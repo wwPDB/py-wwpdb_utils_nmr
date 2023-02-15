@@ -9,6 +9,7 @@
 import copy
 import json
 import re
+import io
 from itertools import zip_longest
 
 
@@ -248,15 +249,12 @@ def getMiddleCode(seqIdList1, seqIdList2):
     """ Return array of middle code of sequence alignment.
     """
 
-    middleCode = ''
+    f = []
 
     for idx, seqId in enumerate(seqIdList1):
-        if idx < len(seqIdList2):
-            middleCode += '|' if seqId == seqIdList2[idx] and seqId != '.' else ' '
-        else:
-            middleCode += ' '
+        f.append('|' if idx < len(seqIdList2) and seqId == seqIdList2[idx] and seqId != '.' else ' ')
 
-    return middleCode
+    return ''.join(f)
 
 
 def getGaugeCode(seqIdList, offset=0):
@@ -405,12 +403,12 @@ def getOneLetterCodeSequence(compIdList):
     """ Convert array of comp_IDs to 1-letter code sequence.
     """
 
-    compCode = ''
+    f = []
 
     for compId in compIdList:
-        compCode += getOneLetterCode(compId)
+        f.append(getOneLetterCode(compId))
 
-    return compCode
+    return ''.join(f)
 
 
 def letterToDigit(code, minDigit=0):
@@ -988,10 +986,10 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
     """ Assign polymer sequences of restraints.
     """
 
-    warningMessage = ''
-
     if pA is None or polySeqModel is None or polySeqRst is None or seqAlign is None:
-        return None, warningMessage
+        return None, []
+
+    warnings = []
 
     mrFormatName = getRestraintFormatName(fileType)
     _a_mr_format_name = 'the ' + mrFormatName
@@ -1042,8 +1040,8 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
             if len(_cif_chains) > 1:
                 chain_id2 = polySeqRst[column]['chain_id']
 
-                warningMessage += f"[Concatenated sequence] The chain ID {chain_id2!r} of the sequences in {_a_mr_format_name} file "\
-                    f"will be re-assigned to the chain IDs {_cif_chains} in the coordinates during biocuration.\n"
+                warnings.append(f"[Concatenated sequence] The chain ID {chain_id2!r} of the sequences in {_a_mr_format_name} file "
+                                f"will be re-assigned to the chain IDs {_cif_chains} in the coordinates during biocuration.")
 
         chain_id = polySeqModel[row][chain_id_name]
         chain_id2 = polySeqRst[column]['chain_id']
@@ -1187,8 +1185,8 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
 
                     #     cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
 
-                    #     warningMessage += f"[Sequence mismatch] {cif_seq_code} is not present "\
-                    #         f"in {_a_mr_format_name} data (chain_id {chain_id2}).\n"
+                    #     warnings.append(f"[Sequence mismatch] {cif_seq_code} is not present "
+                    #                     f"in {_a_mr_format_name} data (chain_id {chain_id2}).")
                     #
                 elif mr_comp_id != cif_comp_id and aligned[i]:
 
@@ -1218,9 +1216,9 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
                         if getOneLetterCode(cif_comp_id) == 'X':
                             continue
 
-                    warningMessage += f"[Sequence mismatch] Sequence alignment error between the coordinate ({cif_seq_code}) "\
-                        f"and {_a_mr_format_name} data ({mr_seq_code}). "\
-                        "Please verify the two sequences and re-upload the correct file(s) if required.\n"
+                    warnings.append(f"[Sequence mismatch] Sequence alignment error between the coordinate ({cif_seq_code}) "
+                                    f"and {_a_mr_format_name} data ({mr_seq_code}). "
+                                    "Please verify the two sequences and re-upload the correct file(s) if required.")
 
             if len(unmapped) > 0:
                 ca['unmapped_sequence'] = unmapped
@@ -1270,7 +1268,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
                 except StopIteration:
                     pass
 
-    return chainAssign, warningMessage
+    return chainAssign, warnings
 
 
 def trimSequenceAlignment(seqAlign, chainAssign):
@@ -2507,50 +2505,49 @@ def getPrettyJson(data):
     """ Return pretty JSON string.
     """
 
-    def getPrettyChunk(str):  # pylint: disable=redefined-builtin
+    def getPrettyChunk(chunk):
 
         # string
-        str_ = re.sub(r'",\s+', '", ', str)
+        chunk_ = re.sub(r'",\s+', '", ', chunk)
         # number
-        str__ = re.sub(r'(\d),\s+', r'\1, ', str_)
+        chunk__ = re.sub(r'(\d),\s+', r'\1, ', chunk_)
         # null, true, false
-        str___ = re.sub(r'(null|true|false),\s+', r'\1, ', str__)
+        chunk___ = re.sub(r'(null|true|false),\s+', r'\1, ', chunk__)
 
-        return re.sub(r'(\s+)\[\s+([\S ]+)\s+\](,?)\n', r'\1[\2]\3\n', str___)
+        return re.sub(r'(\s+)\[\s+([\S ]+)\s+\](,?)\n', r'\1[\2]\3\n', chunk___)
 
     lines = json.dumps(data, indent=2).split('\n')
 
     is_tag = []
     chunk = []
 
-    buff = ''
+    with io.StringIO() as f:
 
-    for line in lines:
+        for line in lines:
 
-        if '": ' in line:
+            if '": ' in line:
 
-            if len(buff) > 0:
-                is_tag.append(False)
-                chunk.append(buff)
+                if f.tell() > 0:
+                    is_tag.append(False)
+                    chunk.append(f.getvalue())
 
-            is_tag.append(True)
-            chunk.append(line)
+                    f.truncate(0)
+                    f.seek(0)
 
-            buff = ''
+                is_tag.append(True)
+                chunk.append(line)
 
-        else:
-            buff += line + '\n'
+            else:
+                f.write(line + '\n')
 
-    if len(buff) > 0:
-        is_tag.append(False)
-        chunk.append(buff)
+        if f.tell() > 0:
+            is_tag.append(False)
+            chunk.append(f.getvalue())
 
-    buff = ''
+            f.truncate(0)
+            f.seek(0)
 
-    for _is_tag, _chunk in zip(is_tag, chunk):
-        if _is_tag:
-            buff += _chunk + '\n'
-        else:
-            buff += getPrettyChunk(_chunk)
+        for _is_tag, _chunk in zip(is_tag, chunk):
+            f.write((_chunk + '\n') if _is_tag else getPrettyChunk(_chunk))
 
-    return buff
+        return f.getvalue()

@@ -439,7 +439,8 @@ class AmberMRParserListener(ParseTreeListener):
     # ambigous atom name mapping
     ambigAtomNameMapping = {}
 
-    warningMessage = ''
+    __f = __g = None
+    warningMessage = None
 
     reasonsForReParsing = {}
 
@@ -720,6 +721,8 @@ class AmberMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by AmberMRParser#amber_mr.
     def enterAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
         self.__polySeqRst = []
+        self.__f = []
+        self.__g = []
 
     # Exit a parse tree produced by AmberMRParser#amber_mr.
     def exitAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
@@ -730,7 +733,9 @@ class AmberMRParserListener(ParseTreeListener):
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
-                self.warningMessage += message
+                self.__f.extend(message)
+
+            self.warningMessage = '\n'.join(self.__f)
 
             if self.__chainAssign is not None:
 
@@ -764,11 +769,10 @@ class AmberMRParserListener(ParseTreeListener):
                     if 'ambig_atom_id_remap' not in self.reasonsForReParsing:
                         self.reasonsForReParsing['ambig_atom_id_remap'] = self.ambigAtomNameMapping
 
-        if len(self.warningMessage) == 0:
+        if len(self.__f) == 0:
             self.warningMessage = None
         else:
-            self.warningMessage = self.warningMessage[0:-1]
-            self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
+            self.warningMessage = '\n'.join(set(self.__f))
 
     # Enter a parse tree produced by AmberMRParser#comment.
     def enterComment(self, ctx: AmberMRParser.CommentContext):  # pylint: disable=unused-argument
@@ -896,8 +900,8 @@ class AmberMRParserListener(ParseTreeListener):
             self.detectRestraintType(self.likeDist)
 
             if len(self.__cur_subtype) == 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Couldn't specify NMR restraint type because the number of columns in the 'iat' clause did not match.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Couldn't specify NMR restraint type because the number of columns in the 'iat' clause did not match.")
                 return
 
             # conventional restraint
@@ -908,8 +912,8 @@ class AmberMRParserListener(ParseTreeListener):
                     self.numIatCol = max(setIatCol)
                     if list(range(1, self.numIatCol + 1)) != setIatCol:
                         misIatCol = ','.join([str(col) for col in set(range(1, self.numIatCol + 1)) - set(setIatCol)])
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"Couldn't specify NMR restraint type because of missing 'iat({misIatCol})' clause(s).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"Couldn't specify NMR restraint type because of missing 'iat({misIatCol})' clause(s).")
                         return
 
                 # cross-check between IAT and IGRn variables
@@ -925,8 +929,8 @@ class AmberMRParserListener(ParseTreeListener):
                             maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
                             valArray = ','.join([str(val) for col_, val in enumerate(self.igr[varNum]) if val > 0 and col_ < maxCol])
                             if len(valArray) > 0:
-                                self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                                    f"'{varName}={valArray}' has no effect because 'iat({varNum})={iat}'.\n"
+                                self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                                f"'{varName}={valArray}' has no effect because 'iat({varNum})={iat}'.")
                         del self.igr[varNum]
 
                     elif iat < 0:
@@ -949,26 +953,26 @@ class AmberMRParserListener(ParseTreeListener):
                                     hint += f"igr({_col+1})={valArray},"
                             if len(hint) > 0:
                                 hint = f" The peripheral atom selections are: {hint[:-1]}."
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"'{varName}' is missing despite being set 'iat({varNum})={iat}'.{hint}\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"'{varName}' is missing despite being set 'iat({varNum})={iat}'.{hint}")
                         else:
                             nonpCols = [col_ for col_, val in enumerate(self.igr[varNum]) if val <= 0]
                             maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
                             valArray = ','.join([str(val) for col_, val in enumerate(self.igr[varNum]) if val > 0 and col_ < maxCol])
                             if len(valArray) == 0:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"'{varName}' includes non-positive integers.\n"
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                f"'{varName}' includes non-positive integers.")
                                 del self.igr[varNum]
                             else:
                                 nonp = [val for col_, val in enumerate(self.igr[varNum]) if val > 0 and col_ < maxCol]
                                 if self.iresid == 0:
                                     if len(nonp) != len(set(nonp)):
                                         if self.__hasPolySeq:
-                                            self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                                                f"'{varName}={valArray}' includes redundant integers.\n"
+                                            self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                                            f"'{varName}={valArray}' includes redundant integers.")
                                     elif len(nonp) < 2:
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"Surprisingly '{varName}={valArray}' consists of a single integer.\n"
+                                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                        f"Surprisingly '{varName}={valArray}' consists of a single integer.")
                                 else:
                                     mask = [str(val) + '@' + grnam
                                             for col_, (val, grnam) in enumerate(zip(self.igr[varNum], self.grnam[varNum]))
@@ -977,12 +981,12 @@ class AmberMRParserListener(ParseTreeListener):
                                     valArray2 = ','.join([val for col_, val in enumerate(self.grnam[varNum]) if len(val) > 0 and col_ < maxCol])
                                     if len(mask) != len(set(mask)):
                                         if self.__hasPolySeq:
-                                            self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                                                f"'{varName}={valArray}' and '{varName2}={valArray2}' include redundant atoms.\n"
+                                            self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                                            f"'{varName}={valArray}' and '{varName2}={valArray2}' include redundant atoms.")
                                     elif len(nonp) < 2 or len(mask) < 2:
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"Surprisingly '{varName}={valArray}' consists of a single integer "\
-                                            f"or '{varName2}={valArray2}' consists of a single string.\n"
+                                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                        f"Surprisingly '{varName}={valArray}' consists of a single integer "
+                                                        f"or '{varName2}={valArray2}' consists of a single string.")
                                 self.igr[varNum] = list(set(nonp))  # trimming non-positive/redundant integer
 
                 self.iat = self.iat[0:self.numIatCol]  # trimming default zero integer
@@ -1007,7 +1011,7 @@ class AmberMRParserListener(ParseTreeListener):
                             chk_dihed = True
                             mis_iat = None
                             dihed_factors = {}
-                            _warningMessage = ''
+                            self.__g.clear()
                     lastComment = str(self.lastComment)
                     hint = '' if lastComment is None else\
                         (" or ambiguous atom name mapping information generated by 'makeDIST_RST' should be attached to the AMBER restraint file "
@@ -1030,35 +1034,35 @@ class AmberMRParserListener(ParseTreeListener):
                                     if chk_dihed:
                                         mis_dihed = True
                                         mis_iat = iat
-                                        _warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                            f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file{hint}.\n"
+                                        self.__g.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                        f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file{hint}.")
                                     else:
-                                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                            f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file{hint}.\n"
+                                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                        f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file{hint}.")
                             elif iat < 0:
                                 varNum = col + 1
                                 if self.igr is None:
-                                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                        f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.\n"
+                                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                    f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
                                 elif varNum in self.igr:
                                     for igr in self.igr[varNum]:
                                         if igr in self.__atomNumberDict:
                                             atomSelection.append(self.__atomNumberDict[igr])
                                         else:
-                                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                                f"'igr({varNum})={igr}' is not defined in the AMBER parameter/topology file{hint}.\n"
+                                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                            f"'igr({varNum})={igr}' is not defined in the AMBER parameter/topology file{hint}.")
 
                         else:
 
                             if iat > 0:
                                 if col >= len(self.atnam):
-                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                        f"'atnam({col+1})' is missing despite being set iresid=1, iat({col+1})={iat}.\n"
+                                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                    f"'atnam({col+1})' is missing despite being set iresid=1, iat({col+1})={iat}.")
                                 else:
                                     atnam = self.atnam[col]
                                     if len(atnam) == 0:
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"'atnam({col+1})={atnam}' is empty despite being set iresid=1, iat({col+1})={iat}.\n"
+                                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                        f"'atnam({col+1})={atnam}' is empty despite being set iresid=1, iat({col+1})={iat}.")
                                     else:
                                         factor = self.getAtomNumberDictFromAmbmaskInfo(iat, self.atnam[col])
                                         if factor is not None:
@@ -1067,18 +1071,18 @@ class AmberMRParserListener(ParseTreeListener):
                             elif iat < 0:
                                 varNum = col + 1
                                 if self.igr is None:
-                                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                        f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.\n"
+                                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                    f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
                                 elif varNum in self.igr:
                                     if varNum not in self.grnam:
-                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                            f"'grnam({varNum})' is missing despite being set iresid=1, igr({varNum})={self.igr[varNum]}.\n"
+                                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                        f"'grnam({varNum})' is missing despite being set iresid=1, igr({varNum})={self.igr[varNum]}.")
                                     else:
                                         for igr, grnam in zip(self.igr[varNum], self.grnam[varNum]):
                                             if len(grnam) == 0:
-                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                    f"'grnam({varNum})={self.grnam[varNum]}' is empty "\
-                                                    f"despite being set iresid=1, igr({varNum})={self.igr[varNum]}.\n"
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"'grnam({varNum})={self.grnam[varNum]}' is empty "
+                                                                f"despite being set iresid=1, igr({varNum})={self.igr[varNum]}.")
                                             else:
                                                 for order in range(6):
                                                     factor = self.getAtomNumberDictFromAmbmaskInfo(igr, grnam, order)
@@ -1115,7 +1119,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     self.atomSelectionSet.insert(mis_idx, [_factor])
 
                         if not rescued:
-                            self.warningMessage += _warningMessage
+                            self.__f.extend(self.__g)
 
                     if self.lastComment is not None:
                         if self.__debug:
@@ -1340,8 +1344,8 @@ class AmberMRParserListener(ParseTreeListener):
                         valid = True
                         for col, iat in enumerate(self.iat):
                             if iat < 0:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"Ambiguous atom selection 'iat({col+1})={iat}' is not allowed as a angle restraint.\n"
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                f"Ambiguous atom selection 'iat({col+1})={iat}' is not allowed as a angle restraint.")
                                 valid = False
                         if not valid:
                             return
@@ -1389,8 +1393,8 @@ class AmberMRParserListener(ParseTreeListener):
                         valid = True
                         for col, iat in enumerate(self.iat):
                             if iat < 0:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"Ambiguous atom selection 'iat({col+1})={iat}' is not allowed as a torsional angle restraint.\n"
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                f"Ambiguous atom selection 'iat({col+1})={iat}' is not allowed as a torsional angle restraint.")
                                 valid = False
                         if not valid:
                             return
@@ -1438,8 +1442,8 @@ class AmberMRParserListener(ParseTreeListener):
                         valid = True
                         for col, iat in enumerate(self.iat):
                             if iat < 0:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"Ambiguous atom selection 'iat({col+1})={iat}' is not allowed as a plane-(point/plane) angle restraint.\n"
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                f"Ambiguous atom selection 'iat({col+1})={iat}' is not allowed as a plane-(point/plane) angle restraint.")
                                 valid = False
                         if not valid:
                             return
@@ -1574,10 +1578,10 @@ class AmberMRParserListener(ParseTreeListener):
                                                   }
                                         if not self.updateSanderAtomNumberDict(factor):
                                             if 'AMB' in g[offset + 1] and ((':' in g[offset + 2] and '-' in g[offset + 2]) or '.' in g[offset + 2]):
-                                                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                    f"based on Sander comment {' '.join(g[offset:offset+3])!r}. "\
-                                                    "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the AMBER restraint file.\n"
+                                                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {' '.join(g[offset:offset+3])!r}. "
+                                                                "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the AMBER restraint file.")
                                             else:
                                                 _factor = self.getAtomNumberDictFromAmbmaskInfo(int(g[offset + 0]), g[offset + 2])
                                                 if _factor is None:
@@ -1604,9 +1608,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                             if factor is not None:
                                                                 if self.updateSanderAtomNumberDict(factor):
                                                                     continue
-                                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                        f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                        f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
+                                                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                    f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
                                                     continue
                                                 factor = {'auth_seq_id': int(g[offset + 0]),
                                                           'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
@@ -1614,9 +1618,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                           'iat': iat
                                                           }
                                                 if not self.updateSanderAtomNumberDict(factor):
-                                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                        f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                        f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
+                                                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                    f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
 
                                     else:
                                         s = None
@@ -1631,9 +1635,9 @@ class AmberMRParserListener(ParseTreeListener):
                                             if s is not None:
                                                 break
                                         if s is None:
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                f"based on Sander comment {e!r}.\n"
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {e!r}.")
                                         else:
                                             factor = {'auth_seq_id': s,
                                                       'auth_comp_id': e,
@@ -1643,15 +1647,15 @@ class AmberMRParserListener(ParseTreeListener):
                                             if self.updateSanderAtomNumberDict(factor):
                                                 self.metalIonMapping[e].append(s)
                                             else:
-                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                    f"based on Sander comment {e!r}.\n"
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {e!r}.")
 
                             elif iat < 0:
                                 varNum = col + 1
                                 if self.igr is None:
-                                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                        f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.\n"
+                                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                    f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
                                 elif varNum in self.igr:
                                     igr = self.igr[varNum]
                                     if igr[0] not in self.__sanderAtomNumberDict:
@@ -1665,17 +1669,17 @@ class AmberMRParserListener(ParseTreeListener):
                                                   }
                                         if not self.updateSanderAtomNumberDict(factor):
                                             if 'AMB' in g[offset + 1] and ((':' in g[offset + 2] and '-' in g[offset + 2]) or '.' in g[offset + 2]):
-                                                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'igr({varNum})={igr}' in the coordinates "\
-                                                    f"based on Sander comment {' '.join(g[offset:offset+3])!r}. "\
-                                                    "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the AMBER restraint file.\n"
+                                                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'igr({varNum})={igr}' in the coordinates "
+                                                                f"based on Sander comment {' '.join(g[offset:offset+3])!r}. "
+                                                                "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the AMBER restraint file.")
                                             else:
                                                 for order, iat in enumerate(igr):
                                                     _factor = self.getAtomNumberDictFromAmbmaskInfo(int(g[offset + 0]), g[offset + 2], order)
                                                     if _factor is None:
-                                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                            f"Couldn't specify 'igr({varNum})={igr}' in the coordinates "\
-                                                            f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
+                                                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                        f"Couldn't specify 'igr({varNum})={igr}' in the coordinates "
+                                                                        f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
                                                         break
                                                     factor = {'auth_seq_id': int(g[offset + 0]),
                                                               'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
@@ -1683,9 +1687,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                               'iat': iat
                                                               }
                                                     if not self.updateSanderAtomNumberDict(factor):
-                                                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                            f"Couldn't specify 'igr({varNum})={igr}' in the coordinates "\
-                                                            f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
+                                                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                        f"Couldn't specify 'igr({varNum})={igr}' in the coordinates "
+                                                                        f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
 
                     if self.__cur_subtype == 'ang':
                         subtype_name = 'angle restraint'
@@ -1714,9 +1718,9 @@ class AmberMRParserListener(ParseTreeListener):
                                         atomId = self.ang_nang_atoms[1][col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
                                         if _factor is None:
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                f"based on Sander comment {self.prevComment!r}.\n"
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.prevComment!r}.")
                                             continue
                                         factor = {'auth_seq_id': seqId,
                                                   'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
@@ -1724,9 +1728,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                   'iat': iat
                                                   }
                                         if not self.updateSanderAtomNumberDict(factor):
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                f"based on Sander comment {self.prevComment!r}.\n"
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.prevComment!r}.")
 
                             self.prevComment = None
 
@@ -1741,9 +1745,9 @@ class AmberMRParserListener(ParseTreeListener):
                                         atomId = self.ang_nang_atoms[0][col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
                                         if _factor is None:
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                f"based on Sander comment {self.lastComment!r}.\n"
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.lastComment!r}.")
                                             continue
                                         factor = {'auth_seq_id': seqId,
                                                   'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
@@ -1751,9 +1755,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                   'iat': iat
                                                   }
                                         if not self.updateSanderAtomNumberDict(factor):
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                f"based on Sander comment {self.lastComment!r}.\n"
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.lastComment!r}.")
 
                         else:
                             for col, iat in enumerate(self.iat):
@@ -1772,9 +1776,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                   'iat': iat
                                                   }
                                         if not self.updateSanderAtomNumberDict(factor):
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
 
                     if self.__cur_subtype == 'dihed':
                         subtype_name = 'torsional angle restraint'
@@ -1811,9 +1815,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                   'iat': iat
                                                   }
                                         if not self.updateSanderAtomNumberDict(factor):
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                f"based on Sander comment 'PLANAR RESTRAINTS FOR RESIDUE {self.lastPlaneSeqId}' and {gp[col]!r}.\n"
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment 'PLANAR RESTRAINTS FOR RESIDUE {self.lastPlaneSeqId}' and {gp[col]!r}.")
 
                         if go is not None:
                             for col, iat in enumerate(self.iat):
@@ -1828,9 +1832,9 @@ class AmberMRParserListener(ParseTreeListener):
                                         atomId = self.dihed_omega_atoms[col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
                                         if _factor is None:
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                f"based on Sander comment {self.lastComment!r}.\n"
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.lastComment!r}.")
                                             continue
                                         factor = {'auth_seq_id': seqId,
                                                   'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
@@ -1838,9 +1842,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                   'iat': iat
                                                   }
                                         if not self.updateSanderAtomNumberDict(factor):
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                f"based on Sander comment {self.lastComment!r}.\n"
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.lastComment!r}.")
 
                         elif gc is not None:
                             for col, iat in enumerate(self.iat):
@@ -1853,9 +1857,9 @@ class AmberMRParserListener(ParseTreeListener):
                                         atomId = gc[col + 1]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
                                         if _factor is None:
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                f"based on Sander comment {self.lastComment!r}.\n"
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.lastComment!r}.")
                                             continue
                                         factor = {'auth_seq_id': seqId,
                                                   'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
@@ -1863,9 +1867,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                   'iat': iat
                                                   }
                                         if not self.updateSanderAtomNumberDict(factor):
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                f"based on Sander comment {self.lastComment!r}.\n"
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.lastComment!r}.")
 
                         else:
                             for col, iat in enumerate(self.iat):
@@ -1886,9 +1890,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                       'iat': iat
                                                       }
                                             if not self.updateSanderAtomNumberDict(factor):
-                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                    f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
                                         else:
                                             factor = {'auth_seq_id': int(g2[offset2 + 0]),
                                                       'auth_comp_id': g2[offset2 + 1],
@@ -1896,9 +1900,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                       'iat': iat
                                                       }
                                             if not self.updateSanderAtomNumberDict(factor):
-                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                    f"based on Sander comment {' '.join(g2[offset2:offset2+3])!r}.\n"
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {' '.join(g2[offset2:offset2+3])!r}.")
 
                 elif self.lastComment is not None:
                     if not self.__hasComments:
@@ -1925,8 +1929,8 @@ class AmberMRParserListener(ParseTreeListener):
                                     if iat in self.__atomNumberDict:
                                         atomSelection.append(self.__atomNumberDict[iat])
                                     else:
-                                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                            f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
+                                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                        f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.")
                                 else:  # ambmask format
                                     factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
                                     if factor is not None:
@@ -1938,8 +1942,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         rawExprs.append(str(_funcExpr['igr']))
                                     else:  # ambmask format
                                         rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-(point/plane) angle restraint.\n"
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-(point/plane) angle restraint.")
                                 return
 
                             self.atomSelectionSet.append(atomSelection)
@@ -1954,8 +1958,8 @@ class AmberMRParserListener(ParseTreeListener):
                                 if iat in self.__atomNumberDict:
                                     atomSelection.append(self.__atomNumberDict[iat])
                                 else:
-                                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                        f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
+                                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                    f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.")
                             else:  # ambmask format
                                 factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
                                 if factor is not None:
@@ -1967,8 +1971,8 @@ class AmberMRParserListener(ParseTreeListener):
                                     if igr in self.__atomNumberDict:
                                         atomSelection.append(self.__atomNumberDict[igr])
                                     else:
-                                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                            f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.\n"
+                                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                        f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.")
                                 else:  # ambmask format
                                     factor = self.getAtomNumberDictFromAmbmaskInfo(_funcExpr['seq_id'], _funcExpr['atom_id'])
                                     if factor is not None:
@@ -2053,8 +2057,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         if iat in self.__atomNumberDict:
                                             atomSelection.append(self.__atomNumberDict[iat])
                                         else:
-                                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                                f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
+                                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                            f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.")
                                     else:  # ambmask format
                                         factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
                                         if factor is not None:
@@ -2066,8 +2070,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             if igr in self.__atomNumberDict:
                                                 atomSelection.append(self.__atomNumberDict[igr])
                                             else:
-                                                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                                    f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.\n"
+                                                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                                f"'igr({col+1})={igr}' is not defined in the AMBER parameter/topology file.")
                                         else:  # ambmask format
                                             factor = self.getAtomNumberDictFromAmbmaskInfo(_funcExpr['seq_id'], _funcExpr['atom_id'])
                                             if factor is not None:
@@ -2237,8 +2241,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         rawExprs.append(str(_funcExpr['igr']))
                                     else:  # ambmask format
                                         rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as an angle restraint.\n"
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as an angle restraint.")
                                 valid = False
                         if not valid:
                             return
@@ -2292,8 +2296,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         rawExprs.append(str(_funcExpr['igr']))
                                     else:  # ambmask format
                                         rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a torsional angle restraint.\n"
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a torsional angle restraint.")
                                 valid = False
                         if not valid:
                             return
@@ -2355,8 +2359,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             rawExprs.append(str(_funcExpr['igr']))
                                         else:  # ambmask format
                                             rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
-                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                        f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-point angle restraint.\n"
+                                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                    f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-point angle restraint.")
                                     return
 
                             if self.__createSfDict:
@@ -2412,8 +2416,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         if iat in self.__atomNumberDict:
                                             atomSelection.append(self.__atomNumberDict[iat])
                                         else:
-                                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                                f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.\n"
+                                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                            f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file.")
                                     else:  # ambmask format
                                         factor = self.getAtomNumberDictFromAmbmaskInfo(funcExpr['seq_id'], funcExpr['atom_id'])
                                         if factor is not None:
@@ -2425,8 +2429,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             rawExprs.append(str(_funcExpr['igr']))
                                         else:  # ambmask format
                                             rawExprs.append(f":{_funcExpr['seq_id']}@{_funcExpr['atom_id']}")
-                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                        f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-plane angle restraint.\n"
+                                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                    f"Ambiguous atom selection 'igr({col+1})={', '.join(rawExprs)}' is not allowed as a plane-plane angle restraint.")
                                     return
 
                                 self.atomSelectionSet.append(atomSelection)
@@ -2507,9 +2511,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                   'iat': iat
                                                   }
                                         if not self.updateSanderAtomNumberDict(factor):
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
 
                             else:  # list
                                 igr = [_funcExpr['igr'] for _funcExpr in funcExpr if 'igr' in _funcExpr]
@@ -2525,9 +2529,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                   'igr': igr
                                                   }
                                         if not self.updateSanderAtomNumberDict(factor):
-                                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                f"Couldn't specify 'igr({col+1})={igr}' in the coordinates "\
-                                                f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'igr({col+1})={igr}' in the coordinates "
+                                                            f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
 
                     elif self.__cur_subtype == 'ang':
                         subtype_name = 'angle restraint'
@@ -2558,9 +2562,9 @@ class AmberMRParserListener(ParseTreeListener):
                                             atomId = self.ang_nang_atoms[1][col]
                                             _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
                                             if _factor is None:
-                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                    f"based on Sander comment {self.prevComment!r}.\n"
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {self.prevComment!r}.")
                                                 continue
                                             factor = {'auth_seq_id': seqId,
                                                       'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
@@ -2568,9 +2572,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                       'iat': iat
                                                       }
                                             if not self.updateSanderAtomNumberDict(factor):
-                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                    f"based on Sander comment {self.prevComment!r}.\n"
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {self.prevComment!r}.")
 
                             self.prevComment = None
 
@@ -2587,9 +2591,9 @@ class AmberMRParserListener(ParseTreeListener):
                                             atomId = self.ang_nang_atoms[0][col]
                                             _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
                                             if _factor is None:
-                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                    f"based on Sander comment {self.lastComment!r}.\n"
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {self.lastComment!r}.")
                                                 continue
                                             factor = {'auth_seq_id': seqId,
                                                       'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
@@ -2597,9 +2601,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                       'iat': iat
                                                       }
                                             if not self.updateSanderAtomNumberDict(factor):
-                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                    f"based on Sander comment {self.lastComment!r}.\n"
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {self.lastComment!r}.")
 
                         else:
                             for col, funcExpr in enumerate(self.funcExprs):
@@ -2620,9 +2624,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                       'iat': iat
                                                       }
                                             if not self.updateSanderAtomNumberDict(factor):
-                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                    f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
 
                     elif self.__cur_subtype == 'dihed':
                         subtype_name = 'torsional angle restraint'
@@ -2658,9 +2662,9 @@ class AmberMRParserListener(ParseTreeListener):
                                             atomId = self.dihed_omega_atoms[col]
                                             _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
                                             if _factor is None:
-                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                    f"based on Sander comment {self.lastComment!r}.\n"
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {self.lastComment!r}.")
                                                 continue
                                             factor = {'auth_seq_id': seqId,
                                                       'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
@@ -2668,9 +2672,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                       'iat': iat
                                                       }
                                             if not self.updateSanderAtomNumberDict(factor):
-                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                    f"based on Sander comment {self.lastComment!r}.\n"
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {self.lastComment!r}.")
 
                         elif gc is not None:
                             for col, funcExpr in enumerate(self.funcExprs):
@@ -2685,9 +2689,9 @@ class AmberMRParserListener(ParseTreeListener):
                                             atomId = gc[col + 1]
                                             _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId)
                                             if _factor is None:
-                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                    f"based on Sander comment {self.lastComment!r}.\n"
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {self.lastComment!r}.")
                                                 continue
                                             factor = {'auth_seq_id': seqId,
                                                       'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
@@ -2695,9 +2699,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                       'iat': iat
                                                       }
                                             if not self.updateSanderAtomNumberDict(factor):
-                                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                    f"based on Sander comment {self.lastComment!r}.\n"
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {self.lastComment!r}.")
 
                         else:
                             for col, funcExpr in enumerate(self.funcExprs):
@@ -2720,9 +2724,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                           'iat': iat
                                                           }
                                                 if not self.updateSanderAtomNumberDict(factor):
-                                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                        f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                        f"based on Sander comment {' '.join(g[offset:offset+3])!r}.\n"
+                                                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                    f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
                                             else:
                                                 factor = {'auth_seq_id': int(g2[offset2 + 0]),
                                                           'auth_comp_id': g2[offset2 + 1],
@@ -2730,9 +2734,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                           'iat': iat
                                                           }
                                                 if not self.updateSanderAtomNumberDict(factor):
-                                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                                        f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "\
-                                                        f"based on Sander comment {' '.join(g2[offset2:offset2+3])!r}.\n"
+                                                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                    f"based on Sander comment {' '.join(g2[offset2:offset2+3])!r}.")
 
         finally:
 
@@ -2753,88 +2757,88 @@ class AmberMRParserListener(ParseTreeListener):
                 dstFunc['lower_limit'] = f"{self.lowerLimit}"
             else:
                 if self.lowerLimit <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value 'r2={self.lowerLimit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value 'r2={self.lowerLimit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     self.lowerLimit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value 'r2={self.lowerLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value 'r2={self.lowerLimit}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if self.upperLimit is not None:
             if DIST_ERROR_MIN < self.upperLimit <= DIST_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{self.upperLimit}"
             else:
                 if (self.upperLimit <= DIST_ERROR_MIN or self.upperLimit > DIST_ERROR_MAX) and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value 'r3={self.upperLimit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value 'r3={self.upperLimit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     self.upperLimit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value 'r3={self.upperLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value 'r3={self.upperLimit}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if self.lowerLinearLimit is not None:
             if DIST_ERROR_MIN <= self.lowerLinearLimit < DIST_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{self.lowerLinearLimit}"
             else:
                 if self.lowerLinearLimit <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value 'r1={self.lowerLinearLimit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     self.lowerLinearLimit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if self.upperLinearLimit is not None:
             if DIST_ERROR_MIN < self.upperLinearLimit <= DIST_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{self.upperLinearLimit}"
             else:
                 if (self.upperLinearLimit <= DIST_ERROR_MIN or self.upperLinearLimit > DIST_ERROR_MAX) and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value 'r4={self.upperLinearLimit}' is omitted because it is not  within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The upper linear limit value 'r4={self.upperLinearLimit}' is omitted because it is not  within range {DIST_RESTRAINT_ERROR}.")
                     self.upperLinearLimit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value 'r4={self.upperLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper linear limit value 'r4={self.upperLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if self.lowerLimit is not None and self.upperLimit is not None:
             if self.lowerLimit > self.upperLimit:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value 'r2={self.lowerLimit}' must be less than the upper limit value 'r3={self.upperLimit}'.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value 'r2={self.lowerLimit}' must be less than the upper limit value 'r3={self.upperLimit}'.")
 
         if self.lowerLinearLimit is not None and self.upperLimit is not None:
             if self.lowerLinearLimit > self.upperLimit:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the upper limit value 'r3={self.upperLimit}'.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the upper limit value 'r3={self.upperLimit}'.")
 
         if self.lowerLimit is not None and self.upperLinearLimit is not None:
             if self.lowerLimit > self.upperLinearLimit:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value 'r2={self.lowerLimit}' must be less than the upper limit value 'r4={self.upperLinearLimit}'.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value 'r2={self.lowerLimit}' must be less than the upper limit value 'r4={self.upperLinearLimit}'.")
 
         if self.lowerLinearLimit is not None and self.upperLinearLimit is not None:
             if self.lowerLinearLimit > self.upperLinearLimit:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the upper limit value 'r4={self.upperLinearLimit}'.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the upper limit value 'r4={self.upperLinearLimit}'.")
 
         if self.lowerLimit is not None and self.lowerLinearLimit is not None:
             if self.lowerLinearLimit > self.lowerLimit:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the lower limit value 'r2={self.lowerLimit}'.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the lower limit value 'r2={self.lowerLimit}'.")
 
         if self.upperLimit is not None and self.upperLinearLimit is not None:
             if self.upperLimit > self.upperLinearLimit:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value 'r3={self.upperLimit}' must be less than the upper linear limit value 'r4={self.upperLinearLimit}'.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value 'r3={self.upperLimit}' must be less than the upper linear limit value 'r4={self.upperLinearLimit}'.")
 
         if not validRange:
             self.lastComment = None
@@ -2844,29 +2848,29 @@ class AmberMRParserListener(ParseTreeListener):
             if DIST_RANGE_MIN <= self.lowerLimit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value 'r2={self.lowerLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value 'r2={self.lowerLimit}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if self.upperLimit is not None:
             if DIST_RANGE_MIN <= self.upperLimit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value 'r3={self.upperLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value 'r3={self.upperLimit}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if self.lowerLinearLimit is not None:
             if DIST_RANGE_MIN <= self.lowerLinearLimit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value 'r1={self.lowerLinearLimit}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if self.upperLinearLimit is not None:
             if DIST_RANGE_MIN <= self.upperLinearLimit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value 'r4={self.upperLinearLimit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value 'r4={self.upperLinearLimit}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -2887,9 +2891,9 @@ class AmberMRParserListener(ParseTreeListener):
             elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
                 shift = -(numpy.nanmin(_array) // 360) * 360
             if shift is not None:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    "The limit values for an angle restraint have been circularly shifted "\
-                    f"to fit within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                "The limit values for an angle restraint have been circularly shifted "
+                                f"to fit within range {ANGLE_RESTRAINT_ERROR}.")
                 if self.lowerLimit is not None:
                     self.lowerLimit += shift
                 if self.upperLimit is not None:
@@ -2904,44 +2908,44 @@ class AmberMRParserListener(ParseTreeListener):
                 dstFunc['lower_limit'] = f"{self.lowerLimit}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value 'r2={self.lowerLimit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value 'r2={self.lowerLimit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if self.upperLimit is not None:
             if ANGLE_ERROR_MIN < self.upperLimit <= ANGLE_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{self.upperLimit}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value 'r3={self.upperLimit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value 'r3={self.upperLimit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if self.lowerLinearLimit is not None:
             if ANGLE_ERROR_MIN <= self.lowerLinearLimit < ANGLE_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{self.lowerLinearLimit}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if self.upperLinearLimit is not None:
             if ANGLE_ERROR_MIN < self.upperLinearLimit <= ANGLE_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{self.upperLinearLimit}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value 'r4={self.upperLinearLimit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value 'r4={self.upperLinearLimit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if self.lowerLimit is not None and self.lowerLinearLimit is not None:
             if self.lowerLinearLimit > self.lowerLimit:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the lower limit value 'r2={self.lowerLimit}'.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the lower limit value 'r2={self.lowerLimit}'.")
 
         if self.upperLimit is not None and self.upperLinearLimit is not None:
             if self.upperLimit > self.upperLinearLimit:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value 'r3={self.upperLimit}' must be less than the upper linear limit value 'r4={self.upperLinearLimit}'.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value 'r3={self.upperLimit}' must be less than the upper linear limit value 'r4={self.upperLinearLimit}'.")
 
         if not validRange:
             self.lastComment = None
@@ -2951,29 +2955,29 @@ class AmberMRParserListener(ParseTreeListener):
             if ANGLE_RANGE_MIN <= self.lowerLimit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value 'r2={self.lowerLimit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value 'r2={self.lowerLimit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if self.upperLimit is not None:
             if ANGLE_RANGE_MIN <= self.upperLimit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value 'r3={self.upperLimit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value 'r3={self.upperLimit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if self.lowerLinearLimit is not None:
             if ANGLE_RANGE_MIN <= self.lowerLinearLimit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value 'r1={self.lowerLinearLimit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value 'r1={self.lowerLinearLimit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if self.upperLinearLimit is not None:
             if ANGLE_RANGE_MIN <= self.upperLinearLimit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value 'r4={self.upperLinearLimit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value 'r4={self.upperLinearLimit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -2991,8 +2995,8 @@ class AmberMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{obs}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(self.nmpmc,n)}"\
-                    f"The target value 'obs({n})={obs}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(self.nmpmc,n)}"
+                                f"The target value 'obs({n})={obs}' must be within range {PCS_RESTRAINT_ERROR}.")
 
         if not validRange:
             self.lastComment = None
@@ -3002,8 +3006,8 @@ class AmberMRParserListener(ParseTreeListener):
             if PCS_RANGE_MIN <= obs <= PCS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.nmpmc,n)}"\
-                    f"The target value 'obs({n})={obs}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.nmpmc,n)}"
+                                f"The target value 'obs({n})={obs}' should be within range {PCS_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -3025,16 +3029,16 @@ class AmberMRParserListener(ParseTreeListener):
                 dstFunc['lower_limit'] = f"{dobsl}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(self.dataset,n)}"\
-                    f"The lower limit value 'dobsl({n})={dobsl}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(self.dataset,n)}"
+                                f"The lower limit value 'dobsl({n})={dobsl}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if dobsu is not None:
             if RDC_ERROR_MIN < dobsu < RDC_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{dobsu}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(self.dataset,n)}"\
-                    f"The upper limit value 'dobsu({n})={dobsu}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(self.dataset,n)}"
+                                f"The upper limit value 'dobsu({n})={dobsu}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if not validRange:
             self.lastComment = None
@@ -3044,15 +3048,15 @@ class AmberMRParserListener(ParseTreeListener):
             if RDC_RANGE_MIN <= dobsl <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.dataset,n)}"\
-                    f"The lower limit value 'dobsl({n})={dobsl}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.dataset,n)}"
+                                f"The lower limit value 'dobsl({n})={dobsl}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if dobsu is not None:
             if RDC_RANGE_MIN <= dobsu <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.dataset,n)}"\
-                    f"The upper limit value 'dobsu({n})={dobsu}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.dataset,n)}"
+                                f"The upper limit value 'dobsu({n})={dobsu}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -3074,16 +3078,16 @@ class AmberMRParserListener(ParseTreeListener):
                 dstFunc['lower_limit'] = f"{cobsl}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The lower limit value 'cobsl({n})={cobsl}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                f"The lower limit value 'cobsl({n})={cobsl}' must be within range {CSA_RESTRAINT_ERROR}.")
 
         if cobsu is not None:
             if CSA_ERROR_MIN < cobsu < CSA_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{cobsu}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The upper limit value 'cobsu({n})={cobsu}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                f"The upper limit value 'cobsu({n})={cobsu}' must be within range {CSA_RESTRAINT_ERROR}.")
 
         if not validRange:
             self.lastComment = None
@@ -3093,15 +3097,15 @@ class AmberMRParserListener(ParseTreeListener):
             if CSA_RANGE_MIN <= cobsl <= CSA_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The lower limit value 'cobsl({n})={cobsl}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                f"The lower limit value 'cobsl({n})={cobsl}' should be within range {CSA_RESTRAINT_RANGE}.")
 
         if cobsu is not None:
             if CSA_RANGE_MIN <= cobsu <= CSA_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                    f"The upper limit value 'cobsu({n})={cobsu}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                f"The upper limit value 'cobsu({n})={cobsu}' should be within range {CSA_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -3248,19 +3252,19 @@ class AmberMRParserListener(ParseTreeListener):
                                         if len(bondedTo) > 0:
                                             if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                 checked = True
-                                                self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
-                                                    "Please re-upload the model file.\n"
+                                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                "Please re-upload the model file.")
                                     if not checked:
                                         if chainId in LARGE_ASYM_ID:
-                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                             if 'auth_seq_scheme' not in self.reasonsForReParsing:
                                                 self.reasonsForReParsing['auth_seq_scheme'] = True
                                 return factor
                             if chainId in LARGE_ASYM_ID:
-                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                 if 'auth_seq_scheme' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['auth_seq_scheme'] = True
                             return None
@@ -3392,19 +3396,19 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if len(bondedTo) > 0:
                                                     if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                         checked = True
-                                                        self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
-                                                            "Please re-upload the model file.\n"
+                                                        self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                        "Please re-upload the model file.")
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                     if 'auth_seq_scheme' not in self.reasonsForReParsing:
                                                         self.reasonsForReParsing['auth_seq_scheme'] = True
                                         return factor
                                     if chainId in LARGE_ASYM_ID:
-                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                         if 'auth_seq_scheme' not in self.reasonsForReParsing:
                                             self.reasonsForReParsing['auth_seq_scheme'] = True
                                     return None
@@ -3418,20 +3422,20 @@ class AmberMRParserListener(ParseTreeListener):
         """ Report Sander comment issue.
         """
         if self.lastComment is None:
-            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                "Failed to recognize AMBER atom numbers in the restraint file "\
-                "because neither AMBER parameter/topology file nor Sander comment are available.\n"
+            self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                            "Failed to recognize AMBER atom numbers in the restraint file "
+                            "because neither AMBER parameter/topology file nor Sander comment are available.")
         else:
             lastComment = str(self.lastComment)
             if 'AMB' in lastComment and (('-' in lastComment and ':' in lastComment) or '.' in lastComment):
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    "Failed to recognize AMBER atom numbers in the restraint file "\
-                    f"To interpret Sander comment {lastComment!r} as a {subtype_name}, "\
-                    "please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the AMBER restraint file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                "Failed to recognize AMBER atom numbers in the restraint file "
+                                f"To interpret Sander comment {lastComment!r} as a {subtype_name}, "
+                                "please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the AMBER restraint file.")
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    "Failed to recognize AMBER atom numbers in the restraint file "\
-                    f"because Sander comment {lastComment!r} couldn't be interpreted as a {subtype_name}.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                "Failed to recognize AMBER atom numbers in the restraint file "
+                                f"because Sander comment {lastComment!r} couldn't be interpreted as a {subtype_name}.")
 
     def updateSanderAtomNumberDict(self, factor, cifCheck=True, useDefault=True):
         """ Try to update Sander atom number dictionary.
@@ -3595,13 +3599,13 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if len(bondedTo) > 0:
                                                     if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                         checked = True
-                                                        self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
-                                                            "Please re-upload the model file.\n"
+                                                        self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                        "Please re-upload the model file.")
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                         return True
 
                     elif 'igr' in factor:
@@ -3678,13 +3682,13 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if len(bondedTo) > 0:
                                                     if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                         checked = True
-                                                        self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
-                                                            "Please re-upload the model file.\n"
+                                                        self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                        "Please re-upload the model file.")
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
 
                         if found:
                             return True
@@ -3800,13 +3804,13 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if len(bondedTo) > 0:
                                                     if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                         checked = True
-                                                        self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
-                                                            "Please re-upload the model file.\n"
+                                                        self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                        "Please re-upload the model file.")
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                         return True
 
                     elif 'igr' in factor:
@@ -3882,13 +3886,13 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if len(bondedTo) > 0:
                                                     if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                         checked = True
-                                                        self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
-                                                            "Please re-upload the model file.\n"
+                                                        self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                        "Please re-upload the model file.")
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
 
                         if found:
                             return True
@@ -4063,13 +4067,13 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if len(bondedTo) > 0:
                                                         if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                             checked = True
-                                                            self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
-                                                                "Please re-upload the model file.\n"
+                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                            "Please re-upload the model file.")
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
-                                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                             break
 
                         elif 'igr' in factor:
@@ -4146,13 +4150,13 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if len(bondedTo) > 0:
                                                         if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                             checked = True
-                                                            self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
-                                                                "Please re-upload the model file.\n"
+                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                            "Please re-upload the model file.")
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
-                                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
 
             if not found and self.__hasNonPolySeq and useDefault:
 
@@ -4251,13 +4255,13 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if len(bondedTo) > 0:
                                                         if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                             checked = True
-                                                            self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
-                                                                "Please re-upload the model file.\n"
+                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                            "Please re-upload the model file.")
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
-                                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                             break
 
                         elif 'igr' in factor:
@@ -4333,13 +4337,13 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if len(bondedTo) > 0:
                                                         if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                             checked = True
-                                                            self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "\
-                                                                "Please re-upload the model file.\n"
+                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                            "Please re-upload the model file.")
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
-                                                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.\n"
+                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
 
             if not found:
                 allFound = False
@@ -4428,7 +4432,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+AmberMRParserListener.getNeighborCandidateAtom() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+AmberMRParserListener.getNeighborCandidateAtom() ++ Error  - {str(e)}")
 
         return None
 
@@ -4455,30 +4459,30 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if decimal <= 0 or decimal > MAX_COL_IAT:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_IAT}.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_IAT}.")
                     return
                 if self.numIatCol > 0 and self.iresid == 0:
                     zeroCols = [col for col, val in enumerate(self.iat) if val == 0]
                     maxCol = MAX_COL_IAT if len(zeroCols) == 0 else min(zeroCols)
                     valArray = ','.join([str(val) for col, val in enumerate(self.iat) if val != 0 and col < maxCol])
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
-                        f"and '{varName}({decimal})={str(ctx.Integers())}', which will overwrite.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "
+                                    f"and '{varName}({decimal})={str(ctx.Integers())}', which will overwrite.")
                 if self.setIatCol is None:
                     self.setIatCol = []
                 if decimal in self.setIatCol and self.iresid == 0:
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"The argument value of '{varName}({decimal})' must be unique. "\
-                        f"'{varName}({decimal})={str(ctx.Integers())}' will overwrite.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"The argument value of '{varName}({decimal})' must be unique. "
+                                    f"'{varName}({decimal})={str(ctx.Integers())}' will overwrite.")
                 else:
                     self.setIatCol.append(decimal)
                 rawIntArray = str(ctx.Integers()).split(',')
                 val = int(rawIntArray[0])
                 if len(rawIntArray) > 1:
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"The '{varName}({decimal})={str(ctx.Integers())}' can not be an array of integers, "\
-                        f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"The '{varName}({decimal})={str(ctx.Integers())}' can not be an array of integers, "
+                                    f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.")
                 self.iat[decimal - 1] = val
                 if val == 0:
                     self.setIatCol.remove(decimal)
@@ -4493,16 +4497,16 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.setIatCol is not None and len(self.setIatCol) > 0 and self.iresid == 0:
                         valArray = ','.join([f"{varName}({valCol})={self.iat[valCol - 1]}"
                                              for valCol in self.setIatCol if self.iat[valCol - 1] != 0])
-                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                            f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
-                            f"and '{varName}={str(ctx.Integers())}', which will overwrite.\n"
+                        self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "
+                                        f"and '{varName}={str(ctx.Integers())}', which will overwrite.")
                     if self.numIatCol > 0 and self.iresid == 0:
                         zeroCols = [col for col, val in enumerate(self.iat) if val == 0]
                         maxCol = MAX_COL_IAT if len(zeroCols) == 0 else min(zeroCols)
                         valArray = ','.join([str(val) for col, val in enumerate(self.iat) if val != 0 and col < maxCol])
-                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                            f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
-                            f"and '{varName}={str(ctx.Integers())}', which will overwrite.\n"
+                        self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                        f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "
+                                        f"and '{varName}={str(ctx.Integers())}', which will overwrite.")
                     rawIntArray = str(ctx.Integers()).split(',')
                     numIatCol = 0
                     for col, rawInt in enumerate(rawIntArray):
@@ -4516,24 +4520,24 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.setIatCol is not None and len(self.setIatCol) > 0 and self.iresid == 0:
                         valArray = ','.join([f"{varName}({valCol})={self.iat[valCol - 1]}"
                                              for valCol in self.setIatCol if self.iat[valCol - 1] != 0])
-                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                            f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
-                            f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
+                        self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "
+                                        f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.")
                     if self.numIatCol > 0 and self.iresid == 0:
                         zeroCols = [col for col, val in enumerate(self.iat) if val == 0]
                         maxCol = MAX_COL_IAT if len(zeroCols) == 0 else min(zeroCols)
                         valArray = ','.join([str(val) for col, val in enumerate(self.iat) if val != 0 and col < maxCol])
-                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                            f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
-                            f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
+                        self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                        f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "
+                                        f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.")
                     offset = 0
                     for multiplicativeInt in str(ctx.MultiplicativeInt()).split(','):
                         rawMultInt = multiplicativeInt.split('*')
                         numIatCol = int(rawMultInt[0])
                         if offset + numIatCol <= 0 or offset + numIatCol > MAX_COL_IAT:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The argument value of '{varName}({numIatCol})' derived from "\
-                                f"'{str(ctx.MultiplicativeInt())}' must be in the range 1-{MAX_COL_IAT}.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The argument value of '{varName}({numIatCol})' derived from "
+                                            f"'{str(ctx.MultiplicativeInt())}' must be in the range 1-{MAX_COL_IAT}.")
                             return
                         val = int(rawMultInt[1])
                         for col in range(0, numIatCol):
@@ -4542,9 +4546,9 @@ class AmberMRParserListener(ParseTreeListener):
                             self.numIatCol = offset + numIatCol
                         else:
                             self.numIatCol = 0
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The '{varName}' values '{val}' derived from "\
-                                f"'{str(ctx.MultiplicativeInt())}' must be non-zero integer.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The '{varName}' values '{val}' derived from "
+                                            f"'{str(ctx.MultiplicativeInt())}' must be non-zero integer.")
                             break
                         offset += numIatCol
                     if self.numIatCol in (2, 3, 5, 6):  # possible to specify restraint type, see also detectRestraintType()
@@ -4585,30 +4589,30 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if decimal <= 0 or decimal > MAX_COL_IGR:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_IGR}.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_IGR}.")
                     return
                 if self.numIgrCol[varNum] > 0:
                     nonpCols = [col for col, val in enumerate(self.igr[varNum]) if val <= 0]
                     maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
                     valArray = ','.join([str(val) for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol])
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
-                        f"and '{varName}({decimal})={str(ctx.Integers())}', which will overwrite.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "
+                                    f"and '{varName}({decimal})={str(ctx.Integers())}', which will overwrite.")
                 if self.setIgrCol[varNum] is None:
                     self.setIgrCol[varNum] = []
                 if decimal in self.setIgrCol[varNum]:
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"The argument value of '{varName}({decimal})' must be unique. "\
-                        f"'{varName}({decimal})={str(ctx.Integers())}' will overwrite.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"The argument value of '{varName}({decimal})' must be unique. "
+                                    f"'{varName}({decimal})={str(ctx.Integers())}' will overwrite.")
                 else:
                     self.setIgrCol[varNum].append(decimal)
                 rawIntArray = str(ctx.Integers()).split(',')
                 val = int(rawIntArray[0])
                 if len(rawIntArray) > 1:
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"The '{varName}({decimal})={str(ctx.Integers())}' can not be an array of integers, "\
-                        f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"The '{varName}({decimal})={str(ctx.Integers())}' can not be an array of integers, "
+                                    f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.")
                 self.igr[varNum][decimal - 1] = val
                 if val == 0:
                     self.setIgrCol[varNum].remove(decimal)
@@ -4620,16 +4624,16 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.setIgrCol[varNum] is not None and len(self.setIgrCol[varNum]) > 0:
                         valArray = ','.join([f"{varName}({valCol})={self.igr[varNum][valCol - 1]}"
                                              for valCol in self.setIgrCol[varNum] if self.igr[varNum][valCol - 1] > 0])
-                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                            f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
-                            f"and '{varName}={str(ctx.Integers())}', which will overwrite.\n"
+                        self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "
+                                        f"and '{varName}={str(ctx.Integers())}', which will overwrite.")
                     if self.numIgrCol[varNum] > 0:
                         nonpCols = [col for col, val in enumerate(self.igr[varNum]) if val <= 0]
                         maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
                         valArray = ','.join([str(val) for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol])
-                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                            f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
-                            f"and '{varName}={str(ctx.Integers())}', which will overwrite.\n"
+                        self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                        f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "
+                                        f"and '{varName}={str(ctx.Integers())}', which will overwrite.")
                     rawIntArray = str(ctx.Integers()).split(',')
                     numIgrCol = 0
                     for col, rawInt in enumerate(rawIntArray):
@@ -4643,24 +4647,24 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.setIgrCol[varNum] is not None and len(self.setIgrCol[varNum]) > 0:
                         valArray = ','.join([f"{varName}({valCol})={self.igr[varNum][valCol - 1]}"
                                              for valCol in self.setIgrCol[varNum] if self.igr[varNum][valCol - 1] > 0])
-                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                            f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
-                            f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
+                        self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "
+                                        f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.")
                     if self.numIgrCol[varNum] > 0:
                         nonpCols = [col for col, val in enumerate(self.igr[varNum]) if val <= 0]
                         maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
                         valArray = ','.join([str(val) for col, val in enumerate(self.igr[varNum]) if val > 0 and col < maxCol])
-                        self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                            f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
-                            f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.\n"
+                        self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                        f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "
+                                        f"and '{varName}={str(ctx.MultiplicativeInt())}', which will overwrite.")
                     offset = 0
                     for multiplicativeInt in str(ctx.MultiplicativeInt()).split(','):
                         rawMultInt = multiplicativeInt.split('*')
                         numIgrCol = int(rawMultInt[0])
                         if offset + numIgrCol <= 0 or offset + numIgrCol > MAX_COL_IGR:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The argument value of '{varName}({numIgrCol})' derived from "\
-                                f"'{str(ctx.MultiplicativeInt())}' must be in the range 1-{MAX_COL_IGR}.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The argument value of '{varName}({numIgrCol})' derived from "
+                                            f"'{str(ctx.MultiplicativeInt())}' must be in the range 1-{MAX_COL_IGR}.")
                             return
                         val = int(rawMultInt[1])
                         for col in range(0, numIgrCol):
@@ -4669,9 +4673,9 @@ class AmberMRParserListener(ParseTreeListener):
                             self.numIgrCol[varNum] = offset + numIgrCol
                         else:
                             self.numIgrCol[varNum] = 0
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The '{varName}' values '{val}' derived from "\
-                                f"'{str(ctx.MultiplicativeInt())}' must be positive integer.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The '{varName}' values '{val}' derived from "
+                                            f"'{str(ctx.MultiplicativeInt())}' must be positive integer.")
                             break
                         offset += numIgrCol
 
@@ -4695,8 +4699,8 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if decimal <= 0 or decimal > MAX_COL_RSTWT:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_RSTWT}.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_RSTWT}.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
@@ -4708,8 +4712,8 @@ class AmberMRParserListener(ParseTreeListener):
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > MAX_COL_RSTWT:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={','.join(rawRealArray)}' must not exceed {MAX_COL_RSTWT}.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The length of '{varName}={','.join(rawRealArray)}' must not exceed {MAX_COL_RSTWT}.")
                         return
                     for col, rawReal in enumerate(rawRealArray):
                         val = float(rawReal)
@@ -4722,9 +4726,9 @@ class AmberMRParserListener(ParseTreeListener):
                         rawMultReal = multiplicativeReal.split('*')
                         numCol = int(rawMultReal[0])
                         if offset + numCol <= 0 or offset + numCol > MAX_COL_RSTWT:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The argument value of '{varName}({numCol})' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must not exceed {MAX_COL_RSTWT}.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The argument value of '{varName}({numCol})' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must not exceed {MAX_COL_RSTWT}.")
                             return
                         val = float(rawMultReal[1])
                         for col in range(0, numCol):
@@ -4764,16 +4768,16 @@ class AmberMRParserListener(ParseTreeListener):
                 if self.setAtnamCol is not None and len(self.setAtnamCol) > 0:
                     valArray = ','.join([f"{varName}({valCol})={self.atnam[valCol - 1]}"
                                          for valCol in self.setAtnamCol if len(self.atnam[valCol - 1]) > 0])
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
-                        f"and '{varName}={str(ctx.Qstrings())}', which will overwrite.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "
+                                    f"and '{varName}={str(ctx.Qstrings())}', which will overwrite.")
                 if self.numAtnamCol > 0:
                     zeroCols = [col for col, val in enumerate(self.atnam) if len(val) == 0]
                     maxCol = MAX_COL_IAT if len(zeroCols) == 0 else min(zeroCols)
                     valArray = ','.join([str(val) for col, val in enumerate(self.atnam) if len(val) > 0 and col < maxCol])
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
-                        f"and '{varName}={str(ctx.Qstrings())}', which will overwrite.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "
+                                    f"and '{varName}={str(ctx.Qstrings())}', which will overwrite.")
                 rawStrArray = str(ctx.Qstrings()).split(',')
                 numAtnamCol = 0
                 for col, rawStr in enumerate(rawStrArray):
@@ -4790,30 +4794,30 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal_AP():
                 decimal = int(str(ctx.Decimal_AP()))
                 if decimal <= 0 or decimal > MAX_COL_IAT:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_IAT}.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_IAT}.")
                     return
                 if self.numAtnamCol > 0:
                     zeroCols = [col for col, val in enumerate(self.atnam) if len(val) == 0]
                     maxCol = MAX_COL_IAT if len(zeroCols) == 0 else min(zeroCols)
                     valArray = ','.join([str(val) for col, val in enumerate(self.atnam) if len(val) > 0 and col < maxCol])
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
-                        f"and '{varName}({decimal})={str(ctx.Qstring_AP())}', which will overwrite.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "
+                                    f"and '{varName}({decimal})={str(ctx.Qstring_AP())}', which will overwrite.")
                 if self.setAtnamCol is None:
                     self.setAtnamCol = []
                 if decimal in self.setAtnamCol:
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"The argument value of '{varName}({decimal})' must be unique. "\
-                        f"'{varName}({decimal})={str(ctx.Qstring_AP())}' will overwrite.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"The argument value of '{varName}({decimal})' must be unique. "
+                                    f"'{varName}({decimal})={str(ctx.Qstring_AP())}' will overwrite.")
                 else:
                     self.setAtnamCol.append(decimal)
                 rawStrArray = str(ctx.Qstring_AP()).split(',')
                 val = stripQuot(rawStrArray[0])
                 if len(rawStrArray) > 1:
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"The '{varName}({decimal})={str(ctx.Qstring_AP())}' can not be an array of strings, "\
-                        f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"The '{varName}({decimal})={str(ctx.Qstring_AP())}' can not be an array of strings, "
+                                    f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.")
                 self.atnam[decimal - 1] = val
                 if len(val) == 0:
                     self.setAtnamCol.remove(decimal)
@@ -4846,16 +4850,16 @@ class AmberMRParserListener(ParseTreeListener):
                 if self.setGrnamCol[varNum] is not None and len(self.setGrnamCol[varNum]) > 0:
                     valArray = ','.join([f"{varName}({valCol})={self.grnam[varNum][valCol - 1]}"
                                          for valCol in self.setGrnamCol[varNum] if len(self.grnam[varNum][valCol - 1]) > 0])
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
-                        f"and '{varName}={str(ctx.Qstrings())}', which will overwrite.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "
+                                    f"and '{varName}={str(ctx.Qstrings())}', which will overwrite.")
                 if self.numGrnamCol[varNum] > 0:
                     nonpCols = [col for col, val in enumerate(self.grnam[varNum]) if len(val) == 0]
                     maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
                     valArray = ','.join([str(val) for col, val in enumerate(self.grnam[varNum]) if len(val) > 0 and col < maxCol])
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "\
-                        f"and '{varName}={str(ctx.Qstrings())}', which will overwrite.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"You have overwritten the '{varName}' variable, '{varName}={valArray}' "
+                                    f"and '{varName}={str(ctx.Qstrings())}', which will overwrite.")
                 rawStrArray = str(ctx.Qstrings()).split(',')
                 numGrnamCol = 0
                 for col, rawStr in enumerate(rawStrArray):
@@ -4901,30 +4905,30 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal_AP():
                 decimal = int(str(ctx.Decimal_AP()))
                 if decimal <= 0 or decimal > MAX_COL_IGR:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_IGR}.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{MAX_COL_IGR}.")
                     return
                 if self.numGrnamCol[varNum] > 0:
                     nonpCols = [col for col, val in enumerate(self.grnam[varNum]) if len(val) == 0]
                     maxCol = MAX_COL_IGR if len(nonpCols) == 0 else min(nonpCols)
                     valArray = ','.join([str(val) for col, val in enumerate(self.grnam[varNum]) if len(val) > 0 and col < maxCol])
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "\
-                        f"and '{varName}({decimal})={str(ctx.Qstring_AP())}', which will overwrite.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"You have mixed different syntaxes for the '{varName}' variable, '{varName}={valArray}' "
+                                    f"and '{varName}({decimal})={str(ctx.Qstring_AP())}', which will overwrite.")
                 if self.setGrnamCol[varNum] is None:
                     self.setGrnamCol[varNum] = []
                 if decimal in self.setGrnamCol[varNum]:
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"The argument value of '{varName}({decimal})' must be unique. "\
-                        f"'{varName}({decimal})={str(ctx.Qstring_AP())}' will overwrite.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"The argument value of '{varName}({decimal})' must be unique. "
+                                    f"'{varName}({decimal})={str(ctx.Qstring_AP())}' will overwrite.")
                 else:
                     self.setGrnamCol[varNum].append(decimal)
                 rawStrArray = str(ctx.Qstring_AP()).split(',')
                 val = stripQuot(rawStrArray[0])
                 if len(rawStrArray) > 1:
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"The '{varName}({decimal})={str(ctx.Qstring_AP())}' can not be an array of strings, "\
-                        f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"The '{varName}({decimal})={str(ctx.Qstring_AP())}' can not be an array of strings, "
+                                    f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.")
                 self.grnam[varNum][decimal - 1] = val
                 if len(val) == 0:
                     self.setGrnamCol[varNum].remove(decimal)
@@ -5001,15 +5005,15 @@ class AmberMRParserListener(ParseTreeListener):
 
             imixes = self.npeak.keys()
             if len(imixes) <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"No NOESY experiment exists.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "No NOESY experiment exists.")
                 return
 
             for imix in imixes:
 
                 if imix not in self.emix:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The mixing time of the NOESY experiment emix({imix}) is unknown.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The mixing time of the NOESY experiment emix({imix}) is unknown.")
                     continue
 
                 mix = self.emix[imix]
@@ -5017,31 +5021,31 @@ class AmberMRParserListener(ParseTreeListener):
                 for ipeak in range(1, self.npeak[imix] + 1):
 
                     if ipeak not in self.ihp[imix]:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                            f"The atom number involved in the NOESY peak ihp({imix},{ipeak}) was not set.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                        f"The atom number involved in the NOESY peak ihp({imix},{ipeak}) was not set.")
                         continue
 
                     if ipeak not in self.jhp[imix]:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                            f"The atom number involved in the NOESY peak jhp({imix},{ipeak}) was not set.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                        f"The atom number involved in the NOESY peak jhp({imix},{ipeak}) was not set.")
                         continue
 
                     if ipeak not in self.aexp[imix]:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                            f"The NOESY peak volume aexp({imix},{ipeak}) was not set.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                        f"The NOESY peak volume aexp({imix},{ipeak}) was not set.")
                         continue
 
                     _iprot = self.ihp[imix][ipeak]
                     _jprot = self.jhp[imix][ipeak]
 
                     if _iprot <= 0:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                            f"The atom number involved in the NOESY peak 'ihp({imix},{ipeak})={_iprot}' should be a positive integer.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                        f"The atom number involved in the NOESY peak 'ihp({imix},{ipeak})={_iprot}' should be a positive integer.")
                         continue
 
                     if _jprot <= 0:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                            f"The atom number involved in the NOESY peak 'jhp({imix},{ipeak})={_jprot}' should be a positive integer.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                        f"The atom number involved in the NOESY peak 'jhp({imix},{ipeak})={_jprot}' should be a positive integer.")
                         continue
 
                     awt = 1.0
@@ -5064,8 +5068,8 @@ class AmberMRParserListener(ParseTreeListener):
                         if _iprot in self.__atomNumberDict:
                             atomSelection.append(self.__atomNumberDict[_iprot])
                         else:
-                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                                f"'ihp({imix},{ipeak})={_iprot}' is not defined in the AMBER parameter/topology file.\n"
+                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                            f"'ihp({imix},{ipeak})={_iprot}' is not defined in the AMBER parameter/topology file.")
                             continue
 
                         chain_id = atomSelection[0]['chain_id']
@@ -5076,8 +5080,8 @@ class AmberMRParserListener(ParseTreeListener):
                         self.atomSelectionSet.append(atomSelection)
 
                         if atom_id[0] not in protonBeginCode:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                                f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from ihp) is not a proton.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                            f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from ihp) is not a proton.")
                             continue
 
                         atomSelection = []
@@ -5085,8 +5089,8 @@ class AmberMRParserListener(ParseTreeListener):
                         if _jprot in self.__atomNumberDict:
                             atomSelection.append(self.__atomNumberDict[_jprot])
                         else:
-                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                                f"'jhp({imix},{ipeak})={_jprot}' is not defined in the AMBER parameter/topology file.\n"
+                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                            f"'jhp({imix},{ipeak})={_jprot}' is not defined in the AMBER parameter/topology file.")
                             continue
 
                         chain_id = atomSelection[0]['chain_id']
@@ -5097,8 +5101,8 @@ class AmberMRParserListener(ParseTreeListener):
                         self.atomSelectionSet.append(atomSelection)
 
                         if atom_id[0] not in protonBeginCode:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                                f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from jhp) is not a proton.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                            f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from jhp) is not a proton.")
                             continue
 
                         dstFunc = self.validateNoexpRange(imix, ipeak, awt, arange)
@@ -5126,9 +5130,9 @@ class AmberMRParserListener(ParseTreeListener):
                                 sf['loop'].add_data(row)
 
                     elif self.__hasPolySeq:
-                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                            "Failed to recognize AMBER atom numbers in the NOESY volume restraint file "\
-                            "because AMBER parameter/topology file is not available.\n"
+                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                        "Failed to recognize AMBER atom numbers in the NOESY volume restraint file "
+                                        "because AMBER parameter/topology file is not available.")
                         return
 
         finally:
@@ -5160,9 +5164,9 @@ class AmberMRParserListener(ParseTreeListener):
                 imix = int(str(ctx.Decimal(0)))
                 ipeak = int(str(ctx.Decimal(1)))
                 if imix in self.npeak and ipeak > self.npeak[imix]:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                        f"The second argument value of '{varName}({imix},{ipeak})' must be in the range 1-{self.npeak[imix]}, "\
-                        f"regulated by 'npeak({imix})={self.npeak[imix]}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                    f"The second argument value of '{varName}({imix},{ipeak})' must be in the range 1-{self.npeak[imix]}, "
+                                    f"regulated by 'npeak({imix})={self.npeak[imix]}'.")
                     return
                 if imix not in self.ihp:
                     self.ihp[imix] = {}
@@ -5175,9 +5179,9 @@ class AmberMRParserListener(ParseTreeListener):
                 imix = int(str(ctx.Decimal(0)))
                 ipeak = int(str(ctx.Decimal(1)))
                 if imix in self.npeak and ipeak > self.npeak[imix]:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                        f"The second argument value of '{varName}({imix},{ipeak})' must be in the range 1-{self.npeak[imix]}, "\
-                        f"regulated by 'npeak({imix})={self.npeak[imix]}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                    f"The second argument value of '{varName}({imix},{ipeak})' must be in the range 1-{self.npeak[imix]}, "
+                                    f"regulated by 'npeak({imix})={self.npeak[imix]}'.")
                     return
                 if imix not in self.jhp:
                     self.jhp[imix] = {}
@@ -5190,9 +5194,9 @@ class AmberMRParserListener(ParseTreeListener):
                 imix = int(str(ctx.Decimal(0)))
                 ipeak = int(str(ctx.Decimal(1)))
                 if imix in self.npeak and ipeak > self.npeak[imix]:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                        f"The second argument value of '{varName}({imix},{ipeak})' must be in the range 1-{self.npeak[imix]}, "\
-                        f"regulated by 'npeak({imix})={self.npeak[imix]}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                    f"The second argument value of '{varName}({imix},{ipeak})' must be in the range 1-{self.npeak[imix]}, "
+                                    f"regulated by 'npeak({imix})={self.npeak[imix]}'.")
                     return
                 if imix not in self.aexp:
                     self.aexp[imix] = {}
@@ -5205,16 +5209,16 @@ class AmberMRParserListener(ParseTreeListener):
                 imix = int(str(ctx.Decimal(0)))
                 ipeak = int(str(ctx.Decimal(1)))
                 if imix in self.npeak and ipeak > self.npeak[imix]:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                        f"The second argument value of '{varName}({imix},{ipeak})' must be in the range 1-{self.npeak[imix]}, "\
-                        f"regulated by 'npeak({imix})={self.npeak[imix]}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                    f"The second argument value of '{varName}({imix},{ipeak})' must be in the range 1-{self.npeak[imix]}, "
+                                    f"regulated by 'npeak({imix})={self.npeak[imix]}'.")
                     return
                 if imix not in self.arange:
                     self.arange[imix] = {}
                 val = float(str(ctx.Real()))
                 if val < 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                        f"The uncertainty of peak volume '{varName}({imix},{ipeak})={val}' must not be a negative value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                    f"The uncertainty of peak volume '{varName}({imix},{ipeak})={val}' must not be a negative value.")
                     return
                 self.arange[imix][ipeak] = val
 
@@ -5225,16 +5229,16 @@ class AmberMRParserListener(ParseTreeListener):
                 imix = int(str(ctx.Decimal(0)))
                 ipeak = int(str(ctx.Decimal(1)))
                 if imix in self.npeak and ipeak > self.npeak[imix]:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                        f"The second argument value of '{varName}({imix},{ipeak})' must be in the range 1-{self.npeak[imix]}, "\
-                        f"regulated by 'npeak({imix})={self.npeak[imix]}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                    f"The second argument value of '{varName}({imix},{ipeak})' must be in the range 1-{self.npeak[imix]}, "
+                                    f"regulated by 'npeak({imix})={self.npeak[imix]}'.")
                     return
                 if imix not in self.awt:
                     self.awt[imix] = {}
                 val = float(str(ctx.Real()))
                 if val <= 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"\
-                        f"The relative weight value '{varName}({imix},{ipeak})={val}' must not be a negative value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                                    f"The relative weight value '{varName}({imix},{ipeak})={val}' must not be a negative value.")
                     return
                 self.awt[imix][ipeak] = val
 
@@ -5246,9 +5250,9 @@ class AmberMRParserListener(ParseTreeListener):
                 rawIntArray = str(ctx.Integers()).split(',')
                 val = int(rawIntArray[0])
                 if len(rawIntArray) > 1:
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"The '{varName}({decimal})={str(ctx.Integers())}' can not be an array of integers, "\
-                        f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"The '{varName}({decimal})={str(ctx.Integers())}' can not be an array of integers, "
+                                    f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.")
                 if val > 0:
                     self.npeak[decimal] = val
 
@@ -5280,12 +5284,12 @@ class AmberMRParserListener(ParseTreeListener):
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
                 if len(rawRealArray) > 1:
-                    self.warningMessage += f"[Redundant data] {self.__getCurrentRestraint()}"\
-                        f"The '{varName}({decimal})={str(ctx.Reals())}' can not be an array of reals, "\
-                        f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.\n"
+                    self.__f.append(f"[Redundant data] {self.__getCurrentRestraint()}"
+                                    f"The '{varName}({decimal})={str(ctx.Reals())}' can not be an array of reals, "
+                                    f"hence the first value '{varName}({decimal})={val}' will be evaluated as a valid value.")
                 if val <= 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The mixing time '{varName}({decimal})={val}' must be a positive value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The mixing time '{varName}({decimal})={val}' must be a positive value.")
                     return
                 self.emix[decimal] = val
 
@@ -5295,8 +5299,8 @@ class AmberMRParserListener(ParseTreeListener):
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
                         if val <= 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The mixing time '{varName}({col})={val}' must be a positive value.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The mixing time '{varName}({col})={val}' must be a positive value.")
                             break
                         self.emix[col] = val
                 elif ctx.MultiplicativeReal():
@@ -5307,8 +5311,8 @@ class AmberMRParserListener(ParseTreeListener):
                         val = float(rawMultReal[1])
                         for col in range(0, numEmixCol):
                             if val <= 0.0:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                    f"The mixing time '{varName}({col})={val}' must be a positive value.\n"
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                f"The mixing time '{varName}({col})={val}' must be a positive value.")
                                 break
                             self.emix[offset + col] = val
                             offset += numEmixCol
@@ -5361,27 +5365,27 @@ class AmberMRParserListener(ParseTreeListener):
                 self.nprot = max(self.iprot.keys())
 
             if self.nprot <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The number of observed chemical shifts 'nprot' is the mandatory variable.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "The number of observed chemical shifts 'nprot' is the mandatory variable.")
                 return
 
             for n in range(1, self.nprot + 1):
 
                 if n not in self.iprot:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=n)}"\
-                        f"The atom number involved in the chemical shifts nprot({n}) was not set.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=n)}"
+                                    f"The atom number involved in the chemical shifts nprot({n}) was not set.")
                     continue
 
                 if n not in self.obs:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=n)}"\
-                        f"The observed chemical shift value obs({n}) was not set.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=n)}"
+                                    f"The observed chemical shift value obs({n}) was not set.")
                     continue
 
                 _iprot = self.iprot[n]
 
                 if _iprot <= 0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=n)}"\
-                        f"The atom number involved in the chemical shift 'iprot({n})={_iprot}' should be a positive integer.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=n)}"
+                                    f"The atom number involved in the chemical shift 'iprot({n})={_iprot}' should be a positive integer.")
                     continue
 
                 wt = 1.0
@@ -5404,8 +5408,8 @@ class AmberMRParserListener(ParseTreeListener):
                     if _iprot in self.__atomNumberDict:
                         atomSelection.append(self.__atomNumberDict[_iprot])
                     else:
-                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=n)}"\
-                            f"'iprot({n})={_iprot}' is not defined in the AMBER parameter/topology file.\n"
+                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint(n=n)}"
+                                        f"'iprot({n})={_iprot}' is not defined in the AMBER parameter/topology file.")
                         continue
 
                     chain_id = atomSelection[0]['chain_id']
@@ -5416,8 +5420,8 @@ class AmberMRParserListener(ParseTreeListener):
                     self.atomSelectionSet.append(atomSelection)
 
                     if atom_id[0] not in protonBeginCode:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=n)}"\
-                            f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=n)}"
+                                        f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.")
                         continue
 
                     dstFunc = self.validateShfRange(n, wt, shrang)
@@ -5442,9 +5446,9 @@ class AmberMRParserListener(ParseTreeListener):
                             sf['loop'].add_data(row)
 
                 elif self.__hasPolySeq:
-                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                        "Failed to recognize AMBER atom numbers in the chemical shift restraint file "\
-                        "because AMBER parameter/topology file is not available.\n"
+                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                    "Failed to recognize AMBER atom numbers in the chemical shift restraint file "
+                                    "because AMBER parameter/topology file is not available.")
                     return
 
             if self.nring <= 0:
@@ -5453,22 +5457,22 @@ class AmberMRParserListener(ParseTreeListener):
             for r in range(1, self.nring + 1):
 
                 if r not in self.natr:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The number of atoms in a ring 'natr({r})' was not set.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The number of atoms in a ring 'natr({r})' was not set.")
                     continue
 
                 for n in range(1, self.natr[r] + 1):
 
                     if n not in self.iatr[r]:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The ring atom 'iatr({n},{r})' was not set.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The ring atom 'iatr({n},{r})' was not set.")
                         continue
 
                     _iat = self.iatr[r][n]
 
                     if _iat <= 0:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n)}"\
-                            f"The atom number involved in the ring 'iatr({n},{r})={_iat}' should be a positive integer.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n)}"
+                                        f"The atom number involved in the ring 'iatr({n},{r})={_iat}' should be a positive integer.")
                         continue
 
                     # convert AMBER atom numbers to corresponding coordinate atoms based on AMBER parameter/topology file
@@ -5481,8 +5485,8 @@ class AmberMRParserListener(ParseTreeListener):
                         if _iat in self.__atomNumberDict:
                             atomSelection.append(self.__atomNumberDict[_iat])
                         else:
-                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                                f"The ring atom 'iatr({n},{r})={_iat}' is not defined in the AMBER parameter/topology file.\n"
+                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                            f"The ring atom 'iatr({n},{r})={_iat}' is not defined in the AMBER parameter/topology file.")
                             continue
 
                         chain_id = atomSelection[0]['chain_id']
@@ -5503,9 +5507,9 @@ class AmberMRParserListener(ParseTreeListener):
                                       f"ring_atom={atom}")
 
                     elif self.__hasPolySeq:
-                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                            "Failed to recognize AMBER atom numbers in the chemical shift restraint file "\
-                            "because AMBER parameter/topology file is not available.\n"
+                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                        "Failed to recognize AMBER atom numbers in the chemical shift restraint file "
+                                        "because AMBER parameter/topology file is not available.")
                         return
 
         finally:
@@ -5526,8 +5530,8 @@ class AmberMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{obs}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=n)}"\
-                    f"The target value 'obs({n})={obs}' must be within range {CS_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=n)}"
+                                f"The target value 'obs({n})={obs}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if not validRange:
             self.lastComment = None
@@ -5537,8 +5541,8 @@ class AmberMRParserListener(ParseTreeListener):
             if CS_RANGE_MIN <= obs <= CS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=n)}"\
-                    f"The target value 'obs({n})={obs}' should be within range {CS_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=n)}"
+                                f"The target value 'obs({n})={obs}' should be within range {CS_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -5554,9 +5558,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal(0):
                 decimal = int(str(ctx.Decimal(0)))
                 if self.nprot > 0 and decimal > self.nprot:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
-                        f"regulated by 'nprot={self.nprot}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "
+                                    f"regulated by 'nprot={self.nprot}'.")
                     return
                 self.iprot[decimal] = int(str(ctx.Integer()))
 
@@ -5566,9 +5570,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal(0):
                 decimal = int(str(ctx.Decimal(0)))
                 if self.nprot > 0 and decimal > self.nprot:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
-                        f"regulated by 'nprot={self.nprot}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "
+                                    f"regulated by 'nprot={self.nprot}'.")
                     return
                 self.obs[decimal] = float(str(ctx.Real()))
 
@@ -5578,15 +5582,15 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal(0):
                 decimal = int(str(ctx.Decimal(0)))
                 if self.nprot > 0 and decimal > self.nprot:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
-                        f"regulated by 'nprot={self.nprot}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "
+                                    f"regulated by 'nprot={self.nprot}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
                 if val < 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The uncertainty of observed shift '{varName}({decimal})={val}' must not be a negative value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"
+                                    f"The uncertainty of observed shift '{varName}({decimal})={val}' must not be a negative value.")
                     return
                 self.shrang[decimal] = val
 
@@ -5594,14 +5598,14 @@ class AmberMRParserListener(ParseTreeListener):
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > self.nprot:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'nprot={self.nprot}'.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The length of '{varName}={ctx.Reals()}' must not exceed 'nprot={self.nprot}'.")
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
                         if val < 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The uncertainty of observed shift '{varName}({col})={val}' must not be a negative.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The uncertainty of observed shift '{varName}({col})={val}' must not be a negative.")
                             return
                         self.shrang[col] = val
                 elif ctx.MultiplicativeReal():
@@ -5610,16 +5614,16 @@ class AmberMRParserListener(ParseTreeListener):
                         rawMultReal = multiplicativeReal.split('*')
                         numCol = int(rawMultReal[0])
                         if offset + numCol <= 0 or offset + numCol > self.nprot:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The argument value of '{varName}({numCol})' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nprot}, "\
-                                f"regulated by 'nprot={self.nprot}'.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The argument value of '{varName}({numCol})' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nprot}, "
+                                            f"regulated by 'nprot={self.nprot}'.")
                             return
                         val = float(rawMultReal[1])
                         if val < 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The uncertainty of observed shift '{varName}={val}' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must not be a negative.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The uncertainty of observed shift '{varName}={val}' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must not be a negative.")
                             return
                         for col in range(0, numCol):
                             self.shrang[offset + col + 1] = val
@@ -5631,37 +5635,37 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal(0):
                 decimal = int(str(ctx.Decimal(0)))
                 if self.nprot > 0 and decimal > self.nprot:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
-                        f"regulated by 'nprot={self.nprot}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "
+                                    f"regulated by 'nprot={self.nprot}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
                 if val < 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The relative weight value '{varName}({decimal})={val}' must not be a negative value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"
+                                    f"The relative weight value '{varName}({decimal})={val}' must not be a negative value.")
                     return
                 if val == 0.0:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The relative weight value '{varName}({decimal})={val}' should be a positive value.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=decimal)}"
+                                    f"The relative weight value '{varName}({decimal})={val}' should be a positive value.")
                 self.wt[decimal] = val
 
             else:
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > self.nprot:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'nprot={self.nprot}'.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The length of '{varName}={ctx.Reals()}' must not exceed 'nprot={self.nprot}'.")
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
                         if val < 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col})={val}' must not be a negative value.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}({col})={val}' must not be a negative value.")
                             return
                         if val == 0.0:
-                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col})={val}' should be a positive value.\n"
+                            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}({col})={val}' should be a positive value.")
                         self.wt[col] = val
                 elif ctx.MultiplicativeReal():
                     offset = 0
@@ -5669,21 +5673,21 @@ class AmberMRParserListener(ParseTreeListener):
                         rawMultReal = multiplicativeReal.split('*')
                         numCol = int(rawMultReal[0])
                         if offset + numCol <= 0 or offset + numCol > self.nprot:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The argument value of '{varName}({numCol})' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nprot}, "\
-                                f"regulated by 'nprot={self.nprot}'.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The argument value of '{varName}({numCol})' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nprot}, "
+                                            f"regulated by 'nprot={self.nprot}'.")
                             return
                         val = float(rawMultReal[1])
                         if val < 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}={val}' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must not be a negative value.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}={val}' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must not be a negative value.")
                             return
                         if val == 0.0:
-                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}={val}' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' should be a positive value.\n"
+                            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}={val}' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' should be a positive value.")
                         for col in range(0, numCol):
                             self.wt[offset + col + 1] = val
                         offset += numCol
@@ -5691,8 +5695,8 @@ class AmberMRParserListener(ParseTreeListener):
         elif ctx.NPROT():
             self.nprot = int(str(ctx.Integer()))
             if self.nprot <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The number of protons 'nprot={self.nprot}' must be a positive integer.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The number of protons 'nprot={self.nprot}' must be a positive integer.")
                 return
 
         elif ctx.IATR():
@@ -5702,14 +5706,14 @@ class AmberMRParserListener(ParseTreeListener):
                 j = int(str(ctx.Decimal(0)))
                 ring = int(str(ctx.Decimal(1)))
                 if self.nring > 0 and ring > self.nring:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The second argument value of '{varName}({j},{ring})' must be in the range 1-{self.nring}, "\
-                        f"regulated by 'nring={self.nring}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"
+                                    f"The second argument value of '{varName}({j},{ring})' must be in the range 1-{self.nring}, "
+                                    f"regulated by 'nring={self.nring}'.")
                     return
                 if ring in self.natr and j > self.natr[ring]:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The first argument value of '{varName}({j},{ring})' must be in the range 1-{self.natr[ring]}, "\
-                        f"regulated by 'natr({ring})={self.natr[ring]}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"
+                                    f"The first argument value of '{varName}({j},{ring})' must be in the range 1-{self.natr[ring]}, "
+                                    f"regulated by 'natr({ring})={self.natr[ring]}'.")
                     return
                 self.iatr[ring][j] = int(str(ctx.Integer()))
 
@@ -5719,14 +5723,14 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal(0):
                 decimal = int(str(ctx.Decimal(0)))
                 if self.nring > 0 and decimal > self.nring:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nring}, "\
-                        f"regulated by 'nring={self.nring}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nring}, "
+                                    f"regulated by 'nring={self.nring}'.")
                     return
                 val = int(str(ctx.Integer()))
                 if val < 0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The number of atoms in a ring '{varName}({decimal})={val}' must not be a negative integer.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The number of atoms in a ring '{varName}({decimal})={val}' must not be a negative integer.")
                     return
                 self.natr[decimal] = val
                 self.iatr[decimal] = {}
@@ -5737,15 +5741,15 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal(0):
                 decimal = int(str(ctx.Decimal(0)))
                 if self.nring > 0 and decimal > self.nring:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nring}, "\
-                        f"regulated by 'nring={self.nring}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nring}, "
+                                    f"regulated by 'nring={self.nring}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
                 if val <= 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The relative strength value '{varName}({decimal})={val}' must be a positive value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"
+                                    f"The relative strength value '{varName}({decimal})={val}' must be a positive value.")
                     return
                 self._str[decimal] = val
 
@@ -5753,14 +5757,14 @@ class AmberMRParserListener(ParseTreeListener):
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > self.nring:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'nring={self.nring}'.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The length of '{varName}={ctx.Reals()}' must not exceed 'nring={self.nring}'.")
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
                         if val <= 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative strength value '{varName}({col})={val}' must be a positive value.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The relative strength value '{varName}({col})={val}' must be a positive value.")
                             return
                         self._str[col] = val
                 elif ctx.MultiplicativeReal():
@@ -5769,16 +5773,16 @@ class AmberMRParserListener(ParseTreeListener):
                         rawMultReal = multiplicativeReal.split('*')
                         numCol = int(rawMultReal[0])
                         if offset + numCol <= 0 or offset + numCol > self.nring:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The argument value of '{varName}({numCol})' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nring}, "\
-                                f"regulated by 'nring={self.nring}'.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The argument value of '{varName}({numCol})' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nring}, "
+                                            f"regulated by 'nring={self.nring}'.")
                             return
                         val = float(rawMultReal[1])
                         if val <= 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative strength value '{varName}={val}' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must be a positive value.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The relative strength value '{varName}={val}' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must be a positive value.")
                             return
                         for col in range(0, numCol):
                             self._str[offset + col + 1] = val
@@ -5787,22 +5791,22 @@ class AmberMRParserListener(ParseTreeListener):
         elif ctx.NRING():
             self.nring = int(str(ctx.Integer()))
             if self.nring < 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The number of rings 'nring={self.nring}' must not be a negative integer.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The number of rings 'nring={self.nring}' must not be a negative integer.")
                 return
 
         elif ctx.NTER():
             self.nter = int(str(ctx.Integer()))
             if self.cter is not None and self.nter >= self.cter:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The residue number of N-terminus 'nter={self.nter}' must be less than 'cter={self.cter}'.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The residue number of N-terminus 'nter={self.nter}' must be less than 'cter={self.cter}'.")
                 return
 
         elif ctx.CTER():
             self.cter = int(str(ctx.Integer()))
             if self.nter >= self.cter:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The residue number of C-terminus 'cter={self.cter}' must be greater than 'nter={self.nter}'.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The residue number of C-terminus 'cter={self.cter}' must be greater than 'nter={self.nter}'.")
                 return
 
         elif ctx.NAMR():
@@ -5811,9 +5815,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal(0):
                 decimal = int(str(ctx.Decimal(0)))
                 if self.nring > 0 and decimal > self.nring:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nring}, "\
-                        f"regulated by 'nring={self.nring}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nring}, "
+                                    f"regulated by 'nring={self.nring}'.")
                     return
                 self.namr[decimal] = str(ctx.Qstring()).strip()
 
@@ -5843,35 +5847,35 @@ class AmberMRParserListener(ParseTreeListener):
             self.nprot = max(self.iprot.keys())
 
         if self.nprot <= 0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The number of observed PCS values 'nprot' is the mandatory variable.\n"
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "The number of observed PCS values 'nprot' is the mandatory variable.")
             return
 
         if self.nme < 0 and len(self.optphi.keys()) > 0:  # pylint: disable=chained-comparison
             self.nme = max(self.optphi.keys())
         """
         if self.nme <= 0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"The number of paramagnetic centers 'nme' is the mandatory variable.\n"
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "The number of paramagnetic centers 'nme' is the mandatory variable.")
             return
         """
         for n in range(1, self.nprot + 1):
 
             if n not in self.iprot:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"\
-                    f"The atom number involved in the PCS nprot({n}) was not set.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"
+                                f"The atom number involved in the PCS nprot({n}) was not set.")
                 continue
 
             if n not in self.obs:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"\
-                    f"The observed PCS value obs({n}) was not set.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"
+                                f"The observed PCS value obs({n}) was not set.")
                 continue
 
             _iprot = self.iprot[n]
 
             if _iprot <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"\
-                    f"The atom number involved in the PCS 'iprot({n})={_iprot}' should be a positive integer.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"
+                                f"The atom number involved in the PCS 'iprot({n})={_iprot}' should be a positive integer.")
                 continue
 
             wt = 1.0
@@ -5902,8 +5906,8 @@ class AmberMRParserListener(ParseTreeListener):
                 if _iprot in self.__atomNumberDict:
                     atomSelection.append(self.__atomNumberDict[_iprot])
                 else:
-                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.nmpmc,n)}"\
-                        f"'iprot({n})={_iprot}' is not defined in the AMBER parameter/topology file.\n"
+                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.nmpmc,n)}"
+                                    f"'iprot({n})={_iprot}' is not defined in the AMBER parameter/topology file.")
                     continue
 
                 chain_id = atomSelection[0]['chain_id']
@@ -5914,8 +5918,8 @@ class AmberMRParserListener(ParseTreeListener):
                 self.atomSelectionSet.append(atomSelection)
 
                 if atom_id[0] not in protonBeginCode:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"\
-                        f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"
+                                    f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.")
                     continue
 
                 dstFunc = self.validatePcsRange(n, wt, tolpro, mltpro)
@@ -5945,9 +5949,9 @@ class AmberMRParserListener(ParseTreeListener):
                         sf['loop'].add_data(row)
 
             elif self.__hasPolySeq:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    "Failed to recognize AMBER atom numbers in the Psuedocontact shift restraint file "\
-                    "because AMBER parameter/topology file is not available.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                "Failed to recognize AMBER atom numbers in the Psuedocontact shift restraint file "
+                                "because AMBER parameter/topology file is not available.")
                 return
 
     # Enter a parse tree produced by AmberMRParser#pcshf_factor.
@@ -5962,9 +5966,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nprot > 0 and decimal > self.nprot:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
-                        f"regulated by 'nprot={self.nprot}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "
+                                    f"regulated by 'nprot={self.nprot}'.")
                     return
                 self.iprot[decimal] = int(str(ctx.Integer()))
 
@@ -5974,9 +5978,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nprot > 0 and decimal > self.nprot:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
-                        f"regulated by 'nprot={self.nprot}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "
+                                    f"regulated by 'nprot={self.nprot}'.")
                     return
                 self.obs[decimal] = float(str(ctx.Real()))
 
@@ -5986,37 +5990,37 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nprot > 0 and decimal > self.nprot:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
-                        f"regulated by 'nprot={self.nprot}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "
+                                    f"regulated by 'nprot={self.nprot}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
                 if val < 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
-                        f"The relative weight value '{varName}({decimal})={val}' must not be a negative value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                                    f"The relative weight value '{varName}({decimal})={val}' must not be a negative value.")
                     return
                 if val == 0.0:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
-                        f"The relative weight value '{varName}({decimal})={val}' should be a positive value.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                                    f"The relative weight value '{varName}({decimal})={val}' should be a positive value.")
                 self.wt[decimal] = val
 
             else:
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > self.nprot:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'nprot={self.nprot}'.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The length of '{varName}={ctx.Reals()}' must not exceed 'nprot={self.nprot}'.")
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
                         if val < 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col})={val}' must not be a negative value.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}({col})={val}' must not be a negative value.")
                             return
                         if val == 0.0:
-                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col})={val}' should be a positive value.\n"
+                            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}({col})={val}' should be a positive value.")
                         self.wt[col] = val
                 elif ctx.MultiplicativeReal():
                     offset = 0
@@ -6024,21 +6028,21 @@ class AmberMRParserListener(ParseTreeListener):
                         rawMultReal = multiplicativeReal.split('*')
                         numCol = int(rawMultReal[0])
                         if offset + numCol <= 0 or offset + numCol > self.nprot:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The argument value of '{varName}({numCol})' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nprot}, "\
-                                f"regulated by 'nprot={self.nprot}'.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The argument value of '{varName}({numCol})' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nprot}, "
+                                            f"regulated by 'nprot={self.nprot}'.")
                             return
                         val = float(rawMultReal[1])
                         if val < 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}={val}' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must not be a negative value.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}={val}' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must not be a negative value.")
                             return
                         if val == 0.0:
-                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}={val}' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' should be a positive value.\n"
+                            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}={val}' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' should be a positive value.")
                         for col in range(0, numCol):
                             self.wt[offset + col + 1] = val
                         offset += numCol
@@ -6049,15 +6053,15 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nprot > 0 and decimal > self.nprot:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
-                        f"regulated by 'nprot={self.nprot}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "
+                                    f"regulated by 'nprot={self.nprot}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
                 if val <= 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
-                        f"The relative tolerance value '{varName}({decimal})={val}' must be a positive value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                                    f"The relative tolerance value '{varName}({decimal})={val}' must be a positive value.")
                     return
                 self.tolpro[decimal] = val
 
@@ -6065,14 +6069,14 @@ class AmberMRParserListener(ParseTreeListener):
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > self.nprot:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'nprot={self.nprot}'.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The length of '{varName}={ctx.Reals()}' must not exceed 'nprot={self.nprot}'.")
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
                         if val <= 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative tolerance value '{varName}({col})={val}' must be a positive value.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The relative tolerance value '{varName}({col})={val}' must be a positive value.")
                             return
                         self.tolpro[col] = val
                 elif ctx.MultiplicativeReal():
@@ -6081,16 +6085,16 @@ class AmberMRParserListener(ParseTreeListener):
                         rawMultReal = multiplicativeReal.split('*')
                         numCol = int(rawMultReal[0])
                         if offset + numCol <= 0 or offset + numCol > self.nprot:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The argument value of '{varName}({numCol})' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nprot}, "\
-                                f"regulated by 'nprot={self.nprot}'.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The argument value of '{varName}({numCol})' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.nprot}, "
+                                            f"regulated by 'nprot={self.nprot}'.")
                             return
                         val = float(rawMultReal[1])
                         if val <= 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative tolerance value '{varName}={val}' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must be a positive value.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The relative tolerance value '{varName}={val}' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must be a positive value.")
                             return
                         for col in range(0, numCol):
                             self.tolpro[offset + col + 1] = val
@@ -6102,22 +6106,22 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nprot > 0 and decimal > self.nprot:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "\
-                        f"regulated by 'nprot={self.nprot}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "
+                                    f"regulated by 'nprot={self.nprot}'.")
                     return
                 val = int(str(ctx.Integer()))
                 if val <= 0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
-                        f"The multiplicity of NMR signal of '{varName}({decimal})={val}' must be a positive integer.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                                    f"The multiplicity of NMR signal of '{varName}({decimal})={val}' must be a positive integer.")
                     return
                 self.mltpro[decimal] = val
 
         elif ctx.NPROT():
             self.nprot = int(str(ctx.Integer()))
             if self.nprot <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The number of protons 'nprot={self.nprot}' must be a positive integer.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The number of protons 'nprot={self.nprot}' must be a positive integer.")
                 return
 
         elif ctx.OPTPHI():
@@ -6126,9 +6130,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nme > 0 and decimal > self.nme:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "\
-                        f"regulated by 'nme={self.nme}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "
+                                    f"regulated by 'nme={self.nme}'.")
                     return
                 self.optphi[decimal] = float(str(ctx.Real()))
 
@@ -6138,9 +6142,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nme > 0 and decimal > self.nme:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "\
-                        f"regulated by 'nme={self.nme}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "
+                                    f"regulated by 'nme={self.nme}'.")
                     return
                 self.opttet[decimal] = float(str(ctx.Real()))
 
@@ -6150,9 +6154,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nme > 0 and decimal > self.nme:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "\
-                        f"regulated by 'nme={self.nme}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "
+                                    f"regulated by 'nme={self.nme}'.")
                     return
                 self.optomg[decimal] = float(str(ctx.Real()))
 
@@ -6162,9 +6166,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nme > 0 and decimal > self.nme:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "\
-                        f"regulated by 'nme={self.nme}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "
+                                    f"regulated by 'nme={self.nme}'.")
                     return
                 self.opta1[decimal] = float(str(ctx.Real()))
 
@@ -6174,9 +6178,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nme > 0 and decimal > self.nme:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "\
-                        f"regulated by 'nme={self.nme}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "
+                                    f"regulated by 'nme={self.nme}'.")
                     return
                 self.opta2[decimal] = float(str(ctx.Real()))
 
@@ -6186,8 +6190,8 @@ class AmberMRParserListener(ParseTreeListener):
         elif ctx.NME():
             self.nme = int(str(ctx.Integer()))
             if self.nme <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The number of paramagnetic centers 'nme={self.nme}' must be a positive integer.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The number of paramagnetic centers 'nme={self.nme}' must be a positive integer.")
                 return
 
         elif ctx.NMPMC():
@@ -6225,43 +6229,43 @@ class AmberMRParserListener(ParseTreeListener):
                 self.ndip = max(self.id.keys())
 
             if self.ndip <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The number of observed dipolar couplings 'ndip' is the mandatory variable.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "The number of observed dipolar couplings 'ndip' is the mandatory variable.")
                 return
 
             for n in range(1, self.ndip + 1):
 
                 if n not in self.id:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                        f"The first atom number involved in the dipolar coupling id({n}) was not set.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                                    f"The first atom number involved in the dipolar coupling id({n}) was not set.")
                     continue
 
                 if n not in self.jd:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                        f"The second atom number involved in the dipolar coupling jd({n}) was not set.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                                    f"The second atom number involved in the dipolar coupling jd({n}) was not set.")
                     continue
 
                 if n not in self.dobsl:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                        f"The lower limit value for the observed dipolar coupling dobsl({n}) was not set.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                                    f"The lower limit value for the observed dipolar coupling dobsl({n}) was not set.")
                     continue
 
                 if n not in self.dobsu:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                        f"The upper limit value for the observed dipolar coupling dobsu({n}) was not set.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                                    f"The upper limit value for the observed dipolar coupling dobsu({n}) was not set.")
                     continue
 
                 _id = self.id[n]
                 _jd = self.jd[n]
 
                 if _id <= 0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                        f"The first atom number involved in the dipolar coupling 'id({n})={_id}' should be a positive integer.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                                    f"The first atom number involved in the dipolar coupling 'id({n})={_id}' should be a positive integer.")
                     continue
 
                 if _jd <= 0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                        f"The second atom number involved in the dipolar coupling 'jd({n})={_jd}' should be a positive integer.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                                    f"The second atom number involved in the dipolar coupling 'jd({n})={_jd}' should be a positive integer.")
                     continue
 
                 dwt = 1.0
@@ -6300,8 +6304,8 @@ class AmberMRParserListener(ParseTreeListener):
                                     self.__atomNumberDict[_id] = atom_sel_i
                                     atomSelection.append(atom_sel_i)
                         if atom_id_i is None:
-                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                                f"'id({n})={_id}' is not defined in the AMBER parameter/topology file.\n"
+                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"
+                                            f"'id({n})={_id}' is not defined in the AMBER parameter/topology file.")
                             continue
 
                     chain_id_1 = atomSelection[0]['chain_id']
@@ -6336,8 +6340,8 @@ class AmberMRParserListener(ParseTreeListener):
                                     self.__atomNumberDict[_jd] = atom_sel_j
                                     atomSelection.append(atom_sel_j)
                         if atom_id_j is None:
-                            self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                                f"'jd({n})={_jd}' is not defined in the AMBER parameter/topology file.\n"
+                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"
+                                            f"'jd({n})={_jd}' is not defined in the AMBER parameter/topology file.")
                             continue
 
                     chain_id_2 = atomSelection[0]['chain_id']
@@ -6348,29 +6352,29 @@ class AmberMRParserListener(ParseTreeListener):
                     self.atomSelectionSet.append(atomSelection)
 
                     if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                            f"Non-magnetic susceptible spin appears in RDC vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                                        "Non-magnetic susceptible spin appears in RDC vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         continue
 
                     if chain_id_1 != chain_id_2:
                         ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                         ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                         if ps1 is None and ps2 is None:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                                f"Found inter-chain RDC vector; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                                            "Found inter-chain RDC vector; "
+                                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                             continue
 
                     elif abs(seq_id_1 - seq_id_2) > 1:
                         ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                         if ps1 is None:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                                f"Found inter-residue RDC vector; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                                            "Found inter-residue RDC vector; "
+                                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                             continue
 
                     elif abs(seq_id_1 - seq_id_2) == 1:
@@ -6383,17 +6387,17 @@ class AmberMRParserListener(ParseTreeListener):
                             pass
 
                         else:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                                "Found inter-residue RDC vector; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                                            "Found inter-residue RDC vector; "
+                                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                             continue
 
                     elif atom_id_1 == atom_id_2:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                            "Found zero RDC vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                                        "Found zero RDC vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         continue
 
                     elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -6401,10 +6405,10 @@ class AmberMRParserListener(ParseTreeListener):
                         if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                             if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"\
-                                    "Found an RDC vector over multiple covalent bonds; "\
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                                                "Found an RDC vector over multiple covalent bonds; "
+                                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                                 continue
 
                     dstFunc = self.validateRdcRange(n, dwt)
@@ -6438,9 +6442,9 @@ class AmberMRParserListener(ParseTreeListener):
                             sf['loop'].add_data(row)
 
                 elif self.__hasPolySeq:
-                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                        "Failed to recognize AMBER atom numbers in the Direct dipolar coupling restraint file "\
-                        "because AMBER parameter/topology file is not available.\n"
+                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                    "Failed to recognize AMBER atom numbers in the Direct dipolar coupling restraint file "
+                                    "because AMBER parameter/topology file is not available.")
                     return
 
         finally:
@@ -6459,9 +6463,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
-                        f"regulated by 'ndip={self.ndip}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
+                                    f"regulated by 'ndip={self.ndip}'.")
                     return
                 self.id[decimal] = int(str(ctx.Integer()))
 
@@ -6471,9 +6475,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
-                        f"regulated by 'ndip={self.ndip}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
+                                    f"regulated by 'ndip={self.ndip}'.")
                     return
                 self.jd[decimal] = int(str(ctx.Integer()))
 
@@ -6483,9 +6487,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
-                        f"regulated by 'ndip={self.ndip}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
+                                    f"regulated by 'ndip={self.ndip}'.")
                     return
                 self.dobsl[decimal] = float(str(ctx.Real()))
 
@@ -6495,9 +6499,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
-                        f"regulated by 'ndip={self.ndip}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
+                                    f"regulated by 'ndip={self.ndip}'.")
                     return
                 self.dobsu[decimal] = float(str(ctx.Real()))
 
@@ -6507,9 +6511,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
-                        f"regulated by 'ndip={self.ndip}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
+                                    f"regulated by 'ndip={self.ndip}'.")
                     return
                 self.dobsl[decimal] = self.dobsu[decimal] = float(str(ctx.Real()))
 
@@ -6519,37 +6523,37 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
-                        f"regulated by 'ndip={self.ndip}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
+                                    f"regulated by 'ndip={self.ndip}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
                 if val < 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The relative weight value '{varName}({decimal})={val}' must not be a negative value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                                    f"The relative weight value '{varName}({decimal})={val}' must not be a negative value.")
                     return
                 if val == 0.0:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The relative weight value '{varName}({decimal})={val}' should be a positive value.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                                    f"The relative weight value '{varName}({decimal})={val}' should be a positive value.")
                 self.dwt[decimal] = val
 
             else:
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > self.ndip:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.")
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
                         if val < 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col})={val}' must not be a negative value.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}({col})={val}' must not be a negative value.")
                             return
                         if val == 0.0:
-                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col})={val}' should be a positive value.\n"
+                            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}({col})={val}' should be a positive value.")
                         self.dwt[col] = val
                 elif ctx.MultiplicativeReal():
                     offset = 0
@@ -6557,21 +6561,21 @@ class AmberMRParserListener(ParseTreeListener):
                         rawMultReal = multiplicativeReal.split('*')
                         numCol = int(rawMultReal[0])
                         if offset + numCol <= 0 or offset + numCol > self.ndip:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The argument value of '{varName}({numCol})' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.ndip}, "\
-                                f"regulated by 'ndip={self.ndip}'.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The argument value of '{varName}({numCol})' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.ndip}, "
+                                            f"regulated by 'ndip={self.ndip}'.")
                             return
                         val = float(rawMultReal[1])
                         if val < 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}={val}' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must not be a negative value.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}={val}' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must not be a negative value.")
                             return
                         if val == 0.0:
-                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}={val}' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' should be a positive value.\n"
+                            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}={val}' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' should be a positive value.")
                         for col in range(0, numCol):
                             self.dwt[offset + col + 1] = val
                         offset += numCol
@@ -6582,9 +6586,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
-                        f"regulated by 'ndip={self.ndip}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
+                                    f"regulated by 'ndip={self.ndip}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 self.gigj[decimal] = float(rawRealArray[0])
@@ -6593,8 +6597,8 @@ class AmberMRParserListener(ParseTreeListener):
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > self.ndip:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.")
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         self.gigj[col] = float(rawReal)
@@ -6604,10 +6608,10 @@ class AmberMRParserListener(ParseTreeListener):
                         rawMultReal = multiplicativeReal.split('*')
                         numCol = int(rawMultReal[0])
                         if offset + numCol <= 0 or offset + numCol > self.ndip:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The argument value of '{varName}({numCol})' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.ndip}, "\
-                                f"regulated by 'ndip={self.ndip}'.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The argument value of '{varName}({numCol})' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.ndip}, "
+                                            f"regulated by 'ndip={self.ndip}'.")
                             return
                         val = float(rawMultReal[1])
                         for col in range(0, numCol):
@@ -6620,9 +6624,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
-                        f"regulated by 'ndip={self.ndip}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
+                                    f"regulated by 'ndip={self.ndip}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 self.dij[decimal] = float(rawRealArray[0])
@@ -6631,8 +6635,8 @@ class AmberMRParserListener(ParseTreeListener):
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > self.ndip:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.")
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         self.dij[col] = float(rawReal)
@@ -6642,10 +6646,10 @@ class AmberMRParserListener(ParseTreeListener):
                         rawMultReal = multiplicativeReal.split('*')
                         numCol = int(rawMultReal[0])
                         if offset + numCol <= 0 or offset + numCol > self.ndip:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The argument value of '{varName}({numCol})' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.ndip}, "\
-                                f"regulated by 'ndip={self.ndip}'.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The argument value of '{varName}({numCol})' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.ndip}, "
+                                            f"regulated by 'ndip={self.ndip}'.")
                             return
                         val = float(rawMultReal[1])
                         for col in range(0, numCol):
@@ -6655,8 +6659,8 @@ class AmberMRParserListener(ParseTreeListener):
         elif ctx.NDIP():
             self.ndip = int(str(ctx.Integer()))
             if self.ndip <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The argument value of 'ndip={self.ndip}' must be a positive integer.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The argument value of 'ndip={self.ndip}' must be a positive integer.")
                 return
 
         if ctx.DATASET():
@@ -6665,31 +6669,31 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
-                        f"regulated by 'ndip={self.ndip}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
+                                    f"regulated by 'ndip={self.ndip}'.")
                     return
 
             self.dataset = int(str(ctx.Integer()))
 
             if self.dataset <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The argument value of '{varName}={self.dataset}' must be a positive integer.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The argument value of '{varName}={self.dataset}' must be a positive integer.")
                 return
 
             if self.dataset > self.numDatasets:
                 self.numDatasets = self.dataset
                 """
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The argument value of '{varName}={self.dataset}' must be in the range 1-{self.numDatasets}, "\
-                    f"regulated by 'num_dataset={self.numDatasets}'.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The argument value of '{varName}={self.dataset}' must be in the range 1-{self.numDatasets}, "
+                                f"regulated by 'num_dataset={self.numDatasets}'.")
                 return
                 """
         elif ctx.NUM_DATASETS():
             self.numDatasets = int(str(ctx.Integer()))
             if self.numDatasets <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The argument value of 'num_dataset={self.numDatasets}' must be a positive integer.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The argument value of 'num_dataset={self.numDatasets}' must be a positive integer.")
                 return
 
         elif ctx.S11():
@@ -6698,9 +6702,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
-                        f"regulated by 'ndip={self.ndip}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
+                                    f"regulated by 'ndip={self.ndip}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 self.s11[decimal] = float(rawRealArray[0])
@@ -6709,8 +6713,8 @@ class AmberMRParserListener(ParseTreeListener):
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > self.ndip:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.")
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         self.s11[col] = float(rawReal)
@@ -6721,9 +6725,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
-                        f"regulated by 'ndip={self.ndip}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
+                                    f"regulated by 'ndip={self.ndip}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 self.s12[decimal] = float(rawRealArray[0])
@@ -6732,8 +6736,8 @@ class AmberMRParserListener(ParseTreeListener):
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > self.ndip:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.")
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         self.s12[col] = float(rawReal)
@@ -6744,9 +6748,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
-                        f"regulated by 'ndip={self.ndip}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
+                                    f"regulated by 'ndip={self.ndip}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 self.s13[decimal] = float(rawRealArray[0])
@@ -6755,8 +6759,8 @@ class AmberMRParserListener(ParseTreeListener):
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > self.ndip:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.")
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         self.s13[col] = float(rawReal)
@@ -6767,9 +6771,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
-                        f"regulated by 'ndip={self.ndip}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
+                                    f"regulated by 'ndip={self.ndip}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 self.s22[decimal] = float(rawRealArray[0])
@@ -6778,8 +6782,8 @@ class AmberMRParserListener(ParseTreeListener):
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > self.ndip:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.")
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         self.s22[col] = float(rawReal)
@@ -6790,9 +6794,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "\
-                        f"regulated by 'ndip={self.ndip}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
+                                    f"regulated by 'ndip={self.ndip}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 self.s23[decimal] = float(rawRealArray[0])
@@ -6801,8 +6805,8 @@ class AmberMRParserListener(ParseTreeListener):
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > self.ndip:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The length of '{varName}={ctx.Reals()}' must not exceed 'ndip={self.ndip}'.")
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         self.s23[col] = float(rawReal)
@@ -6832,35 +6836,35 @@ class AmberMRParserListener(ParseTreeListener):
                 self.ncsa = max(self.icsa.keys())
 
             if self.ncsa <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The number of observed CSA values 'ncsa' is the mandatory variable.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "The number of observed CSA values 'ncsa' is the mandatory variable.")
                 return
 
             for n in range(1, self.ncsa + 1):
 
                 if n not in self.icsa:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                        f"The first atom number involved in the CSA icsa({n}) was not set.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                    f"The first atom number involved in the CSA icsa({n}) was not set.")
                     continue
 
                 if n not in self.jcsa:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                        f"The second atom number involved in the CSA jcsa({n}) was not set.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                    f"The second atom number involved in the CSA jcsa({n}) was not set.")
                     continue
 
                 if n not in self.kcsa:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                        f"The second atom number involved in the CSA kcsa({n}) was not set.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                    f"The second atom number involved in the CSA kcsa({n}) was not set.")
                     continue
 
                 if n not in self.cobsl:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                        f"The lower limit value for the observed CSA cobsl({n}) was not set.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                    f"The lower limit value for the observed CSA cobsl({n}) was not set.")
                     continue
 
                 if n not in self.cobsu:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                        f"The upper limit value for the observed CSA cobsu({n}) was not set.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                    f"The upper limit value for the observed CSA cobsu({n}) was not set.")
                     continue
 
                 _icsa = self.icsa[n]
@@ -6868,18 +6872,18 @@ class AmberMRParserListener(ParseTreeListener):
                 _kcsa = self.kcsa[n]
 
                 if _icsa <= 0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                        f"The first atom number involved in the CSA 'icsa({n})={_icsa}' should be a positive integer.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                    f"The first atom number involved in the CSA 'icsa({n})={_icsa}' should be a positive integer.")
                     continue
 
                 if _jcsa <= 0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                        f"The second atom number involved in the CSA 'jcsa({n})={_jcsa}' should be a positive integer.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                    f"The second atom number involved in the CSA 'jcsa({n})={_jcsa}' should be a positive integer.")
                     continue
 
                 if _kcsa <= 0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                        f"The second atom number involved in the CSA 'kcsa({n})={_kcsa}' should be a positive integer.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                    f"The second atom number involved in the CSA 'kcsa({n})={_kcsa}' should be a positive integer.")
                     continue
 
                 cwt = 1.0
@@ -6898,8 +6902,8 @@ class AmberMRParserListener(ParseTreeListener):
                     if _icsa in self.__atomNumberDict:
                         atomSelection.append(self.__atomNumberDict[_icsa])
                     else:
-                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                            f"'icsa({n})={_icsa}' is not defined in the AMBER parameter/topology file.\n"
+                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                        f"'icsa({n})={_icsa}' is not defined in the AMBER parameter/topology file.")
                         continue
 
                     chain_id_1 = atomSelection[0]['chain_id']
@@ -6914,8 +6918,8 @@ class AmberMRParserListener(ParseTreeListener):
                     if _jcsa in self.__atomNumberDict:
                         atomSelection.append(self.__atomNumberDict[_jcsa])
                     else:
-                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                            f"'jcsa({n})={_jcsa}' is not defined in the AMBER parameter/topology file.\n"
+                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                        f"'jcsa({n})={_jcsa}' is not defined in the AMBER parameter/topology file.")
                         continue
 
                     chain_id_2 = atomSelection[0]['chain_id']
@@ -6930,8 +6934,8 @@ class AmberMRParserListener(ParseTreeListener):
                     if _kcsa in self.__atomNumberDict:
                         atomSelection.append(self.__atomNumberDict[_kcsa])
                     else:
-                        self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                            f"'kcsa({n})={_kcsa}' is not defined in the AMBER parameter/topology file.\n"
+                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                        f"'kcsa({n})={_kcsa}' is not defined in the AMBER parameter/topology file.")
                         continue
 
                     chain_id_3 = atomSelection[0]['chain_id']
@@ -6943,11 +6947,11 @@ class AmberMRParserListener(ParseTreeListener):
 
                     if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
                        or (atom_id_3[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                            f"Non-magnetic susceptible spin appears in CSA vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                        "Non-magnetic susceptible spin appears in CSA vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                         continue
 
                     if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3:
@@ -6955,19 +6959,19 @@ class AmberMRParserListener(ParseTreeListener):
                         ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                         ps3 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_3 and 'identical_auth_chain_id' in ps), None)
                         if ps1 is None and ps2 is None and ps3 is None:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                                f"Found inter-chain CSA vector; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                            "Found inter-chain CSA vector; "
+                                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                             continue
 
                     elif abs(seq_id_1 - seq_id_2) > 1 or abs(seq_id_2 - seq_id_3) > 1 or abs(seq_id_3 - seq_id_1) > 1:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                            f"Found inter-residue CSA vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                        "Found inter-residue CSA vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                         continue
 
                     elif abs(seq_id_1 - seq_id_2) == 1 or abs(seq_id_2 - seq_id_3) == 1 or abs(seq_id_3 - seq_id_1) == 1:
@@ -6982,11 +6986,11 @@ class AmberMRParserListener(ParseTreeListener):
                                 pass
 
                             else:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                                    "Found inter-residue CSA vector; "\
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                                "Found inter-residue CSA vector; "
+                                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                                 continue
 
                         elif abs(seq_id_2 - seq_id_3) == 1:
@@ -6999,11 +7003,11 @@ class AmberMRParserListener(ParseTreeListener):
                                 pass
 
                             else:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                                    "Found inter-residue CSA vector; "\
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                                "Found inter-residue CSA vector; "
+                                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                                 continue
 
                         elif abs(seq_id_3 - seq_id_1) == 1:
@@ -7016,19 +7020,19 @@ class AmberMRParserListener(ParseTreeListener):
                                 pass
 
                             else:
-                                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                                    "Found inter-residue CSA vector; "\
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                                "Found inter-residue CSA vector; "
+                                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                                 continue
 
                     elif atom_id_1 == atom_id_2 or atom_id_2 == atom_id_3 or atom_id_3 == atom_id_1:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                            "Found zero CSA vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                        "Found zero CSA vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                         continue
 
                     else:
@@ -7038,11 +7042,11 @@ class AmberMRParserListener(ParseTreeListener):
                             if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                                 if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                                        "Found an CSA vector over multiple covalent bonds; "\
-                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                                    "Found an CSA vector over multiple covalent bonds; "
+                                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                                     continue
 
                         if self.__ccU.updateChemCompDict(comp_id_3) and seq_id_3 == seq_id_2:  # matches with comp_id in CCD
@@ -7050,11 +7054,11 @@ class AmberMRParserListener(ParseTreeListener):
                             if not self.__ccU.hasBond(comp_id_1, atom_id_2, atom_id_3):
 
                                 if self.__nefT.validate_comp_atom(comp_id_3, atom_id_3) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"\
-                                        "Found an CSA vector over multiple covalent bonds; "\
-                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                                    "Found an CSA vector over multiple covalent bonds; "
+                                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                                     continue
 
                     dstFunc = self.validateCsaRange(n, cwt)
@@ -7088,9 +7092,9 @@ class AmberMRParserListener(ParseTreeListener):
                             sf['loop'].add_data(row)
 
                 elif self.__hasPolySeq:
-                    self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                        "Failed to recognize AMBER atom numbers in the Residual CSA or psuedo-CSA restraint file "\
-                        "because AMBER parameter/topology file is not available.\n"
+                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                    "Failed to recognize AMBER atom numbers in the Residual CSA or psuedo-CSA restraint file "
+                                    "because AMBER parameter/topology file is not available.")
                     return
 
         finally:
@@ -7109,9 +7113,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ncsa > 0 and decimal > self.ncsa:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "\
-                        f"regulated by 'ncsa={self.ncsa}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "
+                                    f"regulated by 'ncsa={self.ncsa}'.")
                     return
                 self.icsa[decimal] = int(str(ctx.Integer()))
 
@@ -7121,9 +7125,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ncsa > 0 and decimal > self.ncsa:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "\
-                        f"regulated by 'ncsa={self.ncsa}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "
+                                    f"regulated by 'ncsa={self.ncsa}'.")
                     return
                 self.jcsa[decimal] = int(str(ctx.Integer()))
 
@@ -7133,9 +7137,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ncsa > 0 and decimal > self.ncsa:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "\
-                        f"regulated by 'ncsa={self.ncsa}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "
+                                    f"regulated by 'ncsa={self.ncsa}'.")
                     return
                 self.kcsa[decimal] = int(str(ctx.Integer()))
 
@@ -7145,9 +7149,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ncsa > 0 and decimal > self.ncsa:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "\
-                        f"regulated by 'ncsa={self.ncsa}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "
+                                    f"regulated by 'ncsa={self.ncsa}'.")
                     return
                 self.cobsl[decimal] = float(str(ctx.Real()))
 
@@ -7157,9 +7161,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ncsa > 0 and decimal > self.ncsa:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "\
-                        f"regulated by 'ncsa={self.ncsa}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "
+                                    f"regulated by 'ncsa={self.ncsa}'.")
                     return
                 self.cobsu[decimal] = float(str(ctx.Real()))
 
@@ -7169,9 +7173,9 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ncsa > 0 and decimal > self.ncsa:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "\
-                        f"regulated by 'ncsa={self.ncsa}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "
+                                    f"regulated by 'ncsa={self.ncsa}'.")
                     return
                 self.cobsl[decimal] = self.cobsu[decimal] = float(str(ctx.Real()))
 
@@ -7181,37 +7185,37 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ncsa > 0 and decimal > self.ncsa:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
-                        f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "\
-                        f"regulated by 'ncsa={self.ncsa}'.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                                    f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "
+                                    f"regulated by 'ncsa={self.ncsa}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
                 if val < 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
-                        f"The relative weight value '{varName}({decimal})={val}' must not be a negative value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                                    f"The relative weight value '{varName}({decimal})={val}' must not be a negative value.")
                     return
                 if val == 0.0:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(self.datasetc,decimal)}"\
-                        f"The relative weight value '{varName}({decimal})={val}' should be a positive value.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                                    f"The relative weight value '{varName}({decimal})={val}' should be a positive value.")
                 self.cwt[decimal] = val
 
             else:
                 if ctx.Reals():
                     rawRealArray = str(ctx.Reals()).split(',')
                     if len(rawRealArray) > self.ncsa:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"The length of '{varName}={ctx.Reals()}' must not exceed 'ncsa={self.ncsa}'.\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The length of '{varName}={ctx.Reals()}' must not exceed 'ncsa={self.ncsa}'.")
                         return
                     for col, rawReal in enumerate(rawRealArray, start=1):
                         val = float(rawReal)
                         if val < 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col})={val}' must not be a negative value.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}({col})={val}' must not be a negative value.")
                             return
                         if val == 0.0:
-                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}({col})={val}' should be a positive value.\n"
+                            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}({col})={val}' should be a positive value.")
                         self.cwt[col] = val
                 elif ctx.MultiplicativeReal():
                     offset = 0
@@ -7219,21 +7223,21 @@ class AmberMRParserListener(ParseTreeListener):
                         rawMultReal = multiplicativeReal.split('*')
                         numCol = int(rawMultReal[0])
                         if offset + numCol <= 0 or offset + numCol > self.ncsa:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The argument value of '{varName}({numCol})' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.ncsa}, "\
-                                f"regulated by 'ncsa={self.ncsa}'.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The argument value of '{varName}({numCol})' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must be in the range 1-{self.ncsa}, "
+                                            f"regulated by 'ncsa={self.ncsa}'.")
                             return
                         val = float(rawMultReal[1])
                         if val < 0.0:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}={val}' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' must not be a negative value.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}={val}' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' must not be a negative value.")
                             return
                         if val == 0.0:
-                            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                                f"The relative weight value '{varName}={val}' derived from "\
-                                f"'{str(ctx.MultiplicativeReal())}' should be a positive value.\n"
+                            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                            f"The relative weight value '{varName}={val}' derived from "
+                                            f"'{str(ctx.MultiplicativeReal())}' should be a positive value.")
                         for col in range(0, numCol):
                             self.cwt[offset + col + 1] = val
                         offset += numCol
@@ -7241,15 +7245,15 @@ class AmberMRParserListener(ParseTreeListener):
         elif ctx.NCSA():
             self.ncsa = int(str(ctx.Integer()))
             if self.ncsa <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The argument value of 'ncsa={self.ncsa}' must be a positive integer.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The argument value of 'ncsa={self.ncsa}' must be a positive integer.")
                 return
 
         elif ctx.DATASETC():
             self.datasetc = int(str(ctx.Integer()))
             if self.datasetc <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The argument value of 'datasetc={self.datasetc}' must be a positive integer.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The argument value of 'datasetc={self.datasetc}' must be a positive integer.")
                 return
 
         elif ctx.SIGMA11():
@@ -7759,18 +7763,18 @@ class AmberMRParserListener(ParseTreeListener):
                 if atomId is not None and atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1')
             if atomId is not None and (('-' in atomId and ':' in atomId) or '.' in atomId):
-                self.warningMessage += f"[Atom not found] "\
-                    f"{_seqId}:{atomId} is not present in the coordinates. "\
-                    "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the AMBER restraint file.\n"
+                self.__f.append(f"[Atom not found] "
+                                f"{_seqId}:{atomId} is not present in the coordinates. "
+                                "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the AMBER restraint file.")
             else:
                 if seqId < 1 and len(self.__polySeq) == 1:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{_seqId}:{atomId} is not present in the coordinates. "\
-                        f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "\
-                        "Please update the sequence in the Macromolecules page.\n"
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{_seqId}:{atomId} is not present in the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
                 else:
-                    self.warningMessage += f"[Atom not found] "\
-                        f"{_seqId}:{atomId} is not present in the coordinates.\n"
+                    self.__f.append(f"[Atom not found] "
+                                    f"{_seqId}:{atomId} is not present in the coordinates.")
 
         return list(chainAssign)
 
@@ -7822,13 +7826,13 @@ class AmberMRParserListener(ParseTreeListener):
                     self.selectCoordAtoms(chainAssign, seqId, compId, atomId, allowAmbig, enableWarning, offset=1)
                     return
                 if enableWarning:
-                    self.warningMessage += f"[Invalid atom nomenclature] "\
-                        f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.\n"
+                    self.__f.append(f"[Invalid atom nomenclature] "
+                                    f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.")
                 continue
             if lenAtomId > 1 and not allowAmbig:
                 if enableWarning:
-                    self.warningMessage += f"[Invalid atom selection] "\
-                        f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.\n"
+                    self.__f.append(f"[Invalid atom selection] "
+                                    f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.")
                 continue
 
             for cifAtomId in _atomId:
@@ -7918,14 +7922,14 @@ class AmberMRParserListener(ParseTreeListener):
                         if len(bondedTo) > 0:
                             if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                 if enableWarning:
-                                    self.warningMessage += f"[Hydrogen not instantiated] "\
-                                        f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
-                                        "Please re-upload the model file.\n"
+                                    self.__f.append(f"[Hydrogen not instantiated] "
+                                                    f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
+                                                    "Please re-upload the model file.")
                                     return
                     if enableWarning:
                         if chainId in LARGE_ASYM_ID:
-                            self.warningMessage += f"[Atom not found] "\
-                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                            self.__f.append(f"[Atom not found] "
+                                            f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
 
     def __getCurrentRestraint(self, dataset=None, n=None):
         if self.__cur_subtype == 'dist':

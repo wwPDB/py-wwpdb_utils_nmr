@@ -984,20 +984,20 @@ def concat_nmr_restraint_names(content_subtype):
     """ Return concatenated NMR restraint names.
     """
 
-    subtype_name = ""
-
     if content_subtype is None:
-        return subtype_name
+        return ''
+
+    f = []
 
     for k, v in content_subtype.items():
         if v == 0:
             continue
         try:
-            subtype_name += getRestraintName(k) + ", "
+            f.append(getRestraintName(k))
         except KeyError:
             pass
 
-    return '' if len(subtype_name) == 0 else subtype_name[:-2]
+    return ', '.join(f)
 
 
 def is_peak_list(line, has_header=True):
@@ -6815,7 +6815,7 @@ class NmrDpUtility:
                 if _file_type != file_type:
 
                     err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                        f"but recognized as {self.readable_file_type[_file_type]} file. Please re-upload the file."
+                          f"but recognized as {self.readable_file_type[_file_type]} file. Please re-upload the file."
 
                     if len(message['error']) > 0:
                         for err_message in message['error']:
@@ -6981,12 +6981,9 @@ class NmrDpUtility:
                     if _file_type != file_type:
 
                         err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                            f"but recognized as {self.readable_file_type[_file_type]} file."
-
-                        if _file_type == 'nef':  # DAOTHER-5673
-                            err += " Please re-upload the NEF file as an NMR unified data file."
-                        else:
-                            err += " Please re-upload the file."
+                              f"but recognized as {self.readable_file_type[_file_type]} file."
+                        # DAOTHER-5673
+                        err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
 
                         if len(message['error']) > 0:
                             for err_message in message['error']:
@@ -7125,12 +7122,9 @@ class NmrDpUtility:
                         if _file_type != file_type:
 
                             err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                                f"but recognized as {self.readable_file_type[_file_type]} file."
-
-                            if _file_type == 'nef':  # DAOTHER-5673
-                                err += " Please re-upload the NEF file as an NMR unified data file."
-                            else:
-                                err += " Please re-upload the file."
+                                  f"but recognized as {self.readable_file_type[_file_type]} file."
+                            # DAOTHER-5673
+                            err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
 
                             if len(message['error']) > 0:
                                 for err_message in message['error']:
@@ -7991,19 +7985,17 @@ class NmrDpUtility:
                                     ofp.write(target['sf_tag_prefix_2'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category')
                                               + '    ' + target['category_2'] + '\n')
                                     ofp.write('loop_\n')
-                                    lp_tags = ''
-                                    lp_values = ''
+                                    lp_tags = lp_vals = ''
                             elif target['category_type_2'] == 'loop':
                                 ofp.write('loop_\n')
-                                lp_tags = ''
-                                lp_values = ''
+                                lp_tags = lp_vals = ''
                         if i not in loop_category_locations:
                             ofp.write(line)
                         else:
                             g = tagvalue_pattern.search(line).groups()
                             try:
                                 lp_tags += f"_{g[0]}.{g[1]}\n"
-                                lp_values += ' ' + g[2].strip(' ') + ' '
+                                lp_vals += f" {g[2].strip(' ')} "
                             except IndexError:
                                 continue
                         if i in target_category_ends:
@@ -8013,11 +8005,11 @@ class NmrDpUtility:
                                     pass
                                 else:
                                     ofp.write(lp_tags)
-                                    ofp.write(lp_values.rstrip(' ') + '\n')
+                                    ofp.write(lp_vals.rstrip(' ') + '\n')
                                     ofp.write('stop_\n')
                             elif target['category_type_2'] == 'loop':
                                 ofp.write(lp_tags)
-                                ofp.write(lp_values.rstrip(' ') + '\n')
+                                ofp.write(lp_vals.rstrip(' ') + '\n')
                                 ofp.write('stop_\n')
 
                         i += 1
@@ -13171,8 +13163,8 @@ class NmrDpUtility:
                     is_valid = True
 
                     err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like {_a_mr_format_name} file, "\
-                        f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
-                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+                          f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
+                          "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
 
                     if has_content:
                         _err = ''
@@ -13183,8 +13175,8 @@ class NmrDpUtility:
                                 for description in messageList:
                                     if description['line_number'] in dismiss_err_lines:
                                         continue
-                                    _err += f"[Syntax error as {_a_mr_format_name} file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                    _err = f"[Syntax error as {_a_mr_format_name} file] "\
+                                           f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
                                         enc = detect_encoding(description['input'])
                                         is_not_ascii = False
@@ -13205,7 +13197,7 @@ class NmrDpUtility:
                                     if description['line_number'] in dismiss_err_lines:
                                         continue
                                     _err += f"[Syntax error as {_a_mr_format_name} file] "\
-                                        f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                                            f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
                                     if 'input' in description:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
@@ -13609,11 +13601,8 @@ class NmrDpUtility:
 
                                 err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
                                     f"but recognized as {self.readable_file_type[_file_type]} file."
-
-                                if _file_type == 'nef':  # DAOTHER-5673
-                                    err += " Please re-upload the NEF file as an NMR unified data file."
-                                else:
-                                    err += " Please re-upload the file."
+                                # DAOTHER-5673
+                                err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
 
                                 if len(message['error']) > 0:
                                     for err_message in message['error']:
@@ -13782,11 +13771,8 @@ class NmrDpUtility:
 
                                 err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
                                     f"but recognized as {self.readable_file_type[_file_type]} file."
-
-                                if _file_type == 'nef':  # DAOTHER-5673
-                                    err += " Please re-upload the NEF file as an NMR unified data file."
-                                else:
-                                    err += " Please re-upload the file."
+                                # DAOTHER-5673
+                                err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
 
                                 if len(message['error']) > 0:
                                     for err_message in message['error']:
@@ -14399,11 +14385,8 @@ class NmrDpUtility:
 
                                     err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
                                         f"but recognized as {self.readable_file_type[_file_type]} file."
-
-                                    if _file_type == 'nef':  # DAOTHER-5673
-                                        err += " Please re-upload the NEF file as an NMR unified data file."
-                                    else:
-                                        err += " Please re-upload the file."
+                                    # DAOTHER-5673
+                                    err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
 
                                     if len(message['error']) > 0:
                                         for err_message in message['error']:
@@ -14526,11 +14509,8 @@ class NmrDpUtility:
 
                                     err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
                                         f"but recognized as {self.readable_file_type[_file_type]} file."
-
-                                    if _file_type == 'nef':  # DAOTHER-5673
-                                        err += " Please re-upload the NEF file as an NMR unified data file."
-                                    else:
-                                        err += " Please re-upload the file."
+                                    # DAOTHER-5673
+                                    err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
 
                                     if len(message['error']) > 0:
                                         for err_message in message['error']:
@@ -19436,12 +19416,12 @@ class NmrDpUtility:
 
                             if r >= self.r_conflicted_dist_restraint:
                                 discrepancy += f"{dname} |{_val_1}-{_val_2}|/|{_val_1}+{_val_2}| = {r:.1%} is out of acceptable range, "\
-                                    f"{int(self.r_conflicted_dist_restraint * 100)} %, "
+                                               f"{int(self.r_conflicted_dist_restraint * 100)} %, "
                                 conflict = True
 
                             elif r >= self.r_inconsistent_dist_restraint:
                                 discrepancy += f"{dname} |{_val_1}-{_val_2}|/|{_val_1}+{_val_2}| = {r:.1%} is out of typical range, "\
-                                    f"{int(self.r_inconsistent_dist_restraint * 100)} %, "
+                                               f"{int(self.r_inconsistent_dist_restraint * 100)} %, "
                                 inconsist = True
 
                         else:
@@ -19482,12 +19462,12 @@ class NmrDpUtility:
 
                             if r > max_inclusive:
                                 discrepancy += f"{dname} |{_val_1}-{_val_2}| = {r:.1f} is out of acceptable range, "\
-                                    f"{max_inclusive}{'°' if content_subtype == 'dihed_restraint' else 'Hz'}, "
+                                               f"{max_inclusive}{'°' if content_subtype == 'dihed_restraint' else 'Hz'}, "
                                 conflict = True
 
                             elif r > max_inclusive * self.inconsist_over_conflicted:
                                 discrepancy += f"{dname} |{_val_1}-{_val_2}| = {r:.1f} is out of typical range, "\
-                                    f"{max_inclusive * self.inconsist_over_conflicted}{'°' if content_subtype == 'dihed_restraint' else 'Hz'}, "
+                                               f"{max_inclusive * self.inconsist_over_conflicted}{'°' if content_subtype == 'dihed_restraint' else 'Hz'}, "
                                 inconsist = True
 
                     if conflict:
@@ -21093,15 +21073,15 @@ class NmrDpUtility:
                         atom_name = atom_id
 
                         if details is not None:
-                            atom_name += ' (' + details.rstrip('.') + ')'
+                            atom_name += f" ({details.rstrip('.')})"
 
                     else:
-                        atom_name = atom_id + ' (e.g. '
+                        atom_name = f'{atom_id} (e.g. '
 
                         for atom_id_ in _atom_id:
-                            atom_name += atom_id_ + ' '
+                            atom_name += f'{atom_id_} '
 
-                        atom_name = atom_name.rstrip() + ')'
+                        atom_name = f'{atom_name.rstrip()})'
 
                         # representative atom id
                         atom_id_ = _atom_id[0]
@@ -26102,15 +26082,15 @@ class NmrDpUtility:
                                     atom_name = atom_id
 
                                     if details is not None:
-                                        atom_name += ' (' + details.rstrip('.') + ')'
+                                        atom_name += f" ({details.rstrip('.')})"
 
                                 else:
-                                    atom_name = atom_id + ' (e.g. '
+                                    atom_name = f'{atom_id} (e.g. '
 
                                     for atom_id_ in _atom_id:
-                                        atom_name += atom_id_ + ' '
+                                        atom_name += f'{atom_id_} '
 
-                                    atom_name = atom_name.rstrip() + ')'
+                                    atom_name = f'{atom_name.rstrip()})'
 
                                     # representative atom id
                                     atom_id_ = _atom_id[0]
@@ -26203,15 +26183,15 @@ class NmrDpUtility:
                                 atom_name = atom_id
 
                                 if details is not None:
-                                    atom_name += ' (' + details.rstrip('.') + ')'
+                                    atom_name += f" ({details.rstrip('.')})"
 
                             else:
-                                atom_name = atom_id + ' (e.g. '
+                                atom_name = f'{atom_id} (e.g. '
 
                                 for atom_id_ in _atom_id:
-                                    atom_name += atom_id_ + ' '
+                                    atom_name += f'{atom_id_} '
 
-                                atom_name = atom_name.rstrip() + ')'
+                                atom_name = f'{atom_name.rstrip()})'
 
                                 # representative atom id
                                 atom_id_ = _atom_id[0]
@@ -33827,7 +33807,7 @@ class NmrDpUtility:
                 data_type = 'long_range_hydrogen_bonds'
             else:
                 data_type = 'hydrogen_bonds'
-            data_type += '_' + hydrogen_bond_type
+            data_type += f'_{hydrogen_bond_type}'
         elif disulfide_bond:
             if chain_id_1 != chain_id_2:
                 data_type = 'inter-chain_disulfide_bonds'
@@ -33835,7 +33815,7 @@ class NmrDpUtility:
                 data_type = 'long_range_disulfide_bonds'
             else:
                 data_type = 'disulfide_bonds'
-            data_type += '_' + disulfide_bond_type
+            data_type += f'_{disulfide_bond_type}'
         elif diselenide_bond:
             if chain_id_1 != chain_id_2:
                 data_type = 'inter-chain_diselenide_bonds'
@@ -33843,7 +33823,7 @@ class NmrDpUtility:
                 data_type = 'long_range_diselenide_bonds'
             else:
                 data_type = 'diselenide_bonds'
-            data_type += '_' + diselenide_bond_type
+            data_type += f'_{diselenide_bond_type}'
         elif other_bond:
             if chain_id_1 != chain_id_2:
                 data_type = 'inter-chain_other_bonds'
@@ -33851,7 +33831,7 @@ class NmrDpUtility:
                 data_type = 'long_range_other_bonds'
             else:
                 data_type = 'other_bonds'
-            data_type += '_' + other_bond_type
+            data_type += f'_{other_bond_type}'
         elif symmetry:
             data_type = 'symmetric_constraints'
         elif chain_id_1 != chain_id_2:
@@ -34169,7 +34149,7 @@ class NmrDpUtility:
                 data_type = 'long_range_hydrogen_bonds'
             else:
                 data_type = 'hydrogen_bonds'
-            data_type += '_' + hydrogen_bond_type
+            data_type += f'_{hydrogen_bond_type}'
         elif disulfide_bond:
             if chain_id_1 != chain_id_2:
                 data_type = 'inter-chain_disulfide_bonds'
@@ -34177,7 +34157,7 @@ class NmrDpUtility:
                 data_type = 'long_range_disulfide_bonds'
             else:
                 data_type = 'disulfide_bonds'
-            data_type += '_' + disulfide_bond_type
+            data_type += f'_{disulfide_bond_type}'
         elif diselenide_bond:
             if chain_id_1 != chain_id_2:
                 data_type = 'inter-chain_diselenide_bonds'
@@ -34185,7 +34165,7 @@ class NmrDpUtility:
                 data_type = 'long_range_diselenide_bonds'
             else:
                 data_type = 'diselenide_bonds'
-            data_type += '_' + diselenide_bond_type
+            data_type += f'_{diselenide_bond_type}'
         elif other_bond:
             if chain_id_1 != chain_id_2:
                 data_type = 'inter-chain_other_bonds'
@@ -34193,7 +34173,7 @@ class NmrDpUtility:
                 data_type = 'long_range_other_bonds'
             else:
                 data_type = 'other_bonds'
-            data_type += '_' + other_bond_type
+            data_type += f'_{other_bond_type}'
         elif symmetry:
             data_type = 'symmetric_constraints'
         elif chain_id_1 != chain_id_2:
@@ -39013,15 +38993,15 @@ class NmrDpUtility:
                         atom_name = atom_id
 
                         if details is not None:
-                            atom_name += ' (' + details.rstrip('.') + ')'
+                            atom_name += f" ({details.rstrip('.')})"
 
                     else:
-                        atom_name = atom_id + ' (e.g. '
+                        atom_name = f'{atom_id} (e.g. '
 
                         for atom_id_ in _atom_id:
-                            atom_name += atom_id_ + ' '
+                            atom_name += f'{atom_id_} '
 
-                        atom_name = atom_name.rstrip() + ')'
+                        atom_name = f'{atom_name.rstrip()})'
 
                         # representative atom id
                         atom_id_ = _atom_id[0]
@@ -45923,12 +45903,12 @@ class NmrDpUtility:
 
                 sorted_atoms = sorted(atoms, key=lambda x: (x[0], x[1], x[2], x[3], x[4]))
 
-                sorted_id = []
+                sorted_idx = []
 
                 for atom in sorted_atoms:
-                    sorted_id.append(atom[4])
+                    sorted_idx.append(atom[4])
 
-                if sorted_id != list(range(len(lp_data))):
+                if sorted_idx != list(range(len(lp_data))):
 
                     if __pynmrstar_v3_2__:
                         loop = sf_data.get_loop(lp_category)
@@ -45940,8 +45920,8 @@ class NmrDpUtility:
                     for tag in loop.tags:
                         lp.add_tag(lp_category + '.' + tag)
 
-                    for l_id in sorted_id:
-                        lp.add_data(loop[l_id])
+                    for idx in sorted_idx:
+                        lp.add_data(loop[idx])
 
                     del sf_data[loop]
 

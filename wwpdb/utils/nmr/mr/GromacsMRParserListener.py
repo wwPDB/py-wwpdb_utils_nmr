@@ -182,7 +182,8 @@ class GromacsMRParserListener(ParseTreeListener):
     # collection of number selection
     numberSelection = []
 
-    warningMessage = ''
+    __f = None
+    warningMessage = None
 
     # original source MR file name
     __originalFileName = '.'
@@ -271,6 +272,7 @@ class GromacsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by GromacsMRParser#gromacs_mr.
     def enterGromacs_mr(self, ctx: GromacsMRParser.Gromacs_mrContext):  # pylint: disable=unused-argument
         self.__polySeqRst = []
+        self.__f = []
 
     # Exit a parse tree produced by GromacsMRParser#gromacs_mr.
     def exitGromacs_mr(self, ctx: GromacsMRParser.Gromacs_mrContext):  # pylint: disable=unused-argument
@@ -281,7 +283,7 @@ class GromacsMRParserListener(ParseTreeListener):
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
-                self.warningMessage += message
+                self.__f.extend(message)
 
             if self.__chainAssign is not None:
 
@@ -307,11 +309,10 @@ class GromacsMRParserListener(ParseTreeListener):
 
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-        if len(self.warningMessage) == 0:
+        if len(self.__f) == 0:
             self.warningMessage = None
         else:
-            self.warningMessage = self.warningMessage[0:-1]
-            self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
+            self.warningMessage = '\n'.join(set(self.__f))
 
     # Enter a parse tree produced by GromacsMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: GromacsMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
@@ -346,17 +347,17 @@ class GromacsMRParserListener(ParseTreeListener):
             weight = self.numberSelection[3]
 
             if funct != 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index)}"\
-                    f"Unknown function type '{funct}' is set.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index)}"
+                                f"Unknown function type '{funct}' is set.")
                 return
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index)}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index)}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             dstFunc = self.validateDistanceRange(index, weight, lower_limit, upper_limit, upper_linear_limit, self.__omitDistLimitOutlier)
 
@@ -367,9 +368,9 @@ class GromacsMRParserListener(ParseTreeListener):
                 return
 
             if self.__atomNumberDict is None:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=index)}"\
-                    "Failed to recognize GROMACS atom numbers in the restraint file "\
-                    "because GROMACS parameter/topology file is not available.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint(n=index)}"
+                                "Failed to recognize GROMACS atom numbers in the restraint file "
+                                "because GROMACS parameter/topology file is not available.")
                 return
 
             atomSelection = []
@@ -378,8 +379,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ai])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=index)}"\
-                    f"'ai={ai}' is not defined in the GROMACS parameter/topology file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint(n=index)}"
+                                f"'ai={ai}' is not defined in the GROMACS parameter/topology file.")
 
             atomSelection = []
 
@@ -387,8 +388,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[aj])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(n=index)}"\
-                    f"'aj={aj}' is not defined in the GROMACS parameter/topology file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint(n=index)}"
+                                f"'aj={aj}' is not defined in the GROMACS parameter/topology file.")
 
             if len(self.atomSelectionSet) < 2:
                 return
@@ -457,45 +458,45 @@ class GromacsMRParserListener(ParseTreeListener):
                 dstFunc['lower_limit'] = f"{lower_limit}"
             else:
                 if lower_limit <= DIST_ERROR_MIN and omit_dist_limit_outlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                        f"The lower limit value='{lower_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                                    f"The lower limit value='{lower_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     lower_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                        f"The lower limit value='{lower_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                                    f"The lower limit value='{lower_limit}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit}"
             else:
                 if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                        f"The upper limit value='{upper_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                                    f"The upper limit value='{upper_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                        f"The upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                                    f"The upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if DIST_ERROR_MIN < upper_linear_limit <= DIST_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{upper_linear_limit}"
             else:
                 if (upper_linear_limit <= DIST_ERROR_MIN or upper_linear_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                        f"The upper linear limit value='{upper_linear_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                                    f"The upper linear limit value='{upper_linear_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_linear_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                        f"The upper linear limit value='{upper_linear_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                                    f"The upper linear limit value='{upper_linear_limit}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_limit is not None and upper_linear_limit is not None:
             if upper_limit > upper_linear_limit:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                    f"The upper limit value='{upper_limit}' must be less than the upper linear limit value '{upper_linear_limit}'.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                                f"The upper limit value='{upper_limit}' must be less than the upper linear limit value '{upper_linear_limit}'.")
 
         if not validRange:
             return None
@@ -504,22 +505,22 @@ class GromacsMRParserListener(ParseTreeListener):
             if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                    f"The lower limit value='{lower_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                                f"The lower limit value='{lower_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                    f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                                f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if DIST_RANGE_MIN <= upper_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                    f"The upper linear limit value='{upper_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                                f"The upper linear limit value='{upper_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -562,17 +563,17 @@ class GromacsMRParserListener(ParseTreeListener):
                 lower_limit = upper_limit = None
 
             if funct != 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Unknown function type '{funct}' is set.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Unknown function type '{funct}' is set.")
                 return
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             dstFunc = self.validateAngleRange(weight, target_value, lower_limit, upper_limit)
 
@@ -583,9 +584,9 @@ class GromacsMRParserListener(ParseTreeListener):
                 return
 
             if self.__atomNumberDict is None:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    "Failed to recognize GROMACS atom numbers in the restraint file "\
-                    "because GROMACS parameter/topology file is not available.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                "Failed to recognize GROMACS atom numbers in the restraint file "
+                                "because GROMACS parameter/topology file is not available.")
                 return
 
             atomSelection = []
@@ -594,8 +595,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ai])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    f"'ai={ai}' is not defined in the GROMACS parameter/topology file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                f"'ai={ai}' is not defined in the GROMACS parameter/topology file.")
 
             atomSelection = []
 
@@ -603,8 +604,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[aj])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    f"'aj={aj}' is not defined in the GROMACS parameter/topology file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                f"'aj={aj}' is not defined in the GROMACS parameter/topology file.")
 
             atomSelection = []
 
@@ -612,8 +613,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ak])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    f"'ak={ak}' is not defined in the GROMACS parameter/topology file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                f"'ak={ak}' is not defined in the GROMACS parameter/topology file.")
 
             atomSelection = []
 
@@ -621,8 +622,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[al])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    f"'al={al}' is not defined in the GROMACS parameter/topology file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                f"'al={al}' is not defined in the GROMACS parameter/topology file.")
 
             if len(self.atomSelectionSet) < 4:
                 return
@@ -681,9 +682,9 @@ class GromacsMRParserListener(ParseTreeListener):
             elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
                 shift = -(numpy.nanmin(_array) // 360) * 360
             if shift is not None:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    "The target/limit values for an angle restraint have been circularly shifted "\
-                    f"to fit within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                "The target/limit values for an angle restraint have been circularly shifted "
+                                f"to fit within range {ANGLE_RESTRAINT_ERROR}.")
                 if target_value is not None:
                     target_value += shift
                 if lower_limit is not None:
@@ -696,24 +697,24 @@ class GromacsMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if ANGLE_ERROR_MIN <= lower_limit < ANGLE_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if ANGLE_ERROR_MIN < upper_limit <= ANGLE_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if not validRange:
             return None
@@ -722,22 +723,22 @@ class GromacsMRParserListener(ParseTreeListener):
             if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -775,27 +776,27 @@ class GromacsMRParserListener(ParseTreeListener):
             weight = self.numberSelection[3]
 
             if ai == aj:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"Found zero RDC vector; (ai={ai}, aj={aj}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                f"Found zero RDC vector; (ai={ai}, aj={aj}).")
                 return
 
             if funct != 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"Unknown function type '{funct}' is set.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                f"Unknown function type '{funct}' is set.")
                 return
 
             if alpha != 3.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"The 'alpha={alpha}' must be 3.0 for RDC restraints.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                f"The 'alpha={alpha}' must be 3.0 for RDC restraints.")
                 return
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             dstFunc = self.validateRdcRange(weight, exp, index, target_value, None, None)
 
@@ -806,9 +807,9 @@ class GromacsMRParserListener(ParseTreeListener):
                 return
 
             if self.__atomNumberDict is None:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    "Failed to recognize GROMACS atom numbers in the restraint file "\
-                    "because GROMACS parameter/topology file is not available.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                "Failed to recognize GROMACS atom numbers in the restraint file "
+                                "because GROMACS parameter/topology file is not available.")
                 return
 
             atomSelection = []
@@ -817,8 +818,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ai])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"'ai={ai}' is not defined in the GROMACS parameter/topology file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                f"'ai={ai}' is not defined in the GROMACS parameter/topology file.")
 
             atomSelection = []
 
@@ -826,8 +827,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[aj])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"'aj={aj}' is not defined in the GROMACS parameter/topology file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                f"'aj={aj}' is not defined in the GROMACS parameter/topology file.")
 
             if len(self.atomSelectionSet) < 2:
                 return
@@ -843,27 +844,27 @@ class GromacsMRParserListener(ParseTreeListener):
             atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"Non-magnetic susceptible spin appears in RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                "Non-magnetic susceptible spin appears in RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                        f"Found inter-chain RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                    "Found inter-chain RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                        f"Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -876,15 +877,15 @@ class GromacsMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                        "Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    "Found zero RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                "Found zero RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -892,9 +893,9 @@ class GromacsMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                            "Found an RDC vector over multiple covalent bonds; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                        "Found an RDC vector over multiple covalent bonds; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             if self.__createSfDict:
@@ -936,38 +937,38 @@ class GromacsMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if RDC_ERROR_MIN <= lower_limit < RDC_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if RDC_ERROR_MIN < upper_limit <= RDC_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
 
         if not validRange:
             return None
@@ -976,22 +977,22 @@ class GromacsMRParserListener(ParseTreeListener):
             if RDC_RANGE_MIN <= target_value <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if RDC_RANGE_MIN <= lower_limit <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if RDC_RANGE_MIN <= upper_limit <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"\
-                    f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                                f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -1037,18 +1038,18 @@ class GromacsMRParserListener(ParseTreeListener):
             len_atom_sorts = len(set(ai, aj, ak, al))
 
             if len_atom_sorts < 3 or ai == aj or ak == al:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found zero angle vector; (ai={ai}, aj={aj}) - (ak={ak}, al={al}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Found zero angle vector; (ai={ai}, aj={aj}) - (ak={ak}, al={al}).")
                 return
 
             if funct != 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Unknown function type '{funct}' is set.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Unknown function type '{funct}' is set.")
                 return
 
             if mult <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The multiplicity of angle restraint '{mult}' must be a positive integer.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The multiplicity of angle restraint '{mult}' must be a positive integer.")
                 return
 
             dstFunc = self.validateAngleRange(weight, target_value, lower_limit, upper_limit)
@@ -1060,9 +1061,9 @@ class GromacsMRParserListener(ParseTreeListener):
                 return
 
             if self.__atomNumberDict is None:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    "Failed to recognize GROMACS atom numbers in the restraint file "\
-                    "because GROMACS parameter/topology file is not available.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                "Failed to recognize GROMACS atom numbers in the restraint file "
+                                "because GROMACS parameter/topology file is not available.")
                 return
 
             atomSelection = []
@@ -1071,8 +1072,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ai])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    f"'ai={ai}' is not defined in the GROMACS parameter/topology file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                f"'ai={ai}' is not defined in the GROMACS parameter/topology file.")
 
             atomSelection = []
 
@@ -1080,8 +1081,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[aj])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    f"'aj={aj}' is not defined in the GROMACS parameter/topology file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                f"'aj={aj}' is not defined in the GROMACS parameter/topology file.")
 
             atomSelection = []
 
@@ -1089,8 +1090,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ak])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    f"'ak={ak}' is not defined in the GROMACS parameter/topology file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                f"'ak={ak}' is not defined in the GROMACS parameter/topology file.")
 
             atomSelection = []
 
@@ -1098,8 +1099,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[al])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    f"'al={al}' is not defined in the GROMACS parameter/topology file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                f"'al={al}' is not defined in the GROMACS parameter/topology file.")
 
             if len(self.atomSelectionSet) < 4:
                 return
@@ -1233,18 +1234,18 @@ class GromacsMRParserListener(ParseTreeListener):
                 lower_limit = upper_limit = None
 
             if ai == aj:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found zero angle vector; (ai={ai}, aj={aj}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Found zero angle vector; (ai={ai}, aj={aj}).")
                 return
 
             if funct != 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Unknown function type '{funct}' is set.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Unknown function type '{funct}' is set.")
                 return
 
             if mult <= 0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The multiplicity of angle restraint '{mult}' must be a positive integer.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The multiplicity of angle restraint '{mult}' must be a positive integer.")
                 return
 
             dstFunc = self.validateAngleRange(weight, target_value, lower_limit, upper_limit)
@@ -1256,9 +1257,9 @@ class GromacsMRParserListener(ParseTreeListener):
                 return
 
             if self.__atomNumberDict is None:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    "Failed to recognize GROMACS atom numbers in the restraint file "\
-                    "because GROMACS parameter/topology file is not available.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                "Failed to recognize GROMACS atom numbers in the restraint file "
+                                "because GROMACS parameter/topology file is not available.")
                 return
 
             atomSelection = []
@@ -1267,8 +1268,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ai])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    f"'ai={ai}' is not defined in the GROMACS parameter/topology file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                f"'ai={ai}' is not defined in the GROMACS parameter/topology file.")
 
             atomSelection = []
 
@@ -1276,8 +1277,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[aj])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    f"'aj={aj}' is not defined in the GROMACS parameter/topology file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                f"'aj={aj}' is not defined in the GROMACS parameter/topology file.")
 
             if len(self.atomSelectionSet) < 2:
                 return
@@ -1351,17 +1352,17 @@ class GromacsMRParserListener(ParseTreeListener):
             c = self.numberSelection[2]
 
             if funct not in (1, 2):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Unknown function type '{funct}' is set.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Unknown function type '{funct}' is set.")
                 return
 
             if not self.__hasPolySeq:
                 return
 
             if self.__atomNumberDict is None:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    "Failed to recognize GROMACS atom numbers in the restraint file "\
-                    "because GROMACS parameter/topology file is not available.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                "Failed to recognize GROMACS atom numbers in the restraint file "
+                                "because GROMACS parameter/topology file is not available.")
                 return
 
             atomSelection = []
@@ -1370,8 +1371,8 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(self.__atomNumberDict[ai])
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.warningMessage += f"[Missing data] {self.__getCurrentRestraint()}"\
-                    f"'ai={ai}' is not defined in the GROMACS parameter/topology file.\n"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                f"'ai={ai}' is not defined in the GROMACS parameter/topology file.")
 
             if len(self.atomSelectionSet) < 1:
                 return

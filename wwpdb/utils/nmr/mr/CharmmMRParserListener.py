@@ -303,9 +303,8 @@ class CharmmMRParserListener(ParseTreeListener):
     # evaluate
     evaluate = {}
 
-    warningMessage = ''
-
-    __warningInAtomSelection = ''
+    __f = __g = None
+    warningMessage = None
 
     reasonsForReParsing = {}
 
@@ -444,6 +443,8 @@ class CharmmMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CharmmMRParser#charmm_mr.
     def enterCharmm_mr(self, ctx: CharmmMRParser.Charmm_mrContext):  # pylint: disable=unused-argument
         self.__polySeqRst = []
+        self.__f = []
+        self.__g = []
 
     # Exit a parse tree produced by CharmmMRParser#charmm_mr.
     def exitCharmm_mr(self, ctx: CharmmMRParser.Charmm_mrContext):  # pylint: disable=unused-argument
@@ -456,7 +457,9 @@ class CharmmMRParserListener(ParseTreeListener):
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
-                self.warningMessage += message
+                self.__f.extend(message)
+
+            self.warningMessage = '\n'.join(self.__f)
 
             if self.__chainAssign is not None:
 
@@ -598,11 +601,10 @@ class CharmmMRParserListener(ParseTreeListener):
         if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
             del self.reasonsForReParsing['seq_id_remap']
 
-        if len(self.warningMessage) == 0:
+        if len(self.__f) == 0:
             self.warningMessage = None
         else:
-            self.warningMessage = self.warningMessage[0:-1]
-            self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
+            self.warningMessage = '\n'.join(set(self.__f))
 
     # Enter a parse tree produced by CharmmMRParser#comment.
     def enterComment(self, ctx: CharmmMRParser.CommentContext):  # pylint: disable=unused-argument
@@ -685,8 +687,8 @@ class CharmmMRParserListener(ParseTreeListener):
                 return
 
             if len(self.atomSelectionSet[0]) == 0 or len(self.atomSelectionSet[1]) == 0:
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             memberId = '.'
@@ -778,8 +780,8 @@ class CharmmMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             if self.__createSfDict:
@@ -920,13 +922,13 @@ class CharmmMRParserListener(ParseTreeListener):
                 if self.squareExponent in self.evaluate:
                     self.squareExponent = self.evaluate[self.squareExponent]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.squareExponent!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.squareExponent!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.squareExponent = 1.0
             if self.squareExponent is None or self.squareExponent <= 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    "The exponent value of square-well or soft-square function "\
-                    f"'NOE {str(ctx.SExp())} {self.squareExponent} END' must be a positive value.\n"
+                self.__f.append("[Invalid data] "
+                                "The exponent value of square-well or soft-square function "
+                                f"'NOE {str(ctx.SExp())} {self.squareExponent} END' must be a positive value.")
 
         elif ctx.RSwi():
             self.rSwitch = self.getNumber_s(ctx.number_s(0))
@@ -934,13 +936,13 @@ class CharmmMRParserListener(ParseTreeListener):
                 if self.rSwitch in self.evaluate:
                     self.rSwitch = self.evaluate[self.rSwitch]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.rSwitch!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.rSwitch!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.rSwitch = 1.0
             if self.rSwitch is None or self.rSwitch < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    "The smoothing parameter of soft-square function "\
-                    f"'NOE {str(ctx.RSwi())} {self.rSwitch} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                "The smoothing parameter of soft-square function "
+                                f"'NOE {str(ctx.RSwi())} {self.rSwitch} END' must not be a negative value.")
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s(0))
@@ -948,15 +950,15 @@ class CharmmMRParserListener(ParseTreeListener):
                 if self.scale in self.evaluate:
                     self.scale = self.evaluate[self.scale]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.scale!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.scale!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.scale = 1.0
             if self.scale is None or self.scale == 0.0:
-                self.warningMessage += "[Range value warning] "\
-                    f"The scale value 'NOE {str(ctx.Scale())} {self.scale} END' should be a positive value.\n"
+                self.__f.append("[Range value warning] "
+                                f"The scale value 'NOE {str(ctx.Scale())} {self.scale} END' should be a positive value.")
             elif self.scale < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The scale value 'NOE {str(ctx.Scale())} {self.scale} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                f"The scale value 'NOE {str(ctx.Scale())} {self.scale} END' must not be a negative value.")
 
         elif ctx.KMin():
             self.kMin = self.getNumber_s(ctx.number_s(0))
@@ -964,13 +966,13 @@ class CharmmMRParserListener(ParseTreeListener):
                 if self.kMin in self.evaluate:
                     self.kMin = self.evaluate[self.kMin]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.kMin!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.kMin!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.kMin = 0.0
             if self.kMin is None or self.kMin < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    "The kinetic parameter of soft-square function "\
-                    f"'NOE {str(ctx.KMin())} {self.kMin} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                "The kinetic parameter of soft-square function "
+                                f"'NOE {str(ctx.KMin())} {self.kMin} END' must not be a negative value.")
 
         elif ctx.KMax():
             self.kMax = self.getNumber_s(ctx.number_s(0))
@@ -978,13 +980,13 @@ class CharmmMRParserListener(ParseTreeListener):
                 if self.kMax in self.evaluate:
                     self.kMax = self.evaluate[self.kMax]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.kMax!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.kMax!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.kMax = 0.0
             if self.kMax is None or self.kMax < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    "The kinetic parameter of soft-square function "\
-                    f"'NOE {str(ctx.KMax())} {self.kMax} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                "The kinetic parameter of soft-square function "
+                                f"'NOE {str(ctx.KMax())} {self.kMax} END' must not be a negative value.")
 
         elif ctx.RMin():
             self.rMin = self.getNumber_s(ctx.number_s(0))
@@ -992,13 +994,13 @@ class CharmmMRParserListener(ParseTreeListener):
                 if self.rMin in self.evaluate:
                     self.rMin = self.evaluate[self.rMin]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.rMin!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.rMin!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.rMin = 0.0
             if self.rMin is None or self.rMin < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    "The lower limit of distance restraint "\
-                    f"'NOE {str(ctx.RMin())} {self.rMin} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                "The lower limit of distance restraint "
+                                f"'NOE {str(ctx.RMin())} {self.rMin} END' must not be a negative value.")
 
         elif ctx.RMax():
             self.rMax = self.getNumber_s(ctx.number_s(0))
@@ -1006,13 +1008,13 @@ class CharmmMRParserListener(ParseTreeListener):
                 if self.rMax in self.evaluate:
                     self.rMax = self.evaluate[self.rMax]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.rMax!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.rMax!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.rMax = None
             if self.rMax is not None and self.rMax < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    "The upper limit of distance restraint "\
-                    f"'NOE {str(ctx.RMax())} {self.rMax} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                "The upper limit of distance restraint "
+                                f"'NOE {str(ctx.RMax())} {self.rMax} END' must not be a negative value.")
 
         elif ctx.FMax():
             self.fMax = self.getNumber_s(ctx.number_s(0))
@@ -1020,13 +1022,13 @@ class CharmmMRParserListener(ParseTreeListener):
                 if self.fMax in self.evaluate:
                     self.fMax = self.evaluate[self.fMax]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.fMax!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.fMax!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.fMax = None
             if self.fMax is not None and self.fMax < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    "The kinetic parameter of smoothing function "\
-                    f"'NOE {str(ctx.FMax())} {self.fMax} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                "The kinetic parameter of smoothing function "
+                                f"'NOE {str(ctx.FMax())} {self.fMax} END' must not be a negative value.")
 
         elif ctx.RExp():
             self.rExp = self.getNumber_s(ctx.number_s(0))
@@ -1034,8 +1036,8 @@ class CharmmMRParserListener(ParseTreeListener):
                 if self.rExp in self.evaluate:
                     self.rExp = self.evaluate[self.rExp]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.rExp!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.rExp!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.rExp = -1.0 / 6.0
             if abs(self.rExp + 1.0 / 6.0) < 0.001 or abs(self.rExp - 6.0) < 0.001:
                 self.noeAverage = 'r-6'
@@ -1066,7 +1068,7 @@ class CharmmMRParserListener(ParseTreeListener):
         self.distRestraints += 1
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#noe_assign.
     def exitNoe_assign(self, ctx: CharmmMRParser.Noe_assignContext):  # pylint: disable=unused-argument
@@ -1086,137 +1088,136 @@ class CharmmMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 if target_value <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The target value='{target_value}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     target_value = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if DIST_ERROR_MIN <= lower_limit < DIST_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.3f}"
             else:
                 if lower_limit <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     lower_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX or (upper_limit == 0.0 and self.__allowZeroUpperLimit):
                 dstFunc['upper_limit'] = f"{upper_limit:.3f}"
             else:
                 if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if DIST_ERROR_MIN <= lower_linear_limit < DIST_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
             else:
                 if lower_linear_limit <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     lower_linear_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if DIST_ERROR_MIN < upper_linear_limit <= DIST_ERROR_MAX or (upper_linear_limit == 0.0 and self.__allowZeroUpperLimit):
                 dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
             else:
                 if (upper_linear_limit <= DIST_ERROR_MIN or upper_linear_limit > DIST_ERROR_MAX) and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The upper linear limit value='{upper_linear_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_linear_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'. "\
-                        "It indicates that a negative value was unexpectedly set: "\
-                        f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'. "
+                                    "It indicates that a negative value was unexpectedly set: "
+                                    f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the target value '{target_value}'. "\
-                        "It indicates that a negative value was unexpectedly set: "\
-                        f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the target value '{target_value}'. "
+                                    "It indicates that a negative value was unexpectedly set: "
+                                    f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be greater than the target value '{target_value}'. "\
-                        "It indicates that a negative value was unexpectedly set: "\
-                        f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.3f}' must be greater than the target value '{target_value}'. "
+                                    "It indicates that a negative value was unexpectedly set: "
+                                    f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.3f}' must be greater than the target value '{target_value}'. "\
-                        "It indicates that a negative value was unexpectedly set: "\
-                        f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper linear limit value='{upper_linear_limit:.3f}' must be greater than the target value '{target_value}'. "
+                                    "It indicates that a negative value was unexpectedly set: "
+                                    f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
         else:
 
             if lower_limit is not None and upper_limit is not None:
                 if lower_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
-
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.")
             if lower_linear_limit is not None and upper_limit is not None:
                 if lower_linear_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.")
 
             if lower_limit is not None and upper_linear_limit is not None:
                 if lower_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.")
 
             if lower_linear_limit is not None and upper_linear_limit is not None:
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.")
 
             if lower_limit is not None and lower_linear_limit is not None:
                 if lower_linear_limit > lower_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.")
 
             if upper_limit is not None and upper_linear_limit is not None:
                 if upper_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.")
 
         if not validRange:
             return None
@@ -1225,36 +1226,36 @@ class CharmmMRParserListener(ParseTreeListener):
             if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if DIST_RANGE_MIN <= lower_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if DIST_RANGE_MIN <= upper_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -1271,7 +1272,7 @@ class CharmmMRParserListener(ParseTreeListener):
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#pnoe_assign.
     def exitPnoe_assign(self, ctx: CharmmMRParser.Pnoe_assignContext):  # pylint: disable=unused-argument
@@ -1300,7 +1301,7 @@ class CharmmMRParserListener(ParseTreeListener):
         self.dihedRestraints += 1
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#dihedral_assign.
     def exitDihedral_assign(self, ctx: CharmmMRParser.Dihedral_assignContext):  # pylint: disable=unused-argument
@@ -1308,9 +1309,9 @@ class CharmmMRParserListener(ParseTreeListener):
             pass
 
         elif ctx.ByNumber():
-            self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                "The 'bynumber' clause has no effect "\
-                "because the internal atom number is not included in the coordinate file.\n"
+            self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                            "The 'bynumber' clause has no effect "
+                            "because the internal atom number is not included in the coordinate file.")
 
         elif ctx.Simple_name(0) and ctx.Integer(0):
             if ctx.Simple_name(4):
@@ -1347,9 +1348,9 @@ class CharmmMRParserListener(ParseTreeListener):
             elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
                 shift = -(numpy.nanmin(_array) // 360) * 360
             if shift is not None:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    "The target/limit values for an angle restraint have been circularly shifted "\
-                    f"to fit within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                "The target/limit values for an angle restraint have been circularly shifted "
+                                f"to fit within range {ANGLE_RESTRAINT_ERROR}.")
                 if target_value is not None:
                     target_value += shift
                 if lower_limit is not None:
@@ -1370,52 +1371,52 @@ class CharmmMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if ANGLE_ERROR_MIN <= lower_limit < ANGLE_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.3f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if ANGLE_ERROR_MIN < upper_limit <= ANGLE_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit:.3f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if ANGLE_ERROR_MIN <= lower_linear_limit < ANGLE_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if ANGLE_ERROR_MIN < upper_linear_limit <= ANGLE_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_limit is not None and lower_linear_limit is not None:
             if lower_linear_limit > lower_limit:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.")
 
         if upper_limit is not None and upper_linear_limit is not None:
             if upper_limit > upper_linear_limit:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.")
 
         if not validRange:
             return None
@@ -1424,36 +1425,36 @@ class CharmmMRParserListener(ParseTreeListener):
             if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if ANGLE_RANGE_MIN <= lower_linear_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if ANGLE_RANGE_MIN <= upper_linear_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -1477,9 +1478,9 @@ class CharmmMRParserListener(ParseTreeListener):
                     continue
                 if atom1['seq_id'] != atom2['seq_id']:
                     continue
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "\
-                    f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.")
                 return False
 
         return True
@@ -1489,7 +1490,7 @@ class CharmmMRParserListener(ParseTreeListener):
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#harmonic_statement.
     def exitHarmonic_statement(self, ctx: CharmmMRParser.Harmonic_statementContext):  # pylint: disable=unused-argument
@@ -1532,7 +1533,7 @@ class CharmmMRParserListener(ParseTreeListener):
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#ic_statement.
     def exitIc_statement(self, ctx: CharmmMRParser.Ic_statementContext):  # pylint: disable=unused-argument
@@ -1551,7 +1552,7 @@ class CharmmMRParserListener(ParseTreeListener):
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#fix_atom_statement.
     def exitFix_atom_statement(self, ctx: CharmmMRParser.Fix_atom_statementContext):  # pylint: disable=unused-argument
@@ -1562,7 +1563,7 @@ class CharmmMRParserListener(ParseTreeListener):
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#center_of_mass_statement.
     def exitCenter_of_mass_statement(self, ctx: CharmmMRParser.Center_of_mass_statementContext):  # pylint: disable=unused-argument
@@ -1573,7 +1574,7 @@ class CharmmMRParserListener(ParseTreeListener):
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#fix_bond_or_angle_statement.
     def exitFix_bond_or_angle_statement(self, ctx: CharmmMRParser.Fix_bond_or_angle_statementContext):  # pylint: disable=unused-argument
@@ -1600,7 +1601,7 @@ class CharmmMRParserListener(ParseTreeListener):
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#restrained_distance_statement.
     def exitRestrained_distance_statement(self, ctx: CharmmMRParser.Restrained_distance_statementContext):  # pylint: disable=unused-argument
@@ -1611,7 +1612,7 @@ class CharmmMRParserListener(ParseTreeListener):
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#external_force_statement.
     def exitExternal_force_statement(self, ctx: CharmmMRParser.External_force_statementContext):  # pylint: disable=unused-argument
@@ -1622,7 +1623,7 @@ class CharmmMRParserListener(ParseTreeListener):
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#rmsd_statement.
     def exitRmsd_statement(self, ctx: CharmmMRParser.Rmsd_statementContext):  # pylint: disable=unused-argument
@@ -1657,7 +1658,7 @@ class CharmmMRParserListener(ParseTreeListener):
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#gyration_statement.
     def exitGyration_statement(self, ctx: CharmmMRParser.Gyration_statementContext):  # pylint: disable=unused-argument
@@ -1668,7 +1669,7 @@ class CharmmMRParserListener(ParseTreeListener):
         self.geoRestraints += 1
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by CharmmMRParser#distance_matrix_statement.
     def exitDistance_matrix_statement(self, ctx: CharmmMRParser.Distance_matrix_statementContext):  # pylint: disable=unused-argument
@@ -2028,9 +2029,9 @@ class CharmmMRParserListener(ParseTreeListener):
                 if 'seq_id' in _factor:
                     del _factor['seq_id']
 
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    "The 'bynumber' clause has no effect "\
-                    "because the internal atom number is not included in the coordinate file.\n"
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                "The 'bynumber' clause has no effect "
+                                "because the internal atom number is not included in the coordinate file.")
 
                 return _factor
 
@@ -2084,7 +2085,7 @@ class CharmmMRParserListener(ParseTreeListener):
         if key in self.__cachedDictForFactor:
             return copy.deepcopy(self.__cachedDictForFactor[key])
 
-        len_warn_msg = len(self.warningMessage)
+        len_warn_msg = len(self.__f)
 
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
             if self.__largeModel:
@@ -2584,8 +2585,9 @@ class CharmmMRParserListener(ParseTreeListener):
 
         atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
+        valid = len(self.__f) == len_warn_msg
+
         if 'alt_chain_id' in _factor:
-            valid = len(self.warningMessage) == len_warn_msg
             for _atom in atomSelection:
                 self.updateSegmentIdDict(_factor, _atom['chain_id'], valid)
 
@@ -2606,11 +2608,11 @@ class CharmmMRParserListener(ParseTreeListener):
                 if self.__cur_subtype != 'plane':
                     if cifCheck:
                         if self.__cur_union_expr:
-                            self.__warningInAtomSelection += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                                f"The {clauseName} has no effect for a factor {__factor}.\n"
+                            self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                            f"The {clauseName} has no effect for a factor {__factor}.")
                         else:
-                            self.warningMessage += f"[{error_type}] {self.__getCurrentRestraint()}"\
-                                f"The {clauseName} has no effect for a factor {__factor}.\n"
+                            self.__f.append(f"[{error_type}] {self.__getCurrentRestraint()}"
+                                            f"The {clauseName} has no effect for a factor {__factor}.")
                             self.__preferAuthSeq = not self.__preferAuthSeq
                             self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                             self.__setLocalSeqScheme()
@@ -2620,14 +2622,14 @@ class CharmmMRParserListener(ParseTreeListener):
                             #         self.reasonsForReParsing['label_seq_scheme'] = True
                             # """
                     else:
-                        self.__warningInAtomSelection += f"[{error_type}] {self.__getCurrentRestraint()}"\
-                            f"The {clauseName} has no effect for a factor {__factor}. "\
-                            "Please update the sequence in the Macromolecules page.\n"
+                        self.__g.append(f"[{error_type}] {self.__getCurrentRestraint()}"
+                                        f"The {clauseName} has no effect for a factor {__factor}. "
+                                        "Please update the sequence in the Macromolecules page.")
                 else:
                     hint = f" Please verify that the planality restraints match with the residue {_factor['comp_id'][0]!r}"\
                         if 'comp_id' in _factor and len(_factor['comp_id']) == 1 else ''
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        f"The {clauseName} has no effect for a factor {__factor}.{hint}\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    f"The {clauseName} has no effect for a factor {__factor}.{hint}")
 
         if 'chain_id' in _factor:
             del _factor['chain_id']
@@ -2644,7 +2646,7 @@ class CharmmMRParserListener(ParseTreeListener):
         if 'alt_atom_id' in _factor:
             del _factor['alt_atom_id']
 
-        if ambigAtomSelect or len(self.warningMessage) == len_warn_msg:
+        if ambigAtomSelect or valid:
             if key not in self.__cachedDictForFactor:
                 self.__cachedDictForFactor[key] = copy.deepcopy(_factor)
 
@@ -3021,9 +3023,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                                             checked = True
                                                             if len(origAtomId) == 1:
                                                                 _atomSelection[-1]['hydrogen_not_instantiated'] = True
-                                                                self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "\
-                                                                    "Please re-upload the model file.\n"
+                                                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "
+                                                                                "Please re-upload the model file.")
                                                 if not checked and not self.__cur_union_expr:
                                                     if chainId in LARGE_ASYM_ID:
                                                         if isPolySeq and not self.__preferAuthSeq\
@@ -3036,13 +3038,14 @@ class CharmmMRParserListener(ParseTreeListener):
                                                             if offset != 0:
                                                                 self.reasonsForReParsing['label_seq_scheme'] = True
                                                         if seqId < 1 and len(self.__polySeq) == 1:
-                                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "\
-                                                                f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
-                                                                "Please update the sequence in the Macromolecules page.\n"
+                                                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "
+                                                                            f"The residue number '{seqId}' is not present "
+                                                                            f"in polymer sequence of chain {chainId} of the coordinates. "
+                                                                            "Please update the sequence in the Macromolecules page.")
                                                         else:
-                                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                                                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
                                         if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == ps['auth_seq_id'][0]:
                                             if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in atomSiteAtomId)
@@ -3065,13 +3068,13 @@ class CharmmMRParserListener(ParseTreeListener):
                                            and not self.__cur_union_expr:
                                             if chainId in LARGE_ASYM_ID:
                                                 if seqId < 1 and len(self.__polySeq) == 1:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "\
-                                                        f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
-                                                        "Please update the sequence in the Macromolecules page.\n"
+                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "
+                                                                    f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                                    "Please update the sequence in the Macromolecules page.")
                                                 elif seqSpecified:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
 
         return foundCompId
 
@@ -3371,8 +3374,8 @@ class CharmmMRParserListener(ParseTreeListener):
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            f"The {clauseName!r} clause has no effect.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        f"The {clauseName!r} clause has no effect.")
 
                     else:
                         if 'chain_id' in self.factor:
@@ -3400,7 +3403,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
                 except Exception as e:
                     if self.__verbose:
-                        self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+                        self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
             elif ctx.Around():
                 clauseName = 'around'
@@ -3469,15 +3472,15 @@ class CharmmMRParserListener(ParseTreeListener):
 
                         except Exception as e:
                             if self.__verbose:
-                                self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+                                self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
                     if len(self.factor['atom_selection']) > 0:
                         self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
                         if len(self.factor['atom_selection']) == 0:
                             self.factor['atom_id'] = [None]
-                            self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                                f"The {clauseName!r} clause has no effect.\n"
+                            self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                            f"The {clauseName!r} clause has no effect.")
 
             elif ctx.Atom():
                 if self.__sel_expr_debug:
@@ -3515,9 +3518,9 @@ class CharmmMRParserListener(ParseTreeListener):
                         self.factor['auth_chain_id'] = chainId
                     elif self.__reasons is not None:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Couldn't specify segment name "\
-                            f"'{chainId}' the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Couldn't specify segment name "
+                                        f"'{chainId}' the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError
                     else:
                         if 'segment_id_mismatch' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['segment_id_mismatch'] = {}
@@ -3656,9 +3659,9 @@ class CharmmMRParserListener(ParseTreeListener):
                         or attr_prop.startswith('wcom')\
                         or attr_prop.startswith('wmai'):  # XCOMP, YCOMP, ZCOMP, WCOMP, WMAI
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        f"The attribute property {_attr_prop!r} "\
-                        "requires a comparison coordinate set.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    f"The attribute property {_attr_prop!r} "
+                                    "requires a comparison coordinate set.")
                     validProp = False
 
                 elif attr_prop.startswith('char'):  # CAHRGE
@@ -3695,16 +3698,16 @@ class CharmmMRParserListener(ParseTreeListener):
 
                 elif attr_prop in ('dx', 'dy', 'dz'):
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        f"The attribute property {_attr_prop!r} "\
-                        "related to atomic force of each atom is not possessed in the static coordinate file.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    f"The attribute property {_attr_prop!r} "
+                                    "related to atomic force of each atom is not possessed in the static coordinate file.")
                     validProp = False
 
                 elif attr_prop.startswith('fbet'):  # FBETA
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        f"The attribute property {_attr_prop!r} "\
-                        "related to the Langevin dynamics (nonzero friction coefficient) is not possessed in the static coordinate file.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    f"The attribute property {_attr_prop!r} "
+                                    "related to the Langevin dynamics (nonzero friction coefficient) is not possessed in the static coordinate file.")
                     validProp = False
 
                 elif attr_prop == 'mass':
@@ -3740,16 +3743,16 @@ class CharmmMRParserListener(ParseTreeListener):
 
                 elif attr_prop in ('xref', 'yref', 'zref'):
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        f"The attribute property {_attr_prop!r} "\
-                        "requires a reference coordinate set.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    f"The attribute property {_attr_prop!r} "
+                                    "requires a reference coordinate set.")
                     validProp = False
 
                 elif attr_prop in ('vx', 'vy', 'vz'):
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        f"The attribute property {_attr_prop!r} "\
-                        "related to current velocities of each atom is not possessed in the static coordinate file.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    f"The attribute property {_attr_prop!r} "
+                                    "related to current velocities of each atom is not possessed in the static coordinate file.")
                     validProp = False
 
                 elif attr_prop in ('x', 'y', 'z'):
@@ -3789,9 +3792,9 @@ class CharmmMRParserListener(ParseTreeListener):
 
                 elif attr_prop.startswith('sca') or attr_prop in ('zero', 'one'):
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        f"The '{_attr_prop}' clause has no effect "\
-                        "because the internal vector statement is not set.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    f"The '{_attr_prop}' clause has no effect "
+                                    "because the internal vector statement is not set.")
                     validProp = False
 
                 elif attr_prop.startswith('econ') or attr_prop.startswith('epco') or attr_prop.startswith('cons')\
@@ -3800,16 +3803,16 @@ class CharmmMRParserListener(ParseTreeListener):
                         or attr_prop.startswith('rsca') or attr_prop.startswith('fdco')\
                         or attr_prop in ('move', 'type', 'fdim', 'fdep'):
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        f"The attribute property {_attr_prop!r} "\
-                        "related to software specific parameters of each atom is not possessed in the static coordinate file.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    f"The attribute property {_attr_prop!r} "
+                                    "related to software specific parameters of each atom is not possessed in the static coordinate file.")
                     validProp = False
 
                 if validProp and len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]
                     _absolute = ' abs' if absolute else ''
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        f"The 'attribute' clause ('{_attr_prop}{_absolute} {opCode} {attr_value}') has no effect.\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    f"The 'attribute' clause ('{_attr_prop}{_absolute} {opCode} {attr_value}') has no effect.")
 
             elif ctx.Bonded():
                 if self.__sel_expr_debug:
@@ -3997,13 +4000,13 @@ class CharmmMRParserListener(ParseTreeListener):
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            "The 'bondedto' clause has no effect.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        "The 'bondedto' clause has no effect.")
 
                 else:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        "The 'bondedto' clause has no effect because no atom is selected.\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    "The 'bondedto' clause has no effect because no atom is selected.")
 
             elif ctx.ByGroup():
                 if self.__sel_expr_debug:
@@ -4097,15 +4100,15 @@ class CharmmMRParserListener(ParseTreeListener):
 
                     if len(atomSelection) <= len(self.factor['atom_selection']):
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            "The 'bygroup' clause has no effect.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        "The 'bygroup' clause has no effect.")
 
                     self.factor['atom_selection'] = atomSelection
 
                 else:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        "The 'bygroup' clause has no effect because no atom is selected.\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    "The 'bygroup' clause has no effect because no atom is selected.")
 
             elif ctx.ByRes():
                 if self.__sel_expr_debug:
@@ -4164,13 +4167,13 @@ class CharmmMRParserListener(ParseTreeListener):
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            "The 'byres' clause has no effect.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        "The 'byres' clause has no effect.")
 
                 else:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        "The 'byres' clause has no effect because no atom is selected.\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    "The 'byres' clause has no effect because no atom is selected.")
 
             elif ctx.Chemical():
                 if self.__sel_expr_debug:
@@ -4193,8 +4196,8 @@ class CharmmMRParserListener(ParseTreeListener):
                         else:
                             self.factor['type_symbol'] = [val]
                     else:
-                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                            f"The symbol {symbol_name!r} is not defined.\n"
+                        self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                        f"The symbol {symbol_name!r} is not defined.")
 
                 self.consumeFactor_expressions("'chemical' clause", False)
 
@@ -4244,13 +4247,13 @@ class CharmmMRParserListener(ParseTreeListener):
                         self.factor['atom_selection'] = _refAtomSelection
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            "The 'not' clause has no effect.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        "The 'not' clause has no effect.")
 
                 elif 'atom_selection' not in self.factor:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        "The 'not' clause has no effect.\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    "The 'not' clause has no effect.")
 
                 else:
 
@@ -4267,15 +4270,15 @@ class CharmmMRParserListener(ParseTreeListener):
 
                     except Exception as e:
                         if self.__verbose:
-                            self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+                            self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
                     _refAtomSelection = [atom for atom in self.factor['atom_selection'] if atom in _atomSelection]
                     self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            "The 'not' clause has no effect.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        "The 'not' clause has no effect.")
 
             elif ctx.Point():
                 if self.__sel_expr_debug:
@@ -4318,62 +4321,62 @@ class CharmmMRParserListener(ParseTreeListener):
 
                 except Exception as e:
                     if self.__verbose:
-                        self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+                        self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
                 self.factor['atom_selection'] = atomSelection
 
                 if len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        "The 'cut' clause has no effect.\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    "The 'cut' clause has no effect.")
 
             elif ctx.Lone():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> lone")
                 self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    "The 'lone' clause has no effect "\
-                    "because the internal atom selection is fragile in the restraint file.\n"
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                "The 'lone' clause has no effect "
+                                "because the internal atom selection is fragile in the restraint file.")
 
             elif ctx.Previous():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> previous")
                 self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    "The 'previous' clause has no effect "\
-                    "because the internal atom selection is fragile in the restraint file.\n"
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                "The 'previous' clause has no effect "
+                                "because the internal atom selection is fragile in the restraint file.")
 
             elif ctx.User():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> user")
                 self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    "The 'user' clause has no effect "\
-                    "because the internal atom selection is fragile in the restraint file.\n"
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                "The 'user' clause has no effect "
+                                "because the internal atom selection is fragile in the restraint file.")
 
             elif ctx.Recall():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> recall")
                 self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    "The 'recall' clause has no effect "\
-                    "because the internal atom selection is fragile in the restraint file.\n"
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                "The 'recall' clause has no effect "
+                                "because the internal atom selection is fragile in the restraint file.")
 
             elif ctx.IGroup():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> igroup")
                 self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    "The 'igroup' clause has no effect "\
-                    "because the internal atom selection is fragile in the restraint file.\n"
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                "The 'igroup' clause has no effect "
+                                "because the internal atom selection is fragile in the restraint file.")
 
             elif ctx.Subset():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> subset")
                 self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    "The 'subset' clause has no effect "\
-                    "because the internal atom selection is fragile in the restraint file.\n"
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                "The 'subset' clause has no effect "
+                                "because the internal atom selection is fragile in the restraint file.")
 
             elif ctx.ByNumber():
                 if self.__sel_expr_debug:
@@ -4397,8 +4400,8 @@ class CharmmMRParserListener(ParseTreeListener):
                         else:
                             self.factor['atom_num'] = [val if isinstance(val, int) else int(val)]
                     else:
-                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                            f"The symbol {symbol_name!r} is not defined.\n"
+                        self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                        f"The symbol {symbol_name!r} is not defined.")
 
             elif ctx.IRes():
                 if self.__sel_expr_debug:
@@ -4422,8 +4425,8 @@ class CharmmMRParserListener(ParseTreeListener):
                         else:
                             self.factor['seq_id'] = [val if isinstance(val, int) else int(val)]
                     else:
-                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                            f"The symbol {symbol_name!r} is not defined.\n"
+                        self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                        f"The symbol {symbol_name!r} is not defined.")
 
             elif ctx.Residue():
                 if self.__sel_expr_debug:
@@ -4453,8 +4456,8 @@ class CharmmMRParserListener(ParseTreeListener):
                         else:
                             self.factor['seq_id'] = [val if isinstance(val, int) else int(val)]
                     else:
-                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                            f"The symbol {symbol_name!r} is not defined.\n"
+                        self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                        f"The symbol {symbol_name!r} is not defined.")
 
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0:
@@ -4462,8 +4465,8 @@ class CharmmMRParserListener(ParseTreeListener):
                         if 'atom_selection' in __factor:
                             del __factor['atom_selection']
                         del _factor['atom_selection']
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            f"The 'residue' clause has no effect for a conjunction of factor {__factor} and {_factor}.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        f"The 'residue' clause has no effect for a conjunction of factor {__factor} and {_factor}.")
 
             elif ctx.Resname():
                 if self.__sel_expr_debug:
@@ -4493,8 +4496,8 @@ class CharmmMRParserListener(ParseTreeListener):
                         else:
                             self.factor['comp_id'] = [val]
                     else:
-                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                            f"The symbol {symbol_name!r} is not defined.\n"
+                        self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                        f"The symbol {symbol_name!r} is not defined.")
 
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0:
@@ -4502,8 +4505,8 @@ class CharmmMRParserListener(ParseTreeListener):
                         if 'atom_selection' in __factor:
                             del __factor['atom_selection']
                         del _factor['atom_selection']
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            f"The 'resname' clause has no effect for a conjunction of factor {__factor} and {_factor}.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        f"The 'resname' clause has no effect for a conjunction of factor {__factor} and {_factor}.")
 
             elif ctx.ISeg():
                 if self.__sel_expr_debug:
@@ -4527,8 +4530,8 @@ class CharmmMRParserListener(ParseTreeListener):
                         else:
                             self.factor['chain_id'] = [str(val) if isinstance(val, int) else int(val)]
                     else:
-                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                            f"The symbol {symbol_name!r} is not defined.\n"
+                        self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                        f"The symbol {symbol_name!r} is not defined.")
 
             elif ctx.SegIdentifier():
                 if self.__sel_expr_debug:
@@ -4569,8 +4572,8 @@ class CharmmMRParserListener(ParseTreeListener):
                             self.factor['auth_chain_id'] = [begChainId, endChainId]
                         else:
                             self.factor['atom_id'] = [None]
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"Couldn't specify segment name {begChainId:!r}:{endChainId:!r} in the coordinates.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"Couldn't specify segment name {begChainId:!r}:{endChainId:!r} in the coordinates.")
 
                 else:
                     if ctx.Simple_name(0) or ctx.Double_quote_string(0):
@@ -4606,17 +4609,17 @@ class CharmmMRParserListener(ParseTreeListener):
                             else:
                                 self.factor['chain_id'] = [val]
                         else:
-                            self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                                f"The symbol {symbol_name!r} is not defined.\n"
+                            self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                            f"The symbol {symbol_name!r} is not defined.")
                     if len(self.factor['chain_id']) == 0:
                         if len(self.__polySeq) == 1:
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']
                             self.factor['auth_chain_id'] = chainId
                         elif self.__reasons is not None:
                             self.factor['atom_id'] = [None]
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Couldn't specify segment name "\
-                                f"'{chainId}' in the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            "Couldn't specify segment name "
+                                            f"'{chainId}' in the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError
                         else:
                             if 'segment_id_mismatch' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['segment_id_mismatch'] = {}
@@ -4632,8 +4635,8 @@ class CharmmMRParserListener(ParseTreeListener):
                         if 'atom_selection' in __factor:
                             del __factor['atom_selection']
                         del _factor['atom_selection']
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            f"The 'segidentifier' clause has no effect for a conjunction of factor {__factor} and {_factor}.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        f"The 'segidentifier' clause has no effect for a conjunction of factor {__factor} and {_factor}.")
 
             if self.depth > 0 and self.__cur_union_expr:
                 self.unionFactor = self.factor
@@ -4660,8 +4663,8 @@ class CharmmMRParserListener(ParseTreeListener):
             if symbol_name in self.evaluate:
                 self.numberSelection.append(float(self.evaluate[symbol_name]))
             else:
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    f"The symbol {symbol_name!r} is not defined.\n"
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                f"The symbol {symbol_name!r} is not defined.")
                 self.numberSelection.append(None)
 
         else:

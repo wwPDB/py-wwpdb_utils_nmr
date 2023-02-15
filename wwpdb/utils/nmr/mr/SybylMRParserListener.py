@@ -8,8 +8,8 @@
     @author: Masashi Yokochi
 """
 import sys
-import itertools
 import re
+import itertools
 import collections
 
 from antlr4 import ParseTreeListener
@@ -198,7 +198,8 @@ class SybylMRParserListener(ParseTreeListener):
     # collection of number selection
     numberSelection = []
 
-    warningMessage = ''
+    __f = None
+    warningMessage = None
 
     reasonsForReParsing = {}
 
@@ -311,6 +312,7 @@ class SybylMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by SybylMRParser#biosym_mr.
     def enterSybyl_mr(self, ctx: SybylMRParser.Sybyl_mrContext):  # pylint: disable=unused-argument
         self.__polySeqRst = []
+        self.__f = []
 
     # Exit a parse tree produced by SybylMRParser#biosym_mr.
     def exitSybyl_mr(self, ctx: SybylMRParser.Sybyl_mrContext):  # pylint: disable=unused-argument
@@ -323,7 +325,9 @@ class SybylMRParserListener(ParseTreeListener):
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
-                self.warningMessage += message
+                self.__f.extend(message)
+
+            self.warningMessage = '\n'.join(self.__f)
 
             if self.__chainAssign is not None:
 
@@ -465,11 +469,10 @@ class SybylMRParserListener(ParseTreeListener):
         if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
             del self.reasonsForReParsing['seq_id_remap']
 
-        if len(self.warningMessage) == 0:
+        if len(self.__f) == 0:
             self.warningMessage = None
         else:
-            self.warningMessage = self.warningMessage[0:-1]
-            self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
+            self.warningMessage = '\n'.join(set(self.__f))
 
     # Enter a parse tree produced by SybylMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: SybylMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
@@ -626,61 +629,61 @@ class SybylMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 if target_value <= DIST_ERROR_MIN and omit_dist_limit_outlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The target value='{target_value}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     target_value = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if DIST_ERROR_MIN <= lower_limit < DIST_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit}"
             else:
                 if lower_limit <= DIST_ERROR_MIN and omit_dist_limit_outlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     lower_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX or (upper_limit == 0.0 and self.__allowZeroUpperLimit):
                 dstFunc['upper_limit'] = f"{upper_limit}"
             else:
                 if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit}' must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit}' must be greater than the target value '{target_value}'.")
 
         else:
 
             if lower_limit is not None and upper_limit is not None:
                 if lower_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' must be less than the upper limit value '{upper_limit}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit}' must be less than the upper limit value '{upper_limit}'.")
 
         if not validRange:
             return None
@@ -689,22 +692,22 @@ class SybylMRParserListener(ParseTreeListener):
             if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -795,8 +798,8 @@ class SybylMRParserListener(ParseTreeListener):
                     chainAssign.add((chainId, seqId, cifCompId, True))
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
-                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
@@ -896,8 +899,8 @@ class SybylMRParserListener(ParseTreeListener):
                             chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
-                            #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
 
             if self.__hasNonPolySeq:
@@ -939,8 +942,8 @@ class SybylMRParserListener(ParseTreeListener):
                     chainAssign.add((chainId, _seqId, cifCompId, True))
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
-                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
 
         if len(chainAssign) == 0:
@@ -979,8 +982,8 @@ class SybylMRParserListener(ParseTreeListener):
                             self.__setLocalSeqScheme()
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
-                            #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
 
         if len(chainAssign) == 0:
@@ -988,13 +991,13 @@ class SybylMRParserListener(ParseTreeListener):
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequence(seqId, compId, 'H1')
             if seqId < 1 and len(self.__polySeq) == 1:
-                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "\
-                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "\
-                    "Please update the sequence in the Macromolecules page.\n"
+                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
+                                f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "
+                                "Please update the sequence in the Macromolecules page.")
             else:
-                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.\n"
+                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
 
         return list(chainAssign)
 
@@ -1090,8 +1093,8 @@ class SybylMRParserListener(ParseTreeListener):
                                 # self.__authSeqId = 'label_seq_id'
                                 self.__setLocalSeqScheme()
                                 continue
-                    self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
-                        f"Residue name {_compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.\n"
+                    self.__f.append(f"[Sequence mismatch] {self.__getCurrentRestraint()}"
+                                    f"Residue name {_compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
                     continue
 
             if compId != cifCompId and compId in monDict3 and not isPolySeq:
@@ -1103,12 +1106,12 @@ class SybylMRParserListener(ParseTreeListener):
                 if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
                     self.selectCoordAtoms(chainAssign, seqId, compId, atomId, allowAmbig, offset=1)
                     return
-                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
-                    f"{seqId}:{_compId}:{atomId} is invalid atom nomenclature.\n"
+                self.__f.append(f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"
+                                f"{seqId}:{_compId}:{atomId} is invalid atom nomenclature.")
                 continue
             if lenAtomId > 1 and not allowAmbig:
-                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                    f"Ambiguous atom selection '{seqId}:{_compId}:{atomId}' is not allowed as a angle restraint.\n"
+                self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
+                                f"Ambiguous atom selection '{seqId}:{_compId}:{atomId}' is not allowed as a angle restraint.")
                 continue
 
             for cifAtomId in _atomId:
@@ -1281,13 +1284,13 @@ class SybylMRParserListener(ParseTreeListener):
                         bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
                         if len(bondedTo) > 0:
                             if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                    f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
-                                    "Please re-upload the model file.\n"
+                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
+                                                "Please re-upload the model file.")
                                 return
                     if chainId in LARGE_ASYM_ID:
-                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                            f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
 
     def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)

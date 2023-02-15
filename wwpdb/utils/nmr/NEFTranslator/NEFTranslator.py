@@ -98,6 +98,7 @@ import os
 import ntpath
 import logging
 import re
+import io
 import csv
 import itertools
 import copy
@@ -471,15 +472,15 @@ def get_idx_msg(idx_tag_ids, tags, row):
 
     try:
 
-        msg = ''
+        f = []
 
         if len(idx_tag_ids) > 0:
             for _j in idx_tag_ids:
-                msg += tags[_j] + " " + str(row[tags[_j]]) + ", "
+                f.append(tags[_j] + " " + str(row[tags[_j]]))
 
-            msg = "[Check row of " + msg[:-2] + "] "
+            return f"[Check row of {', '.join(f)}] "
 
-        return msg
+        return ''
 
     except KeyError:
         return ''
@@ -1241,7 +1242,7 @@ class NEFTranslator:
         else:
             loops = [star_data]
 
-        warn = ''
+        f = []  # user warnings
 
         data = []  # data of all loops
 
@@ -1281,8 +1282,8 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        warn += "[Invalid data] Sequence must not be empty. "\
-                            f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                        f.append("[Invalid data] Sequence must not be empty. "
+                                 f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(seq_data) == 0:
                 continue
@@ -1295,11 +1296,11 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        warn += f"[Invalid data] {seq_id} must be an integer. "\
-                            f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                        f.append(f"[Invalid data] {seq_id} must be an integer. "
+                                 f"#_of_row {idx + 1}, data_of_row {r}.")
 
-            if len(warn) > 0:
-                raise UserWarning(warn)
+            if len(f) > 0:
+                raise UserWarning('\n'.join(f))
 
             try:
 
@@ -1422,7 +1423,7 @@ class NEFTranslator:
         else:
             loops = [star_data]
 
-        warn = ''
+        f = []  # user warnings
 
         def_chain_id = 'A' if self.__remediation_mode else '1'
 
@@ -1498,8 +1499,8 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        warn += "[Invalid data] Sequence must not be empty. "\
-                            f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                        f.append("[Invalid data] Sequence must not be empty. "
+                                 f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(seq_data) == 0:
                 continue
@@ -1512,15 +1513,15 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        warn += f"[Invalid data] {seq_id} must be an integer. "\
-                            f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                        f.append(f"[Invalid data] {seq_id} must be an integer. "
+                                 f"#_of_row {idx + 1}, data_of_row {r}.")
 
-            if len(warn) > 0:
+            if len(f) > 0:
                 if seq_id == 'Comp_index_ID' and 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags:
                     return self.get_star_seq(star_data, lp_category, 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_asym_ID',
                                              alt_seq_id, alt_seq_id_offset, alt_chain_id, allow_empty, allow_gap)
 
-                raise UserWarning(warn)
+                raise UserWarning('\n'.join(f))
 
             try:
 
@@ -1664,7 +1665,7 @@ class NEFTranslator:
         else:
             loops = [star_data]
 
-        warn = ''
+        f = []  # user warnings
 
         data = []  # data of all loops
 
@@ -1716,8 +1717,8 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        warn += "[Invalid data] Author sequence must not be empty. "\
-                            f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                        f.append("[Invalid data] Author sequence must not be empty. "
+                                 f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(seq_data) == 0:
                 continue
@@ -1730,11 +1731,11 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        warn += f"[Invalid data] {seq_id} must be an integer. "\
-                            f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                        f.append(f"[Invalid data] {seq_id} must be an integer. "
+                                 f"#_of_row {idx + 1}, data_of_row {r}.")
 
-            if len(warn) > 0:
-                raise UserWarning(warn)
+            if len(f) > 0:
+                raise UserWarning('\n'.join(f))
 
             try:
 
@@ -1847,7 +1848,7 @@ class NEFTranslator:
         else:
             loops = [star_data]
 
-        warn = ''
+        f = []  # user warnings
 
         data = []  # data of all loops
 
@@ -1885,11 +1886,11 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        warn += f"[Invalid data] {comp_id} and {atom_id} must not be empty. "\
-                            f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                        f.append(f"[Invalid data] {comp_id} and {atom_id} must not be empty. "
+                                 f"#_of_row {idx + 1}, data_of_row {r}.")
 
-            if len(warn) > 0:
-                raise UserWarning(warn)
+            if len(f) > 0:
+                raise UserWarning('\n'.join(f))
 
             comps = sorted(set(row[0].upper() for row in pair_data if row[0] not in emptyValue))
             sorted_comp_atom = sorted(set((row[0].upper(), row[1]) for row in pair_data),
@@ -1950,7 +1951,7 @@ class NEFTranslator:
         else:
             loops = [star_data]
 
-        warn = ''
+        f = []  # user warnings
 
         data = []  # data of all loops
 
@@ -1981,8 +1982,8 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        warn += f"[Invalid data] {atom_type}, {isotope_number}, and {atom_id} must not be empty. "\
-                            f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                        f.append(f"[Invalid data] {atom_type}, {isotope_number}, and {atom_id} must not be empty. "
+                                 f"#_of_row {idx + 1}, data_of_row {r}.")
 
             for idx, row in enumerate(a_type_data):
                 try:
@@ -1992,11 +1993,11 @@ class NEFTranslator:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
-                        warn += f"[Invalid data] {isotope_number} must be an integer. "\
-                            f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                        f.append(f"[Invalid data] {isotope_number} must be an integer. "
+                                 f"#_of_row {idx + 1}, data_of_row {r}.")
 
-            if len(warn) > 0:
-                raise UserWarning(warn)
+            if len(f) > 0:
+                raise UserWarning('\n'.join(f))
 
             try:
 
@@ -2050,7 +2051,7 @@ class NEFTranslator:
         else:
             loops = [star_data]
 
-        warn = ''
+        f = []  # user warnings
 
         data = []  # data of all loops
 
@@ -2088,16 +2089,16 @@ class NEFTranslator:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[idx][j]
-                            warn += f"[Invalid data] {ambig_code} must be one of {ALLOWED_AMBIGUITY_CODES}. "\
-                                f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                            f.append(f"[Invalid data] {ambig_code} must be one of {ALLOWED_AMBIGUITY_CODES}. "
+                                     f"#_of_row {idx + 1}, data_of_row {r}.")
 
                     if code not in ALLOWED_AMBIGUITY_CODES:
                         if idx < len_loop_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[idx][j]
-                            warn += f"[Invalid data] {ambig_code} must be one of {ALLOWED_AMBIGUITY_CODES}. "\
-                                f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                            f.append(f"[Invalid data] {ambig_code} must be one of {ALLOWED_AMBIGUITY_CODES}. "
+                                     f"#_of_row {idx + 1}, data_of_row {r}.")
 
                     if code >= 4:
                         if row[3] in emptyValue and idx < len_loop_data:
@@ -2105,8 +2106,8 @@ class NEFTranslator:
                                 r = {}
                                 for j, t in enumerate(loop.tags):
                                     r[t] = loop.data[idx][j]
-                                warn += f"[Invalid data] {ambig_set_id} must not be empty for {ambig_code} {code}. "\
-                                    f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                                f.append(f"[Invalid data] {ambig_set_id} must not be empty for {ambig_code} {code}. "
+                                         f"#_of_row {idx + 1}, data_of_row {r}.")
                         else:
                             try:
                                 int(row[3])
@@ -2115,8 +2116,8 @@ class NEFTranslator:
                                     r = {}
                                     for j, t in enumerate(loop.tags):
                                         r[t] = loop.data[idx][j]
-                                    warn += f"[Invalid data] {ambig_set_id} must be an integer. "\
-                                        f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                                    f.append(f"[Invalid data] {ambig_set_id} must be an integer. "
+                                             f"#_of_row {idx + 1}, data_of_row {r}.")
 
                 if row[3] not in emptyValue:
 
@@ -2125,11 +2126,11 @@ class NEFTranslator:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[idx][j]
-                            warn += f"[Invalid data] {ambig_set_id} must be empty for {ambig_code} {row[2]}. "\
-                                f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                            f.append(f"[Invalid data] {ambig_set_id} must be empty for {ambig_code} {row[2]}. "
+                                     f"#_of_row {idx + 1}, data_of_row {r}.")
 
-            if len(warn) > 0:
-                raise UserWarning(warn)
+            if len(f) > 0:
+                raise UserWarning('\n'.join(f))
 
             _ambig_data = [row for row in ambig_data
                            if not (row[0] in emptyValue or (isinstance(row[0], str) and badPattern.match(row[0])))
@@ -2181,7 +2182,7 @@ class NEFTranslator:
         else:
             loops = [star_data]
 
-        warn = ''
+        f = []  # user warnings
 
         data = []  # data of all loops
 
@@ -2205,8 +2206,8 @@ class NEFTranslator:
                     r = {}
                     for j, t in enumerate(loop.tags):
                         r[t] = loop.data[idx][j]
-                    warn += f"[Invalid data] {index_id} must not be empty. "\
-                        f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                    f.append(f"[Invalid data] {index_id} must not be empty. "
+                             f"#_of_row {idx + 1}, data_of_row {r}.")
                 else:
                     try:
                         int(i)
@@ -2215,11 +2216,11 @@ class NEFTranslator:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[idx][j]
-                            warn += f"[Invalid data] {index_id} must be an integer. "\
-                                f"#_of_row {idx + 1}, data_of_row {r}.\n"
+                            f.append(f"[Invalid data] {index_id} must be an integer. "
+                                     f"#_of_row {idx + 1}, data_of_row {r}.")
 
-            if len(warn) > 0:
-                raise UserWarning(warn)
+            if len(f) > 0:
+                raise UserWarning('\n'.join(f))
 
             try:
 
@@ -2263,369 +2264,239 @@ class NEFTranslator:
         else:
             loops = [star_data]
 
-        warn = ''
+        f = _f = []  # user warnings
 
-        data = []  # data of all loops
+        with io.StringIO() as idx_f, io.StringIO() as key_f, io.StringIO() as msg_f:
 
-        item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'positive-int-as-str', 'pointer-index',
-                      'float', 'positive-float', 'range-float', 'enum', 'enum-int')
+            data = []  # data of all loops
 
-        key_names = [k['name'] for k in key_items]
-        data_names = [d['name'] for d in data_items]
-        mand_data_names = [d['name'] for d in data_items if d['mandatory']]
-        _mand_data_names = [d['name'] for d in data_items if d['mandatory'] and 'default-from' in d]
+            item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'positive-int-as-str', 'pointer-index',
+                          'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
-        key_len = len(key_items)
+            key_names = [k['name'] for k in key_items]
+            data_names = [d['name'] for d in data_items]
+            mand_data_names = [d['name'] for d in data_items if d['mandatory']]
+            _mand_data_names = [d['name'] for d in data_items if d['mandatory'] and 'default-from' in d]
 
-        for k in key_items:
-            if k['type'] not in item_types:
-                raise TypeError(f"Type {k['type']} of data item {k['name']} must be one of {item_types}.")
+            key_len = len(key_items)
 
-        for d in data_items:
-            if d['type'] not in item_types:
-                raise TypeError(f"Type {d['type']} of data item {d['name']} must be one of {item_types}.")
-
-        if allowed_tags is not None:
-
-            if len(key_names) > 0 and (set(key_names) | set(allowed_tags)) != set(allowed_tags):
-                raise LookupError(f"Key items {((set(key_names) | set(allowed_tags)) - set(allowed_tags))} must not exists.")
-
-            if len(data_names) > 0 and (set(data_names) | set(allowed_tags)) != set(allowed_tags):
-                raise LookupError(f"Data items {((set(data_names) | set(allowed_tags)) - set(allowed_tags))} must not exists.")
+            for k in key_items:
+                if k['type'] not in item_types:
+                    raise TypeError(f"Type {k['type']} of data item {k['name']} must be one of {item_types}.")
 
             for d in data_items:
-                if 'group-mandatory' in d and d['group-mandatory']:
-                    group = d['group']
-                    if group['member-with'] is not None:
-                        for mw in group['member-with']:
-                            if mw not in allowed_tags:
-                                raise ValueError(f"Member data item {mw} of {d['name']} must exists in allowed tags.")
-                    if group['coexist-with'] is not None:
-                        for cw in group['coexist-with']:
-                            if cw not in allowed_tags:
-                                raise ValueError(f"Coexisting data item {cw} of {d['name']} must exists in allowed tags.")
+                if d['type'] not in item_types:
+                    raise TypeError(f"Type {d['type']} of data item {d['name']} must be one of {item_types}.")
 
-        for loop in loops:
-            tag_data = []
+            if allowed_tags is not None:
 
-            if len(key_names) > 0 and set(key_names) & set(loop.tags) != set(key_names):
-                missing_tags = list(set(key_names) - set(loop.tags))
-                for k in key_items:
-                    if k['name'] in missing_tags:
-                        if 'default-from' in k and k['default-from'] != 'self' and k['default-from'] in loop.tags:
-                            from_col = loop.tags.index(k['default-from'])
-                            for row in loop:
-                                ref = row[from_col]
-                                row.append(ref)
-                            loop.add_tag(k['name'])
-                        elif 'default' in k:
-                            for row in loop:
-                                row.append(k['default'])
-                            loop.add_tag(k['name'])
-                        elif 'auto-increment' in k and k['auto-increment']:
-                            for lv, row in enumerate(loop.data, start=1):
-                                row.append(lv)
-                            loop.add_tag(k['name'])
-                        else:
-                            raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+                if len(key_names) > 0 and (set(key_names) | set(allowed_tags)) != set(allowed_tags):
+                    raise LookupError(f"Key items {((set(key_names) | set(allowed_tags)) - set(allowed_tags))} must not exists.")
 
-            if len(mand_data_names) > 0 and set(mand_data_names) & set(loop.tags) != set(mand_data_names):
-                missing_tags = list(set(mand_data_names) - set(loop.tags))
-                for k in key_items:
-                    if k['name'] in missing_tags:
-                        if 'default-from' in k and k['default-from'] != 'self' and k['default-from'] in loop.tags:
-                            from_col = loop.tags.index(k['default-from'])
-                            for row in loop:
-                                ref = row[from_col]
-                                row.append(ref)
-                            loop.add_tag(k['name'])
-                        elif 'default' in k:
-                            for row in loop:
-                                row.append(k['default'])
-                            loop.add_tag(k['name'])
-                        elif 'auto-increment' in k and k['auto-increment']:
-                            for lv, row in enumerate(loop.data, start=1):
-                                row.append(lv)
-                            loop.add_tag(k['name'])
-                        else:
-                            raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+                if len(data_names) > 0 and (set(data_names) | set(allowed_tags)) != set(allowed_tags):
+                    raise LookupError(f"Data items {((set(data_names) | set(allowed_tags)) - set(allowed_tags))} must not exists.")
 
-            if len(_mand_data_names) > 0 and set(_mand_data_names) & set(loop.tags) != set(_mand_data_names):
-                missing_tags = list(set(_mand_data_names) - set(loop.tags))
                 for d in data_items:
-                    if d['name'] in missing_tags:
-                        if 'default-from' in d:
-                            if d['type'] == 'index-int':
+                    if 'group-mandatory' in d and d['group-mandatory']:
+                        group = d['group']
+                        if group['member-with'] is not None:
+                            for mw in group['member-with']:
+                                if mw not in allowed_tags:
+                                    raise ValueError(f"Member data item {mw} of {d['name']} must exists in allowed tags.")
+                        if group['coexist-with'] is not None:
+                            for cw in group['coexist-with']:
+                                if cw not in allowed_tags:
+                                    raise ValueError(f"Coexisting data item {cw} of {d['name']} must exists in allowed tags.")
+
+            for loop in loops:
+                tag_data = []
+
+                if len(key_names) > 0 and set(key_names) & set(loop.tags) != set(key_names):
+                    missing_tags = list(set(key_names) - set(loop.tags))
+                    for k in key_items:
+                        if k['name'] in missing_tags:
+                            if 'default-from' in k and k['default-from'] != 'self' and k['default-from'] in loop.tags:
+                                from_col = loop.tags.index(k['default-from'])
+                                for row in loop:
+                                    ref = row[from_col]
+                                    row.append(ref)
+                                loop.add_tag(k['name'])
+                            elif 'default' in k:
+                                for row in loop:
+                                    row.append(k['default'])
+                                loop.add_tag(k['name'])
+                            elif 'auto-increment' in k and k['auto-increment']:
+                                for lv, row in enumerate(loop.data, start=1):
+                                    row.append(lv)
+                                loop.add_tag(k['name'])
+                            else:
+                                raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+
+                if len(mand_data_names) > 0 and set(mand_data_names) & set(loop.tags) != set(mand_data_names):
+                    missing_tags = list(set(mand_data_names) - set(loop.tags))
+                    for k in key_items:
+                        if k['name'] in missing_tags:
+                            if 'default-from' in k and k['default-from'] != 'self' and k['default-from'] in loop.tags:
+                                from_col = loop.tags.index(k['default-from'])
+                                for row in loop:
+                                    ref = row[from_col]
+                                    row.append(ref)
+                                loop.add_tag(k['name'])
+                            elif 'default' in k:
+                                for row in loop:
+                                    row.append(k['default'])
+                                loop.add_tag(k['name'])
+                            elif 'auto-increment' in k and k['auto-increment']:
+                                for lv, row in enumerate(loop.data, start=1):
+                                    row.append(lv)
+                                loop.add_tag(k['name'])
+                            else:
+                                raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+
+                if len(_mand_data_names) > 0 and set(_mand_data_names) & set(loop.tags) != set(_mand_data_names):
+                    missing_tags = list(set(_mand_data_names) - set(loop.tags))
+                    for d in data_items:
+                        if d['name'] in missing_tags:
+                            if 'default-from' in d:
+                                if d['type'] == 'index-int':
+                                    for lv, row in enumerate(loop.data, start=1):
+                                        row.append(lv)
+                                    loop.add_tag(d['name'])
+                                elif d['default-from'] != 'self' and d['default-from'] in loop.tags:
+                                    from_col = loop.tags.index(d['default-from'])
+                                    if d['name'] == 'element' or d['name'] == 'Atom_type':
+                                        for row in loop:
+                                            ref = row[from_col]
+                                            if ref[0] in pseProBeginCode:
+                                                row.append('H')
+                                            else:
+                                                row.append(ref[0])
+                                        loop.add_tag(d['name'])
+                                    elif d['name'] == 'isotope_number' or d['name'] == 'Atom_isotope_number':
+                                        for row in loop:
+                                            ref = row[from_col]
+                                            if ref[0] in pseProBeginCode:
+                                                row.append(1)
+                                            else:
+                                                row.append(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[ref[0]][0])
+                                        loop.add_tag(d['name'])
+                                    elif 'Entity_assembly_ID' in d['name']:
+                                        for row in loop:
+                                            ref = row[from_col]
+                                            row.append(ref)
+                                        loop.add_tag(d['name'])
+                            elif 'auto-increment' in d and d['auto-increment']:
                                 for lv, row in enumerate(loop.data, start=1):
                                     row.append(lv)
                                 loop.add_tag(d['name'])
-                            elif d['default-from'] != 'self' and d['default-from'] in loop.tags:
-                                from_col = loop.tags.index(d['default-from'])
-                                if d['name'] == 'element' or d['name'] == 'Atom_type':
-                                    for row in loop:
-                                        ref = row[from_col]
-                                        if ref[0] in pseProBeginCode:
-                                            row.append('H')
-                                        else:
-                                            row.append(ref[0])
-                                    loop.add_tag(d['name'])
-                                elif d['name'] == 'isotope_number' or d['name'] == 'Atom_isotope_number':
-                                    for row in loop:
-                                        ref = row[from_col]
-                                        if ref[0] in pseProBeginCode:
-                                            row.append(1)
-                                        else:
-                                            row.append(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[ref[0]][0])
-                                    loop.add_tag(d['name'])
-                                elif 'Entity_assembly_ID' in d['name']:
-                                    for row in loop:
-                                        ref = row[from_col]
-                                        row.append(ref)
-                                    loop.add_tag(d['name'])
-                        elif 'auto-increment' in d and d['auto-increment']:
-                            for lv, row in enumerate(loop.data, start=1):
-                                row.append(lv)
-                            loop.add_tag(d['name'])
 
-            if disallowed_tags is not None:
-                if len(set(loop.tags) & set(disallowed_tags)) > 0:
-                    disallow_tags = list(set(loop.tags) & set(disallowed_tags))
-                    raise LookupError(f"Disallowed {disallow_tags} loop tag(s) exists.")
+                if disallowed_tags is not None:
+                    if len(set(loop.tags) & set(disallowed_tags)) > 0:
+                        disallow_tags = list(set(loop.tags) & set(disallowed_tags))
+                        raise LookupError(f"Disallowed {disallow_tags} loop tag(s) exists.")
 
-            if enforce_allowed_tags and allowed_tags is not None:
-                extra_tags = (set(loop.tags) | set(allowed_tags)) - set(allowed_tags)
-                if len(extra_tags) > 0 and not self.__remediation_mode:
-                    raise LookupError(f"Unauthorized {extra_tags} loop tag(s) must not exists.")  # DAOTHER-7545 only for NMR-STAR
+                if enforce_allowed_tags and allowed_tags is not None:
+                    extra_tags = (set(loop.tags) | set(allowed_tags)) - set(allowed_tags)
+                    if len(extra_tags) > 0 and not self.__remediation_mode:
+                        raise LookupError(f"Unauthorized {extra_tags} loop tag(s) must not exists.")  # DAOTHER-7545 only for NMR-STAR
 
-            for d in data_items:
-                if 'group-mandatory' in d and d['group-mandatory']:
-                    name = d['name']
-                    group = d['group']
-                    if name in loop.tags:
-                        if group['coexist-with'] is not None:
-                            for cw in group['coexist-with']:
-                                if cw not in loop.tags:
-                                    set_cw = set(group['coexist-with'])
-                                    set_cw.add(name)
-                                    missing_tags = list(set_cw - set(loop.tags))
-                                    raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
-
-                    elif group['member-with'] is not None:
-                        has_member = False
-                        for mw in group['member-with']:
-                            if mw in loop.tags:
-                                has_member = True
-                                break
-                        if not has_member:
-                            set_mw = set(group['member-with'])
-                            set_mw.add(name)
-                            missing_tags = list(set_mw - set(loop.tags))
-                            raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
-
-            tags = [k['name'] for k in key_items]
-            for data_name in set(data_names) & set(loop.tags):
-                tags.append(data_name)
-
-            tag_len = len(tags)
-
-            static_val = {}
-            for name in tags:
-                static_val[name] = None
-
-            idx_tag_ids = set()
-            for j in range(tag_len):
-                name = tags[j]
-                if name in key_names:
-                    for k in key_items:
-                        if k['name'] == name and k['type'] == 'index-int':
-                            idx_tag_ids.add(j)
-                else:
-                    for d in data_items:
-                        if d['name'] == name and d['type'] == 'index-int':
-                            idx_tag_ids.add(j)
-
-            relax_key_ids = set()
-            for j in range(tag_len):
-                name = tags[j]
                 for d in data_items:
-                    if d['name'] == name and 'relax-key-if-exist' in d and d['relax-key-if-exist']:
-                        relax_key_ids.add(j)
+                    if 'group-mandatory' in d and d['group-mandatory']:
+                        name = d['name']
+                        group = d['group']
+                        if name in loop.tags:
+                            if group['coexist-with'] is not None:
+                                for cw in group['coexist-with']:
+                                    if cw not in loop.tags:
+                                        set_cw = set(group['coexist-with'])
+                                        set_cw.add(name)
+                                        missing_tags = list(set_cw - set(loop.tags))
+                                        raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
-            tag_data = get_lp_tag(loop, tags)
-
-            if test_on_index and len(idx_tag_ids) > 0:
-
-                for idx, idx_tag_id in enumerate(idx_tag_ids):
-
-                    try:
-                        idxs = [int(row[idx_tag_id]) for row in tag_data]
-
-                        dup_idxs = [_idx for _idx in set(idxs) if idxs.count(_idx) > 1]
-
-                        if len(dup_idxs) > 0:
-                            raise KeyError(f"{tags[idx_tag_id]} must be unique in loop. {dup_idxs} are duplicated.")
-
-                    except ValueError:
-                        r = {}
-                        for j, t in enumerate(loop.tags):
-                            r[t] = loop.data[idx][j]
-                        raise ValueError(f"{tags[idx_tag_id]} must be an integer. "
-                                         f"#_of_row {idx + 1}, data_of_row {r}.")
-
-            if not excl_missing_data:
-                for idx, row in enumerate(tag_data):
-                    for j in range(tag_len):
-                        if row[j] in emptyValue:
-                            name = tags[j]
-                            if name in key_names:
-                                k = key_items[key_names.index(name)]
-                                if not ('remove-bad-pattern' in k and k['remove-bad-pattern']) and 'default' not in k:
-                                    r = {}
-                                    for _j, _t in enumerate(loop.tags):
-                                        r[_t] = loop.data[idx][_j]
-                                    raise ValueError(f"{name} must not be empty. "
-                                                     f"#_of_row {idx + 1}, data_of_row {r}.")
-
-                            for d in data_items:
-                                if d['name'] == name and d['mandatory'] and 'default' not in d\
-                                   and not ('remove-bad-pattern' in d and d['detele-bad-pattern']):
-                                    r = {}
-                                    for _j, _t in enumerate(loop.tags):
-                                        r[_t] = loop.data[idx][_j]
-                                    raise ValueError(f"{name} must not be empty. "
-                                                     f"#_of_row {idx + 1}, data_of_row {r}.")
-
-            if test_on_index and key_len > 0:
-                keys = set()
-
-                rechk = False
-
-                for row in tag_data:
-
-                    key = ''
-                    for j in range(key_len):
-                        key += ' ' + str(row[j])
-                    key.rstrip()
-
-                    if key in keys:
-
-                        relax_key = False
-
-                        if len(relax_key_ids) > 0:
-                            for j in relax_key_ids:
-                                if row[j] is not emptyValue:
-                                    relax_key = True
+                        elif group['member-with'] is not None:
+                            has_member = False
+                            for mw in group['member-with']:
+                                if mw in loop.tags:
+                                    has_member = True
                                     break
+                            if not has_member:
+                                set_mw = set(group['member-with'])
+                                set_mw.add(name)
+                                missing_tags = list(set_mw - set(loop.tags))
+                                raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
-                        if relax_key:
-                            rechk = True
+                tags = [k['name'] for k in key_items]
+                for data_name in set(data_names) & set(loop.tags):
+                    tags.append(data_name)
 
-                        else:
-                            msg = ''
-                            for j in range(key_len):
-                                msg += key_names[j] + ' ' + str(row[j]) + ', '
+                tag_len = len(tags)
 
-                            idx_msg = ''
+                static_val = {}
+                for name in tags:
+                    static_val[name] = None
 
-                            if len(idx_tag_ids) > 0:
-                                for _j in idx_tag_ids:
-                                    idx_msg += tags[_j] + ' '
-
-                                    for _row in tag_data:
-                                        _key = ''
-                                        for j in range(key_len):
-                                            _key += ' ' + str(_row[j])
-                                            _key.rstrip()
-
-                                        if key == _key:
-                                            idx_msg += str(_row[_j]) + ' vs '
-
-                                    idx_msg = idx_msg[:-4] + ', '
-
-                                idx_msg = "[Check rows of " + idx_msg[:-2] + "] "
-
-                            warn += "[Multiple data] "\
-                                f"{idx_msg}Duplicated rows having the following values {msg.rstrip().rstrip(',')} exist in a loop.\n"
-
+                idx_tag_ids = set()
+                for j in range(tag_len):
+                    name = tags[j]
+                    if name in key_names:
+                        for k in key_items:
+                            if k['name'] == name and k['type'] == 'index-int':
+                                idx_tag_ids.add(j)
                     else:
-                        keys.add(key)
+                        for d in data_items:
+                            if d['name'] == name and d['type'] == 'index-int':
+                                idx_tag_ids.add(j)
 
-                if rechk:
-                    keys = set()
-
-                    for row in tag_data:
-
-                        key = ''
-                        for j in range(key_len):
-                            key += ' ' + str(row[j])
-                        for j in relax_key_ids:
-                            key += ' ' + str(row[j])
-                        key.rstrip()
-
-                        if key in keys:
-
-                            msg = ''
-                            for j in range(key_len):
-                                msg += key_names[j] + ' ' + str(row[j]) + ', '
-                            for j in relax_key_ids:
-                                if row[j] not in emptyValue:
-                                    msg += tags[j] + ' ' + str(row[j]) + ', '
-
-                            idx_msg = ''
-
-                            if len(idx_tag_ids) > 0:
-                                for _j in idx_tag_ids:
-                                    idx_msg += tags[_j] + ' '
-
-                                    for _row in tag_data:
-                                        _key = ''
-                                        for j in range(key_len):
-                                            _key += ' ' + str(_row[j])
-                                        for j in relax_key_ids:
-                                            _key += ' ' + str(_row[j])
-                                            _key.rstrip()
-
-                                        if key == _key:
-                                            idx_msg += str(_row[_j]) + ' vs '
-
-                                    idx_msg = idx_msg[:-4] + ', '
-
-                                idx_msg = "[Check rows of " + idx_msg[:-2] + "] "
-
-                            warn += "[Multiple data] "\
-                                f"{idx_msg}Duplicated rows having the following values {msg.rstrip().rstrip(',')} exist in a loop.\n"
-
-                        else:
-                            keys.add(key)
-
-            if len(warn) > 0:
-                _warn = ''
-
-                for k in key_items:
-                    if k['type'] == 'int' and 'default-from' in k and k['default-from'] in loop.tags:
-                        to_idx = loop.tags.index(k['name'])
-                        fr_idx = loop.tags.index(k['default-from'])
-
-                        offset = None
-
-                        for row in loop:
-                            if row[to_idx] not in emptyValue and row[fr_idx] not in emptyValue:
-                                try:
-                                    offset = int(row[to_idx]) - int(row[fr_idx])
-                                    break
-                                except ValueError:
-                                    continue
-
-                        if offset is not None:
-
-                            for idx, row in enumerate(loop.data):
-                                if row[to_idx] not in emptyValue and row[fr_idx] not in emptyValue:
-                                    try:
-                                        loop.data[idx][to_idx] = str(int(row[fr_idx]) + offset)
-                                    except ValueError:
-                                        continue
+                relax_key_ids = set()
+                for j in range(tag_len):
+                    name = tags[j]
+                    for d in data_items:
+                        if d['name'] == name and 'relax-key-if-exist' in d and d['relax-key-if-exist']:
+                            relax_key_ids.add(j)
 
                 tag_data = get_lp_tag(loop, tags)
+
+                if test_on_index and len(idx_tag_ids) > 0:
+
+                    for idx, idx_tag_id in enumerate(idx_tag_ids):
+
+                        try:
+                            idxs = [int(row[idx_tag_id]) for row in tag_data]
+
+                            dup_idxs = [_idx for _idx in set(idxs) if idxs.count(_idx) > 1]
+
+                            if len(dup_idxs) > 0:
+                                raise KeyError(f"{tags[idx_tag_id]} must be unique in loop. {dup_idxs} are duplicated.")
+
+                        except ValueError:
+                            r = {}
+                            for j, t in enumerate(loop.tags):
+                                r[t] = loop.data[idx][j]
+                            raise ValueError(f"{tags[idx_tag_id]} must be an integer. "
+                                             f"#_of_row {idx + 1}, data_of_row {r}.")
+
+                if not excl_missing_data:
+                    for idx, row in enumerate(tag_data):
+                        for j in range(tag_len):
+                            if row[j] in emptyValue:
+                                name = tags[j]
+                                if name in key_names:
+                                    k = key_items[key_names.index(name)]
+                                    if not ('remove-bad-pattern' in k and k['remove-bad-pattern']) and 'default' not in k:
+                                        r = {}
+                                        for _j, _t in enumerate(loop.tags):
+                                            r[_t] = loop.data[idx][_j]
+                                        raise ValueError(f"{name} must not be empty. "
+                                                         f"#_of_row {idx + 1}, data_of_row {r}.")
+
+                                for d in data_items:
+                                    if d['name'] == name and d['mandatory'] and 'default' not in d\
+                                       and not ('remove-bad-pattern' in d and d['detele-bad-pattern']):
+                                        r = {}
+                                        for _j, _t in enumerate(loop.tags):
+                                            r[_t] = loop.data[idx][_j]
+                                        raise ValueError(f"{name} must not be empty. "
+                                                         f"#_of_row {idx + 1}, data_of_row {r}.")
 
                 if test_on_index and key_len > 0:
                     keys = set()
@@ -2634,10 +2505,14 @@ class NEFTranslator:
 
                     for row in tag_data:
 
-                        key = ''
+                        if key_f.tell() > 0:
+                            key_f.truncate(0)
+                            key_f.seek(0)
+
                         for j in range(key_len):
-                            key += ' ' + row[j]
-                        key.rstrip()
+                            key_f.write(f'{row[j]} ')
+
+                        key = key_f.getvalue()
 
                         if key in keys:
 
@@ -2653,31 +2528,56 @@ class NEFTranslator:
                                 rechk = True
 
                             else:
-                                msg = ''
+
+                                if msg_f.tell() > 0:
+                                    msg_f.truncate(0)
+                                    msg_f.seek(0)
+
                                 for j in range(key_len):
-                                    msg += key_names[j] + ' ' + row[j] + ', '
+                                    msg_f.write(f'{key_names[j]} {row[j]}, ')
+
+                                pos = msg_f.tell() - 2
+                                msg_f.truncate(pos)
+                                msg_f.seek(pos)
 
                                 idx_msg = ''
 
+                                if idx_f.tell() > 0:
+                                    idx_f.truncate(0)
+                                    idx_f.seek(0)
+
                                 if len(idx_tag_ids) > 0:
                                     for _j in idx_tag_ids:
-                                        idx_msg += tags[_j] + ' '
+                                        idx_f.write(f'{tags[_j]} ')
 
                                         for _row in tag_data:
-                                            _key = ''
+
+                                            if key_f.tell() > 0:
+                                                key_f.truncate(0)
+                                                key_f.seek(0)
+
                                             for j in range(key_len):
-                                                _key += " " + _row[j]
-                                                _key.rstrip()
+                                                key_f.write(f'{_row[j]} ')
+
+                                            _key = key_f.getvalue()
 
                                             if key == _key:
-                                                idx_msg += _row[_j] + ' vs '
+                                                idx_f.write(f'{_row[_j]} vs ')
 
-                                        idx_msg = idx_msg[:-4] + ', '
+                                        pos = idx_f.tell() - 4
+                                        idx_f.truncate(pos)
+                                        idx_f.seek(pos)
 
-                                    idx_msg = "[Check rows of " + idx_msg[:-2] + "] "
+                                        idx_f.write(', ')
 
-                                _warn += "[Multiple data] "\
-                                    f"{idx_msg}Duplicated rows having the following values {msg.rstrip().rstrip(',')} exist in a loop.\n"
+                                    pos = idx_f.tell() - 2
+                                    idx_f.truncate(pos)
+                                    idx_f.seek(pos)
+
+                                    idx_msg = f"[Check rows of {idx_f.getvalue()}] "
+
+                                f.append("[Multiple data] "
+                                         f"{idx_msg}Duplicated rows having the following values {msg_f.getvalue()} exist in a loop.")
 
                         else:
                             keys.add(key)
@@ -2687,764 +2587,980 @@ class NEFTranslator:
 
                         for row in tag_data:
 
-                            key = ''
+                            if key_f.tell() > 0:
+                                key_f.truncate(0)
+                                key_f.seek(0)
+
                             for j in range(key_len):
-                                key += ' ' + row[j]
+                                key_f.write(f'{row[j]} ')
                             for j in relax_key_ids:
-                                key += ' ' + row[j]
-                            key.rstrip()
+                                key_f.write(f'{row[j]} ')
+
+                            key = key_f.getvalue()
 
                             if key in keys:
 
-                                msg = ''
+                                if msg_f.tell() > 0:
+                                    msg_f.truncate(0)
+                                    msg_f.seek(0)
+
                                 for j in range(key_len):
-                                    msg += key_names[j] + ' ' + row[j] + ', '
+                                    msg_f.write(f'{key_names[j]} {row[j]}, ')
                                 for j in relax_key_ids:
                                     if row[j] not in emptyValue:
-                                        msg += tags[j] + ' ' + row[j] + ', '
+                                        msg_f.write(f'{tags[j]} {row[j]}, ')
+
+                                pos = msg_f.tell() - 2
+                                msg_f.truncate(pos)
+                                msg_f.seek(pos)
 
                                 idx_msg = ''
 
+                                if idx_f.tell() > 0:
+                                    idx_f.truncate(0)
+                                    idx_f.seek(0)
+
                                 if len(idx_tag_ids) > 0:
                                     for _j in idx_tag_ids:
-                                        idx_msg += tags[_j] + ' '
+                                        idx_f.write(f'{tags[_j]} ')
 
                                         for _row in tag_data:
-                                            _key = ''
+
+                                            if key_f.tell() > 0:
+                                                key_f.truncate(0)
+                                                key_f.seek(0)
+
                                             for j in range(key_len):
-                                                _key += " " + _row[j]
+                                                key_f.write(f'{_row[j]} ')
                                             for j in relax_key_ids:
-                                                _key += " " + _row[j]
-                                                _key.rstrip()
+                                                key_f.write(f'{_row[j]} ')
+
+                                            _key = key_f.getvalue()
 
                                             if key == _key:
-                                                idx_msg += _row[_j] + ' vs '
+                                                idx_f.write(f'{_row[_j]} vs ')
 
-                                        idx_msg = idx_msg[:-4] + ', '
+                                        pos = idx_f.tell() - 4
+                                        idx_f.truncate(pos)
+                                        idx_f.seek(pos)
 
-                                    idx_msg = "[Check rows of " + idx_msg[:-2] + "] "
+                                        idx_f.write(', ')
 
-                                _warn += "[Multiple data] "\
-                                    f"{idx_msg}Duplicated rows having the following values {msg.rstrip().rstrip(',')} exist in a loop.\n"
+                                    pos = idx_f.tell() - 2
+                                    idx_f.truncate(pos)
+                                    idx_f.seek(pos)
+
+                                    idx_msg = f"[Check rows of {idx_f.getvalue()}] "
+
+                                f.append("[Multiple data] "
+                                         f"{idx_msg}Duplicated rows having the following values {msg_f.getvalue()} exist in a loop.")
 
                             else:
                                 keys.add(key)
 
-                if len(_warn) == 0:
-                    warn = ''
+                if len(f) > 0:
 
-            asm = []  # assembly of a loop
+                    for k in key_items:
+                        if k['type'] == 'int' and 'default-from' in k and k['default-from'] in loop.tags:
+                            to_idx = loop.tags.index(k['name'])
+                            fr_idx = loop.tags.index(k['default-from'])
 
-            for idx, row in enumerate(tag_data):
-                ent = {}  # entity
+                            offset = None
 
-                missing_mandatory_data = False
-                remove_bad_pattern = False
-                clear_bad_pattern = False
+                            for row in loop:
+                                if row[to_idx] not in emptyValue and row[fr_idx] not in emptyValue:
+                                    try:
+                                        offset = int(row[to_idx]) - int(row[fr_idx])
+                                        break
+                                    except ValueError:
+                                        continue
 
-                for j in range(tag_len):
-                    name = tags[j]
-                    val = row[j]
-                    if j < key_len:
-                        k = key_items[j]
-                        type = k['type']  # pylint: disable=redefined-builtin
-                        if val in emptyValue and 'default' in k and k['default'] in emptyValue:
-                            ent[name] = k['default']
-                        elif type == 'bool':
-                            try:
-                                ent[name] = val.lower() in trueValue
-                            except ValueError:
-                                if excl_missing_data:
-                                    missing_mandatory_data = True
-                                    continue
-                                if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
-                                    remove_bad_pattern = True
-                                    continue
-                                if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
-                                    clear_bad_pattern = True
-                                    continue
-                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                        elif type == 'int':
-                            try:
-                                ent[name] = int(val)
-                            except ValueError:
-                                if 'default-from' in k and k['default-from'] == 'self':
-                                    row[j] = ent[name] = letterToDigit(val)
-                                elif 'default-from' in k and k['default-from'] in tags:
-                                    row[j] = ent[name] = letterToDigit(row[tags.index(k['default-from'])])
-                                elif 'default' in k:
-                                    row[j] = ent[name] = int(k['default'])
-                                elif excl_missing_data:
-                                    missing_mandatory_data = True
-                                    continue
-                                elif 'remove-bad-pattern' in k and k['remove-bad-pattern']:
-                                    remove_bad_pattern = True
-                                    continue
-                                elif 'clear-bad-pattern' in k and k['clear-bad-pattern']:
-                                    clear_bad_pattern = True
-                                    continue
-                                else:
-                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                        elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
-                            try:
-                                ent[name] = int(val)
-                            except ValueError:
-                                if 'default-from' in k and k['default-from'] == 'self':
-                                    row[j] = ent[name] = letterToDigit(val, 1)
-                                elif 'default-from' in k and k['default-from'] in tags and row[tags.index(k['default-from'])] not in emptyValue:
-                                    row[j] = ent[name] = letterToDigit(row[tags.index(k['default-from'])], 1)
-                                    if ent[name] > 8 and not self.__remediation_mode and 'default' in k:
-                                        row[j] = ent[name] = int(k['default'])
-                                elif 'default-from' in k and k['default-from'].startswith('Auth_asym_ID'):
-                                    row[j] = ent[name] = letterToDigit(val, 1)
-                                elif 'default' in k:
-                                    row[j] = ent[name] = int(k['default'])
-                                elif excl_missing_data:
-                                    missing_mandatory_data = True
-                                    continue
-                                elif 'remove-bad-pattern' in k and k['remove-bad-pattern']:
-                                    remove_bad_pattern = True
-                                    continue
-                                elif 'clear-bad-pattern' in k and k['clear-bad-pattern']:
-                                    clear_bad_pattern = True
-                                    continue
-                                else:
-                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                            if (type == 'index-int' and ent[name] <= 0)\
-                               or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):
-                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                            if ent[name] == 0 and enforce_non_zero:
-                                if 'void-zero' in k:
-                                    if self.replace_zero_by_null_in_case:
-                                        loop.data[idx][loop.tags.index(name)] = None
-                                    ent[name] = None
-                                else:
-                                    warn += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                        f"{name} {val!r} should not be zero, "\
-                                        f"as defined by {self.readableItemType[type]}.\n"
-                            if type == 'positive-int-as-str':
-                                row[j] = ent[name] = str(ent[name])
-                        elif type == 'pointer-index':
-                            try:
-                                ent[name] = int(val)
-                            except ValueError:
-                                if 'default-from' in k and k['default-from'] == 'self':
-                                    row[j] = ent[name] = letterToDigit(val, 1)
-                                elif 'default-from' in k and k['default-from'] in tags:
-                                    row[j] = ent[name] = letterToDigit(row[tags.index(k['default-from'])], 1)
-                                elif 'default-from' in k and k['default-from'] == 'parent' and parent_pointer is not None:
-                                    row[j] = ent[name] = parent_pointer
-                                elif 'default' in k:
-                                    row[j] = ent[name] = int(k['default'])
-                                elif excl_missing_data:
-                                    missing_mandatory_data = True
-                                    continue
-                                elif 'remove-bad-pattern' in k and k['remove-bad-pattern']:
-                                    remove_bad_pattern = True
-                                    continue
-                                elif 'clear-bad-pattern' in k and k['clear-bad-pattern']:
-                                    clear_bad_pattern = True
-                                    continue
-                                else:
-                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                            if ent[name] <= 0:
-                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                            if static_val[name] is None:
-                                static_val[name] = val
-                            elif val != static_val[name] and test_on_index:
-                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val} vs {static_val[name]} must be {self.readableItemType[type]}.")
-                        elif type == 'float':
-                            try:
-                                ent[name] = float(val)
-                            except ValueError:
-                                if excl_missing_data:
-                                    missing_mandatory_data = True
-                                    continue
-                                if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
-                                    remove_bad_pattern = True
-                                    continue
-                                if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
-                                    clear_bad_pattern = True
-                                    continue
-                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                        elif type == 'positive-float':
-                            try:
-                                ent[name] = float(val)
-                            except ValueError:
-                                if excl_missing_data:
-                                    missing_mandatory_data = True
-                                    continue
-                                if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
-                                    remove_bad_pattern = True
-                                    continue
-                                if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
-                                    clear_bad_pattern = True
-                                    continue
-                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                            if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']):
-                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                            if ent[name] == 0.0 and enforce_non_zero:
-                                if 'void-zero' in k:
-                                    if self.replace_zero_by_null_in_case:
-                                        loop.data[idx][loop.tags.index(name)] = None
-                                    ent[name] = None
-                                else:
-                                    warn += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                        f"{name} {val!r} should not be zero, "\
-                                        f"as defined by {self.readableItemType[type]}.\n"
-                        elif type == 'range-float':
-                            try:
-                                _range = k['range']
-                                ent[name] = float(val)
-                            except KeyError:
-                                raise ValueError(f"Range of key item {name} is not defined")
-                            except ValueError:
-                                if excl_missing_data:
-                                    missing_mandatory_data = True
-                                    continue
-                                if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
-                                    remove_bad_pattern = True
-                                    continue
-                                if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
-                                    clear_bad_pattern = True
-                                    continue
-                                if not enforce_range:
-                                    ent[name] = None
-                                    continue
-                                warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                    f"{name} {val!r} must be {self.readableItemType[type]}.\n"
-                            if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
-                               or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
-                                if ent[name] < 0.0:
-                                    if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive'])\
-                                       or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive'])\
-                                       or ('enforce-sign' in k and k['enforce-sign']):
-                                        if not enforce_range:
-                                            ent[name] = None
-                                        else:
-                                            warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                                f"{name} {val!r} must be within range {_range}.\n"
-                                    elif enforce_sign:
-                                        warn += f"[Negative value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                            f"{name} {val!r} should not have "\
-                                            f"negative value for {self.readableItemType[type]}, {_range}.\n"
-                                elif ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']:
-                                    if not enforce_range:
-                                        ent[name] = None
-                                    else:
-                                        warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                            f"{name} {val!r} must be within range {_range}.\n"
-                                elif ent[name] == 0.0 and enforce_non_zero:
-                                    if 'void-zero' in k:
-                                        if self.replace_zero_by_null_in_case:
-                                            loop.data[idx][loop.tags.index(name)] = None
-                                        ent[name] = None
-                                    else:
-                                        warn += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                            f"{name} {val!r} should not be zero, "\
-                                            f"as defined by {self.readableItemType[type]}, {_range}.\n"
-                            elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
-                                 ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or\
-                                 ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or\
-                                 ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
-                                if 'void-zero' in k and ent[name] == 0.0:
-                                    if self.replace_zero_by_null_in_case:
-                                        loop.data[idx][loop.tags.index(name)] = None
-                                    ent[name] = None
-                                elif not enforce_range:
-                                    ent[name] = None
-                                else:
-                                    warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                        f"{name} {val!r} must be within range {_range}.\n"
-                        elif type == 'enum':
-                            try:
-                                enum = k['enum']
-                                if val not in enum:
-                                    if 'default-from' in k and k['default-from'] in tags:
-                                        if row[tags.index(k['default-from'])][0].upper() in enum:
-                                            val = row[tags.index(k['default-from'])][0].upper()
-                                    elif 'enum-alt' in k and val in k['enum-alt']:
-                                        val = k['enum-alt'][val]
-                                        row[j] = val
-                                    elif 'enforce-enum' in k and k['enforce-enum']:
-                                        if excl_missing_data:
-                                            missing_mandatory_data = True
+                            if offset is not None:
+
+                                for idx, row in enumerate(loop.data):
+                                    if row[to_idx] not in emptyValue and row[fr_idx] not in emptyValue:
+                                        try:
+                                            loop.data[idx][to_idx] = str(int(row[fr_idx]) + offset)
+                                        except ValueError:
                                             continue
-                                        if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
-                                            remove_bad_pattern = True
-                                            continue
-                                        if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
-                                            clear_bad_pattern = True
-                                            continue
-                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be one of {enum}.")
-                                    elif enforce_enum and name in mand_data_names:
-                                        warn += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                            f"{name} {val!r} should be one of {enum}.\n"
-                                ent[name] = val
-                            except KeyError:
-                                raise ValueError(f"Enumeration of key item {name} is not defined")
-                        elif type == 'enum-int':
-                            try:
-                                enum = k['enum']
-                                if int(val) not in enum:
-                                    if 'default-from' in k and k['default-from'] in tags:
-                                        if row[tags.index(k['default-from'])][0].upper() in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                            val = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[row[tags.index(k['default-from'])][0].upper()][0]
-                                    if 'enforce-enum' in k and k['enforce-enum']:
-                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be one of {enum}.")
-                                    if enforce_enum:
-                                        warn += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                            f"{name} {val!r} should be one of {enum}.\n"
-                                ent[name] = int(val)
-                            except KeyError:
-                                raise ValueError(f"Enumeration of key item {name} is not defined")
-                            except ValueError:
-                                if excl_missing_data:
-                                    missing_mandatory_data = True
-                                    continue
-                                if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
-                                    remove_bad_pattern = True
-                                    continue
-                                if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
-                                    clear_bad_pattern = True
-                                    continue
-                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                        else:
-                            if val in emptyValue:
-                                if 'default-from' in k and k['default-from'] == 'self':
-                                    val = indexToLetter(letterToDigit(val, 1) - 1)
-                                elif 'default-from' in k and k['default-from'] in tags and row[tags.index(k['default-from'])] not in emptyValue:
-                                    val = row[tags.index(k['default-from'])]
-                                elif 'default-from' in k and k['default-from'].startswith('Auth_asym_ID'):
-                                    val = indexToLetter(letterToDigit(val, 1) - 1)
-                                elif 'default' in k:
-                                    val = k['default']
+
+                    tag_data = get_lp_tag(loop, tags)
+
+                    if test_on_index and key_len > 0:
+                        keys = set()
+
+                        rechk = False
+
+                        for row in tag_data:
+
+                            if key_f.tell() > 0:
+                                key_f.truncate(0)
+                                key_f.seek(0)
+
+                            for j in range(key_len):
+                                key_f.write(f'{row[j]} ')
+
+                            key = key_f.getvalue()
+
+                            if key in keys:
+
+                                relax_key = False
+
+                                if len(relax_key_ids) > 0:
+                                    for j in relax_key_ids:
+                                        if row[j] is not emptyValue:
+                                            relax_key = True
+                                            break
+
+                                if relax_key:
+                                    rechk = True
+
                                 else:
-                                    missing_mandatory_data = True
-                                    continue
-                                if 'uppercase' in k and k['uppercase']:
-                                    val = val.upper()
-                                row[j] = ent[name] = val
-                            if ('remove-bad-pattern' in k and k['remove-bad-pattern']) or ('clear-bad-pattern' in k and k['clear-bad-pattern']):
-                                if isinstance(val, str) and badPattern.match(val):
+
+                                    if msg_f.tell() > 0:
+                                        msg_f.truncate(0)
+                                        msg_f.seek(0)
+
+                                    for j in range(key_len):
+                                        msg_f.write(f'{key_names[j]} {row[j]}, ')
+
+                                    pos = msg_f.tell() - 2
+                                    msg_f.truncate(pos)
+                                    msg_f.seek(pos)
+
+                                    idx_msg = ''
+
+                                    if idx_f.tell() > 0:
+                                        idx_f.truncate(0)
+                                        idx_f.seek(0)
+
+                                    if len(idx_tag_ids) > 0:
+                                        for _j in idx_tag_ids:
+                                            idx_f.write(f'{tags[_j]} ')
+
+                                            for _row in tag_data:
+
+                                                if key_f.tell() > 0:
+                                                    key_f.truncate(0)
+                                                    key_f.seek(0)
+
+                                                for j in range(key_len):
+                                                    key_f.write(f'{_row[j]} ')
+
+                                                _key = key_f.getvalue()
+
+                                                if key == _key:
+                                                    idx_f.write(f'{_row[_j]} vs ')
+
+                                            pos = idx_f.tell() - 4
+                                            idx_f.truncate(pos)
+                                            idx_f.seek(pos)
+
+                                            idx_f.write(', ')
+
+                                        pos = idx_f.tell() - 2
+                                        idx_f.truncate(pos)
+                                        idx_f.seek(pos)
+
+                                        idx_msg = f"[Check rows of {idx_f.getvalue()}] "
+
+                                    _f.append("[Multiple data] "
+                                              f"{idx_msg}Duplicated rows having the following values {msg_f.getvalue()} exist in a loop.")
+
+                            else:
+                                keys.add(key)
+
+                        if rechk:
+                            keys = set()
+
+                            for row in tag_data:
+
+                                if key_f.tell() > 0:
+                                    key_f.truncate(0)
+                                    key_f.seek(0)
+
+                                for j in range(key_len):
+                                    key_f.write(f'{row[j]} ')
+                                for j in relax_key_ids:
+                                    key_f.write(f'{row[j]} ')
+
+                                key = key_f.getvalue()
+
+                                if key in keys:
+
+                                    if msg_f.tell() > 0:
+                                        msg_f.truncate(0)
+                                        msg_f.seek(0)
+
+                                    for j in range(key_len):
+                                        msg_f.write(f'{key_names[j]} {row[j]}, ')
+                                    for j in relax_key_ids:
+                                        if row[j] not in emptyValue:
+                                            msg_f.write(f'{tags[j]} {row[j]}, ')
+
+                                    pos = msg_f.tell() - 2
+                                    msg_f.truncate(pos)
+                                    msg_f.seek(pos)
+
+                                    idx_msg = ''
+
+                                    if idx_f.tell() > 0:
+                                        idx_f.truncate(0)
+                                        idx_f.seek(0)
+
+                                    if len(idx_tag_ids) > 0:
+                                        for _j in idx_tag_ids:
+                                            idx_f.write(f'{tags[_j]} ')
+
+                                            for _row in tag_data:
+
+                                                if key_f.tell() > 0:
+                                                    key_f.truncate(0)
+                                                    key_f.seek(0)
+
+                                                for j in range(key_len):
+                                                    key_f.write(f'{_row[j]} ')
+                                                for j in relax_key_ids:
+                                                    key_f.write(f'{_row[j]} ')
+
+                                                _key = key_f.getvalue()
+
+                                                if key == _key:
+                                                    idx_f.write(f'{_row[_j]} vs ')
+
+                                            pos = idx_f.tell() - 4
+                                            idx_f.truncate(pos)
+                                            idx_f.seek(pos)
+
+                                            idx_f.write(', ')
+
+                                        pos = idx_f.tell() - 2
+                                        idx_f.truncate(pos)
+                                        idx_f.seek(pos)
+
+                                        idx_msg = f"[Check rows of {idx_f.getvalue()}] "
+
+                                    _f.append("[Multiple data] "
+                                              f"{idx_msg}Duplicated rows having the following values {msg_f.getvalue()} exist in a loop.")
+
+                                else:
+                                    keys.add(key)
+
+                    if len(_f) == 0:
+                        f = []
+
+                asm = []  # assembly of a loop
+
+                for idx, row in enumerate(tag_data):
+                    ent = {}  # entity
+
+                    missing_mandatory_data = False
+                    remove_bad_pattern = False
+                    clear_bad_pattern = False
+
+                    for j in range(tag_len):
+                        name = tags[j]
+                        val = row[j]
+                        if j < key_len:
+                            k = key_items[j]
+                            type = k['type']  # pylint: disable=redefined-builtin
+                            if val in emptyValue and 'default' in k and k['default'] in emptyValue:
+                                ent[name] = k['default']
+                            elif type == 'bool':
+                                try:
+                                    ent[name] = val.lower() in trueValue
+                                except ValueError:
+                                    if excl_missing_data:
+                                        missing_mandatory_data = True
+                                        continue
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
                                     if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
                                         clear_bad_pattern = True
                                         continue
-                            if 'uppercase' in k and k['uppercase']:
-                                ent[name] = val.upper()
-                            else:
-                                ent[name] = val
-
-                    else:
-                        for d in data_items:
-                            if d['name'] == name:
-                                type = d['type']
-                                if val in emptyValue and ('enum' in type or ('default-from' not in d and 'default' not in d)):
-                                    if d['mandatory'] and excl_missing_data:
+                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                            elif type == 'int':
+                                try:
+                                    ent[name] = int(val)
+                                except ValueError:
+                                    if 'default-from' in k and k['default-from'] == 'self':
+                                        row[j] = ent[name] = letterToDigit(val)
+                                    elif 'default-from' in k and k['default-from'] in tags:
+                                        row[j] = ent[name] = letterToDigit(row[tags.index(k['default-from'])])
+                                    elif 'default' in k:
+                                        row[j] = ent[name] = int(k['default'])
+                                    elif excl_missing_data:
                                         missing_mandatory_data = True
                                         continue
-                                    ent[name] = None
-                                elif type == 'bool':
-                                    try:
-                                        ent[name] = val.lower() in trueValue
-                                    except ValueError:
-                                        if excl_missing_data:
-                                            ent[name] = None
-                                            continue
-                                        if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
-                                            remove_bad_pattern = True
-                                            continue
-                                        if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
-                                            clear_bad_pattern = True
-                                            continue
+                                    elif 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                        remove_bad_pattern = True
+                                        continue
+                                    elif 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        clear_bad_pattern = True
+                                        continue
+                                    else:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                          + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                                elif type == 'int':
-                                    try:
-                                        ent[name] = int(val)
-                                    except ValueError:
-                                        if 'default-from' in d and d['default-from'] == 'self':
-                                            row[j] = ent[name] = letterToDigit(val)
-                                        elif 'default-from' in d and d['default-from'] in tags:
-                                            row[j] = ent[name] = letterToDigit(row[tags.index(d['default-from'])])
-                                        elif 'default' in d:
-                                            row[j] = ent[name] = int(d['default'])
-                                        elif excl_missing_data:
-                                            ent[name] = None
-                                            continue
-                                        elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
-                                            remove_bad_pattern = True
-                                            continue
-                                        elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
-                                            clear_bad_pattern = True
-                                            continue
-                                        else:
-                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                                elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
-                                    try:
-                                        ent[name] = int(val)
-                                    except ValueError:
-                                        if 'default-from' in d and d['default-from'] == 'self':
-                                            row[j] = ent[name] = letterToDigit(val, 1)
-                                        elif 'default-from' in d and d['default-from'] in tags and row[tags.index(d['default-from'])] not in emptyValue:
-                                            row[j] = ent[name] = letterToDigit(row[tags.index(d['default-from'])], 1)
-                                            if ent[name] > 8 and not self.__remediation_mode and 'default' in d:
-                                                row[j] = ent[name] = int(d['default'])
-                                        elif 'default-from' in d and d['default-from'].startswith('Auth_asym_ID'):
-                                            row[j] = ent[name] = letterToDigit(val, 1)
-                                        elif 'default' in d:
-                                            row[j] = ent[name] = int(d['default'])
-                                        elif excl_missing_data:
-                                            ent[name] = None
-                                            continue
-                                        elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
-                                            remove_bad_pattern = True
-                                            continue
-                                        elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
-                                            clear_bad_pattern = True
-                                            continue
-                                        else:
-                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                                    if (type == 'index-int' and ent[name] <= 0)\
-                                       or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):
+                            elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
+                                try:
+                                    ent[name] = int(val)
+                                except ValueError:
+                                    if 'default-from' in k and k['default-from'] == 'self':
+                                        row[j] = ent[name] = letterToDigit(val, 1)
+                                    elif 'default-from' in k and k['default-from'] in tags and row[tags.index(k['default-from'])] not in emptyValue:
+                                        row[j] = ent[name] = letterToDigit(row[tags.index(k['default-from'])], 1)
+                                        if ent[name] > 8 and not self.__remediation_mode and 'default' in k:
+                                            row[j] = ent[name] = int(k['default'])
+                                    elif 'default-from' in k and k['default-from'].startswith('Auth_asym_ID'):
+                                        row[j] = ent[name] = letterToDigit(val, 1)
+                                    elif 'default' in k:
+                                        row[j] = ent[name] = int(k['default'])
+                                    elif excl_missing_data:
+                                        missing_mandatory_data = True
+                                        continue
+                                    elif 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                        remove_bad_pattern = True
+                                        continue
+                                    elif 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        clear_bad_pattern = True
+                                        continue
+                                    else:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                          + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                                    if ent[name] == 0 and enforce_non_zero:
-                                        if 'void-zero' in d:
-                                            if self.replace_zero_by_null_in_case:
-                                                loop.data[idx][loop.tags.index(name)] = None
-                                            ent[name] = None
-                                        else:
-                                            warn += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                                f"{name} {val!r} should not be zero, "\
-                                                f"as defined by {self.readableItemType[type]}.\n"
-                                    if type == 'positive-int-as-str':
-                                        row[j] = ent[name] = str(ent[name])
-                                elif type == 'pointer-index':
-                                    try:
-                                        ent[name] = int(val)
-                                    except ValueError:
-                                        if 'default-from' in d and d['default-from'] == 'self':
-                                            row[j] = ent[name] = letterToDigit(val, 1)
-                                        elif 'default-from' in d and d['default-from'] in tags:
-                                            row[j] = ent[name] = letterToDigit(row[tags.index(d['default-from'])], 1)
-                                        elif 'default-from' in d and d['default-from'] == 'parent' and parent_pointer is not None:
-                                            row[j] = ent[name] = parent_pointer
-                                        elif 'default' in d:
-                                            row[j] = ent[name] = int(d['default'])
-                                        elif excl_missing_data:
-                                            ent[name] = None
-                                            continue
-                                        elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
-                                            remove_bad_pattern = True
-                                            continue
-                                        elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
-                                            clear_bad_pattern = True
-                                            continue
-                                        else:
-                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                                    if ent[name] <= 0:
+                                if (type == 'index-int' and ent[name] <= 0)\
+                                   or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):
+                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                if ent[name] == 0 and enforce_non_zero:
+                                    if 'void-zero' in k:
+                                        if self.replace_zero_by_null_in_case:
+                                            loop.data[idx][loop.tags.index(name)] = None
+                                        ent[name] = None
+                                    else:
+                                        f.append(f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                 f"{name} {val!r} should not be zero, "
+                                                 f"as defined by {self.readableItemType[type]}.")
+                                if type == 'positive-int-as-str':
+                                    row[j] = ent[name] = str(ent[name])
+                            elif type == 'pointer-index':
+                                try:
+                                    ent[name] = int(val)
+                                except ValueError:
+                                    if 'default-from' in k and k['default-from'] == 'self':
+                                        row[j] = ent[name] = letterToDigit(val, 1)
+                                    elif 'default-from' in k and k['default-from'] in tags:
+                                        row[j] = ent[name] = letterToDigit(row[tags.index(k['default-from'])], 1)
+                                    elif 'default-from' in k and k['default-from'] == 'parent' and parent_pointer is not None:
+                                        row[j] = ent[name] = parent_pointer
+                                    elif 'default' in k:
+                                        row[j] = ent[name] = int(k['default'])
+                                    elif excl_missing_data:
+                                        missing_mandatory_data = True
+                                        continue
+                                    elif 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                        remove_bad_pattern = True
+                                        continue
+                                    elif 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        clear_bad_pattern = True
+                                        continue
+                                    else:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                          + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                                    if static_val[name] is None:
-                                        static_val[name] = val
-                                    elif val != static_val[name] and test_on_index:
-                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val} vs {static_val[name]} must be {self.readableItemType[type]}.")
-                                elif type == 'float':
-                                    try:
-                                        ent[name] = float(val)
-                                    except ValueError:
-                                        if excl_missing_data:
-                                            ent[name] = None
-                                            continue
-                                        if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
-                                            remove_bad_pattern = True
-                                            continue
-                                        if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
-                                            clear_bad_pattern = True
-                                            continue
-                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                                elif type == 'positive-float':
-                                    try:
-                                        ent[name] = float(val)
-                                    except ValueError:
-                                        if excl_missing_data:
-                                            ent[name] = None
-                                            continue
-                                        if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
-                                            remove_bad_pattern = True
-                                            continue
-                                        if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
-                                            clear_bad_pattern = True
-                                            continue
-                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                                    if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']):
-                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                                    if ent[name] == 0.0 and enforce_non_zero:
-                                        if 'void-zero' in d:
-                                            if self.replace_zero_by_null_in_case:
-                                                loop.data[idx][loop.tags.index(name)] = None
-                                            ent[name] = None
-                                        else:
-                                            warn += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                                f"{name} {val!r} should not be zero, "\
-                                                f"as defined by {self.readableItemType[type]}.\n"
-                                elif type == 'range-float':
-                                    try:
-                                        _range = d['range']
-                                        ent[name] = float(val)
-                                    except KeyError:
-                                        raise ValueError(f"Range of data item {name} is not defined")
-                                    except ValueError:
-                                        if excl_missing_data:
-                                            ent[name] = None
-                                            continue
-                                        if not enforce_range:
-                                            ent[name] = None
-                                            continue
-                                        if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
-                                            remove_bad_pattern = True
-                                            continue
-                                        if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
-                                            clear_bad_pattern = True
-                                            continue
-                                        warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                            f"{name} {val!r} must be {self.readableItemType[type]}.\n"
-                                    if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
-                                       or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
-                                        if ent[name] < 0.0:
-                                            if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive'])\
-                                               or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive'])\
-                                               or ('enforce-sign' in d and d['enforce-sign']):
-                                                if not enforce_range:
-                                                    ent[name] = None
-                                                else:
-                                                    warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                                        f"{name} {val!r} must be within range {_range}.\n"
-                                            elif enforce_sign:
-                                                warn += f"[Negative value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                                    f"{name} {val!r} should not have "\
-                                                    f"negative value for {self.readableItemType[type]}, {_range}.\n"
-                                        elif ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']:
+                                if ent[name] <= 0:
+                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                if static_val[name] is None:
+                                    static_val[name] = val
+                                elif val != static_val[name] and test_on_index:
+                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                     + f"{name} {val} vs {static_val[name]} must be {self.readableItemType[type]}.")
+                            elif type == 'float':
+                                try:
+                                    ent[name] = float(val)
+                                except ValueError:
+                                    if excl_missing_data:
+                                        missing_mandatory_data = True
+                                        continue
+                                    if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                        remove_bad_pattern = True
+                                        continue
+                                    if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        clear_bad_pattern = True
+                                        continue
+                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                            elif type == 'positive-float':
+                                try:
+                                    ent[name] = float(val)
+                                except ValueError:
+                                    if excl_missing_data:
+                                        missing_mandatory_data = True
+                                        continue
+                                    if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                        remove_bad_pattern = True
+                                        continue
+                                    if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        clear_bad_pattern = True
+                                        continue
+                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']):
+                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                if ent[name] == 0.0 and enforce_non_zero:
+                                    if 'void-zero' in k:
+                                        if self.replace_zero_by_null_in_case:
+                                            loop.data[idx][loop.tags.index(name)] = None
+                                        ent[name] = None
+                                    else:
+                                        f.append(f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                 f"{name} {val!r} should not be zero, "
+                                                 f"as defined by {self.readableItemType[type]}.")
+                            elif type == 'range-float':
+                                try:
+                                    _range = k['range']
+                                    ent[name] = float(val)
+                                except KeyError:
+                                    raise ValueError(f"Range of key item {name} is not defined")
+                                except ValueError:
+                                    if excl_missing_data:
+                                        missing_mandatory_data = True
+                                        continue
+                                    if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                        remove_bad_pattern = True
+                                        continue
+                                    if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        clear_bad_pattern = True
+                                        continue
+                                    if not enforce_range:
+                                        ent[name] = None
+                                        continue
+                                    f.append(f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                             f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
+                                   or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
+                                    if ent[name] < 0.0:
+                                        if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive'])\
+                                           or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive'])\
+                                           or ('enforce-sign' in k and k['enforce-sign']):
                                             if not enforce_range:
                                                 ent[name] = None
                                             else:
-                                                warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                                    f"{name} {val!r} must be within range {_range}.\n"
-                                        elif ent[name] == 0.0 and enforce_non_zero:
-                                            if 'void-zero' in d:
-                                                if self.replace_zero_by_null_in_case:
-                                                    loop.data[idx][loop.tags.index(name)] = None
-                                                ent[name] = None
-                                            else:
-                                                warn += f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                                    f"{name} {val!r} should not be zero, "\
-                                                    f"as defined by {self.readableItemType[type]}, {_range}.\n"
-                                        elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
-                                            remove_bad_pattern = True
-                                            continue
-                                        elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
-                                            clear_bad_pattern = True
-                                            continue
-                                    elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
-                                         ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or\
-                                         ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or\
-                                         ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
-                                        if 'void-zero' in d and ent[name] == 0.0:
+                                                f.append(f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                         f"{name} {val!r} must be within range {_range}.")
+                                        elif enforce_sign:
+                                            f.append(f"[Negative value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                     f"{name} {val!r} should not have "
+                                                     f"negative value for {self.readableItemType[type]}, {_range}.")
+                                    elif ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']:
+                                        if not enforce_range:
+                                            ent[name] = None
+                                        else:
+                                            f.append(f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                     f"{name} {val!r} must be within range {_range}.")
+                                    elif ent[name] == 0.0 and enforce_non_zero:
+                                        if 'void-zero' in k:
                                             if self.replace_zero_by_null_in_case:
                                                 loop.data[idx][loop.tags.index(name)] = None
                                             ent[name] = None
-                                        elif not enforce_range:
-                                            ent[name] = None
-                                        elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                        else:
+                                            f.append(f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                     f"{name} {val!r} should not be zero, "
+                                                     f"as defined by {self.readableItemType[type]}, {_range}.")
+                                elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
+                                     ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or\
+                                     ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or\
+                                     ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
+                                    if 'void-zero' in k and ent[name] == 0.0:
+                                        if self.replace_zero_by_null_in_case:
+                                            loop.data[idx][loop.tags.index(name)] = None
+                                        ent[name] = None
+                                    elif not enforce_range:
+                                        ent[name] = None
+                                    else:
+                                        f.append(f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                 f"{name} {val!r} must be within range {_range}.")
+                            elif type == 'enum':
+                                try:
+                                    enum = k['enum']
+                                    if val not in enum:
+                                        if 'default-from' in k and k['default-from'] in tags:
+                                            if row[tags.index(k['default-from'])][0].upper() in enum:
+                                                val = row[tags.index(k['default-from'])][0].upper()
+                                        elif 'enum-alt' in k and val in k['enum-alt']:
+                                            val = k['enum-alt'][val]
+                                            row[j] = val
+                                        elif 'enforce-enum' in k and k['enforce-enum']:
+                                            if excl_missing_data:
+                                                missing_mandatory_data = True
+                                                continue
+                                            if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                                remove_bad_pattern = True
+                                                continue
+                                            if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                                clear_bad_pattern = True
+                                                continue
+                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                             + f"{name} {val!r} must be one of {enum}.")
+                                        elif enforce_enum and name in mand_data_names:
+                                            f.append(f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                     f"{name} {val!r} should be one of {enum}.")
+                                    ent[name] = val
+                                except KeyError:
+                                    raise ValueError(f"Enumeration of key item {name} is not defined")
+                            elif type == 'enum-int':
+                                try:
+                                    enum = k['enum']
+                                    if int(val) not in enum:
+                                        if 'default-from' in k and k['default-from'] in tags:
+                                            if row[tags.index(k['default-from'])][0].upper() in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                                val = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[row[tags.index(k['default-from'])][0].upper()][0]
+                                        if 'enforce-enum' in k and k['enforce-enum']:
+                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                             + f"{name} {val!r} must be one of {enum}.")
+                                        if enforce_enum:
+                                            f.append(f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                     f"{name} {val!r} should be one of {enum}.")
+                                    ent[name] = int(val)
+                                except KeyError:
+                                    raise ValueError(f"Enumeration of key item {name} is not defined")
+                                except ValueError:
+                                    if excl_missing_data:
+                                        missing_mandatory_data = True
+                                        continue
+                                    if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                        remove_bad_pattern = True
+                                        continue
+                                    if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        clear_bad_pattern = True
+                                        continue
+                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                     + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                            else:
+                                if val in emptyValue:
+                                    if 'default-from' in k and k['default-from'] == 'self':
+                                        val = indexToLetter(letterToDigit(val, 1) - 1)
+                                    elif 'default-from' in k and k['default-from'] in tags and row[tags.index(k['default-from'])] not in emptyValue:
+                                        val = row[tags.index(k['default-from'])]
+                                    elif 'default-from' in k and k['default-from'].startswith('Auth_asym_ID'):
+                                        val = indexToLetter(letterToDigit(val, 1) - 1)
+                                    elif 'default' in k:
+                                        val = k['default']
+                                    else:
+                                        missing_mandatory_data = True
+                                        continue
+                                    if 'uppercase' in k and k['uppercase']:
+                                        val = val.upper()
+                                    row[j] = ent[name] = val
+                                if ('remove-bad-pattern' in k and k['remove-bad-pattern']) or ('clear-bad-pattern' in k and k['clear-bad-pattern']):
+                                    if isinstance(val, str) and badPattern.match(val):
+                                        if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                             remove_bad_pattern = True
                                             continue
-                                        elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                        if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
                                             clear_bad_pattern = True
                                             continue
-                                        else:
-                                            warn += f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                                f"{name} {val!r} must be within range {_range}.\n"
-                                elif type == 'enum':
-                                    try:
-                                        enum = d['enum']
-                                        if val not in enum:
-                                            if 'default-from' in d and d['default-from'] in tags:
-                                                if row[tags.index(d['default-from'])][0].upper() in enum:
-                                                    val = row[tags.index(d['default-from'])][0].upper()
-                                            elif 'enum-alt' in d and val in d['enum-alt']:
-                                                val = d['enum-alt'][val]
-                                                row[j] = val
-                                            elif 'enforce-enum' in d and d['enforce-enum']:
-                                                if excl_missing_data:
-                                                    ent[name] = None
-                                                    continue
-                                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                                 + f"{name} {val!r} must be one of {enum}.")
-                                            elif enforce_enum and name in mand_data_names:
-                                                warn += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                                    f"{name} {val!r} should be one of {enum}.\n"
-                                            elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
-                                                remove_bad_pattern = True
-                                                continue
-                                            elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
-                                                clear_bad_pattern = True
-                                                continue
-                                        ent[name] = val
-                                    except KeyError:
-                                        raise ValueError(f"Enumeration of data item {name} is not defined")
-                                elif type == 'enum-int':
-                                    try:
-                                        enum = d['enum']
-                                        if int(val) not in enum:
-                                            if 'default-from' in d and d['default-from'] in tags:
-                                                if row[tags.index(d['default-from'])][0].upper() in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                                    val = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[row[tags.index(d['default-from'])][0].upper()][0]
-                                            if 'enforce-enum' in d and d['enforce-enum']:
-                                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                                 + f"{name} {val!r} must be one of {enum}.")
-                                            if enforce_enum:
-                                                warn += f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"\
-                                                    f"{name} {val!r} should be one of {enum}.\n"
-                                            elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
-                                                remove_bad_pattern = True
-                                                continue
-                                            elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
-                                                clear_bad_pattern = True
-                                                continue
-                                        ent[name] = int(val)
-                                    except KeyError:
-                                        raise ValueError(f"Enumeration of data item {name} is not defined")
-                                    except ValueError:
-                                        if excl_missing_data:
-                                            ent[name] = None
-                                            continue
-                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                if 'uppercase' in k and k['uppercase']:
+                                    ent[name] = val.upper()
                                 else:
-                                    if ('remove-bad-pattern' in d and d['remove-bad-pattern']) or ('clear-bad-pattern' in d and d['clear-bad-pattern']):
-                                        if isinstance(val, str) and badPattern.match(val):
+                                    ent[name] = val
+
+                        else:
+                            for d in data_items:
+                                if d['name'] == name:
+                                    type = d['type']
+                                    if val in emptyValue and ('enum' in type or ('default-from' not in d and 'default' not in d)):
+                                        if d['mandatory'] and excl_missing_data:
+                                            missing_mandatory_data = True
+                                            continue
+                                        ent[name] = None
+                                    elif type == 'bool':
+                                        try:
+                                            ent[name] = val.lower() in trueValue
+                                        except ValueError:
+                                            if excl_missing_data:
+                                                ent[name] = None
+                                                continue
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 remove_bad_pattern = True
                                                 continue
                                             if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
                                                 clear_bad_pattern = True
                                                 continue
-                                    if 'uppercase' in d and d['uppercase']:
-                                        ent[name] = val.upper()
-                                    else:
-                                        ent[name] = val
-
-                for d in data_items:
-                    if 'group-mandatory' in d and d['group-mandatory']:
-                        name = d['name']
-                        group = d['group']
-                        if name in ent and ent[name] is not None:
-                            if group['coexist-with'] is not None:
-                                for cw in group['coexist-with']:
-                                    if cw not in ent or ent[cw] is None:
-                                        raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                         + f"One of data item {cw} must not be empty for a row having {name} {ent[name]!r}.")
-
-                            if 'smaller-than' in group and group['smaller-than'] is not None:
-                                for st in group['smaller-than']:
-                                    if st in ent and ent[st] is not None:
-                                        if ent[name] < ent[st]:
-                                            if 'circular-shift' in group:
-                                                ent[st] -= abs(group['circular-shift'])
-                                            if ent[name] < ent[st]:
-                                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                                 + f"Data item {name} {ent[name]!r} must be larger than {st} {ent[st]!r}.")
-
-                            if 'larger-than' in group and group['larger-than'] is not None:
-                                for lt in group['larger-than']:
-                                    if lt in ent and ent[lt] is not None:
-                                        if ent[name] > ent[lt]:
-                                            if 'circular-shift' in group:
-                                                ent[lt] += abs(group['circular-shift'])
-                                            if ent[name] > ent[lt]:
-                                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                                 + f"Data item {name} {ent[name]!r} must be smaller than {lt} {ent[lt]!r}.")
-
-                            if 'not-equal-to' in group and group['not-equal-to'] is not None:
-                                for ne in group['not-equal-to']:
-                                    if ne in ent and ent[ne] is not None:
-                                        if ent[name] == ent[ne]:
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                             + f"Data item {name} {ent[name]!r} must not be equal to {ne} {ent[ne]!r}.")
+                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                    elif type == 'int':
+                                        try:
+                                            ent[name] = int(val)
+                                        except ValueError:
+                                            if 'default-from' in d and d['default-from'] == 'self':
+                                                row[j] = ent[name] = letterToDigit(val)
+                                            elif 'default-from' in d and d['default-from'] in tags:
+                                                row[j] = ent[name] = letterToDigit(row[tags.index(d['default-from'])])
+                                            elif 'default' in d:
+                                                row[j] = ent[name] = int(d['default'])
+                                            elif excl_missing_data:
+                                                ent[name] = None
+                                                continue
+                                            elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                remove_bad_pattern = True
+                                                continue
+                                            elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                clear_bad_pattern = True
+                                                continue
+                                            else:
+                                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                    elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
+                                        try:
+                                            ent[name] = int(val)
+                                        except ValueError:
+                                            if 'default-from' in d and d['default-from'] == 'self':
+                                                row[j] = ent[name] = letterToDigit(val, 1)
+                                            elif 'default-from' in d and d['default-from'] in tags and row[tags.index(d['default-from'])] not in emptyValue:
+                                                row[j] = ent[name] = letterToDigit(row[tags.index(d['default-from'])], 1)
+                                                if ent[name] > 8 and not self.__remediation_mode and 'default' in d:
+                                                    row[j] = ent[name] = int(d['default'])
+                                            elif 'default-from' in d and d['default-from'].startswith('Auth_asym_ID'):
+                                                row[j] = ent[name] = letterToDigit(val, 1)
+                                            elif 'default' in d:
+                                                row[j] = ent[name] = int(d['default'])
+                                            elif excl_missing_data:
+                                                ent[name] = None
+                                                continue
+                                            elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                remove_bad_pattern = True
+                                                continue
+                                            elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                clear_bad_pattern = True
+                                                continue
+                                            else:
+                                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                        if (type == 'index-int' and ent[name] <= 0)\
+                                           or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):
+                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                        if ent[name] == 0 and enforce_non_zero:
+                                            if 'void-zero' in d:
+                                                if self.replace_zero_by_null_in_case:
+                                                    loop.data[idx][loop.tags.index(name)] = None
+                                                ent[name] = None
+                                            else:
+                                                f.append(f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                         f"{name} {val!r} should not be zero, "
+                                                         f"as defined by {self.readableItemType[type]}.")
+                                        if type == 'positive-int-as-str':
+                                            row[j] = ent[name] = str(ent[name])
+                                    elif type == 'pointer-index':
+                                        try:
+                                            ent[name] = int(val)
+                                        except ValueError:
+                                            if 'default-from' in d and d['default-from'] == 'self':
+                                                row[j] = ent[name] = letterToDigit(val, 1)
+                                            elif 'default-from' in d and d['default-from'] in tags:
+                                                row[j] = ent[name] = letterToDigit(row[tags.index(d['default-from'])], 1)
+                                            elif 'default-from' in d and d['default-from'] == 'parent' and parent_pointer is not None:
+                                                row[j] = ent[name] = parent_pointer
+                                            elif 'default' in d:
+                                                row[j] = ent[name] = int(d['default'])
+                                            elif excl_missing_data:
+                                                ent[name] = None
+                                                continue
+                                            elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                remove_bad_pattern = True
+                                                continue
+                                            elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                clear_bad_pattern = True
+                                                continue
+                                            else:
+                                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                                 + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                        if ent[name] <= 0:
+                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                        if static_val[name] is None:
+                                            static_val[name] = val
+                                        elif val != static_val[name] and test_on_index:
+                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                             + f"{name} {val} vs {static_val[name]} must be {self.readableItemType[type]}.")
+                                    elif type == 'float':
+                                        try:
+                                            ent[name] = float(val)
+                                        except ValueError:
+                                            if excl_missing_data:
+                                                ent[name] = None
+                                                continue
+                                            if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                remove_bad_pattern = True
+                                                continue
+                                            if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                clear_bad_pattern = True
+                                                continue
+                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                    elif type == 'positive-float':
+                                        try:
+                                            ent[name] = float(val)
+                                        except ValueError:
+                                            if excl_missing_data:
+                                                ent[name] = None
+                                                continue
+                                            if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                remove_bad_pattern = True
+                                                continue
+                                            if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                clear_bad_pattern = True
+                                                continue
+                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                        if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']):
+                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                        if ent[name] == 0.0 and enforce_non_zero:
+                                            if 'void-zero' in d:
+                                                if self.replace_zero_by_null_in_case:
+                                                    loop.data[idx][loop.tags.index(name)] = None
+                                                ent[name] = None
+                                            else:
+                                                f.append(f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                         f"{name} {val!r} should not be zero, "
+                                                         f"as defined by {self.readableItemType[type]}.")
+                                    elif type == 'range-float':
+                                        try:
+                                            _range = d['range']
+                                            ent[name] = float(val)
+                                        except KeyError:
+                                            raise ValueError(f"Range of data item {name} is not defined")
+                                        except ValueError:
+                                            if excl_missing_data:
+                                                ent[name] = None
+                                                continue
+                                            if not enforce_range:
+                                                ent[name] = None
+                                                continue
+                                            if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                remove_bad_pattern = True
+                                                continue
+                                            if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                clear_bad_pattern = True
+                                                continue
+                                            f.append(f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                     f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                        if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
+                                           or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
+                                            if ent[name] < 0.0:
+                                                if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive'])\
+                                                   or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive'])\
+                                                   or ('enforce-sign' in d and d['enforce-sign']):
+                                                    if not enforce_range:
+                                                        ent[name] = None
+                                                    else:
+                                                        f.append(f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                                 f"{name} {val!r} must be within range {_range}.")
+                                                elif enforce_sign:
+                                                    f.append(f"[Negative value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                             f"{name} {val!r} should not have "
+                                                             f"negative value for {self.readableItemType[type]}, {_range}.")
+                                            elif ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']:
+                                                if not enforce_range:
+                                                    ent[name] = None
+                                                else:
+                                                    f.append(f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                             f"{name} {val!r} must be within range {_range}.")
+                                            elif ent[name] == 0.0 and enforce_non_zero:
+                                                if 'void-zero' in d:
+                                                    if self.replace_zero_by_null_in_case:
+                                                        loop.data[idx][loop.tags.index(name)] = None
+                                                    ent[name] = None
+                                                else:
+                                                    f.append(f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                             f"{name} {val!r} should not be zero, "
+                                                             f"as defined by {self.readableItemType[type]}, {_range}.")
+                                            elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                remove_bad_pattern = True
+                                                continue
+                                            elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                clear_bad_pattern = True
+                                                continue
+                                        elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
+                                             ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or\
+                                             ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or\
+                                             ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
+                                            if 'void-zero' in d and ent[name] == 0.0:
+                                                if self.replace_zero_by_null_in_case:
+                                                    loop.data[idx][loop.tags.index(name)] = None
+                                                ent[name] = None
+                                            elif not enforce_range:
+                                                ent[name] = None
+                                            elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                remove_bad_pattern = True
+                                                continue
+                                            elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                clear_bad_pattern = True
+                                                continue
+                                            else:
+                                                f.append(f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                         f"{name} {val!r} must be within range {_range}.")
+                                    elif type == 'enum':
+                                        try:
+                                            enum = d['enum']
+                                            if val not in enum:
+                                                if 'default-from' in d and d['default-from'] in tags:
+                                                    if row[tags.index(d['default-from'])][0].upper() in enum:
+                                                        val = row[tags.index(d['default-from'])][0].upper()
+                                                elif 'enum-alt' in d and val in d['enum-alt']:
+                                                    val = d['enum-alt'][val]
+                                                    row[j] = val
+                                                elif 'enforce-enum' in d and d['enforce-enum']:
+                                                    if excl_missing_data:
+                                                        ent[name] = None
+                                                        continue
+                                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                                     + f"{name} {val!r} must be one of {enum}.")
+                                                elif enforce_enum and name in mand_data_names:
+                                                    f.append(f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                             f"{name} {val!r} should be one of {enum}.")
+                                                elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                    remove_bad_pattern = True
+                                                    continue
+                                                elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                    clear_bad_pattern = True
+                                                    continue
+                                            ent[name] = val
+                                        except KeyError:
+                                            raise ValueError(f"Enumeration of data item {name} is not defined")
+                                    elif type == 'enum-int':
+                                        try:
+                                            enum = d['enum']
+                                            if int(val) not in enum:
+                                                if 'default-from' in d and d['default-from'] in tags:
+                                                    if row[tags.index(d['default-from'])][0].upper() in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                                        val = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[row[tags.index(d['default-from'])][0].upper()][0]
+                                                if 'enforce-enum' in d and d['enforce-enum']:
+                                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                                     + f"{name} {val!r} must be one of {enum}.")
+                                                if enforce_enum:
+                                                    f.append(f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                             f"{name} {val!r} should be one of {enum}.")
+                                                elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                    remove_bad_pattern = True
+                                                    continue
+                                                elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                    clear_bad_pattern = True
+                                                    continue
+                                            ent[name] = int(val)
+                                        except KeyError:
+                                            raise ValueError(f"Enumeration of data item {name} is not defined")
+                                        except ValueError:
+                                            if excl_missing_data:
+                                                ent[name] = None
+                                                continue
+                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                             + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                    else:
+                                        if ('remove-bad-pattern' in d and d['remove-bad-pattern']) or ('clear-bad-pattern' in d and d['clear-bad-pattern']):
+                                            if isinstance(val, str) and badPattern.match(val):
+                                                if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                    remove_bad_pattern = True
+                                                    continue
+                                                if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                    clear_bad_pattern = True
+                                                    continue
+                                        if 'uppercase' in d and d['uppercase']:
+                                            ent[name] = val.upper()
+                                        else:
+                                            ent[name] = val
 
-                        elif group['member-with'] is not None:
-                            has_member = not d['mandatory']
-                            for mw in group['member-with']:
-                                if mw in ent and ent[mw] is not None:
-                                    has_member = True
-                                    break
-                            if not has_member:
-                                member = set(group['member-with'])
-                                member.add(name)
-                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
-                                                 + f"One of data items {member} must not be empty.")
-
-                if missing_mandatory_data:
-                    continue
-
-                if remove_bad_pattern:
-                    r = {}
-                    for j, t in enumerate(loop.tags):
-                        r[t] = loop.data[idx][j]
-                    warn += f"[Remove bad pattern] Found bad pattern. "\
-                        f"#_of_row {idx + 1}, data_of_row {r}.\n"
-                    continue  # should be removed from loop later
-
-                if clear_bad_pattern:
-                    r = {}
-                    for j, t in enumerate(loop.tags):
-                        r[t] = loop.data[idx][j]
-                    warn += f"[Clear bad pattern] Found bad pattern. "\
-                        f"#_of_row {idx + 1}, data_of_row {r}.\n"
-                    for k in key_items:
-                        if k in loop.tags and 'clear-bad-pattern' in k and k['clear-bad-pattern']:
-                            row[loop.tags.index(k)] = '?'
-                            ent[k] = None
                     for d in data_items:
-                        if d in loop.tags and 'clear-bad-pattern' in d and d['clear-bad-pattern']:
-                            row[loop.tags.index(d)] = '?'
-                            ent[d] = None
+                        if 'group-mandatory' in d and d['group-mandatory']:
+                            name = d['name']
+                            group = d['group']
+                            if name in ent and ent[name] is not None:
+                                if group['coexist-with'] is not None:
+                                    for cw in group['coexist-with']:
+                                        if cw not in ent or ent[cw] is None:
+                                            raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                             + f"One of data item {cw} must not be empty for a row having {name} {ent[name]!r}.")
 
-                asm.append(ent)
+                                if 'smaller-than' in group and group['smaller-than'] is not None:
+                                    for st in group['smaller-than']:
+                                        if st in ent and ent[st] is not None:
+                                            if ent[name] < ent[st]:
+                                                if 'circular-shift' in group:
+                                                    ent[st] -= abs(group['circular-shift'])
+                                                if ent[name] < ent[st]:
+                                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                                     + f"Data item {name} {ent[name]!r} must be larger than {st} {ent[st]!r}.")
 
-            data.append(asm)
+                                if 'larger-than' in group and group['larger-than'] is not None:
+                                    for lt in group['larger-than']:
+                                        if lt in ent and ent[lt] is not None:
+                                            if ent[name] > ent[lt]:
+                                                if 'circular-shift' in group:
+                                                    ent[lt] += abs(group['circular-shift'])
+                                                if ent[name] > ent[lt]:
+                                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                                     + f"Data item {name} {ent[name]!r} must be smaller than {lt} {ent[lt]!r}.")
 
-        if len(warn) > 0:
-            raise UserWarning(warn)
+                                if 'not-equal-to' in group and group['not-equal-to'] is not None:
+                                    for ne in group['not-equal-to']:
+                                        if ne in ent and ent[ne] is not None:
+                                            if ent[name] == ent[ne]:
+                                                raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                                 + f"Data item {name} {ent[name]!r} must not be equal to {ne} {ent[ne]!r}.")
 
-        if len(data) == 0:
-            data.append([])
+                            elif group['member-with'] is not None:
+                                has_member = not d['mandatory']
+                                for mw in group['member-with']:
+                                    if mw in ent and ent[mw] is not None:
+                                        has_member = True
+                                        break
+                                if not has_member:
+                                    member = set(group['member-with'])
+                                    member.add(name)
+                                    raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
+                                                     + f"One of data items {member} must not be empty.")
 
-        return data
+                    if missing_mandatory_data:
+                        continue
+
+                    if remove_bad_pattern:
+                        r = {}
+                        for j, t in enumerate(loop.tags):
+                            r[t] = loop.data[idx][j]
+                        f.append(f"[Remove bad pattern] Found bad pattern. "
+                                 f"#_of_row {idx + 1}, data_of_row {r}.")
+                        continue  # should be removed from loop later
+
+                    if clear_bad_pattern:
+                        r = {}
+                        for j, t in enumerate(loop.tags):
+                            r[t] = loop.data[idx][j]
+                        f.append(f"[Clear bad pattern] Found bad pattern. "
+                                 f"#_of_row {idx + 1}, data_of_row {r}.")
+                        for k in key_items:
+                            if k in loop.tags and 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                row[loop.tags.index(k)] = '?'
+                                ent[k] = None
+                        for d in data_items:
+                            if d in loop.tags and 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                row[loop.tags.index(d)] = '?'
+                                ent[d] = None
+
+                    asm.append(ent)
+
+                data.append(asm)
+
+            if len(f) > 0:
+                raise UserWarning('\n'.join(f))
+
+            if len(data) == 0:
+                data.append([])
+
+            return data
 
     def get_conflict_id(self, star_data, lp_category, key_items):  # pylint: disable=no-self-use
         """ Return list of conflicted row IDs except for rows of the first occurrence.
@@ -3470,40 +3586,46 @@ class NEFTranslator:
 
         key_len = len(key_items)
 
-        for loop in loops:
+        with io.StringIO() as key_f:
 
-            if len(key_names) > 0 and set(key_names) & set(loop.tags) != set(key_names):
-                missing_tags = list(set(key_names) - set(loop.tags))
-                for k in key_items:
-                    if k['name'] in missing_tags:
-                        if 'default' in k:
-                            for row in loop:
-                                row.append(k['default'])
-                            loop.add_tag(k['name'])
-                        else:
-                            raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+            for loop in loops:
 
-            len_loop = len(loop)
+                if len(key_names) > 0 and set(key_names) & set(loop.tags) != set(key_names):
+                    missing_tags = list(set(key_names) - set(loop.tags))
+                    for k in key_items:
+                        if k['name'] in missing_tags:
+                            if 'default' in k:
+                                for row in loop:
+                                    row.append(k['default'])
+                                loop.add_tag(k['name'])
+                            else:
+                                raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
-            keys = set()
-            dup_ids = set()
+                len_loop = len(loop)
 
-            for idx, row in enumerate(get_lp_tag(loop, key_names)):
+                keys = set()
+                dup_ids = set()
 
-                key = ''
-                for j in range(key_len):
-                    key += ' ' + (row[j].upper() if uppercases[j] else row[j])
-                key.rstrip()
+                for idx, row in enumerate(get_lp_tag(loop, key_names)):
 
-                if key in keys and idx < len_loop:
-                    dup_ids.add(idx)
+                    if key_f.tell() > 0:
+                        key_f.truncate(0)
+                        key_f.seek(0)
 
-                else:
-                    keys.add(key)
+                    for j in range(key_len):
+                        key_f.write(f'{row[j].upper() if uppercases[j] else row[j]} ')
 
-            data.append(sorted(dup_ids, reverse=True))
+                    key = key_f.getvalue()
 
-        return data
+                    if key in keys and idx < len_loop:
+                        dup_ids.add(idx)
+
+                    else:
+                        keys.add(key)
+
+                data.append(sorted(dup_ids, reverse=True))
+
+            return data
 
     def get_conflict_id_set(self, star_data, lp_category, key_items):  # pylint: disable=no-self-use
         """ Return list of conflicted row ID sets.
@@ -3529,68 +3651,82 @@ class NEFTranslator:
 
         key_len = len(key_items)
 
-        for loop in loops:
+        with io.StringIO() as key_f:
 
-            if len(key_names) > 0 and set(key_names) & set(loop.tags) != set(key_names):
-                missing_tags = list(set(key_names) - set(loop.tags))
-                raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+            for loop in loops:
 
-            len_loop = len(loop)
+                if len(key_names) > 0 and set(key_names) & set(loop.tags) != set(key_names):
+                    missing_tags = list(set(key_names) - set(loop.tags))
+                    raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
-            tag_data = get_lp_tag(loop, key_names)
+                len_loop = len(loop)
 
-            keys = set()
-            dup_ids = set()
+                tag_data = get_lp_tag(loop, key_names)
 
-            for idx, row in enumerate(tag_data):
+                keys = set()
+                dup_ids = set()
 
-                key = ''
-                for j in range(key_len):
-                    key += ' ' + (row[j].upper() if uppercases[j] else row[j])
-                key.rstrip()
+                for idx, row in enumerate(tag_data):
 
-                if key in keys and idx < len_loop:
-                    dup_ids.add(idx)
+                    if key_f.tell() > 0:
+                        key_f.truncate(0)
+                        key_f.seek(0)
+
+                    for j in range(key_len):
+                        key_f.write(f'{row[j].upper() if uppercases[j] else row[j]} ')
+
+                    key = key_f.getvalue()
+
+                    if key in keys and idx < len_loop:
+                        dup_ids.add(idx)
+
+                    else:
+                        keys.add(key)
+
+                conflict_id = sorted(dup_ids, reverse=True)
+
+                if len(conflict_id) == 0:
+                    data.append(None)
 
                 else:
-                    keys.add(key)
+                    conflict_id_set = []
 
-            conflict_id = sorted(dup_ids, reverse=True)
+                    for idx in conflict_id:
 
-            if len(conflict_id) == 0:
-                data.append(None)
+                        if key_f.tell() > 0:
+                            key_f.truncate(0)
+                            key_f.seek(0)
 
-            else:
-                conflict_id_set = []
-
-                for idx in conflict_id:
-
-                    key = ''
-                    for j in range(key_len):
-                        key += ' ' + tag_data[idx][j]
-                        key.rstrip()
-
-                    id_set = [idx]
-
-                    for m in range(idx):
-
-                        _key = ''
                         for j in range(key_len):
-                            _key += ' ' + tag_data[m][j]
-                            _key.rstrip()
+                            key_f.write(f'{tag_data[idx][j]} ')
 
-                        if key == _key and m < len_loop:
-                            id_set.append(m)
+                        key = key_f.getvalue()
 
-                            if m in conflict_id:
-                                conflict_id.remove(m)
+                        id_set = [idx]
 
-                    if len(id_set) > 1:
-                        conflict_id_set.insert(0, sorted(id_set))
+                        for m in range(idx):
 
-                data.append(conflict_id_set)
+                            if key_f.tell() > 0:
+                                key_f.truncate(0)
+                                key_f.seek(0)
 
-        return data
+                            for j in range(key_len):
+                                key_f.write(f'{tag_data[m][j]} ')
+
+                            _key = key_f.getvalue()
+
+                            if key == _key and m < len_loop:
+                                id_set.append(m)
+
+                                if m in conflict_id:
+                                    conflict_id.remove(m)
+
+                        if len(id_set) > 1:
+                            conflict_id_set.insert(0, sorted(id_set))
+
+                    data.append(conflict_id_set)
+
+            return data
 
     def get_conflict_atom_id(self, star_data, file_type, lp_category, key_items):
         """ Return list of row IDs that include self atoms.
@@ -3729,8 +3865,6 @@ class NEFTranslator:
             @return: list of extracted saveframe tags
         """
 
-        warn = ''
-
         item_types = ('str', 'bool', 'int', 'positive-int', 'positive-int-as-str',
                       'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
@@ -3795,6 +3929,8 @@ class NEFTranslator:
                     if t['name'] == name and t['mandatory'] and 'default' not in t:
                         raise ValueError(f"{name} must not be empty.")
 
+        f = []  # user warnings
+
         ent = {}  # entity
 
         for name, val in sf_tags.items():
@@ -3844,8 +3980,8 @@ class NEFTranslator:
                                     star_data.tags[sf_tags.keys().index(name)][1] = None
                                 ent[name] = None
                             else:
-                                warn += f"[Zero value error] {name} {val!r} should not be zero, "\
-                                    f"as defined by {self.readableItemType[type]}.\n"
+                                f.append(f"[Zero value error] {name} {val!r} should not be zero, "
+                                         f"as defined by {self.readableItemType[type]}.")
                         if type == 'positive-int-as-str':
                             ent[name] = str(ent[name])
                     elif type == 'float':
@@ -3866,8 +4002,8 @@ class NEFTranslator:
                                     star_data.tags[sf_tags.keys().index(name)][1] = None
                                 ent[name] = None
                             else:
-                                warn += f"[Zero value error] {name} {val!r} should not be zero, "\
-                                    f"as defined by {self.readableItemType[type]}.\n"
+                                f.append(f"[Zero value error] {name} {val!r} should not be zero, "
+                                         f"as defined by {self.readableItemType[type]}.")
                     elif type == 'range-float':
                         try:
                             _range = t['range']
@@ -3878,7 +4014,7 @@ class NEFTranslator:
                             if not enforce_range:
                                 ent[name] = None
                                 continue
-                            warn += f"[Range value error] {name} {val!r} must be {self.readableItemType[type]}.\n"
+                            f.append(f"[Range value error] {name} {val!r} must be {self.readableItemType[type]}.")
                         if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
                            or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                             if ent[name] < 0.0:
@@ -3888,23 +4024,23 @@ class NEFTranslator:
                                     if not enforce_range:
                                         ent[name] = None
                                     else:
-                                        warn += f"[Range value error] {name} {val!r} must be within range {_range}.\n"
+                                        f.append(f"[Range value error] {name} {val!r} must be within range {_range}.")
                                 elif enforce_sign:
-                                    warn += f"[Negative value error] {name} {val!r} should not have "\
-                                        f"negative value for {self.readableItemType[type]}, {_range}.\n"
+                                    f.append(f"[Negative value error] {name} {val!r} should not have "
+                                             f"negative value for {self.readableItemType[type]}, {_range}.")
                             elif ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']:
                                 if not enforce_range:
                                     ent[name] = None
                                 else:
-                                    warn += f"[Range value error] {name} {val!r} must be within range {_range}.\n"
+                                    f.append(f"[Range value error] {name} {val!r} must be within range {_range}.")
                             elif ent[name] == 0.0 and enforce_non_zero:
                                 if 'void-zero' in t:
                                     if self.replace_zero_by_null_in_case:
                                         star_data.tags[sf_tags.keys().index(name)][1] = None
                                     ent[name] = None
                                 else:
-                                    warn += f"[Zero value error] {name} {val!r} should not be zero, "\
-                                        f"as defined by {self.readableItemType[type]}, {_range}.\n"
+                                    f.append(f"[Zero value error] {name} {val!r} should not be zero, "
+                                             f"as defined by {self.readableItemType[type]}, {_range}.")
                         elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
                              ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or\
                              ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or\
@@ -3916,7 +4052,7 @@ class NEFTranslator:
                             elif not enforce_range:
                                 ent[name] = None
                             else:
-                                warn += f"[Range value error] {name} {val} must be within range {_range}.\n"
+                                f.append(f"[Range value error] {name} {val} must be within range {_range}.")
                     elif type == 'enum':
                         if val in emptyValue:
                             val = '?'  # '.' raises internal error in NmrDpUtility
@@ -3929,22 +4065,22 @@ class NEFTranslator:
                                     itName = '_' + category + '.' + t['name']
                                     if val == '?' and enforce_enum:
                                         if self.is_mandatory_tag(itName, file_type):
-                                            warn += f"[Enumeration error] The mandatory type {itName} {val!r} is missing "\
-                                                f"and the type must be one of {enum}. {t['enum-alt'][val]} will be given "\
-                                                f"unless you would like to fix the type and re-upload the {file_type.upper()} file.\n"
+                                            f.append(f"[Enumeration error] The mandatory type {itName} {val!r} is missing "
+                                                     f"and the type must be one of {enum}. {t['enum-alt'][val]} will be given "
+                                                     f"unless you would like to fix the type and re-upload the {file_type.upper()} file.")
                                             val = t['enum-alt'][val]
                                             star_data.tags[itCol][1] = val
                                         else:
-                                            warn += f"[Enumeration error] {name} {val!r} should be one of {enum}. "\
-                                                "The type may be filled with either 'undefined' or estimated value "\
-                                                f"unless you would like to fix the type and re-upload the {file_type.upper()} file.\n"
+                                            f.append(f"[Enumeration error] {name} {val!r} should be one of {enum}. "
+                                                     "The type may be filled with either 'undefined' or estimated value "
+                                                     f"unless you would like to fix the type and re-upload the {file_type.upper()} file.")
                                     else:
                                         val = t['enum-alt'][val]
                                         star_data.tags[itCol][1] = val
                                 elif 'enforce-enum' in t and t['enforce-enum']:
                                     raise ValueError(f"{name} {val!r} must be one of {enum}.")
                                 elif enforce_enum and name in mand_tag_names:
-                                    warn += f"[Enumeration error] {name} {val!r} should be one of {enum}.\n"
+                                    f.append(f"[Enumeration error] {name} {val!r} should be one of {enum}.")
                             ent[name] = None if val in emptyValue else val
                         except KeyError:
                             raise ValueError(f"Enumeration of tag item {name} is not defined.")
@@ -3955,7 +4091,7 @@ class NEFTranslator:
                                 if 'enforce-enum' in t and t['enforce-enum']:
                                     raise ValueError(f"{name} {val!r} must be one of {enum}.")
                                 if enforce_enum:
-                                    warn += f"[Enumeration error] {name} {val!r} should be one of {enum}.\n"
+                                    f.append(f"[Enumeration error] {name} {val!r} should be one of {enum}.")
                             ent[name] = int(val)
                         except KeyError:
                             raise ValueError(f"Enumeration of tag item {name} is not defined.")
@@ -4009,8 +4145,8 @@ class NEFTranslator:
                             member.add(name)
                             raise ValueError(f"One of tag items {member} must not be empty.")
 
-        if len(warn) > 0:
-            raise UserWarning(warn)
+        if len(f) > 0:
+            raise UserWarning('\n'.join(f))
 
         return ent
 
@@ -5594,132 +5730,138 @@ class NEFTranslator:
                 chain_tag_2 = chain_tag
                 seq_tag_2 = seq_tag
 
-        key_indices = [star_tags.index(tag) for tag in ['_Bond.Entity_assembly_ID_1', '_Bond.Comp_index_ID_1', '_Bond.Atom_ID_1',
-                                                        '_Bond.Entity_assembly_ID_2', '_Bond.Comp_index_ID_2', '_Bond.Atom_ID_2']]
+        with io.StringIO() as key_f:
 
-        index = 1
+            key_indices = [star_tags.index(tag) for tag in ['_Bond.Entity_assembly_ID_1', '_Bond.Comp_index_ID_1', '_Bond.Atom_ID_1',
+                                                            '_Bond.Entity_assembly_ID_2', '_Bond.Comp_index_ID_2', '_Bond.Atom_ID_2']]
 
-        for row in loop_data:
+            index = 1
 
-            buf_row = []
+            for row in loop_data:
 
-            tag_map = {}
-            self_tag_map = {}
+                buf_row = []
 
-            for tag in seq_ident_tags:
-                chain_tag = tag['chain_tag']
-                seq_tag = tag['seq_tag']
+                tag_map = {}
+                self_tag_map = {}
 
-                nef_chain = row[nef_tags.index(chain_tag)]
-                _nef_seq = row[nef_tags.index(seq_tag)]
-                if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
-                    _nef_seq = int(_nef_seq)
+                for tag in seq_ident_tags:
+                    chain_tag = tag['chain_tag']
+                    seq_tag = tag['seq_tag']
 
-                seq_key = (nef_chain, _nef_seq)
+                    nef_chain = row[nef_tags.index(chain_tag)]
+                    _nef_seq = row[nef_tags.index(seq_tag)]
+                    if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
+                        _nef_seq = int(_nef_seq)
 
-                try:
-                    tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                    self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-                except KeyError:
-                    tag_map[chain_tag] = nef_chain
-                    tag_map[seq_tag] = _nef_seq
-                    self_tag_map[chain_tag] = nef_chain
-                    self_tag_map[seq_tag] = _nef_seq
+                    seq_key = (nef_chain, _nef_seq)
 
-            intra_residue = row[nef_tags.index(chain_tag_1)] == row[nef_tags.index(chain_tag_2)]\
-                and row[nef_tags.index(seq_tag_1)] == row[nef_tags.index(seq_tag_2)]
+                    try:
+                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                        self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
+                    except KeyError:
+                        tag_map[chain_tag] = nef_chain
+                        tag_map[seq_tag] = _nef_seq
+                        self_tag_map[chain_tag] = nef_chain
+                        self_tag_map[seq_tag] = _nef_seq
 
-            atom_list_1 = self.get_star_atom(row[nef_comp_index_1], row[nef_atom_index_1])[0]
-            atom_list_2 = self.get_star_atom(row[nef_comp_index_2], row[nef_atom_index_2])[0]
+                intra_residue = row[nef_tags.index(chain_tag_1)] == row[nef_tags.index(chain_tag_2)]\
+                    and row[nef_tags.index(seq_tag_1)] == row[nef_tags.index(seq_tag_2)]
 
-            for atom_1 in atom_list_1:
+                atom_list_1 = self.get_star_atom(row[nef_comp_index_1], row[nef_atom_index_1])[0]
+                atom_list_2 = self.get_star_atom(row[nef_comp_index_2], row[nef_atom_index_2])[0]
 
-                for atom_2 in atom_list_2:
+                for atom_1 in atom_list_1:
 
-                    if intra_residue and atom_2 == atom_1:
-                        continue
+                    for atom_2 in atom_list_2:
 
-                    buf = [None] * len(star_tags)
-
-                    for tag in nef_tags:
-
-                        auth_tag, data_tag, _ = self.get_star_tag(tag)
-
-                        if auth_tag is None:
+                        if intra_residue and atom_2 == atom_1:
                             continue
 
-                        data = row[nef_tags.index(tag)]
+                        buf = [None] * len(star_tags)
 
-                        if 'chain_code' in tag or 'sequence_code' in tag:
-                            buf[star_tags.index(auth_tag)] = self_tag_map[tag]
-                        else:
-                            buf[star_tags.index(auth_tag)] = data
+                        for tag in nef_tags:
 
-                        if auth_tag != data_tag:
+                            auth_tag, data_tag, _ = self.get_star_tag(tag)
 
-                            data_index = star_tags.index(data_tag)
+                            if auth_tag is None:
+                                continue
+
+                            data = row[nef_tags.index(tag)]
 
                             if 'chain_code' in tag or 'sequence_code' in tag:
-                                buf[data_index] = tag_map[tag]
-                            elif tag == '_nef_covalent_links.atom_name_1':
-                                buf[data_index] = atom_1
-                            elif tag == '_nef_covalent_links.atom_name_2':
-                                buf[data_index] = atom_2
+                                buf[star_tags.index(auth_tag)] = self_tag_map[tag]
                             else:
-                                buf[data_index] = data
+                                buf[star_tags.index(auth_tag)] = data
 
-                    # 'amide': (C=O)-N
-                    # 'directed': N-O
-                    # 'disulfide': S-S
-                    # 'ester': (C=O)-O
-                    # 'ether': -O-
-                    # 'hydrogen': (O/N/F)-H-(O/N/F)
-                    # 'metal coordination': (N/O/S)-Metal
-                    # 'peptide': (C=O)-N
-                    # 'thioether': -S-
-                    # 'oxime': >C=N-OH
-                    # 'thioester': -(C=O)-S-
-                    # 'phosphoester': ?
-                    # 'phosphodiester': -(PO4)-
-                    # 'diselenide': Se-Se
-                    buf[star_type_index] = 'covalent'
-                    if atom_1 == 'SG' and atom_2 == 'SG':
-                        buf[star_type_index] = 'disulfide'
-                    elif atom_1 == 'SE' and atom_2 == 'SE':
-                        buf[star_type_index] = 'diselenide'
-                    elif (atom_1 in NON_METAL_ELEMENTS and (atom_2 in PARAMAGNETIC_ELEMENTS or atom_2 in FERROMAGNETIC_ELEMENTS)) or\
-                         (atom_2 in NON_METAL_ELEMENTS and (atom_1 in PARAMAGNETIC_ELEMENTS or atom_1 in FERROMAGNETIC_ELEMENTS)):
-                        buf[star_type_index] = 'metal coordination'
-                    elif {atom_1, atom_2} == {'C', 'N'}\
-                            and row[nef_tags.index(chain_tag_1)] == row[nef_tags.index(chain_tag_2)]\
-                            and row[nef_tags.index(seq_tag_1)] != row[nef_tags.index(seq_tag_2)]:
-                        buf[star_type_index] = 'peptide'
-                    buf[star_value_order_index] = 'sing'
+                            if auth_tag != data_tag:
 
-                    buf_row.append(buf)
+                                data_index = star_tags.index(data_tag)
 
-            keys = set()
+                                if 'chain_code' in tag or 'sequence_code' in tag:
+                                    buf[data_index] = tag_map[tag]
+                                elif tag == '_nef_covalent_links.atom_name_1':
+                                    buf[data_index] = atom_1
+                                elif tag == '_nef_covalent_links.atom_name_2':
+                                    buf[data_index] = atom_2
+                                else:
+                                    buf[data_index] = data
 
-            for b in buf_row:
+                        # 'amide': (C=O)-N
+                        # 'directed': N-O
+                        # 'disulfide': S-S
+                        # 'ester': (C=O)-O
+                        # 'ether': -O-
+                        # 'hydrogen': (O/N/F)-H-(O/N/F)
+                        # 'metal coordination': (N/O/S)-Metal
+                        # 'peptide': (C=O)-N
+                        # 'thioether': -S-
+                        # 'oxime': >C=N-OH
+                        # 'thioester': -(C=O)-S-
+                        # 'phosphoester': ?
+                        # 'phosphodiester': -(PO4)-
+                        # 'diselenide': Se-Se
+                        buf[star_type_index] = 'covalent'
+                        if atom_1 == 'SG' and atom_2 == 'SG':
+                            buf[star_type_index] = 'disulfide'
+                        elif atom_1 == 'SE' and atom_2 == 'SE':
+                            buf[star_type_index] = 'diselenide'
+                        elif (atom_1 in NON_METAL_ELEMENTS and (atom_2 in PARAMAGNETIC_ELEMENTS or atom_2 in FERROMAGNETIC_ELEMENTS)) or\
+                             (atom_2 in NON_METAL_ELEMENTS and (atom_1 in PARAMAGNETIC_ELEMENTS or atom_1 in FERROMAGNETIC_ELEMENTS)):
+                            buf[star_type_index] = 'metal coordination'
+                        elif {atom_1, atom_2} == {'C', 'N'}\
+                                and row[nef_tags.index(chain_tag_1)] == row[nef_tags.index(chain_tag_2)]\
+                                and row[nef_tags.index(seq_tag_1)] != row[nef_tags.index(seq_tag_2)]:
+                            buf[star_type_index] = 'peptide'
+                        buf[star_value_order_index] = 'sing'
 
-                key = ''
-                for j in key_indices:
-                    key += ' ' + str(b[j])
-                key.rstrip()
+                        buf_row.append(buf)
 
-                if key in keys:
-                    continue
+                keys = set()
 
-                keys.add(key)
+                for b in buf_row:
 
-                if star_id_index >= 0:
-                    b[star_id_index] = index
+                    if key_f.tell() > 0:
+                        key_f.truncate(0)
+                        key_f.seek(0)
 
-                index += 1
+                    for j in key_indices:
+                        key_f.write(f'{b[j]} ')
 
-                out_row.append(b)
+                    key = key_f.getvalue()
 
-        return out_row
+                    if key in keys:
+                        continue
+
+                    keys.add(key)
+
+                    if star_id_index >= 0:
+                        b[star_id_index] = index
+
+                    index += 1
+
+                    out_row.append(b)
+
+            return out_row
 
     def star2star_bond_row(self, in_star_tags, star_tags, loop_data):
         """ Translate rows in bond loop from PyNMRSTAR data object into NMR-STAR.
@@ -5758,134 +5900,140 @@ class NEFTranslator:
                 chain_tag_2 = chain_tag
                 seq_tag_2 = seq_tag
 
-        key_indices = [star_tags.index(tag) for tag in ['_Bond.Entity_assembly_ID_1', '_Bond.Comp_index_ID_1', '_Bond.Atom_ID_1',
-                                                        '_Bond.Entity_assembly_ID_2', '_Bond.Comp_index_ID_2', '_Bond.Atom_ID_2']]
+        with io.StringIO() as key_f:
 
-        index = 1
+            key_indices = [star_tags.index(tag) for tag in ['_Bond.Entity_assembly_ID_1', '_Bond.Comp_index_ID_1', '_Bond.Atom_ID_1',
+                                                            '_Bond.Entity_assembly_ID_2', '_Bond.Comp_index_ID_2', '_Bond.Atom_ID_2']]
 
-        for row in loop_data:
+            index = 1
 
-            buf_row = []
+            for row in loop_data:
 
-            tag_map = {}
-            self_tag_map = {}
+                buf_row = []
 
-            for tag in seq_ident_tags:
-                chain_tag = tag['chain_tag']
-                seq_tag = tag['seq_tag']
+                tag_map = {}
+                self_tag_map = {}
 
-                in_star_chain = row[in_star_tags.index(chain_tag)]
-                _in_star_seq = row[in_star_tags.index(seq_tag)]
-                if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
-                    _in_star_seq = int(_in_star_seq)
+                for tag in seq_ident_tags:
+                    chain_tag = tag['chain_tag']
+                    seq_tag = tag['seq_tag']
 
-                seq_key = (in_star_chain, _in_star_seq)
+                    in_star_chain = row[in_star_tags.index(chain_tag)]
+                    _in_star_seq = row[in_star_tags.index(seq_tag)]
+                    if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
+                        _in_star_seq = int(_in_star_seq)
 
-                try:
-                    tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                    self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-                except KeyError:
-                    tag_map[chain_tag] = in_star_chain
-                    tag_map[seq_tag] = _in_star_seq
-                    self_tag_map[chain_tag] = in_star_chain
-                    self_tag_map[seq_tag] = _in_star_seq
+                    seq_key = (in_star_chain, _in_star_seq)
 
-            intra_residue = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_2)]\
-                and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_2)]
+                    try:
+                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                        self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
+                    except KeyError:
+                        tag_map[chain_tag] = in_star_chain
+                        tag_map[seq_tag] = _in_star_seq
+                        self_tag_map[chain_tag] = in_star_chain
+                        self_tag_map[seq_tag] = _in_star_seq
 
-            atom_list_1 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_1], row[in_star_atom_index_1])[0]
-            atom_list_2 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_2], row[in_star_atom_index_2])[0]
+                intra_residue = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_2)]\
+                    and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_2)]
 
-            for atom_1 in atom_list_1:
+                atom_list_1 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_1], row[in_star_atom_index_1])[0]
+                atom_list_2 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_2], row[in_star_atom_index_2])[0]
 
-                for atom_2 in atom_list_2:
+                for atom_1 in atom_list_1:
 
-                    if intra_residue and atom_2 == atom_1:
-                        continue
+                    for atom_2 in atom_list_2:
 
-                    buf = [None] * len(star_tags)
-
-                    for data_tag in in_star_tags:
-
-                        auth_tag, _ = self.get_star_auth_tag(data_tag)
-
-                        if auth_tag is None:
+                        if intra_residue and atom_2 == atom_1:
                             continue
 
-                        data = row[in_star_tags.index(data_tag)]
+                        buf = [None] * len(star_tags)
 
-                        if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                            buf[star_tags.index(auth_tag)] = self_tag_map[data_tag]
-                        else:
-                            buf[star_tags.index(auth_tag)] = data
+                        for data_tag in in_star_tags:
 
-                        if auth_tag != data_tag:
+                            auth_tag, _ = self.get_star_auth_tag(data_tag)
 
-                            data_index = star_tags.index(data_tag)
+                            if auth_tag is None:
+                                continue
+
+                            data = row[in_star_tags.index(data_tag)]
 
                             if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                                buf[data_index] = tag_map[data_tag]
-                            elif 'Comp_ID' in data_tag:
-                                buf[data_index] = data.upper()
-                            elif data_tag == '_Bond.Atom_ID_1':
-                                buf[data_index] = atom_1
-                            elif data_tag == '_Bond.Atom_ID_2':
-                                buf[data_index] = atom_2
+                                buf[star_tags.index(auth_tag)] = self_tag_map[data_tag]
                             else:
-                                buf[data_index] = data
+                                buf[star_tags.index(auth_tag)] = data
 
-                    # 'amide': (C=O)-N
-                    # 'directed': N-O
-                    # 'disulfide': S-S
-                    # 'ester': (C=O)-O
-                    # 'ether': -O-
-                    # 'hydrogen': (O/N/F)-H-(O/N/F)
-                    # 'metal coordination': (N/O/S)-Metal
-                    # 'peptide': (C=O)-N
-                    # 'thioether': -S-
-                    # 'oxime': >C=N-OH
-                    # 'thioester': -(C=O)-S-
-                    # 'phosphoester': ?
-                    # 'phosphodiester': -(PO4)-
-                    # 'diselenide': Se-Se
-                    buf[star_type_index] = 'covalent'
-                    if atom_1 == 'SG' and atom_2 == 'SG':
-                        buf[star_type_index] = 'disulfide'
-                    elif atom_1 == 'SE' and atom_2 == 'SE':
-                        buf[star_type_index] = 'diselenide'
-                    elif (atom_1 in NON_METAL_ELEMENTS and (atom_2 in PARAMAGNETIC_ELEMENTS or atom_2 in FERROMAGNETIC_ELEMENTS)) or\
-                         (atom_2 in NON_METAL_ELEMENTS and (atom_1 in PARAMAGNETIC_ELEMENTS or atom_1 in FERROMAGNETIC_ELEMENTS)):
-                        buf[star_type_index] = 'metal coordination'
-                    elif {atom_1, atom_2} == {'C', 'N'}\
-                            and row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_2)]\
-                            and row[in_star_tags.index(seq_tag_1)] != row[in_star_tags.index(seq_tag_2)]:
-                        buf[star_type_index] = 'peptide'
-                    buf[star_value_order_index] = 'sing'
+                            if auth_tag != data_tag:
 
-                    buf_row.append(buf)
+                                data_index = star_tags.index(data_tag)
 
-            keys = set()
+                                if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
+                                    buf[data_index] = tag_map[data_tag]
+                                elif 'Comp_ID' in data_tag:
+                                    buf[data_index] = data.upper()
+                                elif data_tag == '_Bond.Atom_ID_1':
+                                    buf[data_index] = atom_1
+                                elif data_tag == '_Bond.Atom_ID_2':
+                                    buf[data_index] = atom_2
+                                else:
+                                    buf[data_index] = data
 
-            for b in buf_row:
+                        # 'amide': (C=O)-N
+                        # 'directed': N-O
+                        # 'disulfide': S-S
+                        # 'ester': (C=O)-O
+                        # 'ether': -O-
+                        # 'hydrogen': (O/N/F)-H-(O/N/F)
+                        # 'metal coordination': (N/O/S)-Metal
+                        # 'peptide': (C=O)-N
+                        # 'thioether': -S-
+                        # 'oxime': >C=N-OH
+                        # 'thioester': -(C=O)-S-
+                        # 'phosphoester': ?
+                        # 'phosphodiester': -(PO4)-
+                        # 'diselenide': Se-Se
+                        buf[star_type_index] = 'covalent'
+                        if atom_1 == 'SG' and atom_2 == 'SG':
+                            buf[star_type_index] = 'disulfide'
+                        elif atom_1 == 'SE' and atom_2 == 'SE':
+                            buf[star_type_index] = 'diselenide'
+                        elif (atom_1 in NON_METAL_ELEMENTS and (atom_2 in PARAMAGNETIC_ELEMENTS or atom_2 in FERROMAGNETIC_ELEMENTS)) or\
+                             (atom_2 in NON_METAL_ELEMENTS and (atom_1 in PARAMAGNETIC_ELEMENTS or atom_1 in FERROMAGNETIC_ELEMENTS)):
+                            buf[star_type_index] = 'metal coordination'
+                        elif {atom_1, atom_2} == {'C', 'N'}\
+                                and row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_2)]\
+                                and row[in_star_tags.index(seq_tag_1)] != row[in_star_tags.index(seq_tag_2)]:
+                            buf[star_type_index] = 'peptide'
+                        buf[star_value_order_index] = 'sing'
 
-                key = ''
-                for j in key_indices:
-                    key += ' ' + str(b[j])
-                key.rstrip()
+                        buf_row.append(buf)
 
-                if key in keys:
-                    continue
+                keys = set()
 
-                keys.add(key)
+                for b in buf_row:
 
-                if star_id_index >= 0:
-                    b[star_id_index] = index
+                    if key_f.tell() > 0:
+                        key_f.truncate(0)
+                        key_f.seek(0)
 
-                index += 1
+                    for j in key_indices:
+                        key_f.write(f'{b[j]} ')
 
-                out_row.append(b)
+                    key = key_f.getvalue()
 
-        return out_row
+                    if key in keys:
+                        continue
+
+                    keys.add(key)
+
+                    if star_id_index >= 0:
+                        b[star_id_index] = index
+
+                    index += 1
+
+                    out_row.append(b)
+
+            return out_row
 
     def nef2star_cs_row(self, nef_tags, star_tags, loop_data, leave_unmatched=False):
         """ Translate rows in chemical shift loop from NEF into NMR-STAR.
@@ -6345,137 +6493,143 @@ class NEFTranslator:
                 chain_tag_2 = chain_tag
                 seq_tag_2 = seq_tag
 
-        try:
-            index_index = star_tags.index('_Gen_dist_constraint.Index_ID')
-        except ValueError:
-            index_index = -1
+        with io.StringIO() as key_f:
 
-        key_indices = [star_tags.index(tag) for tag in ['_Gen_dist_constraint.Entity_assembly_ID_1',
-                                                        '_Gen_dist_constraint.Comp_index_ID_1',
-                                                        '_Gen_dist_constraint.Atom_ID_1',
-                                                        '_Gen_dist_constraint.Entity_assembly_ID_2',
-                                                        '_Gen_dist_constraint.Comp_index_ID_2',
-                                                        '_Gen_dist_constraint.Atom_ID_2']]
+            try:
+                index_index = star_tags.index('_Gen_dist_constraint.Index_ID')
+            except ValueError:
+                index_index = -1
 
-        member_code_index = star_tags.index('_Gen_dist_constraint.Member_logic_code')
+            key_indices = [star_tags.index(tag) for tag in ['_Gen_dist_constraint.Entity_assembly_ID_1',
+                                                            '_Gen_dist_constraint.Comp_index_ID_1',
+                                                            '_Gen_dist_constraint.Atom_ID_1',
+                                                            '_Gen_dist_constraint.Entity_assembly_ID_2',
+                                                            '_Gen_dist_constraint.Comp_index_ID_2',
+                                                            '_Gen_dist_constraint.Atom_ID_2']]
 
-        id_index = nef_tags.index('_nef_distance_restraint.restraint_id')
+            member_code_index = star_tags.index('_Gen_dist_constraint.Member_logic_code')
 
-        id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_index = nef_tags.index('_nef_distance_restraint.restraint_id')
 
-        index = 1
+            id_list = sorted(set(int(row[id_index]) for row in loop_data))
 
-        for row_id in id_list:
+            index = 1
 
-            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+            for row_id in id_list:
 
-            buf_row = []
+                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
-            for row in in_row:
+                buf_row = []
 
-                tag_map = {}
-                self_tag_map = {}
+                for row in in_row:
 
-                for tag in seq_ident_tags:
-                    chain_tag = tag['chain_tag']
-                    seq_tag = tag['seq_tag']
+                    tag_map = {}
+                    self_tag_map = {}
 
-                    nef_chain = row[nef_tags.index(chain_tag)]
-                    _nef_seq = row[nef_tags.index(seq_tag)]
-                    if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
-                        _nef_seq = int(_nef_seq)
+                    for tag in seq_ident_tags:
+                        chain_tag = tag['chain_tag']
+                        seq_tag = tag['seq_tag']
 
-                    seq_key = (nef_chain, _nef_seq)
+                        nef_chain = row[nef_tags.index(chain_tag)]
+                        _nef_seq = row[nef_tags.index(seq_tag)]
+                        if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
+                            _nef_seq = int(_nef_seq)
 
-                    try:
-                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                        self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-                    except KeyError:
-                        tag_map[chain_tag] = nef_chain
-                        tag_map[seq_tag] = _nef_seq
-                        self_tag_map[chain_tag] = nef_chain
-                        self_tag_map[seq_tag] = _nef_seq
+                        seq_key = (nef_chain, _nef_seq)
 
-                intra_residue = row[nef_tags.index(chain_tag_1)] == row[nef_tags.index(chain_tag_2)]\
-                    and row[nef_tags.index(seq_tag_1)] == row[nef_tags.index(seq_tag_2)]
+                        try:
+                            tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                            self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
+                        except KeyError:
+                            tag_map[chain_tag] = nef_chain
+                            tag_map[seq_tag] = _nef_seq
+                            self_tag_map[chain_tag] = nef_chain
+                            self_tag_map[seq_tag] = _nef_seq
 
-                atom_list_1 = self.get_star_atom(row[nef_comp_index_1], row[nef_atom_index_1])[0]
-                atom_list_2 = self.get_star_atom(row[nef_comp_index_2], row[nef_atom_index_2])[0]
+                    intra_residue = row[nef_tags.index(chain_tag_1)] == row[nef_tags.index(chain_tag_2)]\
+                        and row[nef_tags.index(seq_tag_1)] == row[nef_tags.index(seq_tag_2)]
 
-                or_code = len(atom_list_1) * len(atom_list_2) > 1
+                    atom_list_1 = self.get_star_atom(row[nef_comp_index_1], row[nef_atom_index_1])[0]
+                    atom_list_2 = self.get_star_atom(row[nef_comp_index_2], row[nef_atom_index_2])[0]
 
-                for atom_1 in atom_list_1:
+                    or_code = len(atom_list_1) * len(atom_list_2) > 1
 
-                    for atom_2 in atom_list_2:
+                    for atom_1 in atom_list_1:
 
-                        if intra_residue and atom_2 == atom_1:
-                            continue
+                        for atom_2 in atom_list_2:
 
-                        buf = [None] * len(star_tags)
-
-                        for tag in nef_tags:
-
-                            auth_tag, data_tag, _ = self.get_star_tag(tag)
-
-                            if auth_tag is None:
+                            if intra_residue and atom_2 == atom_1:
                                 continue
 
-                            data = row[nef_tags.index(tag)]
+                            buf = [None] * len(star_tags)
 
-                            if 'chain_code' in tag or 'sequence_code' in tag:
-                                buf[star_tags.index(auth_tag)] = self_tag_map[tag]
-                            else:
-                                buf[star_tags.index(auth_tag)] = data
+                            for tag in nef_tags:
 
-                            if auth_tag != data_tag:
+                                auth_tag, data_tag, _ = self.get_star_tag(tag)
 
-                                data_index = star_tags.index(data_tag)
+                                if auth_tag is None:
+                                    continue
+
+                                data = row[nef_tags.index(tag)]
 
                                 if 'chain_code' in tag or 'sequence_code' in tag:
-                                    buf[data_index] = tag_map[tag]
-                                elif tag == '_nef_distance_restraint.atom_name_1':
-                                    buf[data_index] = atom_1
-                                elif tag == '_nef_distance_restraint.atom_name_2':
-                                    buf[data_index] = atom_2
+                                    buf[star_tags.index(auth_tag)] = self_tag_map[tag]
                                 else:
-                                    buf[data_index] = data
-                            #
-                            # if details_1 is None and details_2 is None:
-                            #     pass
+                                    buf[star_tags.index(auth_tag)] = data
 
-                            # else:
+                                if auth_tag != data_tag:
 
-                            #     details_index = star_tags.index('_Gen_dist_constraint.Details')
+                                    data_index = star_tags.index(data_tag)
 
-                            #     buf[details_index] = ' '.join(filter(None, [details_1, detail_2]))
-                            #
-                        if or_code:
-                            buf[member_code_index] = 'OR'
+                                    if 'chain_code' in tag or 'sequence_code' in tag:
+                                        buf[data_index] = tag_map[tag]
+                                    elif tag == '_nef_distance_restraint.atom_name_1':
+                                        buf[data_index] = atom_1
+                                    elif tag == '_nef_distance_restraint.atom_name_2':
+                                        buf[data_index] = atom_2
+                                    else:
+                                        buf[data_index] = data
+                                #
+                                # if details_1 is None and details_2 is None:
+                                #     pass
 
-                        buf_row.append(buf)
+                                # else:
 
-            keys = set()
+                                #     details_index = star_tags.index('_Gen_dist_constraint.Details')
 
-            for row in buf_row:
+                                #     buf[details_index] = ' '.join(filter(None, [details_1, detail_2]))
+                                #
+                            if or_code:
+                                buf[member_code_index] = 'OR'
 
-                key = ''
-                for j in key_indices:
-                    key += ' ' + str(row[j])
-                key.rstrip()
+                            buf_row.append(buf)
 
-                if key in keys:
-                    continue
+                keys = set()
 
-                keys.add(key)
+                for row in buf_row:
 
-                if index_index >= 0:
-                    row[index_index] = index
+                    if key_f.tell() > 0:
+                        key_f.truncate(0)
+                        key_f.seek(0)
 
-                index += 1
+                    for j in key_indices:
+                        key_f.write(f'{row[j]} ')
 
-                out_row.append(row)
+                    key = key_f.getvalue()
 
-        return out_row
+                    if key in keys:
+                        continue
+
+                    keys.add(key)
+
+                    if index_index >= 0:
+                        row[index_index] = index
+
+                    index += 1
+
+                    out_row.append(row)
+
+            return out_row
 
     def star2nef_dist_row(self, star_tags, nef_tags, loop_data):
         """ Translate rows in distance restraint loop from NMR-STAR into NEF.
@@ -6505,133 +6659,139 @@ class NEFTranslator:
                 # chain_tag_2 = chain_tag
                 # seq_tag_2 = seq_tag
 
-        try:
-            index_index = nef_tags.index('_nef_distance_restraint.index')
-        except ValueError:
-            index_index = -1
+        with io.StringIO() as key_f:
 
-        key_indices = [nef_tags.index(tag) for tag in ['_nef_distance_restraint.chain_code_1',
-                                                       '_nef_distance_restraint.sequence_code_1',
-                                                       '_nef_distance_restraint.atom_name_1',
-                                                       '_nef_distance_restraint.chain_code_2',
-                                                       '_nef_distance_restraint.sequence_code_2',
-                                                       '_nef_distance_restraint.atom_name_2']]
+            try:
+                index_index = nef_tags.index('_nef_distance_restraint.index')
+            except ValueError:
+                index_index = -1
 
-        id_index = star_tags.index('_Gen_dist_constraint.ID')
+            key_indices = [nef_tags.index(tag) for tag in ['_nef_distance_restraint.chain_code_1',
+                                                           '_nef_distance_restraint.sequence_code_1',
+                                                           '_nef_distance_restraint.atom_name_1',
+                                                           '_nef_distance_restraint.chain_code_2',
+                                                           '_nef_distance_restraint.sequence_code_2',
+                                                           '_nef_distance_restraint.atom_name_2']]
 
-        id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_index = star_tags.index('_Gen_dist_constraint.ID')
 
-        index = 1
+            id_list = sorted(set(int(row[id_index]) for row in loop_data))
 
-        for row_id in id_list:
+            index = 1
 
-            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+            for row_id in id_list:
 
-            buf_row = []
+                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
-            for row in in_row:
+                buf_row = []
 
-                tag_map = {}
+                for row in in_row:
 
-                for tag in seq_ident_tags:
-                    chain_tag = tag['chain_tag']
-                    seq_tag = tag['seq_tag']
+                    tag_map = {}
 
-                    star_chain = row[star_tags.index(chain_tag)]
-                    _star_chain = star_chain
-                    if isinstance(star_chain, str) and star_chain not in emptyValue:
-                        _star_chain = int(star_chain)
+                    for tag in seq_ident_tags:
+                        chain_tag = tag['chain_tag']
+                        seq_tag = tag['seq_tag']
 
-                    _star_seq = row[star_tags.index(seq_tag)]
-                    if isinstance(_star_seq, str) and _star_seq not in emptyValue:
-                        _star_seq = int(_star_seq)
+                        star_chain = row[star_tags.index(chain_tag)]
+                        _star_chain = star_chain
+                        if isinstance(star_chain, str) and star_chain not in emptyValue:
+                            _star_chain = int(star_chain)
 
-                    seq_key = (_star_chain, _star_seq)
+                        _star_seq = row[star_tags.index(seq_tag)]
+                        if isinstance(_star_seq, str) and _star_seq not in emptyValue:
+                            _star_seq = int(_star_seq)
 
-                    try:
-                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                    except KeyError:
+                        seq_key = (_star_chain, _star_seq)
+
                         try:
-                            nef_chain = self.selfSeqMap[(_star_chain, 1)][0]
+                            tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
                         except KeyError:
-                            if _star_chain in emptyValue or _star_chain not in self.authChainId:
-                                nef_chain = _star_chain
-                            else:
-                                cid = self.authChainId.index(_star_chain)
-                                nef_chain = indexToLetter(cid)
-                        tag_map[chain_tag] = nef_chain
-                        tag_map[seq_tag] = _star_seq
+                            try:
+                                nef_chain = self.selfSeqMap[(_star_chain, 1)][0]
+                            except KeyError:
+                                if _star_chain in emptyValue or _star_chain not in self.authChainId:
+                                    nef_chain = _star_chain
+                                else:
+                                    cid = self.authChainId.index(_star_chain)
+                                    nef_chain = indexToLetter(cid)
+                            tag_map[chain_tag] = nef_chain
+                            tag_map[seq_tag] = _star_seq
 
-                    if star_chain in self.star2CifChainMapping:
-                        tag_map[chain_tag] = self.star2CifChainMapping[star_chain]
+                        if star_chain in self.star2CifChainMapping:
+                            tag_map[chain_tag] = self.star2CifChainMapping[star_chain]
 
-                    if chain_tag == chain_tag_1:
-                        seq_key_1 = seq_key
-                    else:
-                        seq_key_2 = seq_key
+                        if chain_tag == chain_tag_1:
+                            seq_key_1 = seq_key
+                        else:
+                            seq_key_2 = seq_key
 
-                buf = [None] * len(nef_tags)
+                    buf = [None] * len(nef_tags)
 
-                for tag in star_tags:
+                    for tag in star_tags:
 
-                    nef_tag, _ = self.get_nef_tag(tag)
+                        nef_tag, _ = self.get_nef_tag(tag)
 
-                    if nef_tag is None:
+                        if nef_tag is None:
+                            continue
+
+                        data = row[star_tags.index(tag)]
+
+                        data_index = nef_tags.index(nef_tag)
+
+                        if 'chain_code' in nef_tag or 'sequence_code' in nef_tag:
+                            buf[data_index] = tag_map[tag]
+                        elif nef_tag == '_nef_distance_restraint.atom_name_1':
+                            try:
+                                if self.atomIdMap is not None:
+                                    buf[data_index] = self.atomIdMap[seq_key_1][data]
+                            except KeyError:
+                                atom_list = self.get_nef_atom(row[comp_1_index], [{'atom_id': data, 'ambig_code': None, 'value': None}])[0]
+                                if len(atom_list) > 0:
+                                    buf[data_index] = atom_list[0]
+                                else:
+                                    buf[data_index] = data
+                        elif nef_tag == '_nef_distance_restraint.atom_name_2':
+                            try:
+                                if self.atomIdMap is not None:
+                                    buf[data_index] = self.atomIdMap[seq_key_2][data]
+                            except KeyError:
+                                atom_list = self.get_nef_atom(row[comp_2_index], [{'atom_id': data, 'ambig_code': None, 'value': None}])[0]
+                                if len(atom_list) > 0:
+                                    buf[data_index] = atom_list[0]
+                                else:
+                                    buf[data_index] = data
+                        else:
+                            buf[data_index] = data
+
+                    buf_row.append(buf)
+
+                keys = set()
+
+                for row in buf_row:
+
+                    if key_f.tell() > 0:
+                        key_f.truncate(0)
+                        key_f.seek(0)
+
+                    for j in key_indices:
+                        key_f.write(f'{row[j]} ')
+
+                    key = key_f.getvalue()
+
+                    if key in keys:
                         continue
 
-                    data = row[star_tags.index(tag)]
+                    keys.add(key)
 
-                    data_index = nef_tags.index(nef_tag)
+                    if index_index >= 0:
+                        row[index_index] = index
 
-                    if 'chain_code' in nef_tag or 'sequence_code' in nef_tag:
-                        buf[data_index] = tag_map[tag]
-                    elif nef_tag == '_nef_distance_restraint.atom_name_1':
-                        try:
-                            if self.atomIdMap is not None:
-                                buf[data_index] = self.atomIdMap[seq_key_1][data]
-                        except KeyError:
-                            atom_list = self.get_nef_atom(row[comp_1_index], [{'atom_id': data, 'ambig_code': None, 'value': None}])[0]
-                            if len(atom_list) > 0:
-                                buf[data_index] = atom_list[0]
-                            else:
-                                buf[data_index] = data
-                    elif nef_tag == '_nef_distance_restraint.atom_name_2':
-                        try:
-                            if self.atomIdMap is not None:
-                                buf[data_index] = self.atomIdMap[seq_key_2][data]
-                        except KeyError:
-                            atom_list = self.get_nef_atom(row[comp_2_index], [{'atom_id': data, 'ambig_code': None, 'value': None}])[0]
-                            if len(atom_list) > 0:
-                                buf[data_index] = atom_list[0]
-                            else:
-                                buf[data_index] = data
-                    else:
-                        buf[data_index] = data
+                    index += 1
 
-                buf_row.append(buf)
+                    out_row.append(row)
 
-            keys = set()
-
-            for row in buf_row:
-
-                key = ''
-                for j in key_indices:
-                    key += ' ' + str(row[j])
-                key.rstrip()
-
-                if key in keys:
-                    continue
-
-                keys.add(key)
-
-                if index_index >= 0:
-                    row[index_index] = index
-
-                index += 1
-
-                out_row.append(row)
-
-        return out_row
+            return out_row
 
     def star2star_dist_row(self, in_star_tags, star_tags, loop_data):
         """ Translate rows in distance restraint loop from PyNMRSTAR data object into NMR-STAR.
@@ -6662,130 +6822,136 @@ class NEFTranslator:
                 chain_tag_2 = chain_tag
                 seq_tag_2 = seq_tag
 
-        try:
-            index_index = star_tags.index('_Gen_dist_constraint.Index_ID')
-        except ValueError:
-            index_index = -1
+        with io.StringIO() as key_f:
 
-        key_indices = [star_tags.index(tag) for tag in ['_Gen_dist_constraint.Entity_assembly_ID_1',
-                                                        '_Gen_dist_constraint.Comp_index_ID_1',
-                                                        '_Gen_dist_constraint.Atom_ID_1',
-                                                        '_Gen_dist_constraint.Entity_assembly_ID_2',
-                                                        '_Gen_dist_constraint.Comp_index_ID_2',
-                                                        '_Gen_dist_constraint.Atom_ID_2']]
+            try:
+                index_index = star_tags.index('_Gen_dist_constraint.Index_ID')
+            except ValueError:
+                index_index = -1
 
-        member_code_index = star_tags.index('_Gen_dist_constraint.Member_logic_code')
+            key_indices = [star_tags.index(tag) for tag in ['_Gen_dist_constraint.Entity_assembly_ID_1',
+                                                            '_Gen_dist_constraint.Comp_index_ID_1',
+                                                            '_Gen_dist_constraint.Atom_ID_1',
+                                                            '_Gen_dist_constraint.Entity_assembly_ID_2',
+                                                            '_Gen_dist_constraint.Comp_index_ID_2',
+                                                            '_Gen_dist_constraint.Atom_ID_2']]
 
-        id_index = in_star_tags.index('_Gen_dist_constraint.ID')
+            member_code_index = star_tags.index('_Gen_dist_constraint.Member_logic_code')
 
-        id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_index = in_star_tags.index('_Gen_dist_constraint.ID')
 
-        index = 1
+            id_list = sorted(set(int(row[id_index]) for row in loop_data))
 
-        for row_id in id_list:
+            index = 1
 
-            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+            for row_id in id_list:
 
-            buf_row = []
+                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
-            for row in in_row:
+                buf_row = []
 
-                tag_map = {}
-                self_tag_map = {}
+                for row in in_row:
 
-                for tag in seq_ident_tags:
-                    chain_tag = tag['chain_tag']
-                    seq_tag = tag['seq_tag']
+                    tag_map = {}
+                    self_tag_map = {}
 
-                    in_star_chain = row[in_star_tags.index(chain_tag)]
-                    _in_star_seq = row[in_star_tags.index(seq_tag)]
-                    if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
-                        _in_star_seq = int(_in_star_seq)
+                    for tag in seq_ident_tags:
+                        chain_tag = tag['chain_tag']
+                        seq_tag = tag['seq_tag']
 
-                    seq_key = (in_star_chain, _in_star_seq)
+                        in_star_chain = row[in_star_tags.index(chain_tag)]
+                        _in_star_seq = row[in_star_tags.index(seq_tag)]
+                        if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
+                            _in_star_seq = int(_in_star_seq)
 
-                    try:
-                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                        self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-                    except KeyError:
-                        tag_map[chain_tag] = in_star_chain
-                        tag_map[seq_tag] = _in_star_seq
-                        self_tag_map[chain_tag] = in_star_chain
-                        self_tag_map[seq_tag] = _in_star_seq
+                        seq_key = (in_star_chain, _in_star_seq)
 
-                intra_residue = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_2)]\
-                    and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_2)]
+                        try:
+                            tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                            self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
+                        except KeyError:
+                            tag_map[chain_tag] = in_star_chain
+                            tag_map[seq_tag] = _in_star_seq
+                            self_tag_map[chain_tag] = in_star_chain
+                            self_tag_map[seq_tag] = _in_star_seq
 
-                atom_list_1 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_1], row[in_star_atom_index_1])[0]
-                atom_list_2 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_2], row[in_star_atom_index_2])[0]
+                    intra_residue = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_2)]\
+                        and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_2)]
 
-                or_code = len(atom_list_1) * len(atom_list_2) > 1
+                    atom_list_1 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_1], row[in_star_atom_index_1])[0]
+                    atom_list_2 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_2], row[in_star_atom_index_2])[0]
 
-                for atom_1 in atom_list_1:
+                    or_code = len(atom_list_1) * len(atom_list_2) > 1
 
-                    for atom_2 in atom_list_2:
+                    for atom_1 in atom_list_1:
 
-                        if intra_residue and atom_2 == atom_1:
-                            continue
+                        for atom_2 in atom_list_2:
 
-                        buf = [None] * len(star_tags)
-
-                        for data_tag in in_star_tags:
-
-                            auth_tag, _ = self.get_star_auth_tag(data_tag)
-
-                            if auth_tag is None:
+                            if intra_residue and atom_2 == atom_1:
                                 continue
 
-                            data = row[in_star_tags.index(data_tag)]
+                            buf = [None] * len(star_tags)
 
-                            if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                                buf[star_tags.index(auth_tag)] = self_tag_map[data_tag]
-                            else:
-                                buf[star_tags.index(auth_tag)] = data
+                            for data_tag in in_star_tags:
 
-                            if auth_tag != data_tag:
+                                auth_tag, _ = self.get_star_auth_tag(data_tag)
 
-                                data_index = star_tags.index(data_tag)
+                                if auth_tag is None:
+                                    continue
+
+                                data = row[in_star_tags.index(data_tag)]
 
                                 if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                                    buf[data_index] = tag_map[data_tag]
-                                elif 'Comp_ID' in data_tag:
-                                    buf[data_index] = data.upper()
-                                elif data_tag == '_Gen_dist_constraint.Atom_ID_1':
-                                    buf[data_index] = atom_1
-                                elif data_tag == '_Gen_dist_constraint.Atom_ID_2':
-                                    buf[data_index] = atom_2
+                                    buf[star_tags.index(auth_tag)] = self_tag_map[data_tag]
                                 else:
-                                    buf[data_index] = data
+                                    buf[star_tags.index(auth_tag)] = data
 
-                        if or_code:
-                            buf[member_code_index] = 'OR'
+                                if auth_tag != data_tag:
 
-                        buf_row.append(buf)
+                                    data_index = star_tags.index(data_tag)
 
-            keys = set()
+                                    if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
+                                        buf[data_index] = tag_map[data_tag]
+                                    elif 'Comp_ID' in data_tag:
+                                        buf[data_index] = data.upper()
+                                    elif data_tag == '_Gen_dist_constraint.Atom_ID_1':
+                                        buf[data_index] = atom_1
+                                    elif data_tag == '_Gen_dist_constraint.Atom_ID_2':
+                                        buf[data_index] = atom_2
+                                    else:
+                                        buf[data_index] = data
 
-            for row in buf_row:
+                            if or_code:
+                                buf[member_code_index] = 'OR'
 
-                key = ''
-                for j in key_indices:
-                    key += ' ' + str(row[j])
-                key.rstrip()
+                            buf_row.append(buf)
 
-                if key in keys:
-                    continue
+                keys = set()
 
-                keys.add(key)
+                for row in buf_row:
 
-                if index_index >= 0:
-                    row[index_index] = index
+                    if key_f.tell() > 0:
+                        key_f.truncate(0)
+                        key_f.seek(0)
 
-                index += 1
+                    for j in key_indices:
+                        key_f.write(f'{row[j]} ')
 
-                out_row.append(row)
+                    key = key_f.getvalue()
 
-        return out_row
+                    if key in keys:
+                        continue
+
+                    keys.add(key)
+
+                    if index_index >= 0:
+                        row[index_index] = index
+
+                    index += 1
+
+                    out_row.append(row)
+
+            return out_row
 
     def nef2star_dihed_row(self, nef_tags, star_tags, loop_data):
         """ Translate rows in dihedral angle restraint loop from NEF into NMR-STAR.
@@ -6826,153 +6992,159 @@ class NEFTranslator:
                 chain_tag_4 = chain_tag
                 seq_tag_4 = seq_tag
 
-        try:
-            index_index = star_tags.index('_Torsion_angle_constraint.Index_ID')
-        except ValueError:
-            index_index = -1
+        with io.StringIO() as key_f:
 
-        key_indices = [star_tags.index(tag) for tag in ['_Torsion_angle_constraint.Entity_assembly_ID_1',
-                                                        '_Torsion_angle_constraint.Comp_index_ID_1',
-                                                        '_Torsion_angle_constraint.Atom_ID_1',
-                                                        '_Torsion_angle_constraint.Entity_assembly_ID_2',
-                                                        '_Torsion_angle_constraint.Comp_index_ID_2',
-                                                        '_Torsion_angle_constraint.Atom_ID_2',
-                                                        '_Torsion_angle_constraint.Entity_assembly_ID_3',
-                                                        '_Torsion_angle_constraint.Comp_index_ID_3',
-                                                        '_Torsion_angle_constraint.Atom_ID_3',
-                                                        '_Torsion_angle_constraint.Entity_assembly_ID_4',
-                                                        '_Torsion_angle_constraint.Comp_index_ID_4',
-                                                        '_Torsion_angle_constraint.Atom_ID_4']]
+            try:
+                index_index = star_tags.index('_Torsion_angle_constraint.Index_ID')
+            except ValueError:
+                index_index = -1
 
-        id_index = nef_tags.index('_nef_dihedral_restraint.restraint_id')
+            key_indices = [star_tags.index(tag) for tag in ['_Torsion_angle_constraint.Entity_assembly_ID_1',
+                                                            '_Torsion_angle_constraint.Comp_index_ID_1',
+                                                            '_Torsion_angle_constraint.Atom_ID_1',
+                                                            '_Torsion_angle_constraint.Entity_assembly_ID_2',
+                                                            '_Torsion_angle_constraint.Comp_index_ID_2',
+                                                            '_Torsion_angle_constraint.Atom_ID_2',
+                                                            '_Torsion_angle_constraint.Entity_assembly_ID_3',
+                                                            '_Torsion_angle_constraint.Comp_index_ID_3',
+                                                            '_Torsion_angle_constraint.Atom_ID_3',
+                                                            '_Torsion_angle_constraint.Entity_assembly_ID_4',
+                                                            '_Torsion_angle_constraint.Comp_index_ID_4',
+                                                            '_Torsion_angle_constraint.Atom_ID_4']]
 
-        id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_index = nef_tags.index('_nef_dihedral_restraint.restraint_id')
 
-        index = 1
+            id_list = sorted(set(int(row[id_index]) for row in loop_data))
 
-        for row_id in id_list:
+            index = 1
 
-            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+            for row_id in id_list:
 
-            buf_row = []
+                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
-            for row in in_row:
+                buf_row = []
 
-                tag_map = {}
-                self_tag_map = {}
+                for row in in_row:
 
-                for tag in seq_ident_tags:
-                    chain_tag = tag['chain_tag']
-                    seq_tag = tag['seq_tag']
+                    tag_map = {}
+                    self_tag_map = {}
 
-                    nef_chain = row[nef_tags.index(chain_tag)]
-                    _nef_seq = row[nef_tags.index(seq_tag)]
-                    if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
-                        _nef_seq = int(_nef_seq)
+                    for tag in seq_ident_tags:
+                        chain_tag = tag['chain_tag']
+                        seq_tag = tag['seq_tag']
 
-                    seq_key = (nef_chain, _nef_seq)
+                        nef_chain = row[nef_tags.index(chain_tag)]
+                        _nef_seq = row[nef_tags.index(seq_tag)]
+                        if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
+                            _nef_seq = int(_nef_seq)
 
-                    try:
-                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                        self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-                    except KeyError:
-                        tag_map[chain_tag] = nef_chain
-                        tag_map[seq_tag] = _nef_seq
-                        self_tag_map[chain_tag] = nef_chain
-                        self_tag_map[seq_tag] = _nef_seq
+                        seq_key = (nef_chain, _nef_seq)
 
-                intra_residue_12 = row[nef_tags.index(chain_tag_1)] == row[nef_tags.index(chain_tag_2)]\
-                    and row[nef_tags.index(seq_tag_1)] == row[nef_tags.index(seq_tag_2)]
-                intra_residue_13 = row[nef_tags.index(chain_tag_1)] == row[nef_tags.index(chain_tag_3)]\
-                    and row[nef_tags.index(seq_tag_1)] == row[nef_tags.index(seq_tag_3)]
-                intra_residue_14 = row[nef_tags.index(chain_tag_1)] == row[nef_tags.index(chain_tag_4)]\
-                    and row[nef_tags.index(seq_tag_1)] == row[nef_tags.index(seq_tag_4)]
-                intra_residue_23 = row[nef_tags.index(chain_tag_2)] == row[nef_tags.index(chain_tag_3)]\
-                    and row[nef_tags.index(seq_tag_2)] == row[nef_tags.index(seq_tag_3)]
-                intra_residue_24 = row[nef_tags.index(chain_tag_2)] == row[nef_tags.index(chain_tag_4)]\
-                    and row[nef_tags.index(seq_tag_2)] == row[nef_tags.index(seq_tag_4)]
-                intra_residue_34 = row[nef_tags.index(chain_tag_3)] == row[nef_tags.index(chain_tag_4)]\
-                    and row[nef_tags.index(seq_tag_3)] == row[nef_tags.index(seq_tag_4)]
+                        try:
+                            tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                            self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
+                        except KeyError:
+                            tag_map[chain_tag] = nef_chain
+                            tag_map[seq_tag] = _nef_seq
+                            self_tag_map[chain_tag] = nef_chain
+                            self_tag_map[seq_tag] = _nef_seq
 
-                atom_list_1 = self.get_star_atom(row[nef_comp_index_1], row[nef_atom_index_1])[0]
-                atom_list_2 = self.get_star_atom(row[nef_comp_index_2], row[nef_atom_index_2])[0]
-                atom_list_3 = self.get_star_atom(row[nef_comp_index_3], row[nef_atom_index_3])[0]
-                atom_list_4 = self.get_star_atom(row[nef_comp_index_4], row[nef_atom_index_4])[0]
+                    intra_residue_12 = row[nef_tags.index(chain_tag_1)] == row[nef_tags.index(chain_tag_2)]\
+                        and row[nef_tags.index(seq_tag_1)] == row[nef_tags.index(seq_tag_2)]
+                    intra_residue_13 = row[nef_tags.index(chain_tag_1)] == row[nef_tags.index(chain_tag_3)]\
+                        and row[nef_tags.index(seq_tag_1)] == row[nef_tags.index(seq_tag_3)]
+                    intra_residue_14 = row[nef_tags.index(chain_tag_1)] == row[nef_tags.index(chain_tag_4)]\
+                        and row[nef_tags.index(seq_tag_1)] == row[nef_tags.index(seq_tag_4)]
+                    intra_residue_23 = row[nef_tags.index(chain_tag_2)] == row[nef_tags.index(chain_tag_3)]\
+                        and row[nef_tags.index(seq_tag_2)] == row[nef_tags.index(seq_tag_3)]
+                    intra_residue_24 = row[nef_tags.index(chain_tag_2)] == row[nef_tags.index(chain_tag_4)]\
+                        and row[nef_tags.index(seq_tag_2)] == row[nef_tags.index(seq_tag_4)]
+                    intra_residue_34 = row[nef_tags.index(chain_tag_3)] == row[nef_tags.index(chain_tag_4)]\
+                        and row[nef_tags.index(seq_tag_3)] == row[nef_tags.index(seq_tag_4)]
 
-                for atom_1 in atom_list_1:
+                    atom_list_1 = self.get_star_atom(row[nef_comp_index_1], row[nef_atom_index_1])[0]
+                    atom_list_2 = self.get_star_atom(row[nef_comp_index_2], row[nef_atom_index_2])[0]
+                    atom_list_3 = self.get_star_atom(row[nef_comp_index_3], row[nef_atom_index_3])[0]
+                    atom_list_4 = self.get_star_atom(row[nef_comp_index_4], row[nef_atom_index_4])[0]
 
-                    for atom_2 in atom_list_2:
+                    for atom_1 in atom_list_1:
 
-                        if intra_residue_12 and atom_2 == atom_1:
-                            continue
+                        for atom_2 in atom_list_2:
 
-                        for atom_3 in atom_list_3:
-
-                            if (intra_residue_13 and atom_3 == atom_1) or (intra_residue_23 and atom_3 == atom_2):
+                            if intra_residue_12 and atom_2 == atom_1:
                                 continue
 
-                            for atom_4 in atom_list_4:
+                            for atom_3 in atom_list_3:
 
-                                if (intra_residue_14 and atom_4 == atom_1) or (intra_residue_24 and atom_4 == atom_2) or (intra_residue_34 and atom_4 == atom_3):
+                                if (intra_residue_13 and atom_3 == atom_1) or (intra_residue_23 and atom_3 == atom_2):
                                     continue
 
-                                buf = [None] * len(star_tags)
+                                for atom_4 in atom_list_4:
 
-                                for tag in nef_tags:
-
-                                    auth_tag, data_tag, _ = self.get_star_tag(tag)
-
-                                    if auth_tag is None:
+                                    if (intra_residue_14 and atom_4 == atom_1) or (intra_residue_24 and atom_4 == atom_2) or (intra_residue_34 and atom_4 == atom_3):
                                         continue
 
-                                    data = row[nef_tags.index(tag)]
+                                    buf = [None] * len(star_tags)
 
-                                    if 'chain_code' in tag or 'sequence_code' in tag:
-                                        buf[star_tags.index(auth_tag)] = self_tag_map[tag]
-                                    else:
-                                        buf[star_tags.index(auth_tag)] = data
+                                    for tag in nef_tags:
 
-                                    if auth_tag != data_tag:
+                                        auth_tag, data_tag, _ = self.get_star_tag(tag)
 
-                                        data_index = star_tags.index(data_tag)
+                                        if auth_tag is None:
+                                            continue
+
+                                        data = row[nef_tags.index(tag)]
 
                                         if 'chain_code' in tag or 'sequence_code' in tag:
-                                            buf[data_index] = tag_map[tag]
-                                        elif tag == '_nef_dihedral_restraint.atom_name_1':
-                                            buf[data_index] = atom_1
-                                        elif tag == '_nef_dihedral_restraint.atom_name_2':
-                                            buf[data_index] = atom_2
-                                        elif tag == '_nef_dihedral_restraint.atom_name_3':
-                                            buf[data_index] = atom_3
-                                        elif tag == '_nef_dihedral_restraint.atom_name_4':
-                                            buf[data_index] = atom_4
+                                            buf[star_tags.index(auth_tag)] = self_tag_map[tag]
                                         else:
-                                            buf[data_index] = data
+                                            buf[star_tags.index(auth_tag)] = data
 
-                                buf_row.append(buf)
+                                        if auth_tag != data_tag:
 
-            keys = set()
+                                            data_index = star_tags.index(data_tag)
 
-            for row in buf_row:
+                                            if 'chain_code' in tag or 'sequence_code' in tag:
+                                                buf[data_index] = tag_map[tag]
+                                            elif tag == '_nef_dihedral_restraint.atom_name_1':
+                                                buf[data_index] = atom_1
+                                            elif tag == '_nef_dihedral_restraint.atom_name_2':
+                                                buf[data_index] = atom_2
+                                            elif tag == '_nef_dihedral_restraint.atom_name_3':
+                                                buf[data_index] = atom_3
+                                            elif tag == '_nef_dihedral_restraint.atom_name_4':
+                                                buf[data_index] = atom_4
+                                            else:
+                                                buf[data_index] = data
 
-                key = ''
-                for j in key_indices:
-                    key += ' ' + str(row[j])
-                key.rstrip()
+                                    buf_row.append(buf)
 
-                if key in keys:
-                    continue
+                keys = set()
 
-                keys.add(key)
+                for row in buf_row:
 
-                if index_index >= 0:
-                    row[index_index] = index
+                    if key_f.tell() > 0:
+                        key_f.truncate(0)
+                        key_f.seek(0)
 
-                index += 1
+                    for j in key_indices:
+                        key_f.write(f'{row[j]} ')
 
-                out_row.append(row)
+                    key = key_f.getvalue()
 
-        return out_row
+                    if key in keys:
+                        continue
+
+                    keys.add(key)
+
+                    if index_index >= 0:
+                        row[index_index] = index
+
+                    index += 1
+
+                    out_row.append(row)
+
+            return out_row
 
     def star2star_dihed_row(self, in_star_tags, star_tags, loop_data):
         """ Translate rows in dihedral angle restraint loop from PyNMRSTAR data object into NMR-STAR.
@@ -7013,155 +7185,161 @@ class NEFTranslator:
                 chain_tag_4 = chain_tag
                 seq_tag_4 = seq_tag
 
-        try:
-            index_index = star_tags.index('_Torsion_angle_constraint.Index_ID')
-        except ValueError:
-            index_index = -1
+        with io.StringIO() as key_f:
 
-        key_indices = [star_tags.index(tag) for tag in ['_Torsion_angle_constraint.Entity_assembly_ID_1',
-                                                        '_Torsion_angle_constraint.Comp_index_ID_1',
-                                                        '_Torsion_angle_constraint.Atom_ID_1',
-                                                        '_Torsion_angle_constraint.Entity_assembly_ID_2',
-                                                        '_Torsion_angle_constraint.Comp_index_ID_2',
-                                                        '_Torsion_angle_constraint.Atom_ID_2',
-                                                        '_Torsion_angle_constraint.Entity_assembly_ID_3',
-                                                        '_Torsion_angle_constraint.Comp_index_ID_3',
-                                                        '_Torsion_angle_constraint.Atom_ID_3',
-                                                        '_Torsion_angle_constraint.Entity_assembly_ID_4',
-                                                        '_Torsion_angle_constraint.Comp_index_ID_4',
-                                                        '_Torsion_angle_constraint.Atom_ID_4']]
+            try:
+                index_index = star_tags.index('_Torsion_angle_constraint.Index_ID')
+            except ValueError:
+                index_index = -1
 
-        id_index = in_star_tags.index('_Torsion_angle_constraint.ID')
+            key_indices = [star_tags.index(tag) for tag in ['_Torsion_angle_constraint.Entity_assembly_ID_1',
+                                                            '_Torsion_angle_constraint.Comp_index_ID_1',
+                                                            '_Torsion_angle_constraint.Atom_ID_1',
+                                                            '_Torsion_angle_constraint.Entity_assembly_ID_2',
+                                                            '_Torsion_angle_constraint.Comp_index_ID_2',
+                                                            '_Torsion_angle_constraint.Atom_ID_2',
+                                                            '_Torsion_angle_constraint.Entity_assembly_ID_3',
+                                                            '_Torsion_angle_constraint.Comp_index_ID_3',
+                                                            '_Torsion_angle_constraint.Atom_ID_3',
+                                                            '_Torsion_angle_constraint.Entity_assembly_ID_4',
+                                                            '_Torsion_angle_constraint.Comp_index_ID_4',
+                                                            '_Torsion_angle_constraint.Atom_ID_4']]
 
-        id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_index = in_star_tags.index('_Torsion_angle_constraint.ID')
 
-        index = 1
+            id_list = sorted(set(int(row[id_index]) for row in loop_data))
 
-        for row_id in id_list:
+            index = 1
 
-            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+            for row_id in id_list:
 
-            buf_row = []
+                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
-            for row in in_row:
+                buf_row = []
 
-                tag_map = {}
-                self_tag_map = {}
+                for row in in_row:
 
-                for tag in seq_ident_tags:
-                    chain_tag = tag['chain_tag']
-                    seq_tag = tag['seq_tag']
+                    tag_map = {}
+                    self_tag_map = {}
 
-                    in_star_chain = row[in_star_tags.index(chain_tag)]
-                    _in_star_seq = row[in_star_tags.index(seq_tag)]
-                    if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
-                        _in_star_seq = int(_in_star_seq)
+                    for tag in seq_ident_tags:
+                        chain_tag = tag['chain_tag']
+                        seq_tag = tag['seq_tag']
 
-                    seq_key = (in_star_chain, _in_star_seq)
+                        in_star_chain = row[in_star_tags.index(chain_tag)]
+                        _in_star_seq = row[in_star_tags.index(seq_tag)]
+                        if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
+                            _in_star_seq = int(_in_star_seq)
 
-                    try:
-                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                        self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-                    except KeyError:
-                        tag_map[chain_tag] = in_star_chain
-                        tag_map[seq_tag] = _in_star_seq
-                        self_tag_map[chain_tag] = in_star_chain
-                        self_tag_map[seq_tag] = _in_star_seq
+                        seq_key = (in_star_chain, _in_star_seq)
 
-                intra_residue_12 = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_2)]\
-                    and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_2)]
-                intra_residue_13 = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_3)]\
-                    and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_3)]
-                intra_residue_14 = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_4)]\
-                    and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_4)]
-                intra_residue_23 = row[in_star_tags.index(chain_tag_2)] == row[in_star_tags.index(chain_tag_3)]\
-                    and row[in_star_tags.index(seq_tag_2)] == row[in_star_tags.index(seq_tag_3)]
-                intra_residue_24 = row[in_star_tags.index(chain_tag_2)] == row[in_star_tags.index(chain_tag_4)]\
-                    and row[in_star_tags.index(seq_tag_2)] == row[in_star_tags.index(seq_tag_4)]
-                intra_residue_34 = row[in_star_tags.index(chain_tag_3)] == row[in_star_tags.index(chain_tag_4)]\
-                    and row[in_star_tags.index(seq_tag_3)] == row[in_star_tags.index(seq_tag_4)]
+                        try:
+                            tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                            self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
+                        except KeyError:
+                            tag_map[chain_tag] = in_star_chain
+                            tag_map[seq_tag] = _in_star_seq
+                            self_tag_map[chain_tag] = in_star_chain
+                            self_tag_map[seq_tag] = _in_star_seq
 
-                atom_list_1 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_1], row[in_star_atom_index_1])[0]
-                atom_list_2 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_2], row[in_star_atom_index_2])[0]
-                atom_list_3 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_3], row[in_star_atom_index_3])[0]
-                atom_list_4 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_4], row[in_star_atom_index_4])[0]
+                    intra_residue_12 = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_2)]\
+                        and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_2)]
+                    intra_residue_13 = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_3)]\
+                        and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_3)]
+                    intra_residue_14 = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_4)]\
+                        and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_4)]
+                    intra_residue_23 = row[in_star_tags.index(chain_tag_2)] == row[in_star_tags.index(chain_tag_3)]\
+                        and row[in_star_tags.index(seq_tag_2)] == row[in_star_tags.index(seq_tag_3)]
+                    intra_residue_24 = row[in_star_tags.index(chain_tag_2)] == row[in_star_tags.index(chain_tag_4)]\
+                        and row[in_star_tags.index(seq_tag_2)] == row[in_star_tags.index(seq_tag_4)]
+                    intra_residue_34 = row[in_star_tags.index(chain_tag_3)] == row[in_star_tags.index(chain_tag_4)]\
+                        and row[in_star_tags.index(seq_tag_3)] == row[in_star_tags.index(seq_tag_4)]
 
-                for atom_1 in atom_list_1:
+                    atom_list_1 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_1], row[in_star_atom_index_1])[0]
+                    atom_list_2 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_2], row[in_star_atom_index_2])[0]
+                    atom_list_3 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_3], row[in_star_atom_index_3])[0]
+                    atom_list_4 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_4], row[in_star_atom_index_4])[0]
 
-                    for atom_2 in atom_list_2:
+                    for atom_1 in atom_list_1:
 
-                        if intra_residue_12 and atom_2 == atom_1:
-                            continue
+                        for atom_2 in atom_list_2:
 
-                        for atom_3 in atom_list_3:
-
-                            if (intra_residue_13 and atom_3 == atom_1) or (intra_residue_23 and atom_3 == atom_2):
+                            if intra_residue_12 and atom_2 == atom_1:
                                 continue
 
-                            for atom_4 in atom_list_4:
+                            for atom_3 in atom_list_3:
 
-                                if (intra_residue_14 and atom_4 == atom_1) or (intra_residue_24 and atom_4 == atom_2) or (intra_residue_34 and atom_4 == atom_3):
+                                if (intra_residue_13 and atom_3 == atom_1) or (intra_residue_23 and atom_3 == atom_2):
                                     continue
 
-                                buf = [None] * len(star_tags)
+                                for atom_4 in atom_list_4:
 
-                                for data_tag in in_star_tags:
-
-                                    auth_tag, _ = self.get_star_auth_tag(data_tag)
-
-                                    if auth_tag is None:
+                                    if (intra_residue_14 and atom_4 == atom_1) or (intra_residue_24 and atom_4 == atom_2) or (intra_residue_34 and atom_4 == atom_3):
                                         continue
 
-                                    data = row[in_star_tags.index(data_tag)]
+                                    buf = [None] * len(star_tags)
 
-                                    if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                                        buf[star_tags.index(auth_tag)] = self_tag_map[data_tag]
-                                    else:
-                                        buf[star_tags.index(auth_tag)] = data
+                                    for data_tag in in_star_tags:
 
-                                    if auth_tag != data_tag:
+                                        auth_tag, _ = self.get_star_auth_tag(data_tag)
 
-                                        data_index = star_tags.index(data_tag)
+                                        if auth_tag is None:
+                                            continue
+
+                                        data = row[in_star_tags.index(data_tag)]
 
                                         if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                                            buf[data_index] = tag_map[data_tag]
-                                        elif 'Comp_ID' in data_tag:
-                                            buf[data_index] = data.upper()
-                                        elif data_tag == '_Torsion_angle_constraint.Atom_ID_1':
-                                            buf[data_index] = atom_1
-                                        elif data_tag == '_Torsion_angle_constraint.Atom_ID_2':
-                                            buf[data_index] = atom_2
-                                        elif data_tag == '_Torsion_angle_constraint.Atom_ID_3':
-                                            buf[data_index] = atom_3
-                                        elif data_tag == '_Torsion_angle_constraint.Atom_ID_4':
-                                            buf[data_index] = atom_4
+                                            buf[star_tags.index(auth_tag)] = self_tag_map[data_tag]
                                         else:
-                                            buf[data_index] = data
+                                            buf[star_tags.index(auth_tag)] = data
 
-                                buf_row.append(buf)
+                                        if auth_tag != data_tag:
 
-            keys = set()
+                                            data_index = star_tags.index(data_tag)
 
-            for row in buf_row:
+                                            if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
+                                                buf[data_index] = tag_map[data_tag]
+                                            elif 'Comp_ID' in data_tag:
+                                                buf[data_index] = data.upper()
+                                            elif data_tag == '_Torsion_angle_constraint.Atom_ID_1':
+                                                buf[data_index] = atom_1
+                                            elif data_tag == '_Torsion_angle_constraint.Atom_ID_2':
+                                                buf[data_index] = atom_2
+                                            elif data_tag == '_Torsion_angle_constraint.Atom_ID_3':
+                                                buf[data_index] = atom_3
+                                            elif data_tag == '_Torsion_angle_constraint.Atom_ID_4':
+                                                buf[data_index] = atom_4
+                                            else:
+                                                buf[data_index] = data
 
-                key = ''
-                for j in key_indices:
-                    key += ' ' + str(row[j])
-                key.rstrip()
+                                    buf_row.append(buf)
 
-                if key in keys:
-                    continue
+                keys = set()
 
-                keys.add(key)
+                for row in buf_row:
 
-                if index_index >= 0:
-                    row[index_index] = index
+                    if key_f.tell() > 0:
+                        key_f.truncate(0)
+                        key_f.seek(0)
 
-                index += 1
+                    for j in key_indices:
+                        key_f.write(f'{row[j]} ')
 
-                out_row.append(row)
+                    key = key_f.getvalue()
 
-        return out_row
+                    if key in keys:
+                        continue
+
+                    keys.add(key)
+
+                    if index_index >= 0:
+                        row[index_index] = index
+
+                    index += 1
+
+                    out_row.append(row)
+
+            return out_row
 
     def nef2star_rdc_row(self, nef_tags, star_tags, loop_data):
         """ Translate rows in RDC restraint loop from NEF into NMR-STAR.
@@ -7192,121 +7370,127 @@ class NEFTranslator:
                 chain_tag_2 = chain_tag
                 seq_tag_2 = seq_tag
 
-        try:
-            index_index = star_tags.index('_RDC_constraint.Index_ID')
-        except ValueError:
-            index_index = -1
+        with io.StringIO() as key_f:
 
-        key_indices = [star_tags.index(tag) for tag in ['_RDC_constraint.Entity_assembly_ID_1',
-                                                        '_RDC_constraint.Comp_index_ID_1',
-                                                        '_RDC_constraint.Atom_ID_1',
-                                                        '_RDC_constraint.Entity_assembly_ID_2',
-                                                        '_RDC_constraint.Comp_index_ID_2',
-                                                        '_RDC_constraint.Atom_ID_2']]
+            try:
+                index_index = star_tags.index('_RDC_constraint.Index_ID')
+            except ValueError:
+                index_index = -1
 
-        id_index = nef_tags.index('_nef_rdc_restraint.restraint_id')
+            key_indices = [star_tags.index(tag) for tag in ['_RDC_constraint.Entity_assembly_ID_1',
+                                                            '_RDC_constraint.Comp_index_ID_1',
+                                                            '_RDC_constraint.Atom_ID_1',
+                                                            '_RDC_constraint.Entity_assembly_ID_2',
+                                                            '_RDC_constraint.Comp_index_ID_2',
+                                                            '_RDC_constraint.Atom_ID_2']]
 
-        id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_index = nef_tags.index('_nef_rdc_restraint.restraint_id')
 
-        index = 1
+            id_list = sorted(set(int(row[id_index]) for row in loop_data))
 
-        for row_id in id_list:
+            index = 1
 
-            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+            for row_id in id_list:
 
-            buf_row = []
+                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
-            for row in in_row:
+                buf_row = []
 
-                tag_map = {}
-                self_tag_map = {}
+                for row in in_row:
 
-                for tag in seq_ident_tags:
-                    chain_tag = tag['chain_tag']
-                    seq_tag = tag['seq_tag']
+                    tag_map = {}
+                    self_tag_map = {}
 
-                    nef_chain = row[nef_tags.index(chain_tag)]
-                    _nef_seq = row[nef_tags.index(seq_tag)]
-                    if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
-                        _nef_seq = int(_nef_seq)
+                    for tag in seq_ident_tags:
+                        chain_tag = tag['chain_tag']
+                        seq_tag = tag['seq_tag']
 
-                    seq_key = (nef_chain, _nef_seq)
+                        nef_chain = row[nef_tags.index(chain_tag)]
+                        _nef_seq = row[nef_tags.index(seq_tag)]
+                        if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
+                            _nef_seq = int(_nef_seq)
 
-                    try:
-                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                        self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-                    except KeyError:
-                        tag_map[chain_tag] = nef_chain
-                        tag_map[seq_tag] = _nef_seq
-                        self_tag_map[chain_tag] = nef_chain
-                        self_tag_map[seq_tag] = _nef_seq
+                        seq_key = (nef_chain, _nef_seq)
 
-                intra_residue = row[nef_tags.index(chain_tag_1)] == row[nef_tags.index(chain_tag_2)]\
-                    and row[nef_tags.index(seq_tag_1)] == row[nef_tags.index(seq_tag_2)]
+                        try:
+                            tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                            self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
+                        except KeyError:
+                            tag_map[chain_tag] = nef_chain
+                            tag_map[seq_tag] = _nef_seq
+                            self_tag_map[chain_tag] = nef_chain
+                            self_tag_map[seq_tag] = _nef_seq
 
-                atom_list_1 = self.get_star_atom(row[nef_comp_index_1], row[nef_atom_index_1])[0]
-                atom_list_2 = self.get_star_atom(row[nef_comp_index_2], row[nef_atom_index_2])[0]
+                    intra_residue = row[nef_tags.index(chain_tag_1)] == row[nef_tags.index(chain_tag_2)]\
+                        and row[nef_tags.index(seq_tag_1)] == row[nef_tags.index(seq_tag_2)]
 
-                for atom_1 in atom_list_1:
+                    atom_list_1 = self.get_star_atom(row[nef_comp_index_1], row[nef_atom_index_1])[0]
+                    atom_list_2 = self.get_star_atom(row[nef_comp_index_2], row[nef_atom_index_2])[0]
 
-                    for atom_2 in atom_list_2:
+                    for atom_1 in atom_list_1:
 
-                        if intra_residue and atom_2 == atom_1:
-                            continue
+                        for atom_2 in atom_list_2:
 
-                        buf = [None] * len(star_tags)
-
-                        for tag in nef_tags:
-
-                            auth_tag, data_tag, _ = self.get_star_tag(tag)
-
-                            if auth_tag is None:
+                            if intra_residue and atom_2 == atom_1:
                                 continue
 
-                            data = row[nef_tags.index(tag)]
+                            buf = [None] * len(star_tags)
 
-                            if 'chain_code' in tag or 'sequence_code' in tag:
-                                buf[star_tags.index(auth_tag)] = self_tag_map[tag]
-                            else:
-                                buf[star_tags.index(auth_tag)] = data
+                            for tag in nef_tags:
 
-                            if auth_tag != data_tag:
+                                auth_tag, data_tag, _ = self.get_star_tag(tag)
 
-                                data_index = star_tags.index(data_tag)
+                                if auth_tag is None:
+                                    continue
+
+                                data = row[nef_tags.index(tag)]
 
                                 if 'chain_code' in tag or 'sequence_code' in tag:
-                                    buf[data_index] = tag_map[tag]
-                                elif tag == '_nef_rdc_restraint.atom_name_1':
-                                    buf[data_index] = atom_1
-                                elif tag == '_nef_rdc_restraint.atom_name_2':
-                                    buf[data_index] = atom_2
+                                    buf[star_tags.index(auth_tag)] = self_tag_map[tag]
                                 else:
-                                    buf[data_index] = data
+                                    buf[star_tags.index(auth_tag)] = data
 
-                        buf_row.append(buf)
+                                if auth_tag != data_tag:
 
-            keys = set()
+                                    data_index = star_tags.index(data_tag)
 
-            for row in buf_row:
+                                    if 'chain_code' in tag or 'sequence_code' in tag:
+                                        buf[data_index] = tag_map[tag]
+                                    elif tag == '_nef_rdc_restraint.atom_name_1':
+                                        buf[data_index] = atom_1
+                                    elif tag == '_nef_rdc_restraint.atom_name_2':
+                                        buf[data_index] = atom_2
+                                    else:
+                                        buf[data_index] = data
 
-                key = ''
-                for j in key_indices:
-                    key += ' ' + str(row[j])
-                key.rstrip()
+                            buf_row.append(buf)
 
-                if key in keys:
-                    continue
+                keys = set()
 
-                keys.add(key)
+                for row in buf_row:
 
-                if index_index >= 0:
-                    row[index_index] = index
+                    if key_f.tell() > 0:
+                        key_f.truncate(0)
+                        key_f.seek(0)
 
-                index += 1
+                    for j in key_indices:
+                        key_f.write(f'{row[j]} ')
 
-                out_row.append(row)
+                    key = key_f.getvalue()
 
-        return out_row
+                    if key in keys:
+                        continue
+
+                    keys.add(key)
+
+                    if index_index >= 0:
+                        row[index_index] = index
+
+                    index += 1
+
+                    out_row.append(row)
+
+            return out_row
 
     def star2star_rdc_row(self, in_star_tags, star_tags, loop_data):
         """ Translate rows in RDC restraint loop from PyNMRSTAR data object into NMR-STAR.
@@ -7337,123 +7521,129 @@ class NEFTranslator:
                 chain_tag_2 = chain_tag
                 seq_tag_2 = seq_tag
 
-        try:
-            index_index = star_tags.index('_RDC_constraint.Index_ID')
-        except ValueError:
-            index_index = -1
+        with io.StringIO() as key_f:
 
-        key_indices = [star_tags.index(tag) for tag in ['_RDC_constraint.Entity_assembly_ID_1',
-                                                        '_RDC_constraint.Comp_index_ID_1',
-                                                        '_RDC_constraint.Atom_ID_1',
-                                                        '_RDC_constraint.Entity_assembly_ID_2',
-                                                        '_RDC_constraint.Comp_index_ID_2',
-                                                        '_RDC_constraint.Atom_ID_2']]
+            try:
+                index_index = star_tags.index('_RDC_constraint.Index_ID')
+            except ValueError:
+                index_index = -1
 
-        id_index = in_star_tags.index('_RDC_constraint.ID')
+            key_indices = [star_tags.index(tag) for tag in ['_RDC_constraint.Entity_assembly_ID_1',
+                                                            '_RDC_constraint.Comp_index_ID_1',
+                                                            '_RDC_constraint.Atom_ID_1',
+                                                            '_RDC_constraint.Entity_assembly_ID_2',
+                                                            '_RDC_constraint.Comp_index_ID_2',
+                                                            '_RDC_constraint.Atom_ID_2']]
 
-        id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_index = in_star_tags.index('_RDC_constraint.ID')
 
-        index = 1
+            id_list = sorted(set(int(row[id_index]) for row in loop_data))
 
-        for row_id in id_list:
+            index = 1
 
-            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+            for row_id in id_list:
 
-            buf_row = []
+                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
-            for row in in_row:
+                buf_row = []
 
-                tag_map = {}
-                self_tag_map = {}
+                for row in in_row:
 
-                for tag in seq_ident_tags:
-                    chain_tag = tag['chain_tag']
-                    seq_tag = tag['seq_tag']
+                    tag_map = {}
+                    self_tag_map = {}
 
-                    in_star_chain = row[in_star_tags.index(chain_tag)]
-                    _in_star_seq = row[in_star_tags.index(seq_tag)]
-                    if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
-                        _in_star_seq = int(_in_star_seq)
+                    for tag in seq_ident_tags:
+                        chain_tag = tag['chain_tag']
+                        seq_tag = tag['seq_tag']
 
-                    seq_key = (in_star_chain, _in_star_seq)
+                        in_star_chain = row[in_star_tags.index(chain_tag)]
+                        _in_star_seq = row[in_star_tags.index(seq_tag)]
+                        if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
+                            _in_star_seq = int(_in_star_seq)
 
-                    try:
-                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                        self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-                    except KeyError:
-                        tag_map[chain_tag] = in_star_chain
-                        tag_map[seq_tag] = _in_star_seq
-                        self_tag_map[chain_tag] = in_star_chain
-                        self_tag_map[seq_tag] = _in_star_seq
+                        seq_key = (in_star_chain, _in_star_seq)
 
-                intra_residue = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_2)]\
-                    and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_2)]
+                        try:
+                            tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                            self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
+                        except KeyError:
+                            tag_map[chain_tag] = in_star_chain
+                            tag_map[seq_tag] = _in_star_seq
+                            self_tag_map[chain_tag] = in_star_chain
+                            self_tag_map[seq_tag] = _in_star_seq
 
-                atom_list_1 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_1], row[in_star_atom_index_1])[0]
-                atom_list_2 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_2], row[in_star_atom_index_2])[0]
+                    intra_residue = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_2)]\
+                        and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_2)]
 
-                for atom_1 in atom_list_1:
+                    atom_list_1 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_1], row[in_star_atom_index_1])[0]
+                    atom_list_2 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_2], row[in_star_atom_index_2])[0]
 
-                    for atom_2 in atom_list_2:
+                    for atom_1 in atom_list_1:
 
-                        if intra_residue and atom_2 == atom_1:
-                            continue
+                        for atom_2 in atom_list_2:
 
-                        buf = [None] * len(star_tags)
-
-                        for data_tag in in_star_tags:
-
-                            auth_tag, _ = self.get_star_auth_tag(data_tag)
-
-                            if auth_tag is None:
+                            if intra_residue and atom_2 == atom_1:
                                 continue
 
-                            data = row[in_star_tags.index(data_tag)]
+                            buf = [None] * len(star_tags)
 
-                            if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                                buf[star_tags.index(auth_tag)] = self_tag_map[data_tag]
-                            else:
-                                buf[star_tags.index(auth_tag)] = data
+                            for data_tag in in_star_tags:
 
-                            if auth_tag != data_tag:
+                                auth_tag, _ = self.get_star_auth_tag(data_tag)
 
-                                data_index = star_tags.index(data_tag)
+                                if auth_tag is None:
+                                    continue
+
+                                data = row[in_star_tags.index(data_tag)]
 
                                 if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                                    buf[data_index] = tag_map[data_tag]
-                                elif 'Comp_ID' in data_tag:
-                                    buf[data_index] = data.upper()
-                                elif data_tag == '_RDC_constraint.Atom_ID_1':
-                                    buf[data_index] = atom_1
-                                elif data_tag == '_RDC_constraint.Atom_ID_2':
-                                    buf[data_index] = atom_2
+                                    buf[star_tags.index(auth_tag)] = self_tag_map[data_tag]
                                 else:
-                                    buf[data_index] = data
+                                    buf[star_tags.index(auth_tag)] = data
 
-                        buf_row.append(buf)
+                                if auth_tag != data_tag:
 
-            keys = set()
+                                    data_index = star_tags.index(data_tag)
 
-            for row in buf_row:
+                                    if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
+                                        buf[data_index] = tag_map[data_tag]
+                                    elif 'Comp_ID' in data_tag:
+                                        buf[data_index] = data.upper()
+                                    elif data_tag == '_RDC_constraint.Atom_ID_1':
+                                        buf[data_index] = atom_1
+                                    elif data_tag == '_RDC_constraint.Atom_ID_2':
+                                        buf[data_index] = atom_2
+                                    else:
+                                        buf[data_index] = data
 
-                key = ''
-                for j in key_indices:
-                    key += ' ' + str(row[j])
-                key.rstrip()
+                            buf_row.append(buf)
 
-                if key in keys:
-                    continue
+                keys = set()
 
-                keys.add(key)
+                for row in buf_row:
 
-                if index_index >= 0:
-                    row[index_index] = index
+                    if key_f.tell() > 0:
+                        key_f.truncate(0)
+                        key_f.seek(0)
 
-                index += 1
+                    for j in key_indices:
+                        key_f.write(f'{row[j]} ')
 
-                out_row.append(row)
+                    key = key_f.getvalue()
 
-        return out_row
+                    if key in keys:
+                        continue
+
+                    keys.add(key)
+
+                    if index_index >= 0:
+                        row[index_index] = index
+
+                    index += 1
+
+                    out_row.append(row)
+
+            return out_row
 
     def nef2star_peak_row(self, nef_tags, star_tags, loop_data, leave_unmatched=False):
         """ Translate rows in spectral peak loop from NEF into NMR-STAR.
@@ -7477,163 +7667,179 @@ class NEFTranslator:
             nef_comp_indices.append(nef_tags.index(f"_nef_peak.residue_name_{d}"))
             nef_atom_indices.append(nef_tags.index(f"_nef_peak.atom_name_{d}"))
 
-        try:
-            index_index = star_tags.index('_Peak_row_format.Index_ID')
-        except ValueError:
-            index_index = -1
+        with io.StringIO() as key_f, io.StringIO() as msg_f:
 
-        key_indices = [star_tags.index(tag) for tag in [k for k in star_tags
-                                                        if k.startswith('_Peak_row_format.Entity_assembly_ID')
-                                                        or k.startswith('_Peak_row_format.Comp_index_ID')
-                                                        or k.startswith('_Peak_row_format.Atom_ID')]]
+            try:
+                index_index = star_tags.index('_Peak_row_format.Index_ID')
+            except ValueError:
+                index_index = -1
 
-        id_index = nef_tags.index('_nef_peak.peak_id')
+            key_indices = [star_tags.index(tag) for tag in [k for k in star_tags
+                                                            if k.startswith('_Peak_row_format.Entity_assembly_ID')
+                                                            or k.startswith('_Peak_row_format.Comp_index_ID')
+                                                            or k.startswith('_Peak_row_format.Atom_ID')]]
 
-        id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_index = nef_tags.index('_nef_peak.peak_id')
 
-        index = 1
+            id_list = sorted(set(int(row[id_index]) for row in loop_data))
 
-        for row_id in id_list:
+            index = 1
 
-            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+            for row_id in id_list:
 
-            buf_row = []
+                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
-            for row in in_row:
+                buf_row = []
 
-                tag_map = {}
-                self_tag_map = {}
+                for row in in_row:
 
-                for tag in seq_ident_tags:
-                    chain_tag = tag['chain_tag']
-                    seq_tag = tag['seq_tag']
+                    tag_map = {}
+                    self_tag_map = {}
 
-                    nef_chain = row[nef_tags.index(chain_tag)]
-                    _nef_seq = row[nef_tags.index(seq_tag)]
-                    if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
-                        _nef_seq = int(_nef_seq)
+                    for tag in seq_ident_tags:
+                        chain_tag = tag['chain_tag']
+                        seq_tag = tag['seq_tag']
 
-                    seq_key = (nef_chain, _nef_seq)
+                        nef_chain = row[nef_tags.index(chain_tag)]
+                        _nef_seq = row[nef_tags.index(seq_tag)]
+                        if isinstance(_nef_seq, str) and _nef_seq not in emptyValue:
+                            _nef_seq = int(_nef_seq)
 
-                    try:
-                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                        self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-                    except KeyError:
-                        tag_map[chain_tag] = nef_chain
-                        tag_map[seq_tag] = _nef_seq
-                        self_tag_map[chain_tag] = nef_chain
-                        self_tag_map[seq_tag] = _nef_seq
+                        seq_key = (nef_chain, _nef_seq)
 
-                details = ''
-                a = []
+                        try:
+                            tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                            self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
+                        except KeyError:
+                            tag_map[chain_tag] = nef_chain
+                            tag_map[seq_tag] = _nef_seq
+                            self_tag_map[chain_tag] = nef_chain
+                            self_tag_map[seq_tag] = _nef_seq
 
-                for nef_comp_index, nef_atom_index in zip(nef_comp_indices, nef_atom_indices):
-                    atom_list = self.get_star_atom(row[nef_comp_index], row[nef_atom_index])[0]
-                    len_atom_list = len(atom_list)
-                    if len_atom_list == 0:
-                        atom_list.append('.')
-                    elif len_atom_list > 1 and leave_unmatched:
-                        details += f"{row[nef_atom_index]} -> {atom_list}, "
+                    if msg_f.tell() > 0:
+                        msg_f.truncate(0)
+                        msg_f.seek(0)
 
-                    a.append(atom_list)
+                    a = []
 
-                if num_dim == 1:
+                    for nef_comp_index, nef_atom_index in zip(nef_comp_indices, nef_atom_indices):
+                        atom_list = self.get_star_atom(row[nef_comp_index], row[nef_atom_index])[0]
+                        len_atom_list = len(atom_list)
+                        if len_atom_list == 0:
+                            atom_list.append('.')
+                        elif len_atom_list > 1 and leave_unmatched:
+                            msg_f.write(f"{row[nef_atom_index]} -> {atom_list}, ")
 
-                    for comb in itertools.product(a[0]):
-                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        a.append(atom_list)
 
-                elif num_dim == 2:
+                    pos = msg_f.tell() - 2
+                    if pos > 0:
+                        msg_f.truncate(pos)
+                        msg_f.seek(pos)
 
-                    for comb in itertools.product(a[0], a[1]):
-                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                    details = msg_f.getvalue()
 
-                elif num_dim == 3:
+                    if num_dim == 1:
 
-                    for comb in itertools.product(a[0], a[1], a[2]):
-                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0]):
+                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 4:
+                    elif num_dim == 2:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3]):
-                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1]):
+                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 5:
+                    elif num_dim == 3:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4]):
-                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2]):
+                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 6:
+                    elif num_dim == 4:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5]):
-                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3]):
+                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 7:
+                    elif num_dim == 5:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6]):
-                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4]):
+                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 8:
+                    elif num_dim == 6:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]):
-                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5]):
+                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 9:
+                    elif num_dim == 7:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]):
-                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6]):
+                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 10:
+                    elif num_dim == 8:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9]):
-                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]):
+                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 11:
+                    elif num_dim == 9:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10]):
-                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]):
+                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 12:
+                    elif num_dim == 10:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11]):
-                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9]):
+                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 13:
+                    elif num_dim == 11:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12]):
-                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10]):
+                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 14:
+                    elif num_dim == 12:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13]):
-                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11]):
+                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 15:
+                    elif num_dim == 13:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13], a[14]):
-                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12]):
+                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-            keys = set()
+                    elif num_dim == 14:
 
-            for row in buf_row:
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13]):
+                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                key = ''
-                for j in key_indices:
-                    key += ' ' + str(row[j])
-                key.rstrip()
+                    elif num_dim == 15:
 
-                if key in keys:
-                    continue
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13], a[14]):
+                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                keys.add(key)
+                keys = set()
 
-                if index_index >= 0:
-                    row[index_index] = index
+                for row in buf_row:
 
-                index += 1
+                    if key_f.tell() > 0:
+                        key_f.truncate(0)
+                        key_f.seek(0)
 
-                out_row.append(row)
+                    for j in key_indices:
+                        key_f.write(f'{row[j]} ')
 
-        return out_row
+                    key = key_f.getvalue()
+
+                    if key in keys:
+                        continue
+
+                    keys.add(key)
+
+                    if index_index >= 0:
+                        row[index_index] = index
+
+                    index += 1
+
+                    out_row.append(row)
+
+            return out_row
 
     def __nef2star_peak_row(self, nef_tags, star_tags, tag_map, self_tag_map, row, details, comb):
         """ Translate rows in spectral peak loop from NEF into NMR-STAR.
@@ -7670,7 +7876,7 @@ class NEFTranslator:
             if len(details) > 0:
                 details_index = star_tags.index('_Peak_row_format.Details')
 
-                buf[details_index] = details[:-2]
+                buf[details_index] = details
 
         return buf
 
@@ -7694,121 +7900,127 @@ class NEFTranslator:
         for d in range(1, num_dim + 1):
             comp_indices.append(star_tags.index(f"_Peak_row_format.Comp_ID_{d}"))
 
-        try:
-            index_index = nef_tags.index('_nef_peak.index')
-        except ValueError:
-            index_index = -1
+        with io.StringIO() as key_f:
 
-        key_indices = [nef_tags.index(tag) for tag in [k for k in nef_tags
-                                                       if k.startswith('_nef_peak.chain_code')
-                                                       or k.startswith('_nef_peak.sequence_code')
-                                                       or k.startswith('_nef_peak.atom_name')]]
+            try:
+                index_index = nef_tags.index('_nef_peak.index')
+            except ValueError:
+                index_index = -1
 
-        id_index = star_tags.index('_Peak_row_format.ID')
+            key_indices = [nef_tags.index(tag) for tag in [k for k in nef_tags
+                                                           if k.startswith('_nef_peak.chain_code')
+                                                           or k.startswith('_nef_peak.sequence_code')
+                                                           or k.startswith('_nef_peak.atom_name')]]
 
-        id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_index = star_tags.index('_Peak_row_format.ID')
 
-        index = 1
+            id_list = sorted(set(int(row[id_index]) for row in loop_data))
 
-        for row_id in id_list:
+            index = 1
 
-            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+            for row_id in id_list:
 
-            buf_row = []
+                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
-            for row in in_row:
+                buf_row = []
 
-                tag_map = {}
+                for row in in_row:
 
-                s = []
+                    tag_map = {}
 
-                for tag in seq_ident_tags:
-                    chain_tag = tag['chain_tag']
-                    seq_tag = tag['seq_tag']
+                    s = []
 
-                    star_chain = row[star_tags.index(chain_tag)]
-                    _star_chain = star_chain
-                    if isinstance(star_chain, str) and star_chain not in emptyValue:
-                        _star_chain = int(star_chain)
+                    for tag in seq_ident_tags:
+                        chain_tag = tag['chain_tag']
+                        seq_tag = tag['seq_tag']
 
-                    _star_seq = row[star_tags.index(seq_tag)]
-                    if isinstance(_star_seq, str) and _star_seq not in emptyValue:
-                        _star_seq = int(_star_seq)
+                        star_chain = row[star_tags.index(chain_tag)]
+                        _star_chain = star_chain
+                        if isinstance(star_chain, str) and star_chain not in emptyValue:
+                            _star_chain = int(star_chain)
 
-                    seq_key = (_star_chain, _star_seq)
+                        _star_seq = row[star_tags.index(seq_tag)]
+                        if isinstance(_star_seq, str) and _star_seq not in emptyValue:
+                            _star_seq = int(_star_seq)
 
-                    try:
-                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                    except KeyError:
+                        seq_key = (_star_chain, _star_seq)
+
                         try:
-                            nef_chain = self.selfSeqMap[(_star_chain, 1)][0]
+                            tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
                         except KeyError:
-                            if _star_chain in emptyValue or _star_chain not in self.authChainId:
-                                nef_chain = _star_chain
-                            else:
-                                cid = self.authChainId.index(_star_chain)
-                                nef_chain = indexToLetter(cid)
-                        tag_map[chain_tag] = nef_chain
-                        tag_map[seq_tag] = _star_seq
+                            try:
+                                nef_chain = self.selfSeqMap[(_star_chain, 1)][0]
+                            except KeyError:
+                                if _star_chain in emptyValue or _star_chain not in self.authChainId:
+                                    nef_chain = _star_chain
+                                else:
+                                    cid = self.authChainId.index(_star_chain)
+                                    nef_chain = indexToLetter(cid)
+                            tag_map[chain_tag] = nef_chain
+                            tag_map[seq_tag] = _star_seq
 
-                    if star_chain in self.star2CifChainMapping:
-                        tag_map[chain_tag] = self.star2CifChainMapping[star_chain]
+                        if star_chain in self.star2CifChainMapping:
+                            tag_map[chain_tag] = self.star2CifChainMapping[star_chain]
 
-                    s.append(seq_key)
+                        s.append(seq_key)
 
-                buf = [None] * len(nef_tags)
+                    buf = [None] * len(nef_tags)
 
-                for tag in star_tags:
+                    for tag in star_tags:
 
-                    nef_tag, _ = self.get_nef_tag(tag)
+                        nef_tag, _ = self.get_nef_tag(tag)
 
-                    if nef_tag is None:
+                        if nef_tag is None:
+                            continue
+
+                        data = row[star_tags.index(tag)]
+
+                        data_index = nef_tags.index(nef_tag)
+
+                        if 'chain_code' in nef_tag or 'sequence_code' in nef_tag:
+                            buf[data_index] = tag_map[tag]
+                        elif nef_tag.startswith('_nef_peak.atom_name'):
+                            try:
+                                if self.atomIdMap is not None:
+                                    buf[data_index] = self.atomIdMap[s[int(nef_tag[20:]) - 1]][data]
+                            except KeyError:
+                                atom_list = self.get_nef_atom(row[comp_indices[int(nef_tag[20:]) - 1]],
+                                                              [{'atom_id': data, 'ambig_code': None, 'value': None}])[0]
+                                if len(atom_list) > 0:
+                                    buf[data_index] = atom_list[0]
+                                else:
+                                    buf[data_index] = data
+                        else:
+                            buf[data_index] = data
+
+                    buf_row.append(buf)
+
+                keys = set()
+
+                for row in buf_row:
+
+                    if key_f.tell() > 0:
+                        key_f.truncate(0)
+                        key_f.seek(0)
+
+                    for j in key_indices:
+                        key_f.write(f'{row[j]} ')
+
+                    key = key_f.getvalue()
+
+                    if key in keys:
                         continue
 
-                    data = row[star_tags.index(tag)]
+                    keys.add(key)
 
-                    data_index = nef_tags.index(nef_tag)
+                    if index_index >= 0:
+                        row[index_index] = index
 
-                    if 'chain_code' in nef_tag or 'sequence_code' in nef_tag:
-                        buf[data_index] = tag_map[tag]
-                    elif nef_tag.startswith('_nef_peak.atom_name'):
-                        try:
-                            if self.atomIdMap is not None:
-                                buf[data_index] = self.atomIdMap[s[int(nef_tag[20:]) - 1]][data]
-                        except KeyError:
-                            atom_list = self.get_nef_atom(row[comp_indices[int(nef_tag[20:]) - 1]],
-                                                          [{'atom_id': data, 'ambig_code': None, 'value': None}])[0]
-                            if len(atom_list) > 0:
-                                buf[data_index] = atom_list[0]
-                            else:
-                                buf[data_index] = data
-                    else:
-                        buf[data_index] = data
+                    index += 1
 
-                buf_row.append(buf)
+                    out_row.append(row)
 
-            keys = set()
-
-            for row in buf_row:
-
-                key = ''
-                for j in key_indices:
-                    key += ' ' + str(row[j])
-                key.rstrip()
-
-                if key in keys:
-                    continue
-
-                keys.add(key)
-
-                if index_index >= 0:
-                    row[index_index] = index
-
-                index += 1
-
-                out_row.append(row)
-
-        return out_row
+            return out_row
 
     def star2star_peak_row(self, in_star_tags, star_tags, loop_data, leave_unmatched=False):
         """ Translate rows in spectral peak loop from PyNMRSTAR data object into NMR-STAR.
@@ -7832,163 +8044,179 @@ class NEFTranslator:
             in_star_comp_indices.append(in_star_tags.index(f"_Peak_row_format.Comp_ID_{d}"))
             in_star_atom_indices.append(in_star_tags.index(f"_Peak_row_format.Atom_ID_{d}"))
 
-        try:
-            index_index = star_tags.index('_Peak_row_format.Index_ID')
-        except ValueError:
-            index_index = -1
+        with io.StringIO() as key_f, io.StringIO() as msg_f:
 
-        key_indices = [star_tags.index(tag) for tag in [k for k in star_tags
-                                                        if k.startswith('_Peak_row_format.Entity_assembly_ID')
-                                                        or k.startswith('_Peak_row_format.Comp_index_ID')
-                                                        or k.startswith('_Peak_row_format.Atom_ID')]]
+            try:
+                index_index = star_tags.index('_Peak_row_format.Index_ID')
+            except ValueError:
+                index_index = -1
 
-        id_index = in_star_tags.index('_Peak_row_format.ID')
+            key_indices = [star_tags.index(tag) for tag in [k for k in star_tags
+                                                            if k.startswith('_Peak_row_format.Entity_assembly_ID')
+                                                            or k.startswith('_Peak_row_format.Comp_index_ID')
+                                                            or k.startswith('_Peak_row_format.Atom_ID')]]
 
-        id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_index = in_star_tags.index('_Peak_row_format.ID')
 
-        index = 1
+            id_list = sorted(set(int(row[id_index]) for row in loop_data))
 
-        for row_id in id_list:
+            index = 1
 
-            in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+            for row_id in id_list:
 
-            buf_row = []
+                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
 
-            for row in in_row:
+                buf_row = []
 
-                tag_map = {}
-                self_tag_map = {}
+                for row in in_row:
 
-                for tag in seq_ident_tags:
-                    chain_tag = tag['chain_tag']
-                    seq_tag = tag['seq_tag']
+                    tag_map = {}
+                    self_tag_map = {}
 
-                    in_star_chain = row[in_star_tags.index(chain_tag)]
-                    _in_star_seq = row[in_star_tags.index(seq_tag)]
-                    if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
-                        _in_star_seq = int(_in_star_seq)
+                    for tag in seq_ident_tags:
+                        chain_tag = tag['chain_tag']
+                        seq_tag = tag['seq_tag']
 
-                    seq_key = (in_star_chain, _in_star_seq)
+                        in_star_chain = row[in_star_tags.index(chain_tag)]
+                        _in_star_seq = row[in_star_tags.index(seq_tag)]
+                        if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
+                            _in_star_seq = int(_in_star_seq)
 
-                    try:
-                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                        self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-                    except KeyError:
-                        tag_map[chain_tag] = in_star_chain
-                        tag_map[seq_tag] = _in_star_seq
-                        self_tag_map[chain_tag] = in_star_chain
-                        self_tag_map[seq_tag] = _in_star_seq
+                        seq_key = (in_star_chain, _in_star_seq)
 
-                details = ''
-                a = []
+                        try:
+                            tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                            self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
+                        except KeyError:
+                            tag_map[chain_tag] = in_star_chain
+                            tag_map[seq_tag] = _in_star_seq
+                            self_tag_map[chain_tag] = in_star_chain
+                            self_tag_map[seq_tag] = _in_star_seq
 
-                for in_star_comp_index, in_star_atom_index in zip(in_star_comp_indices, in_star_atom_indices):
-                    atom_list = self.get_valid_star_atom_in_xplor(row[in_star_comp_index], row[in_star_atom_index])[0]
-                    len_atom_list = len(atom_list)
-                    if len_atom_list == 0:
-                        atom_list.append('.')
-                    elif len_atom_list > 1 and leave_unmatched:
-                        details += f"{row[in_star_atom_index]} -> {atom_list}, "
+                    if msg_f.tell() > 0:
+                        msg_f.truncate(0)
+                        msg_f.seek(0)
 
-                    a.append(atom_list)
+                    a = []
 
-                if num_dim == 1:
+                    for in_star_comp_index, in_star_atom_index in zip(in_star_comp_indices, in_star_atom_indices):
+                        atom_list = self.get_valid_star_atom_in_xplor(row[in_star_comp_index], row[in_star_atom_index])[0]
+                        len_atom_list = len(atom_list)
+                        if len_atom_list == 0:
+                            atom_list.append('.')
+                        elif len_atom_list > 1 and leave_unmatched:
+                            msg_f.write(f"{row[in_star_atom_index]} -> {atom_list}, ")
 
-                    for comb in itertools.product(a[0]):
-                        buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        a.append(atom_list)
 
-                elif num_dim == 2:
+                    pos = msg_f.tell() - 2
+                    if pos > 0:
+                        msg_f.truncate(pos)
+                        msg_f.seek(pos)
 
-                    for comb in itertools.product(a[0], a[1]):
-                        buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                    details = msg_f.getvalue()
 
-                elif num_dim == 3:
+                    if num_dim == 1:
 
-                    for comb in itertools.product(a[0], a[1], a[2]):
-                        buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0]):
+                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 4:
+                    elif num_dim == 2:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3]):
-                        buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1]):
+                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 5:
+                    elif num_dim == 3:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4]):
-                        buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2]):
+                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 6:
+                    elif num_dim == 4:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5]):
-                        buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3]):
+                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 7:
+                    elif num_dim == 5:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6]):
-                        buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4]):
+                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 8:
+                    elif num_dim == 6:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]):
-                        buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5]):
+                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 9:
+                    elif num_dim == 7:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]):
-                        buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6]):
+                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 10:
+                    elif num_dim == 8:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9]):
-                        buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]):
+                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 11:
+                    elif num_dim == 9:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10]):
-                        buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]):
+                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 12:
+                    elif num_dim == 10:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11]):
-                        buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9]):
+                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 13:
+                    elif num_dim == 11:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12]):
-                        buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10]):
+                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 14:
+                    elif num_dim == 12:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13]):
-                        buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11]):
+                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                elif num_dim == 15:
+                    elif num_dim == 13:
 
-                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13], a[14]):
-                        buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12]):
+                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-            keys = set()
+                    elif num_dim == 14:
 
-            for row in buf_row:
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13]):
+                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                key = ''
-                for j in key_indices:
-                    key += ' ' + str(row[j])
-                key.rstrip()
+                    elif num_dim == 15:
 
-                if key in keys:
-                    continue
+                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13], a[14]):
+                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
-                keys.add(key)
+                keys = set()
 
-                if index_index >= 0:
-                    row[index_index] = index
+                for row in buf_row:
 
-                index += 1
+                    if key_f.tell() > 0:
+                        key_f.truncate(0)
+                        key_f.seek(0)
 
-                out_row.append(row)
+                    for j in key_indices:
+                        key_f.write(f'{row[j]} ')
 
-        return out_row
+                    key = key_f.getvalue()
+
+                    if key in keys:
+                        continue
+
+                    keys.add(key)
+
+                    if index_index >= 0:
+                        row[index_index] = index
+
+                    index += 1
+
+                    out_row.append(row)
+
+            return out_row
 
     def __star2star_peak_row(self, in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb):
         """ Translate rows in spectral peak loop from PyNMRSTAR data object into NMR-STAR.
@@ -8027,7 +8255,7 @@ class NEFTranslator:
             if len(details) > 0:
                 details_index = star_tags.index('_Peak_row_format.Details')
 
-                buf[details_index] = details[:-2]
+                buf[details_index] = details
 
         return buf
 

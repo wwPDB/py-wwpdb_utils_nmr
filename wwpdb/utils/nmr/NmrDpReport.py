@@ -1057,7 +1057,7 @@ class NmrDpReport:
         if ps is None:
             return None
 
-        code = ''
+        f = []
 
         for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
@@ -1065,13 +1065,13 @@ class NmrDpReport:
                 continue
 
             if comp_id in monDict3:
-                code += monDict3[comp_id]
+                f.append(monDict3[comp_id])
             elif comp_id in emptyValue:
-                code += ' '
+                f.append(' ')
             else:
-                code += '(' + comp_id + ')'
+                f.append(f'({comp_id})')
 
-        return code
+        return ''.join(f)
 
     def getModelSeq1LetterCodeOf(self, cif_chain_id, label_scheme=True):
         """ Retrieve model polymer sequence (1-letter code) having a given chain_id.
@@ -1089,16 +1089,17 @@ class NmrDpReport:
         if ps is None:
             return None
 
-        code = ''
+        f = []
+
         for comp_id in ps['comp_id']:
             if comp_id in monDict3:
-                code += monDict3[comp_id]
+                f.append(monDict3[comp_id])
             elif comp_id in emptyValue:
-                code += ' '
+                f.append(' ')
             else:
-                code += '(' + comp_id + ')'
+                f.append(f'({comp_id})')
 
-        return code
+        return ''.join(f)
 
     def getNmrPolymerSequenceWithModelChainId(self, cif_chain_id, label_scheme=True):
         """ Retrieve NMR polymer sequence corresponding to a given coordinate chain_id.

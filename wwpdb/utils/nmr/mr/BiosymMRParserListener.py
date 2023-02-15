@@ -216,7 +216,8 @@ class BiosymMRParserListener(ParseTreeListener):
     # collection of number selection
     numberSelection = []
 
-    warningMessage = ''
+    __f = None
+    warningMessage = None
 
     reasonsForReParsing = {}
 
@@ -330,6 +331,7 @@ class BiosymMRParserListener(ParseTreeListener):
     def enterBiosym_mr(self, ctx: BiosymMRParser.Biosym_mrContext):  # pylint: disable=unused-argument
         self.__chainNumberDict = {}
         self.__polySeqRst = []
+        self.__f = []
 
     # Exit a parse tree produced by BiosymMRParser#biosym_mr.
     def exitBiosym_mr(self, ctx: BiosymMRParser.Biosym_mrContext):  # pylint: disable=unused-argument
@@ -342,7 +344,9 @@ class BiosymMRParserListener(ParseTreeListener):
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
-                self.warningMessage += message
+                self.__f.extend(message)
+
+            self.warningMessage = '\n'.join(self.__f)
 
             if self.__chainAssign is not None:
 
@@ -484,11 +488,10 @@ class BiosymMRParserListener(ParseTreeListener):
         if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
             del self.reasonsForReParsing['seq_id_remap']
 
-        if len(self.warningMessage) == 0:
+        if len(self.__f) == 0:
             self.warningMessage = None
         else:
-            self.warningMessage = self.warningMessage[0:-1]
-            self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
+            self.warningMessage = '\n'.join(set(self.__f))
 
     # Enter a parse tree produced by BiosymMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: BiosymMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
@@ -768,61 +771,61 @@ class BiosymMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 if target_value <= DIST_ERROR_MIN and omit_dist_limit_outlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The target value='{target_value}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     target_value = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if DIST_ERROR_MIN <= lower_limit < DIST_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit}"
             else:
                 if lower_limit <= DIST_ERROR_MIN and omit_dist_limit_outlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     lower_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX or (upper_limit == 0.0 and self.__allowZeroUpperLimit):
                 dstFunc['upper_limit'] = f"{upper_limit}"
             else:
                 if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit}' must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit}' must be greater than the target value '{target_value}'.")
 
         else:
 
             if lower_limit is not None and upper_limit is not None:
                 if lower_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' must be less than the upper limit value '{upper_limit}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit}' must be less than the upper limit value '{upper_limit}'.")
 
         if not validRange:
             return None
@@ -831,22 +834,22 @@ class BiosymMRParserListener(ParseTreeListener):
             if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -962,8 +965,8 @@ class BiosymMRParserListener(ParseTreeListener):
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
-                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
@@ -1079,8 +1082,8 @@ class BiosymMRParserListener(ParseTreeListener):
                                 self.__chainNumberDict[refChainId] = chainId
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
-                            #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
 
             if self.__hasNonPolySeq:
@@ -1134,8 +1137,8 @@ class BiosymMRParserListener(ParseTreeListener):
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
-                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
 
         if len(chainAssign) == 0:
@@ -1181,8 +1184,8 @@ class BiosymMRParserListener(ParseTreeListener):
                                 self.__chainNumberDict[refChainId] = chainId
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
-                            #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
 
         if len(chainAssign) == 0:
@@ -1190,13 +1193,13 @@ class BiosymMRParserListener(ParseTreeListener):
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequence(refChainId, seqId, compId, 'H1')
             if seqId < 1 and len(self.__polySeq) == 1:
-                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "\
-                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "\
-                    "Please update the sequence in the Macromolecules page.\n"
+                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
+                                f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                "Please update the sequence in the Macromolecules page.")
             else:
-                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.\n"
+                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
 
         elif any(ca for ca in chainAssign if ca[0] == refChainId) and any(ca for ca in chainAssign if ca[0] != refChainId):
             _chainAssign = copy.copy(chainAssign)
@@ -1302,8 +1305,8 @@ class BiosymMRParserListener(ParseTreeListener):
                                 # self.__authSeqId = 'label_seq_id'
                                 self.__setLocalSeqScheme()
                                 continue
-                    self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
-                        f"Residue name {_compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.\n"
+                    self.__f.append(f"[Sequence mismatch] {self.__getCurrentRestraint()}"
+                                    f"Residue name {_compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
                     continue
 
             if compId != cifCompId and compId in monDict3 and not isPolySeq:
@@ -1315,12 +1318,12 @@ class BiosymMRParserListener(ParseTreeListener):
                 if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
                     self.selectCoordAtoms(chainAssign, seqId, compId, atomId, allowAmbig, offset=1)
                     return
-                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
-                    f"{seqId}:{_compId}:{atomId} is invalid atom nomenclature.\n"
+                self.__f.append(f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"
+                                f"{seqId}:{_compId}:{atomId} is invalid atom nomenclature.")
                 continue
             if lenAtomId > 1 and not allowAmbig:
-                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                    f"Ambiguous atom selection '{seqId}:{_compId}:{atomId}' is not allowed as a angle restraint.\n"
+                self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
+                                f"Ambiguous atom selection '{seqId}:{_compId}:{atomId}' is not allowed as a angle restraint.")
                 continue
 
             for cifAtomId in _atomId:
@@ -1494,13 +1497,13 @@ class BiosymMRParserListener(ParseTreeListener):
                         bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
                         if len(bondedTo) > 0:
                             if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                    f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
-                                    "Please re-upload the model file.\n"
+                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
+                                                "Please re-upload the model file.")
                                 return
                     if chainId in LARGE_ASYM_ID:
-                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                            f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
 
     def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)
@@ -1551,12 +1554,12 @@ class BiosymMRParserListener(ParseTreeListener):
             # weught_max = self.numberSelection[4]
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             target_value = None
             lower_limit = self.numberSelection[5]
@@ -1708,12 +1711,12 @@ class BiosymMRParserListener(ParseTreeListener):
             # weught_max = self.numberSelection[4]
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             dstFunc = self.validateAngleRange(weight, target_value, lower_limit, upper_limit)
 
@@ -1795,9 +1798,9 @@ class BiosymMRParserListener(ParseTreeListener):
             elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
                 shift = -(numpy.nanmin(_array) // 360) * 360
             if shift is not None:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    "The target/limit values for an angle restraint have been circularly shifted "\
-                    f"to fit within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                "The target/limit values for an angle restraint have been circularly shifted "
+                                f"to fit within range {ANGLE_RESTRAINT_ERROR}.")
                 if target_value is not None:
                     target_value += shift
                 if lower_limit is not None:
@@ -1810,24 +1813,24 @@ class BiosymMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if ANGLE_ERROR_MIN <= lower_limit < ANGLE_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if ANGLE_ERROR_MIN < upper_limit <= ANGLE_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if not validRange:
             return None
@@ -1836,22 +1839,22 @@ class BiosymMRParserListener(ParseTreeListener):
             if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -2004,9 +2007,9 @@ class BiosymMRParserListener(ParseTreeListener):
                     continue
                 if atom1['seq_id'] != atom2['seq_id']:
                     continue
-                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "\
-                    f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.\n"
+                self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
+                                f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.")
                 return False
 
         return True

@@ -499,9 +499,8 @@ class XplorMRParserListener(ParseTreeListener):
     donor_columnSel = -1
     acceptor_columnSel = -1
 
-    warningMessage = ''
-
-    __warningInAtomSelection = ''
+    __f = __g = None
+    warningMessage = None
 
     reasonsForReParsing = {}
 
@@ -679,6 +678,8 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#xplor_nih_mr.
     def enterXplor_nih_mr(self, ctx: XplorMRParser.Xplor_nih_mrContext):  # pylint: disable=unused-argument
         self.__polySeqRst = []
+        self.__f = []
+        self.__g = []
 
     # Exit a parse tree produced by XplorMRParser#xplor_nih_mr.
     def exitXplor_nih_mr(self, ctx: XplorMRParser.Xplor_nih_mrContext):  # pylint: disable=unused-argument
@@ -691,7 +692,9 @@ class XplorMRParserListener(ParseTreeListener):
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
-                self.warningMessage += message
+                self.__f.extend(message)
+
+            self.warningMessage = '\n'.join(self.__f)
 
             if self.__chainAssign is not None:
 
@@ -833,11 +836,10 @@ class XplorMRParserListener(ParseTreeListener):
         if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
             del self.reasonsForReParsing['seq_id_remap']
 
-        if len(self.warningMessage) == 0:
+        if len(self.__f) == 0:
             self.warningMessage = None
         else:
-            self.warningMessage = self.warningMessage[0:-1]
-            self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
+            self.warningMessage = '\n'.join(set(self.__f))
 
     # Enter a parse tree produced by XplorMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: XplorMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
@@ -1303,9 +1305,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.noePotential = '3dpo'
             else:
                 self.noePotential = 'biharmonic'
-                self.warningMessage += "[Enum mismatch ignorable] "\
-                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'NOE' statements. "\
-                    f"Instead, set the default potential {self.noePotential!r}.\n"
+                self.__f.append("[Enum mismatch ignorable] "
+                                f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'NOE' statements. "
+                                f"Instead, set the default potential {self.noePotential!r}.")
 
         elif ctx.Averaging_methods():
             code = str(ctx.Averaging_methods()).upper()
@@ -1319,9 +1321,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.noeAverage = 'center'
             else:
                 self.noeAverage = 'r-6'
-                self.warningMessage += "[Enum mismatch ignorable] "\
-                    f"The averaging method {str(ctx.Averaging_methods())!r} is unknown method for the 'NOE' statements. "\
-                    f"Instead, set the default method {self.noeAverage!r}.\n"
+                self.__f.append("[Enum mismatch ignorable] "
+                                f"The averaging method {str(ctx.Averaging_methods())!r} is unknown method for the 'NOE' statements. "
+                                f"Instead, set the default method {self.noeAverage!r}.")
 
         elif ctx.SqExponent():
             self.squareExponent = self.getNumber_s(ctx.number_s())
@@ -1329,13 +1331,13 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.squareExponent in self.evaluate:
                     self.squareExponent = self.evaluate[self.squareExponent]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.squareExponent!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.squareExponent!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.squareExponent = 2.0
             if self.squareExponent is None or self.squareExponent <= 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    "The exponent value of square-well or soft-square function "\
-                    f"'NOE {str(ctx.SqExponent())} {self.getClass_name(ctx.class_name(0))} {self.squareExponent} END' must be a positive value.\n"
+                self.__f.append("[Invalid data] "
+                                "The exponent value of square-well or soft-square function "
+                                f"'NOE {str(ctx.SqExponent())} {self.getClass_name(ctx.class_name(0))} {self.squareExponent} END' must be a positive value.")
 
         elif ctx.SoExponent():
             self.softExponent = self.getNumber_s(ctx.number_s())
@@ -1343,13 +1345,13 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.softExponent in self.evaluate:
                     self.softExponent = self.evaluate[self.softExponent]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.softExponent!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.softExponent!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.softExponent = 2.0
             if self.softExponent is None or self.softExponent <= 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    "The exponent value for soft-square function only "\
-                    f"'NOE {str(ctx.SoExponent())} {self.getClass_name(ctx.class_name(0))} {self.softExponent} END' must be a positive value.\n"
+                self.__f.append("[Invalid data] "
+                                "The exponent value for soft-square function only "
+                                f"'NOE {str(ctx.SoExponent())} {self.getClass_name(ctx.class_name(0))} {self.softExponent} END' must be a positive value.")
 
         elif ctx.SqConstant():
             self.squareConstant = self.getNumber_s(ctx.number_s())
@@ -1357,13 +1359,13 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.squareConstant in self.evaluate:
                     self.squareConstant = self.evaluate[self.squareConstant]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.squareConstant!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.squareConstant!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.squareConstant = 20.0
             if self.squareConstant is None or self.squareConstant <= 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    "The auxiliary scaling constant of square-well or soft-square function "\
-                    f"'NOE {str(ctx.SqConstant())} {self.getClass_name(ctx.class_name(0))} {self.squareConstant} END' must be a positive value.\n"
+                self.__f.append("[Invalid data] "
+                                "The auxiliary scaling constant of square-well or soft-square function "
+                                f"'NOE {str(ctx.SqConstant())} {self.getClass_name(ctx.class_name(0))} {self.squareConstant} END' must be a positive value.")
 
         elif ctx.SqOffset():
             self.squareOffset = self.getNumber_s(ctx.number_s())
@@ -1371,13 +1373,13 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.squareOffset in self.evaluate:
                     self.squareOffset = self.evaluate[self.squareOffset]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.squareOffset!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.squareOffset!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.squareOffset = 0.0
             if self.squareOffset is None or self.squareOffset < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    "The negative offset value to all upper bounds of square-well or soft-square function "\
-                    f"'NOE {str(ctx.SqOffset())} {self.getClass_name(ctx.class_name(0))} {self.squareOffset} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                "The negative offset value to all upper bounds of square-well or soft-square function "
+                                f"'NOE {str(ctx.SqOffset())} {self.getClass_name(ctx.class_name(0))} {self.squareOffset} END' must not be a negative value.")
 
         elif ctx.Rswitch():
             self.rSwitch = self.getNumber_s(ctx.number_s())
@@ -1385,13 +1387,13 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.rSwitch in self.evaluate:
                     self.rSwitch = self.evaluate[self.rSwitch]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.rSwitch!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.rSwitch!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.rSwitch = 10.0
             if self.rSwitch is None or self.rSwitch < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    "The smoothing parameter of soft-square function "\
-                    f"'NOE {str(ctx.Rswitch())} {self.getClass_name(ctx.class_name(0))} {self.rSwitch} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                "The smoothing parameter of soft-square function "
+                                f"'NOE {str(ctx.Rswitch())} {self.getClass_name(ctx.class_name(0))} {self.rSwitch} END' must not be a negative value.")
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s())
@@ -1399,15 +1401,15 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.scale in self.evaluate:
                     self.scale = self.evaluate[self.scale]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.scale!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.scale!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.scale = 1.0
             if self.scale is None or self.scale == 0.0:
-                self.warningMessage += "[Range value warning] "\
-                    f"The scale value 'NOE {str(ctx.Scale())} {self.getClass_name(ctx.class_name(0))} {self.scale} END' should be a positive value.\n"
+                self.__f.append("[Range value warning] "
+                                f"The scale value 'NOE {str(ctx.Scale())} {self.getClass_name(ctx.class_name(0))} {self.scale} END' should be a positive value.")
             elif self.scale < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The scale value 'NOE {str(ctx.Scale())} {self.getClass_name(ctx.class_name(0))} {self.scale} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                f"The scale value 'NOE {str(ctx.Scale())} {self.getClass_name(ctx.class_name(0))} {self.scale} END' must not be a negative value.")
 
         elif ctx.Asymptote():
             self.asymptote = self.getNumber_s(ctx.number_s())
@@ -1415,15 +1417,17 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.asymptote in self.evaluate:
                     self.asymptote = self.evaluate[self.asymptote]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.asymptote!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.asymptote!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.asymptote = 0.0
             if self.asymptote is None:
-                self.warningMessage += "[Range value warning] "\
-                    f"The asymptote slope value 'NOE {str(ctx.Asymptote())} {self.getClass_name(ctx.class_name(0))} {self.asymptote} END' should be a non-negative value.\n"
+                self.__f.append("[Range value warning] "
+                                "The asymptote slope value "
+                                f"'NOE {str(ctx.Asymptote())} {self.getClass_name(ctx.class_name(0))} {self.asymptote} END' should be a non-negative value.")
             elif self.asymptote < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The asymptote slope value 'NOE {str(ctx.Asymptote())} {self.getClass_name(ctx.class_name(0))} {self.asymptote} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                "The asymptote slope value "
+                                f"'NOE {str(ctx.Asymptote())} {self.getClass_name(ctx.class_name(0))} {self.asymptote} END' must not be a negative value.")
 
         elif ctx.Bhig():
             self.B_high = self.getNumber_s(ctx.number_s())
@@ -1431,15 +1435,17 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.B_high in self.evaluate:
                     self.B_high = self.evaluate[self.B_high]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.B_high!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.B_high!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.B_high = 0.01
             if self.B_high is None:
-                self.warningMessage += "[Range value warning] "\
-                    f"The potential barrier value 'NOE {str(ctx.Bhig())} {self.getClass_name(ctx.class_name(0))} {self.B_high} END' should be a non-negative value.\n"
+                self.__f.append("[Range value warning] "
+                                "The potential barrier value "
+                                f"'NOE {str(ctx.Bhig())} {self.getClass_name(ctx.class_name(0))} {self.B_high} END' should be a non-negative value.")
             elif self.B_high < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The potential barrier value 'NOE {str(ctx.Bhig())} {self.getClass_name(ctx.class_name(0))} {self.B_high} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                "The potential barrier value "
+                                f"'NOE {str(ctx.Bhig())} {self.getClass_name(ctx.class_name(0))} {self.B_high} END' must not be a negative value.")
 
         elif ctx.Ceiling():
             self.ceiling = self.getNumber_s(ctx.number_s())
@@ -1447,15 +1453,15 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.ceiling in self.evaluate:
                     self.ceiling = self.evaluate[self.ceiling]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.ceiling!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.ceiling!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.ceiling = 30.0
             if self.ceiling is None:
-                self.warningMessage += "[Range value warning] "\
-                    f"The ceiling value for energy constant 'NOE {str(ctx.Ceiling())} {self.ceiling} END' should be a non-negative value.\n"
+                self.__f.append("[Range value warning] "
+                                f"The ceiling value for energy constant 'NOE {str(ctx.Ceiling())} {self.ceiling} END' should be a non-negative value.")
             elif self.ceiling < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The ceiling value for energy constant 'NOE {str(ctx.Ceiling())} {self.ceiling} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                f"The ceiling value for energy constant 'NOE {str(ctx.Ceiling())} {self.ceiling} END' must not be a negative value.")
 
         elif ctx.Temperature():
             self.temperature = self.getNumber_s(ctx.number_s())
@@ -1463,33 +1469,37 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.temperature in self.evaluate:
                     self.temperature = self.evaluate[self.temperature]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.temperature!r} in the 'NOE' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.temperature!r} in the 'NOE' statement is not defined so that set the default value.")
                     self.temperature = 300.0
             if self.temperature is None:
-                self.warningMessage += "[Range value warning] "\
-                    f"The temperature 'NOE {str(ctx.Temparature())} {self.temperature} END' should be a non-negative value.\n"
+                self.__f.append("[Range value warning] "
+                                f"The temperature 'NOE {str(ctx.Temparature())} {self.temperature} END' should be a non-negative value.")
             elif self.temperature < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The temperature 'NOE {str(ctx.Temparature())} {self.temperature} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                f"The temperature 'NOE {str(ctx.Temparature())} {self.temperature} END' must not be a negative value.")
 
         elif ctx.Monomers():
             self.monomers = int(str(ctx.Integer()))
             if self.monomers is None or self.monomers == 0:
-                self.warningMessage += "[Range value warning] "\
-                    f"The number of monomers 'NOE {str(ctx.Monomers())} {self.getClass_name(ctx.class_name(0))} {self.monomers} END' should be a positive value.\n"
+                self.__f.append("[Range value warning] "
+                                "The number of monomers "
+                                f"'NOE {str(ctx.Monomers())} {self.getClass_name(ctx.class_name(0))} {self.monomers} END' should be a positive value.")
             elif self.monomers < 0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The number of monomers 'NOE {str(ctx.Monomers())} {self.getClass_name(ctx.class_name(0))} {self.monomers} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                "The number of monomers "
+                                f"'NOE {str(ctx.Monomers())} {self.getClass_name(ctx.class_name(0))} {self.monomers} END' must not be a negative value.")
 
         elif ctx.Ncount():
             self.ncount = int(str(ctx.Integer()))
             if self.ncount is None or self.ncount == 0:
-                self.warningMessage += "[Range value warning] "\
-                    f"The number of assign statements 'NOE {str(ctx.Ncount())} {self.getClass_name(ctx.class_name(0))} {self.ncount} END' should be a positive value.\n"
+                self.__f.append("[Range value warning] "
+                                f"The number of assign statements "
+                                f"'NOE {str(ctx.Ncount())} {self.getClass_name(ctx.class_name(0))} {self.ncount} END' should be a positive value.")
             elif self.ncount < 0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The number of assign statements 'NOE {str(ctx.Ncount())} {self.getClass_name(ctx.class_name(0))} {self.ncount} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                f"The number of assign statements "
+                                f"'NOE {str(ctx.Ncount())} {self.getClass_name(ctx.class_name(0))} {self.ncount} END' must not be a negative value.")
 
         elif ctx.Reset():
             self.noePotential = 'biharmonic'  # default potential
@@ -1523,7 +1533,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'dist' if self.__cur_subtype not in ('pre', 'rdc') else self.__cur_subtype  # set 'pre', 'rdc' for error message
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
         self.scale_a = None
         self.paramagCenter = None
@@ -1614,12 +1624,12 @@ class XplorMRParserListener(ParseTreeListener):
             scale = self.scale if self.scale_a is None else self.scale_a
 
             if scale < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The weight value '{scale}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The weight value '{scale}' must not be a negative value.")
                 return
             if scale == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The weight value '{scale}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The weight value '{scale}' should be a positive value.")
 
             target_value = target
             lower_limit = None
@@ -1711,8 +1721,8 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if len(self.atomSelectionSet[0]) == 0 or len(self.atomSelectionSet[1]) == 0:
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             combinationId = memberId = '.'
@@ -1784,137 +1794,137 @@ class XplorMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 if target_value <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The target value='{target_value}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     target_value = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The target value='{target_value}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if DIST_ERROR_MIN <= lower_limit < DIST_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.3f}"
             else:
                 if lower_limit <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     lower_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX or (upper_limit == 0.0 and self.__allowZeroUpperLimit):
                 dstFunc['upper_limit'] = f"{upper_limit:.3f}"
             else:
                 if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if DIST_ERROR_MIN <= lower_linear_limit < DIST_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
             else:
                 if lower_linear_limit <= DIST_ERROR_MIN and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     lower_linear_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if DIST_ERROR_MIN < upper_linear_limit <= DIST_ERROR_MAX or (upper_linear_limit == 0.0 and self.__allowZeroUpperLimit):
                 dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
             else:
                 if (upper_linear_limit <= DIST_ERROR_MIN or upper_linear_limit > DIST_ERROR_MAX) and self.__omitDistLimitOutlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The upper linear limit value='{upper_linear_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_linear_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'. "\
-                        "It indicates that a negative value was unexpectedly set: "\
-                        f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value}'. "
+                                    "It indicates that a negative value was unexpectedly set: "
+                                    f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the target value '{target_value}'. "\
-                        "It indicates that a negative value was unexpectedly set: "\
-                        f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the target value '{target_value}'. "
+                                    "It indicates that a negative value was unexpectedly set: "
+                                    f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be greater than the target value '{target_value}'. "\
-                        "It indicates that a negative value was unexpectedly set: "\
-                        f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.3f}' must be greater than the target value '{target_value}'. "
+                                    "It indicates that a negative value was unexpectedly set: "
+                                    f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.3f}' must be greater than the target value '{target_value}'. "\
-                        "It indicates that a negative value was unexpectedly set: "\
-                        f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper linear limit value='{upper_linear_limit:.3f}' must be greater than the target value '{target_value}'. "
+                                    "It indicates that a negative value was unexpectedly set: "
+                                    f"d={target_value}, dminus={self.numberSelection[1]}, dplus={self.numberSelection[2]}.")
 
         else:
 
             if lower_limit is not None and upper_limit is not None:
                 if lower_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.")
 
             if lower_linear_limit is not None and upper_limit is not None:
                 if lower_linear_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.")
 
             if lower_limit is not None and upper_linear_limit is not None:
                 if lower_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.")
 
             if lower_linear_limit is not None and upper_linear_limit is not None:
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the upper limit value '{upper_linear_limit:.3f}'.")
 
             if lower_limit is not None and lower_linear_limit is not None:
                 if lower_linear_limit > lower_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.")
 
             if upper_limit is not None and upper_linear_limit is not None:
                 if upper_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.")
 
         if not validRange:
             return None
@@ -1923,36 +1933,36 @@ class XplorMRParserListener(ParseTreeListener):
             if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if DIST_RANGE_MIN <= lower_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if DIST_RANGE_MIN <= upper_linear_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -1981,16 +1991,16 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.scale in self.evaluate:
                     self.scale = self.evaluate[self.scale]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The scale value 'RESTRAINTS DIHEDRAL {str(ctx.Scale())}={self.scale} END' "\
-                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The scale value 'RESTRAINTS DIHEDRAL {str(ctx.Scale())}={self.scale} END' "
+                                    f"where the symbol {self.scale!r} is not defined so that set the default value.")
                     self.scale = 1.0
             if self.scale < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The scale value 'RESTRAINTS DIHEDRAL {str(ctx.Scale())}={self.scale} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                f"The scale value 'RESTRAINTS DIHEDRAL {str(ctx.Scale())}={self.scale} END' must not be a negative value.")
             elif self.scale == 0.0:
-                self.warningMessage += "[Range value warning] "\
-                    f"The scale value 'RESTRAINTS DIHEDRAL {str(ctx.Scale())}={self.scale} END' should be a positive value.\n"
+                self.__f.append("[Range value warning] "
+                                f"The scale value 'RESTRAINTS DIHEDRAL {str(ctx.Scale())}={self.scale} END' should be a positive value.")
 
         elif ctx.Reset():
             self.scale = 1.0
@@ -2007,7 +2017,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'dihed'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#dihedral_assign.
     def exitDihedral_assign(self, ctx: XplorMRParser.Dihedral_assignContext):
@@ -2023,13 +2033,13 @@ class XplorMRParserListener(ParseTreeListener):
             exponent = int(str(ctx.Integer()))
 
             if energyConst <= 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The energy constant value {energyConst} must be a positive value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The energy constant value {energyConst} must be a positive value.")
                 return
 
             if exponent not in (0, 1, 2, 4):
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The exponent value of dihedral angle restraint 'ed={exponent}' should be 1 (linear well), 2 (square well) or 4 (quartic well).\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The exponent value of dihedral angle restraint 'ed={exponent}' should be 1 (linear well), 2 (square well) or 4 (quartic well).")
                 return
 
             target_value = target
@@ -2057,8 +2067,8 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             if self.__createSfDict:
@@ -2113,9 +2123,9 @@ class XplorMRParserListener(ParseTreeListener):
             elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
                 shift = -(numpy.nanmin(_array) // 360) * 360
             if shift is not None:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    "The target/limit values for an angle restraint have been circularly shifted "\
-                    f"to fit within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                "The target/limit values for an angle restraint have been circularly shifted "
+                                f"to fit within range {ANGLE_RESTRAINT_ERROR}.")
                 if target_value is not None:
                     target_value += shift
                 if lower_limit is not None:
@@ -2136,52 +2146,52 @@ class XplorMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if ANGLE_ERROR_MIN <= lower_limit < ANGLE_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.3f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if ANGLE_ERROR_MIN < upper_limit <= ANGLE_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit:.3f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if ANGLE_ERROR_MIN <= lower_linear_limit < ANGLE_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.3f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if ANGLE_ERROR_MIN < upper_linear_limit <= ANGLE_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.3f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_limit is not None and lower_linear_limit is not None:
             if lower_linear_limit > lower_limit:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.3f}' must be less than the lower limit value '{lower_limit:.3f}'.")
 
         if upper_limit is not None and upper_linear_limit is not None:
             if upper_limit > upper_linear_limit:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.3f}' must be less than the upper linear limit value '{upper_linear_limit:.3f}'.")
 
         if not validRange:
             return None
@@ -2190,36 +2200,36 @@ class XplorMRParserListener(ParseTreeListener):
             if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if ANGLE_RANGE_MIN <= lower_linear_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if ANGLE_RANGE_MIN <= upper_linear_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -2244,13 +2254,13 @@ class XplorMRParserListener(ParseTreeListener):
                 if atom1['seq_id'] != atom2['seq_id']:
                     continue
                 if allow_ambig:
-                    self.warningMessage += f"[{allow_ambig_warn_title}] {self.__getCurrentRestraint()}"\
-                        f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "\
-                        f"{atom2['atom_id']}' found in {subtype_name} restraint.\n"
+                    self.__f.append(f"[{allow_ambig_warn_title}] {self.__getCurrentRestraint()}"
+                                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                    f"{atom2['atom_id']}' found in {subtype_name} restraint.")
                     continue
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "\
-                    f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.")
                 return False
 
         return True
@@ -2265,9 +2275,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'harmonic'
             else:
                 self.potential = 'square'
-                self.warningMessage += "[Enum mismatch ignorable] "\
-                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'SANIsotropy' statements. "\
-                    f"Instead, set the default potential {self.potential!r}.\n"
+                self.__f.append("[Enum mismatch ignorable] "
+                                f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'SANIsotropy' statements. "
+                                f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -2293,7 +2303,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'rdc'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#sani_assign.
     def exitSani_assign(self, ctx: XplorMRParser.Sani_assignContext):  # pylint: disable=unused-argument
@@ -2333,8 +2343,8 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
@@ -2391,13 +2401,13 @@ class XplorMRParserListener(ParseTreeListener):
 
                         except Exception as e:
                             if self.__verbose:
-                                self.__lfh.write(f"+XplorMRParserListener.exitSani_assign() ++ Error  - {str(e)}\n")
+                                self.__lfh.write(f"+XplorMRParserListener.exitSani_assign() ++ Error  - {str(e)}")
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if chain_id_1 != chain_id_2:
@@ -2405,17 +2415,17 @@ class XplorMRParserListener(ParseTreeListener):
                     ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                     ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                     if ps1 is None and ps2 is None:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"Found inter-chain RDC vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-chain RDC vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -2428,16 +2438,16 @@ class XplorMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
                 if self.__symmetric == 'no':
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found zero RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found zero RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -2446,14 +2456,14 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         if atom_id_1[0] in protonBeginCode and atom_id_2[0] in protonBeginCode:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}). "\
-                                "Did you accidentally select 'SANIsotropy' statement, instead of 'XDIPolar' statement of XPLOR-NIH?\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "
+                                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}). "
+                                            "Did you accidentally select 'SANIsotropy' statement, instead of 'XDIPolar' statement of XPLOR-NIH?")
                         else:
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "
+                                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             if self.__createSfDict:
@@ -2470,11 +2480,11 @@ class XplorMRParserListener(ParseTreeListener):
                     if isAsymmetricRangeRestraint([atom1, atom2], chain_id_set, self.__symmetric):
                         continue
                     if atom1['chain_id'] != atom2['chain_id']:
-                        self.warningMessage += f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"\
-                            f"Found inter-chain RDC vector; "\
-                            f"({atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']}, "\
-                            f"{atom2['chain_id']}:{atom2['seq_id']}:{atom2['comp_id']}:{atom2['atom_id']}). "\
-                            "However, it might be an artificial RDC constraint on solid-state NMR applied to symmetric samples such as fibrils.\n"
+                        self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
+                                        "Found inter-chain RDC vector; "
+                                        f"({atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']}, "
+                                        f"{atom2['chain_id']}:{atom2['seq_id']}:{atom2['comp_id']}:{atom2['atom_id']}). "
+                                        "However, it might be an artificial RDC constraint on solid-state NMR applied to symmetric samples such as fibrils.")
 
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (SANI) id={self.rdcRestraints} "
@@ -2508,104 +2518,104 @@ class XplorMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if RDC_ERROR_MIN <= lower_limit < RDC_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if RDC_ERROR_MIN < upper_limit <= RDC_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if RDC_ERROR_MIN <= lower_linear_limit < RDC_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if RDC_ERROR_MIN < upper_linear_limit <= RDC_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
 
         else:
 
             if lower_limit is not None and upper_limit is not None:
                 if lower_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if lower_linear_limit is not None and upper_limit is not None:
                 if lower_linear_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if lower_limit is not None and upper_linear_limit is not None:
                 if lower_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if lower_linear_limit is not None and upper_linear_limit is not None:
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if lower_limit is not None and lower_linear_limit is not None:
                 if lower_linear_limit > lower_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.")
 
             if upper_limit is not None and upper_linear_limit is not None:
                 if upper_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.\n"
+                    self. __f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                     f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -2614,36 +2624,36 @@ class XplorMRParserListener(ParseTreeListener):
             if RDC_RANGE_MIN <= target_value <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if RDC_RANGE_MIN <= lower_limit <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if RDC_RANGE_MIN <= upper_limit <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if RDC_RANGE_MIN <= lower_linear_limit <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if RDC_RANGE_MIN <= upper_linear_limit <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -2657,9 +2667,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'harmonic'
             else:
                 self.potential = 'square'
-                self.warningMessage += "[Enum mismatch ignorable] "\
-                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'XDIPolar' statements. "\
-                    f"Instead, set the default potential {self.potential!r}.\n"
+                self.__f.append("[Enum mismatch ignorable] "
+                                f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'XDIPolar' statements. "
+                                f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Averaging_methods():
             code = str(ctx.Averaging_methods()).upper()
@@ -2671,9 +2681,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.average = 'average'
             else:
                 self.average = 'sum'
-                self.warningMessage += "[Enum mismatch ignorable] "\
-                    f"The averaging method {str(ctx.Averaging_methods())!r} is unknown method for the 'XDIPolar' statements. "\
-                    f"Instead, set the default method {self.average!r}.\n"
+                self.__f.append("[Enum mismatch ignorable] "
+                                f"The averaging method {str(ctx.Averaging_methods())!r} is unknown method for the 'XDIPolar' statements. "
+                                f"Instead, set the default method {self.average!r}.")
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s(0))
@@ -2681,15 +2691,15 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.scale in self.evaluate:
                     self.scale = self.evaluate[self.scale]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The symbol {self.scale!r} in the 'XDIPolar' statement is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The symbol {self.scale!r} in the 'XDIPolar' statement is not defined so that set the default value.")
                     self.scale = 1.0
             if self.scale < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The scale value 'XDIPOLAR {str(ctx.Scale())} {self.scale} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                f"The scale value 'XDIPOLAR {str(ctx.Scale())} {self.scale} END' must not be a negative value.")
             elif self.scale == 0.0:
-                self.warningMessage += "[Range value warning] "\
-                    f"The scale value 'XDIPOLAR {str(ctx.Scale())} {self.scale} END' should be a positive value.\n"
+                self.__f.append("[Range value warning] "
+                                f"The scale value 'XDIPOLAR {str(ctx.Scale())} {self.scale} END' should be a positive value.")
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -2715,7 +2725,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'rdc'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#xdip_assign.
     def exitXdip_assign(self, ctx: XplorMRParser.Xdip_assignContext):  # pylint: disable=unused-argument
@@ -2781,8 +2791,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             if not self.areUniqueCoordAtoms('an RDC (XDIP)', XPLOR_ORIGIN_AXIS_COLS,
                                             allow_ambig=True, allow_ambig_warn_title='Anomalous RDC vector'):
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
@@ -2796,10 +2806,10 @@ class XplorMRParserListener(ParseTreeListener):
             atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             spin_system = f'{ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id_1[0]][0]}{atom_id_1[0]}-{ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_id_2[0]][0]}{atom_id_2[0]}'
@@ -2808,15 +2818,15 @@ class XplorMRParserListener(ParseTreeListener):
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain {spin_system} dipolar coupling vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"Found inter-chain {spin_system} dipolar coupling vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue {spin_system} dipolar coupling vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Found inter-residue {spin_system} dipolar coupling vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -2829,22 +2839,22 @@ class XplorMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-residue {spin_system} dipolar coupling vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"Found inter-residue {spin_system} dipolar coupling vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found zero {spin_system} dipolar coupling vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Found zero {spin_system} dipolar coupling vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             else:
                 if atom_id_1[0] not in protonBeginCode or atom_id_2[0] not in protonBeginCode:
-                    self.warningMessage += f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"\
-                        f"Found {spin_system} dipolar coupling vector in the 'XDIPolar' statement, which usually accepts 1H-1H dipolar coupling; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
+                                    f"Found {spin_system} dipolar coupling vector in the 'XDIPolar' statement, which usually accepts 1H-1H dipolar coupling; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
@@ -2886,63 +2896,63 @@ class XplorMRParserListener(ParseTreeListener):
             dstFunc['target_value_1'] = f"{target_value_1:.6f}"
         else:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The target value(1)='{target_value_1}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The target value(1)='{target_value_1}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if RDC_ERROR_MIN <= lower_limit_1 < RDC_ERROR_MAX:
             dstFunc['lower_limit_1'] = f"{lower_limit_1:.6f}"
         else:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The lower limit value(1)='{lower_limit_1:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if RDC_ERROR_MIN < upper_limit_1 <= RDC_ERROR_MAX:
             dstFunc['upper_limit_1'] = f"{upper_limit_1:.6f}"
         else:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The upper limit value(1)='{upper_limit_1:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if RDC_ERROR_MIN < target_value_2 < RDC_ERROR_MAX:
             dstFunc['target_value_2'] = f"{target_value_2:.6f}"
         else:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The target value(2)='{target_value_2}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The target value(2)='{target_value_2}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if RDC_ERROR_MIN <= lower_limit_2 < RDC_ERROR_MAX:
             dstFunc['lower_limit_2'] = f"{lower_limit_2:.6f}"
         else:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The lower limit value(2)='{lower_limit_2:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if RDC_ERROR_MIN < upper_limit_2 <= RDC_ERROR_MAX:
             dstFunc['upper_limit_2'] = f"{upper_limit_2:.6f}"
         else:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The upper limit value(2)='{upper_limit_2:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if lower_limit_1 > target_value_1:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1:.6f}' must be less than the target value(1) '{target_value_1}'.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The lower limit value(1)='{lower_limit_1:.6f}' must be less than the target value(1) '{target_value_1}'.")
 
         if upper_limit_1 < target_value_1:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1:.6f}' must be greater than the target value(1) '{target_value_1}'.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The upper limit value(1)='{upper_limit_1:.6f}' must be greater than the target value(1) '{target_value_1}'.")
 
         if lower_limit_2 > target_value_2:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2:.6f}' must be less than the target value(2) '{target_value_2}'.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The lower limit value(2)='{lower_limit_2:.6f}' must be less than the target value(2) '{target_value_2}'.")
 
         if upper_limit_2 < target_value_2:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2:.6f}' must be greater than the target value(2) '{target_value_2}'.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The upper limit value(2)='{upper_limit_2:.6f}' must be greater than the target value(2) '{target_value_2}'.")
 
         if not validRange:
             return None
@@ -2950,38 +2960,38 @@ class XplorMRParserListener(ParseTreeListener):
         if RDC_RANGE_MIN <= target_value_1 <= RDC_RANGE_MAX:
             pass
         else:
-            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The target value(1)='{target_value_1}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                            f"The target value(1)='{target_value_1}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if RDC_RANGE_MIN <= lower_limit_1 <= RDC_RANGE_MAX:
             pass
         else:
-            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                            f"The lower limit value(1)='{lower_limit_1:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if RDC_RANGE_MIN <= upper_limit_1 <= RDC_RANGE_MAX:
             pass
         else:
-            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                            f"The upper limit value(1)='{upper_limit_1:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if RDC_RANGE_MIN <= target_value_2 <= RDC_RANGE_MAX:
             pass
         else:
-            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The target value(2)='{target_value_2}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                            f"The target value(2)='{target_value_2}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if RDC_RANGE_MIN <= lower_limit_2 <= RDC_RANGE_MAX:
             pass
         else:
-            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                            f"The lower limit value(2)='{lower_limit_2:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if RDC_RANGE_MIN <= upper_limit_2 <= RDC_RANGE_MAX:
             pass
         else:
-            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2:.6f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                            f"The upper limit value(2)='{upper_limit_2:.6f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -3001,7 +3011,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'rdc'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#vean_assign.
     def exitVean_assign(self, ctx: XplorMRParser.Vean_assignContext):  # pylint: disable=unused-argument
@@ -3046,8 +3056,8 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('an RDC (VEAN)'):
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             for i in range(0, 4, 2):
@@ -3062,27 +3072,27 @@ class XplorMRParserListener(ParseTreeListener):
                 atom_id_2 = self.atomSelectionSet[i + 1][0]['atom_id']
 
                 if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Non-magnetic susceptible spin appears in RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Non-magnetic susceptible spin appears in RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 if chain_id_1 != chain_id_2:
                     ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                     ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                     if ps1 is None and ps2 is None:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"Found inter-chain RDC vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-chain RDC vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
                     ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                     if ps1 is None:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"Found inter-residue RDC vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-residue RDC vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) == 1:
@@ -3095,15 +3105,15 @@ class XplorMRParserListener(ParseTreeListener):
                         pass
 
                     else:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found inter-residue RDC vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-residue RDC vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif atom_id_1 == atom_id_2:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found zero RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found zero RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -3111,9 +3121,9 @@ class XplorMRParserListener(ParseTreeListener):
                     if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                         if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an RDC vector over multiple covalent bonds in the 'VEANgle' statement; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            "Found an RDC vector over multiple covalent bonds in the 'VEANgle' statement; "
+                                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                             return
 
             if self.__createSfDict:
@@ -3165,43 +3175,43 @@ class XplorMRParserListener(ParseTreeListener):
             dstFunc['target_value_1'] = f"{target_value_1}"
         else:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The target value(1)='{target_value_1}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The target value(1)='{target_value_1}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if ANGLE_ERROR_MIN <= lower_limit_1 < ANGLE_ERROR_MAX:
             dstFunc['lower_limit_1'] = f"{lower_limit_1:.3f}"
         else:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The lower limit value(1)='{lower_limit_1:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if ANGLE_ERROR_MIN < upper_limit_1 <= ANGLE_ERROR_MAX:
             dstFunc['upper_limit_1'] = f"{upper_limit_1:.3f}"
         else:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The upper limit value(1)='{upper_limit_1:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if ANGLE_ERROR_MIN < target_value_2 < ANGLE_ERROR_MAX:
             dstFunc['target_value_2'] = f"{target_value_2}"
         else:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The target value(2)='{target_value_2}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The target value(2)='{target_value_2}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if ANGLE_ERROR_MIN <= lower_limit_2 < ANGLE_ERROR_MAX:
             dstFunc['lower_limit_2'] = f"{lower_limit_2:.3f}"
         else:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The lower limit value(2)='{lower_limit_2:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if ANGLE_ERROR_MIN < upper_limit_2 <= ANGLE_ERROR_MAX:
             dstFunc['upper_limit_2'] = f"{upper_limit_2:.3f}"
         else:
             validRange = False
-            self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+            self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                            f"The upper limit value(2)='{upper_limit_2:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if not validRange:
             return None
@@ -3209,38 +3219,38 @@ class XplorMRParserListener(ParseTreeListener):
         if ANGLE_RANGE_MIN <= target_value_1 <= ANGLE_RANGE_MAX:
             pass
         else:
-            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The target value(1)='{target_value_1}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                            f"The target value(1)='{target_value_1}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if ANGLE_RANGE_MIN <= lower_limit_1 <= ANGLE_RANGE_MAX:
             pass
         else:
-            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(1)='{lower_limit_1:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                            f"The lower limit value(1)='{lower_limit_1:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if ANGLE_RANGE_MIN <= upper_limit_1 <= ANGLE_RANGE_MAX:
             pass
         else:
-            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(1)='{upper_limit_1:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                            f"The upper limit value(1)='{upper_limit_1:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if ANGLE_RANGE_MIN <= target_value_2 <= ANGLE_RANGE_MAX:
             pass
         else:
-            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The target value(2)='{target_value_2}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                            f"The target value(2)='{target_value_2}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if ANGLE_RANGE_MIN <= lower_limit_2 <= ANGLE_RANGE_MAX:
             pass
         else:
-            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The lower limit value(2)='{lower_limit_2:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                            f"The lower limit value(2)='{lower_limit_2:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if ANGLE_RANGE_MIN <= upper_limit_2 <= ANGLE_RANGE_MAX:
             pass
         else:
-            self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                f"The upper limit value(2)='{upper_limit_2:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+            self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                            f"The upper limit value(2)='{upper_limit_2:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -3254,9 +3264,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'harmonic'
             else:
                 self.potential = 'square'
-                self.warningMessage += "[Enum mismatch ignorable] "\
-                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for 'TENSOr' statements. "\
-                    f"Instead, set the default potential {self.potential!r}.\n"
+                self.__f.append("[Enum mismatch ignorable] "
+                                f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for 'TENSOr' statements. "
+                                f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -3278,7 +3288,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'rdc'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#tenso_assign.
     def exitTenso_assign(self, ctx: XplorMRParser.Tenso_assignContext):  # pylint: disable=unused-argument
@@ -3313,8 +3323,8 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('an RDC (TENSO)'):
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
@@ -3328,27 +3338,27 @@ class XplorMRParserListener(ParseTreeListener):
             atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-chain RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -3361,15 +3371,15 @@ class XplorMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found zero RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -3377,9 +3387,9 @@ class XplorMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an RDC vector over multiple covalent bonds in the 'TENSOr' statement; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found an RDC vector over multiple covalent bonds in the 'TENSOr' statement; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             if self.__createSfDict:
@@ -3415,9 +3425,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'harmonic'
             else:
                 self.potential = 'square'
-                self.warningMessage += "[Enum mismatch ignorable] "\
-                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'ANISotropy' statements. "\
-                    f"Instead, set the default potential {self.potential!r}.\n"
+                self.__f.append("[Enum mismatch ignorable] "
+                                f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'ANISotropy' statements. "
+                                f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -3442,7 +3452,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'rdc'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#anis_assign.
     def exitAnis_assign(self, ctx: XplorMRParser.Anis_assignContext):  # pylint: disable=unused-argument
@@ -3477,8 +3487,8 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('an RDC (ANIS)'):
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             for i in range(0, 4, 2):
@@ -3493,27 +3503,27 @@ class XplorMRParserListener(ParseTreeListener):
                 atom_id_2 = self.atomSelectionSet[i + 1][0]['atom_id']
 
                 if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Non-magnetic susceptible spin appears in RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Non-magnetic susceptible spin appears in RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 if chain_id_1 != chain_id_2:
                     ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                     ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                     if ps1 is None and ps2 is None:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"Found inter-chain RDC vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-chain RDC vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
                     ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                     if ps1 is None:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"Found inter-residue RDC vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-residue RDC vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) == 1:
@@ -3526,15 +3536,15 @@ class XplorMRParserListener(ParseTreeListener):
                         pass
 
                     else:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found inter-residue RDC vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-residue RDC vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif atom_id_1 == atom_id_2:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found zero RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found zero RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -3542,9 +3552,9 @@ class XplorMRParserListener(ParseTreeListener):
                     if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                         if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an RDC vector over multiple covalent bonds in the 'ANISotropy' statement; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            "Found an RDC vector over multiple covalent bonds in the 'ANISotropy' statement; "
+                                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                             return
 
             if self.__createSfDict:
@@ -3601,7 +3611,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'plane'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
         if ctx.Weight():
             self.planeWeight = self.getNumber_s(ctx.number_s())
@@ -3609,16 +3619,16 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.planeWeight in self.evaluate:
                     self.planeWeight = self.evaluate[self.planeWeight]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' "\
-                        f"where the symbol {self.planeWeight!r} is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' "
+                                    f"where the symbol {self.planeWeight!r} is not defined so that set the default value.")
                     self.planeWeight = 300.0
             if self.planeWeight < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' must not be a negative value.")
             elif self.planeWeight == 0.0:
-                self.warningMessage += "[Range value warning] "\
-                    f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' should be a positive value.\n"
+                self.__f.append("[Range value warning] "
+                                f"The weight value 'GROUP {str(ctx.Weight())}={self.planeWeight} END' should be a positive value.")
 
     # Exit a parse tree produced by XplorMRParser#group_statement.
     def exitGroup_statement(self, ctx: XplorMRParser.Group_statementContext):  # pylint: disable=unused-argument
@@ -3653,9 +3663,8 @@ class XplorMRParserListener(ParseTreeListener):
         if ctx.Exponent():
             self.squareExponent = int(str(ctx.Integer()))
             if self.squareExponent <= 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    "The exponent value  "\
-                    f"'RESTRAINTS HARMONIC {str(ctx.Exponent())}={self.squareExponent} END' must be a positive value.\n"
+                self.__f.append("[Invalid data] "
+                                f"The exponent value 'RESTRAINTS HARMONIC {str(ctx.Exponent())}={self.squareExponent} END' must be a positive value.")
 
         elif ctx.Normal():
             if ctx.number_s(0):
@@ -3676,8 +3685,8 @@ class XplorMRParserListener(ParseTreeListener):
             self.vector3D = [0.0] * 3  # set default vector if not available
 
         if 'harm' not in self.vectorDo or len(self.vector3D['harm']) == 0:
-            self.warningMessage += "[Invalid data] "\
-                "No vector statement for harmonic coordinate restraints exists.\n"
+            self.__f.append("[Invalid data] "
+                            "No vector statement for harmonic coordinate restraints exists.")
             return
 
         for col, vector in enumerate(self.vector3D['harm'], start=1):
@@ -3700,7 +3709,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'geo'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#harmonic_assign.
     def exitHarmonic_assign(self, ctx: XplorMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
@@ -3738,16 +3747,16 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.adistExpectValue in self.evaluate:
                     self.adistExpectValue = self.evaluate[self.adistExpectValue]
                 else:
-                    self.warningMessage += "[Invalid data] "\
-                        f"The symbol {self.adistExpectValue!r} in the 'XADC' statement is not defined.\n"
+                    self.__f.append("[Invalid data] "
+                                    f"The symbol {self.adistExpectValue!r} in the 'XADC' statement is not defined.")
                     return
 
             if 0.0 <= self.adistExpectValue <= 1.0:
                 pass
             else:
-                self.warningMessage += "[Range value error] "\
-                    f"The expectation distance 'XADC {str(ctx.Expectation())} {str(ctx.Integer())} {self.adistExpectValue} END' "\
-                    f"must be within range {PROBABILITY_RANGE}.\n"
+                self.__f.append("[Range value error] "
+                                f"The expectation distance 'XADC {str(ctx.Expectation())} {str(ctx.Integer())} {self.adistExpectValue} END' "
+                                f"must be within range {PROBABILITY_RANGE}.")
 
             self.adistExpectGrid = int(str(ctx.Integer()))
 
@@ -3757,16 +3766,16 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.adistSizeMaxDist in self.evaluate:
                     self.adistSizeMaxDist = self.evaluate[self.adistSizeMaxDist]
                 else:
-                    self.warningMessage += "[Invalid data] "\
-                        f"The symbol {self.adistSizeMaxDist!r} in the 'XADC' statement is not defined.\n"
+                    self.__f.append("[Invalid data] "
+                                    f"The symbol {self.adistSizeMaxDist!r} in the 'XADC' statement is not defined.")
                     return
 
             if DIST_ERROR_MIN < self.adistSizeMaxDist < DIST_ERROR_MAX:
                 pass
             else:
-                self.warningMessage += "[Range value error] "\
-                    f"The expectation distance 'XADC {str(ctx.Size())} {self.adistSizeMaxDist} {str(ctx.Integer())} END' "\
-                    f"must be within range {DIST_RESTRAINT_ERROR}.\n"
+                self.__f.append("[Range value error] "
+                                f"The expectation distance 'XADC {str(ctx.Size())} {self.adistSizeMaxDist} {str(ctx.Integer())} END' "
+                                f"must be within range {DIST_RESTRAINT_ERROR}.")
 
             self.adistSizeStep = int(str(ctx.Integer()))
 
@@ -3789,7 +3798,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'adist'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#xadc_assign.
     def exitXadc_assign(self, ctx: XplorMRParser.Xadc_assignContext):  # pylint: disable=unused-argument
@@ -3834,9 +3843,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'harmonic'
             else:
                 self.potential = 'square'
-                self.warningMessage += "[Enum mismatch ignorable] "\
-                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'COUPling' statements. "\
-                    f"Instead, set the default potential {self.potential!r}.\n"
+                self.__f.append("[Enum mismatch ignorable] "
+                                f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'COUPling' statements. "
+                                f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -3862,7 +3871,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'jcoup' if self.__cur_subtype != 'rdc' else 'rdc'  # set 'rdc' for error message
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#coup_assign.
     def exitCoup_assign(self, ctx: XplorMRParser.Coup_assignContext):  # pylint: disable=unused-argument
@@ -3947,8 +3956,8 @@ class XplorMRParserListener(ParseTreeListener):
                     return
 
             if not self.areUniqueCoordAtoms('a J-coupling (COUP)'):
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             for i in range(0, len(self.atomSelectionSet), 4):
@@ -3963,25 +3972,25 @@ class XplorMRParserListener(ParseTreeListener):
                 atom_id_2 = self.atomSelectionSet[i + 3][0]['atom_id']
 
                 if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Non-magnetic susceptible spin appears in J-coupling vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"Non-magnetic susceptible spin appears in J-coupling vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 if chain_id_1 != chain_id_2:
                     ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                     ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                     if ps1 is None and ps2 is None:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"Found inter-chain J-coupling vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-chain J-coupling vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-residue J-coupling vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue J-coupling vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 elif abs(seq_id_1 - seq_id_2) == 1:
@@ -3994,15 +4003,15 @@ class XplorMRParserListener(ParseTreeListener):
                         pass
 
                     else:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found inter-residue J-coupling vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-residue J-coupling vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif atom_id_1 == atom_id_2:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found zero J-coupling vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found zero J-coupling vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             if self.__createSfDict:
@@ -4079,9 +4088,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'harmonic'
             else:
                 self.potential = 'square'
-                self.warningMessage += "[Enum mismatch ignorable] "\
-                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'CARBon' statements. "\
-                    f"Instead, set the default potential {self.potential!r}.\n"
+                self.__f.append("[Enum mismatch ignorable] "
+                                f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'CARBon' statements. "
+                                f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -4107,7 +4116,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'hvycs'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#carbon_shift_assign.
     def exitCarbon_shift_assign(self, ctx: XplorMRParser.Carbon_shift_assignContext):  # pylint: disable=unused-argument
@@ -4123,16 +4132,16 @@ class XplorMRParserListener(ParseTreeListener):
             if CS_ERROR_MIN < ca_shift < CS_ERROR_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"CA chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"CA chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.")
                 return
 
             if not self.__hasPolySeq:
                 return
 
             if not self.areUniqueCoordAtoms('a carbon chemical shift (CARB)'):
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             dstFunc = {'ca_shift': ca_shift, 'cb_shift': cb_shift, 'weight': 1.0, 'potential': self.potential}
@@ -4163,8 +4172,8 @@ class XplorMRParserListener(ParseTreeListener):
             atom_ids = [atom_id_1, atom_id_2, atom_id_3, atom_id_4, atom_id_5]
 
             if chain_ids != [chain_id_1] * 5 or offsets != [-1, 0, 0, 0, 1] or atom_ids != ['C', 'N', 'CA', 'C', 'N']:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].")
                 return
 
             comp_id = self.atomSelectionSet[2][0]['comp_id']
@@ -4177,8 +4186,8 @@ class XplorMRParserListener(ParseTreeListener):
                 if CS_ERROR_MIN < cb_shift < CS_ERROR_MAX:
                     pass
                 else:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"CB chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"CB chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.")
                     return
 
             if self.__createSfDict:
@@ -4211,7 +4220,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#carbon_shift_rcoil.
     def enterCarbon_shift_rcoil(self, ctx: XplorMRParser.Carbon_shift_rcoilContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#carbon_shift_rcoil.
     def exitCarbon_shift_rcoil(self, ctx: XplorMRParser.Carbon_shift_rcoilContext):  # pylint: disable=unused-argument
@@ -4227,23 +4236,23 @@ class XplorMRParserListener(ParseTreeListener):
             if CS_ERROR_MIN < rcoil_a < CS_ERROR_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"Random coil 'a' chemical shift value '{rcoil_a}' must be within range {CS_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"Random coil 'a' chemical shift value '{rcoil_a}' must be within range {CS_RESTRAINT_ERROR}.")
                 return
 
             if CS_ERROR_MIN < rcoil_b < CS_ERROR_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"Random coil 'b' chemical shift value '{rcoil_b}' must be within range {CS_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"Random coil 'b' chemical shift value '{rcoil_b}' must be within range {CS_RESTRAINT_ERROR}.")
                 return
 
             dstFunc = {'rcoil_a': rcoil_a, 'rcoil_b': rcoil_b}
 
             for atom1 in self.atomSelectionSet[0]:
                 if atom1['atom_id'][0] != 'C':
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Not a carbon; {atom1}.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"Not a carbon; {atom1}.")
                     return
 
             for atom1 in self.atomSelectionSet[0]:
@@ -4264,9 +4273,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'harmonic'
             else:
                 self.potential = 'square'
-                self.warningMessage += "[Enum mismatch ignorable] "\
-                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'PROTONshift' statements. "\
-                    f"Instead, set the default potential {self.potential!r}.\n"
+                self.__f.append("[Enum mismatch ignorable] "
+                                f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'PROTONshift' statements. "
+                                f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -4283,7 +4292,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'procs'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#observed.
     def exitObserved(self, ctx: XplorMRParser.ObservedContext):  # pylint: disable=unused-argument
@@ -4302,16 +4311,16 @@ class XplorMRParserListener(ParseTreeListener):
             if CS_ERROR_MIN < obs_value < CS_ERROR_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The observed chemical shift value '{obs_value}' must be within range {CS_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The observed chemical shift value '{obs_value}' must be within range {CS_RESTRAINT_ERROR}.")
                 return
 
             if obs_value_2 is not None:
                 if CS_ERROR_MIN < obs_value_2 < CS_ERROR_MAX:
                     pass
                 else:
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The 2nd observed chemical shift value '{obs_value_2}' must be within range {CS_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The 2nd observed chemical shift value '{obs_value_2}' must be within range {CS_RESTRAINT_ERROR}.")
                     return
 
             if obs_value_2 is None:
@@ -4322,19 +4331,19 @@ class XplorMRParserListener(ParseTreeListener):
             lenAtomSelectionSet = len(self.atomSelectionSet)
 
             if obs_value_2 is None and lenAtomSelectionSet == 2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Missing observed chemical shift value for the 2nd atom selection.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Missing observed chemical shift value for the 2nd atom selection.")
                 return
 
             if obs_value_2 is not None and lenAtomSelectionSet == 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Missing 2nd atom selection for the observed chemical shift value '{obs_value_2}'.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Missing 2nd atom selection for the observed chemical shift value '{obs_value_2}'.")
                 return
 
             for atom1 in self.atomSelectionSet[0]:
                 if atom1['atom_id'][0] not in protonBeginCode:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Not a proton; {atom1}.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"Not a proton; {atom1}.")
                 return
 
             if self.__createSfDict:
@@ -4381,7 +4390,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#proton_shift_rcoil.
     def enterProton_shift_rcoil(self, ctx: XplorMRParser.Proton_shift_rcoilContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_rcoil.
     def exitProton_shift_rcoil(self, ctx: XplorMRParser.Proton_shift_rcoilContext):  # pylint: disable=unused-argument
@@ -4396,16 +4405,16 @@ class XplorMRParserListener(ParseTreeListener):
             if CS_ERROR_MIN < rcoil < CS_ERROR_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"Random coil chemical shift value '{rcoil}' must be within range {CS_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"Random coil chemical shift value '{rcoil}' must be within range {CS_RESTRAINT_ERROR}.")
                 return
 
             dstFunc = {'rcoil': rcoil}
 
             for atom1 in self.atomSelectionSet[0]:
                 if atom1['atom_id'][0] not in protonBeginCode:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Not a proton; {atom1}.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"Not a proton; {atom1}.")
                     return
 
             for atom1 in self.atomSelectionSet[0]:
@@ -4419,7 +4428,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#proton_shift_anisotropy.
     def enterProton_shift_anisotropy(self, ctx: XplorMRParser.Proton_shift_anisotropyContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_anisotropy.
     def exitProton_shift_anisotropy(self, ctx: XplorMRParser.Proton_shift_anisotropyContext):
@@ -4430,8 +4439,8 @@ class XplorMRParserListener(ParseTreeListener):
         sc_or_bb = str(ctx.Simple_name(1))
 
         if not self.areUniqueCoordAtoms('a proton chemical shift (PROTON/ANIS)'):
-            if len(self.__warningInAtomSelection) > 0:
-                self.warningMessage += self.__warningInAtomSelection
+            if len(self.__g) > 0:
+                self.__f.extend(self.__g)
             return
 
         dstFunc = {'co_or_cn': co_or_cn.lower(), 'is_cooh': is_cooh, 'sc_or_bb': sc_or_bb.lower()}
@@ -4454,8 +4463,8 @@ class XplorMRParserListener(ParseTreeListener):
         atom_ids = [atom_id_1, atom_id_2, atom_id_3]
 
         if chain_ids != [chain_id_1] * 3 or offsets != [0] * 3 or atom_ids != ['CA', 'C', 'O']:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "The atom selection order must be [CA(i), C(i), O(i)].\n"
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "The atom selection order must be [CA(i), C(i), O(i)].")
             return
 
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
@@ -4470,14 +4479,14 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#proton_shift_amides.
     def enterProton_shift_amides(self, ctx: XplorMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_amides.
     def exitProton_shift_amides(self, ctx: XplorMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'] != 'H':
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Not a backbone amide proton; {atom1}.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Not a backbone amide proton; {atom1}.")
                 return
 
         for atom1 in self.atomSelectionSet[0]:
@@ -4487,14 +4496,14 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#proton_shift_carbons.
     def enterProton_shift_carbons(self, ctx: XplorMRParser.Proton_shift_carbonsContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_carbons.
     def exitProton_shift_carbons(self, ctx: XplorMRParser.Proton_shift_carbonsContext):  # pylint: disable=unused-argument
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'] != 'C':
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Not a backbone carbonyl carbon; {atom1}.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Not a backbone carbonyl carbon; {atom1}.")
                 return
 
         for atom1 in self.atomSelectionSet[0]:
@@ -4504,14 +4513,14 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#proton_shift_nitrogens.
     def enterProton_shift_nitrogens(self, ctx: XplorMRParser.Proton_shift_nitrogensContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_nitrogens.
     def exitProton_shift_nitrogens(self, ctx: XplorMRParser.Proton_shift_nitrogensContext):  # pylint: disable=unused-argument
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'] != 'N':
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Not a backbone nitrogen; {atom1}.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Not a backbone nitrogen; {atom1}.")
                 return
 
         for atom1 in self.atomSelectionSet[0]:
@@ -4521,14 +4530,14 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#proton_shift_oxygens.
     def enterProton_shift_oxygens(self, ctx: XplorMRParser.Proton_shift_oxygensContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_oxygens.
     def exitProton_shift_oxygens(self, ctx: XplorMRParser.Proton_shift_oxygensContext):  # pylint: disable=unused-argument
         for atom1 in self.atomSelectionSet[0]:
             if atom1['atom_id'] != 'O':
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Not a backbone oxygen; {atom1}.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Not a backbone oxygen; {atom1}.")
                 return
 
         for atom1 in self.atomSelectionSet[0]:
@@ -4538,7 +4547,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#proton_shift_ring_atoms.
     def enterProton_shift_ring_atoms(self, ctx: XplorMRParser.Proton_shift_ring_atomsContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_ring_atoms.
     def exitProton_shift_ring_atoms(self, ctx: XplorMRParser.Proton_shift_ring_atomsContext):
@@ -4547,13 +4556,13 @@ class XplorMRParserListener(ParseTreeListener):
         ringNames = ('PHE', 'TYR', 'HIS', 'TRP5', 'TRP6', 'ADE6', 'ADE5', 'GUA6', 'GUA5', 'THY', 'CYT', 'URA')
 
         if ring_name not in ringNames:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                f"{ring_name!r} must be one of {ringNames}.\n"
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            f"{ring_name!r} must be one of {ringNames}.")
             return
 
         if not self.areUniqueCoordAtoms('a proton chemical shift (PROTON/RING)'):
-            if len(self.__warningInAtomSelection) > 0:
-                self.warningMessage += self.__warningInAtomSelection
+            if len(self.__g) > 0:
+                self.__f.extend(self.__g)
             return
 
         if len(self.atomSelectionSet) == 5:
@@ -4584,7 +4593,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#proton_shift_alphas_and_amides.
     def enterProton_shift_alphas_and_amides(self, ctx: XplorMRParser.Proton_shift_alphas_and_amidesContext):  # pylint: disable=unused-argument
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_alphas_and_amides.
     def exitProton_shift_alphas_and_amides(self, ctx: XplorMRParser.Proton_shift_alphas_and_amidesContext):  # pylint: disable=unused-argument
@@ -4592,8 +4601,8 @@ class XplorMRParserListener(ParseTreeListener):
             if atom1['atom_id'] == 'H' or atom1['atom_id'].startswith('HA'):
                 pass
             else:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Neither alpha protons nor amide proton; {atom1}.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Neither alpha protons nor amide proton; {atom1}.")
                 return
 
         for atom1 in self.atomSelectionSet[0]:
@@ -4608,16 +4617,16 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.ramaScale in self.evaluate:
                     self.ramaScale = self.evaluate[self.ramaScale]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The scale value 'RAMA {str(ctx.Scale())} {self.ramaScale} END' "\
-                        f"where the symbol {self.ramaScale!r} is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The scale value 'RAMA {str(ctx.Scale())} {self.ramaScale} END' "
+                                    f"where the symbol {self.ramaScale!r} is not defined so that set the default value.")
                     self.ramaScale = 1.0
             if self.ramaScale < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The scale value 'RAMA {str(ctx.Scale())} {self.ramaScale} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                f"The scale value 'RAMA {str(ctx.Scale())} {self.ramaScale} END' must not be a negative value.")
             elif self.ramaScale == 0.0:
-                self.warningMessage += "[Range value warning] "\
-                    f"The scale value 'RAMA {str(ctx.Scale())} {self.ramaScale} END' should be a positive value.\n"
+                self.__f.append("[Range value warning] "
+                                f"The scale value 'RAMA {str(ctx.Scale())} {self.ramaScale} END' should be a positive value.")
 
         elif ctx.Cutoff():
             self.ramaCutoff = self.getNumber_s(ctx.number_s(0))
@@ -4625,8 +4634,8 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.ramaCutoff in self.evaluate:
                     self.ramaCutoff = self.evaluate[self.ramaCutoff]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The scale value 'RAMA {str(ctx.Cutoff())} {self.ramaCutoff} END'"
+                    self.__f.append("[Unsupported data] "
+                                    f"The scale value 'RAMA {str(ctx.Cutoff())} {self.ramaCutoff} END'")
 
         elif ctx.ForceConstant():
             self.ramaForceConst = self.getNumber_s(ctx.number_s(0))
@@ -4718,7 +4727,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'rama'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#rama_assign.
     def exitRama_assign(self, ctx: XplorMRParser.Rama_assignContext):  # pylint: disable=unused-argument
@@ -4726,8 +4735,8 @@ class XplorMRParserListener(ParseTreeListener):
             return
 
         if not self.areUniqueCoordAtoms('a dihedral angle database (RAMA)'):
-            if len(self.__warningInAtomSelection) > 0:
-                self.warningMessage += self.__warningInAtomSelection
+            if len(self.__g) > 0:
+                self.__f.extend(self.__g)
             return
 
         for i in range(0, len(self.atomSelectionSet), 2):
@@ -4742,25 +4751,25 @@ class XplorMRParserListener(ParseTreeListener):
             atom_id_2 = self.atomSelectionSet[i + 1][0]['atom_id']
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in dihedral angle vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in dihedral angle vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain dihedral angle vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-chain dihedral angle vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue dihedral angle vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found inter-residue dihedral angle vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -4773,15 +4782,15 @@ class XplorMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue dihedral angle vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue dihedral angle vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero dihedral angle vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found zero dihedral angle vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -4789,9 +4798,9 @@ class XplorMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an dihedral angle vector over multiple covalent bonds in the 'RAMAchandran' statement; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found an dihedral angle vector over multiple covalent bonds in the 'RAMAchandran' statement; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
         if self.__createSfDict:
@@ -4845,16 +4854,16 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.radiScale in self.evaluate:
                     self.radiScale = self.evaluate[self.radiScale]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The scale value 'COLL {str(ctx.Scale())} {self.radiScale} END' "\
-                        f"where the symbol {self.radiScale!r} is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The scale value 'COLL {str(ctx.Scale())} {self.radiScale} END' "
+                                    f"where the symbol {self.radiScale!r} is not defined so that set the default value.")
                     self.radiScale = 1.0
             if self.radiScale < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The scale value 'COLL {str(ctx.Scale())} {self.radiScale} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                f"The scale value 'COLL {str(ctx.Scale())} {self.radiScale} END' must not be a negative value.")
             elif self.radiScale == 0.0:
-                self.warningMessage += "[Range value warning] "\
-                    f"The scale value 'COLL {str(ctx.Scale())} {self.radiScale} END' should be a positive value.\n"
+                self.__f.append("[Range value warning] "
+                                f"The scale value 'COLL {str(ctx.Scale())} {self.radiScale} END' should be a positive value.")
 
         elif ctx.Reset():
             self.radiScale = 1.0
@@ -4873,7 +4882,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'radi'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#coll_assign.
     def exitColl_assign(self, ctx: XplorMRParser.Coll_assignContext):  # pylint: disable=unused-argument
@@ -4887,15 +4896,15 @@ class XplorMRParserListener(ParseTreeListener):
             targetRgyr = self.numberSelection[1]
 
             if forceConst <= 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The force constant value {forceConst} must be a positive value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The force constant value {forceConst} must be a positive value.")
                 return
 
             if DIST_ERROR_MIN < targetRgyr < DIST_ERROR_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target Rgyr value {targetRgyr} must be within range {DIST_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target Rgyr value {targetRgyr} must be within range {DIST_RESTRAINT_ERROR}.")
                 return
 
             dstFunc = {'target_Rgyr': targetRgyr, 'force_const': forceConst}
@@ -4949,9 +4958,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.diffPotential = 'harmonic'
             else:
                 self.diffPotential = 'square'
-                self.warningMessage += "[Enum mismatch ignorable] "\
-                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'DANIsotropy' statements. "\
-                    f"Instead, set the default potential {self.diffPotential!r}.\n"
+                self.__f.append("[Enum mismatch ignorable] "
+                                f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'DANIsotropy' statements. "
+                                f"Instead, set the default potential {self.diffPotential!r}.")
 
         elif ctx.Type():
             self.diffType = str(ctx.Rdc_or_Diff_anis_types()).lower()
@@ -4975,7 +4984,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'diff'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#dani_assign.
     def exitDani_assign(self, ctx: XplorMRParser.Dani_assignContext):  # pylint: disable=unused-argument
@@ -5010,8 +5019,8 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('a diffusion anisotropy (DANI)', XPLOR_ORIGIN_AXIS_COLS):
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
@@ -5025,25 +5034,25 @@ class XplorMRParserListener(ParseTreeListener):
             atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in diffusion anisotropy vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in diffusion anisotropy vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain diffusion anisotropy vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-chain diffusion anisotropy vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue diffusion anisotropy vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found inter-residue diffusion anisotropy vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -5056,15 +5065,15 @@ class XplorMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue diffusion anisotropy vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue diffusion anisotropy vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero diffusion anisotropy vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found zero diffusion anisotropy vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -5072,9 +5081,9 @@ class XplorMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found a diffusion anisotropy vector over multiple covalent bonds in the 'DANIsotropy' statement; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found a diffusion anisotropy vector over multiple covalent bonds in the 'DANIsotropy' statement; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             if self.__createSfDict:
@@ -5125,104 +5134,104 @@ class XplorMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' must be within range {T1T2_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if T1T2_ERROR_MIN <= lower_limit < T1T2_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if T1T2_ERROR_MIN < upper_limit <= T1T2_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if T1T2_ERROR_MIN <= lower_linear_limit < T1T2_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if T1T2_ERROR_MIN < upper_linear_limit <= T1T2_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {T1T2_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
 
         else:
 
             if lower_limit is not None and upper_limit is not None:
                 if lower_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if lower_linear_limit is not None and upper_limit is not None:
                 if lower_linear_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if lower_limit is not None and upper_linear_limit is not None:
                 if lower_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if lower_linear_limit is not None and upper_linear_limit is not None:
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if lower_limit is not None and lower_linear_limit is not None:
                 if lower_linear_limit > lower_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.")
 
             if upper_limit is not None and upper_linear_limit is not None:
                 if upper_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -5231,36 +5240,36 @@ class XplorMRParserListener(ParseTreeListener):
             if T1T2_RANGE_MIN <= target_value <= T1T2_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {T1T2_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if T1T2_RANGE_MIN <= lower_limit <= T1T2_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if T1T2_RANGE_MIN <= upper_limit <= T1T2_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if T1T2_RANGE_MIN <= lower_linear_limit <= T1T2_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if T1T2_RANGE_MIN <= upper_linear_limit <= T1T2_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -5349,7 +5358,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'nbase'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#orie_assign.
     def exitOrie_assign(self, ctx: XplorMRParser.Orie_assignContext):  # pylint: disable=unused-argument
@@ -5357,8 +5366,8 @@ class XplorMRParserListener(ParseTreeListener):
             return
 
         if not self.areUniqueCoordAtoms('a residue-residue position/orientation database (ORIE)'):
-            if len(self.__warningInAtomSelection) > 0:
-                self.warningMessage += self.__warningInAtomSelection
+            if len(self.__g) > 0:
+                self.__f.extend(self.__g)
             return
 
         chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
@@ -5384,46 +5393,46 @@ class XplorMRParserListener(ParseTreeListener):
         _, nucleotide, _ = self.__csStat.getTypeOfCompId(comp_id_1)
 
         if not nucleotide:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Not a nucleic acid; "\
-                f"{chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}.\n"
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "Not a nucleic acid; "
+                            f"{chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}.")
             return
 
         if comp_id_2 != comp_id_1:
             _, nucleotide, _ = self.__csStat.getTypeOfCompId(comp_id_2)
 
             if not nucleotide:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Not a nucleic acid; "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Not a nucleic acid; "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}.")
                 return
 
         if comp_id_3 not in (comp_id_1, comp_id_2):
             _, nucleotide, _ = self.__csStat.getTypeOfCompId(comp_id_3)
 
             if not nucleotide:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Not a nucleic acid; "\
-                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Not a nucleic acid; "
+                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}.")
                 return
 
         if comp_id_4 not in (comp_id_1, comp_id_2, comp_id_3):
             _, nucleotide, _ = self.__csStat.getTypeOfCompId(comp_id_4)
 
             if not nucleotide:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Not a nucleic acid; "\
-                    f"{chain_id_4}:{seq_id_4}:{comp_id_4}:{atom_id_4}.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Not a nucleic acid; "
+                                f"{chain_id_4}:{seq_id_4}:{comp_id_4}:{atom_id_4}.")
                 return
 
         if chain_id_1 == chain_id_2 and chain_id_2 == chain_id_3 and chain_id_3 == chain_id_4:
             if seq_id_1 == seq_id_2 and seq_id_2 == seq_id_3 and seq_id_3 == seq_id_4:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "All selected atoms are in the same residue; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}, "\
-                    f"{chain_id_4}:{seq_id_4}:{comp_id_4}:{atom_id_4}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "All selected atoms are in the same residue; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}, "
+                                f"{chain_id_4}:{seq_id_4}:{comp_id_4}:{atom_id_4}).")
                 return
 
         if self.__createSfDict:
@@ -5488,9 +5497,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'harmonic'
             else:
                 self.potential = 'square'
-                self.warningMessage += "[Enum mismatch ignorable] "\
-                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'DCSA' statements. "\
-                    f"Instead, set the default potential {self.potential!r}.\n"
+                self.__f.append("[Enum mismatch ignorable] "
+                                f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'DCSA' statements. "
+                                f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s(0))
@@ -5498,16 +5507,16 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.scale in self.evaluate:
                     self.scale = self.evaluate[self.scale]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The scale value 'DCSA {str(ctx.Scale())} {self.scale} END' "\
-                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The scale value 'DCSA {str(ctx.Scale())} {self.scale} END' "
+                                    f"where the symbol {self.scale!r} is not defined so that set the default value.")
                     self.scale = 1.0
             if self.scale < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The scale value 'DCSA {str(ctx.Scale())} {self.scale} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                f"The scale value 'DCSA {str(ctx.Scale())} {self.scale} END' must not be a negative value.")
             elif self.scale == 0.0:
-                self.warningMessage += "[Range value warning] "\
-                    f"The scale value 'DCSA {str(ctx.Scale())} {self.scale} END' should be a positive value.\n"
+                self.__f.append("[Range value warning] "
+                                f"The scale value 'DCSA {str(ctx.Scale())} {self.scale} END' should be a positive value.")
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -5542,7 +5551,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'csa'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#csa_assign.
     def exitCsa_assign(self, ctx: XplorMRParser.Csa_assignContext):  # pylint: disable=unused-argument
@@ -5582,8 +5591,8 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('a CSA (DCSA)', XPLOR_ORIGIN_AXIS_COLS):
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
@@ -5602,20 +5611,20 @@ class XplorMRParserListener(ParseTreeListener):
             atom_id_3 = self.atomSelectionSet[6][0]['atom_id']
 
             if self.csaType is not None and atom_id_1[0] != self.csaType[0].upper():
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Central atom {atom_id_1!r} and 'type={self.csaType}' are not consistent; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Central atom {atom_id_1!r} and 'type={self.csaType}' are not consistent; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                 return
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
                or (atom_id_3[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in CSA vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in CSA vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                 return
 
             if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3:
@@ -5623,19 +5632,19 @@ class XplorMRParserListener(ParseTreeListener):
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 ps3 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_3 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None and ps3 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain CSA vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-chain CSA vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1 or abs(seq_id_2 - seq_id_3) > 1 or abs(seq_id_3 - seq_id_1) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue CSA vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found inter-residue CSA vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                 return
 
             elif abs(seq_id_1 - seq_id_2) == 1 or abs(seq_id_2 - seq_id_3) == 1 or abs(seq_id_3 - seq_id_1) == 1:
@@ -5650,11 +5659,11 @@ class XplorMRParserListener(ParseTreeListener):
                         pass
 
                     else:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found inter-residue CSA vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-residue CSA vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                         return
 
                 elif abs(seq_id_2 - seq_id_3) == 1:
@@ -5667,11 +5676,11 @@ class XplorMRParserListener(ParseTreeListener):
                         pass
 
                     else:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found inter-residue CSA vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-residue CSA vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                         return
 
                 elif abs(seq_id_3 - seq_id_1) == 1:
@@ -5682,19 +5691,19 @@ class XplorMRParserListener(ParseTreeListener):
                         pass
 
                     else:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found inter-residue CSA vector; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-residue CSA vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                        f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                         return
 
             elif atom_id_1 == atom_id_2 or atom_id_2 == atom_id_3 or atom_id_3 == atom_id_1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero CSA vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                    f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found zero CSA vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                 return
 
             else:
@@ -5704,11 +5713,11 @@ class XplorMRParserListener(ParseTreeListener):
                     if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                         if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an CSA vector over multiple covalent bonds; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            "Found an CSA vector over multiple covalent bonds; "
+                                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                             return
 
                 if self.__ccU.updateChemCompDict(comp_id_1) and seq_id_1 == seq_id_3:  # matches with comp_id in CCD
@@ -5716,11 +5725,11 @@ class XplorMRParserListener(ParseTreeListener):
                     if not self.__ccU.hasBond(comp_id_1, atom_id_3, atom_id_1):
 
                         if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_3, atom_id_3):
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Found an CSA vector over multiple covalent bonds; "\
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "\
-                                f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            "Found an CSA vector over multiple covalent bonds; "
+                                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                            f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
+                                            f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                             return
 
             if self.__createSfDict:
@@ -5760,104 +5769,104 @@ class XplorMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' must be within range {CSA_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if CSA_ERROR_MIN <= lower_limit < CSA_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if CSA_ERROR_MIN < upper_limit <= CSA_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if CSA_ERROR_MIN <= lower_linear_limit < CSA_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if CSA_ERROR_MIN < upper_linear_limit <= CSA_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {CSA_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
 
         else:
 
             if lower_limit is not None and upper_limit is not None:
                 if lower_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if lower_linear_limit is not None and upper_limit is not None:
                 if lower_linear_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if lower_limit is not None and upper_linear_limit is not None:
                 if lower_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if lower_linear_limit is not None and upper_linear_limit is not None:
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if lower_limit is not None and lower_linear_limit is not None:
                 if lower_linear_limit > lower_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.")
 
             if upper_limit is not None and upper_linear_limit is not None:
                 if upper_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -5866,36 +5875,36 @@ class XplorMRParserListener(ParseTreeListener):
             if CSA_RANGE_MIN <= target_value <= CSA_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {CSA_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if CSA_RANGE_MIN <= lower_limit <= CSA_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if CSA_RANGE_MIN <= upper_limit <= CSA_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if CSA_RANGE_MIN <= lower_linear_limit <= CSA_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if CSA_RANGE_MIN <= upper_linear_limit <= CSA_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -5911,9 +5920,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'harmonic'
             else:
                 self.potential = 'square'
-                self.warningMessage += "[Enum mismatch ignorable] "\
-                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'PCSA' statements. "\
-                    f"Instead, set the default potential {self.potential!r}.\n"
+                self.__f.append("[Enum mismatch ignorable] "
+                                f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'PCSA' statements. "
+                                f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Scale():
             self.scale = self.getNumber_s(ctx.number_s(0))
@@ -5921,16 +5930,16 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.scale in self.evaluate:
                     self.scale = self.evaluate[self.scale]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The scale value 'PCSA {str(ctx.Scale())} {self.scale} END' "\
-                        f"where the symbol {self.scale!r} is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The scale value 'PCSA {str(ctx.Scale())} {self.scale} END' "
+                                    f"where the symbol {self.scale!r} is not defined so that set the default value.")
                     self.scale = 1.0
             if self.scale < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The scale value 'PCSA {str(ctx.Scale())} {self.scale} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                f"The scale value 'PCSA {str(ctx.Scale())} {self.scale} END' must not be a negative value.")
             elif self.scale == 0.0:
-                self.warningMessage += "[Range value warning] "\
-                    f"The scale value 'PCSA {str(ctx.Scale())} {self.scale} END' should be a positive value.\n"
+                self.__f.append("[Range value warning] "
+                                f"The scale value 'PCSA {str(ctx.Scale())} {self.scale} END' should be a positive value.")
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -6006,9 +6015,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.potential = 'harmonic'
             else:
                 self.potential = 'square'
-                self.warningMessage += "[Enum mismatch ignorable] "\
-                    f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'PMAGnetic' statements. "\
-                    f"Instead, set the default potential {self.potential!r}.\n"
+                self.__f.append("[Enum mismatch ignorable] "
+                                f"The potential type {str(ctx.Potential_types())!r} is unknown potential type for the 'PMAGnetic' statements. "
+                                f"Instead, set the default potential {self.potential!r}.")
 
         elif ctx.Reset():
             self.potential = 'square'
@@ -6019,24 +6028,24 @@ class XplorMRParserListener(ParseTreeListener):
         elif ctx.Kconst():
             _classification = str(ctx.Simple_name())
             if _classification not in self.preParameterDict:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The classification of '{str(ctx.Kconst())}={_classification!r} {self.getNumber_s(ctx.number_s(0))}' is unknown.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The classification of '{str(ctx.Kconst())}={_classification!r} {self.getNumber_s(ctx.number_s(0))}' is unknown.")
                 return
             self.preParameterDict[_classification]['k_const'] = self.getNumber_s(ctx.number_s(0))
 
         elif ctx.Omega():
             _classification = str(ctx.Simple_name())
             if _classification not in self.preParameterDict:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The classification of '{str(ctx.Omega())}={_classification!r} {self.getNumber_s(ctx.number_s(0))}' is unknown.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The classification of '{str(ctx.Omega())}={_classification!r} {self.getNumber_s(ctx.number_s(0))}' is unknown.")
                 return
             self.preParameterDict[_classification]['omega'] = self.getNumber_s(ctx.number_s(0))
 
         elif ctx.Tauc():
             _classification = str(ctx.Simple_name())
             if _classification not in self.preParameterDict:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The classification of '{str(ctx.Tauc())}={_classification!r} {self.getNumber_s(ctx.number_s(0))}' is unknown.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The classification of '{str(ctx.Tauc())}={_classification!r} {self.getNumber_s(ctx.number_s(0))}' is unknown.")
                 return
             self.preParameterDict[_classification]['tauc'] = self.getNumber_s(ctx.number_s(0))
 
@@ -6056,7 +6065,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'pre'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#pre_assign.
     def exitPre_assign(self, ctx: XplorMRParser.Pre_assignContext):  # pylint: disable=unused-argument
@@ -6098,8 +6107,8 @@ class XplorMRParserListener(ParseTreeListener):
             atom_id = self.atomSelectionSet[1][0]['atom_id']
 
             if atom_id[0] not in protonBeginCode:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Not a proton;  {chain_id}:{seq_id}:{comp_id}:{atom_id}.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Not a proton; {chain_id}:{seq_id}:{comp_id}:{atom_id}.")
                 return
 
             if self.__createSfDict:
@@ -6135,104 +6144,104 @@ class XplorMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {PRE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' must be within range {PRE_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if PRE_ERROR_MIN <= lower_limit < PRE_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if PRE_ERROR_MIN < upper_limit <= PRE_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if PRE_ERROR_MIN <= lower_linear_limit < PRE_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if PRE_ERROR_MIN < upper_linear_limit <= PRE_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {PRE_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
 
         else:
 
             if lower_limit is not None and upper_limit is not None:
                 if lower_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if lower_linear_limit is not None and upper_limit is not None:
                 if lower_linear_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if lower_limit is not None and upper_linear_limit is not None:
                 if lower_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if lower_linear_limit is not None and upper_linear_limit is not None:
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if lower_limit is not None and lower_linear_limit is not None:
                 if lower_linear_limit > lower_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.")
 
             if upper_limit is not None and upper_linear_limit is not None:
                 if upper_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -6241,36 +6250,36 @@ class XplorMRParserListener(ParseTreeListener):
             if PRE_RANGE_MIN <= target_value <= PRE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {PRE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {PRE_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if PRE_RANGE_MIN <= lower_limit <= PRE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if PRE_RANGE_MIN <= upper_limit <= PRE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if PRE_RANGE_MIN <= lower_linear_limit <= PRE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if PRE_RANGE_MIN <= upper_linear_limit <= PRE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -6297,7 +6306,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'pcs' if self.__cur_subtype != 'hvycs' else 'hvycs'  # set 'hvycs' for error message
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#pcs_assign.
     def exitPcs_assign(self, ctx: XplorMRParser.Pcs_assignContext):  # pylint: disable=unused-argument
@@ -6415,104 +6424,104 @@ class XplorMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' must be within range {PCS_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if PCS_ERROR_MIN <= lower_limit < PCS_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if PCS_ERROR_MIN < upper_limit <= PCS_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if PCS_ERROR_MIN <= lower_linear_limit < PCS_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if PCS_ERROR_MIN < upper_linear_limit <= PCS_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
 
         else:
 
             if lower_limit is not None and upper_limit is not None:
                 if lower_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if lower_linear_limit is not None and upper_limit is not None:
                 if lower_linear_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if lower_limit is not None and upper_linear_limit is not None:
                 if lower_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if lower_linear_limit is not None and upper_linear_limit is not None:
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if lower_limit is not None and lower_linear_limit is not None:
                 if lower_linear_limit > lower_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.")
 
             if upper_limit is not None and upper_linear_limit is not None:
                 if upper_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -6521,36 +6530,36 @@ class XplorMRParserListener(ParseTreeListener):
             if PCS_RANGE_MIN <= target_value <= PCS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {PCS_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if PCS_RANGE_MIN <= lower_limit <= PCS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if PCS_RANGE_MIN <= upper_limit <= PCS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if PCS_RANGE_MIN <= lower_linear_limit <= PCS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if PCS_RANGE_MIN <= upper_linear_limit <= PCS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -6577,7 +6586,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'prdc'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#prdc_assign.
     def exitPrdc_assign(self, ctx: XplorMRParser.Prdc_assignContext):  # pylint: disable=unused-argument
@@ -6612,8 +6621,8 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('a paramagnetic RDC (XRDC)', XPLOR_ORIGIN_AXIS_COLS):
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else self.paramagCenter
@@ -6629,27 +6638,27 @@ class XplorMRParserListener(ParseTreeListener):
             atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-chain RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -6662,15 +6671,15 @@ class XplorMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found zero RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -6678,9 +6687,9 @@ class XplorMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an RDC vector over multiple covalent bonds in the 'XRDCoupling' statement; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found an RDC vector over multiple covalent bonds in the 'XRDCoupling' statement; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             if self.__createSfDict:
@@ -6725,7 +6734,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'pang'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#porientation_assign.
     def exitPorientation_assign(self, ctx: XplorMRParser.Porientation_assignContext):  # pylint: disable=unused-argument
@@ -6765,8 +6774,8 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('a paramagnetic orientation (XANG)'):
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
@@ -6780,25 +6789,25 @@ class XplorMRParserListener(ParseTreeListener):
             atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in orientation vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in orientation vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain orientation vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-chain orientation vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue orientation vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found inter-residue orientation vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -6811,15 +6820,15 @@ class XplorMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue orientation vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue orientation vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero orientation vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found zero orientation vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -6827,9 +6836,9 @@ class XplorMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an orientation vector over multiple covalent bonds in the 'XANGle' statement; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found an orientation vector over multiple covalent bonds in the 'XANGle' statement; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             if self.__createSfDict:
@@ -6882,7 +6891,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'pccr'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#pccr_assign.
     def exitPccr_assign(self, ctx: XplorMRParser.Pccr_assignContext):  # pylint: disable=unused-argument
@@ -6917,8 +6926,8 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if not self.areUniqueCoordAtoms('a paramagnetic cross-correlation rate (XCCR)'):
-                if len(self.__warningInAtomSelection) > 0:
-                    self.warningMessage += self.__warningInAtomSelection
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
                 return
 
             atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else self.paramagCenter
@@ -6934,25 +6943,25 @@ class XplorMRParserListener(ParseTreeListener):
             atom_id_2 = self.atomSelectionSet[2][0]['atom_id']
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in CCR vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in CCR vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain CCR vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-chain CCR vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue CCR vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found inter-residue CCR vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -6965,15 +6974,15 @@ class XplorMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue CCR vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue CCR vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero CCR vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found zero CCR vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -6981,9 +6990,9 @@ class XplorMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an CCR vector over multiple covalent bonds in the 'XCCR' statement; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found an CCR vector over multiple covalent bonds in the 'XCCR' statement; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             if self.__createSfDict:
@@ -7022,104 +7031,104 @@ class XplorMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' must be within range {CCR_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if CCR_ERROR_MIN <= lower_limit < CCR_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if CCR_ERROR_MIN < upper_limit <= CCR_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.")
 
         if lower_linear_limit is not None:
             if CCR_ERROR_MIN <= lower_linear_limit < CCR_ERROR_MAX:
                 dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.")
 
         if upper_linear_limit is not None:
             if CCR_ERROR_MIN < upper_linear_limit <= CCR_ERROR_MAX:
                 dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.6f}' must be within range {CCR_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if lower_linear_limit is not None:
                 if lower_linear_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
 
             if upper_linear_limit is not None:
                 if upper_linear_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper linear limit value='{upper_linear_limit:.6f}' must be greater than the target value '{target_value}'.")
 
         else:
 
             if lower_limit is not None and upper_limit is not None:
                 if lower_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if lower_linear_limit is not None and upper_limit is not None:
                 if lower_linear_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_limit:.6f}'.")
 
             if lower_limit is not None and upper_linear_limit is not None:
                 if lower_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if lower_linear_limit is not None and upper_linear_limit is not None:
                 if lower_linear_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the upper limit value '{upper_linear_limit:.6f}'.")
 
             if lower_limit is not None and lower_linear_limit is not None:
                 if lower_linear_limit > lower_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower linear limit value='{lower_linear_limit:.6f}' must be less than the lower limit value '{lower_limit:.6f}'.")
 
             if upper_limit is not None and upper_linear_limit is not None:
                 if upper_limit > upper_linear_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -7128,36 +7137,36 @@ class XplorMRParserListener(ParseTreeListener):
             if CCR_RANGE_MIN <= target_value <= CCR_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {CCR_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {CCR_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if CCR_RANGE_MIN <= lower_limit <= CCR_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if CCR_RANGE_MIN <= upper_limit <= CCR_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.")
 
         if lower_linear_limit is not None:
             if CCR_RANGE_MIN <= lower_linear_limit <= CCR_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower linear limit value='{lower_linear_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.")
 
         if upper_linear_limit is not None:
             if CCR_RANGE_MIN <= upper_linear_limit <= CCR_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -7179,7 +7188,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'hbond'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#hbond_assign.
     def exitHbond_assign(self, ctx: XplorMRParser.Hbond_assignContext):  # pylint: disable=unused-argument
@@ -7187,8 +7196,8 @@ class XplorMRParserListener(ParseTreeListener):
             return
 
         if not self.areUniqueCoordAtoms('a hydrogen bond geometry (HBDA)'):
-            if len(self.__warningInAtomSelection) > 0:
-                self.warningMessage += self.__warningInAtomSelection
+            if len(self.__g) > 0:
+                self.__f.extend(self.__g)
             return
 
         donor = self.atomSelectionSet[0][0]
@@ -7196,38 +7205,38 @@ class XplorMRParserListener(ParseTreeListener):
         acceptor = self.atomSelectionSet[2][0]
 
         if donor['chain_id'] != hydrogen['chain_id']:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "The donor atom and its hygrogen are in different chains; "\
-                f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "\
-                f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).\n"
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "The donor atom and its hygrogen are in different chains; "
+                            f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "
+                            f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
             return
 
         if donor['seq_id'] != hydrogen['seq_id']:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "The donor atom and its hygrogen are in different residues; "\
-                f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "\
-                f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).\n"
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "The donor atom and its hygrogen are in different residues; "
+                            f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "
+                            f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
             return
 
         if donor['atom_id'][0] not in ('N', 'O', 'F'):
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "The donor atom type should be one of Nitrogen, Oxygen, Fluorine; "\
-                f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}. "\
-                "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.\n"
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "The donor atom type should be one of Nitrogen, Oxygen, Fluorine; "
+                            f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}. "
+                            "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
             return
 
         if acceptor['atom_id'][0] not in ('N', 'O', 'F'):
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "The acceptor atom type should be one of Nitrogen, Oxygen, Fluorine; "\
-                f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}. "\
-                "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.\n"
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "The acceptor atom type should be one of Nitrogen, Oxygen, Fluorine; "
+                            f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}. "
+                            "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
             return
 
         if hydrogen['atom_id'][0] not in protonBeginCode:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "Not a hydrogen; "\
-                f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}. "\
-                "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.\n"
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "Not a hydrogen; "
+                            f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}. "
+                            "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
             return
 
         comp_id = donor['comp_id']
@@ -7240,10 +7249,10 @@ class XplorMRParserListener(ParseTreeListener):
             if not self.__ccU.hasBond(comp_id, atom_id_1, atom_id_2):
 
                 if self.__nefT.validate_comp_atom(comp_id, atom_id_1) and self.__nefT.validate_comp_atom(comp_id, atom_id_2):
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found a donor-hydrogen vector over multiple covalent bonds in the 'HBDA' statement; "\
-                        f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "\
-                        f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found a donor-hydrogen vector over multiple covalent bonds in the 'HBDA' statement; "
+                                    f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "
+                                    f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
                     return
 
         chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
@@ -7299,19 +7308,19 @@ class XplorMRParserListener(ParseTreeListener):
             if len(_donor) == 1 and len(_hydrogen) == 1 and len(_acceptor) == 1:
                 distance = numpy.linalg.norm(toNpArray(_hydrogen[0]) - toNpArray(_acceptor[0]))
                 if distance > 2.5:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
-                        f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
+                                    f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).")
 
                 distance = numpy.linalg.norm(toNpArray(_donor[0]) - toNpArray(_acceptor[0]))
                 if distance > 3.5:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
-                        f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
+                                    f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).")
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+XplorMRParserListener.exitHbond_assign() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+XplorMRParserListener.exitHbond_assign() ++ Error  - {str(e)}")
 
         if self.__createSfDict:
             sf = self.__getSf()
@@ -7359,7 +7368,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'hbond'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
         self.donor_columnSel = self.acceptor_columnSel = -1
 
@@ -7369,35 +7378,35 @@ class XplorMRParserListener(ParseTreeListener):
             return
 
         if not self.areUniqueCoordAtoms('a hydrogen bond database (HBDB)'):
-            if len(self.__warningInAtomSelection) > 0:
-                self.warningMessage += self.__warningInAtomSelection
+            if len(self.__g) > 0:
+                self.__f.extend(self.__g)
             return
 
         if self.donor_columnSel < 0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "The donor atom has not been selected. 'don' tag must be exist in an atom selection expression of each Hydrogen bond database (HBDB) statement. "\
-                "e.g. assign (acc and resid 2 and segid A and name O ) (don and resid 8 and segid A and name HN)\n"
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "The donor atom has not been selected. 'don' tag must be exist in an atom selection expression of each Hydrogen bond database (HBDB) statement. "
+                            "e.g. assign (acc and resid 2 and segid A and name O ) (don and resid 8 and segid A and name HN)")
             return
 
         if self.acceptor_columnSel < 0:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "The acceptor atom has not been selected. 'acc' tag must be exist in an atom selection expression of each Hydrogen bond database (HBDB) statement. "\
-                "e.g. assign (acc and resid 2 and segid A and name O ) (don and resid 8 and segid A and name HN)\n"
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "The acceptor atom has not been selected. 'acc' tag must be exist in an atom selection expression of each Hydrogen bond database (HBDB) statement. "
+                            "e.g. assign (acc and resid 2 and segid A and name O ) (don and resid 8 and segid A and name HN)")
             return
 
         acceptor = self.atomSelectionSet[self.acceptor_columnSel][0]
         donor = self.atomSelectionSet[self.donor_columnSel][0]
 
         if acceptor['atom_id'][0] not in ('N', 'O', 'F'):
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "The acceptor atom type should be one of Nitrogen, Oxygen, Fluorine; "\
-                f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}.\n"
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "The acceptor atom type should be one of Nitrogen, Oxygen, Fluorine; "
+                            f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}.")
             return
 
         if donor['atom_id'][0] not in protonBeginCode:
-            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                "The donor atom type should be Hydrogen; "\
-                f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}.\n"
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "The donor atom type should be Hydrogen; "
+                            f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}.")
             return
 
         chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
@@ -7437,13 +7446,13 @@ class XplorMRParserListener(ParseTreeListener):
             if len(_hydrogen) == 1 and len(_acceptor) == 1:
                 distance = numpy.linalg.norm(toNpArray(_hydrogen[0]) - toNpArray(_acceptor[0]))
                 if distance > 2.5:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
-                        f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
+                                    f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).")
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+XplorMRParserListener.exitHbond_db_assign() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+XplorMRParserListener.exitHbond_db_assign() ++ Error  - {str(e)}")
 
         if self.__createSfDict:
             sf = self.__getSf()
@@ -7494,7 +7503,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'geo'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
         if ctx.Sigb():
             self.ncsSigb = self.getNumber_s(ctx.number_s())
@@ -7502,13 +7511,13 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.ncsSigb in self.evaluate:
                     self.ncsSigb = self.evaluate[self.ncsSigb]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.ncsSigb} END' "\
-                        f"where the symbol {self.ncsSigb!r} is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.ncsSigb} END' "
+                                    f"where the symbol {self.ncsSigb!r} is not defined so that set the default value.")
                     self.ncsSigb = 2.0
             if self.ncsSigb <= 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.ncsSigb} END' must be a positive value.\n"
+                self.__f.append("[Invalid data] "
+                                f"The B-factor value 'GROUP {str(ctx.Sigb())}={self.ncsSigb} END' must be a positive value.")
 
         elif ctx.Weight():
             self.ncsWeight = self.getNumber_s(ctx.number_s())
@@ -7516,16 +7525,16 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.ncsWeight in self.evaluate:
                     self.ncsWeight = self.evaluate[self.ncsWeight]
                 else:
-                    self.warningMessage += "[Unsupported data] "\
-                        f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' "\
-                        f"where the symbol {self.ncsWeight!r} is not defined so that set the default value.\n"
+                    self.__f.append("[Unsupported data] "
+                                    f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' "
+                                    f"where the symbol {self.ncsWeight!r} is not defined so that set the default value.")
                     self.ncsWeight = 300.0
             if self.ncsWeight < 0.0:
-                self.warningMessage += "[Invalid data] "\
-                    f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' must not be a negative value.\n"
+                self.__f.append("[Invalid data] "
+                                f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' must not be a negative value.")
             elif self.ncsWeight == 0.0:
-                self.warningMessage += "[Range value warning] "\
-                    f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' should be a positive value.\n"
+                self.__f.append("[Range value warning] "
+                                f"The weight value 'GROUP {str(ctx.Weight())}={self.ncsWeight} END' should be a positive value.")
 
     # Exit a parse tree produced by XplorMRParser#ncs_group_statement.
     def exitNcs_group_statement(self, ctx: XplorMRParser.Ncs_group_statementContext):  # pylint: disable=unused-argument
@@ -7735,13 +7744,13 @@ class XplorMRParserListener(ParseTreeListener):
             if self.inVector3D_columnSel == 0:
                 self.inVector3D_tail = atomSelection[0]
                 if len(atomSelection) > 1:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Ambiguous atoms have been selected to create a 3d-vector in the 'tail' clause.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Ambiguous atoms have been selected to create a 3d-vector in the 'tail' clause.")
             else:
                 self.inVector3D_head = atomSelection[0]
                 if len(atomSelection) > 1:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Ambiguous atoms have been selected to create a 3d-vector in the 'head' clause.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Ambiguous atoms have been selected to create a 3d-vector in the 'head' clause.")
 
         else:
             self.atomSelectionSet.append(atomSelection)
@@ -7943,7 +7952,7 @@ class XplorMRParserListener(ParseTreeListener):
         if key in self.__cachedDictForFactor:
             return copy.deepcopy(self.__cachedDictForFactor[key])
 
-        len_warn_msg = len(self.warningMessage)
+        len_warn_msg = len(self.__f)
 
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
             if self.__largeModel:
@@ -8445,8 +8454,9 @@ class XplorMRParserListener(ParseTreeListener):
 
         atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
+        valid = len(self.__f) == len_warn_msg
+
         if 'alt_chain_id' in _factor:
-            valid = len(self.warningMessage) == len_warn_msg
             for _atom in atomSelection:
                 self.updateSegmentIdDict(_factor, _atom['chain_id'], valid)
 
@@ -8476,11 +8486,11 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__cur_subtype != 'plane':
                     if cifCheck:
                         if self.__cur_union_expr:
-                            self.__warningInAtomSelection += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                                f"The {clauseName} has no effect for a factor {__factor}.\n"
+                            self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                            f"The {clauseName} has no effect for a factor {__factor}.")
                         else:
-                            self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                                f"The {clauseName} has no effect for a factor {__factor}.\n"
+                            self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                            f"The {clauseName} has no effect for a factor {__factor}.")
                             self.__preferAuthSeq = not self.__preferAuthSeq
                             self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                             self.__setLocalSeqScheme()
@@ -8490,14 +8500,14 @@ class XplorMRParserListener(ParseTreeListener):
                             #         self.reasonsForReParsing['label_seq_scheme'] = True
                             # """
                     else:
-                        self.__warningInAtomSelection += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            f"The {clauseName} has no effect for a factor {__factor}. "\
-                            "Please update the sequence in the Macromolecules page.\n"
+                        self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        f"The {clauseName} has no effect for a factor {__factor}. "
+                                        "Please update the sequence in the Macromolecules page.")
                 else:
                     hint = f" Please verify that the planality restraints match with the residue {_factor['comp_id'][0]!r}"\
                         if 'comp_id' in _factor and len(_factor['comp_id']) == 1 else ''
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        f"The {clauseName} has no effect for a factor {__factor}.{hint}\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    f"The {clauseName} has no effect for a factor {__factor}.{hint}")
 
         if 'chain_id' in _factor:
             del _factor['chain_id']
@@ -8514,7 +8524,7 @@ class XplorMRParserListener(ParseTreeListener):
         if 'alt_atom_id' in _factor:
             del _factor['alt_atom_id']
 
-        if ambigAtomSelect or len(self.warningMessage) == len_warn_msg:
+        if ambigAtomSelect or valid:
             if key not in self.__cachedDictForFactor:
                 self.__cachedDictForFactor[key] = copy.deepcopy(_factor)
 
@@ -8929,9 +8939,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                             checked = True
                                                             if len(origAtomId) == 1:
                                                                 _atomSelection[-1]['hydrogen_not_instantiated'] = True
-                                                                self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "\
-                                                                    "Please re-upload the model file.\n"
+                                                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "
+                                                                                "Please re-upload the model file.")
                                                 if not checked and not self.__cur_union_expr:
                                                     if chainId in LARGE_ASYM_ID:
                                                         if isPolySeq and not self.__preferAuthSeq\
@@ -8944,13 +8954,14 @@ class XplorMRParserListener(ParseTreeListener):
                                                             if offset != 0:
                                                                 self.reasonsForReParsing['label_seq_scheme'] = True
                                                         if seqId < 1 and len(self.__polySeq) == 1:
-                                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "\
-                                                                f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
-                                                                "Please update the sequence in the Macromolecules page.\n"
+                                                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "
+                                                                            f"The residue number '{seqId}' is not present "
+                                                                            f"in polymer sequence of chain {chainId} of the coordinates. "
+                                                                            "Please update the sequence in the Macromolecules page.")
                                                         else:
-                                                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                                                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
                                         if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == ps['auth_seq_id'][0]:
                                             if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in atomSiteAtomId)
@@ -8973,13 +8984,13 @@ class XplorMRParserListener(ParseTreeListener):
                                            and not self.__cur_union_expr:
                                             if chainId in LARGE_ASYM_ID:
                                                 if seqId < 1 and len(self.__polySeq) == 1:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "\
-                                                        f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
-                                                        "Please update the sequence in the Macromolecules page.\n"
+                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "
+                                                                    f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                                    "Please update the sequence in the Macromolecules page.")
                                                 elif seqSpecified:
-                                                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                                        f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.\n"
+                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
 
         return foundCompId
 
@@ -9286,8 +9297,8 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            f"The {clauseName!r} clause has no effect.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        f"The {clauseName!r} clause has no effect.")
 
                     else:
                         if 'chain_id' in self.factor:
@@ -9315,7 +9326,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                 except Exception as e:
                     if self.__verbose:
-                        self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+                        self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
             elif ctx.Around() or ctx.Saround():
                 clauseName = 'around' if ctx.Around() else 'saround'
@@ -9384,7 +9395,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                         except Exception as e:
                             if self.__verbose:
-                                self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+                                self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
                     if ctx.Saround():
                         identity = numpy.identity(3, dtype=float)
@@ -9455,15 +9466,15 @@ class XplorMRParserListener(ParseTreeListener):
 
                                     except Exception as e:
                                         if self.__verbose:
-                                            self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+                                            self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
                     if len(self.factor['atom_selection']) > 0:
                         self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
 
                         if len(self.factor['atom_selection']) == 0:
                             self.factor['atom_id'] = [None]
-                            self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                                f"The {clauseName!r} clause has no effect.\n"
+                            self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                            f"The {clauseName!r} clause has no effect.")
 
             elif ctx.Atom():
                 if self.__sel_expr_debug:
@@ -9501,9 +9512,9 @@ class XplorMRParserListener(ParseTreeListener):
                         self.factor['auth_chain_id'] = chainId
                     elif self.__reasons is not None:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Couldn't specify segment name "\
-                            f"'{chainId}' the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Couldn't specify segment name "
+                                        f"'{chainId}' the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError
                     else:
                         if 'segment_id_mismatch' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['segment_id_mismatch'] = {}
@@ -9674,9 +9685,9 @@ class XplorMRParserListener(ParseTreeListener):
                         or attr_prop.startswith('ycom')\
                         or attr_prop.startswith('zcom'):  # BCOMP, QCOMP, XCOMP, YCOMP, ZCOM`
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        f"The attribute property {_attr_prop!r} "\
-                        "requires a comparison coordinate set.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    f"The attribute property {_attr_prop!r} "
+                                    "requires a comparison coordinate set.")
                     validProp = False
 
                 elif attr_prop.startswith('char'):  # CAHRGE
@@ -9713,16 +9724,16 @@ class XplorMRParserListener(ParseTreeListener):
 
                 elif attr_prop in ('dx', 'dy', 'dz', 'harm'):
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        f"The attribute property {_attr_prop!r} "\
-                        "related to atomic force of each atom is not possessed in the static coordinate file.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    f"The attribute property {_attr_prop!r} "
+                                    "related to atomic force of each atom is not possessed in the static coordinate file.")
                     validProp = False
 
                 elif attr_prop.startswith('fbet'):  # FBETA
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        f"The attribute property {_attr_prop!r} "\
-                        "related to the Langevin dynamics (nonzero friction coefficient) is not possessed in the static coordinate file.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    f"The attribute property {_attr_prop!r} "
+                                    "related to the Langevin dynamics (nonzero friction coefficient) is not possessed in the static coordinate file.")
                     validProp = False
 
                 elif attr_prop == 'mass':
@@ -9789,16 +9800,16 @@ class XplorMRParserListener(ParseTreeListener):
 
                 elif attr_prop in ('refx', 'refy', 'refz', 'rmsd'):
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        f"The attribute property {_attr_prop!r} "\
-                        "requires a reference coordinate set.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    f"The attribute property {_attr_prop!r} "
+                                    "requires a reference coordinate set.")
                     validProp = False
 
                 elif attr_prop in ('vx', 'vy', 'vz'):
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        f"The attribute property {_attr_prop!r} "\
-                        "related to current velocities of each atom is not possessed in the static coordinate file.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    f"The attribute property {_attr_prop!r} "
+                                    "related to current velocities of each atom is not possessed in the static coordinate file.")
                     validProp = False
 
                 elif attr_prop in ('x', 'y', 'z'):
@@ -9837,16 +9848,16 @@ class XplorMRParserListener(ParseTreeListener):
                     store_id = int(attr_prop[-1])
                     self.factor['atom_id'] = [None]
                     if len(self.storeSet[store_id]) == 0:
-                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                            f"The 'store{store_id}' clause has no effect "\
-                            "because the internal vector statement is not set.\n"
+                        self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                        f"The 'store{store_id}' clause has no effect "
+                                        "because the internal vector statement is not set.")
                         validProp = False
 
                 if validProp and 'atom_selection' in self.factor and len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]
                     _absolute = ' abs' if absolute else ''
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        f"The 'attribute' clause ('{_attr_prop}{_absolute} {opCode} {attr_value}') has no effect.\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    f"The 'attribute' clause ('{_attr_prop}{_absolute} {opCode} {attr_value}') has no effect.")
 
             elif ctx.BondedTo():
                 if self.__sel_expr_debug:
@@ -10034,13 +10045,13 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            "The 'bondedto' clause has no effect.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        "The 'bondedto' clause has no effect.")
 
                 else:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        "The 'bondedto' clause has no effect because no atom is selected.\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    "The 'bondedto' clause has no effect because no atom is selected.")
 
             elif ctx.ByGroup():
                 if self.__sel_expr_debug:
@@ -10134,15 +10145,15 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if len(atomSelection) <= len(self.factor['atom_selection']):
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            "The 'bygroup' clause has no effect.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        "The 'bygroup' clause has no effect.")
 
                     self.factor['atom_selection'] = atomSelection
 
                 else:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        "The 'bygroup' clause has no effect because no atom is selected.\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    "The 'bygroup' clause has no effect because no atom is selected.")
 
             elif ctx.ByRes():
                 if self.__sel_expr_debug:
@@ -10201,13 +10212,13 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            "The 'byres' clause has no effect.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        "The 'byres' clause has no effect.")
 
                 else:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        "The 'byres' clause has no effect because no atom is selected.\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    "The 'byres' clause has no effect because no atom is selected.")
 
             elif ctx.Chemical():
                 if self.__sel_expr_debug:
@@ -10236,8 +10247,8 @@ class XplorMRParserListener(ParseTreeListener):
                         else:
                             self.factor['type_symbol'] = [val]
                     else:
-                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                            f"The symbol {symbol_name!r} is not defined.\n"
+                        self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                        f"The symbol {symbol_name!r} is not defined.")
 
                 self.consumeFactor_expressions("'chemical' clause", False)
 
@@ -10264,9 +10275,9 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> id")
                 self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    "The 'id' clause has no effect "\
-                    "because the internal atom number is not included in the coordinate file.\n"
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                "The 'id' clause has no effect "
+                                "because the internal atom number is not included in the coordinate file.")
 
             elif ctx.Name():
                 if self.__sel_expr_debug:
@@ -10317,8 +10328,8 @@ class XplorMRParserListener(ParseTreeListener):
                         else:
                             self.factor['atom_id'] = [val]
                     else:
-                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                            f"The symbol {symbol_name!r} is not defined.\n"
+                        self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                        f"The symbol {symbol_name!r} is not defined.")
 
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor and __factor['atom_id'][0] is not None:
@@ -10337,8 +10348,8 @@ class XplorMRParserListener(ParseTreeListener):
                             if 'atom_selection' in __factor:
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
-                            self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                                f"The 'name' clause has no effect for a conjunction of factor {__factor} and {_factor}.\n"
+                            self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                            f"The 'name' clause has no effect for a conjunction of factor {__factor} and {_factor}.")
 
             elif ctx.Not_op():
                 if self.__sel_expr_debug:
@@ -10362,13 +10373,13 @@ class XplorMRParserListener(ParseTreeListener):
                         self.factor['atom_selection'] = _refAtomSelection
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            "The 'not' clause has no effect.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        "The 'not' clause has no effect.")
 
                 elif 'atom_selection' not in self.factor:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        "The 'not' clause has no effect.\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    "The 'not' clause has no effect.")
 
                 else:
 
@@ -10385,15 +10396,15 @@ class XplorMRParserListener(ParseTreeListener):
 
                     except Exception as e:
                         if self.__verbose:
-                            self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+                            self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
                     _refAtomSelection = [atom for atom in self.factor['atom_selection'] if atom in _atomSelection]
                     self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            "The 'not' clause has no effect.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        "The 'not' clause has no effect.")
 
             elif ctx.Point():
                 if self.__sel_expr_debug:
@@ -10444,7 +10455,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                         except Exception as e:
                             if self.__verbose:
-                                self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+                                self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
                     self.inVector3D_tail = self.inVector3D_head = None
                     if len(self.numberFSelection) == 0 or None in self.numberFSelection:
@@ -10459,8 +10470,8 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if self.vector3D is None:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        "The 'point' clause has no effect because no 3d-vector is specified.\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    "The 'point' clause has no effect because no 3d-vector is specified.")
 
                 else:
                     atomSelection = []
@@ -10496,14 +10507,14 @@ class XplorMRParserListener(ParseTreeListener):
 
                     except Exception as e:
                         if self.__verbose:
-                            self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+                            self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
                     self.factor['atom_selection'] = atomSelection
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
-                        self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                            "The 'cut' clause has no effect.\n"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        "The 'cut' clause has no effect.")
 
                 self.inVector3D = False
                 self.vector3D = None
@@ -10512,9 +10523,9 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> previous")
                 self.factor['atom_id'] = [None]
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    "The 'previous' clause has no effect "\
-                    "because the internal atom selection is fragile in the restraint file.\n"
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                "The 'previous' clause has no effect "
+                                "because the internal atom selection is fragile in the restraint file.")
 
             elif ctx.Pseudo():
                 if self.__sel_expr_debug:
@@ -10550,14 +10561,14 @@ class XplorMRParserListener(ParseTreeListener):
 
                 except Exception as e:
                     if self.__verbose:
-                        self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+                        self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
                 self.intersectionFactor_expressions(atomSelection)
 
                 if len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        "The 'pseudo' clause has no effect.\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    "The 'pseudo' clause has no effect.")
 
             elif ctx.Residue():
                 if self.__sel_expr_debug:
@@ -10593,8 +10604,8 @@ class XplorMRParserListener(ParseTreeListener):
                         else:
                             self.factor['seq_id'] = [val if isinstance(val, int) else int(val)]
                     else:
-                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                            f"The symbol {symbol_name!r} is not defined.\n"
+                        self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                        f"The symbol {symbol_name!r} is not defined.")
 
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
@@ -10613,8 +10624,8 @@ class XplorMRParserListener(ParseTreeListener):
                             if 'atom_selection' in __factor:
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
-                            self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                                f"The 'residue' clause has no effect for a conjunction of factor {__factor} and {_factor}.\n"
+                            self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                            f"The 'residue' clause has no effect for a conjunction of factor {__factor} and {_factor}.")
 
             elif ctx.Resname():
                 if self.__sel_expr_debug:
@@ -10650,8 +10661,8 @@ class XplorMRParserListener(ParseTreeListener):
                         else:
                             self.factor['comp_id'] = [val]
                     else:
-                        self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                            f"The symbol {symbol_name!r} is not defined.\n"
+                        self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                        f"The symbol {symbol_name!r} is not defined.")
 
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
@@ -10670,8 +10681,8 @@ class XplorMRParserListener(ParseTreeListener):
                             if 'atom_selection' in __factor:
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
-                            self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                                f"The 'resname' clause has no effect for a conjunction of factor {__factor} and {_factor}.\n"
+                            self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                            f"The 'resname' clause has no effect for a conjunction of factor {__factor} and {_factor}.")
 
             elif ctx.SegIdentifier():
                 if self.__sel_expr_debug:
@@ -10712,8 +10723,8 @@ class XplorMRParserListener(ParseTreeListener):
                             self.factor['auth_chain_id'] = [begChainId, endChainId]
                         else:
                             self.factor['atom_id'] = [None]
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                f"Couldn't specify segment name {begChainId:!r}:{endChainId:!r} in the coordinates.\n"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            f"Couldn't specify segment name {begChainId:!r}:{endChainId:!r} in the coordinates.")
 
                 else:
                     if ctx.Simple_name(0) or ctx.Double_quote_string(0):
@@ -10755,17 +10766,17 @@ class XplorMRParserListener(ParseTreeListener):
                             else:
                                 self.factor['chain_id'] = [val]
                         else:
-                            self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                                f"The symbol {symbol_name!r} is not defined.\n"
+                            self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                            f"The symbol {symbol_name!r} is not defined.")
                     if len(self.factor['chain_id']) == 0:
                         if len(self.__polySeq) == 1:
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']
                             self.factor['auth_chain_id'] = chainId
                         elif self.__reasons is not None:
                             self.factor['atom_id'] = [None]
-                            self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                                "Couldn't specify segment name "\
-                                f"'{chainId}' in the coordinates.\n"  # do not use 'chainId!r' expression, '%' code throws ValueError
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            "Couldn't specify segment name "
+                                            f"'{chainId}' in the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError
                         else:
                             if 'segment_id_mismatch' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['segment_id_mismatch'] = {}
@@ -10792,17 +10803,17 @@ class XplorMRParserListener(ParseTreeListener):
                             if 'atom_selection' in __factor:
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
-                            self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                                f"The 'segidentifier' clause has no effect for a conjunction of factor {__factor} and {_factor}.\n"
+                            self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                            f"The 'segidentifier' clause has no effect for a conjunction of factor {__factor} and {_factor}.")
 
             elif ctx.Store1():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> store1")
                 if len(self.storeSet[1]) == 0:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        "The 'store1' clause has no effect "\
-                        "because the internal vector statement is not set.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    "The 'store1' clause has no effect "
+                                    "because the internal vector statement is not set.")
                 else:
                     self.factor = copy.copy(self.storeSet[1])
 
@@ -10811,9 +10822,9 @@ class XplorMRParserListener(ParseTreeListener):
                     print("  " * self.depth + "--> store2")
                 if len(self.storeSet[2]) == 0:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        "The 'store2' clause has no effect "\
-                        "because the internal vector statement is not set.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    "The 'store2' clause has no effect "
+                                    "because the internal vector statement is not set.")
                 else:
                     self.factor = copy.copy(self.storeSet[2])
 
@@ -10822,9 +10833,9 @@ class XplorMRParserListener(ParseTreeListener):
                     print("  " * self.depth + "--> store3")
                 if len(self.storeSet[3]) == 0:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        "The 'store3' clause has no effect "\
-                        "because the internal vector statement is not set.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    "The 'store3' clause has no effect "
+                                    "because the internal vector statement is not set.")
                 else:
                     self.factor = copy.copy(self.storeSet[3])
 
@@ -10833,9 +10844,9 @@ class XplorMRParserListener(ParseTreeListener):
                     print("  " * self.depth + "--> store4")
                 if len(self.storeSet[4]) == 0:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        "The 'store4' clause has no effect "\
-                        "because the internal vector statement is not set.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    "The 'store4' clause has no effect "
+                                    "because the internal vector statement is not set.")
                 else:
                     self.factor = copy.copy(self.storeSet[4])
 
@@ -10844,9 +10855,9 @@ class XplorMRParserListener(ParseTreeListener):
                     print("  " * self.depth + "--> store5")
                 if len(self.storeSet[5]) == 0:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        "The 'store5' clause has no effect "\
-                        "because the internal vector statement is not set.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    "The 'store5' clause has no effect "
+                                    "because the internal vector statement is not set.")
                 else:
                     self.factor = copy.copy(self.storeSet[5])
 
@@ -10855,9 +10866,9 @@ class XplorMRParserListener(ParseTreeListener):
                     print("  " * self.depth + "--> store6")
                 if len(self.storeSet[6]) == 0:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        "The 'store6' clause has no effect "\
-                        "because the internal vector statement is not set.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    "The 'store6' clause has no effect "
+                                    "because the internal vector statement is not set.")
                 else:
                     self.factor = copy.copy(self.storeSet[6])
 
@@ -10866,9 +10877,9 @@ class XplorMRParserListener(ParseTreeListener):
                     print("  " * self.depth + "--> store7")
                 if len(self.storeSet[7]) == 0:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        "The 'store7' clause has no effect "\
-                        "because the internal vector statement is not set.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    "The 'store7' clause has no effect "
+                                    "because the internal vector statement is not set.")
                 else:
                     self.factor = copy.copy(self.storeSet[7])
 
@@ -10877,9 +10888,9 @@ class XplorMRParserListener(ParseTreeListener):
                     print("  " * self.depth + "--> store8")
                 if len(self.storeSet[8]) == 0:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        "The 'store8' clause has no effect "\
-                        "because the internal vector statement is not set.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    "The 'store8' clause has no effect "
+                                    "because the internal vector statement is not set.")
                 else:
                     self.factor = copy.copy(self.storeSet[8])
 
@@ -10888,9 +10899,9 @@ class XplorMRParserListener(ParseTreeListener):
                     print("  " * self.depth + "--> store9")
                 if len(self.storeSet[9]) == 0:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                        "The 'store9' clause has no effect "\
-                        "because the internal vector statement is not set.\n"
+                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                    "The 'store9' clause has no effect "
+                                    "because the internal vector statement is not set.")
                 else:
                     self.factor = copy.copy(self.storeSet[9])
 
@@ -10924,14 +10935,14 @@ class XplorMRParserListener(ParseTreeListener):
 
                 except Exception as e:
                     if self.__verbose:
-                        self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}\n")
+                        self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
                 self.intersectionFactor_expressions(atomSelection)
 
                 if len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]
-                    self.warningMessage += f"[Insufficient atom selection] {self.__getCurrentRestraint()}"\
-                        "The 'tag' clause has no effect.\n"
+                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                    "The 'tag' clause has no effect.")
 
             elif ctx.Donor():
                 self.donor_columnSel = len(self.atomSelectionSet)
@@ -10964,8 +10975,8 @@ class XplorMRParserListener(ParseTreeListener):
             if symbol_name in self.evaluate:
                 self.numberSelection.append(float(self.evaluate[symbol_name]))
             else:
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    f"The symbol {symbol_name!r} is not defined.\n"
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                f"The symbol {symbol_name!r} is not defined.")
                 self.numberSelection.append(None)
 
         else:
@@ -11089,7 +11100,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.stackVflc = []
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#vector_statement.
     def exitVector_statement(self, ctx: XplorMRParser.Vector_statementContext):  # pylint: disable=unused-argument
@@ -11162,8 +11173,8 @@ class XplorMRParserListener(ParseTreeListener):
             elif symbol_name in self.evaluateFor:
                 self.stackVflc.append(self.evaluateFor[symbol_name])
             else:
-                self.warningMessage += f"[Unsupported data] {self.__getCurrentRestraint()}"\
-                    f"The symbol {symbol_name!r} is not defined.\n"
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                f"The symbol {symbol_name!r} is not defined.")
         elif ctx.Atom_properties_VE():
             pass
         elif ctx.vector_func_call():
@@ -11271,7 +11282,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'geo'
 
         self.atomSelectionSet.clear()
-        self.__warningInAtomSelection = ''
+        self.__g.clear()
 
     # Exit a parse tree produced by XplorMRParser#patch_statement.
     def exitPatch_statement(self, ctx: XplorMRParser.Patch_statementContext):  # pylint: disable=unused-argument

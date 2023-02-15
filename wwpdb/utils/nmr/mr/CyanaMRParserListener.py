@@ -8,9 +8,9 @@
     @author: Masashi Yokochi
 """
 import sys
+import re
 import itertools
 import numpy
-import re
 import copy
 import collections
 
@@ -303,7 +303,8 @@ class CyanaMRParserListener(ParseTreeListener):
     # collection of general atom name extended with ambig code
     genAtomNameSelection = []
 
-    warningMessage = ''
+    __f = None
+    warningMessage = None
 
     reasonsForReParsing = {}
 
@@ -405,14 +406,14 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if upl_or_lol not in (None, 'upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl'):
             msg = f"The argument 'upl_or_lol' must be one of {(None, 'upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl')}"
-            log.write(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}\n")
+            log.write(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}")
             raise ValueError(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}")
 
         self.__file_ext = file_ext
 
         if file_ext not in CYANA_MR_FILE_EXTS:
             msg = f"The argument 'file_ext' must be one of {CYANA_MR_FILE_EXTS}"
-            log.write(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}\n")
+            log.write(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}")
             raise ValueError(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}")
 
         if upl_or_lol is None and file_ext is not None:
@@ -465,6 +466,7 @@ class CyanaMRParserListener(ParseTreeListener):
     def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
         self.__chainNumberDict = {}
         self.__polySeqRst = []
+        self.__f = []
 
     # Exit a parse tree produced by CyanaMRParser#cyana_mr.
     def exitCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
@@ -477,7 +479,9 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
-                self.warningMessage += message
+                self.__f.extend(message)
+
+            self.warningMessage = '\n'.join(self.__f)
 
             if self.__chainAssign is not None:
 
@@ -626,11 +630,10 @@ class CyanaMRParserListener(ParseTreeListener):
         if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
             del self.reasonsForReParsing['seq_id_remap']
 
-        if len(self.warningMessage) == 0:
+        if len(self.__f) == 0:
             self.warningMessage = None
         else:
-            self.warningMessage = self.warningMessage[0:-1]
-            self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
+            self.warningMessage = '\n'.join(set(self.__f))
 
         if self.__remediate:
             if self.__dihed_lb_greater_than_ub and self.__dihed_ub_always_positive:
@@ -744,12 +747,12 @@ class CyanaMRParserListener(ParseTreeListener):
                         has_square = True
 
                 if weight < 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must not be a negative value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{weight}' must not be a negative value.")
                     return
                 if weight == 0.0:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' should be a positive value.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{weight}' should be a positive value.")
 
                 if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered:
                     if value > self.__max_dist_value:
@@ -1062,12 +1065,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     error = abs(self.numberSelection[1])
 
                 if weight < 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must not be a negative value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{weight}' must not be a negative value.")
                     return
                 if weight == 0.0:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' should be a positive value.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{weight}' should be a positive value.")
 
                 target_value = target
                 lower_limit = target - error if error is not None else None
@@ -1109,25 +1112,25 @@ class CyanaMRParserListener(ParseTreeListener):
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                 if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Non-magnetic susceptible spin appears in scalar coupling constant; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Non-magnetic susceptible spin appears in scalar coupling constant; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 if chain_id_1 != chain_id_2:
                     ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                     ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                     if ps1 is None and ps2 is None:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"Found inter-chain scalar coupling constant; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-chain scalar coupling constant; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-residue scalar coupling constant; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue scalar coupling constant; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 elif abs(seq_id_1 - seq_id_2) == 1:
@@ -1140,15 +1143,15 @@ class CyanaMRParserListener(ParseTreeListener):
                         pass
 
                     else:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found inter-residue scalar coupling constant; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-residue scalar coupling constant; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif atom_id_1 == atom_id_2:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found zero scalar coupling constant; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found zero scalar coupling constant; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 if self.__createSfDict:
@@ -1237,12 +1240,12 @@ class CyanaMRParserListener(ParseTreeListener):
                         has_square = True
 
                 if weight < 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must not be a negative value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{weight}' must not be a negative value.")
                     return
                 if weight == 0.0:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' should be a positive value.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{weight}' should be a positive value.")
 
                 if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered:
                     if value > self.__max_dist_value:
@@ -1555,12 +1558,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     error = abs(self.numberSelection[1])
 
                 if weight < 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must not be a negative value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{weight}' must not be a negative value.")
                     return
                 if weight == 0.0:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' should be a positive value.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{weight}' should be a positive value.")
 
                 target_value = target
                 lower_limit = target - error if error is not None else None
@@ -1602,25 +1605,25 @@ class CyanaMRParserListener(ParseTreeListener):
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
                 if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Non-magnetic susceptible spin appears in scalar coupling constant; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                        f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Non-magnetic susceptible spin appears in scalar coupling constant; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 if chain_id_1 != chain_id_2:
                     ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                     ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                     if ps1 is None and ps2 is None:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            f"Found inter-chain scalar coupling constant; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-chain scalar coupling constant; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-residue scalar coupling constant; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue scalar coupling constant; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 elif abs(seq_id_1 - seq_id_2) == 1:
@@ -1633,15 +1636,15 @@ class CyanaMRParserListener(ParseTreeListener):
                         pass
 
                     else:
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found inter-residue scalar coupling constant; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-residue scalar coupling constant; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
                 elif atom_id_1 == atom_id_2:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found zero scalar coupling constant; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found zero scalar coupling constant; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
                 if self.__createSfDict:
@@ -1705,13 +1708,13 @@ class CyanaMRParserListener(ParseTreeListener):
                     if 'upl' in (self.__file_ext, self.__cur_dist_type) or 'lol' in (self.__file_ext, self.__cur_dist_type):
                         dstFunc['target_value'] = f"{target_value:.3f}"
                     else:
-                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                            f"The target value='{target_value:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                        self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                        f"The target value='{target_value:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                         target_value = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The target value='{target_value:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The target value='{target_value:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if DIST_ERROR_MIN <= lower_limit < DIST_ERROR_MAX:
@@ -1721,13 +1724,13 @@ class CyanaMRParserListener(ParseTreeListener):
                     if 'lol' in (self.__file_ext, self.__cur_dist_type):
                         dstFunc['lower_limit'] = f"{lower_limit:.3f}"
                     else:
-                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                            f"The lower limit value='{lower_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                        self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                        f"The lower limit value='{lower_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                         lower_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX or (upper_limit == 0.0 and self.__allowZeroUpperLimit):
@@ -1737,35 +1740,35 @@ class CyanaMRParserListener(ParseTreeListener):
                     if 'upl' in (self.__file_ext, self.__cur_dist_type):
                         dstFunc['upper_limit'] = f"{upper_limit:.3f}"
                     else:
-                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                            f"The upper limit value='{upper_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                        self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                        f"The upper limit value='{upper_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                         upper_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value:.3f}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be greater than the target value '{target_value:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.3f}' must be greater than the target value '{target_value:.3f}'.")
 
         else:
 
             if lower_limit is not None and upper_limit is not None:
                 if lower_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.")
 
         if not validRange:
             return None
@@ -1774,22 +1777,22 @@ class CyanaMRParserListener(ParseTreeListener):
             if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -1814,14 +1817,14 @@ class CyanaMRParserListener(ParseTreeListener):
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit}' must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit}' must be greater than the target value '{target_value}'.")
 
         if not validRange:
             return None
@@ -1935,8 +1938,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainAssign.add((chainId, seqId, cifCompId, True))
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
-                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
@@ -2034,8 +2037,8 @@ class CyanaMRParserListener(ParseTreeListener):
                             chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
-                            #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
 
             if self.__hasNonPolySeq:
@@ -2077,8 +2080,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainAssign.add((chainId, _seqId, cifCompId, True))
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
-                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
 
         if len(chainAssign) == 0:
@@ -2117,8 +2120,8 @@ class CyanaMRParserListener(ParseTreeListener):
                             self.__setLocalSeqScheme()
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
-                            #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
 
         if len(chainAssign) == 0:
@@ -2126,13 +2129,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequence(seqId, compId, 'H1')
             if seqId < 1 and len(self.__polySeq) == 1:
-                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "\
-                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "\
-                    "Please update the sequence in the Macromolecules page.\n"
+                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
+                                f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "
+                                "Please update the sequence in the Macromolecules page.")
             else:
-                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.\n"
+                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
 
         return list(chainAssign)
 
@@ -2237,8 +2240,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
-                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
@@ -2351,8 +2354,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                 self.__chainNumberDict[refChainId] = chainId
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
-                            #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                            #             f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
 
             if self.__hasNonPolySeq:
@@ -2412,8 +2415,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
-                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
 
         if len(chainAssign) == 0:
@@ -2460,8 +2463,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                 self.__chainNumberDict[refChainId] = chainId
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
-                            #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint()}"\
-                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
 
         if len(chainAssign) == 0:
@@ -2469,18 +2472,18 @@ class CyanaMRParserListener(ParseTreeListener):
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequenceWithChainId(refChainId, seqId, compId, 'H1')
             if compId == 'AMB' and (('-' in atomId and ':' in atomId) or '.' in atomId):
-                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "\
-                    "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the CYANA restraint file.\n"
+                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
+                                "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the CYANA restraint file.")
             else:
                 if seqId < 1 and len(self.__polySeq) == 1:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "\
-                        f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "\
-                        "Please update the sequence in the Macromolecules page.\n"
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
                 else:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.\n"
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
 
         elif any(ca for ca in chainAssign if ca[0] == refChainId) and any(ca for ca in chainAssign if ca[0] != refChainId):
             _chainAssign = copy.copy(chainAssign)
@@ -2655,18 +2658,18 @@ class CyanaMRParserListener(ParseTreeListener):
                 if atomId is not None and atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1')
             if atomId is not None and (('-' in atomId and ':' in atomId) or '.' in atomId):
-                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId}:{atomId} is not present in the coordinates. "\
-                    "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the CYANA restraint file.\n"
+                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                f"{_seqId}:{atomId} is not present in the coordinates. "
+                                "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the CYANA restraint file.")
             else:
                 if seqId < 1 and len(self.__polySeq) == 1:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{_seqId}:{atomId} is not present in the coordinates. "\
-                        f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "\
-                        "Please update the sequence in the Macromolecules page.\n"
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{_seqId}:{atomId} is not present in the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
                 else:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{_seqId}:{atomId} is not present in the coordinates.\n"
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{_seqId}:{atomId} is not present in the coordinates.")
 
         return list(chainAssign)
 
@@ -2834,18 +2837,18 @@ class CyanaMRParserListener(ParseTreeListener):
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequenceWithChainIdWithoutCompId(fixedChainId, seqId, 'H1')
             if (('-' in atomId and ':' in atomId) or '.' in atomId):
-                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates. "\
-                    "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the CYANA restraint file.\n"
+                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates. "
+                                "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the CYANA restraint file.")
             else:
                 if seqId < 1 and len(self.__polySeq) == 1:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates. "\
-                        f"The residue number '{_seqId}' is not present in polymer sequence of chain {fixedChainId} of the coordinates. "\
-                        "Please update the sequence in the Macromolecules page.\n"
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {fixedChainId} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
                 else:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates.\n"
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates.")
 
         return list(chainAssign)
 
@@ -2994,8 +2997,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                 self.__authSeqId = 'label_seq_id'
                                 self.__setLocalSeqScheme()
                                 continue
-                    self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
-                        f"Residue name {_compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.\n"
+                    self.__f.append(f"[Sequence mismatch] {self.__getCurrentRestraint()}"
+                                    f"Residue name {_compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
                     continue
 
             if compId != cifCompId and compId in monDict3 and not isPolySeq:
@@ -3008,13 +3011,13 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.selectCoordAtoms(chainAssign, seqId, compId, atomId, allowAmbig, enableWarning, offset=1)
                     return
                 if enableWarning:
-                    self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"\
-                        f"{seqId}:{_compId}:{atomId} is invalid atom nomenclature.\n"
+                    self.__f.append(f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"
+                                    f"{seqId}:{_compId}:{atomId} is invalid atom nomenclature.")
                 continue
             if lenAtomId > 1 and not allowAmbig:
                 if enableWarning:
-                    self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                        f"Ambiguous atom selection '{seqId}:{_compId}:{atomId}' is not allowed as a angle restraint.\n"
+                    self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
+                                    f"Ambiguous atom selection '{seqId}:{_compId}:{atomId}' is not allowed as a angle restraint.")
                 continue
 
             for cifAtomId in _atomId:
@@ -3187,14 +3190,14 @@ class CyanaMRParserListener(ParseTreeListener):
                         bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
                         if len(bondedTo) > 0:
                             if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"\
-                                    f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
-                                    "Please re-upload the model file.\n"
+                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
+                                                "Please re-upload the model file.")
                                 return
                     if enableWarning:
                         if chainId in LARGE_ASYM_ID:
-                            self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                            f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
 
     def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)
@@ -3264,16 +3267,16 @@ class CyanaMRParserListener(ParseTreeListener):
                 weight = self.numberSelection[2]
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
             """
             if lower_limit > upper_limit:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The angle's lower limit '{lower_limit}' must be less than or equal to the upper limit '{upper_limit}'.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The angle's lower limit '{lower_limit}' must be less than or equal to the upper limit '{upper_limit}'.")
                 if self.__remediate:
                     self.__dihed_lb_greater_than_ub = True
                 return
@@ -3306,9 +3309,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     # For the case 'EPSIL' could be standard name 'EPSILON'
                     angleName = next(name for name in KNOWN_ANGLE_NAMES if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
                 except StopIteration:
-                    self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
-                        f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {_compId!r}, "\
-                        "of which CYANA residue library should be uploaded.\n"
+                    self.__f.append(f"[Insufficient angle selection] {self.__getCurrentRestraint()}"
+                                    f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {_compId!r}, "
+                                    "of which CYANA residue library should be uploaded.")
                     return
 
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
@@ -3350,8 +3353,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         if not isinstance(atomId, str):
                             atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
                             if atomId is None:
-                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId}:{_compId} is not present in the coordinates.\n"
+                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                f"{seqId}:{_compId} is not present in the coordinates.")
                                 return
 
                 self.__retrieveLocalSeqScheme()
@@ -3362,8 +3365,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainAssign = self.assignCoordPolymerSequence(seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{seqId}:{_compId} is not present in the coordinates.\n"
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{seqId}:{_compId} is not present in the coordinates.")
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
@@ -3386,9 +3389,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     elif carbohydrate and angleName in ('PHI', 'PSI', 'OMEGA'):
                         pass
                     else:
-                        self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
-                            f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {_compId!r}, "\
-                            "of which CYANA residue library should be uploaded.\n"
+                        self.__f.append(f"[Insufficient angle selection] {self.__getCurrentRestraint()}"
+                                        f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {_compId!r}, "
+                                        "of which CYANA residue library should be uploaded.")
                         return
 
                     atomNames = None
@@ -3430,9 +3433,9 @@ class CyanaMRParserListener(ParseTreeListener):
                             #     pass
                             # """
                             if _cifCompId is None:
-                                self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
-                                    f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
-                                    "Please update the sequence in the Macromolecules page.\n"
+                                self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                "Please update the sequence in the Macromolecules page.")
                                 return
                                 # _cifCompId = '.'
                             # cifAtomId = atomId
@@ -3468,8 +3471,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                     cifAtomId = None
 
                             if cifAtomId is None:
-                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
+                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.")
                                 return
 
                         prevCifAtomId = cifAtomId
@@ -3529,8 +3532,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainAssign = self.assignCoordPolymerSequence(seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{seqId}:{_compId} is not present in the coordinates.\n"
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{seqId}:{_compId} is not present in the coordinates.")
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
@@ -3544,8 +3547,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if nucleotide:
                         pass
                     else:
-                        self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
-                            f"The angle identifier {str(ctx.Simple_name(1))!r} did not match with residue {_compId!r}.\n"
+                        self.__f.append(f"[Insufficient angle selection] {self.__getCurrentRestraint()}"
+                                        f"The angle identifier {str(ctx.Simple_name(1))!r} did not match with residue {_compId!r}.")
                         return
 
                     for atomId, offset in zip(atomNames, seqOffset):
@@ -3561,9 +3564,9 @@ class CyanaMRParserListener(ParseTreeListener):
                             except IndexError:
                                 pass
                             if _cifCompId is None:
-                                self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
-                                    f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
-                                    "Please update the sequence in the Macromolecules page.\n"
+                                self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                "Please update the sequence in the Macromolecules page.")
                                 return
                                 # _cifCompId = '.'
                             # cifAtomId = atomId
@@ -3574,8 +3577,8 @@ class CyanaMRParserListener(ParseTreeListener):
                             cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
 
                             if cifAtomId is None:
-                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
+                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.")
                                 return
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
@@ -3633,9 +3636,9 @@ class CyanaMRParserListener(ParseTreeListener):
             elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
                 shift = -(numpy.nanmin(_array) // 360) * 360
             if shift is not None:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    "The target/limit values for an angle restraint have been circularly shifted "\
-                    f"to fit within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                "The target/limit values for an angle restraint have been circularly shifted "
+                                f"to fit within range {ANGLE_RESTRAINT_ERROR}.")
                 if target_value is not None:
                     target_value += shift
                 if lower_limit is not None:
@@ -3648,24 +3651,24 @@ class CyanaMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value:.3f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if ANGLE_ERROR_MIN <= lower_limit < ANGLE_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if ANGLE_ERROR_MIN < upper_limit <= ANGLE_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if not validRange:
             return None
@@ -3674,22 +3677,22 @@ class CyanaMRParserListener(ParseTreeListener):
             if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -3764,26 +3767,26 @@ class CyanaMRParserListener(ParseTreeListener):
             #     scale = self.numberSelection[3]
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             if orientation not in self.rdcParameterDict:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The orientation '{orientation}' must be defined before you start to describe RDC restraints.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The orientation '{orientation}' must be defined before you start to describe RDC restraints.")
                 return
 
             if seqId1 == self.rdcParameterDict[orientation]['orientation_center_seq_id']:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The residue number '{seqId1}' must not be the same as the center of orientation.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The residue number '{seqId1}' must not be the same as the center of orientation.")
                 return
 
             if seqId2 == self.rdcParameterDict[orientation]['orientation_center_seq_id']:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The residue number '{seqId2}' must not be the same as the center of orientation.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The residue number '{seqId2}' must not be the same as the center of orientation.")
                 return
 
             target_value = target
@@ -3826,27 +3829,27 @@ class CyanaMRParserListener(ParseTreeListener):
             atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-chain RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -3859,15 +3862,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found zero RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -3875,9 +3878,9 @@ class CyanaMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an RDC vector over multiple covalent bonds; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found an RDC vector over multiple covalent bonds; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             if self.__createSfDict:
@@ -3921,38 +3924,38 @@ class CyanaMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if RDC_ERROR_MIN <= lower_limit < RDC_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if RDC_ERROR_MIN < upper_limit <= RDC_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
 
         if not validRange:
             return None
@@ -3961,22 +3964,22 @@ class CyanaMRParserListener(ParseTreeListener):
             if RDC_RANGE_MIN <= target_value <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if RDC_RANGE_MIN <= lower_limit <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if RDC_RANGE_MIN <= upper_limit <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -3994,9 +3997,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     continue
                 if atom1['seq_id'] != atom2['seq_id']:
                     continue
-                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "\
-                    f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.\n"
+                self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
+                                f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.")
                 return False
 
         return True
@@ -4067,21 +4070,21 @@ class CyanaMRParserListener(ParseTreeListener):
             orientation = int(str(ctx.Integer(1)))
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             if orientation not in self.pcsParameterDict:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The orientation '{orientation}' must be defined before you start to describe PCS restraints.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The orientation '{orientation}' must be defined before you start to describe PCS restraints.")
                 return
 
             if seqId == self.pcsParameterDict[orientation]['orientation_center_seq_id']:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The residue number '{seqId}' must not be the same as the center of orientation.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The residue number '{seqId}' must not be the same as the center of orientation.")
                 return
 
             target_value = target
@@ -4141,38 +4144,38 @@ class CyanaMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' must be within range {PCS_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if PCS_ERROR_MIN <= lower_limit < PCS_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if PCS_ERROR_MIN < upper_limit <= PCS_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' must be within range {PCS_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
 
         if not validRange:
             return None
@@ -4181,22 +4184,22 @@ class CyanaMRParserListener(ParseTreeListener):
             if PCS_RANGE_MIN <= target_value <= PCS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {PCS_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if PCS_RANGE_MIN <= lower_limit <= PCS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if PCS_RANGE_MIN <= upper_limit <= PCS_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -4507,12 +4510,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     has_square = True
 
                 if weight < 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must not be a negative value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{weight}' must not be a negative value.")
                     return
                 if weight == 0.0:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' should be a positive value.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{weight}' should be a positive value.")
 
                 target_value = None
                 lower_limit = None
@@ -4817,12 +4820,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 weight = self.numberSelection[num_col + 2]
 
                 if weight < 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must not be a negative value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{weight}' must not be a negative value.")
                     return
                 if weight == 0.0:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' should be a positive value.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{weight}' should be a positive value.")
 
                 target_value = None
                 lower_limit = None
@@ -5295,12 +5298,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 has_square = False
 
                 if value2 < 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{value2}' must not be a negative value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{value2}' must not be a negative value.")
                     return
                 if value2 == 0.0:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{value2}' should be a positive value.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{value2}' should be a positive value.")
 
                 if value2 <= 1.0 or value2 < value:
                     delta = abs(value2)
@@ -5611,12 +5614,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 weight = self.numberSelection[num_col + 2]
 
                 if weight < 0.0:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' must not be a negative value.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{weight}' must not be a negative value.")
                     return
                 if weight == 0.0:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                        f"The relative weight value of '{weight}' should be a positive value.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The relative weight value of '{weight}' should be a positive value.")
 
                 target_value = None
                 lower_limit = None
@@ -6075,8 +6078,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                         break
 
             if len(self.__col_order_of_dist_w_chain) != 6:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Failed to identify columns for comp_id_1, atom_id_1, chain_id_1, comp_id_2, atom_id_2, chain_id_2.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Failed to identify columns for comp_id_1, atom_id_1, chain_id_1, comp_id_2, atom_id_2, chain_id_2.")
                 self.distRestraints -= 1
                 return
 
@@ -6109,12 +6112,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     has_square = True
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered:
                 if value > self.__max_dist_value:
@@ -6522,16 +6525,16 @@ class CyanaMRParserListener(ParseTreeListener):
                 weight = self.numberSelection[2]
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
             """
             if lower_limit > upper_limit:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The angle's lower limit '{lower_limit}' must be less than or equal to the upper limit '{upper_limit}'.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The angle's lower limit '{lower_limit}' must be less than or equal to the upper limit '{upper_limit}'.")
                 if self.__remediate:
                     self.__dihed_lb_greater_than_ub = True
                 return
@@ -6564,9 +6567,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     # For the case 'EPSIL' could be standard name 'EPSILON'
                     angleName = next(name for name in KNOWN_ANGLE_NAMES if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
                 except StopIteration:
-                    self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
-                        f"The angle identifier {str(ctx.Simple_name(2))!r} is unknown for the residue {_compId!r}, "\
-                        "of which CYANA residue library should be uploaded.\n"
+                    self.__f.append(f"[Insufficient angle selection] {self.__getCurrentRestraint()}"
+                                    f"The angle identifier {str(ctx.Simple_name(2))!r} is unknown for the residue {_compId!r}, "
+                                    "of which CYANA residue library should be uploaded.")
                     return
 
             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
@@ -6608,8 +6611,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         if not isinstance(atomId, str):
                             atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
                             if atomId is None:
-                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId}:{_compId} is not present in the coordinates.\n"
+                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                f"{seqId}:{_compId} is not present in the coordinates.")
                                 return
 
                 self.__retrieveLocalSeqScheme()
@@ -6617,8 +6620,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainAssign = self.assignCoordPolymerSequenceWithChainId(chainId, seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{seqId}:{_compId} is not present in the coordinates.\n"
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{seqId}:{_compId} is not present in the coordinates.")
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
@@ -6638,9 +6641,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     elif carbohydrate and angleName in ('PHI', 'PSI', 'OMEGA'):
                         pass
                     else:
-                        self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
-                            f"The angle identifier {str(ctx.Simple_name(2))!r} is unknown for the residue {_compId!r}, "\
-                            "of which CYANA residue library should be uploaded.\n"
+                        self.__f.append(f"[Insufficient angle selection] {self.__getCurrentRestraint()}"
+                                        f"The angle identifier {str(ctx.Simple_name(2))!r} is unknown for the residue {_compId!r}, "
+                                        "of which CYANA residue library should be uploaded.")
                         return
 
                     atomNames = None
@@ -6682,9 +6685,9 @@ class CyanaMRParserListener(ParseTreeListener):
                             #     pass
                             # """
                             if _cifCompId is None:
-                                self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
-                                    f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
-                                    "Please update the sequence in the Macromolecules page.\n"
+                                self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                "Please update the sequence in the Macromolecules page.")
                                 return
                                 # _cifCompId = '.'
                             # cifAtomId = atomId
@@ -6720,8 +6723,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                     cifAtomId = None
 
                             if cifAtomId is None:
-                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
+                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.")
                                 return
 
                         prevCifAtomId = cifAtomId
@@ -6781,8 +6784,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainAssign = self.assignCoordPolymerSequenceWithChainId(chainId, seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{seqId}:{_compId} is not present in the coordinates.\n"
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{seqId}:{_compId} is not present in the coordinates.")
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
@@ -6796,8 +6799,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if nucleotide:
                         pass
                     else:
-                        self.warningMessage += f"[Insufficient angle selection] {self.__getCurrentRestraint()}"\
-                            f"The angle identifier {str(ctx.Simple_name(2))!r} did not match with residue {_compId!r}.\n"
+                        self.__f.append(f"[Insufficient angle selection] {self.__getCurrentRestraint()}"
+                                        f"The angle identifier {str(ctx.Simple_name(2))!r} did not match with residue {_compId!r}.")
                         return
 
                     for atomId, offset in zip(atomNames, seqOffset):
@@ -6813,9 +6816,9 @@ class CyanaMRParserListener(ParseTreeListener):
                             except IndexError:
                                 pass
                             if _cifCompId is None:
-                                self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
-                                    f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
-                                    "Please update the sequence in the Macromolecules page.\n"
+                                self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                "Please update the sequence in the Macromolecules page.")
                                 return
                                 # _cifCompId = '.'
                             # cifAtomId = atomId
@@ -6826,8 +6829,8 @@ class CyanaMRParserListener(ParseTreeListener):
                             cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
 
                             if cifAtomId is None:
-                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.\n"
+                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.")
                                 return
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
@@ -6918,12 +6921,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 error = abs(self.numberSelection[1])
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             target_value = target
             lower_limit = target - error if error is not None else None
@@ -6965,25 +6968,25 @@ class CyanaMRParserListener(ParseTreeListener):
             atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in scalar coupling constant; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in scalar coupling constant; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain scalar coupling constant; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-chain scalar coupling constant; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found inter-residue scalar coupling constant; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found inter-residue scalar coupling constant; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -6996,15 +6999,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue scalar coupling constant; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue scalar coupling constant; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero scalar coupling constant; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found zero scalar coupling constant; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if self.__createSfDict:
@@ -7093,15 +7096,15 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1 in self.atomSelectionSet[0]:
                 if atom1['comp_id'] != 'CYS':
-                    self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                        f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
+                    self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
+                                    f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.")
                     self.ssbondRestraints -= 1
                     return
 
             for atom2 in self.atomSelectionSet[1]:
                 if atom2['comp_id'] != 'CYS':
-                    self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                        f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.\n"
+                    self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
+                                    f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.")
                     self.ssbondRestraints -= 1
                     return
 
@@ -7142,13 +7145,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(_head) == 1 and len(_tail) == 1:
                     distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
                     if distance > 2.5:
-                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                            f"The distance of the disulfide bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
-                            f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+                        self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                        f"The distance of the disulfide bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
+                                        f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).")
 
             except Exception as e:
                 if self.__verbose:
-                    self.__lfh.write(f"+CyanaMRParserListener.exitSsbond_macro() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+CyanaMRParserListener.exitSsbond_macro() ++ Error  - {str(e)}")
 
             if self.__createSfDict:
                 sf = self.__getSf()
@@ -7250,13 +7253,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(_head) == 1 and len(_tail) == 1:
                     distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
                     if distance > (3.4 if atom_id_1[0] not in protonBeginCode and atom_id_2[0] not in protonBeginCode else 2.4):
-                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                            f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
-                            f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+                        self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                        f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
+                                        f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).")
 
             except Exception as e:
                 if self.__verbose:
-                    self.__lfh.write(f"+CyanaMRParserListener.exitHbond_macro() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+CyanaMRParserListener.exitHbond_macro() ++ Error  - {str(e)}")
 
             if self.__createSfDict:
                 sf = self.__getSf()
@@ -7386,13 +7389,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(_head) == 1 and len(_tail) == 1:
                     distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
                     if distance > (3.5 if atom_id_1[0] not in protonBeginCode and atom_id_2[0] not in protonBeginCode else 2.5):
-                        self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                            f"The distance of the covalent bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "\
-                            f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).\n"
+                        self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                        f"The distance of the covalent bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
+                                        f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).")
 
             except Exception as e:
                 if self.__verbose:
-                    self.__lfh.write(f"+CyanaMRParserListener.exitLink_statement() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+CyanaMRParserListener.exitLink_statement() ++ Error  - {str(e)}")
 
             if self.__createSfDict:
                 sf = self.__getSf('covalent bond linkage')
@@ -7442,16 +7445,16 @@ class CyanaMRParserListener(ParseTreeListener):
             len_split = len(_split)
 
             if len_split < 2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Could not interpret '{str(ctx.Double_quote_string())}' as floating chiral stereo assignment.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Could not interpret '{str(ctx.Double_quote_string())}' as floating chiral stereo assignment.")
                 return
 
             atomId1 = _split[0].upper()
             atomId2 = None
 
             if not atomId1.isalnum():
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Could not interpret '{str(ctx.Double_quote_string())}' as floating chiral stereo assignment.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Could not interpret '{str(ctx.Double_quote_string())}' as floating chiral stereo assignment.")
                 return
 
             if _split[1].isdecimal():
@@ -7462,8 +7465,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for l in range(seq_id_offset, len_split):
                 if not _split[l].isdecimal():
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Could not interpret '{str(ctx.Double_quote_string())}' as floating chiral stereo assignment.\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    f"Could not interpret '{str(ctx.Double_quote_string())}' as floating chiral stereo assignment.")
                     return
 
             if not self.__hasPolySeq:

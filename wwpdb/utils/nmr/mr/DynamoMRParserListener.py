@@ -256,7 +256,8 @@ class DynamoMRParserListener(ParseTreeListener):
     # collection of number selection
     numberSelection = []
 
-    warningMessage = ''
+    __f = None
+    warningMessage = None
 
     reasonsForReParsing = {}
 
@@ -374,6 +375,7 @@ class DynamoMRParserListener(ParseTreeListener):
     def enterDynamo_mr(self, ctx: DynamoMRParser.Dynamo_mrContext):  # pylint: disable=unused-argument
         self.__chainNumberDict = {}
         self.__polySeqRst = []
+        self.__f = []
 
     # Exit a parse tree produced by DynamoMRParser#dynamo_mr.
     def exitDynamo_mr(self, ctx: DynamoMRParser.Dynamo_mrContext):  # pylint: disable=unused-argument
@@ -386,7 +388,9 @@ class DynamoMRParserListener(ParseTreeListener):
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
             if len(message) > 0:
-                self.warningMessage += message
+                self.__f.extend(message)
+
+            self.warningMessage = '\n'.join(self.__f)
 
             if self.__chainAssign is not None:
 
@@ -528,11 +532,10 @@ class DynamoMRParserListener(ParseTreeListener):
         if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
             del self.reasonsForReParsing['seq_id_remap']
 
-        if len(self.warningMessage) == 0:
+        if len(self.__f) == 0:
             self.warningMessage = None
         else:
-            self.warningMessage = self.warningMessage[0:-1]
-            self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
+            self.warningMessage = '\n'.join(set(self.__f))
 
     # Enter a parse tree produced by DynamoMRParser#sequence.
     def enterSequence(self, ctx: DynamoMRParser.SequenceContext):
@@ -610,20 +613,20 @@ class DynamoMRParserListener(ParseTreeListener):
             scale = self.numberSelection[4]
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             if scale < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative scale value of '{scale}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"The relative scale value of '{scale}' must not be a negative value.")
                 return
             if scale == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative scale value of '{scale}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"The relative scale value of '{scale}' should be a positive value.")
 
             if not self.__hasPolySeq:
                 return
@@ -771,20 +774,20 @@ class DynamoMRParserListener(ParseTreeListener):
             scale = self.numberSelection[4]
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             if scale < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative scale value of '{scale}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"The relative scale value of '{scale}' must not be a negative value.")
                 return
             if scale == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative scale value of '{scale}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"The relative scale value of '{scale}' should be a positive value.")
 
             if not self.__hasPolySeq:
                 return
@@ -925,20 +928,20 @@ class DynamoMRParserListener(ParseTreeListener):
             scale = self.numberSelection[4]
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             if scale < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative scale value of '{scale}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"The relative scale value of '{scale}' must not be a negative value.")
                 return
             if scale == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The relative scale value of '{scale}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"The relative scale value of '{scale}' should be a positive value.")
 
             if not self.__hasPolySeq:
                 return
@@ -1043,61 +1046,61 @@ class DynamoMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value:.3f}"
             else:
                 if target_value <= DIST_ERROR_MIN and omit_dist_limit_outlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
-                        f"The target value='{target_value:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                                    f"The target value='{target_value:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     target_value = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"\
-                        f"The target value='{target_value:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"
+                                    f"The target value='{target_value:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if DIST_ERROR_MIN <= lower_limit < DIST_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.3f}"
             else:
                 if lower_limit <= DIST_ERROR_MIN and omit_dist_limit_outlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
-                        f"The lower limit value='{lower_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                                    f"The lower limit value='{lower_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     lower_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"
+                                    f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX or (upper_limit == 0.0 and self.__allowZeroUpperLimit):
                 dstFunc['upper_limit'] = f"{upper_limit:.3f}"
             else:
                 if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
-                    self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
-                        f"The upper limit value='{upper_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                                    f"The upper limit value='{upper_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_limit = None
                 else:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"
+                                    f"The upper limit value='{upper_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"
+                                    f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value:.3f}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"\
-                        f"The upper limit value='{upper_limit:.3f}' must be greater than the target value '{target_value:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"
+                                    f"The upper limit value='{upper_limit:.3f}' must be greater than the target value '{target_value:.3f}'.")
 
         else:
 
             if lower_limit is not None and upper_limit is not None:
                 if lower_limit > upper_limit:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"\
-                        f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"
+                                    f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.")
 
         if not validRange:
             return None
@@ -1106,22 +1109,22 @@ class DynamoMRParserListener(ParseTreeListener):
             if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The target value='{target_value:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"The target value='{target_value:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The lower limit value='{lower_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"The lower limit value='{lower_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"The upper limit value='{upper_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"The upper limit value='{upper_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -1151,12 +1154,12 @@ class DynamoMRParserListener(ParseTreeListener):
         if self.__has_sequence and self.__reasons is None:
             # """
             # if seqId < self.__first_resid:
-            #     self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
-            #         f"The residue number '{seqId}' must be grater than or equal to the internally defined first residue number {self.__first_resid}.\n"
+            #     self.__f.append(f"[Sequence mismatch] {self.__getCurrentRestraint()}"
+            #                     f"The residue number '{seqId}' must be grater than or equal to the internally defined first residue number {self.__first_resid}.")
             #     return []
             # if seqId - self.__first_resid >= len(self.__cur_sequence):
-            #     self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
-            #         f"The residue number '{seqId}' must be less than {len(self.__cur_sequence)}, total number of the internally defined sequence.\n"
+            #     self.__f.append(f"[Sequence mismatch] {self.__getCurrentRestraint()}"
+            #                     f"The residue number '{seqId}' must be less than {len(self.__cur_sequence)}, total number of the internally defined sequence.")
             #     return []
             # """
             if self.__first_resid <= seqId < self.__first_resid + len(self.__cur_sequence):
@@ -1165,10 +1168,10 @@ class DynamoMRParserListener(ParseTreeListener):
                 _compId = next(k for k, v in monDict3.items() if v == oneLetterCode)
 
                 if _compId != translateToStdResName(compId, self.__ccU) and _compId != 'X':
-                    self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
-                        f"Sequence alignment error between the sequence ({seqId}:{_compId}) "\
-                        f"and data ({seqId}:{compId}). "\
-                        "Please verify the consistency between the internally defined sequence and restraints and re-upload the restraint file(s).\n"
+                    self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                    f"Sequence alignment error between the sequence ({seqId}:{_compId}) "
+                                    f"and data ({seqId}:{compId}). "
+                                    "Please verify the consistency between the internally defined sequence and restraints and re-upload the restraint file(s).")
                     self.__has_seq_align_err = True
                     return []
 
@@ -1258,8 +1261,8 @@ class DynamoMRParserListener(ParseTreeListener):
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
-                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint(n=index,g=group)}"
+                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
             elif 'gap_in_auth_seq' in ps:
                 min_auth_seq_id = ps['auth_seq_id'][0]
@@ -1375,8 +1378,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                 self.__chainNumberDict[refChainId] = chainId
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
-                            #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint(n=index,g=group)}"\
-                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint(n=index,g=group)}"
+                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
 
             if self.__hasNonPolySeq:
@@ -1430,8 +1433,8 @@ class DynamoMRParserListener(ParseTreeListener):
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
                     # if cifCompId != translateToStdResName(compId, self.__ccU):
-                    #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint(n=index,g=group)}"
+                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
 
         if len(chainAssign) == 0:
@@ -1477,8 +1480,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                 self.__chainNumberDict[refChainId] = chainId
                             # """ defer to sequence alignment error
                             # if cifCompId != translateToStdResName(compId, self.__ccU):
-                            #     self.warningMessage += f"[Unmatched residue name] {self.__getCurrentRestraint(n=index,g=group)}"\
-                            #         f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.\n"
+                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint(n=index,g=group)}"
+                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
 
         if len(chainAssign) == 0:
@@ -1486,13 +1489,13 @@ class DynamoMRParserListener(ParseTreeListener):
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequence(refChainId, seqId, compId, 'H1')
             if seqId < 1 and len(self.__polySeq) == 1:
-                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "\
-                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "\
-                    "Please update the sequence in the Macromolecules page.\n"
+                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
+                                f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                "Please update the sequence in the Macromolecules page.")
             else:
-                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.\n"
+                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
 
         elif any(ca for ca in chainAssign if ca[0] == refChainId) and any(ca for ca in chainAssign if ca[0] != refChainId):
             _chainAssign = copy.copy(chainAssign)
@@ -1594,8 +1597,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                 # self.__authSeqId = 'label_seq_id'
                                 self.__setLocalSeqScheme()
                                 continue
-                    self.warningMessage += f"[Sequence mismatch] {self.__getCurrentRestraint()}"\
-                        f"Residue name {_compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.\n"
+                    self.__f.append(f"[Sequence mismatch] {self.__getCurrentRestraint()}"
+                                    f"Residue name {_compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
                     continue
 
             if compId != cifCompId and compId in monDict3 and not isPolySeq:
@@ -1607,12 +1610,12 @@ class DynamoMRParserListener(ParseTreeListener):
                 if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
                     self.selectCoordAtoms(chainAssign, seqId, compId, atomId, allowAmbig, index, group, offset=1)
                     return
-                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"{seqId}:{_compId}:{atomId} is invalid atom nomenclature.\n"
+                self.__f.append(f"[Invalid atom nomenclature] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"{seqId}:{_compId}:{atomId} is invalid atom nomenclature.")
                 continue
             if lenAtomId > 1 and not allowAmbig:
-                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"Ambiguous atom selection '{seqId}:{_compId}:{atomId}' is not allowed as a angle restraint.\n"
+                self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"Ambiguous atom selection '{seqId}:{_compId}:{atomId}' is not allowed as a angle restraint.")
                 continue
 
             for cifAtomId in _atomId:
@@ -1689,12 +1692,12 @@ class DynamoMRParserListener(ParseTreeListener):
 
             lenAtomId = len(_atomId)
             if lenAtomId == 0:
-                self.warningMessage += f"[Invalid atom nomenclature] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.\n"
+                self.__f.append(f"[Invalid atom nomenclature] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.")
                 continue
             if lenAtomId > 1 and not allowAmbig:
-                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint(n=index,g=group)}"\
-                    f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.\n"
+                self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint(n=index,g=group)}"
+                                f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.")
                 continue
 
             for cifAtomId in _atomId:
@@ -1852,13 +1855,13 @@ class DynamoMRParserListener(ParseTreeListener):
                         bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
                         if len(bondedTo) > 0:
                             if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                self.warningMessage += f"[Hydrogen not instantiated] {self.__getCurrentRestraint(n=index,g=group)}"\
-                                    f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
-                                    "Please re-upload the model file.\n"
+                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint(n=index,g=group)}"
+                                                f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
+                                                "Please re-upload the model file.")
                                 return
                     if chainId in LARGE_ASYM_ID:
-                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint(n=index,g=group)}"\
-                            f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.\n"
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index,g=group)}"
+                                        f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
 
     def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)
@@ -2233,9 +2236,9 @@ class DynamoMRParserListener(ParseTreeListener):
             elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
                 shift = -(numpy.nanmin(_array) // 360) * 360
             if shift is not None:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                    "The target/limit values for an angle restraint have been circularly shifted "\
-                    f"to fit within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                                "The target/limit values for an angle restraint have been circularly shifted "
+                                f"to fit within range {ANGLE_RESTRAINT_ERROR}.")
                 if target_value is not None:
                     target_value += shift
                 if lower_limit is not None:
@@ -2248,24 +2251,24 @@ class DynamoMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                    f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                                f"The target value='{target_value}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if ANGLE_ERROR_MIN <= lower_limit < ANGLE_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.3f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                    f"The lower limit value='{lower_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                                f"The lower limit value='{lower_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if ANGLE_ERROR_MIN < upper_limit <= ANGLE_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit:.3f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                    f"The upper limit value='{upper_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                                f"The upper limit value='{upper_limit:.3f}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
         if not validRange:
             return None
@@ -2274,22 +2277,22 @@ class DynamoMRParserListener(ParseTreeListener):
             if ANGLE_RANGE_MIN <= target_value <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                    f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                                f"The target value='{target_value}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if ANGLE_RANGE_MIN <= lower_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                    f"The lower limit value='{lower_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                                f"The lower limit value='{lower_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if ANGLE_RANGE_MIN <= upper_limit <= ANGLE_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                    f"The upper limit value='{upper_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                                f"The upper limit value='{upper_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -2329,12 +2332,12 @@ class DynamoMRParserListener(ParseTreeListener):
             weight = self.numberSelection[2]
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             target_value = target
             lower_limit = target - error
@@ -2381,27 +2384,27 @@ class DynamoMRParserListener(ParseTreeListener):
                 return
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-chain RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -2414,15 +2417,15 @@ class DynamoMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found zero RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -2430,9 +2433,9 @@ class DynamoMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an RDC vector over multiple covalent bonds; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found an RDC vector over multiple covalent bonds; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             if self.__createSfDict:
@@ -2499,12 +2502,12 @@ class DynamoMRParserListener(ParseTreeListener):
             weight = self.numberSelection[2]
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             target_value = target
             lower_limit = target - error
@@ -2551,27 +2554,27 @@ class DynamoMRParserListener(ParseTreeListener):
                 return
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-chain RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -2584,15 +2587,15 @@ class DynamoMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found zero RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -2600,9 +2603,9 @@ class DynamoMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an RDC vector over multiple covalent bonds; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found an RDC vector over multiple covalent bonds; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             if self.__createSfDict:
@@ -2669,12 +2672,12 @@ class DynamoMRParserListener(ParseTreeListener):
             weight = self.numberSelection[2]
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             target_value = target
             lower_limit = target - error
@@ -2721,27 +2724,27 @@ class DynamoMRParserListener(ParseTreeListener):
                 return
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-chain RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -2754,15 +2757,15 @@ class DynamoMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found zero RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -2770,9 +2773,9 @@ class DynamoMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an RDC vector over multiple covalent bonds; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found an RDC vector over multiple covalent bonds; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             if self.__createSfDict:
@@ -2848,12 +2851,12 @@ class DynamoMRParserListener(ParseTreeListener):
             weight = self.numberSelection[5]
 
             if weight < 0.0:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' must not be a negative value.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The relative weight value of '{weight}' should be a positive value.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
 
             target_value = target
             lower_limit = target - error
@@ -2900,27 +2903,27 @@ class DynamoMRParserListener(ParseTreeListener):
                 return
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Non-magnetic susceptible spin appears in RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
-                    f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             if chain_id_1 != chain_id_2:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-chain RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-chain RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        f"Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
@@ -2933,15 +2936,15 @@ class DynamoMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                        "Found inter-residue RDC vector; "\
-                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    "Found zero RDC vector; "\
-                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found zero RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
 
             elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
@@ -2949,9 +2952,9 @@ class DynamoMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                            "Found an RDC vector over multiple covalent bonds; "\
-                            f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).\n"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found an RDC vector over multiple covalent bonds; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
             if self.__createSfDict:
@@ -2992,38 +2995,38 @@ class DynamoMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if RDC_ERROR_MIN <= lower_limit < RDC_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if RDC_ERROR_MIN < upper_limit <= RDC_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint()}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
 
         if not validRange:
             return None
@@ -3032,22 +3035,22 @@ class DynamoMRParserListener(ParseTreeListener):
             if RDC_RANGE_MIN <= target_value <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if RDC_RANGE_MIN <= lower_limit <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if RDC_RANGE_MIN <= upper_limit <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint()}"\
-                    f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -3065,9 +3068,9 @@ class DynamoMRParserListener(ParseTreeListener):
                     continue
                 if atom1['seq_id'] != atom2['seq_id']:
                     continue
-                self.warningMessage += f"[Invalid atom selection] {self.__getCurrentRestraint()}"\
-                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "\
-                    f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.\n"
+                self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
+                                f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.")
                 return False
 
         return True
@@ -3506,38 +3509,38 @@ class DynamoMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                    f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                                f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
             if RDC_ERROR_MIN <= lower_limit < RDC_ERROR_MAX:
                 dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                    f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                                f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
             if RDC_ERROR_MIN < upper_limit <= RDC_ERROR_MAX:
                 dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
-                self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                    f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.\n"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                                f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if target_value is not None:
 
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                        f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                                    f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.warningMessage += f"[Range value error] {self.__getCurrentRestraint(n=index)}"\
-                        f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.\n"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
 
         if not validRange:
             return None
@@ -3546,22 +3549,22 @@ class DynamoMRParserListener(ParseTreeListener):
             if RDC_RANGE_MIN <= target_value <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                    f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                                f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if RDC_RANGE_MIN <= lower_limit <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                    f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                                f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if RDC_RANGE_MIN <= upper_limit <= RDC_RANGE_MAX:
                 pass
             else:
-                self.warningMessage += f"[Range value warning] {self.__getCurrentRestraint(n=index)}"\
-                    f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.\n"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                                f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         return dstFunc
 
@@ -3590,8 +3593,8 @@ class DynamoMRParserListener(ParseTreeListener):
             compId = str(ctx.Simple_name(0)).upper()
 
             if compId not in monDict3.values() and compId not in monDict3:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found unknown residue name {compId!r}.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Found unknown residue name {compId!r}.")
                 return
 
             if len(compId) >= 3:
@@ -3618,8 +3621,8 @@ class DynamoMRParserListener(ParseTreeListener):
             _class = str(ctx.Simple_name(1))
 
             if _class not in TALOS_PREDICTION_CLASSES:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The class name {_class!r} should be one of {TALOS_PREDICTION_CLASSES}.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The class name {_class!r} should be one of {TALOS_PREDICTION_CLASSES}.")
                 return
 
             if _class not in TALOS_PREDICTION_MIN_CLASSES:  # ignore suspicious predictions
@@ -3658,8 +3661,8 @@ class DynamoMRParserListener(ParseTreeListener):
                     self.__ccU.updateChemCompDict(compId)
                     atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
                     if atomId is None:
-                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                            f"{seqId}:{compId} is not present in the coordinates.\n"
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{seqId}:{compId} is not present in the coordinates.")
                         return
 
                 self.__retrieveLocalSeqScheme()
@@ -3667,8 +3670,8 @@ class DynamoMRParserListener(ParseTreeListener):
                 chainAssign = self.assignCoordPolymerSequence(None, seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{seqId}:{compId} is not present in the coordinates.\n"
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{seqId}:{compId} is not present in the coordinates.")
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
@@ -3687,9 +3690,9 @@ class DynamoMRParserListener(ParseTreeListener):
                             except IndexError:
                                 pass
                             if _cifCompId is None:
-                                self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
-                                    f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
-                                    "Please update the sequence in the Macromolecules page.\n"
+                                self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                "Please update the sequence in the Macromolecules page.")
                                 return
                                 # _cifCompId = '.'
                             # cifAtomId = atomId
@@ -3700,8 +3703,8 @@ class DynamoMRParserListener(ParseTreeListener):
                             cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
 
                             if cifAtomId is None:
-                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
+                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.")
                                 return
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
@@ -3768,8 +3771,8 @@ class DynamoMRParserListener(ParseTreeListener):
             compId = str(ctx.Simple_name(0)).upper()
 
             if compId not in monDict3.values() and compId not in monDict3:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"Found unknown residue name {compId!r}.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"Found unknown residue name {compId!r}.")
                 return
 
             if len(compId) >= 3:
@@ -3794,8 +3797,8 @@ class DynamoMRParserListener(ParseTreeListener):
             _class = str(ctx.Simple_name(1))
 
             if _class not in TALOS_PREDICTION_CLASSES:
-                self.warningMessage += f"[Invalid data] {self.__getCurrentRestraint()}"\
-                    f"The class name {_class!r} should be one of {TALOS_PREDICTION_CLASSES}.\n"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The class name {_class!r} should be one of {TALOS_PREDICTION_CLASSES}.")
                 return
 
             if _class not in TALOS_PREDICTION_MIN_CLASSES:  # ignore suspicious predictions
@@ -3834,8 +3837,8 @@ class DynamoMRParserListener(ParseTreeListener):
                     self.__ccU.updateChemCompDict(compId)
                     atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
                     if atomId is None:
-                        self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                            f"{seqId}:{compId} is not present in the coordinates.\n"
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{seqId}:{compId} is not present in the coordinates.")
                         return
 
                 self.__retrieveLocalSeqScheme()
@@ -3843,8 +3846,8 @@ class DynamoMRParserListener(ParseTreeListener):
                 chainAssign = self.assignCoordPolymerSequence(None, seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
-                    self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                        f"{seqId}:{compId} is not present in the coordinates.\n"
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{seqId}:{compId} is not present in the coordinates.")
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
@@ -3863,9 +3866,9 @@ class DynamoMRParserListener(ParseTreeListener):
                             except IndexError:
                                 pass
                             if _cifCompId is None:
-                                self.warningMessage += f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"\
-                                    f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "\
-                                    "Please update the sequence in the Macromolecules page.\n"
+                                self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                "Please update the sequence in the Macromolecules page.")
                                 return
                                 # _cifCompId = '.'
                             # cifAtomId = atomId
@@ -3876,8 +3879,8 @@ class DynamoMRParserListener(ParseTreeListener):
                             cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
 
                             if cifAtomId is None:
-                                self.warningMessage += f"[Atom not found] {self.__getCurrentRestraint()}"\
-                                    f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.\n"
+                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.")
                                 return
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})

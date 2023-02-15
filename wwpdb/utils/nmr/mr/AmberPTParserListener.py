@@ -51,10 +51,10 @@ except ImportError:
                                retrieveAtomIdentFromMRMap)
 
 
-def chunk_string(string, length=4):
+def chunk_string(line, length=4):
     """ Split a string into fixed length chunks.
     """
-    return [string[i:i + length] for i in range(0, len(string), length)]
+    return [line[i:i + length] for i in range(0, len(line), length)]
 
 
 # This class defines a complete listener for a parse tree produced by AmberPTParser.
@@ -126,7 +126,8 @@ class AmberPTParserListener(ParseTreeListener):
     # __cur_column_len = None
     __cur_word_len = None
 
-    warningMessage = ''
+    __f = None
+    warningMessage = None
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -212,15 +213,17 @@ class AmberPTParserListener(ParseTreeListener):
     def enterAmber_pt(self, ctx: AmberPTParser.Amber_ptContext):  # pylint: disable=unused-argument
         self.__atomNumberDict = {}
         self.__polySeqPrmTop = []
+        self.__f = []
 
     # Exit a parse tree produced by AmberPTParser#amber_pt.
     def exitAmber_pt(self, ctx: AmberPTParser.Amber_ptContext):  # pylint: disable=unused-argument
         if not self.__hasPolySeqModel:
-            if len(self.warningMessage) == 0:
+
+            if len(self.__f) == 0:
                 self.warningMessage = None
             else:
-                self.warningMessage = self.warningMessage[0:-1]
-                self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
+                self.warningMessage = '\n'.join(set(self.__f))
+
             return
 
         if self.__residueLabel is None or self.__residuePointer is None or self.__atomName is None or self.__amberAtomType is None:
@@ -350,8 +353,8 @@ class AmberPTParserListener(ParseTreeListener):
                         else:
                             compIdList.append('.')
                             unknownAtomIds = [_atomId for _atomId in authAtomIds if _atomId not in chemCompAtomIds]
-                            self.warningMessage += f"[Unknown atom name] "\
-                                f"{unknownAtomIds} are unknown atom names for {authCompId} residue.\n"
+                            self.__f.append(f"[Unknown atom name] "
+                                            f"{unknownAtomIds} are unknown atom names for {authCompId} residue.")
                             compIdList.append(f"? {authCompId} {unknownAtomIds}")
                 else:
                     compId = self.__csStat.getSimilarCompIdFromAtomIds([atomNum['auth_atom_id']
@@ -379,8 +382,8 @@ class AmberPTParserListener(ParseTreeListener):
                     else:
                         compIdList.append('.')
                         """ deferred to assignNonPolymer()
-                        self.warningMessage += f"[Unknown residue name] "\
-                            f"{authCompId!r} is unknown residue name.\n"
+                        self.__f.append(f"[Unknown residue name] "
+                                        f"{authCompId!r} is unknown residue name.")
                         """
 
             ps['comp_id'] = compIdList
@@ -446,20 +449,20 @@ class AmberPTParserListener(ParseTreeListener):
                 if 'comp_id' not in atomNum or atomNum['comp_id'] == atomNum['auth_comp_id']:
                     authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
                     if self.__ccU.updateChemCompDict(authCompId):
-                        self.warningMessage += f"[Unknown atom name] "\
-                            f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['auth_comp_id']!r} residue.\n"
+                        self.__f.append(f"[Unknown atom name] "
+                                        f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['auth_comp_id']!r} residue.")
                 else:
                     authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
                     if self.__ccU.updateChemCompDict(authCompId):
                         atomNum['atom_id'] = atomNum['auth_atom_id']
-                        self.warningMessage += f"[Unknown atom name] "\
-                            f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "\
-                            f"(the original residue label is {atomNum['auth_comp_id']!r}).\n"
+                        self.__f.append(f"[Unknown atom name] "
+                                        f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "
+                                        f"(the original residue label is {atomNum['auth_comp_id']!r}).")
 
         self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
 
         if len(message) > 0:
-            self.warningMessage += message
+            self.__f.extend(message)
 
         if self.__chainAssign is not None:
 
@@ -508,11 +511,10 @@ class AmberPTParserListener(ParseTreeListener):
                     for idx in sorted(nonPolyIndices, reverse=True):
                         del self.__polySeqPrmTop[idx]
 
-        if len(self.warningMessage) == 0:
+        if len(self.__f) == 0:
             self.warningMessage = None
         else:
-            self.warningMessage = self.warningMessage[0:-1]
-            self.warningMessage = '\n'.join(set(self.warningMessage.split('\n')))
+            self.warningMessage = '\n'.join(set(self.__f))
 
     def assignMetalIon(self):
         if not self.__hasNonPolyModel:
@@ -564,8 +566,8 @@ class AmberPTParserListener(ParseTreeListener):
         for authCompId in nonPolyCompIds:
             refCompId = next((compId[0] for compId in refCompIds if compId[1] == authCompId[1] and compId[1] not in comp_id_mapping.values()), None)
             if refCompId is None:
-                self.warningMessage += f"[Unknown residue name] "\
-                    f"{authCompId[0]!r} is unknown residue name.\n"
+                self.__f.append(f"[Unknown residue name] "
+                                f"{authCompId[0]!r} is unknown residue name.")
                 continue
             comp_id_mapping[authCompId[0]] = refCompId
 
@@ -604,9 +606,9 @@ class AmberPTParserListener(ParseTreeListener):
                     else:
                         if authAtomId not in reported_auth_atom_id:
                             atomNum['atom_id'] = atomNum['auth_atom_id']
-                            self.warningMessage += f"[Unknown atom name] "\
-                                f"{authAtomId!r} is not recognized as the atom name of {compId!r} residue "\
-                                f"(the original residue label is {authCompId!r}).\n"
+                            self.__f.append(f"[Unknown atom name] "
+                                            f"{authAtomId!r} is not recognized as the atom name of {compId!r} residue "
+                                            f"(the original residue label is {authCompId!r}).")
                             reported_auth_atom_id.append(authAtomId)
 
     # Enter a parse tree produced by AmberPTParser#version_statement.

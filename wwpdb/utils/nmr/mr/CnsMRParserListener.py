@@ -575,7 +575,7 @@ class CnsMRParserListener(ParseTreeListener):
             if len(message) > 0:
                 self.__f.extend(message)
 
-            self.warningMessage = '\n'.josin(self.__f)
+            self.warningMessage = '\n'.join(self.__f)
 
             if self.__chainAssign is not None:
 

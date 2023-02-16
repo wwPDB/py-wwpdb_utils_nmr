@@ -276,43 +276,44 @@ class GromacsMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by GromacsMRParser#gromacs_mr.
     def exitGromacs_mr(self, ctx: GromacsMRParser.Gromacs_mrContext):  # pylint: disable=unused-argument
-        if self.__hasPolySeq and self.__polySeqRst is not None:
-            sortPolySeqRst(self.__polySeqRst)
 
-            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
-            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+        try:
 
-            if len(message) > 0:
-                self.__f.extend(message)
+            if self.__hasPolySeq and self.__polySeqRst is not None:
+                sortPolySeqRst(self.__polySeqRst)
 
-            if self.__chainAssign is not None:
+                self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+                self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
-                if len(self.__polySeq) == len(self.__polySeqRst):
+                if len(message) > 0:
+                    self.__f.extend(message)
 
-                    chain_mapping = {}
+                if self.__chainAssign is not None:
 
-                    for ca in self.__chainAssign:
-                        ref_chain_id = ca['ref_chain_id']
-                        test_chain_id = ca['test_chain_id']
+                    if len(self.__polySeq) == len(self.__polySeqRst):
 
-                        if ref_chain_id != test_chain_id:
-                            chain_mapping[test_chain_id] = ref_chain_id
+                        chain_mapping = {}
 
-                    if len(chain_mapping) == len(self.__polySeq):
+                        for ca in self.__chainAssign:
+                            ref_chain_id = ca['ref_chain_id']
+                            test_chain_id = ca['test_chain_id']
 
-                        for ps in self.__polySeqRst:
-                            if ps['chain_id'] in chain_mapping:
-                                ps['chain_id'] = chain_mapping[ps['chain_id']]
+                            if ref_chain_id != test_chain_id:
+                                chain_mapping[test_chain_id] = ref_chain_id
 
-                        self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
-                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+                        if len(chain_mapping) == len(self.__polySeq):
 
-                trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
+                            for ps in self.__polySeqRst:
+                                if ps['chain_id'] in chain_mapping:
+                                    ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-        if len(self.__f) == 0:
-            self.warningMessage = None
-        else:
-            self.warningMessage = '\n'.join(set(self.__f))
+                            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+                            self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+
+                    trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
+
+        finally:
+            self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 
     # Enter a parse tree produced by GromacsMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: GromacsMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument

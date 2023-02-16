@@ -1300,7 +1300,7 @@ class NEFTranslator:
                                  f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(f) > 0:
-                raise UserWarning('\n'.join(f))
+                raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
 
             try:
 
@@ -1521,7 +1521,7 @@ class NEFTranslator:
                     return self.get_star_seq(star_data, lp_category, 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_asym_ID',
                                              alt_seq_id, alt_seq_id_offset, alt_chain_id, allow_empty, allow_gap)
 
-                raise UserWarning('\n'.join(f))
+                raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
 
             try:
 
@@ -1735,7 +1735,7 @@ class NEFTranslator:
                                  f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(f) > 0:
-                raise UserWarning('\n'.join(f))
+                raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
 
             try:
 
@@ -1890,7 +1890,7 @@ class NEFTranslator:
                                  f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(f) > 0:
-                raise UserWarning('\n'.join(f))
+                raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
 
             comps = sorted(set(row[0].upper() for row in pair_data if row[0] not in emptyValue))
             sorted_comp_atom = sorted(set((row[0].upper(), row[1]) for row in pair_data),
@@ -1997,7 +1997,7 @@ class NEFTranslator:
                                  f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(f) > 0:
-                raise UserWarning('\n'.join(f))
+                raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
 
             try:
 
@@ -2130,7 +2130,7 @@ class NEFTranslator:
                                      f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(f) > 0:
-                raise UserWarning('\n'.join(f))
+                raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
 
             _ambig_data = [row for row in ambig_data
                            if not (row[0] in emptyValue or (isinstance(row[0], str) and badPattern.match(row[0])))
@@ -2220,7 +2220,7 @@ class NEFTranslator:
                                      f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(f) > 0:
-                raise UserWarning('\n'.join(f))
+                raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
 
             try:
 
@@ -3555,7 +3555,7 @@ class NEFTranslator:
                 data.append(asm)
 
             if len(f) > 0:
-                raise UserWarning('\n'.join(f))
+                raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
 
             if len(data) == 0:
                 data.append([])
@@ -4146,7 +4146,7 @@ class NEFTranslator:
                             raise ValueError(f"One of tag items {member} must not be empty.")
 
         if len(f) > 0:
-            raise UserWarning('\n'.join(f))
+            raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
 
         return ent
 

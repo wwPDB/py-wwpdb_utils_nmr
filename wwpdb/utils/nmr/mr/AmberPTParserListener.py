@@ -217,116 +217,142 @@ class AmberPTParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberPTParser#amber_pt.
     def exitAmber_pt(self, ctx: AmberPTParser.Amber_ptContext):  # pylint: disable=unused-argument
-        if not self.__hasPolySeqModel:
 
-            if len(self.__f) == 0:
-                self.warningMessage = None
-            else:
-                self.warningMessage = '\n'.join(set(self.__f))
+        try:
 
-            return
+            if not self.__hasPolySeqModel:
+                return
 
-        if self.__residueLabel is None or self.__residuePointer is None or self.__atomName is None or self.__amberAtomType is None:
-            return
+            if self.__residueLabel is None or self.__residuePointer is None or self.__atomName is None or self.__amberAtomType is None:
+                return
 
-        if len(self.__residueLabel) == 0 or len(self.__residuePointer) == 0 or len(self.__atomName) == 0 or len(self.__amberAtomType) == 0:
-            return
+            if len(self.__residueLabel) == 0 or len(self.__residuePointer) == 0 or len(self.__atomName) == 0 or len(self.__amberAtomType) == 0:
+                return
 
-        residuePointer2 = [resPoint - 1 for resPoint in self.__residuePointer]
-        del residuePointer2[0]
-        residuePointer2.append(self.__residuePointer[-1] + 1000)
+            residuePointer2 = [resPoint - 1 for resPoint in self.__residuePointer]
+            del residuePointer2[0]
+            residuePointer2.append(self.__residuePointer[-1] + 1000)
 
-        chainIndex = letterToDigit(self.__polySeqModel[0]['chain_id']) - 1  # set tentative chain_id from label_asym_id, which will be assigned to coordinate auth_asym_id
-        chainId = indexToLetter(chainIndex)
+            chainIndex = letterToDigit(self.__polySeqModel[0]['chain_id']) - 1  # set tentative chain_id from label_asym_id, which will be assigned to coordinate auth_asym_id
+            chainId = indexToLetter(chainIndex)
 
-        terminus = [atomName.endswith('T') for atomName in self.__atomName]
+            terminus = [atomName.endswith('T') for atomName in self.__atomName]
 
-        atomTotal = len(self.__atomName)
-        if terminus[0]:
-            terminus[0] = False
-        for i in range(0, atomTotal - 1):
-            j = i + 1
-            if terminus[i] and terminus[j]:
-                terminus[i] = False
-        if terminus[-1]:
-            terminus[-1] = False
+            atomTotal = len(self.__atomName)
+            if terminus[0]:
+                terminus[0] = False
+            for i in range(0, atomTotal - 1):
+                j = i + 1
+                if terminus[i] and terminus[j]:
+                    terminus[i] = False
+            if terminus[-1]:
+                terminus[-1] = False
 
-        seqIdList = []
-        compIdList = []
-
-        NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S')
-
-        prevAtomName = ''
-        prevSeqId = None
-        offset = 0
-        for atomNum, (atomName, atomType) in enumerate(zip(self.__atomName, self.__amberAtomType), start=1):
-            _seqId = next(resNum for resNum, (atomNumBegin, atomNumEnd)
-                          in enumerate(zip(self.__residuePointer, residuePointer2), start=1)
-                          if atomNumBegin <= atomNum <= atomNumEnd)
-            compId = self.__residueLabel[_seqId - 1]
-            # the second condition indicates metal ions
-            if terminus[atomNum - 2]\
-               or (compId == atomName and compId.title() in NAMES_ELEMENT)\
-               or (len(prevAtomName) > 0 and prevAtomName[0] not in NON_METAL_ELEMENTS and prevSeqId != _seqId):
-                self.__polySeqPrmTop.append({'chain_id': chainId,
-                                             'seq_id': seqIdList,
-                                             'auth_comp_id': compIdList})
-                seqIdList = []
-                compIdList = []
-                chainIndex += 1
-                chainId = indexToLetter(chainIndex)
-                offset = 1 - _seqId
-            seqId = _seqId + offset
-            if seqId not in seqIdList:
-                seqIdList.append(seqId)
-                compIdList.append(compId)
-            if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                _, compId, atomName = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomName)
-            self.__atomNumberDict[atomNum] = {'chain_id': chainId,
-                                              'seq_id': seqId,
-                                              'auth_comp_id': compId,
-                                              'auth_atom_id': atomName,
-                                              'atom_type': atomType}
-            prevAtomName = atomName
-            prevSeqId = _seqId
-
-        self.__polySeqPrmTop.append({'chain_id': chainId,
-                                     'seq_id': seqIdList,
-                                     'auth_comp_id': compIdList})
-
-        for ps in self.__polySeqPrmTop:
-            chainId = ps['chain_id']
+            seqIdList = []
             compIdList = []
-            for seqId, authCompId in zip(ps['seq_id'], ps['auth_comp_id']):
-                authAtomIds = [atomNum['auth_atom_id'] for atomNum in self.__atomNumberDict.values()
-                               if atomNum['chain_id'] == chainId
-                               and atomNum['seq_id'] == seqId
-                               and atomNum['auth_atom_id'][0] not in protonBeginCode]
-                authCompId = translateToStdResName(authCompId, self.__ccU)
-                if self.__ccU.updateChemCompDict(authCompId):
-                    chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-                    valid = True
-                    for _atomId in authAtomIds:
-                        if _atomId not in chemCompAtomIds:
-                            valid = False
-                            break
-                        if not valid:
-                            break
-                    if valid:
-                        compIdList.append(authCompId)
-                        for atomNum in self.__atomNumberDict.values():
-                            if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
-                                atomNum['comp_id'] = authCompId
-                                if atomNum['auth_atom_id'][0] not in protonBeginCode or atomNum['auth_atom_id'] in chemCompAtomIds:
-                                    atomNum['atom_id'] = atomNum['auth_atom_id']
-                                    if 'atom_type' in atomNum:
-                                        del atomNum['atom_type']
-                                else:
-                                    atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds, ccU=self.__ccU)
-                                    if atomId in chemCompAtomIds:
-                                        atomNum['atom_id'] = atomId
+
+            NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S')
+
+            prevAtomName = ''
+            prevSeqId = None
+            offset = 0
+            for atomNum, (atomName, atomType) in enumerate(zip(self.__atomName, self.__amberAtomType), start=1):
+                _seqId = next(resNum for resNum, (atomNumBegin, atomNumEnd)
+                              in enumerate(zip(self.__residuePointer, residuePointer2), start=1)
+                              if atomNumBegin <= atomNum <= atomNumEnd)
+                compId = self.__residueLabel[_seqId - 1]
+                # the second condition indicates metal ions
+                if terminus[atomNum - 2]\
+                   or (compId == atomName and compId.title() in NAMES_ELEMENT)\
+                   or (len(prevAtomName) > 0 and prevAtomName[0] not in NON_METAL_ELEMENTS and prevSeqId != _seqId):
+                    self.__polySeqPrmTop.append({'chain_id': chainId,
+                                                 'seq_id': seqIdList,
+                                                 'auth_comp_id': compIdList})
+                    seqIdList = []
+                    compIdList = []
+                    chainIndex += 1
+                    chainId = indexToLetter(chainIndex)
+                    offset = 1 - _seqId
+                seqId = _seqId + offset
+                if seqId not in seqIdList:
+                    seqIdList.append(seqId)
+                    compIdList.append(compId)
+                if compId not in monDict3 and self.__mrAtomNameMapping is not None:
+                    _, compId, atomName = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomName)
+                self.__atomNumberDict[atomNum] = {'chain_id': chainId,
+                                                  'seq_id': seqId,
+                                                  'auth_comp_id': compId,
+                                                  'auth_atom_id': atomName,
+                                                  'atom_type': atomType}
+                prevAtomName = atomName
+                prevSeqId = _seqId
+
+            self.__polySeqPrmTop.append({'chain_id': chainId,
+                                         'seq_id': seqIdList,
+                                         'auth_comp_id': compIdList})
+
+            for ps in self.__polySeqPrmTop:
+                chainId = ps['chain_id']
+                compIdList = []
+                for seqId, authCompId in zip(ps['seq_id'], ps['auth_comp_id']):
+                    authAtomIds = [atomNum['auth_atom_id'] for atomNum in self.__atomNumberDict.values()
+                                   if atomNum['chain_id'] == chainId
+                                   and atomNum['seq_id'] == seqId
+                                   and atomNum['auth_atom_id'][0] not in protonBeginCode]
+                    authCompId = translateToStdResName(authCompId, self.__ccU)
+                    if self.__ccU.updateChemCompDict(authCompId):
+                        chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+                        valid = True
+                        for _atomId in authAtomIds:
+                            if _atomId not in chemCompAtomIds:
+                                valid = False
+                                break
+                            if not valid:
+                                break
+                        if valid:
+                            compIdList.append(authCompId)
+                            for atomNum in self.__atomNumberDict.values():
+                                if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
+                                    atomNum['comp_id'] = authCompId
+                                    if atomNum['auth_atom_id'][0] not in protonBeginCode or atomNum['auth_atom_id'] in chemCompAtomIds:
+                                        atomNum['atom_id'] = atomNum['auth_atom_id']
                                         if 'atom_type' in atomNum:
                                             del atomNum['atom_type']
+                                    else:
+                                        atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds, ccU=self.__ccU)
+                                        if atomId in chemCompAtomIds:
+                                            atomNum['atom_id'] = atomId
+                                            if 'atom_type' in atomNum:
+                                                del atomNum['atom_type']
+                        else:
+                            compId = self.__csStat.getSimilarCompIdFromAtomIds([atomNum['auth_atom_id']
+                                                                                for atomNum in self.__atomNumberDict.values()
+                                                                                if atomNum['chain_id'] == chainId
+                                                                                and atomNum['seq_id'] == seqId])
+                            if compId is not None:
+                                compIdList.append(compId + '?')  # decide when coordinate is available
+                                chemCompAtomIds = None
+                                if self.__ccU.updateChemCompDict(compId):
+                                    chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+                                for atomNum in self.__atomNumberDict.values():
+                                    if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
+                                        atomNum['comp_id'] = compId
+                                        if chemCompAtomIds is not None and atomNum['auth_atom_id'] in chemCompAtomIds:
+                                            atomNum['atom_id'] = atomNum['auth_atom_id']
+                                            if 'atom_type' in atomNum:
+                                                del atomNum['atom_type']
+                                        elif chemCompAtomIds is not None:
+                                            atomId = translateToStdAtomName(atomNum['auth_atom_id'], compId, chemCompAtomIds, ccU=self.__ccU)
+                                            if atomId in chemCompAtomIds:
+                                                atomNum['atom_id'] = atomId
+                                                if 'atom_type' in atomNum:
+                                                    del atomNum['atom_type']
+                            else:
+                                compIdList.append('.')
+                                unknownAtomIds = [_atomId for _atomId in authAtomIds if _atomId not in chemCompAtomIds]
+                                self.__f.append(f"[Unknown atom name] "
+                                                f"{unknownAtomIds} are unknown atom names for {authCompId} residue.")
+                                compIdList.append(f"? {authCompId} {unknownAtomIds}")
                     else:
                         compId = self.__csStat.getSimilarCompIdFromAtomIds([atomNum['auth_atom_id']
                                                                             for atomNum in self.__atomNumberDict.values()
@@ -352,169 +378,138 @@ class AmberPTParserListener(ParseTreeListener):
                                                 del atomNum['atom_type']
                         else:
                             compIdList.append('.')
-                            unknownAtomIds = [_atomId for _atomId in authAtomIds if _atomId not in chemCompAtomIds]
-                            self.__f.append(f"[Unknown atom name] "
-                                            f"{unknownAtomIds} are unknown atom names for {authCompId} residue.")
-                            compIdList.append(f"? {authCompId} {unknownAtomIds}")
-                else:
-                    compId = self.__csStat.getSimilarCompIdFromAtomIds([atomNum['auth_atom_id']
-                                                                        for atomNum in self.__atomNumberDict.values()
-                                                                        if atomNum['chain_id'] == chainId
-                                                                        and atomNum['seq_id'] == seqId])
-                    if compId is not None:
-                        compIdList.append(compId + '?')  # decide when coordinate is available
-                        chemCompAtomIds = None
-                        if self.__ccU.updateChemCompDict(compId):
-                            chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-                        for atomNum in self.__atomNumberDict.values():
-                            if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
-                                atomNum['comp_id'] = compId
-                                if chemCompAtomIds is not None and atomNum['auth_atom_id'] in chemCompAtomIds:
-                                    atomNum['atom_id'] = atomNum['auth_atom_id']
+                            """ deferred to assignNonPolymer()
+                            self.__f.append(f"[Unknown residue name] "
+                                            f"{authCompId!r} is unknown residue name.")
+                            """
+
+                ps['comp_id'] = compIdList
+
+            for atomNum in self.__atomNumberDict.values():
+                if 'atom_type' not in atomNum:
+                    continue
+                if 'comp_id' in atomNum and atomNum['comp_id'] != atomNum['auth_comp_id']\
+                   and 'atom_id' not in atomNum:
+                    compId = atomNum['comp_id']
+                    if self.__ccU.updateChemCompDict(compId):
+                        chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+
+                        atomId = translateToStdAtomName(atomNum['auth_atom_id'], compId, chemCompAtomIds, ccU=self.__ccU)
+
+                        if atomId is not None and atomId in chemCompAtomIds:
+                            atomNum['atom_id'] = atomId
+                            if 'atom_type' in atomNum:
+                                del atomNum['atom_type']
+                        elif atomNum['comp_id'] != atomNum['auth_comp_id']:
+                            authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
+                            if self.__ccU.updateChemCompDict(authCompId):
+                                chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+
+                                atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds, ccU=self.__ccU)
+
+                                if atomId is not None and atomId in chemCompAtomIds:
+                                    atomNum['atom_id'] = atomId
                                     if 'atom_type' in atomNum:
                                         del atomNum['atom_type']
-                                elif chemCompAtomIds is not None:
-                                    atomId = translateToStdAtomName(atomNum['auth_atom_id'], compId, chemCompAtomIds, ccU=self.__ccU)
-                                    if atomId in chemCompAtomIds:
-                                        atomNum['atom_id'] = atomId
-                                        if 'atom_type' in atomNum:
-                                            del atomNum['atom_type']
-                    else:
-                        compIdList.append('.')
-                        """ deferred to assignNonPolymer()
-                        self.__f.append(f"[Unknown residue name] "
-                                        f"{authCompId!r} is unknown residue name.")
-                        """
-
-            ps['comp_id'] = compIdList
-
-        for atomNum in self.__atomNumberDict.values():
-            if 'atom_type' not in atomNum:
-                continue
-            if 'comp_id' in atomNum and atomNum['comp_id'] != atomNum['auth_comp_id']\
-               and 'atom_id' not in atomNum:
-                compId = atomNum['comp_id']
-                if self.__ccU.updateChemCompDict(compId):
-                    chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-
-                    atomId = translateToStdAtomName(atomNum['auth_atom_id'], compId, chemCompAtomIds, ccU=self.__ccU)
-
-                    if atomId is not None and atomId in chemCompAtomIds:
-                        atomNum['atom_id'] = atomId
-                        if 'atom_type' in atomNum:
-                            del atomNum['atom_type']
-                    elif atomNum['comp_id'] != atomNum['auth_comp_id']:
-                        authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
-                        if self.__ccU.updateChemCompDict(authCompId):
-                            chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-
-                            atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds, ccU=self.__ccU)
-
-                            if atomId is not None and atomId in chemCompAtomIds:
-                                atomNum['atom_id'] = atomId
-                                if 'atom_type' in atomNum:
-                                    del atomNum['atom_type']
-            else:
-                authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
-                if self.__ccU.updateChemCompDict(authCompId):
-                    atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, ccU=self.__ccU)
-                    atomIds = self.__nefT.get_valid_star_atom_in_xplor(authCompId, atomId)[0]
-                    if len(atomIds) == 1:
-                        atomNum['atom_id'] = atomIds[0]
-                        if 'atom_type' in atomNum:
-                            del atomNum['atom_type']
-
-        polySeqModel = copy.copy(self.__polySeqModel)
-        if self.__hasBranchedModel:
-            polySeqModel.extend(self.__branchedModel)
-
-        self.__seqAlign, compIdMapping = alignPolymerSequence(self.__pA, polySeqModel, self.__polySeqPrmTop)
-
-        for cmap in compIdMapping:
-            for atomNum in self.__atomNumberDict.values():
-                if atomNum['chain_id'] == cmap['chain_id'] and atomNum['seq_id'] == cmap['seq_id']:
-                    atomNum['comp_id'] = cmap['comp_id']
-                    atomNum['auth_comp_id'] = cmap['auth_comp_id']
-                    if 'atom_type' in atomNum:
-                        authCompId = cmap['auth_comp_id']
-                        if self.__ccU.updateChemCompDict(authCompId):
-                            chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-                            atomNum['atom_id'] = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds, ccU=self.__ccU)
-                            del atomNum['atom_type']
-
-        for atomNum in self.__atomNumberDict.values():
-            if 'atom_type' not in atomNum:
-                continue
-            if 'atom_id' not in atomNum:
-                if 'comp_id' not in atomNum or atomNum['comp_id'] == atomNum['auth_comp_id']:
-                    authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
-                    if self.__ccU.updateChemCompDict(authCompId):
-                        self.__f.append(f"[Unknown atom name] "
-                                        f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['auth_comp_id']!r} residue.")
                 else:
                     authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
                     if self.__ccU.updateChemCompDict(authCompId):
-                        atomNum['atom_id'] = atomNum['auth_atom_id']
-                        self.__f.append(f"[Unknown atom name] "
-                                        f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "
-                                        f"(the original residue label is {atomNum['auth_comp_id']!r}).")
+                        atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, ccU=self.__ccU)
+                        atomIds = self.__nefT.get_valid_star_atom_in_xplor(authCompId, atomId)[0]
+                        if len(atomIds) == 1:
+                            atomNum['atom_id'] = atomIds[0]
+                            if 'atom_type' in atomNum:
+                                del atomNum['atom_type']
 
-        self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
+            polySeqModel = copy.copy(self.__polySeqModel)
+            if self.__hasBranchedModel:
+                polySeqModel.extend(self.__branchedModel)
 
-        if len(message) > 0:
-            self.__f.extend(message)
+            self.__seqAlign, compIdMapping = alignPolymerSequence(self.__pA, polySeqModel, self.__polySeqPrmTop)
 
-        if self.__chainAssign is not None:
+            for cmap in compIdMapping:
+                for atomNum in self.__atomNumberDict.values():
+                    if atomNum['chain_id'] == cmap['chain_id'] and atomNum['seq_id'] == cmap['seq_id']:
+                        atomNum['comp_id'] = cmap['comp_id']
+                        atomNum['auth_comp_id'] = cmap['auth_comp_id']
+                        if 'atom_type' in atomNum:
+                            authCompId = cmap['auth_comp_id']
+                            if self.__ccU.updateChemCompDict(authCompId):
+                                chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+                                atomNum['atom_id'] = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds, ccU=self.__ccU)
+                                del atomNum['atom_type']
 
-            if len(self.__polySeqModel) == len(self.__polySeqPrmTop):
+            for atomNum in self.__atomNumberDict.values():
+                if 'atom_type' not in atomNum:
+                    continue
+                if 'atom_id' not in atomNum:
+                    if 'comp_id' not in atomNum or atomNum['comp_id'] == atomNum['auth_comp_id']:
+                        authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
+                        if self.__ccU.updateChemCompDict(authCompId):
+                            self.__f.append(f"[Unknown atom name] "
+                                            f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['auth_comp_id']!r} residue.")
+                    else:
+                        authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
+                        if self.__ccU.updateChemCompDict(authCompId):
+                            atomNum['atom_id'] = atomNum['auth_atom_id']
+                            self.__f.append(f"[Unknown atom name] "
+                                            f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "
+                                            f"(the original residue label is {atomNum['auth_comp_id']!r}).")
 
-                chain_mapping = {}
+            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
 
-                for ca in self.__chainAssign:
-                    ref_chain_id = ca['ref_chain_id']
-                    test_chain_id = ca['test_chain_id']
+            if len(message) > 0:
+                self.__f.extend(message)
 
-                    if ref_chain_id != test_chain_id:
-                        chain_mapping[test_chain_id] = ref_chain_id
+            if self.__chainAssign is not None:
 
-                if len(chain_mapping) == len(self.__polySeqModel):
+                if len(self.__polySeqModel) == len(self.__polySeqPrmTop):
 
-                    for ps in self.__polySeqPrmTop:
-                        if ps['chain_id'] in chain_mapping:
-                            ps['chain_id'] = chain_mapping[ps['chain_id']]
+                    chain_mapping = {}
 
-                    for atomNum in self.__atomNumberDict.values():
-                        if atomNum['chain_id'] in chain_mapping:
-                            atomNum['chain_id'] = chain_mapping[atomNum['chain_id']]
+                    for ca in self.__chainAssign:
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
 
-                    self.__seqAlign, _ = alignPolymerSequence(self.__pA, polySeqModel, self.__polySeqPrmTop)
-                    self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
+                        if ref_chain_id != test_chain_id:
+                            chain_mapping[test_chain_id] = ref_chain_id
 
-            trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
+                    if len(chain_mapping) == len(self.__polySeqModel):
 
-            if self.__hasNonPolyModel:
+                        for ps in self.__polySeqPrmTop:
+                            if ps['chain_id'] in chain_mapping:
+                                ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                # metal ion
-                if any(ps for ps in self.__polySeqPrmTop
-                       if len(ps['seq_id']) == 1 and ps['comp_id'][0].title() in NAMES_ELEMENT):
-                    self.assignMetalIon()
+                        for atomNum in self.__atomNumberDict.values():
+                            if atomNum['chain_id'] in chain_mapping:
+                                atomNum['chain_id'] = chain_mapping[atomNum['chain_id']]
 
-                # other non-polymer
-                nonPolyIndices = [idx for idx, ps in enumerate(self.__polySeqPrmTop)
-                                  if not any(ca for ca in self.__chainAssign
-                                             if ca['test_chain_id'] == ps['chain_id'])
-                                  and len(set(ps['comp_id'])) == 1 and ps['comp_id'][0] == '.']
+                        self.__seqAlign, _ = alignPolymerSequence(self.__pA, polySeqModel, self.__polySeqPrmTop)
+                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
 
-                if len(nonPolyIndices) > 0:
-                    self.assignNonPolymer(nonPolyIndices)
+                trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-                    for idx in sorted(nonPolyIndices, reverse=True):
-                        del self.__polySeqPrmTop[idx]
+                if self.__hasNonPolyModel:
 
-        if len(self.__f) == 0:
-            self.warningMessage = None
-        else:
-            self.warningMessage = '\n'.join(set(self.__f))
+                    # metal ion
+                    if any(ps for ps in self.__polySeqPrmTop
+                           if len(ps['seq_id']) == 1 and ps['comp_id'][0].title() in NAMES_ELEMENT):
+                        self.assignMetalIon()
+
+                    # other non-polymer
+                    nonPolyIndices = [idx for idx, ps in enumerate(self.__polySeqPrmTop)
+                                      if not any(ca for ca in self.__chainAssign
+                                                 if ca['test_chain_id'] == ps['chain_id'])
+                                      and len(set(ps['comp_id'])) == 1 and ps['comp_id'][0] == '.']
+
+                    if len(nonPolyIndices) > 0:
+                        self.assignNonPolymer(nonPolyIndices)
+
+                        for idx in sorted(nonPolyIndices, reverse=True):
+                            del self.__polySeqPrmTop[idx]
+
+        finally:
+            self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 
     def assignMetalIon(self):
         if not self.__hasNonPolyModel:

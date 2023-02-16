@@ -448,163 +448,162 @@ class CharmmMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CharmmMRParser#charmm_mr.
     def exitCharmm_mr(self, ctx: CharmmMRParser.Charmm_mrContext):  # pylint: disable=unused-argument
-        if self.__hasPolySeq and self.__polySeqRst is not None:
-            sortPolySeqRst(self.__polySeqRst,
-                           None if self.__reasons is None or 'non_poly_remap' not in self.__reasons else self.__reasons['non_poly_remap'])
 
-            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
-                                                      resolvedMultimer=(self.__reasons is not None))
-            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+        try:
 
-            if len(message) > 0:
-                self.__f.extend(message)
+            if self.__hasPolySeq and self.__polySeqRst is not None:
+                sortPolySeqRst(self.__polySeqRst,
+                               None if self.__reasons is None or 'non_poly_remap' not in self.__reasons else self.__reasons['non_poly_remap'])
 
-            self.warningMessage = '\n'.join(self.__f)
+                self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
+                                                          resolvedMultimer=(self.__reasons is not None))
+                self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
-            if self.__chainAssign is not None:
+                if len(message) > 0:
+                    self.__f.extend(message)
 
-                if len(self.__polySeq) == len(self.__polySeqRst):
+                if self.__chainAssign is not None:
 
-                    chain_mapping = {}
+                    if len(self.__polySeq) == len(self.__polySeqRst):
 
-                    for ca in self.__chainAssign:
-                        ref_chain_id = ca['ref_chain_id']
-                        test_chain_id = ca['test_chain_id']
+                        chain_mapping = {}
 
-                        if ref_chain_id != test_chain_id:
-                            chain_mapping[test_chain_id] = ref_chain_id
+                        for ca in self.__chainAssign:
+                            ref_chain_id = ca['ref_chain_id']
+                            test_chain_id = ca['test_chain_id']
 
-                    if len(chain_mapping) == len(self.__polySeq):
+                            if ref_chain_id != test_chain_id:
+                                chain_mapping[test_chain_id] = ref_chain_id
 
-                        for ps in self.__polySeqRst:
-                            if ps['chain_id'] in chain_mapping:
-                                ps['chain_id'] = chain_mapping[ps['chain_id']]
+                        if len(chain_mapping) == len(self.__polySeq):
 
-                        self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
-                                                                  resolvedMultimer=(self.__reasons is not None))
-                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+                            for ps in self.__polySeqRst:
+                                if ps['chain_id'] in chain_mapping:
+                                    ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
+                            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
+                                                                      resolvedMultimer=(self.__reasons is not None))
+                            self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
-                if 'Atom not found' in self.warningMessage and self.__reasons is None:
+                    trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-                    seqIdRemap = []
+                    if self.__reasons is None and any(f for f in self.__f if 'Atom not found' in f):
 
-                    cyclicPolymer = {}
+                        seqIdRemap = []
 
-                    for ca in self.__chainAssign:
-                        ref_chain_id = ca['ref_chain_id']
-                        test_chain_id = ca['test_chain_id']
+                        cyclicPolymer = {}
 
-                        sa = next(sa for sa in self.__seqAlign
-                                  if sa['ref_chain_id'] == ref_chain_id
-                                  and sa['test_chain_id'] == test_chain_id)
+                        for ca in self.__chainAssign:
+                            ref_chain_id = ca['ref_chain_id']
+                            test_chain_id = ca['test_chain_id']
 
-                        poly_seq_model = next(ps for ps in self.__polySeq
-                                              if ps['auth_chain_id'] == ref_chain_id)
-                        poly_seq_rst = next(ps for ps in self.__polySeqRst
-                                            if ps['chain_id'] == test_chain_id)
-
-                        seq_id_mapping = {}
-                        for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
-                            if mid_code == '|':
-                                try:
-                                    seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
-                                                                       in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
-                                                                       if seq_id == ref_seq_id)
-                                except StopIteration:
-                                    pass
-
-                        if ref_chain_id not in cyclicPolymer:
-                            cyclicPolymer[ref_chain_id] =\
-                                isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName)
-
-                        if cyclicPolymer[ref_chain_id]:
+                            sa = next(sa for sa in self.__seqAlign
+                                      if sa['ref_chain_id'] == ref_chain_id
+                                      and sa['test_chain_id'] == test_chain_id)
 
                             poly_seq_model = next(ps for ps in self.__polySeq
                                                   if ps['auth_chain_id'] == ref_chain_id)
+                            poly_seq_rst = next(ps for ps in self.__polySeqRst
+                                                if ps['chain_id'] == test_chain_id)
 
-                            offset = None
-                            for seq_id, comp_id in zip(poly_seq_rst['seq_id'], poly_seq_rst['comp_id']):
-                                if seq_id not in seq_id_mapping:
-                                    _seq_id = next((_seq_id for _seq_id, _comp_id in zip(poly_seq_model['seq_id'], poly_seq_model['comp_id'])
-                                                    if _seq_id not in seq_id_mapping.values() and _comp_id == comp_id), None)
-                                    if _seq_id is not None:
-                                        offset = seq_id - _seq_id
-                                        break
+                            seq_id_mapping = {}
+                            for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                if mid_code == '|':
+                                    try:
+                                        seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
+                                                                           in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                                                           if seq_id == ref_seq_id)
+                                    except StopIteration:
+                                        pass
 
-                            if offset is not None:
-                                for seq_id in poly_seq_rst['seq_id']:
+                            if ref_chain_id not in cyclicPolymer:
+                                cyclicPolymer[ref_chain_id] =\
+                                    isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName)
+
+                            if cyclicPolymer[ref_chain_id]:
+
+                                poly_seq_model = next(ps for ps in self.__polySeq
+                                                      if ps['auth_chain_id'] == ref_chain_id)
+
+                                offset = None
+                                for seq_id, comp_id in zip(poly_seq_rst['seq_id'], poly_seq_rst['comp_id']):
                                     if seq_id not in seq_id_mapping:
-                                        seq_id_mapping[seq_id] = seq_id - offset
+                                        _seq_id = next((_seq_id for _seq_id, _comp_id in zip(poly_seq_model['seq_id'], poly_seq_model['comp_id'])
+                                                        if _seq_id not in seq_id_mapping.values() and _comp_id == comp_id), None)
+                                        if _seq_id is not None:
+                                            offset = seq_id - _seq_id
+                                            break
 
-                        if any(k for k, v in seq_id_mapping.items() if k != v)\
-                           and not any(k for k, v in seq_id_mapping.items()
-                                       if v in poly_seq_model['seq_id']
-                                       and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
-                            seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
+                                if offset is not None:
+                                    for seq_id in poly_seq_rst['seq_id']:
+                                        if seq_id not in seq_id_mapping:
+                                            seq_id_mapping[seq_id] = seq_id - offset
 
-                    if len(seqIdRemap) > 0:
-                        if 'seq_id_remap' not in self.reasonsForReParsing:
-                            self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
+                            if any(k for k, v in seq_id_mapping.items() if k != v)\
+                               and not any(k for k, v in seq_id_mapping.items()
+                                           if v in poly_seq_model['seq_id']
+                                           and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
+                                seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
 
-                    if any(ps for ps in self.__polySeq if 'identical_chain_id' in ps):
-                        polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
+                        if len(seqIdRemap) > 0:
+                            if 'seq_id_remap' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
-                        if polySeqRst is not None:
-                            self.__polySeqRst = polySeqRst
-                            if 'chain_id_remap' not in self.reasonsForReParsing:
-                                self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
+                        if any(ps for ps in self.__polySeq if 'identical_chain_id' in ps):
+                            polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
 
-                    if len(self.__polySeq) == 1 and len(self.__polySeqRst) == 1:
-                        polySeqRst, chainIdMapping, modelChainIdExt =\
-                            splitPolySeqRstForExactNoes(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
+                            if polySeqRst is not None:
+                                self.__polySeqRst = polySeqRst
+                                if 'chain_id_remap' not in self.reasonsForReParsing:
+                                    self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
 
-                        if polySeqRst is not None:
-                            self.__polySeqRst = polySeqRst
-                            if 'chain_id_clone' not in self.reasonsForReParsing:
-                                self.reasonsForReParsing['chain_id_clone'] = chainIdMapping
-                            if 'model_chain_id_ext' not in self.reasonsForReParsing:
-                                self.reasonsForReParsing['model_chain_id_ext'] = modelChainIdExt
+                        if len(self.__polySeq) == 1 and len(self.__polySeqRst) == 1:
+                            polySeqRst, chainIdMapping, modelChainIdExt =\
+                                splitPolySeqRstForExactNoes(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
 
-                    if self.__hasNonPoly:
-                        polySeqRst, nonPolyMapping = splitPolySeqRstForNonPoly(self.__ccU, self.__nonPoly, self.__polySeqRst,
-                                                                               self.__seqAlign, self.__chainAssign)
+                            if polySeqRst is not None:
+                                self.__polySeqRst = polySeqRst
+                                if 'chain_id_clone' not in self.reasonsForReParsing:
+                                    self.reasonsForReParsing['chain_id_clone'] = chainIdMapping
+                                if 'model_chain_id_ext' not in self.reasonsForReParsing:
+                                    self.reasonsForReParsing['model_chain_id_ext'] = modelChainIdExt
 
-                        if polySeqRst is not None:
-                            self.__polySeqRst = polySeqRst
-                            if 'non_poly_remap' not in self.reasonsForReParsing:
-                                self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
+                        if self.__hasNonPoly:
+                            polySeqRst, nonPolyMapping = splitPolySeqRstForNonPoly(self.__ccU, self.__nonPoly, self.__polySeqRst,
+                                                                                   self.__seqAlign, self.__chainAssign)
 
-                    if self.__hasBranched:
-                        polySeqRst, branchedMapping = splitPolySeqRstForBranched(self.__pA, self.__polySeq, self.__branched, self.__polySeqRst,
-                                                                                 self.__chainAssign)
+                            if polySeqRst is not None:
+                                self.__polySeqRst = polySeqRst
+                                if 'non_poly_remap' not in self.reasonsForReParsing:
+                                    self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
 
-                        if polySeqRst is not None:
-                            self.__polySeqRst = polySeqRst
-                            if 'branched_remap' not in self.reasonsForReParsing:
-                                self.reasonsForReParsing['branched_remap'] = branchedMapping
+                        if self.__hasBranched:
+                            polySeqRst, branchedMapping = splitPolySeqRstForBranched(self.__pA, self.__polySeq, self.__branched, self.__polySeqRst,
+                                                                                     self.__chainAssign)
 
-        # """
-        # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
-        #     if 'non_poly_remap' in self.reasonsForReParsing:
-        #         self.reasonsForReParsing['label_seq_scheme'] = False
-        #     if 'seq_id_remap' in self.reasonsForReParsing:
-        #         del self.reasonsForReParsing['seq_id_remap']
-        # """
-        if 'local_seq_scheme' in self.reasonsForReParsing:
-            if 'non_poly_remap' in self.reasonsForReParsing or 'branched_remap' in self.reasonsForReParsing:
-                del self.reasonsForReParsing['local_seq_scheme']
-            if 'seq_id_remap' in self.reasonsForReParsing:
+                            if polySeqRst is not None:
+                                self.__polySeqRst = polySeqRst
+                                if 'branched_remap' not in self.reasonsForReParsing:
+                                    self.reasonsForReParsing['branched_remap'] = branchedMapping
+
+            # """
+            # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
+            #     if 'non_poly_remap' in self.reasonsForReParsing:
+            #         self.reasonsForReParsing['label_seq_scheme'] = False
+            #     if 'seq_id_remap' in self.reasonsForReParsing:
+            #         del self.reasonsForReParsing['seq_id_remap']
+            # """
+            if 'local_seq_scheme' in self.reasonsForReParsing:
+                if 'non_poly_remap' in self.reasonsForReParsing or 'branched_remap' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['local_seq_scheme']
+                if 'seq_id_remap' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['seq_id_remap']
+
+            if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['seq_id_remap']
 
-        if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-            del self.reasonsForReParsing['seq_id_remap']
-
-        if len(self.__f) == 0:
-            self.warningMessage = None
-        else:
-            self.warningMessage = '\n'.join(set(self.__f))
+        finally:
+            self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 
     # Enter a parse tree produced by CharmmMRParser#comment.
     def enterComment(self, ctx: CharmmMRParser.CommentContext):  # pylint: disable=unused-argument

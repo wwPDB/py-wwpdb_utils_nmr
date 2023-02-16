@@ -10445,10 +10445,12 @@ class NmrDpUtility:
                     elif listener is not None:
 
                         if listener.warningMessage is not None:
-                            messages = [msg for msg in listener.warningMessage.split('\n')
+
+                            messages = [msg for msg in listener.warningMessage
                                         if 'warning' not in msg and 'Unsupported' not in msg
                                         and 'Redundant' not in msg
                                         and ((self.__remediation_mode and 'Range value error' not in msg) or not self.__remediation_mode)]
+
                             if len(messages) > 0:
                                 valid = False
 
@@ -15162,14 +15164,11 @@ class NmrDpUtility:
                 except UserWarning as e:
 
                     errs = str(e).strip("'").split('\n')
-                    proc_errs = set()
 
                     for err in errs:
 
-                        if err == '' or err in proc_errs:
+                        if len(err) == 0:
                             continue
-
-                        proc_errs.add(err)
 
                         if err.startswith('[Invalid data]'):
 
@@ -15438,14 +15437,11 @@ class NmrDpUtility:
         except UserWarning as e:
 
             errs = str(e).strip("'").split('\n')
-            proc_errs = set()
 
             for err in errs:
 
-                if err == '' or err in proc_errs:
+                if len(err) == 0:
                     continue
-
-                proc_errs.add(err)
 
                 if err.startswith('[Invalid data]'):
 
@@ -18203,14 +18199,11 @@ class NmrDpUtility:
                 except UserWarning as e:
 
                     errs = str(e).strip("'").split('\n')
-                    proc_errs = set()
 
                     for err in errs:
 
-                        if err == '' or err in proc_errs:
+                        if len(err) == 0:
                             continue
-
-                        proc_errs.add(err)
 
                         if err.startswith('[Invalid data]'):
 
@@ -18264,14 +18257,11 @@ class NmrDpUtility:
         except UserWarning as e:
 
             errs = str(e).strip("'").split('\n')
-            proc_errs = set()
 
             for err in errs:
 
-                if err == '' or err in proc_errs:
+                if len(err) == 0:
                     continue
-
-                proc_errs.add(err)
 
                 if err.startswith('[Invalid data]'):
 
@@ -18568,14 +18558,11 @@ class NmrDpUtility:
         except UserWarning as e:
 
             errs = str(e).strip("'").split('\n')
-            proc_errs = set()
 
             for err in errs:
 
-                if err == '' or err in proc_errs:
+                if len(err) == 0:
                     continue
-
-                proc_errs.add(err)
 
                 if err.startswith('[Invalid data]'):
 
@@ -18796,14 +18783,11 @@ class NmrDpUtility:
         except UserWarning as e:
 
             errs = str(e).strip("'").split('\n')
-            proc_errs = set()
 
             for err in errs:
 
-                if err == '' or err in proc_errs:
+                if len(err) == 0:
                     continue
-
-                proc_errs.add(err)
 
                 if err.startswith('[Invalid data]'):
 
@@ -18944,14 +18928,11 @@ class NmrDpUtility:
         except UserWarning as e:
 
             errs = str(e).strip("'").split('\n')
-            proc_errs = set()
 
             for err in errs:
 
-                if err == '' or err in proc_errs:
+                if len(err) == 0:
                     continue
-
-                proc_errs.add(err)
 
                 if err.startswith('[Invalid data]'):
 
@@ -19143,17 +19124,14 @@ class NmrDpUtility:
         except UserWarning as e:
 
             warns = str(e).strip("'").split('\n')
-            proc_warns = set()
 
             has_multiple_data = False
             has_bad_pattern = False
 
             for warn in warns:
 
-                if warn == '' or warn in proc_warns:
+                if len(warn) == 0:
                     continue
-
-                proc_warns.add(warn)
 
                 zero = warn.startswith('[Zero value error]')
                 nega = warn.startswith('[Negative value error]')
@@ -20125,20 +20103,14 @@ class NmrDpUtility:
                             except UserWarning as e:
 
                                 warns = str(e).strip("'").split('\n')
-                                proc_warns = set()
 
                                 has_multiple_data = False
                                 has_bad_pattern = False
 
                                 for warn in warns:
 
-                                    if warn == '':
+                                    if len(warn) == 0:
                                         continue
-
-                                    if warn == '' or warn in proc_warns:
-                                        continue
-
-                                    proc_warns.add(warn)
 
                                     zero = warn.startswith('[Zero value error]')
                                     nega = warn.startswith('[Negative value error]')
@@ -20748,7 +20720,7 @@ class NmrDpUtility:
 
                         for warn in warns:
 
-                            if warn == '':
+                            if len(warn) == 0:
                                 continue
 
                             zero = warn.startswith('[Zero value error]')
@@ -27887,11 +27859,8 @@ class NmrDpUtility:
                     if listener is not None:
 
                         if listener.warningMessage is not None:
-                            messages = listener.warningMessage.split('\n')
 
-                            for warn in messages:
-                                # p = msg.index(']') + 2
-                                # warn = msg[p:]
+                            for warn in listener.warningMessage:
 
                                 if warn.startswith('[Concatenated sequence]'):
                                     self.report.warning.appendDescription('concatenated_sequence',
@@ -27968,11 +27937,8 @@ class NmrDpUtility:
                     if listener is not None:
 
                         if listener.warningMessage is not None:
-                            messages = listener.warningMessage.split('\n')
 
-                            for warn in messages:
-                                # p = msg.index(']') + 2
-                                # warn = msg[p:]
+                            for warn in listener.warningMessage:
 
                                 if warn.startswith('[Concatenated sequence]'):
                                     self.report.warning.appendDescription('concatenated_sequence',
@@ -28136,9 +28102,9 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
-                        messages = listener.warningMessage.split('\n')
 
-                        for warn in messages:
+                        for warn in listener.warningMessage:
+
                             if warn.startswith('[Concatenated sequence]'):
                                 self.report.warning.appendDescription('concatenated_sequence',
                                                                       {'file_name': file_name, 'description': warn})
@@ -28306,9 +28272,9 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
-                        messages = listener.warningMessage.split('\n')
 
-                        for warn in messages:
+                        for warn in listener.warningMessage:
+
                             if warn.startswith('[Concatenated sequence]'):
                                 self.report.warning.appendDescription('concatenated_sequence',
                                                                       {'file_name': file_name, 'description': warn})
@@ -28453,9 +28419,9 @@ class NmrDpUtility:
                 if listener is not None:
 
                     if listener.warningMessage is not None:
-                        messages = listener.warningMessage.split('\n')
 
-                        for warn in messages:
+                        for warn in listener.warningMessage:
+
                             if warn.startswith('[Concatenated sequence]'):
                                 self.report.warning.appendDescription('concatenated_sequence',
                                                                       {'file_name': file_name, 'description': warn})
@@ -28634,9 +28600,9 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
-                        messages = listener.warningMessage.split('\n')
 
-                        for warn in messages:
+                        for warn in listener.warningMessage:
+
                             if warn.startswith('[Concatenated sequence]'):
                                 self.report.warning.appendDescription('concatenated_sequence',
                                                                       {'file_name': file_name, 'description': warn})
@@ -28806,9 +28772,9 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
-                        messages = listener.warningMessage.split('\n')
 
-                        for warn in messages:
+                        for warn in listener.warningMessage:
+
                             if warn.startswith('[Concatenated sequence]'):
                                 self.report.warning.appendDescription('concatenated_sequence',
                                                                       {'file_name': file_name, 'description': warn})
@@ -28965,9 +28931,9 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
-                        messages = listener.warningMessage.split('\n')
 
-                        for warn in messages:
+                        for warn in listener.warningMessage:
+
                             if warn.startswith('[Concatenated sequence]'):
                                 self.report.warning.appendDescription('concatenated_sequence',
                                                                       {'file_name': file_name, 'description': warn})
@@ -29104,9 +29070,9 @@ class NmrDpUtility:
                 if listener is not None:
 
                     if listener.warningMessage is not None:
-                        messages = listener.warningMessage.split('\n')
 
-                        for warn in messages:
+                        for warn in listener.warningMessage:
+
                             if warn.startswith('[Concatenated sequence]'):
                                 self.report.warning.appendDescription('concatenated_sequence',
                                                                       {'file_name': file_name, 'description': warn})
@@ -29247,9 +29213,9 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
-                        messages = listener.warningMessage.split('\n')
 
-                        for warn in messages:
+                        for warn in listener.warningMessage:
+
                             if warn.startswith('[Concatenated sequence]'):
                                 self.report.warning.appendDescription('concatenated_sequence',
                                                                       {'file_name': file_name, 'description': warn})
@@ -29414,9 +29380,9 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
-                        messages = listener.warningMessage.split('\n')
 
-                        for warn in messages:
+                        for warn in listener.warningMessage:
+
                             if warn.startswith('[Concatenated sequence]'):
                                 self.report.warning.appendDescription('concatenated_sequence',
                                                                       {'file_name': file_name, 'description': warn})
@@ -29573,9 +29539,9 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
-                        messages = listener.warningMessage.split('\n')
 
-                        for warn in messages:
+                        for warn in listener.warningMessage:
+
                             if warn.startswith('[Concatenated sequence]'):
                                 self.report.warning.appendDescription('concatenated_sequence',
                                                                       {'file_name': file_name, 'description': warn})
@@ -29732,9 +29698,9 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
-                        messages = listener.warningMessage.split('\n')
 
-                        for warn in messages:
+                        for warn in listener.warningMessage:
+
                             if warn.startswith('[Concatenated sequence]'):
                                 self.report.warning.appendDescription('concatenated_sequence',
                                                                       {'file_name': file_name, 'description': warn})

@@ -726,53 +726,52 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#amber_mr.
     def exitAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
-        if self.__hasPolySeq and self.__polySeqRst is not None:
-            sortPolySeqRst(self.__polySeqRst)
 
-            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
-            self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+        try:
 
-            if len(message) > 0:
-                self.__f.extend(message)
+            if self.__hasPolySeq and self.__polySeqRst is not None:
+                sortPolySeqRst(self.__polySeqRst)
 
-            self.warningMessage = '\n'.join(self.__f)
+                self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+                self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
-            if self.__chainAssign is not None:
+                if len(message) > 0:
+                    self.__f.extend(message)
 
-                if len(self.__polySeq) == len(self.__polySeqRst):
+                if self.__chainAssign is not None:
 
-                    chain_mapping = {}
+                    if len(self.__polySeq) == len(self.__polySeqRst):
 
-                    for ca in self.__chainAssign:
-                        ref_chain_id = ca['ref_chain_id']
-                        test_chain_id = ca['test_chain_id']
+                        chain_mapping = {}
 
-                        if ref_chain_id != test_chain_id:
-                            chain_mapping[test_chain_id] = ref_chain_id
+                        for ca in self.__chainAssign:
+                            ref_chain_id = ca['ref_chain_id']
+                            test_chain_id = ca['test_chain_id']
 
-                    if len(chain_mapping) == len(self.__polySeq):
+                            if ref_chain_id != test_chain_id:
+                                chain_mapping[test_chain_id] = ref_chain_id
 
-                        for ps in self.__polySeqRst:
-                            if ps['chain_id'] in chain_mapping:
-                                ps['chain_id'] = chain_mapping[ps['chain_id']]
+                        if len(chain_mapping) == len(self.__polySeq):
 
-                        self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
-                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+                            for ps in self.__polySeqRst:
+                                if ps['chain_id'] in chain_mapping:
+                                    ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
+                            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+                            self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
-            if 'Missing data' in self.warningMessage:
-                if len(self.unambigAtomNameMapping) > 0:
-                    if 'unambig_atom_id_remap' not in self.reasonsForReParsing:
-                        self.reasonsForReParsing['unambig_atom_id_remap'] = self.unambigAtomNameMapping
-                if len(self.ambigAtomNameMapping) > 0:
-                    if 'ambig_atom_id_remap' not in self.reasonsForReParsing:
-                        self.reasonsForReParsing['ambig_atom_id_remap'] = self.ambigAtomNameMapping
+                    trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-        if len(self.__f) == 0:
-            self.warningMessage = None
-        else:
-            self.warningMessage = '\n'.join(set(self.__f))
+                if self.__reasons is None and any(f for f in self.__f if 'Missing data' in f):
+                    if len(self.unambigAtomNameMapping) > 0:
+                        if 'unambig_atom_id_remap' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['unambig_atom_id_remap'] = self.unambigAtomNameMapping
+                    if len(self.ambigAtomNameMapping) > 0:
+                        if 'ambig_atom_id_remap' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['ambig_atom_id_remap'] = self.ambigAtomNameMapping
+
+        finally:
+            self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 
     # Enter a parse tree produced by AmberMRParser#comment.
     def enterComment(self, ctx: AmberMRParser.CommentContext):  # pylint: disable=unused-argument

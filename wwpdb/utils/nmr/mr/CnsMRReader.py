@@ -50,6 +50,7 @@ class CnsMRReader:
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
+        self.__sll_pred = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
         self.__maxParserErrorReport = MAX_ERROR_REPORT
@@ -83,6 +84,9 @@ class CnsMRReader:
 
     def setParserMaxErrorReport(self, maxErrReport):
         self.__maxParserErrorReport = maxErrReport
+
+    def useSllPredMode(self):
+        self.__sll_pred = True
 
     def parse(self, mrFilePath, cifFilePath=None, isFilePath=True,
               createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
@@ -143,7 +147,7 @@ class CnsMRReader:
 
             stream = CommonTokenStream(lexer)
             parser = CnsMRParser(stream)
-            if not isFilePath or 'selected-as-res' in mrFilePath or self.__cR is None:
+            if not isFilePath or self.__sll_pred:
                 parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)

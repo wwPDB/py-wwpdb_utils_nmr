@@ -8524,8 +8524,7 @@ class XplorMRParserListener(ParseTreeListener):
             del _factor['alt_atom_id']
 
         if ambigAtomSelect or valid:
-            if key not in self.__cachedDictForFactor:
-                self.__cachedDictForFactor[key] = copy.deepcopy(_factor)
+            self.__cachedDictForFactor[key] = copy.deepcopy(_factor)
 
         return _factor
 

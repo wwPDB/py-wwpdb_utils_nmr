@@ -191,10 +191,8 @@ class GromacsMRReader:
                         self.__lfh.write(f"{description['marker']}\n")
 
             if self.__verbose:
-                if listener.warningMessage is not None:
-                    print(listener.warningMessage)
-
-            if self.__verbose:
+                if listener.warningMessage is not None and len(listener.warningMessage) > 0:
+                    print('\n'.join(listener.warningMessage))
                 if isFilePath:
                     print(listener.getContentSubtype())
 

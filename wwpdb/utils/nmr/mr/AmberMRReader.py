@@ -194,8 +194,8 @@ class AmberMRReader:
                             self.__lfh.write(f"{description['marker']}\n")
 
                 if self.__verbose:
-                    if listener.warningMessage is not None:
-                        print(listener.warningMessage)
+                    if listener.warningMessage is not None and len(listener.warningMessage) > 0:
+                        print('\n'.join(listener.warningMessage))
 
                 if self.__atomNumberDict is not None:
                     if self.__verbose:
@@ -268,8 +268,10 @@ class AmberMRReader:
                                 self.__lfh.write(f"{description['marker']}\n")
 
                     if self.__verbose:
-                        if listener.warningMessage is not None:
-                            print(listener.warningMessage)
+                        if listener.warningMessage is not None and len(listener.warningMessage) > 0:
+                            print('\n'.join(listener.warningMessage))
+                        if isFilePath:
+                            print(listener.getContentSubtype())
 
                 sanderAtomNumberDict = listener.getSanderAtomNumberDict()
                 if len(sanderAtomNumberDict) > 0:

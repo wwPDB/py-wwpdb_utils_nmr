@@ -143,7 +143,7 @@ class CharmmMRReader:
 
             stream = CommonTokenStream(lexer)
             parser = CharmmMRParser(stream)
-            if not isFilePath or 'selected-as-res' in mrFilePath:
+            if not isFilePath or 'selected-as-res' in mrFilePath or self.__cR is None:
                 parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
@@ -178,8 +178,8 @@ class CharmmMRReader:
                         self.__lfh.write(f"{description['marker']}\n")
 
             if self.__verbose:
-                if listener.warningMessage is not None:
-                    print(listener.warningMessage)
+                if listener.warningMessage is not None and len(listener.warningMessage) > 0:
+                    print('\n'.join(listener.warningMessage))
                 if isFilePath:
                     print(listener.getContentSubtype())
 

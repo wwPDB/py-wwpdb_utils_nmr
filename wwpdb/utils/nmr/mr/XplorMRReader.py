@@ -89,8 +89,8 @@ class XplorMRReader:
     def setParserMaxErrorReport(self, maxErrReport):
         self.__maxParserErrorReport = maxErrReport
 
-    def useSllPredMode(self):
-        self.__sll_pred = True
+    def setSllPredMode(self, ssl_pred):
+        self.__sll_pred = ssl_pred
 
     def parse(self, mrFilePath, cifFilePath=None, isFilePath=True,
               createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
@@ -211,6 +211,11 @@ class XplorMRReader:
 
 
 if __name__ == "__main__":
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5t1o/PCS_HN_EIN.tbl-corrected',
+                 '../../tests-nmr/mock-data-remediation/5t1o/5t1o.cif')
+
     reader = XplorMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\

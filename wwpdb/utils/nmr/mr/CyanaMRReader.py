@@ -93,8 +93,8 @@ class CyanaMRReader:
     def setParserMaxErrorReport(self, maxErrReport):
         self.__maxParserErrorReport = maxErrReport
 
-    def useSllPredMode(self):
-        self.__sll_pred = True
+    def setSllPredMode(self, ssl_pred):
+        self.__sll_pred = ssl_pred
 
     def parse(self, mrFilePath, cifFilePath=None, isFilePath=True,
               createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):

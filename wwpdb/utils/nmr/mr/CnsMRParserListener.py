@@ -5509,6 +5509,17 @@ class CnsMRParserListener(ParseTreeListener):
         if self.__sel_expr_debug:
             print("  " * self.depth + "exit_factor")
 
+        def set_store(num):
+            if self.__sel_expr_debug:
+                print("  " * self.depth + f"--> store{num}")
+            if len(self.storeSet[num]) == 0:
+                self.factor['atom_id'] = [None]
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                f"The 'store{num}' clause has no effect "
+                                "because the internal vector statement is not set.")
+            else:
+                self.factor = copy.copy(self.storeSet[num])
+
         try:
 
             # concatenation
@@ -7145,103 +7156,31 @@ class CnsMRParserListener(ParseTreeListener):
                 pass
 
             elif ctx.Store1():
-                if self.__sel_expr_debug:
-                    print("  " * self.depth + "--> store1")
-                if len(self.storeSet[1]) == 0:
-                    self.factor['atom_id'] = [None]
-                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
-                                    "The 'store1' clause has no effect "
-                                    "because the internal vector statement is not set.")
-                else:
-                    self.factor = copy.copy(self.storeSet[1])
+                set_store(1)
 
             elif ctx.Store2():
-                if self.__sel_expr_debug:
-                    print("  " * self.depth + "--> store2")
-                if len(self.storeSet[2]) == 0:
-                    self.factor['atom_id'] = [None]
-                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
-                                    "The 'store2' clause has no effect "
-                                    "because the internal vector statement is not set.")
-                else:
-                    self.factor = copy.copy(self.storeSet[2])
+                set_store(2)
 
             elif ctx.Store3():
-                if self.__sel_expr_debug:
-                    print("  " * self.depth + "--> store3")
-                if len(self.storeSet[3]) == 0:
-                    self.factor['atom_id'] = [None]
-                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
-                                    "The 'store3' clause has no effect "
-                                    "because the internal vector statement is not set.")
-                else:
-                    self.factor = copy.copy(self.storeSet[3])
+                set_store(3)
 
             elif ctx.Store4():
-                if self.__sel_expr_debug:
-                    print("  " * self.depth + "--> store4")
-                if len(self.storeSet[4]) == 0:
-                    self.factor['atom_id'] = [None]
-                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
-                                    "The 'store4' clause has no effect "
-                                    "because the internal vector statement is not set.")
-                else:
-                    self.factor = copy.copy(self.storeSet[4])
+                set_store(4)
 
             elif ctx.Store5():
-                if self.__sel_expr_debug:
-                    print("  " * self.depth + "--> store5")
-                if len(self.storeSet[5]) == 0:
-                    self.factor['atom_id'] = [None]
-                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
-                                    "The 'store5' clause has no effect "
-                                    "because the internal vector statement is not set.")
-                else:
-                    self.factor = copy.copy(self.storeSet[5])
+                set_store(5)
 
             elif ctx.Store6():
-                if self.__sel_expr_debug:
-                    print("  " * self.depth + "--> store6")
-                if len(self.storeSet[6]) == 0:
-                    self.factor['atom_id'] = [None]
-                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
-                                    "The 'store6' clause has no effect "
-                                    "because the internal vector statement is not set.")
-                else:
-                    self.factor = copy.copy(self.storeSet[6])
+                set_store(6)
 
             elif ctx.Store7():
-                if self.__sel_expr_debug:
-                    print("  " * self.depth + "--> store7")
-                if len(self.storeSet[7]) == 0:
-                    self.factor['atom_id'] = [None]
-                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
-                                    "The 'store7' clause has no effect "
-                                    "because the internal vector statement is not set.")
-                else:
-                    self.factor = copy.copy(self.storeSet[7])
+                set_store(7)
 
             elif ctx.Store8():
-                if self.__sel_expr_debug:
-                    print("  " * self.depth + "--> store8")
-                if len(self.storeSet[8]) == 0:
-                    self.factor['atom_id'] = [None]
-                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
-                                    "The 'store8' clause has no effect "
-                                    "because the internal vector statement is not set.")
-                else:
-                    self.factor = copy.copy(self.storeSet[8])
+                set_store(8)
 
             elif ctx.Store9():
-                if self.__sel_expr_debug:
-                    print("  " * self.depth + "--> store9")
-                if len(self.storeSet[9]) == 0:
-                    self.factor['atom_id'] = [None]
-                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
-                                    "The 'store9' clause has no effect "
-                                    "because the internal vector statement is not set.")
-                else:
-                    self.factor = copy.copy(self.storeSet[9])
+                set_store(9)
 
             elif ctx.Tag():
                 if self.__sel_expr_debug:

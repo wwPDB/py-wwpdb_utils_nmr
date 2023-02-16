@@ -2297,13 +2297,13 @@ def translateToStdResName(compId, ccU=None):
 
         if _compId in monDict3:
             return _compId
-        """ do not use
-        if _compId.endswith('5') or _compId.endswith('3'):
-            _compId = _compId[:-1]
-
-            if _compId in monDict3:
-                return _compId
-        """
+        # """ do not use
+        # if _compId.endswith('5') or _compId.endswith('3'):
+        #     _compId = _compId[:-1]
+        #
+        #     if _compId in monDict3:
+        #         return _compId
+        # """
     if compId in ('HIE', 'HIP', 'HID'):
         return 'HIS'
 

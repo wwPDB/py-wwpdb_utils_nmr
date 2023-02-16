@@ -10338,7 +10338,7 @@ class NmrDpUtility:
                                  'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn',
                                  'nm-res-syb', 'nm-res-isd', 'nm-res-cha'):
                     sll_pred = False
-                    if file_path in self.__sll_pred_holder[file_path] and file_type in self.__sll_pred_holder[file_path]:
+                    if file_path in self.__sll_pred_holder and file_type in self.__sll_pred_holder[file_path]:
                         sll_pred = self.__sll_pred_holder[file_path][file_type]
 
                     reader = self.__getSimpleMrPtFileReader(file_type, self.__verbose, sll_pred=sll_pred)
@@ -13016,130 +13016,127 @@ class NmrDpUtility:
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
-        if len(valid_types) == 0:
+        if (not is_valid or multiple_check) and file_type != 'nm-res-amb':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-amb')
 
-            if (not is_valid or multiple_check) and file_type != 'nm-res-amb':
-                _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                    self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-amb')
+            is_valid |= is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
 
-                is_valid |= is_valid
-                err += _err
-                if _genuine_type is not None:
-                    genuine_type.append(_genuine_type)
+        if (not is_valid or multiple_check) and file_type != 'nm-aux-amb':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-amb')
+
+            is_valid |= is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-cya':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cya')
+
+            is_valid |= is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-ros':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-ros')
+
+            is_valid |= is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-bio':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-bio')
+
+            is_valid |= is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-gro':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-gro')
+
+            is_valid |= is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-aux-gro':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-gro')
+
+            is_valid |= is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-dyn':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-dyn')
+
+            is_valid |= is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-syb':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-syb')
+
+            is_valid |= is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-isd':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-isd')
+
+            is_valid |= is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
                 valid_types.update(_valid_types)
                 possible_types.update(_possible_types)
 
-            if (not is_valid or multiple_check) and file_type != 'nm-aux-amb':
-                _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                    self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-amb')
+        if (not is_valid or multiple_check) and file_type != 'nm-res-cha':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cha',
+                                                                    agreed_w_cns=agreed_w_cns)
 
-                is_valid |= is_valid
-                err += _err
-                if _genuine_type is not None:
-                    genuine_type.append(_genuine_type)
+            is_valid |= is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
                 valid_types.update(_valid_types)
                 possible_types.update(_possible_types)
-
-            if len(valid_types) == 0:
-
-                if (not is_valid or multiple_check) and file_type != 'nm-res-cya':
-                    _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                        self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cya')
-
-                    is_valid |= is_valid
-                    err += _err
-                    if _genuine_type is not None:
-                        genuine_type.append(_genuine_type)
-                    valid_types.update(_valid_types)
-                    possible_types.update(_possible_types)
-
-                if (not is_valid or multiple_check) and file_type != 'nm-res-ros':
-                    _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                        self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-ros')
-
-                    is_valid |= is_valid
-                    err += _err
-                    if _genuine_type is not None:
-                        genuine_type.append(_genuine_type)
-                    valid_types.update(_valid_types)
-                    possible_types.update(_possible_types)
-
-                if (not is_valid or multiple_check) and file_type != 'nm-res-bio':
-                    _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                        self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-bio')
-
-                    is_valid |= is_valid
-                    err += _err
-                    if _genuine_type is not None:
-                        genuine_type.append(_genuine_type)
-                    valid_types.update(_valid_types)
-                    possible_types.update(_possible_types)
-
-                if (not is_valid or multiple_check) and file_type != 'nm-res-gro':
-                    _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                        self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-gro')
-
-                    is_valid |= is_valid
-                    err += _err
-                    if _genuine_type is not None:
-                        genuine_type.append(_genuine_type)
-                    valid_types.update(_valid_types)
-                    possible_types.update(_possible_types)
-
-                if (not is_valid or multiple_check) and file_type != 'nm-aux-gro':
-                    _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                        self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-gro')
-
-                    is_valid |= is_valid
-                    err += _err
-                    if _genuine_type is not None:
-                        genuine_type.append(_genuine_type)
-                    valid_types.update(_valid_types)
-                    possible_types.update(_possible_types)
-
-                if (not is_valid or multiple_check) and file_type != 'nm-res-dyn':
-                    _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                        self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-dyn')
-
-                    is_valid |= is_valid
-                    err += _err
-                    if _genuine_type is not None:
-                        genuine_type.append(_genuine_type)
-                    valid_types.update(_valid_types)
-                    possible_types.update(_possible_types)
-
-                if (not is_valid or multiple_check) and file_type != 'nm-res-syb':
-                    _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                        self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-syb')
-
-                    is_valid |= is_valid
-                    err += _err
-                    if _genuine_type is not None:
-                        genuine_type.append(_genuine_type)
-                    valid_types.update(_valid_types)
-                    possible_types.update(_possible_types)
-
-                if (not is_valid or multiple_check) and file_type != 'nm-res-isd':
-                    _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                        self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-isd')
-
-                    is_valid |= is_valid
-                    err += _err
-                    if _genuine_type is not None:
-                        genuine_type.append(_genuine_type)
-                        valid_types.update(_valid_types)
-                        possible_types.update(_possible_types)
-
-                if (not is_valid or multiple_check) and file_type != 'nm-res-cha':
-                    _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                        self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cha')
-
-                    is_valid |= is_valid
-                    err += _err
-                    if _genuine_type is not None:
-                        genuine_type.append(_genuine_type)
-                        valid_types.update(_valid_types)
-                        possible_types.update(_possible_types)
 
         if len(genuine_type) != 1:
             _valid_types = [k for k, v in sorted(valid_types.items(), key=lambda x: x[1], reverse=True)]

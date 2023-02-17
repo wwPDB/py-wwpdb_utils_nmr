@@ -6028,6 +6028,8 @@ class NmrDpUtility:
         # ParserListerUtil.coordAssemblyChecker()
         self.__caC = None
 
+        # set of entity_assembly_id having experimental data
+        self.__ent_asym_id_with_exptl_data = set()
         # set of label_aysm_id having experimental data
         self.__label_asym_id_with_exptl_data = set()
         # set of auth_asym_id indicating occurence of chemical exchange (eNOE)
@@ -22489,9 +22491,6 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
 
-            # if self.__remediation_mode and file_type == 'nmr-star':
-            #     modified |= self.__remediateCsLoop__(file_list_id, file_type, content_subtype, sf_data, sf_framecode, lp_category)
-
         except StopIteration:
 
             err = f"Assigned chemical shifts of {sf_framecode!r} saveframe did not parsed properly. Please fix problems reported."
@@ -22624,6 +22623,39 @@ class NmrDpUtility:
                     list_id += 1
 
             if modified:
+
+                # update _Entity_assembly.Experimental_data_reported
+
+                if file_type == 'nmr-star' and len(self.__ent_asym_id_with_exptl_data) > 0:
+
+                    _content_subtype = 'poly_seq'
+
+                    _sf_category = self.sf_categories[file_type][_content_subtype]
+
+                    try:
+
+                        _sf_data = self.__star_data[fileListId].get_saveframes_by_category(_sf_category)[0]
+
+                        try:
+                            if __pynmrstar_v3_2__:
+                                _loop = _sf_data.get_loop('_Entity_assembly')
+                            else:
+                                _loop = _sf_data.get_loop_by_category('_Entity_assembly')
+
+                            if 'Experimental_data_reported' in _loop.tags:
+                                id_col = _loop.tags.index('ID')
+                                exptl_data_rep_col = _loop.tags.index('Experimental_data_reported')
+
+                                for _row in _loop:
+                                    if _row[id_col] in self.__ent_asym_id_with_exptl_data:
+                                        _row[exptl_data_rep_col] = 'yes'
+
+                        except KeyError:
+                            pass
+
+                    except IndexError:
+                        pass
+
                 self.__depositNmrData()
 
         return self.report.getTotalErrors() == __errors
@@ -22987,6 +23019,8 @@ class NmrDpUtility:
             auth_to_ins_code = self.__caC['auth_to_ins_code']
             coord_atom_site = self.__caC['coord_atom_site']
 
+            _auth_to_orig_seq = {}
+
             has_auth_seq = valid_auth_seq = False
 
             if self.__remediation_mode:
@@ -23242,12 +23276,16 @@ class NmrDpUtility:
                         seq_key = (auth_asym_id, int(auth_seq_id), auth_comp_id)
                         _seq_key = (seq_key[0], seq_key[1])
                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                        self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
                         _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
                         if has_ins_code and seq_key in auth_to_ins_code:
                             _row[27] = auth_to_ins_code[seq_key]
 
                         if seq_key in auth_to_orig_seq:
+                            if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
+                                orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
                             if not has_orig_seq:
                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                 if orig_seq_id in emptyValue:
@@ -23257,6 +23295,10 @@ class NmrDpUtility:
                                 _row[20], _row[21], _row[22], _row[23] =\
                                     auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
                             elif any(d in emptyValue for d in orig_dat[idx]):
+                                if seq_key in _auth_to_orig_seq:
+                                    _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
+                                if _row[23] in emptyValue:
+                                    _row[23] = atom_id
                                 ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                                 if ambig_code > 0:
                                     orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
@@ -23306,12 +23348,16 @@ class NmrDpUtility:
                             _seq_key = (seq_key[0], seq_key[1])
                             if seq_key in auth_to_star_seq:
                                 entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
                                 _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
                                 if has_ins_code and seq_key in auth_to_ins_code:
                                     _row[27] = auth_to_ins_code[seq_key]
 
                                 if seq_key in auth_to_orig_seq:
+                                    if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
+                                        orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                        _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
                                     if not has_orig_seq:
                                         orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                         if orig_seq_id in emptyValue:
@@ -23321,6 +23367,10 @@ class NmrDpUtility:
                                         _row[20], _row[21], _row[22], _row[23] =\
                                             auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
                                     elif any(d in emptyValue for d in orig_dat[idx]):
+                                        if seq_key in _auth_to_orig_seq:
+                                            _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
+                                        if _row[23] in emptyValue:
+                                            _row[23] = atom_id
                                         ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                                         if ambig_code > 0:
                                             orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
@@ -23394,12 +23444,16 @@ class NmrDpUtility:
                         _seq_key = (seq_key[0], seq_key[1])
                         if seq_key in auth_to_star_seq:
                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                            self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
                             _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
                             if has_ins_code and seq_key in auth_to_ins_code:
                                 _row[27] = auth_to_ins_code[seq_key]
 
                             if seq_key in auth_to_orig_seq:
+                                if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
+                                    orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                    _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
                                 if not has_orig_seq:
                                     orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                     if orig_seq_id in emptyValue:
@@ -23409,6 +23463,10 @@ class NmrDpUtility:
                                     _row[20], _row[21], _row[22], _row[23] =\
                                         auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
                                 elif any(d in emptyValue for d in orig_dat[idx]):
+                                    if seq_key in _auth_to_orig_seq:
+                                        _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
+                                    if _row[23] in emptyValue:
+                                        _row[23] = atom_id
                                     ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                                     if ambig_code > 0:
                                         orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
@@ -36442,6 +36500,7 @@ class NmrDpUtility:
                 self.__coord_near_para_ferro = {}
                 self.__coord_bond_length = {}
                 self.__caC = None
+                self.__ent_asym_id_with_exptl_data = set()
                 self.__label_asym_id_with_exptl_data = set()
                 self.__auth_asym_ids_with_chem_exch = {}
                 self.__auth_seq_ids_with_chem_exch = {}

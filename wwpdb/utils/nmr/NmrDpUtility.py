@@ -21348,7 +21348,8 @@ class NmrDpUtility:
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
-                                        if self.__bmrb_only and file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
+                                        if self.__bmrb_only and file_type == 'nmr-star' and details_col != -1\
+                                           and pa['distance'] > self.vicinity_paramagnetic:
                                             _details = loop.data[idx][details_col]
                                             details = f"{full_value_name} {value} is not within expected range "\
                                                 f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
@@ -21899,7 +21900,8 @@ class NmrDpUtility:
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
-                                        if self.__bmrb_only and file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
+                                        if self.__bmrb_only and file_type == 'nmr-star' and details_col != -1\
+                                           and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
                                             _details = loop.data[idx][details_col]
                                             details = f"{full_value_name} {value} is not within expected range "\
                                                 f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
@@ -21947,7 +21949,8 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
-                                    if self.__bmrb_only and file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
+                                    if self.__bmrb_only and file_type == 'nmr-star' and details_col != -1\
+                                       and pa['distance'] > self.vicinity_paramagnetic:
                                         _details = loop.data[idx][details_col]
                                         details = f"{full_value_name} {value} is not within expected range "\
                                             f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
@@ -40055,10 +40058,13 @@ class NmrDpUtility:
                 if len(self.__auth_asym_ids_with_chem_exch) > 0:
                     auth_asym_id = row[5]
                     if auth_asym_id in self.__auth_asym_ids_with_chem_exch.keys():
+                        conformational_states = len(self.__auth_asym_ids_with_chem_exch[auth_asym_id]) + 1
+                        beg_model_id = 1
+                        end_model_id = self.__total_models // conformational_states
                         seq_ids = [k for k, v in self.__auth_seq_ids_with_chem_exch.items()
                                    if v['chain_id'] == auth_asym_id]
-                        row[12] = f'Conformational isomer 1 identified by eNOE, '\
-                            f'original sequence number range {min(seq_ids)}-{max(seq_ids)}'
+                        row[12] = f'Conformational isomer 1, PDB_model_num range: {beg_model_id}-{end_model_id}, '\
+                            f'original sequence number range: {min(seq_ids)}-{max(seq_ids)}'
 
                 ea_loop.add_data(row)
 
@@ -40077,10 +40083,14 @@ class NmrDpUtility:
                             _row[0] = _entity_assembly_id
                             _row[1] = f'entity_{entity_id}_{offset}'
                             _row[5] = _auth_asym_id
+                            conformational_states = len(self.__auth_asym_ids_with_chem_exch[auth_asym_id]) + 1
+                            model_ids_per_state = self.__total_models // conformational_states
+                            beg_model_id = 1 + model_ids_per_state * (offset - 1)
+                            end_model_id = model_ids_per_state * offset
                             seq_ids = [k for k, v in self.__auth_seq_ids_with_chem_exch.items()
                                        if v['chain_id'] == _auth_asym_id]
-                            _row[12] = f'Conformational isomer {offset} identified by eNOE, '\
-                                f'original sequence number range {min(seq_ids)}-{max(seq_ids)}'
+                            _row[12] = f'Conformational isomer {offset}, PDB_model_num range: {beg_model_id}-{end_model_id}, '\
+                                f'original sequence number range: {min(seq_ids)}-{max(seq_ids)}'
 
                             ea_loop.add_data(_row)
 

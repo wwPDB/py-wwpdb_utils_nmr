@@ -40023,10 +40023,10 @@ class NmrDpUtility:
             asm_sf.add_tag('Number_of_components', components_ex_water)
             asm_sf.add_tag('Organic_ligands', ligand_total if ligand_total > 0 else None)
             asm_sf.add_tag('Metal_ions', ion_total if ion_total > 0 else None)
-            asm_sf.add_tag('Non_standard_bonds', None)
+            asm_sf.add_tag('Non_standard_bonds', None)  # filled 'yes' if the assembly contains non-standard bonds
             asm_sf.add_tag('Ambiguous_conformational_states', None)
             asm_sf.add_tag('Ambiguous_chem_comp_sites', None)
-            asm_sf.add_tag('Molecules_in_chemical_exchange', None)
+            asm_sf.add_tag('Molecules_in_chemical_exchange', None)  # filled 'yes' if conformational isomers exist
             asm_sf.add_tag('Paramagnetic', 'yes' if paramag else 'no')
             asm_sf.add_tag('Thiol_state', thiol_state)
             asm_sf.add_tag('Molecular_mass', f'{formula_weight:.3f}' if isinstance(formula_weight, float) else None)
@@ -40124,6 +40124,7 @@ class NmrDpUtility:
                                    if v['chain_id'] == auth_asym_id]
                         row[12] = f'Conformational isomer 1, PDB_model_num range: {beg_model_id}-{end_model_id}, '\
                             f'original sequence number range: {min(seq_ids)}-{max(seq_ids)}'
+                        set_sf_tag(asm_sf, 'Molecules_in_chemical_exchange', 'yes')
 
                 ea_loop.add_data(row)
 
@@ -40576,6 +40577,8 @@ class NmrDpUtility:
 
                 index = 1
 
+                non_std_bond = False
+
                 for bond in bonds:
                     bond_type = bond['conn_type_id']
                     auth_asym_id_1 = bond['ptnr1_auth_asym_id']
@@ -40593,8 +40596,10 @@ class NmrDpUtility:
 
                     if bond_type == 'covale':
                         row[1], row[2] = 'covalent', 'sing'
+                        non_std_bond = True
                     elif bond_type.startswith('covale_'):  # 'covale_base', 'covale_phosphate', 'covale_sugar'
                         row[1] = 'covalent'
+                        non_std_bond = True
                     elif bond_type == 'disulf':
                         row[1], row[2] = 'disulfide', 'sing'
                     elif bond_type == 'hydrog':
@@ -40602,11 +40607,14 @@ class NmrDpUtility:
                         continue
                     elif bond_type == 'metalc':
                         row[1], row[2] = 'metal coordination', 'sing'
+                        non_std_bond = True
                     elif bond_type == 'mismat':
                         row[1] = 'na'
+                        non_std_bond = True
                         continue
                     elif bond_type == 'modres':
                         row[1] = 'na'
+                        non_std_bond = True
                         continue
                     elif bond_type == 'saltbr':
                         row[1] = 'na'
@@ -40653,6 +40661,9 @@ class NmrDpUtility:
 
                 if index > 1:
                     asm_sf.add_loop(b_loop)
+
+                if non_std_bond:
+                    set_sf_tag(asm_sf, 'Non_standard_bonds', 'yes')
 
                 bonds_w_leaving = [bond for bond in bonds if bond['pdbx_leaving_atom_flag'] in ('both', 'one')]
 
@@ -48903,7 +48914,6 @@ class NmrDpUtility:
 
                 for sf in master_entry.get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
-                    tagNames = [t[0] for t in sf.tags]
 
                     row = [None] * len(tags)
 

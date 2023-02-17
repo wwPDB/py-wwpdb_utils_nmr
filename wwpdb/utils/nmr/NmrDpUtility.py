@@ -21245,7 +21245,7 @@ class NmrDpUtility:
                                             if self.__verbose:
                                                 self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {err}\n")
 
-                                            if file_type == 'nmr-star' and details_col != -1:
+                                            if self.__bmrb_only and file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[idx][details_col]
                                                 details = f"{full_value_name} {value} is not within expected range "\
                                                     f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
@@ -21299,7 +21299,7 @@ class NmrDpUtility:
                                             if self.__verbose:
                                                 self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
-                                            if file_type == 'nmr-star' and details_col != -1\
+                                            if self.__bmrb_only and file_type == 'nmr-star' and details_col != -1\
                                                and (na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
                                                 _details = loop.data[idx][details_col]
                                                 details = f"{full_value_name} {value} is not within expected range "\
@@ -21348,7 +21348,7 @@ class NmrDpUtility:
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
-                                        if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
+                                        if self.__bmrb_only and file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
                                             _details = loop.data[idx][details_col]
                                             details = f"{full_value_name} {value} is not within expected range "\
                                                 f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
@@ -21537,7 +21537,7 @@ class NmrDpUtility:
                                             if self.__verbose:
                                                 self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {err}\n")
 
-                                            if file_type == 'nmr-star' and details_col != -1:
+                                            if self.__bmrb_only and file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[idx][details_col]
                                                 details = f"{full_value_name} {value} is not within expected range "\
                                                     f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
@@ -21590,7 +21590,7 @@ class NmrDpUtility:
                                                 if self.__verbose:
                                                     self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
-                                                if file_type == 'nmr-star' and details_col != -1:
+                                                if self.__bmrb_only and file_type == 'nmr-star' and details_col != -1:
                                                     _details = loop.data[idx][details_col]
                                                     details = f"{full_value_name} {value} is not within expected range "\
                                                         f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
@@ -21640,7 +21640,7 @@ class NmrDpUtility:
                                             if self.__verbose:
                                                 self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
-                                            if file_type == 'nmr-star' and details_col != -1:
+                                            if self.__bmrb_only and file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[idx][details_col]
                                                 details = f"{full_value_name} {value} is not within expected range "\
                                                     f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
@@ -21846,7 +21846,7 @@ class NmrDpUtility:
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {err}\n")
 
-                                        if file_type == 'nmr-star' and details_col != -1:
+                                        if self.__bmrb_only and file_type == 'nmr-star' and details_col != -1:
                                             _details = loop.data[idx][details_col]
                                             details = f"{full_value_name} {value} is not within expected range "\
                                                 f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
@@ -21899,7 +21899,7 @@ class NmrDpUtility:
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
-                                        if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
+                                        if self.__bmrb_only and file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
                                             _details = loop.data[idx][details_col]
                                             details = f"{full_value_name} {value} is not within expected range "\
                                                 f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
@@ -21947,7 +21947,7 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
-                                    if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
+                                    if self.__bmrb_only and file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
                                         _details = loop.data[idx][details_col]
                                         details = f"{full_value_name} {value} is not within expected range "\
                                             f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
@@ -39098,7 +39098,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__testCoordAtomIdConsistency() ++ Warning  - {err}\n")
 
-                        if cyclic and file_type == 'nmr-star' and seq_id == 1 and details_col != -1:
+                        if cyclic and self.__bmrb_only and file_type == 'nmr-star' and seq_id == 1 and details_col != -1:
                             _details = loop.data[idx][details_col]
                             details = f"{chain_id}:{seq_id}:{comp_id}:{atom_name} is not present in the coordinate. "\
                                 "However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n"
@@ -46359,6 +46359,30 @@ class NmrDpUtility:
         master_entry.entry_id = f'nef_{self.__entry_id.lower()}'
 
         self.__c2S.set_entry_id(master_entry, self.__entry_id)
+
+        # remove _Audit loop if exists
+
+        content_subtype = 'entry_info'
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+
+        try:
+
+            sf_data = master_entry.get_saveframes_by_category(sf_category)[0]
+
+            try:
+                if __pynmrstar_v3_2__:
+                    loop = sf_data.get_loop('_Audit')
+                else:
+                    loop = sf_data.get_loop_by_category('_Audit')
+
+                del sf_data[loop]
+
+            except KeyError:
+                pass
+
+        except IndexError:
+            pass
 
         # Refresh _Constraint_stat_list saveframe
 

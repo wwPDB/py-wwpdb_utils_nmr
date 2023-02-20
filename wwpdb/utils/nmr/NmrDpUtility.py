@@ -23326,17 +23326,15 @@ class NmrDpUtility:
                                             if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
                             if seq_key is not None:
                                 _seq_key = (seq_key[0], seq_key[1])
+                                _row[16], _row[17], _row[18], _row[19] =\
+                                    seq_key[0], seq_key[1], seq_key[2], atom_id
+
+                                if has_ins_code and seq_key in auth_to_ins_code:
+                                    _row[27] = auth_to_ins_code[seq_key]
 
                             _row[20], _row[21], _row[22], _row[23] =\
                                 row[auth_asym_id_col], row[auth_seq_id_col],\
                                 row[auth_comp_id_col], row[auth_atom_id_col]
-
-                            if seq_key is not None:
-                                _row[16], _row[17], _row[18], _row[19] =\
-                                    seq_key[0], seq_key[1], seq_key[2], None
-
-                                if has_ins_code and seq_key in auth_to_ins_code:
-                                    _row[27] = auth_to_ins_code[seq_key]
 
                         index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
 
@@ -23398,17 +23396,15 @@ class NmrDpUtility:
                                                     if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
                                     if seq_key is not None:
                                         _seq_key = (seq_key[0], seq_key[1])
+                                        _row[16], _row[17], _row[18], _row[19] =\
+                                            seq_key[0], seq_key[1], seq_key[2], atom_id
+
+                                        if has_ins_code and seq_key in auth_to_ins_code:
+                                            _row[27] = auth_to_ins_code[seq_key]
 
                                     _row[20], _row[21], _row[22], _row[23] =\
                                         row[auth_asym_id_col], row[auth_seq_id_col],\
                                         row[auth_comp_id_col], row[auth_atom_id_col]
-
-                                    if seq_key is not None:
-                                        _row[16], _row[17], _row[18], _row[19] =\
-                                            seq_key[0], seq_key[1], seq_key[2], None
-
-                                        if has_ins_code and seq_key in auth_to_ins_code:
-                                            _row[27] = auth_to_ins_code[seq_key]
 
                                 index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
 
@@ -23445,8 +23441,11 @@ class NmrDpUtility:
                         if seq_key in auth_to_star_seq:
                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                             self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
-                            _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
+                            _row[1], _row[2], _row[3], _row[4] =\
+                                entity_assembly_id, entity_id, seq_id, seq_id
 
+                            _row[16], _row[17], _row[18], _row[19] =\
+                                auth_asym_id, auth_seq_id, comp_id, atom_id
                             if has_ins_code and seq_key in auth_to_ins_code:
                                 _row[27] = auth_to_ins_code[seq_key]
 
@@ -23494,17 +23493,14 @@ class NmrDpUtility:
                                                 if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
                                 if seq_key is not None:
                                     _seq_key = (seq_key[0], seq_key[1])
+                                    _row[16], _row[17], _row[18], _row[19] =\
+                                        seq_key[0], seq_key[1], seq_key[2], atom_id
+                                    if has_ins_code and seq_key in auth_to_ins_code:
+                                        _row[27] = auth_to_ins_code[seq_key]
 
                                 _row[20], _row[21], _row[22], _row[23] =\
                                     row[auth_asym_id_col], row[auth_seq_id_col],\
                                     row[auth_comp_id_col], row[auth_atom_id_col]
-
-                                if seq_key is not None:
-                                    _row[16], _row[17], _row[18], _row[19] =\
-                                        seq_key[0], seq_key[1], seq_key[2], None
-
-                                    if has_ins_code and seq_key in auth_to_ins_code:
-                                        _row[27] = auth_to_ins_code[seq_key]
 
                             index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
 
@@ -23522,17 +23518,14 @@ class NmrDpUtility:
                                                 if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
                                 if seq_key is not None:
                                     _seq_key = (seq_key[0], seq_key[1])
+                                    _row[16], _row[17], _row[18], _row[19] =\
+                                        seq_key[0], seq_key[1], seq_key[2], atom_id
+                                    if has_ins_code and seq_key in auth_to_ins_code:
+                                        _row[27] = auth_to_ins_code[seq_key]
 
                                 _row[20], _row[21], _row[22], _row[23] =\
                                     row[auth_asym_id_col], row[auth_seq_id_col],\
                                     row[auth_comp_id_col], row[auth_atom_id_col]
-
-                                if seq_key is not None:
-                                    _row[16], _row[17], _row[18], _row[19] =\
-                                        seq_key[0], seq_key[1], seq_key[2], None
-
-                                    if has_ins_code and seq_key in auth_to_ins_code:
-                                        _row[27] = auth_to_ins_code[seq_key]
 
                                 index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
 
@@ -23560,17 +23553,14 @@ class NmrDpUtility:
                                                     if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
                                     if seq_key is not None:
                                         _seq_key = (seq_key[0], seq_key[1])
+                                        _row[16], _row[17], _row[18], _row[19] =\
+                                            seq_key[0], seq_key[1], seq_key[2], atom_id
+                                        if has_ins_code and seq_key in auth_to_ins_code:
+                                            _row[27] = auth_to_ins_code[seq_key]
 
                                     _row[20], _row[21], _row[22], _row[23] =\
                                         row[auth_asym_id_col], row[auth_seq_id_col],\
                                         row[auth_comp_id_col], row[auth_atom_id_col]
-
-                                    if seq_key is not None:
-                                        _row[16], _row[17], _row[18], _row[19] =\
-                                            seq_key[0], seq_key[1], seq_key[2], None
-
-                                        if has_ins_code and seq_key in auth_to_ins_code:
-                                            _row[27] = auth_to_ins_code[seq_key]
 
                                     index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
 

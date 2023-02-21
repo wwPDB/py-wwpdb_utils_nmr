@@ -1100,6 +1100,9 @@ class NmrDpUtility:
         # whether legacy distance restraint has been uploaded
         self.__legacy_dist_restraint_uploaded = False
 
+        # whether stereo-array isotope labeling method has been applied for the study
+        self.__sail_flag = False
+
         # source, destination, and log file paths
         self.__srcPath = None
         self.__srcName = None
@@ -22672,6 +22675,51 @@ class NmrDpUtility:
         if not has_poly_seq_in_loop:
             return False
 
+        try:
+
+            if file_type == 'nmr-star':
+
+                _lp_category = '_Systematic_chem_shift_offset'
+
+                if __pynmrstar_v3_2__:
+                    _loop = sf_data.get_loop(_lp_category)
+                else:
+                    _loop = sf_data.get_loop_by_category(_lp_category)
+
+                    if 'Type' in _loop.tags:
+                        type_col = _loop.tags.index('Type')
+                        for _row in _loop:
+                            if _row[type_col] in emptyValue:
+                                continue
+                            if _row[type_col] == 'SAIL isotope labeling':
+                                self.__sail_flag = True
+                                break
+
+                if 'sample' in self.__sf_category_list\
+                   and '_Sample_component' in self.__lp_category_list:
+
+                    _lp_category = '_Sample_component'
+
+                    for _sf_data in self.__star_data[file_list_id].get_saveframes_by_category('sample'):
+
+                        if __pynmrstar_v3_2__:
+                            _loop = _sf_data.get_loop(_lp_category)
+                        else:
+                            _loop = _sf_data.get_loop_by_category(_lp_category)
+
+                        if 'Isotopic_labeling' in _loop.tags:
+                            isotopic_labeling_col = _loop.tags.index('Isotopic_labeling')
+                            for _row in _loop:
+                                if _row[isotopic_labeling_col] in emptyValue:
+                                    continue
+                                text = _row[isotopic_labeling_col].lower()
+                                if 'sail' in text or 'stereo-array isotope labeling' in text:
+                                    self.__sail_flag = True
+                                    break
+
+        except KeyError:
+            pass
+
         if self.__caC is None:
             self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
                                               self.__representative_model_id,
@@ -22740,13 +22788,21 @@ class NmrDpUtility:
 
             return auth_asym_id, auth_seq_id
 
-        def fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id):
+        def fill_cs_row(lp, idx, index, _row, coord_atom_site, _seq_key, comp_id, atom_id):
             fill_auth_atom_id = _row[19] in emptyValue and _row[18] not in emptyValue
 
             if _seq_key in coord_atom_site:
                 _coord_atom_site = coord_atom_site[_seq_key]
                 _row[5] = comp_id
-                if atom_id in _coord_atom_site['atom_id']:
+                valid = True
+                if atom_id in self.__csStat.getRepresentativeMethylProtons(comp_id):
+                    valid = self.__sail_flag
+                    if idx + 1 < len(loop.data):
+                        __row = loop.data[idx + 1]
+                        if __row[1] == _row[1] and __row[3] == _row[3] and __row[5] == _row[5]\
+                           and _row[6] in self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True):
+                            valid = True
+                if atom_id in _coord_atom_site['atom_id'] and valid:
                     _row[6] = atom_id
                     if fill_auth_atom_id:
                         _row[19] = _row[6]
@@ -22762,6 +22818,8 @@ class NmrDpUtility:
                         atom_id = 'H1'
                         if fill_auth_atom_id:
                             _row[19] = atom_id
+                    if not valid:
+                        atom_id = atom_id[:-1]
                     atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                     if len(atom_ids) == 0:
                         atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
@@ -23336,7 +23394,7 @@ class NmrDpUtility:
                                 row[auth_asym_id_col], row[auth_seq_id_col],\
                                 row[auth_comp_id_col], row[auth_atom_id_col]
 
-                        index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
+                        index, _row = fill_cs_row(lp, idx, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
 
                     elif auth_asym_id not in emptyValue and auth_seq_id not in emptyValue and auth_comp_id not in emptyValue:
 
@@ -23406,7 +23464,7 @@ class NmrDpUtility:
                                         row[auth_asym_id_col], row[auth_seq_id_col],\
                                         row[auth_comp_id_col], row[auth_atom_id_col]
 
-                                index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
+                                index, _row = fill_cs_row(lp, idx, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
 
                             else:
                                 resolved = False
@@ -23502,7 +23560,7 @@ class NmrDpUtility:
                                     row[auth_asym_id_col], row[auth_seq_id_col],\
                                     row[auth_comp_id_col], row[auth_atom_id_col]
 
-                            index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
+                            index, _row = fill_cs_row(lp, idx, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
 
                         else:
 
@@ -23527,7 +23585,7 @@ class NmrDpUtility:
                                     row[auth_asym_id_col], row[auth_seq_id_col],\
                                     row[auth_comp_id_col], row[auth_atom_id_col]
 
-                                index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
+                                index, _row = fill_cs_row(lp, idx, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
 
                             else:
                                 resolved = False
@@ -23562,7 +23620,7 @@ class NmrDpUtility:
                                         row[auth_asym_id_col], row[auth_seq_id_col],\
                                         row[auth_comp_id_col], row[auth_atom_id_col]
 
-                                    index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
+                                    index, _row = fill_cs_row(lp, idx, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
 
                             except ValueError:
                                 resolved = False
@@ -39674,6 +39732,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__deleteSkippedLoop() ++ Error  - {err}\n")
 
                     else:
+
                         if __pynmrstar_v3_2__:
                             del sf_data[sf_data.get_loop(w['category'])]
                         else:
@@ -39906,6 +39965,22 @@ class NmrDpUtility:
                            if item['entity_type'] == 'non-polymer' and 'ION' not in item['entity_desc'])
         ion_total = sum(len(item['label_asym_id'].split(',')) for item in self.__caC['entity_assembly']
                         if item['entity_type'] == 'non-polymer' and 'ION' in item['entity_desc'])
+
+        self.__sail_flag = False
+
+        if self.__cR.hasItem('struct_keywords', 'text'):
+            struct_keywords = self.__cR.getDictList('struct_keywords')
+            text = struct_keywords[0]['text'].lower()
+            if 'sail' in text or 'stereo-array isotope labeling' in text:
+                self.__sail_flag = True
+
+        if self.__cR.hasItem('pdbx_nmr_exptl_sample', 'isotopic_labeling'):
+            exptl_sample = self.__cR.getDictList('pdbx_nmr_exptl_sample')
+            for item in exptl_sample:
+                text = item['isotopic_labeling'].lower()
+                if 'sail' in text or 'stereo-array isotope labeling' in text:
+                    self.__sail_flag = True
+                    break
 
         chem_comp = self.__cR.getDictList('chem_comp')
 
@@ -46119,8 +46194,8 @@ class NmrDpUtility:
                 for tag in loop.tags:
                     lp.add_tag(lp_category + '.' + tag)
 
-                for j, i in enumerate(loop, start=1):
-                    lp.add_data([str(j)] + i)
+                for index, row in enumerate(loop, start=1):
+                    lp.add_data([str(index)] + row)
 
                 del sf_data[loop]
 

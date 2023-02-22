@@ -190,35 +190,49 @@ class ChemCompUtil:
 
         return atmList
 
-    def getRepresentativeMethylProtons(self, compId):
+    def getRepMethylProtons(self, compId):
         """ Return representative protons in methyl group of a given comp_id.
         """
 
-        ends_w_num = [a for a in self.getMethylAtoms(compId) if a.startswith('H') and a[-1].isdigit()]
-        ends_w_alp = [a for a in self.getMethylAtoms(compId) if a.startswith('H') and not a[-1].isdigit()]
-        starts_w_num = [a for a in self.getMethylAtoms(compId) if len(a) > 1 and a[0] in ('1', '2', '3') and a[1] == 'H']
+        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+            return []
 
         atmList = []
 
-        if len(ends_w_num) > 0:
-            atmList.extend([a for a in ends_w_num if a.endswith('1')])
+        carbons = (a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] == 'C')
 
-        if len(ends_w_alp) > 0:
-            min_len = min(len(a) for a in ends_w_alp)
-            atmList.extend([a for a in ends_w_alp if len(a) == min_len])
-
-        if len(starts_w_num) > 0:
-            atmList.extend([a for a in starts_w_num if a.startswith('1')])
+        for carbon in carbons:
+            protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != carbon else b[self.ccbAtomId2])
+                       for b in self.lastBonds
+                       if (b[self.ccbAtomId1] == carbon and b[self.ccbAtomId2][0] in protonBeginCode)
+                       or (b[self.ccbAtomId2] == carbon and b[self.ccbAtomId1][0] in protonBeginCode)]
+            if len(protons) != 3:
+                continue
+            atmList.append(protons[0])
 
         return atmList
 
-    def getNonRepresentativeMethylProtons(self, compId):
+    def getNonRepMethylProtons(self, compId):
         """ Return non-representative protons in methyl group of a given comp_id.
         """
 
-        repList = self.getRepresentativeMethylProtons(compId)
+        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+            return []
 
-        return [a for a in self.getMethylAtoms(compId) if a[0] in ('H', '2', '3') and a not in repList]
+        atmList = []
+
+        carbons = (a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] == 'C')
+
+        for carbon in carbons:
+            protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != carbon else b[self.ccbAtomId2])
+                       for b in self.lastBonds
+                       if (b[self.ccbAtomId1] == carbon and b[self.ccbAtomId2][0] in protonBeginCode)
+                       or (b[self.ccbAtomId2] == carbon and b[self.ccbAtomId1][0] in protonBeginCode)]
+            if len(protons) != 3:
+                continue
+            atmList.extend(protons[1:])
+
+        return atmList
 
     def getBondedAtoms(self, compId, atomId):
         """ Return bonded atoms to a given atom.

@@ -626,96 +626,62 @@ class BMRBChemShiftStat:
         return [item['atom_id'] for item in cs_stat
                 if 'aroma' in item['desc'] and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
-    def getMethylAtoms(self, comp_id, excl_minor_atom=False, primary=False):
+    def getMethylAtoms(self, comp_id):
         """ Return atoms in methyl group of a given comp_id.
         """
 
         if comp_id in emptyValue:
             return []
 
-        key = (comp_id, excl_minor_atom, primary)
-        if key in self.__cachedDictForMethylProtons:
-            return self.__cachedDictForMethylProtons[key]
-
-        if comp_id not in self.__std_comp_ids:
-            self.loadOtherStatFromCsvFiles(comp_id)
-
-        if comp_id not in self.__all_comp_ids:
-            self.__appendExtraFromCcd(comp_id)
+        if comp_id in self.__cachedDictForMethylProtons:
+            return self.__cachedDictForMethylProtons[comp_id]
 
         try:
 
-            cs_stat = self.__get(comp_id)
-
-            if comp_id in self.__std_comp_ids or primary:
-                result = [item['atom_id'] for item in cs_stat
-                          if 'methyl' in item['desc'] and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
-
-                return result
-
-            result = [item['atom_id'] for item in cs_stat
-                      if 'methyl' in item['desc'] and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
+            result = self.__ccU.getMethylAtoms(comp_id)
 
             return result
 
         finally:
-            self.__cachedDictForMethylProtons[key] = result
+            self.__cachedDictForMethylProtons[comp_id] = result
 
-    def getRepresentativeMethylProtons(self, comp_id, excl_minor_atom=False, primary=False):
+    def getRepMethylProtons(self, comp_id):
         """ Return representative protons in methyl group of a given comp_id.
         """
 
         if comp_id in emptyValue:
             return []
 
-        key = (comp_id, excl_minor_atom, primary)
-        if key in self.__cachedDictForRepMethylProtons:
-            return self.__cachedDictForRepMethylProtons[key]
+        if comp_id in self.__cachedDictForRepMethylProtons:
+            return self.__cachedDictForRepMethylProtons[comp_id]
 
         try:
 
-            ends_w_num = [a for a in self.getMethylAtoms(comp_id, excl_minor_atom, primary) if a.startswith('H') and a[-1].isdigit()]
-            ends_w_alp = [a for a in self.getMethylAtoms(comp_id, excl_minor_atom, primary) if a.startswith('H') and not a[-1].isdigit()]
-            starts_w_num = [a for a in self.getMethylAtoms(comp_id, excl_minor_atom, primary) if len(a) > 1 and a[0] in ('1', '2', '3') and a[1] == 'H']
-
-            result = []
-
-            if len(ends_w_num) > 0:
-                result.extend([a for a in ends_w_num if a.endswith('1')])
-
-            if len(ends_w_alp) > 0:
-                min_len = min(len(a) for a in ends_w_alp)
-                result.extend([a for a in ends_w_alp if len(a) == min_len])
-
-            if len(starts_w_num) > 0:
-                result.extend([a for a in starts_w_num if a.startswith('1')])
+            result = self.__ccU.getRepMethylProtons(comp_id)
 
             return result
 
         finally:
-            self.__cachedDictForRepMethylProtons[key] = result
+            self.__cachedDictForProtonInSameGroup[comp_id] = result
 
-    def getNonRepresentativeMethylProtons(self, comp_id, excl_minor_atom=False, primary=False):
+    def getNonRepMethylProtons(self, comp_id):
         """ Return non-representative protons in methyl group of a given comp_id.
         """
 
         if comp_id in emptyValue:
             return []
 
-        key = (comp_id, excl_minor_atom, primary)
-        if key in self.__cachedDictForNonRepMethylProtons:
-            return self.__cachedDictForNonRepMethylProtons[key]
+        if comp_id in self.__cachedDictForNonRepMethylProtons:
+            return self.__cachedDictForNonRepMethylProtons[comp_id]
 
         try:
 
-            rep_list = self.getRepresentativeMethylProtons(comp_id, excl_minor_atom, primary)
-
-            result = [a for a in self.getMethylAtoms(comp_id, excl_minor_atom, primary) if a[0] in ('H', '2', '3') and a not in rep_list]
+            result = self.__ccU.getNonRepMethylProtons(comp_id)
 
             return result
 
         finally:
-            self.__cachedDictForNonRepMethylProtons[key] = result
+            self.__cachedDictForNonRepMethylProtons[comp_id] = result
 
     def getProtonsInSameGroup(self, comp_id, atom_id, excl_self=False):
         """ Return protons in the same group of a given comp_id and atom_id.
@@ -1624,7 +1590,7 @@ class BMRBChemShiftStat:
         for comp_id in self.__std_comp_ids:
 
             name_list = self.getAllAtoms(comp_id, excl_minor_atom, primary)
-            methyl_list = self.getMethylAtoms(comp_id, excl_minor_atom, primary)
+            methyl_list = self.getMethylAtoms(comp_id)
 
             for name in name_list:
 

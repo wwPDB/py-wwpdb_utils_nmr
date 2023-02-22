@@ -15804,7 +15804,7 @@ class NmrDpUtility:
 
                                                 err = f"Invalid comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) in a loop {lp_category2}."
 
-                                                if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(comp_id, _comp_id):
+                                                if self.__tolerant_seq_align and self.__equalsRepCompId(comp_id, _comp_id):
                                                     self.report.warning.appendDescription('sequence_mismatch',
                                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
                                                                                            'description': err})
@@ -15872,7 +15872,7 @@ class NmrDpUtility:
                                                 err = f"Unmatched comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) exists "\
                                                     f"against {sf_framecode1!r} saveframe."
 
-                                                if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(comp_id, _comp_id):
+                                                if self.__tolerant_seq_align and self.__equalsRepCompId(comp_id, _comp_id):
                                                     self.report.warning.appendDescription('sequence_mismatch',
                                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
                                                                                            'description': err})
@@ -15911,7 +15911,7 @@ class NmrDpUtility:
                                                 err = f"Unmatched comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) exists "\
                                                     f"against {sf_framecode2!r} saveframe."
 
-                                                if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(comp_id, _comp_id):
+                                                if self.__tolerant_seq_align and self.__equalsRepCompId(comp_id, _comp_id):
                                                     self.report.warning.appendDescription('sequence_mismatch',
                                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
                                                                                            'description': err})
@@ -15935,7 +15935,7 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __equalsRepresentativeCompId(self, comp_id, ref_comp_id):
+    def __equalsRepCompId(self, comp_id, ref_comp_id):
         """ Return whether given representative comp IDs are equal.
             @return: True for representative comp IDs are matched, False otherwise
         """
@@ -17883,7 +17883,7 @@ class NmrDpUtility:
                 or atom_id.endswith('%') or atom_id.endswith('#')
                 or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)
 
-    def __getRepresentativeAtomIdInXplor(self, comp_id, atom_id):
+    def __getRepAtomIdInXplor(self, comp_id, atom_id):
         """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclautre.
         """
 
@@ -17897,7 +17897,7 @@ class NmrDpUtility:
 
         return self.__nefT.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)[0]
 
-    def __getRepresentativeAtomId(self, comp_id, atom_id):
+    def __getRepAtomId(self, comp_id, atom_id):
         """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id.
         """
 
@@ -17974,7 +17974,7 @@ class NmrDpUtility:
                         atom_id_ = atom_id
 
                         if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and self.__isNmrAtomName(comp_id, atom_id):
-                            atom_id_ = self.__getRepresentativeAtomId(comp_id, atom_id)
+                            atom_id_ = self.__getRepAtomId(comp_id, atom_id)
 
                             if file_type == 'nmr-star' and self.__combined_mode and self.__transl_pseudo_name and atom_id != atom_id_:
 
@@ -18082,7 +18082,7 @@ class NmrDpUtility:
                             atom_id_ = atom_id
 
                             if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and self.__isNmrAtomName(comp_id, atom_id):
-                                atom_id_ = self.__getRepresentativeAtomId(comp_id, atom_id)
+                                atom_id_ = self.__getRepAtomId(comp_id, atom_id)
 
                                 if file_type == 'nmr-star' and self.__combined_mode and self.__transl_pseudo_name and atom_id != atom_id_:
 
@@ -18730,7 +18730,7 @@ class NmrDpUtility:
                         _atom_id = atom_id
 
                         if self.__isNmrAtomName(comp_id, atom_id):
-                            _atom_id = self.__getRepresentativeAtomId(comp_id, atom_id)
+                            _atom_id = self.__getRepAtomId(comp_id, atom_id)
 
                         allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _atom_id)
 
@@ -21137,8 +21137,8 @@ class NmrDpUtility:
                             has_cs_stat = True
 
                             if atom_id_[0] in protonBeginCode and 'methyl' in cs_stat['desc']:
-                                _atom_id = self.__getRepresentativeAtomId(comp_id, atom_id)
-                                _, methyl_h_list = self.__nefT.get_group(comp_id, _atom_id)
+                                _atom_id = self.__getRepAtomId(comp_id, atom_id)
+                                methyl_h_list = self.__csStat.getProtonsInSameGroup(comp_id, atom_id)
 
                                 name_len = [len(n) for n in methyl_h_list]
                                 max_len = max(name_len)
@@ -22136,7 +22136,7 @@ class NmrDpUtility:
                     _atom_id = atom_id
 
                     if self.__isNmrAtomName(comp_id, atom_id):
-                        _atom_id = self.__getRepresentativeAtomId(comp_id, atom_id)
+                        _atom_id = self.__getRepAtomId(comp_id, atom_id)
 
                     allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _atom_id)
 
@@ -22354,7 +22354,7 @@ class NmrDpUtility:
                                         _atom_id2 = atom_id2
 
                                         if self.__isNmrAtomName(comp_id2, atom_id2):
-                                            _atom_id2 = self.__getRepresentativeAtomId(comp_id2, atom_id2)
+                                            _atom_id2 = self.__getRepAtomId(comp_id2, atom_id2)
 
                                         if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and _atom_id < _atom_id2:
 
@@ -22383,7 +22383,7 @@ class NmrDpUtility:
                                         _atom_id2 = atom_id2
 
                                         if self.__isNmrAtomName(comp_id2, atom_id2):
-                                            _atom_id2 = self.__getRepresentativeAtomId(comp_id2, atom_id2)
+                                            _atom_id2 = self.__getRepAtomId(comp_id2, atom_id2)
 
                                         if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and _atom_id < _atom_id2)):
 
@@ -22417,7 +22417,7 @@ class NmrDpUtility:
                                         _atom_id2 = atom_id2
 
                                         if self.__isNmrAtomName(comp_id2, atom_id2):
-                                            _atom_id2 = self.__getRepresentativeAtomId(comp_id2, atom_id2)
+                                            _atom_id2 = self.__getRepAtomId(comp_id2, atom_id2)
 
                                         if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and _atom_id < _atom_id2)):
 
@@ -22448,7 +22448,7 @@ class NmrDpUtility:
                                     _atom_id2 = atom_id2
 
                                     if self.__isNmrAtomName(comp_id2, atom_id2):
-                                        _atom_id2 = self.__getRepresentativeAtomId(comp_id2, atom_id2)
+                                        _atom_id2 = self.__getRepAtomId(comp_id2, atom_id2)
 
                                     if _atom_id[0] != _atom_id2[0] and _atom_id < _atom_id2:
 
@@ -22788,21 +22788,36 @@ class NmrDpUtility:
 
             return auth_asym_id, auth_seq_id
 
-        def fill_cs_row(lp, idx, index, _row, coord_atom_site, _seq_key, comp_id, atom_id):
+        def fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
             fill_auth_atom_id = _row[19] in emptyValue and _row[18] not in emptyValue
+            fill_orig_atom_id = _row[23] not in emptyValue
 
             if _seq_key in coord_atom_site:
                 _coord_atom_site = coord_atom_site[_seq_key]
                 _row[5] = comp_id
                 valid = True
-                if atom_id in self.__csStat.getRepresentativeMethylProtons(comp_id):
+                missing_ch3 = []
+                if atom_id in self.__csStat.getRepMethylProtons(comp_id):
+                    missing_ch3 = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
                     valid = self.__sail_flag
-                    if idx + 1 < len(loop.data):
-                        __row = loop.data[idx + 1]
-                        if __row[1] == _row[1] and __row[3] == _row[3] and __row[5] == _row[5]\
-                           and _row[6] in self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True):
-                            valid = True
-                if atom_id in _coord_atom_site['atom_id'] and valid:
+                    for offset in range(1, 10):
+                        if src_idx + offset < len(src_lp.data):
+                            row = src_lp.data[src_idx + offset]
+                            if row[seq_id_col] == str(_row[3]) and row[comp_id_col] == _row[5]\
+                               and row[6] in missing_ch3:
+                                valid = True
+                                missing_ch3.remove(row[6])
+                                if len(missing_ch3) == 0:
+                                    break
+                        if src_idx - offset >= 0:
+                            row = src_lp.data[src_idx - offset]
+                            if row[seq_id_col] == str(_row[3]) and row[comp_id_col] == _row[5]\
+                               and row[6] in missing_ch3:
+                                valid = True
+                                missing_ch3.remove(row[6])
+                                if len(missing_ch3) == 0:
+                                    break
+                if atom_id in _coord_atom_site['atom_id'] and valid and len(missing_ch3) == 0:
                     _row[6] = atom_id
                     if fill_auth_atom_id:
                         _row[19] = _row[6]
@@ -22818,11 +22833,16 @@ class NmrDpUtility:
                         atom_id = 'H1'
                         if fill_auth_atom_id:
                             _row[19] = atom_id
-                    if not valid:
+                    if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 3.0):
+                        missing_ch3 = []
+                    if not valid and len(missing_ch3) > 0:
                         atom_id = atom_id[:-1]
                     atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                     if len(atom_ids) == 0:
                         atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
+                    if valid and len(missing_ch3) > 0:
+                        atom_ids = [atom_id]
+                        atom_ids.extend(missing_ch3)
                     len_atom_ids = len(atom_ids)
                     if len_atom_ids == 0:
                         _row[6] = atom_id
@@ -22832,6 +22852,7 @@ class NmrDpUtility:
                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                     else:
+                        methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
                         _row[6] = atom_ids[0]
                         _row[19] = None
                         fill_auth_atom_id = _row[18] not in emptyValue
@@ -22865,6 +22886,12 @@ class NmrDpUtility:
                                 __row[6] = _atom_id
                                 if fill_auth_atom_id:
                                     __row[19] = __row[6]
+                                if fill_orig_atom_id and len(missing_ch3) > 0:
+                                    if _atom_id in methyl_atoms:
+                                        if ch3_name_in_xplor and _atom_id[0] in protonBeginCode:
+                                            __row[23] = __row[6][-1] + __row[6][:-1]
+                                        else:
+                                            __row[23] = __row[6]
 
                                 lp.add_data(__row)
 
@@ -22875,13 +22902,48 @@ class NmrDpUtility:
 
                         if fill_auth_atom_id:
                             _row[19] = _row[6]
+                        if fill_orig_atom_id and len(missing_ch3) > 0:
+                            if _row[6] in methyl_atoms:
+                                if ch3_name_in_xplor and _row[6][0] in protonBeginCode:
+                                    _row[23] = _row[6][-1] + _row[6][:-1]
+                                else:
+                                    _row[23] = _row[6]
 
             else:
 
                 _row[5] = comp_id
+                valid = True
+                missing_ch3 = []
+                if atom_id in self.__csStat.getRepMethylProtons(comp_id):
+                    missing_ch3 = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
+                    valid = self.__sail_flag
+                    for offset in range(1, 10):
+                        if src_idx + offset < len(src_lp.data):
+                            row = src_lp.data[src_idx + offset]
+                            if row[seq_id_col] == str(_row[3]) and row[comp_id_col] == _row[5]\
+                               and row[6] in missing_ch3:
+                                valid = True
+                                missing_ch3.remove(row[6])
+                                if len(missing_ch3) == 0:
+                                    break
+                        if src_idx - offset >= 0:
+                            row = src_lp.data[src_idx - offset]
+                            if row[seq_id_col] == str(_row[3]) and row[comp_id_col] == _row[5]\
+                               and row[6] in missing_ch3:
+                                valid = True
+                                missing_ch3.remove(row[6])
+                                if len(missing_ch3) == 0:
+                                    break
+                if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 3.0):
+                    missing_ch3 = []
+                if not valid and len(missing_ch3) > 0:
+                    atom_id = atom_id[:-1]
                 atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                 if len(atom_ids) == 0:
                     atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
+                if valid and len(missing_ch3) > 0:
+                    atom_ids = [atom_id]
+                    atom_ids.extend(missing_ch3)
                 len_atom_ids = len(atom_ids)
                 if len_atom_ids == 0:
                     _row[6] = atom_id
@@ -22891,6 +22953,7 @@ class NmrDpUtility:
                     if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                         _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                 else:
+                    methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
                     _row[6] = atom_ids[0]
                     _row[19] = None
                     fill_auth_atom_id = _row[18] not in emptyValue
@@ -22924,6 +22987,12 @@ class NmrDpUtility:
                             __row[6] = _atom_id
                             if fill_auth_atom_id:
                                 __row[19] = __row[6]
+                            if fill_orig_atom_id and len(missing_ch3) > 0:
+                                if _atom_id in methyl_atoms:
+                                    if ch3_name_in_xplor and _atom_id[0] in protonBeginCode:
+                                        __row[23] = __row[6][-1] + __row[6][:-1]
+                                    else:
+                                        __row[23] = __row[6]
 
                             lp.add_data(__row)
 
@@ -22934,6 +23003,12 @@ class NmrDpUtility:
 
                     if fill_auth_atom_id:
                         _row[19] = _row[6]
+                    if fill_orig_atom_id and len(missing_ch3) > 0:
+                        if _row[6] in methyl_atoms:
+                            if ch3_name_in_xplor and _row[6][0] in protonBeginCode:
+                                _row[23] = _row[6][-1] + _row[6][:-1]
+                            else:
+                                _row[23] = _row[6]
 
             return index, _row
 
@@ -23394,7 +23469,7 @@ class NmrDpUtility:
                                 row[auth_asym_id_col], row[auth_seq_id_col],\
                                 row[auth_comp_id_col], row[auth_atom_id_col]
 
-                        index, _row = fill_cs_row(lp, idx, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
+                        index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
                     elif auth_asym_id not in emptyValue and auth_seq_id not in emptyValue and auth_comp_id not in emptyValue:
 
@@ -23464,7 +23539,7 @@ class NmrDpUtility:
                                         row[auth_asym_id_col], row[auth_seq_id_col],\
                                         row[auth_comp_id_col], row[auth_atom_id_col]
 
-                                index, _row = fill_cs_row(lp, idx, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
+                                index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
                             else:
                                 resolved = False
@@ -23560,7 +23635,7 @@ class NmrDpUtility:
                                     row[auth_asym_id_col], row[auth_seq_id_col],\
                                     row[auth_comp_id_col], row[auth_atom_id_col]
 
-                            index, _row = fill_cs_row(lp, idx, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
+                            index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
                         else:
 
@@ -23585,7 +23660,7 @@ class NmrDpUtility:
                                     row[auth_asym_id_col], row[auth_seq_id_col],\
                                     row[auth_comp_id_col], row[auth_atom_id_col]
 
-                                index, _row = fill_cs_row(lp, idx, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
+                                index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
                             else:
                                 resolved = False
@@ -23620,7 +23695,7 @@ class NmrDpUtility:
                                         row[auth_asym_id_col], row[auth_seq_id_col],\
                                         row[auth_comp_id_col], row[auth_atom_id_col]
 
-                                    index, _row = fill_cs_row(lp, idx, index, _row, coord_atom_site, _seq_key, comp_id, atom_id)
+                                    index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
                             except ValueError:
                                 resolved = False
@@ -30914,7 +30989,7 @@ class NmrDpUtility:
                                 polypeptide_like = self.__csStat.peptideLike(comp_id)
 
                                 if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
-                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                    non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
 
                                     if atom_id in non_rep_methyl_pros:
                                         continue
@@ -30939,7 +31014,7 @@ class NmrDpUtility:
                                 polypeptide_like = self.__csStat.peptideLike(comp_id)
 
                                 if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
-                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                    non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
 
                                     if atom_id in non_rep_methyl_pros:
                                         continue
@@ -30964,7 +31039,7 @@ class NmrDpUtility:
                                 polypeptide_like = self.__csStat.peptideLike(comp_id)
 
                                 if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
-                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                    non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
 
                                     if atom_id in non_rep_methyl_pros:
                                         continue
@@ -31181,7 +31256,7 @@ class NmrDpUtility:
 
                                 all_atoms = self.__csStat.getAllAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
                                 non_excl_atoms = self.__csStat.getAllAtoms(comp_id, excl_minor_atom=False)
-                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
 
                                 for a in all_atoms:
 
@@ -31320,7 +31395,7 @@ class NmrDpUtility:
                             if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
                                 bb_atoms = self.__csStat.getBackBoneAtoms(comp_id, excl_minor_atom=True)
-                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
 
                                 for a in bb_atoms:
 
@@ -31446,7 +31521,7 @@ class NmrDpUtility:
                             if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
                                 sc_atoms = self.__csStat.getSideChainAtoms(comp_id, excl_minor_atom=True)
-                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
 
                                 for a in sc_atoms:
 
@@ -31566,8 +31641,8 @@ class NmrDpUtility:
 
                             if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
-                                ch3_atoms = self.__csStat.getMethylAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
-                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                ch3_atoms = self.__csStat.getMethylAtoms(comp_id)
+                                non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
 
                                 for a in ch3_atoms:
 
@@ -31671,7 +31746,7 @@ class NmrDpUtility:
                             if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
                                 aro_atoms = self.__csStat.getAromaticAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
-                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
 
                                 for a in aro_atoms:
 
@@ -32228,7 +32303,7 @@ class NmrDpUtility:
                                         _atom_id = atom_id
 
                                         if self.__isNmrAtomName(comp_id, atom_id):
-                                            _atom_id = self.__getRepresentativeAtomId(comp_id, atom_id)
+                                            _atom_id = self.__getRepAtomId(comp_id, atom_id)
 
                                         if _atom_id == 'CG1':
                                             cg1_chem_shift = row[value_name]
@@ -32322,7 +32397,7 @@ class NmrDpUtility:
                                         _atom_id = atom_id
 
                                         if self.__isNmrAtomName(comp_id, atom_id):
-                                            _atom_id = self.__getRepresentativeAtomId(comp_id, atom_id)
+                                            _atom_id = self.__getRepAtomId(comp_id, atom_id)
 
                                         if _atom_id == 'CD1':
                                             cd1_chem_shift = row[value_name]
@@ -36969,7 +37044,7 @@ class NmrDpUtility:
                                                                            or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
                         self.__coord_atom_site[seq_key]['auth_atom_id'] = auth_atom_ids
                     elif any(not self.__nefT.validate_comp_atom(comp_id, atom_id) for atom_id in atom_ids):
-                        auth_atom_ids = [self.__getRepresentativeAtomIdInXplor(comp_id, atom_id) for atom_id in atom_ids]
+                        auth_atom_ids = [self.__getRepAtomIdInXplor(comp_id, atom_id) for atom_id in atom_ids]
                         self.__coord_atom_site[seq_key]['auth_atom_id'] = auth_atom_ids
                     auth_seq_id = next((c['auth_seq_id'] for c in coord if c['chain_id'] == chain_id and c['seq_id'] is not None and int(c['seq_id']) == seq_id), None)
                     if auth_seq_id is not None:
@@ -38235,7 +38310,7 @@ class NmrDpUtility:
                                 err = f"Sequence alignment error between the NMR data ({nmr_seq_code}) and the coordinate ({cif_seq_code}). "\
                                     "Please verify the two sequences and re-upload the correct file(s)."
 
-                                if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(cif_comp_id, nmr_comp_id):
+                                if self.__tolerant_seq_align and self.__equalsRepCompId(cif_comp_id, nmr_comp_id):
                                     self.__suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
                                                                                     {'ca_idx': ca_idx, 'file_name': nmr_file_name, 'description': err}})
                                     # """
@@ -38626,7 +38701,7 @@ class NmrDpUtility:
                                 err = f"Sequence alignment error between the coordinate ({cif_seq_code}) and the NMR data ({nmr_seq_code}). "\
                                     "Please verify the two sequences and re-upload the correct file(s)."
 
-                                if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(nmr_comp_id, cif_comp_id):
+                                if self.__tolerant_seq_align and self.__equalsRepCompId(nmr_comp_id, cif_comp_id):
                                     self.__suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
                                                                                     {'ca_idx': ca_idx, 'file_name': cif_file_name, 'description': err}})
                                     # """

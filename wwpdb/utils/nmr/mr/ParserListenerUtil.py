@@ -1907,7 +1907,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None)
                         return 'H' + atomId[1:]
                 if 'H' + atomId[1:] + '1' in _refAtomIdList:
                     return 'H' + atomId[1:]
-                candidates = ccU.getRepresentativeMethylProtons(refCompId)
+                candidates = ccU.getRepMethylProtons(refCompId)
                 if len(candidates) == 1:
                     atomId = candidates[0]
                     return atomId[:-1] if atomId.endswith('1') else atomId
@@ -3383,7 +3383,7 @@ def hasIntraChainRestraint(atomSelectionSet):
     for atom1, atom2 in itertools.product(atomSelectionSet[0],
                                           atomSelectionSet[1]):
         if atom1['chain_id'] == atom2['chain_id']:
-            return True, getRepresentativeIntraChainIds(atomSelectionSet)
+            return True, getRepIntraChainIds(atomSelectionSet)
 
     return False, None
 
@@ -3400,7 +3400,7 @@ def hasInterChainRestraint(atomSelectionSet):
     return False
 
 
-def getRepresentativeIntraChainIds(atomSelectionSet):
+def getRepIntraChainIds(atomSelectionSet):
     """ Return representative set of chain id of intra-chain distance restraints in case of large assembly.
     """
 

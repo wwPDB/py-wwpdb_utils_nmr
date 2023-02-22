@@ -73,24 +73,25 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('ALA'), ['CB', 'HB1', 'HB2', 'HB3'])
         self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('CYS'), [])
         self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('THR'), ['CG2', 'HG21', 'HG22', 'HG23'])
-        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('ILE'), ['CD1', 'CG2', 'HD11', 'HD12', 'HD13', 'HG21', 'HG22', 'HG23'])
-        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('VAL'), ['CG1', 'CG2', 'HG11', 'HG12', 'HG13', 'HG21', 'HG22', 'HG23'])
-        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('LEU'), ['CD1', 'CD2', 'HD11', 'HD12', 'HD13', 'HD21', 'HD22', 'HD23'])
+        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('ILE'), ['CG2', 'HG21', 'HG22', 'HG23', 'CD1', 'HD11', 'HD12', 'HD13'])
+        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('VAL'), ['CG1', 'HG11', 'HG12', 'HG13', 'CG2', 'HG21', 'HG22', 'HG23'])
+        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('LEU'), ['CD1', 'HD11', 'HD12', 'HD13', 'CD2', 'HD21', 'HD22', 'HD23'])
         self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('DT'), ['C7', 'H71', 'H72', 'H73'])
-        self.assertEqual(self.bmrb_cs_stat.getRepresentativeMethylProtons('ALA'), ['HB1'])
-        self.assertEqual(self.bmrb_cs_stat.getNonRepresentativeMethylProtons('ALA'), ['HB2', 'HB3'])
-        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('HEM'), ['CMA', 'CMB', 'CMC', 'CMD', 'HMA', 'HMAA', 'HMAB', 'HMB', 'HMBA', 'HMBB', 'HMC', 'HMCA', 'HMCB', 'HMD', 'HMDA', 'HMDB'])
-        self.assertEqual(self.bmrb_cs_stat.getRepresentativeMethylProtons('HEM'), ['HMA', 'HMB', 'HMC', 'HMD'])
-        self.assertEqual(self.bmrb_cs_stat.getNonRepresentativeMethylProtons('HEM'), ['HMAA', 'HMAB', 'HMBA', 'HMBB', 'HMCA', 'HMCB', 'HMDA', 'HMDB'])
-        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('HEB'), ['HBB1', 'HBB2', 'HBB3', 'HMA1', 'HMA2', 'HMA3', 'HMB1',
-                                                                   'HMB2', 'HMB3', 'HMC1', 'HMC2', 'HMC3', 'HMD1', 'HMD2', 'HMD3', 'CMA', 'CMB', 'CBB', 'CMC', 'CMD'])
-        self.assertEqual(self.bmrb_cs_stat.getRepresentativeMethylProtons('HEB'), ['HBB1', 'HMA1', 'HMB1', 'HMC1', 'HMD1'])
-        self.assertEqual(self.bmrb_cs_stat.getNonRepresentativeMethylProtons('HEB'), ['HBB2', 'HBB3', 'HMA2', 'HMA3', 'HMB2', 'HMB3', 'HMC2', 'HMC3', 'HMD2', 'HMD3'])
-        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('HEC'), ['CBB', 'CBC', 'CMA', 'CMB', 'CMC', 'CMD',
-                                                                   'HBB1', 'HBB2', 'HBB3', 'HBC1', 'HBC2', 'HBC3', 'HMA1', 'HMA2',
-                                                                   'HMA3', 'HMB1', 'HMB2', 'HMB3', 'HMC1', 'HMC2', 'HMC3', 'HMD1', 'HMD2', 'HMD3'])
-        self.assertEqual(self.bmrb_cs_stat.getRepresentativeMethylProtons('HEC'), ['HBB1', 'HBC1', 'HMA1', 'HMB1', 'HMC1', 'HMD1'])
-        self.assertEqual(self.bmrb_cs_stat.getNonRepresentativeMethylProtons('HEC'), ['HBB2', 'HBB3', 'HBC2', 'HBC3', 'HMA2', 'HMA3', 'HMB2', 'HMB3', 'HMC2', 'HMC3', 'HMD2', 'HMD3'])
+        self.assertEqual(self.bmrb_cs_stat.getRepMethylProtons('ALA'), ['HB1'])
+        self.assertEqual(self.bmrb_cs_stat.getNonRepMethylProtons('ALA'), ['HB2', 'HB3'])
+        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('HEM'), ['CMA', 'HMA', 'HMAA', 'HMAB', 'CMB', 'HMB', 'HMBA', 'HMBB', 'CMC', 'HMC', 'HMCA', 'HMCB', 'CMD', 'HMD', 'HMDA', 'HMDB'])
+        self.assertEqual(self.bmrb_cs_stat.getRepMethylProtons('HEM'), ['HMA', 'HMB', 'HMC', 'HMD'])
+        self.assertEqual(self.bmrb_cs_stat.getNonRepMethylProtons('HEM'), ['HMAA', 'HMAB', 'HMBA', 'HMBB', 'HMCA', 'HMCB', 'HMDA', 'HMDB'])
+        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('HEB'), ['CMA', 'HMA1', 'HMA2', 'HMA3', 'CMB', 'HMB1', 'HMB2', 'HMB3', 'CBB', 'HBB1', 'HBB2', 'HBB3',
+                                                                   'CMC', 'HMC1', 'HMC2', 'HMC3', 'CMD', 'HMD1', 'HMD2', 'HMD3'])
+        self.assertEqual(self.bmrb_cs_stat.getRepMethylProtons('HEB'), ['HMA1', 'HMB1', 'HBB1', 'HMC1', 'HMD1'])
+        self.assertEqual(self.bmrb_cs_stat.getNonRepMethylProtons('HEB'), ['HMA2', 'HMA3', 'HMB2', 'HMB3', 'HBB2', 'HBB3', 'HMC2', 'HMC3', 'HMD2', 'HMD3'])
+        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('HEC'), ['CMA', 'HMA1', 'HMA2', 'HMA3', 'CMB', 'HMB1', 'HMB2', 'HMB3', 'CBB', 'HBB1', 'HBB2', 'HBB3',
+                                                                   'CMC', 'HMC1', 'HMC2', 'HMC3', 'CBC', 'HBC1', 'HBC2', 'HBC3', 'CMD', 'HMD1', 'HMD2', 'HMD3'])
+        self.assertEqual(self.bmrb_cs_stat.getRepMethylProtons('HEC'), ['HMA1', 'HMB1', 'HBB1', 'HMC1', 'HBC1', 'HMD1'])
+        self.assertEqual(self.bmrb_cs_stat.getNonRepMethylProtons('HEC'), ['HMA2', 'HMA3', 'HMB2', 'HMB3', 'HBB2', 'HBB3', 'HMC2', 'HMC3', 'HBC2', 'HBC3', 'HMD2', 'HMD3'])
+        self.assertEqual(self.bmrb_cs_stat.getRepMethylProtons('L94'), ['H171', 'H474', 'H181', 'H484'])
+        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('MET'), ['CE', 'HE1', 'HE2', 'HE3'])
 
     def test_sc_atoms(self):
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('GLY'), [])

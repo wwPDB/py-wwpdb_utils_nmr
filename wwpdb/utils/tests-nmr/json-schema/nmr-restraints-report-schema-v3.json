@@ -217,6 +217,61 @@
               "type": "integer",
               "minimum": 1
             },
+            "rdc_raw_data": {
+              "description": "The number of lists associated with residual dipolar coupling (RDC) experimetal data.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "ddc_restraint": {
+              "description": "The number of lists associated with dipolar coupling restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "csp_restraint": {
+              "description": "The number of lists associated with chemical shift perturbation experimental data or paramagnetic pseudocontact shift (PCS) restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "auto_relax_restraint": {
+              "description": "The number of lists associated with auto-relaxation data or paramagnetic relaxation enhancement (PRE) restraints.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "heteronucl_noe_data": {
+              "description": "The number of lists associated with heteronuclear NOE experimental data.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "heteronucl_t1_data": {
+              "description": "The number of lists associated with heteronuclear T1 relaxation data.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "heteronucl_t2_data": {
+              "description": "The number of lists associated with heteronuclear T2 relaxation data.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "heteronucl_t1r_data": {
+              "description": "The number of lists associated with heteronuclear T1rho relaxation data.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "order_param_data": {
+              "description": "The number of lists associated with order parameter relaxation analysis.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "ccr_d_csa_restraint": {
+              "description": "The number of lists associated with dipolar-CSA cross-correlation experimental data.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "ccr_dd_restraint": {
+              "description": "The number of lists associated with dipolar-dipolar cross-correlation experimental data.",
+              "type": "integer",
+              "minimum": 1
+            },
             "fchiral_restraint": {
               "description": "The number of lists associated with floating chiral stereo assignments.",
               "type": "integer",

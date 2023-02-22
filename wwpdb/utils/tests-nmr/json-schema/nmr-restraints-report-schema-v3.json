@@ -2477,7 +2477,6 @@
               ]
             }
           },
-          "additionalProperties": false,
           "required": [
             "Sf_category",
             "Sf_framecode",

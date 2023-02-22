@@ -555,7 +555,14 @@
             "null"
           ],
           "items": {
-            "$ref": "#/definitions/bond_information"
+            "allOf": [
+              {
+                "$ref": "#/definitions/bond_information"
+              },
+              {
+                "$ref": "#/definitions/ss_bond_information"
+              }
+            ]
           }
         },
         "stats_of_exptl_data": {

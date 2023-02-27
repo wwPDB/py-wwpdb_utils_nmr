@@ -5498,7 +5498,7 @@ class NEFTranslator:
                 _cif_seq = None
                 if cif_chain is not None:
                     try:
-                        if seq_align is not None:
+                        if report is not None and seq_align is not None:
                             _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_star_seq)]  # label_seq_id
                             if offset is None:
                                 offset = _cif_seq - _star_seq

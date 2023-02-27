@@ -76,6 +76,7 @@
 # 24-Oct-2022  M. Yokochi - add support for floating chiral stereo assignments (NMR restraint remediation)
 # 13-Jan-2023  M. Yokochi - add support for small angle X-ray scattering restraints (NMR restraint remediation)
 # 24-Jan-2023  M. Yokochi - add support for heteronuclear relaxation data (NOE, T1, T2, T1rho, Order parameter) (NMR restraint remediation)
+# 27-Feb-2023  M. Yokochi - add getLabelSeqSchemOf(), which convert author sequence scheme to label sequence scheme of the coordinates (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1299,6 +1300,55 @@ class NmrDpReport:
             return None
 
         return sum(rmsd) / len(rmsd)
+
+    def getLabelSeqSchemeOf(self, auth_asym_id, auth_seq_id):
+        """ Convert author sequence scheme to label sequence scheme of the coordinates.
+        """
+
+        src_id = self.getInputSourceIdOfCoord()
+
+        if src_id == -1:
+            return None, None
+
+        cif_polymer_sequence = self.getPolymerSequenceByInputSrcId(src_id)
+
+        if cif_polymer_sequence is not None:
+            ps = next((ps for ps in cif_polymer_sequence if ps['auth_chain_id'] == auth_asym_id), None)
+
+            if ps is not None:
+                if auth_seq_id in ps['auth_seq_id']:
+                    return ps['chain_id'], ps['seq_id'][ps['auth_seq_id'].index(auth_seq_id)]
+
+        ps_in_loop = get_value_safe(self.getInputSourceDict(src_id), 'polymer_sequence_in_loop')
+
+        if ps_in_loop is None:
+            return None, None
+
+        if 'branched' in ps_in_loop:
+            branched_sequence = ps_in_loop['branched']
+
+            for branched in branched_sequence:
+                polymer_sequence = branched['polymer_sequence']
+
+                br = next((br for br in polymer_sequence if br['auth_chain_id'] == auth_asym_id), None)
+
+                if br is not None:
+                    if auth_seq_id in br['seq_id']:
+                        return br['chain_id'], br['seq_id'].index(auth_seq_id) + 1
+
+        if 'non_poly' in ps_in_loop:
+            non_poly_sequence = ps_in_loop['non_poly']
+
+            for non_poly in non_poly_sequence:
+                polymer_sequence = non_poly['polymer_sequence']
+
+                np = next((np for np in polymer_sequence if np['auth_chain_id'] == auth_asym_id), None)
+
+                if np is not None:
+                    if auth_seq_id in np['seq_id']:
+                        return np['chain_id'], np['seq_id'].index(auth_seq_id) + 1
+
+        return None, None
 
     def getTotalErrors(self):
         """ Return total number of errors.

@@ -6275,6 +6275,7 @@ class NmrDpUtility:
             self.cs_anomalous_error_scaled_by_sigma = 4.0
             self.cs_unusual_error_scaled_by_sigma = 3.5
             self.cs_diff_error_scaled_by_sigma = 5.0
+            self.__nefT.set_bmrb_only_mode(True)
 
         if has_key_value(self.__inputParamDict, 'nonblk_anomalous_cs'):
             if isinstance(self.__inputParamDict['nonblk_anomalous_cs'], bool):
@@ -15762,8 +15763,9 @@ class NmrDpUtility:
                                             if comp_id != '.':
 
                                                 if self.__target_framecode not in emptyValue:
-                                                    print(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
-                                                          f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id=} {comp_id=}")
+                                                    if sys.version_info() >= (3, 8):
+                                                        print(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
+                                                              f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id=} {comp_id=}")
                                                     sys.exit(1)
 
                                                 if (min(set(s2['seq_id']) - set(s1['seq_id'])) > 0 and seq_id > 0) or not self.__nonblk_bad_nterm:
@@ -15798,8 +15800,9 @@ class NmrDpUtility:
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
 
                                                 if self.__target_framecode not in emptyValue:
-                                                    print(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
-                                                          f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id=} {comp_id=}")
+                                                    if sys.version_info() >= (3, 8):
+                                                        print(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
+                                                              f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id=} {comp_id=}")
                                                     sys.exit(1)
 
                                                 err = f"Invalid comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) in a loop {lp_category2}."
@@ -16763,7 +16766,8 @@ class NmrDpUtility:
                                 map_chain_ids[sf_framecode2][chain_id] = __chain_id
 
                                 if sf_framecode2 == self.__target_framecode:
-                                    print(f"#1 {chain_id} -> {__chain_id}, {__length=} {__matched=} {__unmapped=} {__conflict=} {__offset_1=} {__offset_2=}")
+                                    if sys.version_info() >= (3, 8):
+                                        print(f"#1 {chain_id} -> {__chain_id}, {__length=} {__matched=} {__unmapped=} {__conflict=} {__offset_1=} {__offset_2=}")
 
                                 length = __length
                                 _matched = __matched
@@ -16796,7 +16800,8 @@ class NmrDpUtility:
                                 map_chain_ids[sf_framecode2][s2['chain_id']] = chain_id
 
                                 if sf_framecode2 == self.__target_framecode:
-                                    print(f"#2 {s2['chain_id']} -> {chain_id}, {length=} {_matched=} {unmapped=} {conflict=} {offset_1=} {offset_2=}")
+                                    if sys.version_info() >= (3, 8):
+                                        print(f"#2 {s2['chain_id']} -> {chain_id}, {length=} {_matched=} {unmapped=} {conflict=} {offset_1=} {offset_2=}")
 
                                 alt_chain = True
 
@@ -16866,7 +16871,8 @@ class NmrDpUtility:
                                             chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == chain_id)
 
                                         if sf_framecode2 == self.__target_framecode:
-                                            print(f"#a {chain_id2=} {_matched=} {offset_1=} {offset_2=} {seq_id_conv_dict=}")
+                                            if sys.version_info() >= (3, 8):
+                                                print(f"#a {chain_id2=} {_matched=} {offset_1=} {offset_2=} {seq_id_conv_dict=}")
 
                                         if sf_framecode2 not in proc_chain_ids:
                                             proc_chain_ids[sf_framecode2] = set()
@@ -17082,7 +17088,8 @@ class NmrDpUtility:
                                 map_chain_ids[sf_framecode2][chain_id] = __chain_id
 
                                 if sf_framecode2 == self.__target_framecode:
-                                    print(f"#3 {chain_id} -> {__chain_id}, {__length=} {__matched=} {__unmapped=} {__conflict=} {__offset_1=} {__offset_2=}")
+                                    if sys.version_info() >= (3, 8):
+                                        print(f"#3 {chain_id} -> {__chain_id}, {__length=} {__matched=} {__unmapped=} {__conflict=} {__offset_1=} {__offset_2=}")
 
                                 length = __length
                                 _matched = __matched
@@ -17274,7 +17281,8 @@ class NmrDpUtility:
                                             break
 
                             if sf_framecode2 == self.__target_framecode:
-                                print(f"{mapping=} {cross=} {circular=}")
+                                if sys.version_info() >= (3, 8):
+                                    print(f"{mapping=} {cross=} {circular=}")
 
                             for s1 in polymer_sequence:
                                 chain_id = s1['chain_id']
@@ -17356,7 +17364,8 @@ class NmrDpUtility:
                                                     chain_id2 = next(k for k, v in mapping.items() if v == chain_id)
 
                                                 if sf_framecode2 == self.__target_framecode:
-                                                    print(f"#c {chain_id2=} {_matched=} {offset_1=} {offset_2=} {seq_id_conv_dict=}")
+                                                    if sys.version_info() >= (3, 8):
+                                                        print(f"#c {chain_id2=} {_matched=} {offset_1=} {offset_2=} {seq_id_conv_dict=}")
 
                                                 if sf_framecode2 not in proc_chain_ids:
                                                     proc_chain_ids[sf_framecode2] = set()
@@ -23631,9 +23640,10 @@ class NmrDpUtility:
                                     if has_ins_code and seq_key in auth_to_ins_code:
                                         _row[27] = auth_to_ins_code[seq_key]
 
-                                _row[20], _row[21], _row[22], _row[23] =\
-                                    row[auth_asym_id_col], row[auth_seq_id_col],\
-                                    row[auth_comp_id_col], row[auth_atom_id_col]
+                                if has_auth_seq:
+                                    _row[20], _row[21], _row[22], _row[23] =\
+                                        row[auth_asym_id_col], row[auth_seq_id_col],\
+                                        row[auth_comp_id_col], row[auth_atom_id_col]
 
                             index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
@@ -23656,9 +23666,10 @@ class NmrDpUtility:
                                     if has_ins_code and seq_key in auth_to_ins_code:
                                         _row[27] = auth_to_ins_code[seq_key]
 
-                                _row[20], _row[21], _row[22], _row[23] =\
-                                    row[auth_asym_id_col], row[auth_seq_id_col],\
-                                    row[auth_comp_id_col], row[auth_atom_id_col]
+                                if has_auth_seq:
+                                    _row[20], _row[21], _row[22], _row[23] =\
+                                        row[auth_asym_id_col], row[auth_seq_id_col],\
+                                        row[auth_comp_id_col], row[auth_atom_id_col]
 
                                 index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
@@ -46131,7 +46142,9 @@ class NmrDpUtility:
                     iso_number = row[iso_number_name]
                     atom_id = row[atom_id_name]
 
-                    atoms.append((chain_id if isinstance(chain_id, int) else int(chain_id), seq_id - min_seq_ids[chain_id], iso_number, atom_id, idx))
+                    atoms.append((chain_id if isinstance(chain_id, int) else int(chain_id),
+                                  seq_id - min_seq_ids[chain_id],
+                                  iso_number, atom_id, idx))
 
                 sorted_atoms = sorted(atoms, key=lambda x: (x[0], x[1], x[2], x[3], x[4]))
 
@@ -46152,8 +46165,17 @@ class NmrDpUtility:
                     for tag in loop.tags:
                         lp.add_tag(lp_category + '.' + tag)
 
+                    conv_tbl = {loop.tags.index(_key['name']): _key['name'] for _key in (key_items + data_items)
+                                if _key['name'] in loop.tags and _key['name'] in lp_data[0].keys()}
+
                     for idx in sorted_idx:
-                        lp.add_data(loop[idx])
+                        _row = lp_data[idx]
+
+                        row = [None] * len(loop.tags)
+                        for col, _key in conv_tbl.items():
+                            row[col] = _row[_key]
+
+                        lp.add_data(row)
 
                     del sf_data[loop]
 

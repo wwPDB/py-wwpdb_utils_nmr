@@ -89,6 +89,7 @@
 # 09-Sep-2022  M. Yokochi - add support for NEF atom name conversion starting with wild card, i.e. '%HN' (v3.2.0, NMR restraint remediation)
 # 20-Oct-2022  M. Yokochi - allow missing distance restraints via allow_missing_dist_restraint(bool) (v3.2.1, DAOTHER-8088 1.b, 8108)
 # 16-Dec-2022  M. Yokochi - remove deprecated functions with minor code revisions (v3.2.2)
+# 27-Feb-2023  M. Yokochi - preserve author sequence scheme of the coordinates during NMR-STAR to NEF conversion (v3.2.3)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -126,7 +127,7 @@ except ImportError:
                                            ALLOWED_AMBIGUITY_CODES)
 
 __package_name__ = 'wwpdb.utils.nmr'
-__version__ = '3.3.2'
+__version__ = '3.3.3'
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
@@ -585,6 +586,8 @@ class NEFTranslator:
 
         # whether to enable remediation routine
         self.__remediation_mode = False
+        # whether the initial sequence number starts from '1' in NEF file, otherwise preserves author sequence scheme of the coordinates
+        self.__bmrb_only = False
         # whether allow missing distance restraints
         self.__allow_missing_dist_restraint = False
 
@@ -646,6 +649,12 @@ class NEFTranslator:
         """
 
         self.__remediation_mode = flag
+
+    def set_bmrb_only_mode(self, flag):
+        """ Set BMRB-only mode.
+        """
+
+        self.__bmrb_only = flag
 
     def allow_missing_dist_restraint(self, flag):
         """ Whether allow missing distance restraint.
@@ -5282,9 +5291,10 @@ class NEFTranslator:
                 _cif_seq = None
                 if cif_chain is not None:
                     try:
-                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_nef_seq)]  # label_seq_id
-                        if offset is None:
-                            offset = _cif_seq - _nef_seq
+                        if seq_align is not None:
+                            _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_nef_seq)]  # label_seq_id
+                            if offset is None:
+                                offset = _cif_seq - _nef_seq
                         if cif_ps is not None:
                             _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
                     except IndexError:
@@ -5298,6 +5308,12 @@ class NEFTranslator:
                 _star_seq = _nef_seq + offset
 
                 row = next(row for row in loop_data if row[chain_index] == nef_chain and row[seq_index] == nef_seq)
+
+                if _cif_seq is None and row[chain_index] not in emptyValue and row[seq_index] not in emptyValue:
+                    _cif_chain_, _cif_seq_ = report.getLabelSeqSchemeOf(row[chain_index], int(row[seq_index]))
+                    if _cif_seq_ is not None:
+                        _star_chain = letterToDigit(_cif_chain_)
+                        _star_seq = _cif_seq_
 
                 out = [None] * len(star_tags)
 
@@ -5397,6 +5413,11 @@ class NEFTranslator:
         seq_index = star_tags.index('_Chem_comp_assembly.Comp_index_ID')
         comp_index = star_tags.index('_Chem_comp_assembly.Comp_ID')
 
+        auth_asym_index = auth_seq_index = -1
+        if '_Chem_comp_assembly.Auth_asym_ID' in star_tags and '_Chem_comp_assembly.Auth_seq_ID' in star_tags:
+            auth_asym_index = star_tags.index('_Chem_comp_assembly.Auth_asym_ID')
+            auth_seq_index = star_tags.index('_Chem_comp_assembly.Auth_seq_ID')
+
         if entity_del_atom_loop is not None:
             aux_tags = entity_del_atom_loop.get_tag_names()
             aux_chain_index = aux_tags.index('_Entity_deleted_atom.Entity_assembly_ID')
@@ -5477,9 +5498,10 @@ class NEFTranslator:
                 _cif_seq = None
                 if cif_chain is not None:
                     try:
-                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_star_seq)]  # label_seq_id
-                        if offset is None:
-                            offset = _cif_seq - _star_seq
+                        if seq_align is not None:
+                            _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_star_seq)]  # label_seq_id
+                            if offset is None:
+                                offset = _cif_seq - _star_seq
                         if cif_ps is not None:
                             _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
                     except IndexError:
@@ -5493,6 +5515,15 @@ class NEFTranslator:
                 _nef_seq = (_star_seq + offset) if _cif_seq is None else _cif_seq
 
                 row = next(row for row in loop_data if row[chain_index] == star_chain and row[seq_index] == star_seq)
+
+                if _cif_seq is None and not self.__bmrb_only and auth_asym_index != -1 and auth_seq_index != -1:
+                    if row[auth_asym_index] not in emptyValue and row[auth_seq_index] not in emptyValue:
+                        cif_chain = row[auth_asym_index]
+                        _cif_seq = int(row[auth_seq_index])
+                        nef_chain = cif_chain
+                        _nef_seq = _cif_seq
+                        if cif_chain != self.star2CifChainMapping[star_chain]:
+                            self.star2CifChainMapping[star_chain] = cif_chain
 
                 out = [None] * len(nef_tags)
 
@@ -5594,9 +5625,10 @@ class NEFTranslator:
                 _cif_seq = None
                 if cif_chain is not None:
                     try:
-                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_in_star_seq)]  # label_seq_id
-                        if offset is None:
-                            offset = _cif_seq - _in_star_seq
+                        if seq_align is not None:
+                            _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_in_star_seq)]  # label_seq_id
+                            if offset is None:
+                                offset = _cif_seq - _in_star_seq
                         if cif_ps is not None:
                             _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
                     except IndexError:
@@ -9644,7 +9676,7 @@ class NEFTranslator:
             for star_seq in ps['seq_id']:
 
                 _cif_seq = None
-                if cif_chain is not None:
+                if cif_chain is not None and seq_align is not None:
                     try:
                         _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(star_seq)]  # label_seq_id
                         if cif_ps is not None:

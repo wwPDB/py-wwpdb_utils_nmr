@@ -5309,7 +5309,7 @@ class NEFTranslator:
 
                 row = next(row for row in loop_data if row[chain_index] == nef_chain and row[seq_index] == nef_seq)
 
-                if _cif_seq is None and row[chain_index] not in emptyValue and row[seq_index] not in emptyValue:
+                if _cif_seq is None and report is not None and row[chain_index] not in emptyValue and row[seq_index] not in emptyValue:
                     _cif_chain_, _cif_seq_ = report.getLabelSeqSchemeOf(row[chain_index], int(row[seq_index]))
                     if _cif_seq_ is not None:
                         _star_chain = letterToDigit(_cif_chain_)
@@ -5522,7 +5522,7 @@ class NEFTranslator:
                         _cif_seq = int(row[auth_seq_index])
                         nef_chain = cif_chain
                         _nef_seq = _cif_seq
-                        if cif_chain != self.star2CifChainMapping[star_chain]:
+                        if star_chain in self.star2CifChainMapping and cif_chain != self.star2CifChainMapping[star_chain]:
                             self.star2CifChainMapping[star_chain] = cif_chain
 
                 out = [None] * len(nef_tags)

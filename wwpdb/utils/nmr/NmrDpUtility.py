@@ -10855,7 +10855,7 @@ class NmrDpUtility:
 
             if self.__mr_debug:
                 if self.__remediation_loop_count > 5:
-                    print(self.__inputParamDictCopy)
+                    self.__lfh.write(f'repetiation of remediation: {self.__inputParamDictCopy}\n')
 
         return not self.report.isError()
 
@@ -11059,7 +11059,7 @@ class NmrDpUtility:
         self.__divide_mr_error_message.append(err_desc)
 
         if self.__mr_debug:
-            print('DIV-MR')
+            self.__lfh.write('DIV-MR\n')
 
         if file_type == 'nm-res-xpl':
             pass
@@ -11172,12 +11172,12 @@ class NmrDpUtility:
                     if comment_pattern.match(concat_input) or concat_input[0].isalnum():
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #1-1')
+                            self.__lfh.write('DIV-MR-EXIT #1-1\n')
 
                         return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #1-2')
+                        self.__lfh.write('DIV-MR-EXIT #1-2\n')
 
                     return False
 
@@ -11220,19 +11220,19 @@ class NmrDpUtility:
                                     os.rename(cor_src_path, src_path)
 
                                 if self.__mr_debug:
-                                    print('DIV-MR-EXIT #2-1')
+                                    self.__lfh.write('DIV-MR-EXIT #2-1\n')
 
                             else:
 
                                 if self.__mr_debug:
-                                    print('DIV-MR-EXIT #2-2')
+                                    self.__lfh.write('DIV-MR-EXIT #2-2\n')
 
                                 corrected = False
 
                         else:
 
                             if self.__mr_debug:
-                                print('DIV-MR-EXIT #2-3')
+                                self.__lfh.write('DIV-MR-EXIT #2-3\n')
 
                         return corrected
 
@@ -11360,7 +11360,7 @@ class NmrDpUtility:
                                 os.rename(cor_src_path, src_path)
 
                             if self.__mr_debug:
-                                print('DIV-MR-EXIT #3-1')
+                                self.__lfh.write('DIV-MR-EXIT #3-1\n')
 
                             return True
 
@@ -11373,7 +11373,7 @@ class NmrDpUtility:
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
 
                 if self.__mr_debug and not corrected:
-                    print('DIV-MR-EXIT #3-2')
+                    self.__lfh.write('DIV-MR-EXIT #3-2\n')
 
                 return False
 
@@ -11395,7 +11395,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-3')
+                        self.__lfh.write('DIV-MR-EXIT #3-3\n')
 
                     corrected = True
 
@@ -11436,7 +11436,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-4')
+                            self.__lfh.write('DIV-MR-EXIT #3-4\n')
 
                         corrected = True
 
@@ -11499,7 +11499,7 @@ class NmrDpUtility:
                                     os.rename(cor_src_path, src_path)
 
                                 if self.__mr_debug:
-                                    print('DIV-MR-EXIT #3-5')
+                                    self.__lfh.write('DIV-MR-EXIT #3-5\n')
 
                                 corrected = True
 
@@ -11517,7 +11517,7 @@ class NmrDpUtility:
                     if not has_lexer_error:
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-6')
+                            self.__lfh.write('DIV-MR-EXIT #3-6\n')
 
                         return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset)
 
@@ -11530,7 +11530,7 @@ class NmrDpUtility:
                     if not has_lexer_error:
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-7')
+                            self.__lfh.write('DIV-MR-EXIT #3-7\n')
 
                         return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset)
 
@@ -11577,7 +11577,7 @@ class NmrDpUtility:
                                 os.rename(cor_src_path, src_path)
 
                             if self.__mr_debug:
-                                print('DIV-MR-EXIT #3-8')
+                                self.__lfh.write('DIV-MR-EXIT #3-8\n')
 
                             corrected = True
 
@@ -11612,7 +11612,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-9')
+                            self.__lfh.write('DIV-MR-EXIT #3-9\n')
 
                         corrected = True
 
@@ -11637,7 +11637,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-10')
+                        self.__lfh.write('DIV-MR-EXIT #3-10\n')
 
                     corrected = True
 
@@ -11657,7 +11657,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #3-11')
+                        self.__lfh.write('DIV-MR-EXIT #3-11\n')
 
                     corrected = True
 
@@ -11694,7 +11694,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #3-12')
+                            self.__lfh.write('DIV-MR-EXIT #3-12\n')
 
                         corrected = True
 
@@ -11710,7 +11710,7 @@ class NmrDpUtility:
                     err_desc['previous_input'] = prev_input
 
             if self.__mr_debug and not corrected:
-                print('DIV-MR-EXIT #3')
+                self.__lfh.write('DIV-MR-EXIT #3-13\n')
 
             return corrected
 
@@ -11719,7 +11719,7 @@ class NmrDpUtility:
             os.remove(div_try_file)
 
             if self.__mr_debug:
-                print('DIV-MR-EXIT #4')
+                self.__lfh.write('DIV-MR-EXIT #4\n')
 
             return False
 
@@ -11752,12 +11752,12 @@ class NmrDpUtility:
                     if is_peak_list(err_input):
 
                         if self.__mr_debug:
-                            print('DIV-MR-EXIT #5-1')
+                            self.__lfh.write('DIV-MR-EXIT #5-1\n')
 
                         return self.__peelLegacyMrIfNecessary(file_path, file_type, err_desc, src_path, offset)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #5-2')
+                        self.__lfh.write('DIV-MR-EXIT #5-2\n')
 
                     return False  # not split MR file because of the lexer errors to be handled by manual
 
@@ -11850,7 +11850,7 @@ class NmrDpUtility:
                                     os.remove(div_dst_file)
 
                                 if self.__mr_debug:
-                                    print('DIV-MR-EXIT #6')
+                                    self.__lfh.write('DIV-MR-EXIT #6\n')
 
                                 return True
 
@@ -11864,7 +11864,7 @@ class NmrDpUtility:
                             err_desc['previous_input'] = prev_input
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #7')
+                        self.__lfh.write('DIV-MR-EXIT #7\n')
 
                     return False  # not split MR file because of the lexer errors to be handled by manual
 
@@ -11874,7 +11874,7 @@ class NmrDpUtility:
             os.rename(div_try_file, div_ext_file)
 
             if self.__mr_debug:
-                print('DIV-MR-EXIT #8')
+                self.__lfh.write('DIV-MR-EXIT #8\n')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -11889,7 +11889,7 @@ class NmrDpUtility:
                     err_desc['previous_input'] = prev_input
 
             if self.__mr_debug:
-                print('DIV-MR-EXIT #9')
+                self.__lfh.write('DIV-MR-EXIT #9\n')
 
             return False
 
@@ -11906,7 +11906,7 @@ class NmrDpUtility:
                     err_desc['previous_input'] = prev_input
 
             if self.__mr_debug:
-                print('DIV-MR-EXIT #10')
+                self.__lfh.write('DIV-MR-EXIT #10\n')
 
             return False  # actual issue in the line before the parser error should be handled by manual
 
@@ -11933,7 +11933,7 @@ class NmrDpUtility:
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #11')
+                        self.__lfh.write('DIV-MR-EXIT #11\n')
 
                     return False  # actual issue in the line before the parser error should be handled by manual
 
@@ -11966,7 +11966,7 @@ class NmrDpUtility:
         self.__testFormatValidityOfLegacyMr(file_path, file_type, src_path, offset)
 
         if self.__mr_debug:
-            print('DIV-MR-DONE')
+            self.__lfh.write('DIV-MR-DONE\n')
 
         return True
 
@@ -11997,7 +11997,7 @@ class NmrDpUtility:
         self.__peel_mr_error_message.append(err_desc)
 
         if self.__mr_debug:
-            print('PEEL-MR')
+            self.__lfh.write('PEEL-MR\n')
 
         reader = self.__getSimpleMrPtFileReader(file_type, False)
 
@@ -12068,7 +12068,7 @@ class NmrDpUtility:
             if comment_pattern.match(test_line):
 
                 if self.__mr_debug:
-                    print('PEEL-MR-EXIT #1')
+                    self.__lfh.write('PEEL-MR-EXIT #1\n')
 
                 return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset) | corrected
 
@@ -12089,7 +12089,7 @@ class NmrDpUtility:
                 if not has_lexer_error and not has_parser_error:
 
                     if self.__mr_debug:
-                        print('PEEL-MR-EXIT #2')
+                        self.__lfh.write('PEEL-MR-EXIT #2\n')
 
                     return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset) | corrected
 
@@ -12100,7 +12100,7 @@ class NmrDpUtility:
             if has_lexer_error or not has_parser_error:
 
                 if self.__mr_debug:
-                    print('PEEL-MR-EXIT #3')
+                    self.__lfh.write('PEEL-MR-EXIT #3\n')
 
                 return False | corrected
 
@@ -12251,7 +12251,7 @@ class NmrDpUtility:
 
             if j3 > 0:
                 if self.__mr_debug:
-                    print('PEEL-MR-EXIT #5')
+                    self.__lfh.write('PEEL-MR-EXIT #5\n')
 
                 return False | corrected
 
@@ -12262,7 +12262,7 @@ class NmrDpUtility:
                 os.rename(div_ext_file, div_ext_file.replace('dst-div_ext.mr', '_ext.mr'))  # shrink div_ext file name
 
                 if self.__mr_debug:
-                    print('PEEL-MR-EXIT #6')
+                    self.__lfh.write('PEEL-MR-EXIT #6\n')
 
                 return True
 
@@ -12303,7 +12303,7 @@ class NmrDpUtility:
                         os.remove(div_try_file)
 
                     if self.__mr_debug:
-                        print('PEEL-MR-EXIT #7')
+                        self.__lfh.write('PEEL-MR-EXIT #7\n')
 
                     return False | corrected  # not split MR file because of the lexer errors to be handled by manual
 
@@ -12316,7 +12316,7 @@ class NmrDpUtility:
             os.remove(div_try_file)
 
             if self.__mr_debug:
-                print('PEEL-MR-EXIT #8')
+                self.__lfh.write('PEEL-MR-EXIT #8\n')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -12326,7 +12326,7 @@ class NmrDpUtility:
             os.remove(div_try_file)
 
             if self.__mr_debug:
-                print('PEEL-MR-EXIT #9')
+                self.__lfh.write('PEEL-MR-EXIT #9\n')
 
             return False | corrected
 
@@ -12358,7 +12358,7 @@ class NmrDpUtility:
         self.__testFormatValidityOfLegacyMr(file_path, file_type, src_path, offset)
 
         if self.__mr_debug:
-            print('PEEL-MR-DONE')
+            self.__lfh.write('PEEL-MR-DONE\n')
 
         return True
 
@@ -12374,7 +12374,7 @@ class NmrDpUtility:
         div_dst_file = src_basename + '-div_dst.mr'
 
         if self.__mr_debug:
-            print('DO-DIV-MR')
+            self.__lfh.write('DO-DIV-MR\n')
 
         if file_type == 'nm-res-xpl':
             pass
@@ -12409,7 +12409,7 @@ class NmrDpUtility:
         if err_column_position == 0 or len(err_input) == 0:
 
             if self.__mr_debug:
-                print('DO-DIV-MR-EXIT #1')
+                self.__lfh.write('DO-DIV-MR-EXIT #1\n')
 
             return False
 
@@ -12526,7 +12526,7 @@ class NmrDpUtility:
                     err_desc['previous_input'] = f"Do you need to comment out the succeeding lines as well?\n{prev_input}"
 
                 if self.__mr_debug and not corrected:
-                    print('DO-DIV-MR-EXIT #2-1')
+                    self.__lfh.write('DO-DIV-MR-EXIT #2-1\n')
 
                 return False
 
@@ -12548,7 +12548,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DO-DIV-MR-EXIT #2-2')
+                        self.__lfh.write('DO-DIV-MR-EXIT #2-2\n')
 
                     corrected = True
 
@@ -12589,7 +12589,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DO-DIV-MR-EXIT #2-3')
+                            self.__lfh.write('DO-DIV-MR-EXIT #2-3\n')
 
                         corrected = True
 
@@ -12652,7 +12652,7 @@ class NmrDpUtility:
                                     os.rename(cor_src_path, src_path)
 
                                 if self.__mr_debug:
-                                    print('DIV-MR-EXIT #2-4')
+                                    self.__lfh.write('DIV-MR-EXIT #2-4\n')
 
                                 corrected = True
 
@@ -12699,7 +12699,7 @@ class NmrDpUtility:
                                 os.rename(cor_src_path, src_path)
 
                             if self.__mr_debug:
-                                print('DO-DIV-MR-EXIT #2-5')
+                                self.__lfh.write('DO-DIV-MR-EXIT #2-5\n')
 
                             corrected = True
 
@@ -12734,7 +12734,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DO-DIV-MR-EXIT #2-6')
+                            self.__lfh.write('DO-DIV-MR-EXIT #2-6\n')
 
                         corrected = True
 
@@ -12759,7 +12759,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DIV-MR-EXIT #2-7')
+                        self.__lfh.write('DIV-MR-EXIT #2-7\n')
 
                     corrected = True
 
@@ -12779,7 +12779,7 @@ class NmrDpUtility:
                         os.rename(cor_src_path, src_path)
 
                     if self.__mr_debug:
-                        print('DO-DIV-MR-EXIT #2-8')
+                        self.__lfh.write('DO-DIV-MR-EXIT #2-8\n')
 
                     corrected = True
 
@@ -12816,7 +12816,7 @@ class NmrDpUtility:
                             os.rename(cor_src_path, src_path)
 
                         if self.__mr_debug:
-                            print('DO-DIV-MR-EXIT #2-9')
+                            self.__lfh.write('DO-DIV-MR-EXIT #2-9\n')
 
                         corrected = True
 
@@ -12826,7 +12826,7 @@ class NmrDpUtility:
                 os.remove(div_try_file)
 
             if self.__mr_debug and not corrected:
-                print('DO-DIV-MR-EXIT #2')
+                self.__lfh.write('DO-DIV-MR-EXIT #2-10\n')
 
             return corrected
 
@@ -12835,7 +12835,7 @@ class NmrDpUtility:
             os.remove(div_try_file)
 
             if self.__mr_debug:
-                print('DO-DIV-MR-EXIT #3')
+                self.__lfh.write('DO-DIV-MR-EXIT #3\n')
 
             return False
 
@@ -12860,7 +12860,7 @@ class NmrDpUtility:
                 os.remove(div_try_file)
 
                 if self.__mr_debug:
-                    print('DO-DIV-MR-EXIT #4')
+                    self.__lfh.write('DO-DIV-MR-EXIT #4\n')
 
                 return False
 
@@ -12869,7 +12869,7 @@ class NmrDpUtility:
             os.rename(div_try_file, div_ext_file)
 
             if self.__mr_debug:
-                print('DO-DIV-MR-EXIT #5')
+                self.__lfh.write('DO-DIV-MR-EXIT #5\n')
 
             return True  # succeeded in eliminating uninterpretable parts
 
@@ -12878,7 +12878,7 @@ class NmrDpUtility:
             os.remove(div_try_file)
 
             if self.__mr_debug:
-                print('DO-DIV-MR-EXIT #6')
+                self.__lfh.write('DO-DIV-MR-EXIT #6\n')
 
             return False
 
@@ -12910,7 +12910,7 @@ class NmrDpUtility:
         self.__testFormatValidityOfLegacyMr(file_path, file_type, src_path, offset)
 
         if self.__mr_debug:
-            print('DO-DIV-MR-DONE')
+            self.__lfh.write('DO-DIV-MR-DONE\n')
 
         return True
 
@@ -15764,8 +15764,8 @@ class NmrDpUtility:
 
                                                 if self.__target_framecode not in emptyValue:
                                                     if sys.version_info() >= (3, 8):
-                                                        print(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
-                                                              f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id=} {comp_id=}")
+                                                        self.__lfh.write(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
+                                                                         f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id=} {comp_id=}\n")
                                                     sys.exit(1)
 
                                                 if (min(set(s2['seq_id']) - set(s1['seq_id'])) > 0 and seq_id > 0) or not self.__nonblk_bad_nterm:
@@ -15801,8 +15801,8 @@ class NmrDpUtility:
 
                                                 if self.__target_framecode not in emptyValue:
                                                     if sys.version_info() >= (3, 8):
-                                                        print(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
-                                                              f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id=} {comp_id=}")
+                                                        self.__lfh.write(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
+                                                                         f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id=} {comp_id=}\n")
                                                     sys.exit(1)
 
                                                 err = f"Invalid comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) in a loop {lp_category2}."
@@ -16767,7 +16767,8 @@ class NmrDpUtility:
 
                                 if sf_framecode2 == self.__target_framecode:
                                     if sys.version_info() >= (3, 8):
-                                        print(f"#1 {chain_id} -> {__chain_id}, {__length=} {__matched=} {__unmapped=} {__conflict=} {__offset_1=} {__offset_2=}")
+                                        self.__lfh.write(f"#1 {chain_id} -> {__chain_id}, "
+                                                         f"{__length=} {__matched=} {__unmapped=} {__conflict=} {__offset_1=} {__offset_2=}\n")
 
                                 length = __length
                                 _matched = __matched
@@ -16801,7 +16802,8 @@ class NmrDpUtility:
 
                                 if sf_framecode2 == self.__target_framecode:
                                     if sys.version_info() >= (3, 8):
-                                        print(f"#2 {s2['chain_id']} -> {chain_id}, {length=} {_matched=} {unmapped=} {conflict=} {offset_1=} {offset_2=}")
+                                        self.__lfh.write(f"#2 {s2['chain_id']} -> {chain_id}, "
+                                                         f"{length=} {_matched=} {unmapped=} {conflict=} {offset_1=} {offset_2=}\n")
 
                                 alt_chain = True
 
@@ -16872,7 +16874,7 @@ class NmrDpUtility:
 
                                         if sf_framecode2 == self.__target_framecode:
                                             if sys.version_info() >= (3, 8):
-                                                print(f"#a {chain_id2=} {_matched=} {offset_1=} {offset_2=} {seq_id_conv_dict=}")
+                                                self.__lfh.write(f"#a {chain_id2=} {_matched=} {offset_1=} {offset_2=} {seq_id_conv_dict=}\n")
 
                                         if sf_framecode2 not in proc_chain_ids:
                                             proc_chain_ids[sf_framecode2] = set()
@@ -17089,7 +17091,8 @@ class NmrDpUtility:
 
                                 if sf_framecode2 == self.__target_framecode:
                                     if sys.version_info() >= (3, 8):
-                                        print(f"#3 {chain_id} -> {__chain_id}, {__length=} {__matched=} {__unmapped=} {__conflict=} {__offset_1=} {__offset_2=}")
+                                        self.__lfh.write(f"#3 {chain_id} -> {__chain_id}, "
+                                                         f"{__length=} {__matched=} {__unmapped=} {__conflict=} {__offset_1=} {__offset_2=}\n")
 
                                 length = __length
                                 _matched = __matched
@@ -17282,7 +17285,7 @@ class NmrDpUtility:
 
                             if sf_framecode2 == self.__target_framecode:
                                 if sys.version_info() >= (3, 8):
-                                    print(f"{mapping=} {cross=} {circular=}")
+                                    self.__lfh.write(f"{mapping=} {cross=} {circular=}\n")
 
                             for s1 in polymer_sequence:
                                 chain_id = s1['chain_id']
@@ -17365,7 +17368,7 @@ class NmrDpUtility:
 
                                                 if sf_framecode2 == self.__target_framecode:
                                                     if sys.version_info() >= (3, 8):
-                                                        print(f"#c {chain_id2=} {_matched=} {offset_1=} {offset_2=} {seq_id_conv_dict=}")
+                                                        self.__lfh.write(f"#c {chain_id2=} {_matched=} {offset_1=} {offset_2=} {seq_id_conv_dict=}\n")
 
                                                 if sf_framecode2 not in proc_chain_ids:
                                                     proc_chain_ids[sf_framecode2] = set()

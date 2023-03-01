@@ -105,27 +105,27 @@ class CifToNmrStar:
         with open(self.schema_dir + 'headers.txt', 'w') as ofp:
             for header in schema.headers:
                 ofp.write(header + '\n')
-        print('headers.txt: Done.')
+        self.__lfh.write('headers.txt: Done.\n')
 
         # print(schema.schema)
         write_schema_as_pickle(schema.schema, self.schema_dir + 'schema.pkl')
-        print('schema.pkl: Done.')
+        self.__lfh.write('schema.pkl: Done.\n')
 
         # print(schema.schema_order)
         write_schema_as_pickle(schema.schema_order, self.schema_dir + 'schema_order.pkl')
-        print('schema_order.pkl: Done.')
+        self.__lfh.write('schema_order.pkl: Done.\n')
 
         # print(schema.category_order)
         write_schema_as_pickle(schema.category_order, self.schema_dir + 'category_order.pkl')
-        print('category_order.pkl: Done.')
+        self.__lfh.write('category_order.pkl: Done.\n')
 
         # print(schema.data_types)
         write_schema_as_pickle(schema.data_types, self.schema_dir + 'data_types.pkl')
-        print('data_types.pkl: Done.')
+        self.__lfh.write('data_types.pkl: Done.\n')
 
         with open(self.schema_dir + 'version.txt', 'w') as ofp:
             ofp.write(schema.version)
-        print(f"version: {schema.version}")
+        self.__lfh.write(f"version: {schema.version}\n")
 
     def convert(self, cifPath=None, strPath=None, datablockName=None, maxRepeat=1):
         """ Convert CIF formatted NMR data file to normalized NMR-STAR file.

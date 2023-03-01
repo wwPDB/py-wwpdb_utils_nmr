@@ -835,7 +835,7 @@ class CifReader:
                     result['score'] = score
 
                     if self.__verbose:
-                        print(result)
+                        self.__lfh.write(f'{result}\n')
 
                     if score < min_score or (n_noise == 0 and min_score < self.__rmsd_overlaid_exactly):
                         min_score = score

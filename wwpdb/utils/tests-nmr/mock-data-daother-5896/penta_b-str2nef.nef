@@ -61,67 +61,67 @@ save_nef_chemical_shift_list_cs1
       _nef_chemical_shift.value
       _nef_chemical_shift.value_uncertainty
 
-     aaa   1   MET   HA     H   1    3.823          0                  
-     aaa   1   MET   HBx    H   1    1.956          0                  
-     aaa   1   MET   HBy    H   1    1.976          0                  
-     aaa   1   MET   HGy    H   1    2.151          0                  
-     aaa   1   MET   HGx    H   1    2.036          0                  
-     aaa   1   MET   C      C   13   170.978        0                  
-     aaa   1   MET   CA     C   13   55.193         0                  
-     aaa   1   MET   CB     C   13   34.019         0                  
-     aaa   1   MET   CG     C   13   31.136         0                  
-     aaa   2   LYS   H      H   1    8.56           0                  
-     aaa   2   LYS   HA     H   1    4.62           0                  
-     aaa   2   LYS   HBy    H   1    1.494          0                  
-     aaa   2   LYS   HBx    H   1    1.329          0                  
-     aaa   2   LYS   HDx    H   1    1.604          0                  
-     aaa   2   LYS   HDy    H   1    1.651          0                  
-     aaa   2   LYS   HEx    H   1    2.909          0                  
-     aaa   2   LYS   HGy    H   1    1.384          0                  
-     aaa   2   LYS   HGx    H   1    1.223          0                  
-     aaa   2   LYS   C      C   13   174.608        0                  
-     aaa   2   LYS   CA     C   13   54.206         0                  
-     aaa   2   LYS   CB     C   13   35.916         0                  
-     aaa   2   LYS   CD     C   13   29.373         0                  
-     aaa   2   LYS   CE     C   13   42.086         0                  
-     aaa   2   LYS   CG     C   13   24.011         0                  
-     aaa   2   LYS   N      N   15   122.783        0                  
+     aaa   1   MET   HA     H   1    3.823          0.0                
+     aaa   1   MET   HBx    H   1    1.956          0.0                
+     aaa   1   MET   HBy    H   1    1.976          0.0                
+     aaa   1   MET   HGy    H   1    2.151          0.0                
+     aaa   1   MET   HGx    H   1    2.036          0.0                
+     aaa   1   MET   C      C   13   170.978        0.0                
+     aaa   1   MET   CA     C   13   55.193         0.0                
+     aaa   1   MET   CB     C   13   34.019         0.0                
+     aaa   1   MET   CG     C   13   31.136         0.0                
+     aaa   2   LYS   H      H   1    8.56           0.0                
+     aaa   2   LYS   HA     H   1    4.62           0.0                
+     aaa   2   LYS   HBy    H   1    1.494          0.0                
+     aaa   2   LYS   HBx    H   1    1.329          0.0                
+     aaa   2   LYS   HDx    H   1    1.604          0.0                
+     aaa   2   LYS   HDy    H   1    1.651          0.0                
+     aaa   2   LYS   HEx    H   1    2.909          0.0                
+     aaa   2   LYS   HGy    H   1    1.384          0.0                
+     aaa   2   LYS   HGx    H   1    1.223          0.0                
+     aaa   2   LYS   C      C   13   174.608        0.0                
+     aaa   2   LYS   CA     C   13   54.206         0.0                
+     aaa   2   LYS   CB     C   13   35.916         0.0                
+     aaa   2   LYS   CD     C   13   29.373         0.0                
+     aaa   2   LYS   CE     C   13   42.086         0.0                
+     aaa   2   LYS   CG     C   13   24.011         0.0                
+     aaa   2   LYS   N      N   15   122.783        0.0                
      aaa   3   ILE   H      H   1    8.376307844    0.0001791922224    
-     aaa   3   ILE   HA     H   1    3.619032945    0                  
-     aaa   3   ILE   HB     H   1    1.486          0                  
-     aaa   3   ILE   HD11   H   1    0.7444814145   0                  
-     aaa   3   ILE   HD12   H   1    0.7444814145   0                  
-     aaa   3   ILE   HD13   H   1    0.7444814145   0                  
-     aaa   3   ILE   HG1y   H   1    0.781          0                  
-     aaa   3   ILE   HG1x   H   1    0.06           0                  
-     aaa   3   ILE   HG21   H   1    0.595          0                  
-     aaa   3   ILE   HG22   H   1    0.595          0                  
-     aaa   3   ILE   HG23   H   1    0.595          0                  
-     aaa   3   ILE   C      C   13   176.569        0                  
-     aaa   3   ILE   CA     C   13   62.565         0                  
-     aaa   3   ILE   CB     C   13   38.792         0                  
-     aaa   3   ILE   CD1    C   13   14.332         0                  
-     aaa   3   ILE   CG1    C   13   27.255         0                  
-     aaa   3   ILE   CG2    C   13   17.2           0                  
+     aaa   3   ILE   HA     H   1    3.619032945    0.0                
+     aaa   3   ILE   HB     H   1    1.486          0.0                
+     aaa   3   ILE   HD1%   H   1    0.7444814145   0.0                
+     aaa   3   ILE   HG1y   H   1    0.781          0.0                
+     aaa   3   ILE   HG1x   H   1    0.06           0.0                
+     aaa   3   ILE   HG2%   H   1    0.595          0.0                
+     aaa   3   ILE   C      C   13   176.569        0.0                
+     aaa   3   ILE   CA     C   13   62.565         0.0                
+     aaa   3   ILE   CB     C   13   38.792         0.0                
+     aaa   3   ILE   CD1    C   13   14.332         0.0                
+     aaa   3   ILE   CG1    C   13   27.255         0.0                
+     aaa   3   ILE   CG2    C   13   17.2           0.0                
      aaa   3   ILE   N      N   15   119.9906405    0.00327219903      
-     aaa   4   ILE   H      H   1    9.159          0                  
-     aaa   4   ILE   HA     H   1    4.135          0                  
-     aaa   4   ILE   HB     H   1    1.613          0                  
-     aaa   4   ILE   HD11   H   1    0.64           0                  
-     aaa   4   ILE   HD12   H   1    0.64           0                  
-     aaa   4   ILE   HD13   H   1    0.64           0                  
-     aaa   4   ILE   HG1y   H   1    1.164          0                  
-     aaa   4   ILE   HG1x   H   1    1.025          0                  
-     aaa   4   ILE   HG21   H   1    0.802          0                  
-     aaa   4   ILE   HG22   H   1    0.802          0                  
-     aaa   4   ILE   HG23   H   1    0.802          0                  
-     aaa   4   ILE   C      C   13   176.194        0                  
-     aaa   4   ILE   CA     C   13   60.586         0                  
-     aaa   4   ILE   CB     C   13   37.466         0                  
-     aaa   4   ILE   CD1    C   13   10.304         0                  
-     aaa   4   ILE   CG1    C   13   26.368         0                  
-     aaa   4   ILE   CG2    C   13   16.57          0                  
-     aaa   4   ILE   N      N   15   127.239        0                  
+     aaa   4   ILE   H      H   1    9.159          0.0                
+     aaa   4   ILE   HA     H   1    4.135          0.0                
+     aaa   4   ILE   HB     H   1    1.613          0.0                
+     aaa   4   ILE   HD1%   H   1    0.64           0.0                
+     aaa   4   ILE   HG1y   H   1    1.164          0.0                
+     aaa   4   ILE   HG1x   H   1    1.025          0.0                
+     aaa   4   ILE   HG2%   H   1    0.802          0.0                
+     aaa   4   ILE   C      C   13   176.194        0.0                
+     aaa   4   ILE   CA     C   13   60.586         0.0                
+     aaa   4   ILE   CB     C   13   37.466         0.0                
+     aaa   4   ILE   CD1    C   13   10.304         0.0                
+     aaa   4   ILE   CG1    C   13   26.368         0.0                
+     aaa   4   ILE   CG2    C   13   16.57          0.0                
+     aaa   4   ILE   N      N   15   127.239        0.0                
+     aaa   5   SER   H      H   1    7.482          0.0                
+     aaa   5   SER   HA     H   1    4.545          0.0                
+     aaa   5   SER   HBx    H   1    3.784          0.0                
+     aaa   5   SER   HBy    H   1    3.784          0.0                
+     aaa   5   SER   C      C   13   171.58         0.0                
+     aaa   5   SER   CA     C   13   57.655         0.0                
+     aaa   5   SER   CB     C   13   65.178         0.0                
+     aaa   5   SER   N      N   15   112.465        0.0                
 
    stop_
 
@@ -153,113 +153,63 @@ save_nef_distance_restraint_list_dis1
       _nef_distance_restraint.upper_limit
       _nef_distance_restraint.upper_linear_limit
 
-     1     55    .   aaa   1   MET   HA     aaa   1   MET   HGy    1   4     .   .   1.8   5     .    
-     2     56    .   aaa   1   MET   HA     aaa   1   MET   HGx    1   4     .   .   1.8   5     .    
-     3     57    .   aaa   1   MET   HA     aaa   2   LYS   H      1   3     .   .   1.8   3.5   .    
-     4     61    .   aaa   1   MET   HGy    aaa   2   LYS   H      1   4     .   .   1.8   6     .    
-     5     66    .   aaa   2   LYS   H      aaa   2   LYS   HA     1   4     .   .   1.8   5     .    
-     6     68    .   aaa   2   LYS   HA     aaa   3   ILE   H      1   2.5   .   .   1.8   2.9   .    
-     7     69    .   aaa   2   LYS   HBy    aaa   2   LYS   HDx    1   4     .   .   1.8   7     .    
-     8     70    .   aaa   2   LYS   HBy    aaa   2   LYS   HEx    1   4     .   .   1.8   7     .    
-     9     71    .   aaa   2   LYS   HBy    aaa   3   ILE   H      1   4     .   .   1.8   6     .    
-     10    73    .   aaa   2   LYS   HEx    aaa   2   LYS   HGy    1   4     .   .   1.8   6     .    
-     11    74    .   aaa   2   LYS   HEx    aaa   2   LYS   HGx    1   4     .   .   1.8   6     .    
-     12    77    .   aaa   2   LYS   HEx    aaa   4   ILE   HD11   1   4     .   .   1.8   7     .    
-     13    77    .   aaa   2   LYS   HEx    aaa   4   ILE   HD12   1   4     .   .   1.8   7     .    
-     14    77    .   aaa   2   LYS   HEx    aaa   4   ILE   HD13   1   4     .   .   1.8   7     .    
-     15    78    .   aaa   3   ILE   H      aaa   3   ILE   HA     1   4     .   .   1.8   5     .    
-     16    79    .   aaa   3   ILE   H      aaa   3   ILE   HB     1   3     .   .   1.8   3.5   .    
-     17    80    .   aaa   3   ILE   H      aaa   3   ILE   HG1y   1   4     .   .   1.8   5     .    
-     18    81    .   aaa   3   ILE   H      aaa   3   ILE   HG1x   1   4     .   .   1.8   5     .    
-     19    82    .   aaa   3   ILE   H      aaa   3   ILE   HG21   1   4     .   .   1.8   6     .    
-     20    82    .   aaa   3   ILE   H      aaa   3   ILE   HG22   1   4     .   .   1.8   6     .    
-     21    82    .   aaa   3   ILE   H      aaa   3   ILE   HG23   1   4     .   .   1.8   6     .    
-     22    83    .   aaa   3   ILE   H      aaa   3   ILE   HD11   1   4     .   .   1.8   6     .    
-     23    83    .   aaa   3   ILE   H      aaa   3   ILE   HD12   1   4     .   .   1.8   6     .    
-     24    83    .   aaa   3   ILE   H      aaa   3   ILE   HD13   1   4     .   .   1.8   6     .    
-     25    87    .   aaa   3   ILE   HA     aaa   3   ILE   HG1y   1   4     .   .   1.8   5     .    
-     26    88    .   aaa   3   ILE   HA     aaa   3   ILE   HG1x   1   4     .   .   1.8   5     .    
-     27    89    .   aaa   3   ILE   HA     aaa   3   ILE   HG21   1   4     .   .   1.8   5.6   .    
-     28    89    .   aaa   3   ILE   HA     aaa   3   ILE   HG22   1   4     .   .   1.8   5.6   .    
-     29    89    .   aaa   3   ILE   HA     aaa   3   ILE   HG23   1   4     .   .   1.8   5.6   .    
-     30    90    .   aaa   3   ILE   HA     aaa   3   ILE   HD11   1   4     .   .   1.8   6     .    
-     31    90    .   aaa   3   ILE   HA     aaa   3   ILE   HD12   1   4     .   .   1.8   6     .    
-     32    90    .   aaa   3   ILE   HA     aaa   3   ILE   HD13   1   4     .   .   1.8   6     .    
-     33    91    .   aaa   3   ILE   HA     aaa   4   ILE   H      1   3     .   .   1.8   3.5   .    
-     34    92    .   aaa   3   ILE   HA     aaa   4   ILE   HB     1   4     .   .   1.8   5     .    
-     35    93    .   aaa   3   ILE   HA     aaa   5   SER   H      1   4     .   .   1.8   5     .    
-     36    96    .   aaa   3   ILE   HB     aaa   3   ILE   HD11   1   4     .   .   1.8   6     .    
-     37    96    .   aaa   3   ILE   HB     aaa   3   ILE   HD12   1   4     .   .   1.8   6     .    
-     38    96    .   aaa   3   ILE   HB     aaa   3   ILE   HD13   1   4     .   .   1.8   6     .    
-     39    97    .   aaa   3   ILE   HG1y   aaa   3   ILE   HG21   1   4     .   .   1.8   7     .    
-     40    97    .   aaa   3   ILE   HG1y   aaa   3   ILE   HG22   1   4     .   .   1.8   7     .    
-     41    97    .   aaa   3   ILE   HG1y   aaa   3   ILE   HG23   1   4     .   .   1.8   7     .    
-     42    98    .   aaa   3   ILE   HG1y   aaa   4   ILE   H      1   4     .   .   1.8   6     .    
-     43    99    .   aaa   3   ILE   HG1y   aaa   4   ILE   HD11   1   4     .   .   1.8   7     .    
-     44    99    .   aaa   3   ILE   HG1y   aaa   4   ILE   HD12   1   4     .   .   1.8   7     .    
-     45    99    .   aaa   3   ILE   HG1y   aaa   4   ILE   HD13   1   4     .   .   1.8   7     .    
-     46    107   .   aaa   3   ILE   HD11   aaa   3   ILE   HG21   1   4     .   .   1.8   7     .    
-     47    107   .   aaa   3   ILE   HD11   aaa   3   ILE   HG22   1   4     .   .   1.8   7     .    
-     48    107   .   aaa   3   ILE   HD11   aaa   3   ILE   HG23   1   4     .   .   1.8   7     .    
-     49    107   .   aaa   3   ILE   HD12   aaa   3   ILE   HG21   1   4     .   .   1.8   7     .    
-     50    107   .   aaa   3   ILE   HD12   aaa   3   ILE   HG22   1   4     .   .   1.8   7     .    
-     51    107   .   aaa   3   ILE   HD12   aaa   3   ILE   HG23   1   4     .   .   1.8   7     .    
-     52    107   .   aaa   3   ILE   HD13   aaa   3   ILE   HG21   1   4     .   .   1.8   7     .    
-     53    107   .   aaa   3   ILE   HD13   aaa   3   ILE   HG22   1   4     .   .   1.8   7     .    
-     54    107   .   aaa   3   ILE   HD13   aaa   3   ILE   HG23   1   4     .   .   1.8   7     .    
-     55    108   .   aaa   3   ILE   HG21   aaa   4   ILE   H      1   4     .   .   1.8   6     .    
-     56    108   .   aaa   3   ILE   HG22   aaa   4   ILE   H      1   4     .   .   1.8   6     .    
-     57    108   .   aaa   3   ILE   HG23   aaa   4   ILE   H      1   4     .   .   1.8   6     .    
-     58    109   .   aaa   3   ILE   HG21   aaa   4   ILE   HA     1   4     .   .   1.8   6     .    
-     59    109   .   aaa   3   ILE   HG22   aaa   4   ILE   HA     1   4     .   .   1.8   6     .    
-     60    109   .   aaa   3   ILE   HG23   aaa   4   ILE   HA     1   4     .   .   1.8   6     .    
-     61    110   .   aaa   3   ILE   HG21   aaa   4   ILE   HG1y   1   4     .   .   1.8   7     .    
-     62    110   .   aaa   3   ILE   HG22   aaa   4   ILE   HG1y   1   4     .   .   1.8   7     .    
-     63    110   .   aaa   3   ILE   HG23   aaa   4   ILE   HG1y   1   4     .   .   1.8   7     .    
-     64    111   .   aaa   3   ILE   HG21   aaa   5   SER   H      1   4     .   .   1.8   6     .    
-     65    111   .   aaa   3   ILE   HG22   aaa   5   SER   H      1   4     .   .   1.8   6     .    
-     66    111   .   aaa   3   ILE   HG23   aaa   5   SER   H      1   4     .   .   1.8   6     .    
-     67    124   .   aaa   4   ILE   H      aaa   4   ILE   HA     1   4     .   .   1.8   5     .    
-     68    125   .   aaa   4   ILE   H      aaa   4   ILE   HB     1   3     .   .   1.8   3.5   .    
-     69    126   .   aaa   4   ILE   H      aaa   4   ILE   HG1y   1   4     .   .   1.8   5     .    
-     70    127   .   aaa   4   ILE   H      aaa   4   ILE   HG1x   1   4     .   .   1.8   5     .    
-     71    128   .   aaa   4   ILE   H      aaa   4   ILE   HG21   1   4     .   .   1.8   6     .    
-     72    128   .   aaa   4   ILE   H      aaa   4   ILE   HG22   1   4     .   .   1.8   6     .    
-     73    128   .   aaa   4   ILE   H      aaa   4   ILE   HG23   1   4     .   .   1.8   6     .    
-     74    129   .   aaa   4   ILE   H      aaa   4   ILE   HD11   1   4     .   .   1.8   6     .    
-     75    129   .   aaa   4   ILE   H      aaa   4   ILE   HD12   1   4     .   .   1.8   6     .    
-     76    129   .   aaa   4   ILE   H      aaa   4   ILE   HD13   1   4     .   .   1.8   6     .    
-     77    130   .   aaa   4   ILE   H      aaa   5   SER   H      1   3     .   .   1.8   3.5   .    
-     78    134   .   aaa   4   ILE   HA     aaa   4   ILE   HG1y   1   4     .   .   1.8   5     .    
-     79    135   .   aaa   4   ILE   HA     aaa   4   ILE   HG1x   1   4     .   .   1.8   5     .    
-     80    136   .   aaa   4   ILE   HA     aaa   4   ILE   HG21   1   4     .   .   1.8   5.6   .    
-     81    136   .   aaa   4   ILE   HA     aaa   4   ILE   HG22   1   4     .   .   1.8   5.6   .    
-     82    136   .   aaa   4   ILE   HA     aaa   4   ILE   HG23   1   4     .   .   1.8   5.6   .    
-     83    137   .   aaa   4   ILE   HA     aaa   4   ILE   HD11   1   4     .   .   1.8   6     .    
-     84    137   .   aaa   4   ILE   HA     aaa   4   ILE   HD12   1   4     .   .   1.8   6     .    
-     85    137   .   aaa   4   ILE   HA     aaa   4   ILE   HD13   1   4     .   .   1.8   6     .    
-     86    138   .   aaa   4   ILE   HA     aaa   5   SER   H      1   4     .   .   1.8   5     .    
-     87    139   .   aaa   4   ILE   HB     aaa   4   ILE   HD11   1   4     .   .   1.8   6     .    
-     88    139   .   aaa   4   ILE   HB     aaa   4   ILE   HD12   1   4     .   .   1.8   6     .    
-     89    139   .   aaa   4   ILE   HB     aaa   4   ILE   HD13   1   4     .   .   1.8   6     .    
-     90    140   .   aaa   4   ILE   HB     aaa   5   SER   H      1   4     .   .   1.8   5     .    
-     91    144   .   aaa   4   ILE   HG1y   aaa   4   ILE   HG21   1   4     .   .   1.8   7     .    
-     92    144   .   aaa   4   ILE   HG1y   aaa   4   ILE   HG22   1   4     .   .   1.8   7     .    
-     93    144   .   aaa   4   ILE   HG1y   aaa   4   ILE   HG23   1   4     .   .   1.8   7     .    
-     94    145   .   aaa   4   ILE   HG1y   aaa   5   SER   H      1   4     .   .   1.8   5     .    
-     95    146   .   aaa   4   ILE   HG1x   aaa   5   SER   H      1   4     .   .   1.8   5     .    
-     96    153   .   aaa   4   ILE   HG21   aaa   5   SER   H      1   4     .   .   1.8   6     .    
-     97    153   .   aaa   4   ILE   HG22   aaa   5   SER   H      1   4     .   .   1.8   6     .    
-     98    153   .   aaa   4   ILE   HG23   aaa   5   SER   H      1   4     .   .   1.8   6     .    
-     99    154   .   aaa   4   ILE   HG21   aaa   5   SER   HBx    1   4     .   .   1.8   7     .    
-     100   154   .   aaa   4   ILE   HG21   aaa   5   SER   HBy    1   4     .   .   1.8   7     .    
-     101   154   .   aaa   4   ILE   HG22   aaa   5   SER   HBx    1   4     .   .   1.8   7     .    
-     102   154   .   aaa   4   ILE   HG22   aaa   5   SER   HBy    1   4     .   .   1.8   7     .    
-     103   154   .   aaa   4   ILE   HG23   aaa   5   SER   HBx    1   4     .   .   1.8   7     .    
-     104   154   .   aaa   4   ILE   HG23   aaa   5   SER   HBy    1   4     .   .   1.8   7     .    
-     105   161   .   aaa   5   SER   H      aaa   5   SER   HA     1   3     .   .   1.8   3.5   .    
-     106   162   .   aaa   5   SER   H      aaa   5   SER   HBx    1   4     .   .   1.8   6     .    
-     107   162   .   aaa   5   SER   H      aaa   5   SER   HBy    1   4     .   .   1.8   6     .    
+     1    55    .   aaa   1   MET   HA     aaa   1   MET   HGy    1   4     .   .   1.8   5     .    
+     2    56    .   aaa   1   MET   HA     aaa   1   MET   HGx    1   4     .   .   1.8   5     .    
+     3    57    .   aaa   1   MET   HA     aaa   2   LYS   H      1   3     .   .   1.8   3.5   .    
+     4    61    .   aaa   1   MET   HGy    aaa   2   LYS   H      1   4     .   .   1.8   6     .    
+     5    66    .   aaa   2   LYS   H      aaa   2   LYS   HA     1   4     .   .   1.8   5     .    
+     6    68    .   aaa   2   LYS   HA     aaa   3   ILE   H      1   2.5   .   .   1.8   2.9   .    
+     7    69    .   aaa   2   LYS   HBy    aaa   2   LYS   HDx    1   4     .   .   1.8   7     .    
+     8    70    .   aaa   2   LYS   HBy    aaa   2   LYS   HEx    1   4     .   .   1.8   7     .    
+     9    71    .   aaa   2   LYS   HBy    aaa   3   ILE   H      1   4     .   .   1.8   6     .    
+     10   73    .   aaa   2   LYS   HEx    aaa   2   LYS   HGy    1   4     .   .   1.8   6     .    
+     11   74    .   aaa   2   LYS   HEx    aaa   2   LYS   HGx    1   4     .   .   1.8   6     .    
+     12   77    .   aaa   2   LYS   HEx    aaa   4   ILE   HD1%   1   4     .   .   1.8   7     .    
+     13   78    .   aaa   3   ILE   H      aaa   3   ILE   HA     1   4     .   .   1.8   5     .    
+     14   79    .   aaa   3   ILE   H      aaa   3   ILE   HB     1   3     .   .   1.8   3.5   .    
+     15   80    .   aaa   3   ILE   H      aaa   3   ILE   HG1y   1   4     .   .   1.8   5     .    
+     16   81    .   aaa   3   ILE   H      aaa   3   ILE   HG1x   1   4     .   .   1.8   5     .    
+     17   82    .   aaa   3   ILE   H      aaa   3   ILE   HG2%   1   4     .   .   1.8   6     .    
+     18   83    .   aaa   3   ILE   H      aaa   3   ILE   HD1%   1   4     .   .   1.8   6     .    
+     19   87    .   aaa   3   ILE   HA     aaa   3   ILE   HG1y   1   4     .   .   1.8   5     .    
+     20   88    .   aaa   3   ILE   HA     aaa   3   ILE   HG1x   1   4     .   .   1.8   5     .    
+     21   89    .   aaa   3   ILE   HA     aaa   3   ILE   HG2%   1   4     .   .   1.8   5.6   .    
+     22   90    .   aaa   3   ILE   HA     aaa   3   ILE   HD1%   1   4     .   .   1.8   6     .    
+     23   91    .   aaa   3   ILE   HA     aaa   4   ILE   H      1   3     .   .   1.8   3.5   .    
+     24   92    .   aaa   3   ILE   HA     aaa   4   ILE   HB     1   4     .   .   1.8   5     .    
+     25   93    .   aaa   3   ILE   HA     aaa   5   SER   H      1   4     .   .   1.8   5     .    
+     26   96    .   aaa   3   ILE   HB     aaa   3   ILE   HD1%   1   4     .   .   1.8   6     .    
+     27   97    .   aaa   3   ILE   HG1y   aaa   3   ILE   HG2%   1   4     .   .   1.8   7     .    
+     28   98    .   aaa   3   ILE   HG1y   aaa   4   ILE   H      1   4     .   .   1.8   6     .    
+     29   99    .   aaa   3   ILE   HG1y   aaa   4   ILE   HD1%   1   4     .   .   1.8   7     .    
+     30   107   .   aaa   3   ILE   HD1%   aaa   3   ILE   HG2%   1   4     .   .   1.8   7     .    
+     31   108   .   aaa   3   ILE   HG2%   aaa   4   ILE   H      1   4     .   .   1.8   6     .    
+     32   109   .   aaa   3   ILE   HG2%   aaa   4   ILE   HA     1   4     .   .   1.8   6     .    
+     33   110   .   aaa   3   ILE   HG2%   aaa   4   ILE   HG1y   1   4     .   .   1.8   7     .    
+     34   111   .   aaa   3   ILE   HG2%   aaa   5   SER   H      1   4     .   .   1.8   6     .    
+     35   124   .   aaa   4   ILE   H      aaa   4   ILE   HA     1   4     .   .   1.8   5     .    
+     36   125   .   aaa   4   ILE   H      aaa   4   ILE   HB     1   3     .   .   1.8   3.5   .    
+     37   126   .   aaa   4   ILE   H      aaa   4   ILE   HG1y   1   4     .   .   1.8   5     .    
+     38   127   .   aaa   4   ILE   H      aaa   4   ILE   HG1x   1   4     .   .   1.8   5     .    
+     39   128   .   aaa   4   ILE   H      aaa   4   ILE   HG2%   1   4     .   .   1.8   6     .    
+     40   129   .   aaa   4   ILE   H      aaa   4   ILE   HD1%   1   4     .   .   1.8   6     .    
+     41   130   .   aaa   4   ILE   H      aaa   5   SER   H      1   3     .   .   1.8   3.5   .    
+     42   134   .   aaa   4   ILE   HA     aaa   4   ILE   HG1y   1   4     .   .   1.8   5     .    
+     43   135   .   aaa   4   ILE   HA     aaa   4   ILE   HG1x   1   4     .   .   1.8   5     .    
+     44   136   .   aaa   4   ILE   HA     aaa   4   ILE   HG2%   1   4     .   .   1.8   5.6   .    
+     45   137   .   aaa   4   ILE   HA     aaa   4   ILE   HD1%   1   4     .   .   1.8   6     .    
+     46   138   .   aaa   4   ILE   HA     aaa   5   SER   H      1   4     .   .   1.8   5     .    
+     47   139   .   aaa   4   ILE   HB     aaa   4   ILE   HD1%   1   4     .   .   1.8   6     .    
+     48   140   .   aaa   4   ILE   HB     aaa   5   SER   H      1   4     .   .   1.8   5     .    
+     49   144   .   aaa   4   ILE   HG1y   aaa   4   ILE   HG2%   1   4     .   .   1.8   7     .    
+     50   145   .   aaa   4   ILE   HG1y   aaa   5   SER   H      1   4     .   .   1.8   5     .    
+     51   146   .   aaa   4   ILE   HG1x   aaa   5   SER   H      1   4     .   .   1.8   5     .    
+     52   153   .   aaa   4   ILE   HG2%   aaa   5   SER   H      1   4     .   .   1.8   6     .    
+     53   154   .   aaa   4   ILE   HG2%   aaa   5   SER   HBx    1   4     .   .   1.8   7     .    
+     54   154   .   aaa   4   ILE   HG2%   aaa   5   SER   HBy    1   4     .   .   1.8   7     .    
+     55   161   .   aaa   5   SER   H      aaa   5   SER   HA     1   3     .   .   1.8   3.5   .    
+     56   162   .   aaa   5   SER   H      aaa   5   SER   HBx    1   4     .   .   1.8   6     .    
+     57   162   .   aaa   5   SER   H      aaa   5   SER   HBy    1   4     .   .   1.8   6     .    
 
    stop_
 
@@ -446,12 +396,10 @@ save_nef_nmr_spectrum_182
       _nef_peak.residue_name_3
       _nef_peak.atom_name_3
 
-     1   1   .   .   2137900.75   .   8.376128652   .   0.7444814145   .   119.9939127   .   aaa   3   ILE   H   aaa   3   ILE   HD11   aaa   3   ILE   N    
-     2   1   .   .   2137900.75   .   8.376128652   .   0.7444814145   .   119.9939127   .   aaa   3   ILE   H   aaa   3   ILE   HD12   aaa   3   ILE   N    
-     3   1   .   .   2137900.75   .   8.376128652   .   0.7444814145   .   119.9939127   .   aaa   3   ILE   H   aaa   3   ILE   HD13   aaa   3   ILE   N    
-     4   2   .   .   2309688.75   .   8.375167917   .   0.4802299282   .   119.9837713   .   .     .   .     .   .     .   .     .      .     .   .     .    
-     5   3   .   .   2428724.75   .   8.376162972   .   0.2314502766   .   119.9861519   .   .     .   .     .   .     .   .     .      .     .   .     .    
-     6   4   .   .   2094722.25   .   8.376487036   .   3.619032945    .   119.9873683   .   aaa   3   ILE   H   aaa   3   ILE   HA     aaa   3   ILE   N    
+     1   1   .   .   2137900.75   .   8.376128652   .   0.7444814145   .   119.9939127   .   aaa   3   ILE   H   aaa   3   ILE   HD1%   aaa   3   ILE   N    
+     2   2   .   .   2309688.75   .   8.375167917   .   0.4802299282   .   119.9837713   .   .     .   .     .   .     .   .     .      .     .   .     .    
+     3   3   .   .   2428724.75   .   8.376162972   .   0.2314502766   .   119.9861519   .   .     .   .     .   .     .   .     .      .     .   .     .    
+     4   4   .   .   2094722.25   .   8.376487036   .   3.619032945    .   119.9873683   .   aaa   3   ILE   H   aaa   3   ILE   HA     aaa   3   ILE   N    
 
    stop_
 

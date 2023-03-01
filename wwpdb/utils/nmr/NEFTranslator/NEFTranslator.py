@@ -6094,10 +6094,10 @@ class NEFTranslator:
         star_details_index = star_tags.index('_Atom_chem_shift.Details')
 
         if self.insert_original_pdb_cs_items:
-            star_original_chani_id = star_tags.index('_Atom_chem_shift.Original_PDB_strand_ID')
-            star_original_seq_id = star_tags.index('_Atom_chem_shift.Original_PDB_residue_no')
-            star_original_comp_id = star_tags.index('_Atom_chem_shift.Original_PDB_residue_name')
-            star_original_atom_id = star_tags.index('_Atom_chem_shift.Original_PDB_atom_name')
+            star_original_chani_index = star_tags.index('_Atom_chem_shift.Original_PDB_strand_ID')
+            star_original_seq_index = star_tags.index('_Atom_chem_shift.Original_PDB_residue_no')
+            star_original_comp_index = star_tags.index('_Atom_chem_shift.Original_PDB_residue_name')
+            star_original_atom_index = star_tags.index('_Atom_chem_shift.Original_PDB_atom_name')
 
         index = 1
 
@@ -6161,19 +6161,19 @@ class NEFTranslator:
                                 if tag == '_nef_chemical_shift.atom_name':
                                     out[star_tags.index(data_tag)] = atom
                                     if self.insert_original_pdb_cs_items:
-                                        out[star_original_atom_id] = atom
+                                        out[star_original_atom_index] = row[atom_index]
                                 elif tag == '_nef_chemical_shift.chain_code':
                                     out[star_tags.index(data_tag)] = star_chain
                                     if self.insert_original_pdb_cs_items:
-                                        out[star_original_chani_id] = cif_chain
+                                        out[star_original_chani_index] = nef_chain
                                 elif tag == '_nef_chemical_shift.sequence_code':
                                     out[star_tags.index(data_tag)] = _star_seq
                                     if self.insert_original_pdb_cs_items:
-                                        out[star_original_seq_id] = _cif_seq
+                                        out[star_original_seq_index] = _nef_seq
                                 elif tag == '_nef_chemical_shift.residue_name':
                                     out[star_tags.index(data_tag)] = data
                                     if self.insert_original_pdb_cs_items:
-                                        out[star_original_comp_id] = data
+                                        out[star_original_comp_index] = row[comp_index]
                                 else:
                                     out[star_tags.index(data_tag)] = data
 
@@ -6330,10 +6330,10 @@ class NEFTranslator:
         star_details_index = star_tags.index('_Atom_chem_shift.Details')
 
         if self.insert_original_pdb_cs_items:
-            star_original_chani_id = star_tags.index('_Atom_chem_shift.Original_PDB_strand_ID')
-            star_original_seq_id = star_tags.index('_Atom_chem_shift.Original_PDB_residue_no')
-            star_original_comp_id = star_tags.index('_Atom_chem_shift.Original_PDB_residue_name')
-            star_original_atom_id = star_tags.index('_Atom_chem_shift.Original_PDB_atom_name')
+            star_original_chani_index = star_tags.index('_Atom_chem_shift.Original_PDB_strand_ID')
+            star_original_seq_index = star_tags.index('_Atom_chem_shift.Original_PDB_residue_no')
+            star_original_comp_index = star_tags.index('_Atom_chem_shift.Original_PDB_residue_name')
+            star_original_atom_index = star_tags.index('_Atom_chem_shift.Original_PDB_atom_name')
 
         index = 1
 
@@ -6399,19 +6399,19 @@ class NEFTranslator:
                                 if data_tag == '_Atom_chem_shift.Atom_ID':
                                     out[star_tags.index(data_tag)] = atom
                                     if self.insert_original_pdb_cs_items:
-                                        out[star_original_atom_id] = atom
+                                        out[star_original_atom_index] = row[atom_index]
                                 elif data_tag == '_Atom_chem_shift.Entity_assembly_ID':
                                     out[star_tags.index(data_tag)] = star_chain
                                     if self.insert_original_pdb_cs_items:
-                                        out[star_original_chani_id] = cif_chain
+                                        out[star_original_chani_index] = in_star_chain
                                 elif data_tag == '_Atom_chem_shift.Comp_index_ID':
                                     out[star_tags.index(data_tag)] = _star_seq
                                     if self.insert_original_pdb_cs_items:
-                                        out[star_original_seq_id] = _cif_seq
+                                        out[star_original_seq_index] = _in_star_seq
                                 elif data_tag == '_Atom_chem_shift.Comp_ID':
                                     out[star_tags.index(data_tag)] = data.upper()
                                     if self.insert_original_pdb_cs_items:
-                                        out[star_original_comp_id] = data.upper()
+                                        out[star_original_comp_index] = row[comp_index]
                                 else:
                                     out[star_tags.index(data_tag)] = data
 

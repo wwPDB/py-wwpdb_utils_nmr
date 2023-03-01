@@ -22813,17 +22813,17 @@ class NmrDpUtility:
                         if src_idx + offset < len(src_lp.data):
                             row = src_lp.data[src_idx + offset]
                             if row[seq_id_col] == str(_row[3]) and row[comp_id_col] == _row[5]\
-                               and row[6] in missing_ch3:
+                               and row[atom_id_col] in missing_ch3:
                                 valid = True
-                                missing_ch3.remove(row[6])
+                                missing_ch3.remove(row[atom_id_col])
                                 if len(missing_ch3) == 0:
                                     break
                         if src_idx - offset >= 0:
                             row = src_lp.data[src_idx - offset]
                             if row[seq_id_col] == str(_row[3]) and row[comp_id_col] == _row[5]\
-                               and row[6] in missing_ch3:
+                               and row[atom_id_col] in missing_ch3:
                                 valid = True
-                                missing_ch3.remove(row[6])
+                                missing_ch3.remove(row[atom_id_col])
                                 if len(missing_ch3) == 0:
                                     break
                 if atom_id in _coord_atom_site['atom_id'] and valid and len(missing_ch3) == 0:
@@ -23211,6 +23211,14 @@ class NmrDpUtility:
                                     ch2_name_in_xplor = any(r for r, o in zip(atom_id, orig_atom_id) if r == '3' and o == '1')
                                 elif len_in_grp == 3 and atom_id[-1] == orig_atom_id[0]:
                                     ch3_name_in_xplor = True
+            else:
+                if set(orig_pdb_tags) & set(loop.tags) == set(orig_pdb_tags):
+                    orig_dat = get_lp_tag(loop, orig_pdb_tags)
+                    if len(orig_dat) > 0:
+                        for row in orig_dat:
+                            if all(d not in emptyValue for d in row):
+                                has_orig_seq = True
+                                break
 
             chain_id_col = loop.tags.index('Entity_assembly_ID')
             entity_id_col = loop.tags.index('Entity_ID') if 'Entity_ID' in loop.tags else -1
@@ -23460,7 +23468,7 @@ class NmrDpUtility:
                                         elif len_in_grp == 3:
                                             _row[23] = (atom_id[-1] + atom_id[0:-1])\
                                                 if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
-                                        else:
+                                        elif _row[23] in emptyValue:
                                             _row[23] = atom_id
 
                         else:
@@ -23530,7 +23538,7 @@ class NmrDpUtility:
                                                 elif len_in_grp == 3:
                                                     _row[23] = (atom_id[-1] + atom_id[0:-1])\
                                                         if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
-                                                else:
+                                                elif _row[23] in emptyValue:
                                                     _row[23] = atom_id
 
                                 else:
@@ -23627,7 +23635,7 @@ class NmrDpUtility:
                                             elif len_in_grp == 3:
                                                 _row[23] = (atom_id[-1] + atom_id[0:-1])\
                                                     if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
-                                            else:
+                                            elif _row[23] in emptyValue:
                                                 _row[23] = atom_id
 
                             else:
@@ -46165,17 +46173,8 @@ class NmrDpUtility:
                     for tag in loop.tags:
                         lp.add_tag(lp_category + '.' + tag)
 
-                    conv_tbl = {loop.tags.index(_key['name']): _key['name'] for _key in (key_items + data_items)
-                                if _key['name'] in loop.tags and _key['name'] in lp_data[0].keys()}
-
                     for idx in sorted_idx:
-                        _row = lp_data[idx]
-
-                        row = [None] * len(loop.tags)
-                        for col, _key in conv_tbl.items():
-                            row[col] = _row[_key]
-
-                        lp.add_data(row)
+                        lp.add_data(loop.data[idx])
 
                     del sf_data[loop]
 

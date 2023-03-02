@@ -15763,9 +15763,8 @@ class NmrDpUtility:
                                             if comp_id != '.':
 
                                                 if self.__target_framecode not in emptyValue:
-                                                    if sys.version_info() >= (3, 8):
-                                                        self.__lfh.write(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
-                                                                         f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id=} {comp_id=}\n")
+                                                    self.__lfh.write(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
+                                                                     f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id} {comp_id}\n")
                                                     sys.exit(1)
 
                                                 if (min(set(s2['seq_id']) - set(s1['seq_id'])) > 0 and seq_id > 0) or not self.__nonblk_bad_nterm:
@@ -15800,9 +15799,8 @@ class NmrDpUtility:
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
 
                                                 if self.__target_framecode not in emptyValue:
-                                                    if sys.version_info() >= (3, 8):
-                                                        self.__lfh.write(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
-                                                                         f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id=} {comp_id=}\n")
+                                                    self.__lfh.write(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
+                                                                     f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id} {comp_id}\n")
                                                     sys.exit(1)
 
                                                 err = f"Invalid comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) in a loop {lp_category2}."
@@ -16766,9 +16764,8 @@ class NmrDpUtility:
                                 map_chain_ids[sf_framecode2][chain_id] = __chain_id
 
                                 if sf_framecode2 == self.__target_framecode:
-                                    if sys.version_info() >= (3, 8):
-                                        self.__lfh.write(f"#1 {chain_id} -> {__chain_id}, "
-                                                         f"{__length=} {__matched=} {__unmapped=} {__conflict=} {__offset_1=} {__offset_2=}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__appendPolymerSequenceAlignment() map-chain {chain_id} -> {__chain_id}, "
+                                                     f"{__length} {__matched} {__unmapped} {__conflict} {__offset_1} {__offset_2}\n")
 
                                 length = __length
                                 _matched = __matched
@@ -16801,9 +16798,8 @@ class NmrDpUtility:
                                 map_chain_ids[sf_framecode2][s2['chain_id']] = chain_id
 
                                 if sf_framecode2 == self.__target_framecode:
-                                    if sys.version_info() >= (3, 8):
-                                        self.__lfh.write(f"#2 {s2['chain_id']} -> {chain_id}, "
-                                                         f"{length=} {_matched=} {unmapped=} {conflict=} {offset_1=} {offset_2=}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__appendPolymerSequenceAlignment() map-chain-alt {s2['chain_id']} -> {chain_id}, "
+                                                     f"{length} {_matched} {unmapped} {conflict} {offset_1} {offset_2}\n")
 
                                 alt_chain = True
 
@@ -16873,8 +16869,8 @@ class NmrDpUtility:
                                             chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == chain_id)
 
                                         if sf_framecode2 == self.__target_framecode:
-                                            if sys.version_info() >= (3, 8):
-                                                self.__lfh.write(f"#a {chain_id2=} {_matched=} {offset_1=} {offset_2=} {seq_id_conv_dict=}\n")
+                                            self.__lfh.write("+NmrDpUtility.__appendPolymerSequenceAlignment() test "
+                                                             f"{chain_id2} {_matched} {offset_1} {offset_2} {seq_id_conv_dict}\n")
 
                                         if sf_framecode2 not in proc_chain_ids:
                                             proc_chain_ids[sf_framecode2] = set()
@@ -17090,9 +17086,8 @@ class NmrDpUtility:
                                 map_chain_ids[sf_framecode2][chain_id] = __chain_id
 
                                 if sf_framecode2 == self.__target_framecode:
-                                    if sys.version_info() >= (3, 8):
-                                        self.__lfh.write(f"#3 {chain_id} -> {__chain_id}, "
-                                                         f"{__length=} {__matched=} {__unmapped=} {__conflict=} {__offset_1=} {__offset_2=}\n")
+                                    self.__lfh.write(f"+NmrDpUtility.__appendPolymerSequenceAlignment() map-chain-rest {chain_id} -> {__chain_id}, "
+                                                     f"{__length} {__matched} {__unmapped} {__conflict} {__offset_1} {__offset_2}\n")
 
                                 length = __length
                                 _matched = __matched
@@ -17284,8 +17279,7 @@ class NmrDpUtility:
                                             break
 
                             if sf_framecode2 == self.__target_framecode:
-                                if sys.version_info() >= (3, 8):
-                                    self.__lfh.write(f"{mapping=} {cross=} {circular=}\n")
+                                self.__lfh.write(f"+NmrDpUtility.__appendPolymerSequenceAlignment() alt-chain {mapping} {cross} {circular}\n")
 
                             for s1 in polymer_sequence:
                                 chain_id = s1['chain_id']
@@ -17367,8 +17361,8 @@ class NmrDpUtility:
                                                     chain_id2 = next(k for k, v in mapping.items() if v == chain_id)
 
                                                 if sf_framecode2 == self.__target_framecode:
-                                                    if sys.version_info() >= (3, 8):
-                                                        self.__lfh.write(f"#c {chain_id2=} {_matched=} {offset_1=} {offset_2=} {seq_id_conv_dict=}\n")
+                                                    self.__lfh.write("+NmrDpUtility.__appendPolymerSequenceAlignment() test-alt "
+                                                                     f"{chain_id2} {_matched} {offset_1} {offset_2} {seq_id_conv_dict}\n")
 
                                                 if sf_framecode2 not in proc_chain_ids:
                                                     proc_chain_ids[sf_framecode2] = set()

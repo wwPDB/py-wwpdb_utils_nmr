@@ -1445,7 +1445,7 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                     {'name': 'T1rho_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                      'range': {'min_inclusive': 0.0}},
                                                     {'name': 'Rex_val', 'type': 'float', 'mandatory': False},
-                                                    {'name': 'Rex_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                    {'name': 'Rex_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                      'range': {'min_inclusive': 0.0}},
                                                     {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
                                                     {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
@@ -5531,7 +5531,7 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if val is not None:
             row[key_size + 4] = val
             float_row_idx.append(key_size + 4)
-        val = getRowValue('Rex_err')
+        val = getRowValue('Rex_val_err')
         if val is not None:
             row[key_size + 5] = val
             float_row_idx.append(key_size + 5)

@@ -3361,7 +3361,7 @@ class NmrDpUtility:
                                                                  'range': PRE_RESTRAINT_RANGE},
                                                                 {'name': 'Rex_val', 'type': 'range-float', 'mandatory': False,
                                                                  'range': PRE_RESTRAINT_RANGE},
-                                                                {'name': 'Rex_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                {'name': 'Rex_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
                                                                  'range': PRE_RESTRAINT_RANGE},
                                                                 {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
                                                                 {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
@@ -4251,7 +4251,7 @@ class NmrDpUtility:
                                                                  'Sf_ID', 'Entry_ID', 'Heteronucl_T2_list_ID'],
                                           'heteronucl_t1r_data': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID',
                                                                   'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number',
-                                                                  'T1rho_val', 'T1rho_val_err', 'Rex_val', 'Rex_err', 'Resonance_ID',
+                                                                  'T1rho_val', 'T1rho_val_err', 'Rex_val', 'Rex_val_err', 'Resonance_ID',
                                                                   'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
                                                                   'Sf_ID', 'Entry_ID', 'Heteronucl_T1rho_list_ID'],
                                           'order_param_data': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID',
@@ -14878,7 +14878,7 @@ class NmrDpUtility:
                 if 'spectral_peak' in content_subtype or 'spectral_peak_alt' in content_subtype:
                     has_spectral_peak = True
 
-            if not has_restraint:
+            if not has_restraint and mr_file_name != '.':
 
                 touch_file = os.path.join(dir_path, '.entry_without_mr')
                 if not os.path.exists(touch_file):

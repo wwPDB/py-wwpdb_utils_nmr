@@ -40975,7 +40975,10 @@ class NmrDpUtility:
 
         master_entry.add_saveframe(asm_sf)
 
-        poly_seq = self.__getPolymerSequence(0, asm_sf, content_subtype)[0]
+        try:
+            poly_seq = self.__getPolymerSequence(0, asm_sf, content_subtype)[0]
+        except KeyError:
+            return False
 
         identical = True
 

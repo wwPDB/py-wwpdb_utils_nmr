@@ -2730,7 +2730,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         if labelSeqKey not in labelToAuthSeq:
                                             labelToAuthSeq[labelSeqKey] = authSeqKey
 
-        if authToStarSeq is None or authToEntityType is None:
+        if authToStarSeq is None or authToEntityType is None or entityAssembly is None:
             authToStarSeq = {}
             authToOrigSeq = {}
             authToInsCode = {}

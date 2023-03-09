@@ -1365,13 +1365,13 @@ class BMRBChemShiftStat:
                     for methyl_c_2 in methyl_c_list:
                         if methyl_c_list.index(methyl_c_1) < methyl_c_list.index(methyl_c_2):
                             hvy_1_c = set(b[self.__ccU.ccbAtomId2] for b in self.__ccU.lastBonds
-                                          if b[self.__ccU.ccbAtomId1] == methyl_c_1 and not b[self.__ccU.ccbAtomId2][0] in protonBeginCode) |\
+                                          if b[self.__ccU.ccbAtomId1] == methyl_c_1 and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode) |\
                                 set(b[self.__ccU.ccbAtomId1] for b in self.__ccU.lastBonds
-                                    if b[self.__ccU.ccbAtomId2] == methyl_c_1 and not b[self.__ccU.ccbAtomId1][0] in protonBeginCode)
+                                    if b[self.__ccU.ccbAtomId2] == methyl_c_1 and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)
                             hvy_2_c = set(b[self.__ccU.ccbAtomId2] for b in self.__ccU.lastBonds
-                                          if b[self.__ccU.ccbAtomId1] == methyl_c_2 and not b[self.__ccU.ccbAtomId2][0] in protonBeginCode) |\
+                                          if b[self.__ccU.ccbAtomId1] == methyl_c_2 and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode) |\
                                 set(b[self.__ccU.ccbAtomId1] for b in self.__ccU.lastBonds
-                                    if b[self.__ccU.ccbAtomId2] == methyl_c_2 and not b[self.__ccU.ccbAtomId1][0] in protonBeginCode)
+                                    if b[self.__ccU.ccbAtomId2] == methyl_c_2 and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)
                             hvy_common = hvy_1_c & hvy_2_c
                             if len(hvy_common) > 0:
                                 for hvy_c in hvy_common:
@@ -1452,13 +1452,13 @@ class BMRBChemShiftStat:
                     for geminal_n_2 in geminal_n_list:
                         if geminal_n_list.index(geminal_n_1) < geminal_n_list.index(geminal_n_2):
                             hvy_1_c = set(b[self.__ccU.ccbAtomId2] for b in self.__ccU.lastBonds
-                                          if b[self.__ccU.ccbAtomId1] == geminal_n_1 and not b[self.__ccU.ccbAtomId2][0] in protonBeginCode) |\
+                                          if b[self.__ccU.ccbAtomId1] == geminal_n_1 and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode) |\
                                 set(b[self.__ccU.ccbAtomId1] for b in self.__ccU.lastBonds
-                                    if b[self.__ccU.ccbAtomId2] == geminal_n_1 and not b[self.__ccU.ccbAtomId1][0] in protonBeginCode)
+                                    if b[self.__ccU.ccbAtomId2] == geminal_n_1 and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)
                             hvy_2_c = set(b[self.__ccU.ccbAtomId2] for b in self.__ccU.lastBonds
-                                          if b[self.__ccU.ccbAtomId1] == geminal_n_2 and not b[self.__ccU.ccbAtomId2][0] in protonBeginCode) |\
+                                          if b[self.__ccU.ccbAtomId1] == geminal_n_2 and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode) |\
                                 set(b[self.__ccU.ccbAtomId1] for b in self.__ccU.lastBonds
-                                    if b[self.__ccU.ccbAtomId2] == geminal_n_2 and not b[self.__ccU.ccbAtomId1][0] in protonBeginCode)
+                                    if b[self.__ccU.ccbAtomId2] == geminal_n_2 and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)
                             hvy_common = hvy_1_c & hvy_2_c
                             if len(hvy_common) > 0:
                                 for hvy_c in hvy_common:

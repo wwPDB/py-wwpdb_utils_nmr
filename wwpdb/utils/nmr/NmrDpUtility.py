@@ -14878,30 +14878,45 @@ class NmrDpUtility:
                 if 'spectral_peak' in content_subtype or 'spectral_peak_alt' in content_subtype:
                     has_spectral_peak = True
 
-            if not has_restraint and mr_file_name != '.':
+            if not has_restraint:
 
-                touch_file = os.path.join(dir_path, '.entry_without_mr')
-                if not os.path.exists(touch_file):
-                    with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofp:
-                        ofp.write('')
+                if mr_file_name == '.':
 
-                hint = ' or is not recognized properly'
+                    dir_path = os.path.dirname(self.__dstPath)
 
-                if len_peak_file_list > 0:
-                    hint = f', except for {len_peak_file_list} peak list file(s)'
+                    rem_dir = os.path.join(dir_path, 'remediation')
 
-                err = f"NMR restraint file contains no restraints{hint}. "\
-                    "Please re-upload the NMR restraint file."
+                    if os.path.isdir(rem_dir):
 
-                self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
-                                                             {'file_name': mr_file_name, 'description': err}})
+                        try:
+                            os.rmdir(rem_dir)
+                        except OSError:
+                            pass
 
-                # self.report.error.appendDescription('content_mismatch',
-                #                                     {'file_name': file_name, 'description': err})
-                # self.report.setError()
+                else:
 
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                    touch_file = os.path.join(dir_path, '.entry_without_mr')
+                    if not os.path.exists(touch_file):
+                        with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofp:
+                            ofp.write('')
+
+                    hint = ' or is not recognized properly'
+
+                    if len_peak_file_list > 0:
+                        hint = f', except for {len_peak_file_list} peak list file(s)'
+
+                    err = f"NMR restraint file contains no restraints{hint}. "\
+                        "Please re-upload the NMR restraint file."
+
+                    self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
+                                                                 {'file_name': mr_file_name, 'description': err}})
+
+                    # self.report.error.appendDescription('content_mismatch',
+                    #                                     {'file_name': file_name, 'description': err})
+                    # self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
         if has_spectral_peak:
 

@@ -6337,6 +6337,6 @@ def hasKeyValue(d=None, key=None):
         return False
 
     if key in d:
-        return not d[key] is None
+        return d[key] is not None
 
     return False

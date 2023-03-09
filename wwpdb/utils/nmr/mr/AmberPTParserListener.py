@@ -31,7 +31,8 @@ try:
                                            alignPolymerSequence,
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
-                                           retrieveAtomIdentFromMRMap)
+                                           retrieveAtomIdentFromMRMap,
+                                           alignPolymerSequenceWithConflicts)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.AmberPTParser import AmberPTParser
@@ -48,7 +49,8 @@ except ImportError:
                                alignPolymerSequence,
                                assignPolymerSequence,
                                trimSequenceAlignment,
-                               retrieveAtomIdentFromMRMap)
+                               retrieveAtomIdentFromMRMap,
+                               alignPolymerSequenceWithConflicts)
 
 
 def chunk_string(line, length=4):
@@ -426,6 +428,11 @@ class AmberPTParserListener(ParseTreeListener):
                 polySeqModel.extend(self.__branchedModel)
 
             self.__seqAlign, compIdMapping = alignPolymerSequence(self.__pA, polySeqModel, self.__polySeqPrmTop)
+
+            if len(self.__seqAlign) == 0:
+                self.__seqAlign, compIdMapping = alignPolymerSequenceWithConflicts(self.__pA, polySeqModel, self.__polySeqPrmTop, 1)
+                if len(self.__seqAlign) == 0:
+                    self.__seqAlign, compIdMapping = alignPolymerSequenceWithConflicts(self.__pA, polySeqModel, self.__polySeqPrmTop, 2)
 
             for cmap in compIdMapping:
                 for atomNum in self.__atomNumberDict.values():

@@ -982,6 +982,284 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
     return seqAlign, compIdMapping
 
 
+def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1):
+    """ Align polymer sequence of the coordinates and restraints allowing minor conflicts.
+    """
+
+    seqAlign = []
+    compIdMapping = []
+
+    if pA is None or polySeqModel is None or polySeqRst is None:
+        return seqAlign, compIdMapping
+
+    truncated = None
+
+    for i1, s1 in enumerate(polySeqModel):
+        chain_id_name = 'auth_chain_id' if 'auth_chain_id' in s1 else 'chain_id'
+        chain_id = s1[chain_id_name]
+
+        if i1 >= LEN_LARGE_ASYM_ID:
+            continue
+
+        seq_id_name = 'auth_seq_id' if 'auth_seq_id' in s1 else 'seq_id'
+
+        for i2, s2 in enumerate(polySeqRst):
+            chain_id2 = s2['chain_id']
+
+            if i2 >= LEN_LARGE_ASYM_ID:
+                continue
+
+            not_decided_s2_comp_id = any(c2 for c2 in s2['comp_id'] if c2.endswith('?'))  # AMBER/GROMACS topology
+            if not_decided_s2_comp_id:
+                s2 = copy.deepcopy(s2)
+                s2['comp_id'] = [c2[:-1] if c2.endswith('?') else c2 for c2 in s2['comp_id']]
+
+            pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+            pA.addTestSequence(s2['comp_id'], chain_id)
+            pA.doAlign()
+
+            myAlign = pA.getAlignment(chain_id)
+
+            length = len(myAlign)
+
+            if length == 0:
+                continue
+
+            _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+            if length == unmapped + conflict or _matched <= conflict:
+                continue
+
+            if not_decided_s2_comp_id:  # AMBER/GROMACS topology
+                idx2 = 0
+                for i in range(length):
+                    myPr = myAlign[i]
+                    myPr0 = str(myPr[0])
+                    myPr1 = str(myPr[1])
+                    if myPr1 != '.':
+                        while idx2 < len(s2['seq_id']):
+                            if s2['comp_id'][idx2] == myPr1:
+                                s2_seq_id = s2['seq_id'][idx2]
+                                s2_auth_comp_id = s2['auth_comp_id'][idx2]
+                                compIdMapping.append({'chain_id': chain_id2, 'seq_id': s2_seq_id,
+                                                      'comp_id': myPr0, 'auth_comp_id': s2_auth_comp_id})
+                                idx2 += 1
+                                break
+
+            _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1, seqIdName=seq_id_name)
+            _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+
+            if conflict == 0:
+                if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
+                    _s2 = fillInnerBlankCompId(_s2)
+
+            _seq_id_name = 'auth_seq_id' if 'auth_seq_id' in _s1 else 'seq_id'
+
+            if 'gap_in_auth_seq' in s1 and s1['gap_in_auth_seq']:
+
+                for p in range(len(s1[seq_id_name]) - 1):
+                    s_p = s1[seq_id_name][p]
+                    s_q = s1[seq_id_name][p + 1]
+                    if s_p is None or s_q is None or s_p not in s2['seq_id'] or s_q not in s2['seq_id']:
+                        continue
+                    if s_p + 1 != s_q:
+                        beg = s2['seq_id'].index(s_p)
+                        end = s2['seq_id'].index(s_q)
+                        comp_ids = s2['comp_id'][beg + 1:end]
+                        if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
+                            s2['seq_id'] = s2['seq_id'][:beg + 1] + s2['seq_id'][end:]
+                            s2['comp_id'] = s2['comp_id'][:beg + 1] + s2['comp_id'][end:]
+                            if 'auth_comp_id' in s2:
+                                s2['auth_comp_id'] = s2['auth_comp_id'][:beg + 1] + s2['auth_comp_id'][end:]
+                            s2['gap_in_auth_seq'] = True
+                        beg = _s2['seq_id'].index(s_p)
+                        end = _s2['seq_id'].index(s_q)
+                        comp_ids = _s2['comp_id'][beg + 1:end]
+                        if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
+                            _s2['seq_id'] = _s2['seq_id'][:beg + 1] + _s2['seq_id'][end:]
+                            _s2['comp_id'] = _s2['comp_id'][:beg + 1] + _s2['comp_id'][end:]
+                            if 'auth_comp_id' in _s2:
+                                _s2['auth_comp_id'] = _s2['auth_comp_id'][:beg + 1] + _s2['auth_comp_id'][end:]
+                            _s2['gap_in_auth_seq'] = True
+
+            if conflict > 0 and hasLargeSeqGap(_s1, _s2, seqIdName1=_seq_id_name):
+                __s1, __s2 = beautifyPolySeq(_s1, _s2, seqIdName1=_seq_id_name)
+
+                if 'gap_in_auth_seq' in s1 and s1['gap_in_auth_seq']:
+
+                    for p in range(len(s1[seq_id_name]) - 1):
+                        s_p = s1[seq_id_name][p]
+                        s_q = s1[seq_id_name][p + 1]
+                        if s_p is None or s_q is None or s_p not in __s2['seq_id'] or s_q not in __s2['seq_id']:
+                            continue
+                        if s_p + 1 != s_q:
+                            beg = __s2['seq_id'].index(s_p)
+                            end = __s2['seq_id'].index(s_q)
+                            comp_ids = __s2['comp_id'][beg + 1:end]
+                            if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
+                                __s2['seq_id'] = __s2['seq_id'][:beg + 1] + __s2['seq_id'][end:]
+                                __s2['comp_id'] = __s2['comp_id'][:beg + 1] + __s2['comp_id'][end:]
+                                if 'auth_comp_id' in __s2:
+                                    __s2['auth_comp_id'] = __s2['auth_comp_id'][:beg + 1] + __s2['auth_comp_id'][end:]
+                                __s2['gap_in_auth_seq'] = True
+
+                _s1_ = __s1
+                _s2_ = __s2
+
+                pA.setReferenceSequence(_s1_['comp_id'], 'REF' + chain_id)
+                pA.addTestSequence(_s2_['comp_id'], chain_id)
+                pA.doAlign()
+
+                myAlign = pA.getAlignment(chain_id)
+
+                length = len(myAlign)
+
+                _matched, unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
+
+                if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
+                    conflict = 0
+                    offset_1 = _offset_1
+                    offset_2 = _offset_2
+                    _s1 = __s1
+                    _s2 = __s2
+
+            if conflict == 0 and _matched > 0 and unmapped > 0 and 'gap_in_auth_seq' in s1 and s1['gap_in_auth_seq']:
+                for p in range(len(s1[seq_id_name]) - 1):
+                    s_p = s1[seq_id_name][p]
+                    s_q = s1[seq_id_name][p + 1]
+                    if s_p is None or s_q is None or s_p not in s2['seq_id'] or s_q not in s2['seq_id']:
+                        continue
+                    if s_p + 1 != s_q:
+                        idx1 = 0
+                        idx2 = 0
+                        beg = -1
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            myPr0 = str(myPr[0])
+                            myPr1 = str(myPr[1])
+                            if idx1 < len(s1[seq_id_name]):
+                                if s1[seq_id_name][idx1] == s_p:
+                                    beg = idx2
+                            if myPr0 != '.':
+                                while idx1 < len(_s1['seq_id']):
+                                    if _s1['comp_id'][idx1] == myPr0:
+                                        idx1 += 1
+                                        break
+                                    idx1 += 1
+                            if myPr1 != '.':
+                                while idx2 < len(_s2['seq_id']):
+                                    if _s2['comp_id'][idx2] == myPr1:
+                                        idx2 += 1
+                                        break
+                                    idx2 += 1
+                        if beg >= 0 and beg + 1 < len(_s2['seq_id']) and _s2['seq_id'][beg] == s_p and _s2['seq_id'][beg + 1] == s_p + 1:
+                            beg = s2['seq_id'].index(s_p)
+                            end = s2['seq_id'].index(s_q)
+                            comp_ids = s2['comp_id'][beg + 1:end]
+                            if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
+                                truncated = (s_p, s_q)
+                                break
+
+            if conflict > conflictTh:
+                continue
+
+            _seq_id_name = 'auth_seq_id' if 'auth_seq_id' in _s1 else 'seq_id'
+
+            ref_length = len(s1[seq_id_name])
+
+            ref_code = getOneLetterCodeSequence(_s1['comp_id'])
+            test_code = getOneLetterCodeSequence(_s2['comp_id'])
+            mid_code = getMiddleCode(ref_code, test_code)
+            ref_gauge_code = getGaugeCode(_s1['seq_id'])
+            test_gauge_code = getGaugeCode(_s2['seq_id'])
+
+            if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
+                   in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
+                   if __c1 != '.' and __c2 != '.' and __c1 != __c2):
+                seq_id1 = []
+                seq_id2 = []
+                comp_id1 = []
+                comp_id2 = []
+                idx1 = 0
+                idx2 = 0
+                for i in range(length):
+                    myPr = myAlign[i]
+                    myPr0 = str(myPr[0])
+                    myPr1 = str(myPr[1])
+                    if myPr0 != '.':
+                        while idx1 < len(_s1['seq_id']):
+                            if _s1['comp_id'][idx1] == myPr0:
+                                seq_id1.append(_s1['seq_id'][idx1])
+                                comp_id1.append(myPr0)
+                                idx1 += 1
+                                break
+                            idx1 += 1
+                    else:
+                        seq_id1.append(None)
+                        comp_id1.append('.')
+                    if myPr1 != '.':
+                        while idx2 < len(_s2['seq_id']):
+                            if _s2['comp_id'][idx2] == myPr1:
+                                seq_id2.append(_s2['seq_id'][idx2])
+                                comp_id2.append(myPr1)
+                                idx2 += 1
+                                break
+                            idx2 += 1
+                    else:
+                        seq_id2.append(None)
+                        comp_id2.append('.')
+                ref_code = getOneLetterCodeSequence(comp_id1)
+                test_code = getOneLetterCodeSequence(comp_id2)
+                mid_code = getMiddleCode(ref_code, test_code)
+                ref_gauge_code = getGaugeCode(seq_id1, offset_1)
+                test_gauge_code = getGaugeCode(seq_id2, offset_2)
+                if ' ' in ref_gauge_code:
+                    for p, g in enumerate(ref_gauge_code):
+                        if g == ' ':
+                            ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
+                if ' ' in test_gauge_code:
+                    for p, g in enumerate(test_gauge_code):
+                        if g == ' ':
+                            test_code = test_code[0:p] + '-' + test_code[p + 1:]
+
+            matched = mid_code.count('|')
+
+            seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length,
+                         'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
+                         'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
+                         'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
+                         'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
+                         'test_code': test_code, 'test_gauge_code': test_gauge_code}
+
+            if 'auth_seq_id' in _s1:
+                seq_align['ref_auth_seq_id'] = _s1['auth_seq_id']
+
+            seqAlign.append(seq_align)
+
+    if truncated is not None:
+        s_p, s_q = truncated
+
+        for s2 in polySeqRst:
+
+            if s_p not in s2['seq_id'] or s_q not in s2['seq_id']:
+                continue
+
+            beg = s2['seq_id'].index(s_p)
+            end = s2['seq_id'].index(s_q)
+            comp_ids = s2['comp_id'][beg + 1:end]
+
+            if not any(comp_id for comp_id in comp_ids if comp_id != '.'):
+                s2['seq_id'] = s2['seq_id'][:beg + 1] + s2['seq_id'][end:]
+                s2['comp_id'] = s2['comp_id'][:beg + 1] + s2['comp_id'][end:]
+                if 'auth_comp_id' in s2:
+                    s2['auth_comp_id'] = s2['auth_comp_id'][:beg + 1] + s2['auth_comp_id'][end:]
+                s2['gap_in_auth_seq'] = True
+
+        return alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=conflictTh)
+
+    return seqAlign, compIdMapping
+
+
 def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign):
     """ Assign polymer sequences of restraints.
     """

@@ -8220,7 +8220,7 @@ class NmrDpUtility:
 
         try:
 
-            if self.__release_mode:
+            if self.__release_mode and len(tmpPaths) > 0:
                 self.__tmpPath = tmpPaths[-1]
                 self.__srcPath = self.__tmpPath
                 for tmpPath in tmpPaths[:-1]:

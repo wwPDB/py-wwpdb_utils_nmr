@@ -23900,7 +23900,7 @@ class NmrDpUtility:
                         for k, v in inter_residue_seq_id.items():
                             if len(v) == 1:
                                 chain_id = k
-                                seq_id = v[0]
+                                seq_id = list(v)[0]
 
                                 for _row in lp:
 
@@ -49259,10 +49259,13 @@ class NmrDpUtility:
                 for sf in master_entry.get_saveframes_by_category(sf_category):
                     if get_first_sf_tag(sf, 'Block_ID') == block_id:
 
-                        if __pynmrstar_v3_2__:
-                            lp = sf.get_loop(lp_category)
-                        else:
-                            lp = sf.get_loop_by_category(lp_category)
+                        try:
+                            if __pynmrstar_v3_2__:
+                                lp = sf.get_loop(lp_category)
+                            else:
+                                lp = sf.get_loop_by_category(lp_category)
+                        except KeyError:
+                            continue
 
                         item_names = self.item_names_in_ds_loop[file_type]
                         id_col = lp.tags.index('ID')

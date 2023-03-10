@@ -19572,14 +19572,23 @@ class NmrDpUtility:
                 idx_msg = index_tag + ' '
                 if index_tag in lp_data[0]:
                     for row_id in id_set:
-                        idx_msg += f"{lp_data[row_id][index_tag]} vs "
+                        try:
+                            idx_msg += f"{lp_data[row_id][index_tag]} vs "
+                        except IndexError:
+                            continue
                 else:
                     for row_id in id_set:
                         idx_msg += f"{row_id + 1} vs "
                 idx_msg = idx_msg[:-4] + ', '
                 idx_msg += id_tag + ' '
                 for row_id in id_set:
-                    idx_msg += f"{lp_data[row_id][id_tag]} vs "
+                    try:
+                        idx_msg += f"{lp_data[row_id][id_tag]} vs "
+                    except IndexError:
+                        continue
+
+                if not idx_msg.endswith(' vs '):
+                    continue
 
                 warn = f"[Check rows of {idx_msg[:-4]}] Found redundant restraints for the same {data_unit_name} ({msg})."
 
@@ -40846,7 +40855,12 @@ class NmrDpUtility:
                 if non_std_bond:
                     set_sf_tag(asm_sf, 'Non_standard_bonds', 'yes')
 
-                bonds_w_leaving = [bond for bond in bonds if bond['pdbx_leaving_atom_flag'] in ('both', 'one')]
+                bonds_w_leaving = [bond for bond in bonds
+                                   if bond['pdbx_leaving_atom_flag'] in ('both', 'one')
+                                   or (bond['ptnr1_label_comp_id'] in ('CYS', 'DCS') and bond['ptnr1_label_atom_id'] == 'SG')
+                                   or (bond['ptnr2_label_comp_id'] in ('CYS', 'DCS') and bond['ptnr2_label_atom_id'] == 'SG')
+                                   or (bond['ptnr1_label_comp_id'] == 'HIS' and bond['ptnr1_label_atom_id'] in ('ND1', 'NE2'))
+                                   or (bond['ptnr2_label_comp_id'] == 'HIS' and bond['ptnr2_label_atom_id'] in ('ND1', 'NE2'))]
 
                 if len(bonds_w_leaving) > 0:
 
@@ -40962,6 +40976,120 @@ class NmrDpUtility:
                                             eda_loop.add_data(row)
 
                                             index += 1
+
+                        else:
+
+                            if bond['ptnr1_label_comp_id'] in ('CYS', 'DCS') and bond['ptnr1_label_atom_id'] == 'SG':
+                                comp_id = bond['ptnr1_label_comp_id']
+                                atom_id = 'SG'
+                                auth_asym_id = bond['ptnr1_auth_asym_id']
+                                auth_seq_id = bond['ptnr1_auth_seq_id']
+                                leaving_atom_id = 'HG'
+
+                                seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
+
+                                if seq_key in self.__caC['auth_to_star_seq']:
+                                    row = [None] * len(tags)
+
+                                    row[0] = index
+
+                                    entity_assembly_id, seq_id, _, _ = self.__caC['auth_to_star_seq'][seq_key]
+
+                                    row[1], row[2], row[3], row[4], row[5] =\
+                                        entity_assembly_id, seq_id, seq_id, comp_id, leaving_atom_id
+
+                                    row[6], row[7], row[8], row[9] =\
+                                        auth_asym_id, auth_seq_id, comp_id, leaving_atom_id
+
+                                    row[10], row[11] = 1, self.__entry_id
+
+                                    eda_loop.add_data(row)
+
+                                    index += 1
+
+                            elif bond['ptnr1_label_comp_id'] == 'HIS' and bond['ptnr1_label_atom_id'] in ('ND1', 'NE2'):
+                                comp_id = 'HIS'
+                                atom_id = bond['ptnr1_label_atom_id']
+                                auth_asym_id = bond['ptnr1_auth_asym_id']
+                                auth_seq_id = bond['ptnr1_auth_seq_id']
+                                leaving_atom_id = 'HD1' if atom_id == 'ND1' else 'HE2'
+
+                                seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
+
+                                if seq_key in self.__caC['auth_to_star_seq']:
+                                    row = [None] * len(tags)
+
+                                    row[0] = index
+
+                                    entity_assembly_id, seq_id, _, _ = self.__caC['auth_to_star_seq'][seq_key]
+
+                                    row[1], row[2], row[3], row[4], row[5] =\
+                                        entity_assembly_id, seq_id, seq_id, comp_id, leaving_atom_id
+
+                                    row[6], row[7], row[8], row[9] =\
+                                        auth_asym_id, auth_seq_id, comp_id, leaving_atom_id
+
+                                    row[10], row[11] = 1, self.__entry_id
+
+                                    eda_loop.add_data(row)
+
+                                    index += 1
+
+                            if bond['ptnr2_label_comp_id'] in ('CYS', 'DCS') and bond['ptnr2_label_atom_id'] == 'SG':
+                                comp_id = bond['ptnr2_label_comp_id']
+                                atom_id = 'SG'
+                                auth_asym_id = bond['ptnr2_auth_asym_id']
+                                auth_seq_id = bond['ptnr2_auth_seq_id']
+                                leaving_atom_id = 'HG'
+
+                                seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
+
+                                if seq_key in self.__caC['auth_to_star_seq']:
+                                    row = [None] * len(tags)
+
+                                    row[0] = index
+
+                                    entity_assembly_id, seq_id, _, _ = self.__caC['auth_to_star_seq'][seq_key]
+
+                                    row[1], row[2], row[3], row[4], row[5] =\
+                                        entity_assembly_id, seq_id, seq_id, comp_id, leaving_atom_id
+
+                                    row[6], row[7], row[8], row[9] =\
+                                        auth_asym_id, auth_seq_id, comp_id, leaving_atom_id
+
+                                    row[10], row[11] = 1, self.__entry_id
+
+                                    eda_loop.add_data(row)
+
+                                    index += 1
+
+                            elif bond['ptnr2_label_comp_id'] == 'HIS' and bond['ptnr2_label_atom_id'] in ('ND1', 'NE2'):
+                                comp_id = 'HIS'
+                                atom_id = bond['ptnr2_label_atom_id']
+                                auth_asym_id = bond['ptnr2_auth_asym_id']
+                                auth_seq_id = bond['ptnr2_auth_seq_id']
+                                leaving_atom_id = 'HD1' if atom_id == 'ND1' else 'HE2'
+
+                                seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
+
+                                if seq_key in self.__caC['auth_to_star_seq']:
+                                    row = [None] * len(tags)
+
+                                    row[0] = index
+
+                                    entity_assembly_id, seq_id, _, _ = self.__caC['auth_to_star_seq'][seq_key]
+
+                                    row[1], row[2], row[3], row[4], row[5] =\
+                                        entity_assembly_id, seq_id, seq_id, comp_id, leaving_atom_id
+
+                                    row[6], row[7], row[8], row[9] =\
+                                        auth_asym_id, auth_seq_id, comp_id, leaving_atom_id
+
+                                    row[10], row[11] = 1, self.__entry_id
+
+                                    eda_loop.add_data(row)
+
+                                    index += 1
 
                     asm_sf.add_loop(eda_loop)
 

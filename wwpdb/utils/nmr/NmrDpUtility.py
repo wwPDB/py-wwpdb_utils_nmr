@@ -11801,7 +11801,7 @@ class NmrDpUtility:
                                 is_valid = True  # triggar for more split
                                 re_valid = False  # local lexer/parser errors should be handled by manual
 
-                                k = l = 0
+                                k = l = 0  # noqa: E741
 
                                 with open(div_dst_file, 'r') as ifp:
                                     for line in ifp:
@@ -11825,7 +11825,7 @@ class NmrDpUtility:
                                         if is_valid:
                                             k += 1
                                         else:
-                                            l += 1
+                                            l += 1  # noqa: E741
                                             if l >= self.mr_max_spacer_lines:
                                                 break
 
@@ -11835,7 +11835,7 @@ class NmrDpUtility:
                                     _div_src_file = _src_basename + '-div_src.mr'
                                     _div_dst_file = _src_basename + '-div_dst.mr'
 
-                                    l = 0
+                                    l = 0  # noqa: E741
 
                                     with open(div_dst_file, 'r') as ifp,\
                                             open(_div_src_file, 'w') as ofp,\
@@ -11845,7 +11845,7 @@ class NmrDpUtility:
                                                 ofp.write(line)
                                             else:
                                                 ofp2.write(line)
-                                            l += 1
+                                            l += 1  # noqa: E741
 
                                     os.remove(div_dst_file)
 
@@ -16449,7 +16449,7 @@ class NmrDpUtility:
         file_type = input_source_dic['file_type']
 
         if file_type != 'nmr-star' or (not self.__has_star_entity):
-            return True
+            return None
 
         star_data = self.__star_data[file_list_id]
 
@@ -16466,7 +16466,7 @@ class NmrDpUtility:
                 else:
                     loops = [star_data.get_loop_by_category(lp_category)]
             except AttributeError:
-                return False
+                return None
 
         chain_ids = set()
         seq = {}
@@ -16494,7 +16494,7 @@ class NmrDpUtility:
             for row in dat:
 
                 if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue:
-                    return False
+                    return None
 
                 try:
                     c = str(row[2])
@@ -16504,7 +16504,7 @@ class NmrDpUtility:
                         seq[c] = set()
                     seq[c].add((int(row[0]), row[1]))
                 except ValueError:
-                    return False
+                    return None
 
         if chain_id in chain_ids:
 
@@ -19428,8 +19428,12 @@ class NmrDpUtility:
             for i in range(len_id_set - 1):
 
                 for j in range(i + 1, len_id_set):
-                    row_1 = lp_data[id_set[i]]
-                    row_2 = lp_data[id_set[j]]
+                    
+                    try:
+                        row_1 = lp_data[id_set[i]]
+                        row_2 = lp_data[id_set[j]]
+                    except IndexError:
+                        continue
 
                     conflict = False
                     inconsist = False
@@ -40061,6 +40065,9 @@ class NmrDpUtility:
             self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
                                               self.__representative_model_id,
                                               self.__cR, None)
+
+        if self.__caC['entity_assembly'] is None:
+            return False
 
         components_ex_water = 0
         for item in self.__caC['entity_assembly']:

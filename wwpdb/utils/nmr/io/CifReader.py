@@ -967,7 +967,7 @@ class CifReader:
             count = list_labels.count(label)
 
             item = {'domain_id': eff_domain_id[_label], 'number_of_monomers': count}
-            seq_ids = sorted(set(a['seq_id'] for a, l in zip(_atom_site_ref, list_labels) if l == label))
+            seq_ids = sorted(set(a['seq_id'] for a, l in zip(_atom_site_ref, list_labels) if l == label))  # noqa: E741
             item['seq_id'] = seq_ids
             gaps = seq_ids[-1] + 1 - seq_ids[0] - len(seq_ids)
             item['number_of_gaps'] = gaps

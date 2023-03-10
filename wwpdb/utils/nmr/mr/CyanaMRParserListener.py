@@ -7462,8 +7462,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 seq_id_offset = 2
                 atomId2 = _split[1].upper()
 
-            for l in range(seq_id_offset, len_split):
-                if not _split[l].isdecimal():
+            for p in range(seq_id_offset, len_split):
+                if not _split[p].isdecimal():
                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                     f"Could not interpret '{str(ctx.Double_quote_string())}' as floating chiral stereo assignment.")
                     return
@@ -7508,10 +7508,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         sf['loop'].add_data(row)
                         break
 
-                for l in range(seq_id_offset + 1, len_split):
+                for p in range(seq_id_offset + 1, len_split):
                     self.atomSelectionSet.clear()
 
-                    seqId1 = int(_split[l])
+                    seqId1 = int(_split[p])
 
                     chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
                     chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId2)
@@ -7585,10 +7585,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         sf['loop'].add_data(row)
                         break
 
-                for l in range(seq_id_offset + 1, len_split):
+                for p in range(seq_id_offset + 1, len_split):
                     self.atomSelectionSet.clear()
 
-                    seqId1 = int(_split[l])
+                    seqId1 = int(_split[p])
 
                     chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
 

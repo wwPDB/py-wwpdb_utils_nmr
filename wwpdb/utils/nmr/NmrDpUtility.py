@@ -19428,7 +19428,7 @@ class NmrDpUtility:
             for i in range(len_id_set - 1):
 
                 for j in range(i + 1, len_id_set):
-                    
+
                     try:
                         row_1 = lp_data[id_set[i]]
                         row_2 = lp_data[id_set[j]]
@@ -21166,11 +21166,14 @@ class NmrDpUtility:
                                 methyl_h_list = self.__csStat.getProtonsInSameGroup(comp_id, atom_id)
 
                                 name_len = [len(n) for n in methyl_h_list]
-                                max_len = max(name_len)
-                                min_len = min(name_len)
+                                if len(name_len) > 0:
+                                    max_len = max(name_len)
+                                    min_len = min(name_len)
 
-                                if max_len == min_len or len(atom_id) == max_len:
-                                    _atom_id = atom_id[:-1]
+                                    if max_len == min_len or len(atom_id) == max_len:
+                                        _atom_id = atom_id[:-1]
+                                    else:
+                                        _atom_id = atom_id
                                 else:  # For example, HEM HM[A-D]
                                     _atom_id = atom_id
 

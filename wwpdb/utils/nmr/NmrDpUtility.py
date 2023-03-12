@@ -40856,7 +40856,7 @@ class NmrDpUtility:
                     set_sf_tag(asm_sf, 'Non_standard_bonds', 'yes')
 
                 bonds_w_leaving = [bond for bond in bonds
-                                   if bond['pdbx_leaving_atom_flag'] in ('both', 'one')
+                                   if ('pdbx_leaving_atom_flag' in bond and bond['pdbx_leaving_atom_flag'] in ('both', 'one'))
                                    or (bond['ptnr1_label_comp_id'] in ('CYS', 'DCS') and bond['ptnr1_label_atom_id'] == 'SG')
                                    or (bond['ptnr2_label_comp_id'] in ('CYS', 'DCS') and bond['ptnr2_label_atom_id'] == 'SG')
                                    or (bond['ptnr1_label_comp_id'] == 'HIS' and bond['ptnr1_label_atom_id'] in ('ND1', 'NE2'))
@@ -40895,7 +40895,7 @@ class NmrDpUtility:
 
                     for bond in bonds_w_leaving:
 
-                        leaving_flag = bond['pdbx_leaving_atom_flag']
+                        leaving_flag = bond['pdbx_leaving_atom_flag'] if 'pdbx_leaving_atom_flag' in bond else ''
 
                         if leaving_flag in ('one', 'both'):
                             leaving_atom_id = None
@@ -41835,7 +41835,7 @@ class NmrDpUtility:
                             {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id}
                             ]
 
-            if not self.__bmrb_only:
+            if not self.__bmrb_only and self.__cR.hasItem('struct_conn', 'pdbx_leaving_atom_flag'):
                 filter_items.append({'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'})
 
             struct_conn = self.__cR.getDictListWithFilter('struct_conn',

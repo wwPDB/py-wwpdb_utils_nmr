@@ -8965,7 +8965,7 @@ class NmrDpUtility:
            and '_Constraint_file' in self.__lp_category_list:
             _sf_data = self.__star_data[file_list_id].get_saveframes_by_category('constraint_statistics')[0]
             data_file_name = get_first_sf_tag(_sf_data, 'Data_file_name')
-            if mr_file_name_pattern.match(file_name):
+            if mr_file_name_pattern.match(data_file_name):
                 entry_id = get_first_sf_tag(_sf_data, 'Entry_ID')
                 if pdb_id_pattern.match(entry_id):
                     self.__remediation_mode = True
@@ -27903,10 +27903,7 @@ class NmrDpUtility:
 
                     sf_item['id'] -= 1
 
-                _rest_id = rest_id
-                _member_logic_code = member_logic_code
-                _atom1 = atom1
-                _atom2 = atom2
+                _rest_id, _member_logic_code, _atom1, _atom2 = rest_id, member_logic_code, atom1, atom2
 
             except ValueError:
                 _atom1 = _atom2 = None
@@ -32838,6 +32835,9 @@ class NmrDpUtility:
                                                   'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']),
                                                   'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})
 
+            _rest_id = -1
+            _atom1 = _atom2 = None
+
             for idx, row in enumerate(lp_data):
                 index = row[index_tag] if index_tag in row else None
                 combination_id = row[combination_id_name] if combination_id_name in row else None
@@ -32853,7 +32853,23 @@ class NmrDpUtility:
                 atom_id_1 = row[atom_id_1_name]
                 atom_id_2 = row[atom_id_2_name]
                 weight = row[weight_name] if weight_name in row else None
-                set_id.add(row[id_tag])
+
+                rest_id = row[id_tag]
+                set_id.add(id)
+
+                if member_logic_code is not None and member_logic_code == 'OR' and rest_id == _rest_id:
+                    atom1 = {'chain_id': chain_id_1,
+                             'seq_id': int(seq_id_1) if seq_id_1 not in emptyValue else None,
+                             'comp_id': comp_id_1,
+                             'atom_id': atom_id_1}
+                    atom2 = {'chain_id': chain_id_2,
+                             'seq_id': int(seq_id_2) if seq_id_2 not in emptyValue else None,
+                             'comp_id': comp_id_2,
+                             'atom_id': atom_id_2}
+                    if isAmbigAtomSelection([_atom1, atom1], self.__csStat) or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                        continue
+
+                _rest_id, _atom1, _atom2 = rest_id, atom1, atom2
 
                 target_value = row[target_value_name] if target_value_name in row else None
 

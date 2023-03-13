@@ -5785,7 +5785,8 @@ class NmrDpUtility:
                                                    'upper_limit': 'Distance_upper_bound_val',
                                                    'alt_seq_id_1': 'Seq_ID_1',
                                                    'alt_seq_id_2': 'Seq_ID_2',
-                                                   'member_id': 'Member_ID'
+                                                   'member_id': 'Member_ID',
+                                                   'member_logic_code': 'Member_logic_code',
                                                    }
                                       }
 
@@ -8963,7 +8964,7 @@ class NmrDpUtility:
            and 'constraint_statistics' in self.__sf_category_list\
            and '_Constraint_file' in self.__lp_category_list:
             _sf_data = self.__star_data[file_list_id].get_saveframes_by_category('constraint_statistics')[0]
-            file_name = get_first_sf_tag(_sf_data, 'Data_file_name')
+            data_file_name = get_first_sf_tag(_sf_data, 'Data_file_name')
             if mr_file_name_pattern.match(file_name):
                 entry_id = get_first_sf_tag(_sf_data, 'Entry_ID')
                 if pdb_id_pattern.match(entry_id):
@@ -27356,7 +27357,7 @@ class NmrDpUtility:
 
                 item_names = self.item_names_in_ds_loop[file_type]
                 id_col = lp.tags.index('ID')
-                code_col = lp.tags.index('Member_logic_code') if 'Member_logic_code' in lp.tags else -1
+                member_logic_code_col = lp.tags.index('Member_logic_code') if 'Member_logic_code' in lp.tags else -1
                 auth_asym_id_1_col = lp.tags.index('Auth_asym_ID_1')
                 auth_seq_id_1_col = lp.tags.index('Auth_seq_ID_1')
                 auth_asym_id_2_col = lp.tags.index('Auth_asym_ID_2')
@@ -27399,7 +27400,7 @@ class NmrDpUtility:
                 for row in lp:
                     _id = int(row[id_col])
                     if _id == prev_id:
-                        if code_col != -1 and row[code_col] == 'OR':
+                        if member_logic_code_col != -1 and row[member_logic_code_col] == 'OR':
                             has_or_code = True
                         continue
                     prev_id = _id
@@ -27431,7 +27432,7 @@ class NmrDpUtility:
 
                     prev_id = -1
                     for row in lp:
-                        if code_col != -1 and row[code_col] == 'OR':
+                        if member_logic_code_col != -1 and row[member_logic_code_col] == 'OR':
                             _id = int(row[id_col])
                             if _id != prev_id:
                                 _atom1 = {'chain_id': row[auth_asym_id_1_col],
@@ -27823,7 +27824,7 @@ class NmrDpUtility:
         index_id_col = loop.tags.index('Index_ID')
         id_col = loop.tags.index('ID')
         member_id_col = loop.tags.index('Member_ID')
-        member_logic_code_col = loop.tags.index('Member_logic_code')
+        member_logic_code_col = loop.tags.index('ember_logic_code')
 
         chain_id_1_col = loop.tags.index('Auth_asym_ID_1')
         seq_id_1_col = loop.tags.index('Auth_seq_ID_1')
@@ -32775,7 +32776,7 @@ class NmrDpUtility:
 
         index_tag = self.index_tags[file_type]['dist_restraint']
         item_names = self.item_names_in_ds_loop[file_type]
-        comb_id_name = item_names['combination_id']
+        combination_id_name = item_names['combination_id']
         chain_id_1_name = item_names['chain_id_1']
         chain_id_2_name = item_names['chain_id_2']
         seq_id_1_name = item_names['seq_id_1']
@@ -32786,6 +32787,7 @@ class NmrDpUtility:
         atom_id_2_name = item_names['atom_id_2']
         if file_type == 'nmr-star':
             member_id_name = item_names['member_id']
+            member_logic_code_name = item_names['member_logic_code']
         target_value_name = item_names['target_value']
         if 'target_value_alt' in item_names and target_value_name not in lp_data[0].keys():
             target_value_name = item_names['target_value_alt']
@@ -32838,8 +32840,9 @@ class NmrDpUtility:
 
             for idx, row in enumerate(lp_data):
                 index = row[index_tag] if index_tag in row else None
-                comb_id = row[comb_id_name] if comb_id_name in row else None
+                combination_id = row[combination_id_name] if combination_id_name in row else None
                 member_id = row[member_id_name] if file_type == 'nmr-star' and member_id_name in row else None
+                member_logic_code = row[member_logic_code_name] if file_type == 'nmr-star' and member_logic_code_name in row else None
 
                 chain_id_1 = row[chain_id_1_name]
                 chain_id_2 = row[chain_id_2_name]
@@ -33007,7 +33010,7 @@ class NmrDpUtility:
                 else:
                     count[data_type] = 1
 
-                if (comb_id is not None) and (comb_id not in emptyValue):
+                if (combination_id is not None) and (combination_id not in emptyValue):
                     if data_type in comb_count:
                         comb_count[data_type] += 1
                     else:
@@ -34501,7 +34504,7 @@ class NmrDpUtility:
         upper_linear_limit_name = item_names['upper_linear_limit']
 
         dh_item_names = self.item_names_in_dh_loop[file_type]
-        comb_id_name = dh_item_names['combination_id']
+        combination_id_name = dh_item_names['combination_id']
         chain_id_1_name = dh_item_names['chain_id_1']
         chain_id_2_name = dh_item_names['chain_id_2']
         chain_id_3_name = dh_item_names['chain_id_3']
@@ -34550,7 +34553,7 @@ class NmrDpUtility:
 
             for row in lp_data:
                 index = row[index_tag] if index_tag in row else None
-                comb_id = row[comb_id_name] if comb_id_name in row else None
+                combination_id = row[combination_id_name] if combination_id_name in row else None
 
                 target_value = row[target_value_name] if target_value_name in row else None
 
@@ -34640,7 +34643,7 @@ class NmrDpUtility:
                 else:
                     count[data_type] = 1
 
-                if (comb_id is not None) and (comb_id not in emptyValue):
+                if (combination_id is not None) and (combination_id not in emptyValue):
                     if data_type in comb_count:
                         comb_count[data_type] += 1
                     else:
@@ -35323,7 +35326,7 @@ class NmrDpUtility:
                     min_val_ = target_value
 
             item_names = self.item_names_in_rdc_loop[file_type]
-            comb_id_name = item_names['combination_id']
+            combination_id_name = item_names['combination_id']
             chain_id_1_name = item_names['chain_id_1']
             # chain_id_2_name = item_names['chain_id_2']
             seq_id_1_name = item_names['seq_id_1']
@@ -35356,7 +35359,7 @@ class NmrDpUtility:
 
             for row in lp_data:
                 index = row[index_tag] if index_tag in row else None
-                comb_id = row[comb_id_name] if comb_id_name in row else None
+                combination_id = row[combination_id_name] if combination_id_name in row else None
 
                 chain_id_1 = row[chain_id_1_name]
                 seq_id_1 = row[seq_id_1_name]
@@ -35372,7 +35375,7 @@ class NmrDpUtility:
                 else:
                     count[data_type] = 1
 
-                if (comb_id is not None) and (comb_id not in emptyValue):
+                if (combination_id is not None) and (combination_id not in emptyValue):
                     if data_type in comb_count:
                         comb_count[data_type] += 1
                     else:
@@ -46860,9 +46863,9 @@ class NmrDpUtility:
                     atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                     atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
                     try:
-                        comb_id_col = lp.tags.index(item_names['combination_id'])
+                        combination_id_col = lp.tags.index(item_names['combination_id'])
                     except ValueError:
-                        comb_id_col = -1
+                        combination_id_col = -1
                     try:
                         upper_limit_col = lp.tags.index(item_names['upper_limit'])
                     except ValueError:
@@ -46885,12 +46888,12 @@ class NmrDpUtility:
                         atom_id_2 = row[atom_id_2_col]
                         if atom_id_1 is None or atom_id_2 is None:
                             continue
-                        comb_id = row[comb_id_col] if comb_id_col != -1 else None
+                        combination_id = row[combination_id_col] if combination_id_col != -1 else None
                         upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
 
                         offset = abs(seq_id_1 - seq_id_2)
                         ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
-                        uniq = comb_id in emptyValue and not ambig
+                        uniq = combination_id in emptyValue and not ambig
 
                         if uniq:
                             NOE_unique_tot_num += 1
@@ -46990,9 +46993,9 @@ class NmrDpUtility:
                     atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                     atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
                     try:
-                        comb_id_col = lp.tags.index(item_names['combination_id'])
+                        combination_id_col = lp.tags.index(item_names['combination_id'])
                     except ValueError:
-                        comb_id_col = -1
+                        combination_id_col = -1
                     try:
                         upper_limit_col = lp.tags.index(item_names['upper_limit'])
                     except ValueError:
@@ -47015,12 +47018,12 @@ class NmrDpUtility:
                         atom_id_2 = row[atom_id_2_col]
                         if atom_id_1 is None or atom_id_2 is None:
                             continue
-                        comb_id = row[comb_id_col] if comb_id_col != -1 else None
+                        combination_id = row[combination_id_col] if combination_id_col != -1 else None
                         upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
 
                         offset = abs(seq_id_1 - seq_id_2)
                         ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
-                        uniq = comb_id in emptyValue and not ambig
+                        uniq = combination_id in emptyValue and not ambig
 
                         if chain_id_1 == chain_id_2:
                             if uniq:
@@ -47428,9 +47431,9 @@ class NmrDpUtility:
                 atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                 atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
                 try:
-                    comb_id_col = lp.tags.index(item_names['combination_id'])
+                    combination_id_col = lp.tags.index(item_names['combination_id'])
                 except ValueError:
-                    comb_id_col = -1
+                    combination_id_col = -1
 
                 prev_id = -1
                 for row in lp:
@@ -47449,7 +47452,7 @@ class NmrDpUtility:
                     atom_id_2 = row[atom_id_2_col]
                     if atom_id_1 is None or atom_id_2 is None:
                         continue
-                    comb_id = row[comb_id_col] if comb_id_col != -1 else None
+                    combination_id = row[combination_id_col] if combination_id_col != -1 else None
 
                     vector = {atom_id_1, atom_id_2}
                     offset = abs(seq_id_1 - seq_id_2)
@@ -47490,14 +47493,14 @@ class NmrDpUtility:
                             RDC_medium_range_tot_num += 1
                         else:
                             RDC_long_range_tot_num += 1
-                        if comb_id in emptyValue:
+                        if combination_id in emptyValue:
                             RDC_unambig_intramol_tot_num += 1
                         else:
                             RDC_ambig_intramol_tot_num += 1
 
                     else:
                         RDC_intermol_tot_num += 1
-                        if comb_id in emptyValue:
+                        if combination_id in emptyValue:
                             RDC_unambig_intermol_tot_num += 1
                         else:
                             RDC_ambig_intermol_tot_num += 1
@@ -48183,7 +48186,7 @@ class NmrDpUtility:
 
                     item_names = self.item_names_in_ds_loop[file_type]
                     id_col = lp.tags.index('ID')
-                    code_col = lp.tags.index('Member_logic_code') if 'Member_logic_code' in lp.tags else -1
+                    member_logic_code_col = lp.tags.index('Member_logic_code') if 'Member_logic_code' in lp.tags else -1
                     auth_asym_id_1_col = lp.tags.index('Auth_asym_ID_1')
                     auth_seq_id_1_col = lp.tags.index('Auth_seq_ID_1')
                     auth_asym_id_2_col = lp.tags.index('Auth_asym_ID_2')
@@ -48226,7 +48229,7 @@ class NmrDpUtility:
                     for row in lp:
                         _id = int(row[id_col])
                         if _id == prev_id:
-                            if code_col != -1 and row[code_col] == 'OR':
+                            if member_logic_code_col != -1 and row[member_logic_code_col] == 'OR':
                                 has_or_code = True
                             continue
                         prev_id = _id
@@ -48258,7 +48261,7 @@ class NmrDpUtility:
 
                         prev_id = -1
                         for row in lp:
-                            if code_col != -1 and row[code_col] == 'OR':
+                            if member_logic_code_col != -1 and row[member_logic_code_col] == 'OR':
                                 _id = int(row[id_col])
                                 if _id != prev_id:
                                     _atom1 = {'chain_id': row[auth_asym_id_1_col],
@@ -48401,9 +48404,9 @@ class NmrDpUtility:
                         atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                         atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
                         try:
-                            comb_id_col = lp.tags.index(item_names['combination_id'])
+                            combination_id_col = lp.tags.index(item_names['combination_id'])
                         except ValueError:
-                            comb_id_col = -1
+                            combination_id_col = -1
                         try:
                             upper_limit_col = lp.tags.index(item_names['upper_limit'])
                         except ValueError:
@@ -48426,12 +48429,12 @@ class NmrDpUtility:
                             atom_id_2 = row[atom_id_2_col]
                             if atom_id_1 is None or atom_id_2 is None:
                                 continue
-                            comb_id = row[comb_id_col] if comb_id_col != -1 else None
+                            combination_id = row[combination_id_col] if combination_id_col != -1 else None
                             upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
 
                             offset = abs(seq_id_1 - seq_id_2)
                             ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
-                            uniq = comb_id in emptyValue and not ambig
+                            uniq = combination_id in emptyValue and not ambig
 
                             if uniq:
                                 NOE_unique_tot_num += 1
@@ -48535,9 +48538,9 @@ class NmrDpUtility:
                         atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                         atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
                         try:
-                            comb_id_col = lp.tags.index(item_names['combination_id'])
+                            combination_id_col = lp.tags.index(item_names['combination_id'])
                         except ValueError:
-                            comb_id_col = -1
+                            combination_id_col = -1
                         try:
                             upper_limit_col = lp.tags.index(item_names['upper_limit'])
                         except ValueError:
@@ -48560,12 +48563,12 @@ class NmrDpUtility:
                             atom_id_2 = row[atom_id_2_col]
                             if atom_id_1 is None or atom_id_2 is None:
                                 continue
-                            comb_id = row[comb_id_col] if comb_id_col != -1 else None
+                            combination_id = row[combination_id_col] if combination_id_col != -1 else None
                             upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
 
                             offset = abs(seq_id_1 - seq_id_2)
                             ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
-                            uniq = comb_id in emptyValue and not ambig
+                            uniq = combination_id in emptyValue and not ambig
 
                             if chain_id_1 == chain_id_2:
                                 if uniq:
@@ -49023,9 +49026,9 @@ class NmrDpUtility:
                     atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                     atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
                     try:
-                        comb_id_col = lp.tags.index(item_names['combination_id'])
+                        combination_id_col = lp.tags.index(item_names['combination_id'])
                     except ValueError:
-                        comb_id_col = -1
+                        combination_id_col = -1
 
                     prev_id = -1
                     for row in lp:
@@ -49044,7 +49047,7 @@ class NmrDpUtility:
                         atom_id_2 = row[atom_id_2_col]
                         if atom_id_1 is None or atom_id_2 is None:
                             continue
-                        comb_id = row[comb_id_col] if comb_id_col != -1 else None
+                        combination_id = row[combination_id_col] if combination_id_col != -1 else None
 
                         vector = {atom_id_1, atom_id_2}
                         offset = abs(seq_id_1 - seq_id_2)
@@ -49085,14 +49088,14 @@ class NmrDpUtility:
                                 RDC_medium_range_tot_num += 1
                             else:
                                 RDC_long_range_tot_num += 1
-                            if comb_id in emptyValue:
+                            if combination_id in emptyValue:
                                 RDC_unambig_intramol_tot_num += 1
                             else:
                                 RDC_ambig_intramol_tot_num += 1
 
                         else:
                             RDC_intermol_tot_num += 1
-                            if comb_id in emptyValue:
+                            if combination_id in emptyValue:
                                 RDC_unambig_intermol_tot_num += 1
                             else:
                                 RDC_ambig_intermol_tot_num += 1
@@ -49425,7 +49428,7 @@ class NmrDpUtility:
 
                         item_names = self.item_names_in_ds_loop[file_type]
                         id_col = lp.tags.index('ID')
-                        code_col = lp.tags.index('Member_logic_code') if 'Member_logic_code' in lp.tags else -1
+                        member_logic_code_col = lp.tags.index('Member_logic_code') if 'Member_logic_code' in lp.tags else -1
                         auth_asym_id_1_col = lp.tags.index('Auth_asym_ID_1')
                         auth_seq_id_1_col = lp.tags.index('Auth_seq_ID_1')
                         auth_asym_id_2_col = lp.tags.index('Auth_asym_ID_2')
@@ -49436,12 +49439,12 @@ class NmrDpUtility:
                         atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
 
                         for row in lp:
-                            if code_col != -1 and row[code_col] != 'OR':
+                            if member_logic_code_col != -1 and row[member_logic_code_col] != 'OR':
                                 return True
 
                         prev_id = -1
                         for row in lp:
-                            if code_col != -1 and row[code_col] == 'OR':
+                            if member_logic_code_col != -1 and row[member_logic_code_col] == 'OR':
                                 _id = int(row[id_col])
                                 if _id != prev_id:
                                     _atom1 = {'chain_id': row[auth_asym_id_1_col],

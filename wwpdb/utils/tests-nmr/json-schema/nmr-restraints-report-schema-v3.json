@@ -3718,7 +3718,10 @@
             "type": "object",
             "properties": {
               "ref_seq_id": {
-                "type": "integer"
+                "type": [
+                  "integer",
+                  "null"
+                ]
               },
               "ref_comp_id": {
                 "type": "string",

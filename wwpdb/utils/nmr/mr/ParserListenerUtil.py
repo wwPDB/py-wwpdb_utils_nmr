@@ -2677,7 +2677,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                       if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId]
                         coordAtomSite[seqKey]['alt_atom_id'] = altAtomIds
                     altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId), None)
-                    if altSeqId is not None and altSeqId.isdigit():
+                    if chainId in authToLabelChain and altSeqId is not None and altSeqId.isdigit():
                         labelToAuthSeq[(authToLabelChain[chainId], int(altSeqId))] = seqKey
                     else:
                         labelToAuthSeq[seqKey] = seqKey

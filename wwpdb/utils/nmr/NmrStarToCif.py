@@ -25,6 +25,7 @@ except ImportError:
 
 class NmrStarToCif:
     """ NMR-STAR to CIF converter.
+        @deprecated: Comprehensive solution has been integrated in NmrDpUtility class. (DAOTHER-7407)
     """
 
     def __init__(self, verbose=False, log=sys.stderr):
@@ -40,6 +41,7 @@ class NmrStarToCif:
 
     def clean(self, cifPath=None, originalCsFileNameList=None, originalMrFileNameList=None):
         """ Clean up CIF formatted NMR data for NMR legacy deposition
+            @deprecated: Comprehensive solution has been integrated in NmrDpUtility class. (DAOTHER-7407)
         """
 
         if cifPath is None:
@@ -182,6 +184,7 @@ class NmrStarToCif:
 
     def convert(self, strPath=None, cifPath=None, originalFileName=None, fileType='nm-uni-nef'):
         """ Convert NMR-STAR to CIF for NMR unified deposition
+            @deprecated: Comprehensive solution has been integrated in NmrDpUtility class. (DAOTHER-7407)
         """
 
         if strPath is None or cifPath is None:

@@ -3890,7 +3890,7 @@ class NEFTranslator:
         if allowed_tags is not None:
 
             if (set(tag_names) | set(allowed_tags)) != set(allowed_tags):
-                raise LookupError(f"Tag items {((set(tag_names) | set(allowed_tags)) - set(allowed_tags))} must not exists.")
+                raise LookupError(f"Saveframe tags {((set(tag_names) | set(allowed_tags)) - set(allowed_tags))} must not exists.")
 
             for t in tag_items:
                 if 'group-mandatory' in t and t['group-mandatory']:

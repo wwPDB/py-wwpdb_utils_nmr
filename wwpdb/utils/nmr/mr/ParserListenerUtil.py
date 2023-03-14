@@ -2591,8 +2591,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         if authSeqId is None:
             authSeqId = 'pdbx_auth_seq_id' if cR.hasItem('atom_site', 'pdbx_auth_seq_id') else 'auth_seq_id'
         if authAtomId is None:
-            authAtomId = 'pdbx_auth_atom_name' if cR.hasItem('atom_site', 'pdbx_auth_atom_name') else 'auth_atom_id'
-        altAuthAtomId = None if authAtomId == 'auth_atom_id' else 'auth_atom_id'
+            authAtomId = 'auth_atom_id'
+        altAuthAtomId = 'pdbx_auth_atom_name' if cR.hasItem('atom_site', 'pdbx_auth_atom_name') else None
 
         if coordAtomSite is None or labelToAuthSeq is None or authToLabelSeq is None:
             changed = True
@@ -3164,7 +3164,6 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'auth_asym_id': authAsymId,
             'auth_seq_id': authSeqId,
             'auth_atom_id': authAtomId,
-            'alt_auth_atom_id': altAuthAtomId,
             'polymer_sequence': polySeq,
             'alt_polymer_sequence': altPolySeq,
             'non_polymer': nonPoly,

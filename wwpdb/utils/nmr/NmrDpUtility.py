@@ -4026,6 +4026,7 @@ class NmrDpUtility:
                                                              'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2',
                                                              'Auth_atom_ID_2', 'Auth_alt_ID_2', 'Auth_atom_name_2',
                                                              'Sf_ID', 'Entry_ID', 'Gen_dist_constraint_list_ID',
+                                                             # The following Original_PDB_* data items are not legitimate, but keep them for backward compatibility
                                                              'Original_PDB_strand_ID_1', 'Original_PDB_residue_no_1', 'Original_PDB_residue_name_1',
                                                              'Original_PDB_strand_ID_2', 'Original_PDB_residue_no_2', 'Original_PDB_residue_name_2'],
                                           'dihed_restraint': ['Index_ID', 'ID', 'Combination_ID', 'Set_ID', 'Torsion_angle_name',
@@ -8409,7 +8410,8 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__rescueFormerNef() ++ LookupError  - {err}\n")
+                            self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - "
+                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -8447,7 +8449,8 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__rescueFormerNef() ++ LookupError  - {err}\n")
+                            self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - "
+                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -8488,7 +8491,8 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__rescueFormerNef() ++ LookupError  - {err}\n")
+                            self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - "
+                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -8531,7 +8535,8 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__rescueFormerNef() ++ LookupError  - {err}\n")
+                            self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - "
+                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -8743,7 +8748,8 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - {err}\n")
+                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - "
+                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -8784,7 +8790,8 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - {err}\n")
+                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - "
+                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -8813,6 +8820,27 @@ class NmrDpUtility:
                                 atom_type = 'H'
                             row[iso_num_col] = str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0])
 
+            elif content_subtype == 'dist_restraint':  # backward compatibility
+
+                original_items = ['Original_PDB_strand_ID', 'Original_PDB_residue_no', 'Original_PDB_residue_name']
+
+                for i in range(1, 3):
+                    for original_item in original_items:
+                        tag = original_item + '_' + str(i)
+                        if tag in loop.tags:
+                            if __pynmrstar_v3_2__:
+                                loop.remove_tag(tag)
+                            else:
+                                loop.delete_tag(tag)
+
+                    tag = 'Original_PDB_atom_name_' + str(i)
+                    if tag in loop.tags:
+                        _dat = get_lp_tag(loop, [tag])
+                        _tag = 'Auth_atom_name_' + str(i)
+                        if _tag not in loop.tags:
+                            loop.add_tag(_tag)
+                            loop.add_data(_dat)
+
             elif content_subtype == 'dihed_restraint':
 
                 if 'Torsion_angle_name' not in loop.tags:
@@ -8827,7 +8855,8 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - {err}\n")
+                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - "
+                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -8853,7 +8882,8 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - {err}\n")
+                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - "
+                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -8880,7 +8910,8 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - {err}\n")
+                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - "
+                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -8907,7 +8938,8 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - {err}\n")
+                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - "
+                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
 
@@ -15216,7 +15248,8 @@ class NmrDpUtility:
                     # self.report.setError()
 
                     # if self.__verbose:
-                    #     self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequence() ++ LookupError  - {str(e)}\n")
+                    #     self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ LookupError  - "
+                    #                      f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
                     # """
                     pass
                 except ValueError as e:
@@ -15488,7 +15521,8 @@ class NmrDpUtility:
             # self.report.setError()
 
             # if self.__verbose:
-            #     self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequenceInLoop() ++ LookupError  - {str(e)}\n")
+            #     self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ LookupError  - "
+            #                      f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
             # """
             pass
 
@@ -18255,7 +18289,8 @@ class NmrDpUtility:
                     # self.report.setError()
 
                     # if self.__verbose:
-                    #     self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ LookupError  - {str(e)}\n")
+                    #     self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ LookupError  - "
+                    #                      f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
                     # """
                     pass
 
@@ -18315,7 +18350,8 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ LookupError  - {str(e)}\n")
+                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ LookupError  - "
+                                 f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
 
@@ -18616,7 +18652,8 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__validateAtomTypeOfCsLoop() ++ LookupError  - {str(e)}\n")
+                    self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCsLoop() ++ LookupError  - "
+                                     f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
 
@@ -18841,7 +18878,8 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ LookupError  - {str(e)}\n")
+                    self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ LookupError  - "
+                                     f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
 
@@ -18984,7 +19022,8 @@ class NmrDpUtility:
             # self.report.setError()
 
             # if self.__verbose:
-            #     self.__lfh.write(f"+NmrDpUtility.__testIndexConsistency() ++ LookupError  - {str(e)}\n")
+            #     self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ LookupError  - "
+            #                      f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
             # """
             pass
 
@@ -19182,7 +19221,8 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInLoop() ++ LookupError  - {str(e)}\n")
+                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ LookupError  - "
+                                 f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
 
@@ -20032,7 +20072,8 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testNmrCovalentBond() ++ LookupError  - {str(e)}\n")
+                                self.__lfh.write("+NmrDpUtility.__testNmrCovalentBond() ++ LookupError  - "
+                                                 f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
                         except ValueError as e:
 
@@ -20174,7 +20215,8 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ LookupError  - {str(e)}\n")
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ LookupError  - "
+                                                     f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
                             except ValueError as e:
 
@@ -20682,7 +20724,8 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ LookupError  - {str(e)}\n")
+                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ LookupError  - "
+                                     f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
             except ValueError as e:
 
@@ -20788,7 +20831,8 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testSfTagConsistency() ++ LookupError  - {str(e)}\n")
+                            self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ LookupError  - "
+                                             f"{file_name} {sf_framecode} {str(e)}\n")
 
                     except ValueError as e:
 
@@ -22335,7 +22379,8 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ LookupError  - {err}\n")
+                                    self.__lfh.write("+NmrDpUtility.__validateCsValue() ++ LookupError  - "
+                                                     f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                         else:
 
@@ -26493,7 +26538,8 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testResidueVariant() ++ LookupError  - {str(e)}\n")
+                self.__lfh.write("+NmrDpUtility.__testResidueVariant() ++ LookupError  - "
+                                 f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
 
@@ -27824,7 +27870,7 @@ class NmrDpUtility:
         index_id_col = loop.tags.index('Index_ID')
         id_col = loop.tags.index('ID')
         member_id_col = loop.tags.index('Member_ID')
-        member_logic_code_col = loop.tags.index('ember_logic_code')
+        member_logic_code_col = loop.tags.index('Member_logic_code')
 
         chain_id_1_col = loop.tags.index('Auth_asym_ID_1')
         seq_id_1_col = loop.tags.index('Auth_seq_ID_1')
@@ -32857,7 +32903,7 @@ class NmrDpUtility:
                 rest_id = row[id_tag]
                 set_id.add(id)
 
-                if member_logic_code is not None and member_logic_code == 'OR' and rest_id == _rest_id:
+                if (member_logic_code is not None and member_logic_code == 'OR') or rest_id == _rest_id:
                     atom1 = {'chain_id': chain_id_1,
                              'seq_id': int(seq_id_1) if seq_id_1 not in emptyValue else None,
                              'comp_id': comp_id_1,
@@ -32866,10 +32912,13 @@ class NmrDpUtility:
                              'seq_id': int(seq_id_2) if seq_id_2 not in emptyValue else None,
                              'comp_id': comp_id_2,
                              'atom_id': atom_id_2}
-                    if isAmbigAtomSelection([_atom1, atom1], self.__csStat) or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
-                        continue
+                    if _atom1 is not None and _atom2 is not None:
+                        if not isAmbigAtomSelection([_atom1, atom1], self.__csStat) and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                            _rest_id, _atom1, _atom2 = rest_id, atom1, atom2
+                            continue
+                    _atom1, _atom2 = atom1, atom2
 
-                _rest_id, _atom1, _atom2 = rest_id, atom1, atom2
+                _rest_id = rest_id
 
                 target_value = row[target_value_name] if target_value_name in row else None
 
@@ -37012,7 +37061,8 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequence() ++ LookupError  - {str(e)}\n")
+                self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ LookupError  - "
+                                 f"{file_name} {lp_category} {str(e)}\n")
 
         except ValueError as e:
 
@@ -37272,7 +37322,8 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ LookupError  - {str(e)}\n")
+                    self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ LookupError  - "
+                                     f"{file_name} {lp_category} {str(e)}\n")
 
             except ValueError as e:
 
@@ -37857,8 +37908,8 @@ class NmrDpUtility:
                 pass
 
             elif myPr0 == 'HIS' and myPr1 == '.' and _myPr0 == 'HIS':
-                _s2['comp_id'][idx2] = 'HIS'
                 if idx2 < len_s2:
+                    _s2['comp_id'][idx2] = 'HIS'
                     idx2 += 1
 
             _myPr0 = myPr0
@@ -39723,7 +39774,8 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__appendIndexTag() ++ LookupError  - {err}\n")
+                                self.__lfh.write("+NmrDpUtility.__appendIndexTag() ++ LookupError  - "
+                                                 f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     lp = pynmrstar.Loop.from_scratch(lp_category)
 
@@ -43920,7 +43972,8 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__appendWeightInLoop() ++ LookupError  - {err}\n")
+                                    self.__lfh.write("+NmrDpUtility.__appendWeightInLoop() ++ LookupError  - "
+                                                     f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                         for row in loop:
                             row.append('1.0')
@@ -46453,7 +46506,8 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__updateAtomChemShiftId() ++ LookupError  - {err}\n")
+                            self.__lfh.write("+NmrDpUtility.__updateAtomChemShiftId() ++ LookupError  - "
+                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                 lp = pynmrstar.Loop.from_scratch(lp_category)
 

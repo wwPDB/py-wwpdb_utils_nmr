@@ -6,6 +6,7 @@
 # 06-Apr-2020  M. Yokochi - add support for Original_pdb_* items in restraints/peak lists
 # 07-Apr-2020  M. Yokochi - add clean() for NMR legacy deposition (DAOTHER-2874)
 # 18-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
+# 13-Mar-2023  M. Yokochi - use canonical data items to preserve the original atom nomenclature of NMR restraints
 ##
 """ Wrapper class for NMR-STAR to CIF converter.
     @author: Masashi Yokochi
@@ -32,12 +33,10 @@ class NmrStarToCif:
 
         # whether to remove _pdbx_nmr_assigned_chem_shift_list (DAOTHER-2874)
         self.__remove_cs_list_cif = True
-        # whether to add Original_pdb_* items in chemical shifts
-        self.__add_original_pdb_in_chem_shift = True
-        # whether to add Original_pdb_* items in distance restraints
-        self.__add_original_pdb_in_dist_restraint = True
-        # whether to add Origianl_pdb_* items in other restraints
-        self.__add_original_pdb_in_others = False
+        # whether to insert _Atom_chem_shift.Original_pdb_* items
+        self.__insert_original_pdb_cs_items = True
+        # whether to insert Auth_atom_name_* items
+        self.__insert_original_atom_name_items = True
 
     def clean(self, cifPath=None, originalCsFileNameList=None, originalMrFileNameList=None):
         """ Clean up CIF formatted NMR data for NMR legacy deposition
@@ -288,13 +287,16 @@ class NmrStarToCif:
                                     dst.append(src[auth_item])
                                 extended_data_list.append(dst)
 
-                            if self.__add_original_pdb_in_chem_shift:
+                            if self.__insert_original_pdb_cs_items:
                                 cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID') + 1)
 
                         if overwrite_auth_atom_id:
                             cifObj.CopyValueInRow(k, lp_category, atom_id_tags, auth_atom_id_tags)
 
-                # add _Gen_dist_constraint.Original_PDB_* items
+                original_items = ['Auth_atom_name']
+                original_auth_map = {'Auth_atom_name': 'Auth_atom_ID'}
+
+                # add _Gen_dist_constraint.Auth_atom_name_* items
 
                 lp_category = 'Gen_dist_constraint'
                 _original_items = []
@@ -331,150 +333,150 @@ class NmrStarToCif:
                                     dst.append(src[auth_item])
                                 extended_data_list.append(dst)
 
-                            if self.__add_original_pdb_in_dist_restraint:
+                            if self.__insert_original_atom_name_items:
                                 cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_2') + 1)
 
                         if overwrite_auth_atom_id:
                             cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
 
-                if self.__add_original_pdb_in_others:
+                # add _Torsion_angle_constraint.Auth_atom_name_* items
 
-                    # add _Torsion_angle_constraint.Original_PDB_* items
+                lp_category = 'Torsion_angle_constraint'
+                _original_items = []
+                _original_auth_map = {}
+                _atom_id_tags = []
+                _auth_atom_id_tags = []
+                for i in range(1, 5):
+                    for original_item in original_items:
+                        _original_items.append(original_item + '_' + str(i))
+                    for k, v in original_auth_map.items():
+                        _original_auth_map[k + '_' + str(i)] = v + '_' + str(i)
+                    for atom_id_tag in atom_id_tags:
+                        _atom_id_tags.append(atom_id_tag + '_' + str(i))
+                    for auth_atom_id_tag in auth_atom_id_tags:
+                        _auth_atom_id_tags.append(auth_atom_id_tag + '_' + str(i))
 
-                    lp_category = 'Torsion_angle_constraint'
-                    _original_items = []
-                    _original_auth_map = {}
-                    _atom_id_tags = []
-                    _auth_atom_id_tags = []
-                    for i in range(1, 5):
-                        for original_item in original_items:
-                            _original_items.append(original_item + '_' + str(i))
-                        for k, v in original_auth_map.items():
-                            _original_auth_map[k + '_' + str(i)] = v + '_' + str(i)
-                        for atom_id_tag in atom_id_tags:
-                            _atom_id_tags.append(atom_id_tag + '_' + str(i))
-                        for auth_atom_id_tag in auth_atom_id_tags:
-                            _auth_atom_id_tags.append(auth_atom_id_tag + '_' + str(i))
+                for k, v in categories.items():
 
-                    for k, v in categories.items():
+                    if lp_category in v:
+                        items = cifObj.GetAttributes(k, lp_category)
 
-                        if lp_category in v:
-                            items = cifObj.GetAttributes(k, lp_category)
+                        extended_items = [original_item for original_item in _original_items if original_item not in items]
 
-                            extended_items = [original_item for original_item in _original_items if original_item not in items]
+                        if len(extended_items) > 0:
+                            dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
 
-                            if len(extended_items) > 0:
-                                dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
+                            auth_items = [_original_auth_map[original_item] for original_item in extended_items]
 
-                                auth_items = [_original_auth_map[original_item] for original_item in extended_items]
+                            extended_data_list = []
 
-                                extended_data_list = []
+                            for src in dList:
+                                dst = []
+                                for auth_item in auth_items:
+                                    dst.append(src[auth_item])
+                                extended_data_list.append(dst)
 
-                                for src in dList:
-                                    dst = []
-                                    for auth_item in auth_items:
-                                        dst.append(src[auth_item])
-                                    extended_data_list.append(dst)
-
+                            if self.__insert_original_atom_name_items:
                                 cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_4') + 1)
 
-                            if overwrite_auth_atom_id:
-                                cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
+                        if overwrite_auth_atom_id:
+                            cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
 
-                    # add _RDC_constraint.Origianl_PDB_* items
+                # add _RDC_constraint.Auth_atom_name_* items
 
-                    lp_category = 'RDC_constraint'
-                    _original_items = []
-                    _original_auth_map = {}
-                    _atom_id_tags = []
-                    _auth_atom_id_tags = []
-                    for i in range(1, 3):
-                        for original_item in original_items:
-                            _original_items.append(original_item + '_' + str(i))
-                        for k, v in original_auth_map.items():
-                            _original_auth_map[k + '_' + str(i)] = v + '_' + str(i)
-                        for atom_id_tag in atom_id_tags:
-                            _atom_id_tags.append(atom_id_tag + '_' + str(i))
-                        for auth_atom_id_tag in auth_atom_id_tags:
-                            _auth_atom_id_tags.append(auth_atom_id_tag + '_' + str(i))
+                lp_category = 'RDC_constraint'
+                _original_items = []
+                _original_auth_map = {}
+                _atom_id_tags = []
+                _auth_atom_id_tags = []
+                for i in range(1, 3):
+                    for original_item in original_items:
+                        _original_items.append(original_item + '_' + str(i))
+                    for k, v in original_auth_map.items():
+                        _original_auth_map[k + '_' + str(i)] = v + '_' + str(i)
+                    for atom_id_tag in atom_id_tags:
+                        _atom_id_tags.append(atom_id_tag + '_' + str(i))
+                    for auth_atom_id_tag in auth_atom_id_tags:
+                        _auth_atom_id_tags.append(auth_atom_id_tag + '_' + str(i))
 
-                    for k, v in categories.items():
+                for k, v in categories.items():
 
-                        if lp_category in v:
-                            items = cifObj.GetAttributes(k, lp_category)
+                    if lp_category in v:
+                        items = cifObj.GetAttributes(k, lp_category)
 
-                            extended_items = [original_item for original_item in _original_items if original_item not in items]
+                        extended_items = [original_item for original_item in _original_items if original_item not in items]
 
-                            if len(extended_items) > 0:
-                                dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
+                        if len(extended_items) > 0:
+                            dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
 
-                                auth_items = [_original_auth_map[original_item] for original_item in extended_items]
+                            auth_items = [_original_auth_map[original_item] for original_item in extended_items]
 
-                                extended_data_list = []
+                            extended_data_list = []
 
-                                for src in dList:
-                                    dst = []
-                                    for auth_item in auth_items:
-                                        dst.append(src[auth_item])
-                                    extended_data_list.append(dst)
+                            for src in dList:
+                                dst = []
+                                for auth_item in auth_items:
+                                    dst.append(src[auth_item])
+                                extended_data_list.append(dst)
 
+                            if self.__insert_original_atom_name_items:
                                 cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_2') + 1)
 
-                            if overwrite_auth_atom_id:
-                                cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
+                        if overwrite_auth_atom_id:
+                            cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
+                # """
+                # lp_category = 'Peak_row_format'
 
-                    lp_category = 'Peak_row_format'
+                # for k, v in categories.items():
 
-                    for k, v in categories.items():
+                #     if lp_category in v:
+                #         items = cifObj.GetAttributes(k, lp_category)
+                #         max_dim = 0
+                #         for i in range(1, 16):
+                #             if 'Atom_ID_' + str(i) not in items:
+                #                 break
+                #             max_dim = i
 
-                        if lp_category in v:
-                            items = cifObj.GetAttributes(k, lp_category)
-                            max_dim = 0
-                            for i in range(1, 16):
-                                if 'Atom_ID_' + str(i) not in items:
-                                    break
-                                max_dim = i
+                #         if 1 < max_dim <= 16:
+                #             _original_items = []
+                #             _original_auth_map = {}
+                #             _atom_id_tags = []
+                #             _auth_atom_id_tags = []
+                #             for i in range(1, max_dim):
+                #                 for original_item in original_items:
+                #                     _original_items.append(original_item + '_' + str(i))
+                #                 for _k, _v in original_auth_map.items():
+                #                     _original_auth_map[_k + '_' + str(i)] = _v + '_' + str(i)
+                #                 for atom_id_tag in atom_id_tags:
+                #                     _atom_id_tags.append(atom_id_tag + '_' + str(i))
+                #                 for auth_atom_id_tag in auth_atom_id_tags:
+                #                     _auth_atom_id_tags.append(auth_atom_id_tag + '_' + str(i))
 
-                            if 1 < max_dim <= 16:
-                                _original_items = []
-                                _original_auth_map = {}
-                                _atom_id_tags = []
-                                _auth_atom_id_tags = []
-                                for i in range(1, max_dim):
-                                    for original_item in original_items:
-                                        _original_items.append(original_item + '_' + str(i))
-                                    for _k, _v in original_auth_map.items():
-                                        _original_auth_map[_k + '_' + str(i)] = _v + '_' + str(i)
-                                    for atom_id_tag in atom_id_tags:
-                                        _atom_id_tags.append(atom_id_tag + '_' + str(i))
-                                    for auth_atom_id_tag in auth_atom_id_tags:
-                                        _auth_atom_id_tags.append(auth_atom_id_tag + '_' + str(i))
+                #             extended_items = [original_item for original_item in _original_items if original_item not in items]
 
-                                extended_items = [original_item for original_item in _original_items if original_item not in items]
+                #             has_auth_value = False
 
-                                has_auth_value = False
+                #             if len(extended_items) > 0:
+                #                 dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
 
-                                if len(extended_items) > 0:
-                                    dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
+                #                 auth_items = [_original_auth_map[original_item] for original_item in extended_items]
 
-                                    auth_items = [_original_auth_map[original_item] for original_item in extended_items]
+                #                 extended_data_list = []
 
-                                    extended_data_list = []
+                #                 for src in dList:
+                #                     dst = []
+                #                     for auth_item in auth_items:
+                #                         dst.append(src[auth_item])
+                #                         if src[auth_item] not in emptyValue:
+                #                             has_auth_value = True
+                #                     extended_data_list.append(dst)
 
-                                    for src in dList:
-                                        dst = []
-                                        for auth_item in auth_items:
-                                            dst.append(src[auth_item])
-                                            if src[auth_item] not in emptyValue:
-                                                has_auth_value = True
-                                        extended_data_list.append(dst)
+                #                 if has_auth_value:
+                #                     cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index(f"Auth_atom_ID_{max_dim - 1}") + 1)
 
-                                    if has_auth_value:
-                                        cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index(f"Auth_atom_ID_{max_dim - 1}") + 1)
-
-                                if overwrite_auth_atom_id and has_auth_value:
-                                    cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
-
+                #             if overwrite_auth_atom_id and has_auth_value:
+                #                 cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
+                # """
                 cifObj.WriteCif(outputFilePath=cifPath)
 
                 return True

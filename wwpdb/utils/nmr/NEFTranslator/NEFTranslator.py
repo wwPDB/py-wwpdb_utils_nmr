@@ -90,6 +90,7 @@
 # 20-Oct-2022  M. Yokochi - allow missing distance restraints via allow_missing_dist_restraint(bool) (v3.2.1, DAOTHER-8088 1.b, 8108)
 # 16-Dec-2022  M. Yokochi - remove deprecated functions with minor code revisions (v3.2.2)
 # 27-Feb-2023  M. Yokochi - preserve author sequence scheme of the coordinates during NMR-STAR to NEF conversion (v3.2.3)
+# 13-Mar-2023  M. Yokochi - preserve the original atom nomenclature of NMR restraints into Auth_atom_name_* data items (v3.4.0)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -127,7 +128,7 @@ except ImportError:
                                            ALLOWED_AMBIGUITY_CODES)
 
 __package_name__ = 'wwpdb.utils.nmr'
-__version__ = '3.3.3'
+__version__ = '3.4.0'
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
@@ -601,6 +602,8 @@ class NEFTranslator:
         self.replace_zero_by_null_in_case = False
         # whether to insert _Atom_chem_shift.Original_PDB_* items
         self.insert_original_pdb_cs_items = True
+        # whether to insert Auth_atom_name_* items
+        self.insert_original_atom_name_items = True
 
         # temporary dictionaries used in translation
         self.authChainId = None
@@ -4270,12 +4273,23 @@ class NEFTranslator:
         elif lp_category == '_nef_distance_restraint':
             out_tag.append('_Gen_dist_constraint.Member_logic_code')
             out_tag.append('_Gen_dist_constraint.Gen_dist_constraint_list_ID')
+            if self.insert_original_atom_name_items:
+                out_tag.append('_Gen_dist_constraint.Auth_atom_name_1')
+                out_tag.append('_Gen_dist_constraint.Auth_atom_name_2')
 
         elif lp_category == '_nef_dihedral_restraint':
             out_tag.append('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')
+            if self.insert_original_atom_name_items:
+                out_tag.append('_Torsion_angle_constraint.Auth_atom_name_1')
+                out_tag.append('_Torsion_angle_constraint.Auth_atom_name_2')
+                out_tag.append('_Torsion_angle_constraint.Auth_atom_name_3')
+                out_tag.append('_Torsion_angle_constraint.Auth_atom_name_4')
 
         elif lp_category == '_nef_rdc_restraint':
             out_tag.append('_RDC_constraint.RDC_constraint_list_ID')
+            if self.insert_original_atom_name_items:
+                out_tag.append('_RDC_constraint.Auth_atom_name_1')
+                out_tag.append('_RDC_constraint.Auth_atom_name_2')
 
         elif lp_category == '_nef_peak':
             out_tag.append('_Peak_row_format.Details')
@@ -4356,13 +4370,35 @@ class NEFTranslator:
             if '_Gen_dist_constraint.Gen_dist_constraint_list_ID' not in out_tag:
                 out_tag.append('_Gen_dist_constraint.Gen_dist_constraint_list_ID')
 
+            if self.insert_original_atom_name_items:
+                if '_Gen_dist_constraint.Auth_atom_name_1' not in out_tag:
+                    out_tag.append('_Gen_dist_constraint.Auth_atom_name_1')
+                if '_Gen_dist_constraint.Auth_atom_name_2' not in out_tag:
+                    out_tag.append('_Gen_dist_constraint.Auth_atom_name_2')
+
         elif lp_category == '_Torsion_angle_constraint':
             if '_Torsion_angle_constraint.Torsion_angle_constraint_list_ID' not in out_tag:
                 out_tag.append('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')
 
+            if self.insert_original_atom_name_items:
+                if '_Torsion_angle_constraint.Auth_atom_name_1' not in out_tag:
+                    out_tag.append('_Torsion_angle_constraint.Auth_atom_name_1')
+                if '_Torsion_angle_constraint.Auth_atom_name_2' not in out_tag:
+                    out_tag.append('_Torsion_angle_constraint.Auth_atom_name_2')
+                if '_Torsion_angle_constraint.Auth_atom_name_3' not in out_tag:
+                    out_tag.append('_Torsion_angle_constraint.Auth_atom_name_3')
+                if '_Torsion_angle_constraint.Auth_atom_name_4' not in out_tag:
+                    out_tag.append('_Torsion_angle_constraint.Auth_atom_name_4')
+
         elif lp_category == '_RDC_constraint':
             if '_RDC_constraint.RDC_constraint_list_ID' not in out_tag:
                 out_tag.append('_RDC_constraint.RDC_constraint_list_ID')
+
+            if self.insert_original_atom_name_items:
+                if '_RDC_constraint.Auth_atom_name_1' not in out_tag:
+                    out_tag.append('_RDC_constraint.Auth_atom_name_1')
+                if '_RDC_constraint.Auth_atom_name_2' not in out_tag:
+                    out_tag.append('_RDC_constraint.Auth_atom_name_2')
 
         elif lp_category == '_Peak_row_format':
             if '_Peak_row_format.Details' not in out_tag:
@@ -6094,7 +6130,7 @@ class NEFTranslator:
         star_details_index = star_tags.index('_Atom_chem_shift.Details')
 
         if self.insert_original_pdb_cs_items:
-            star_original_chani_index = star_tags.index('_Atom_chem_shift.Original_PDB_strand_ID')
+            star_original_chain_index = star_tags.index('_Atom_chem_shift.Original_PDB_strand_ID')
             star_original_seq_index = star_tags.index('_Atom_chem_shift.Original_PDB_residue_no')
             star_original_comp_index = star_tags.index('_Atom_chem_shift.Original_PDB_residue_name')
             star_original_atom_index = star_tags.index('_Atom_chem_shift.Original_PDB_atom_name')
@@ -6165,7 +6201,7 @@ class NEFTranslator:
                                 elif tag == '_nef_chemical_shift.chain_code':
                                     out[star_tags.index(data_tag)] = star_chain
                                     if self.insert_original_pdb_cs_items:
-                                        out[star_original_chani_index] = nef_chain
+                                        out[star_original_chain_index] = nef_chain
                                 elif tag == '_nef_chemical_shift.sequence_code':
                                     out[star_tags.index(data_tag)] = _star_seq
                                     if self.insert_original_pdb_cs_items:
@@ -6330,7 +6366,16 @@ class NEFTranslator:
         star_details_index = star_tags.index('_Atom_chem_shift.Details')
 
         if self.insert_original_pdb_cs_items:
-            star_original_chani_index = star_tags.index('_Atom_chem_shift.Original_PDB_strand_ID')
+            in_star_original_chain_index = in_star_tags.index('_Atom_chem_shift.Original_PDB_strand_ID')\
+                if '_Atom_chem_shift.Original_PDB_strand_ID' in in_star_tags else -1
+            in_star_original_seq_index = in_star_tags.index('_Atom_chem_shift.Original_PDB_residue_no')\
+                if '_Atom_chem_shift.Original_PDB_residue_no' in in_star_tags else -1
+            in_star_original_comp_index = in_star_tags.index('_Atom_chem_shift.Original_PDB_residue_name')\
+                if '_Atom_chem_shift.Original_PDB_residue_name' in in_star_tags else -1
+            in_star_original_atom_index = in_star_tags.index('_Atom_chem_shift.Original_PDB_atom_name')\
+                if '_Atom_chem_shift.Original_PDB_atom_name' in in_star_tags else -1
+
+            star_original_chain_index = star_tags.index('_Atom_chem_shift.Original_PDB_strand_ID')
             star_original_seq_index = star_tags.index('_Atom_chem_shift.Original_PDB_residue_no')
             star_original_comp_index = star_tags.index('_Atom_chem_shift.Original_PDB_residue_name')
             star_original_atom_index = star_tags.index('_Atom_chem_shift.Original_PDB_atom_name')
@@ -6399,19 +6444,27 @@ class NEFTranslator:
                                 if data_tag == '_Atom_chem_shift.Atom_ID':
                                     out[star_tags.index(data_tag)] = atom
                                     if self.insert_original_pdb_cs_items:
-                                        out[star_original_atom_index] = row[atom_index]
+                                        out[star_original_atom_index] = row[atom_index]\
+                                            if in_star_original_atom_index == -1 or row[in_star_original_atom_index] in emptyValue\
+                                            else row[in_star_original_atom_index]
                                 elif data_tag == '_Atom_chem_shift.Entity_assembly_ID':
                                     out[star_tags.index(data_tag)] = star_chain
                                     if self.insert_original_pdb_cs_items:
-                                        out[star_original_chani_index] = in_star_chain
+                                        out[star_original_chain_index] = in_star_chain\
+                                            if in_star_original_chain_index == -1 or row[in_star_original_chain_index] in emptyValue\
+                                            else row[in_star_original_chain_index]
                                 elif data_tag == '_Atom_chem_shift.Comp_index_ID':
                                     out[star_tags.index(data_tag)] = _star_seq
                                     if self.insert_original_pdb_cs_items:
-                                        out[star_original_seq_index] = _in_star_seq
+                                        out[star_original_seq_index] = _in_star_seq\
+                                            if in_star_original_seq_index == -1 or row[in_star_original_seq_index] in emptyValue\
+                                            else row[in_star_original_seq_index]
                                 elif data_tag == '_Atom_chem_shift.Comp_ID':
                                     out[star_tags.index(data_tag)] = data.upper()
                                     if self.insert_original_pdb_cs_items:
-                                        out[star_original_comp_index] = row[comp_index]
+                                        out[star_original_comp_index] = row[comp_index]\
+                                            if in_star_original_comp_index == -1 or row[in_star_original_comp_index] in emptyValue\
+                                            else row[in_star_original_comp_index]
                                 else:
                                     out[star_tags.index(data_tag)] = data
 
@@ -6617,8 +6670,14 @@ class NEFTranslator:
                                         buf[data_index] = tag_map[tag]
                                     elif tag == '_nef_distance_restraint.atom_name_1':
                                         buf[data_index] = atom_1
+                                        if self.insert_original_atom_name_items:
+                                            buf[star_tags.index(auth_tag)] = atom_1
+                                            buf[star_tags.index('_Gen_dist_constraint.Auth_atom_name_1')] = row[nef_atom_index_1]
                                     elif tag == '_nef_distance_restraint.atom_name_2':
                                         buf[data_index] = atom_2
+                                        if self.insert_original_atom_name_items:
+                                            buf[star_tags.index(auth_tag)] = atom_2
+                                            buf[star_tags.index('_Gen_dist_constraint.Auth_atom_name_2')] = row[nef_atom_index_2]
                                     else:
                                         buf[data_index] = data
                                 #
@@ -6841,6 +6900,12 @@ class NEFTranslator:
         in_star_comp_index_2 = in_star_tags.index('_Gen_dist_constraint.Comp_ID_2')
         in_star_atom_index_2 = in_star_tags.index('_Gen_dist_constraint.Atom_ID_2')
 
+        if self.insert_original_atom_name_items:
+            in_star_original_atom_index_1 = in_star_tags.index('_Gen_dist_constraint.Auth_atom_name_1')\
+                if '_Gen_dist_constraint.Auth_atom_name_1' in in_star_tags else -1
+            in_star_original_atom_index_2 = in_star_tags.index('_Gen_dist_constraint.Auth_atom_name_2')\
+                if '_Gen_dist_constraint.Auth_atom_name_2' in in_star_tags else -1
+
         seq_ident_tags = self.get_seq_ident_tags(in_star_tags, 'nmr-star')
 
         for tag in seq_ident_tags:
@@ -6948,8 +7013,18 @@ class NEFTranslator:
                                         buf[data_index] = data.upper()
                                     elif data_tag == '_Gen_dist_constraint.Atom_ID_1':
                                         buf[data_index] = atom_1
+                                        if self.insert_original_atom_name_items:
+                                            buf[star_tags.index(auth_tag)] = atom_1
+                                            buf[star_tags.index('_Gen_dist_constraint.Auth_atom_name_1')] = row[in_star_atom_index_1]\
+                                                if in_star_original_atom_index_1 == -1 or row[in_star_original_atom_index_1] in emptyValue\
+                                                else row[in_star_original_atom_index_1]
                                     elif data_tag == '_Gen_dist_constraint.Atom_ID_2':
                                         buf[data_index] = atom_2
+                                        if self.insert_original_atom_name_items:
+                                            buf[star_tags.index(auth_tag)] = atom_2
+                                            buf[star_tags.index('_Gen_dist_constraint.Auth_atom_name_2')] = row[in_star_atom_index_2]\
+                                                if in_star_original_atom_index_2 == -1 or row[in_star_original_atom_index_2] in emptyValue\
+                                                else row[in_star_original_atom_index_2]
                                     else:
                                         buf[data_index] = data
 
@@ -7140,12 +7215,24 @@ class NEFTranslator:
                                                 buf[data_index] = tag_map[tag]
                                             elif tag == '_nef_dihedral_restraint.atom_name_1':
                                                 buf[data_index] = atom_1
+                                                if self.insert_original_atom_name_items:
+                                                    buf[star_tags.index(auth_tag)] = atom_1
+                                                    buf[star_tags.index('_Torsion_angle_constraint.Auth_atom_name_1')] = row[nef_atom_index_1]
                                             elif tag == '_nef_dihedral_restraint.atom_name_2':
                                                 buf[data_index] = atom_2
+                                                if self.insert_original_atom_name_items:
+                                                    buf[star_tags.index(auth_tag)] = atom_2
+                                                    buf[star_tags.index('_Torsion_angle_constraint.Auth_atom_name_2')] = row[nef_atom_index_2]
                                             elif tag == '_nef_dihedral_restraint.atom_name_3':
                                                 buf[data_index] = atom_3
+                                                if self.insert_original_atom_name_items:
+                                                    buf[star_tags.index(auth_tag)] = atom_3
+                                                    buf[star_tags.index('_Torsion_angle_constraint.Auth_atom_name_3')] = row[nef_atom_index_3]
                                             elif tag == '_nef_dihedral_restraint.atom_name_4':
                                                 buf[data_index] = atom_4
+                                                if self.insert_original_atom_name_items:
+                                                    buf[star_tags.index(auth_tag)] = atom_4
+                                                    buf[star_tags.index('_Torsion_angle_constraint.Auth_atom_name_4')] = row[nef_atom_index_4]
                                             else:
                                                 buf[data_index] = data
 
@@ -7197,6 +7284,16 @@ class NEFTranslator:
         in_star_atom_index_3 = in_star_tags.index('_Torsion_angle_constraint.Atom_ID_3')
         in_star_comp_index_4 = in_star_tags.index('_Torsion_angle_constraint.Comp_ID_4')
         in_star_atom_index_4 = in_star_tags.index('_Torsion_angle_constraint.Atom_ID_4')
+
+        if self.insert_original_atom_name_items:
+            in_star_original_atom_index_1 = in_star_tags.index('_Torsion_angle_constraint.Auth_atom_name_1')\
+                if '_Torsion_angle_constraint.Auth_atom_name_1' in in_star_tags else -1
+            in_star_original_atom_index_2 = in_star_tags.index('_Torsion_angle_constraint.Auth_atom_name_2')\
+                if '_Torsion_angle_constraint.Auth_atom_name_2' in in_star_tags else -1
+            in_star_original_atom_index_3 = in_star_tags.index('_Torsion_angle_constraint.Auth_atom_name_3')\
+                if '_Torsion_angle_constraint.Auth_atom_name_3' in in_star_tags else -1
+            in_star_original_atom_index_4 = in_star_tags.index('_Torsion_angle_constraint.Auth_atom_name_4')\
+                if '_Torsion_angle_constraint.Auth_atom_name_4' in in_star_tags else -1
 
         seq_ident_tags = self.get_seq_ident_tags(in_star_tags, 'nmr-star')
 
@@ -7335,12 +7432,32 @@ class NEFTranslator:
                                                 buf[data_index] = data.upper()
                                             elif data_tag == '_Torsion_angle_constraint.Atom_ID_1':
                                                 buf[data_index] = atom_1
+                                                if self.insert_original_atom_name_items:
+                                                    buf[star_tags.index(auth_tag)] = atom_1
+                                                    buf[star_tags.index('_Torsion_angle_constraint.Auth_atom_name_1')] = row[in_star_atom_index_1]\
+                                                        if in_star_original_atom_index_1 == -1 or row[in_star_original_atom_index_1] in emptyValue\
+                                                        else row[in_star_original_atom_index_1]
                                             elif data_tag == '_Torsion_angle_constraint.Atom_ID_2':
                                                 buf[data_index] = atom_2
+                                                if self.insert_original_atom_name_items:
+                                                    buf[star_tags.index(auth_tag)] = atom_2
+                                                    buf[star_tags.index('_Torsion_angle_constraint.Auth_atom_name_2')] = row[in_star_atom_index_2]\
+                                                        if in_star_original_atom_index_2 == -1 or row[in_star_original_atom_index_2] in emptyValue\
+                                                        else row[in_star_original_atom_index_2]
                                             elif data_tag == '_Torsion_angle_constraint.Atom_ID_3':
                                                 buf[data_index] = atom_3
+                                                if self.insert_original_atom_name_items:
+                                                    buf[star_tags.index(auth_tag)] = atom_3
+                                                    buf[star_tags.index('_Torsion_angle_constraint.Auth_atom_name_3')] = row[in_star_atom_index_3]\
+                                                        if in_star_original_atom_index_3 == -1 or row[in_star_original_atom_index_3] in emptyValue\
+                                                        else row[in_star_original_atom_index_3]
                                             elif data_tag == '_Torsion_angle_constraint.Atom_ID_4':
                                                 buf[data_index] = atom_4
+                                                if self.insert_original_atom_name_items:
+                                                    buf[star_tags.index(auth_tag)] = atom_4
+                                                    buf[star_tags.index('_Torsion_angle_constraint.Auth_atom_name_4')] = row[in_star_atom_index_4]\
+                                                        if in_star_original_atom_index_4 == -1 or row[in_star_original_atom_index_4] in emptyValue\
+                                                        else row[in_star_original_atom_index_4]
                                             else:
                                                 buf[data_index] = data
 
@@ -7490,8 +7607,14 @@ class NEFTranslator:
                                         buf[data_index] = tag_map[tag]
                                     elif tag == '_nef_rdc_restraint.atom_name_1':
                                         buf[data_index] = atom_1
+                                        if self.insert_original_atom_name_items:
+                                            buf[star_tags.index(auth_tag)] = atom_1
+                                            buf[star_tags.index('_RDC_constraint.Auth_atom_name_1')] = row[nef_atom_index_1]
                                     elif tag == '_nef_rdc_restraint.atom_name_2':
                                         buf[data_index] = atom_2
+                                        if self.insert_original_atom_name_items:
+                                            buf[star_tags.index(auth_tag)] = atom_2
+                                            buf[star_tags.index('_RDC_constraint.Auth_atom_name_2')] = row[nef_atom_index_2]
                                     else:
                                         buf[data_index] = data
 
@@ -7539,6 +7662,12 @@ class NEFTranslator:
         in_star_atom_index_1 = in_star_tags.index('_RDC_constraint.Atom_ID_1')
         in_star_comp_index_2 = in_star_tags.index('_RDC_constraint.Comp_ID_2')
         in_star_atom_index_2 = in_star_tags.index('_RDC_constraint.Atom_ID_2')
+
+        if self.insert_original_atom_name_items:
+            in_star_original_atom_index_1 = in_star_tags.index('_RDC_constraint.Auth_atom_name_1')\
+                if '_RDC_constraint.Auth_atom_name_1' in in_star_tags else -1
+            in_star_original_atom_index_2 = in_star_tags.index('_RDC_constraint.Auth_atom_name_2')\
+                if '_RDC_constraint.Auth_atom_name_2' in in_star_tags else -1
 
         seq_ident_tags = self.get_seq_ident_tags(in_star_tags, 'nmr-star')
 
@@ -7643,8 +7772,18 @@ class NEFTranslator:
                                         buf[data_index] = data.upper()
                                     elif data_tag == '_RDC_constraint.Atom_ID_1':
                                         buf[data_index] = atom_1
+                                        if self.insert_original_atom_name_items:
+                                            buf[star_tags.index(auth_tag)] = atom_1
+                                            buf[star_tags.index('_RDC_constraint.Auth_atom_name_1')] = row[in_star_atom_index_1]\
+                                                if in_star_original_atom_index_1 == -1 or row[in_star_original_atom_index_1] in emptyValue\
+                                                else row[in_star_original_atom_index_1]
                                     elif data_tag == '_RDC_constraint.Atom_ID_2':
                                         buf[data_index] = atom_2
+                                        if self.insert_original_atom_name_items:
+                                            buf[star_tags.index(auth_tag)] = atom_2
+                                            buf[star_tags.index('_RDC_constraint.Auth_atom_name_2')] = row[in_star_atom_index_2]\
+                                                if in_star_original_atom_index_2 == -1 or row[in_star_original_atom_index_2] in emptyValue\
+                                                else row[in_star_original_atom_index_2]
                                     else:
                                         buf[data_index] = data
 

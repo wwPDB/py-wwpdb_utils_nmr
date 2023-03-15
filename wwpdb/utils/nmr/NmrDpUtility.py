@@ -10484,8 +10484,9 @@ class NmrDpUtility:
                                                             {'file_name': file_name, 'description': err})
                         self.report.setError()
 
-                        self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - "
-                                         f"{file_name} {err}\n")
+                        if not self.__remediation_mode or self.__remediation_loop_count > 0:
+                            self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - "
+                                             f"{file_type} {file_name} {err}\n")
 
                         has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
 
@@ -10513,8 +10514,9 @@ class NmrDpUtility:
                                                                     {'file_name': file_name, 'description': err})
                                 self.report.setError()
 
-                                self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - "
-                                                 f"{file_name} {err}\n")
+                                if not self.__remediation_mode or self.__remediation_loop_count > 0:
+                                    self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - "
+                                                     f"{file_type} {file_name} {err}\n")
 
                         if valid:
 
@@ -48010,15 +48012,23 @@ class NmrDpUtility:
 
             sf.add_tag('Text_data_format', data_format)
 
-            with open(file_path, 'r') as ifp:
-                content = ifp.read()
-                sf.add_tag('Text_data', content.encode('ascii'))
+            with open(file_path, 'r', encoding='ascii', errors='ignore') as ifp:
+                sf.add_tag('Text_data', ifp.read())
 
             row[10], row[11] = 1, self.__entry_id
 
             cf_loop.add_data(row)
 
             ext_mr_sf_holder.append(sf)
+
+            err = f"Uninterpreted NMR restraints are stored in {sf_framecode} saveframe as raw text format. "\
+                "@todo: It needs to be reviewed."
+
+            self.report.error.appendDescription('internal_error', f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {err}")
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {err}\n")
 
         cst_sf.add_loop(cf_loop)
 

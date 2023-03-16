@@ -3692,7 +3692,7 @@ class DynamoMRParserListener(ParseTreeListener):
                                                 "Please update the sequence in the Macromolecules page.")
                                 return
                                 # _cifCompId = '.'
-                            # cifAtomId = atomId
+                            cifAtomId = atomId
 
                         else:
                             self.__ccU.updateChemCompDict(_cifCompId)
@@ -3868,7 +3868,7 @@ class DynamoMRParserListener(ParseTreeListener):
                                                 "Please update the sequence in the Macromolecules page.")
                                 return
                                 # _cifCompId = '.'
-                            # cifAtomId = atomId
+                            cifAtomId = atomId
 
                         else:
                             self.__ccU.updateChemCompDict(_cifCompId)

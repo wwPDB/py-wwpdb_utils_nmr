@@ -27859,9 +27859,33 @@ class NmrDpUtility:
         for tag in loop.tags:
             lp.add_tag(loop.category + '.' + tag)
 
-        index_id_col = loop.tags.index('Index_ID')
         id_col = loop.tags.index('ID')
+        if 'Index_ID' not in loop.tags:
+            tag = loop.category + '.Index_ID'
+            loop.add_tag(tag)
+            lp.add_tag(tag)
+            for idx, row in enumerate(loop, start=1):
+                row.append(str(idx))
+            for idx, row in enumerate(lp, start=1):
+                row.append(str(idx))
+        index_id_col = loop.tags.index('Index_ID')
+        if 'Member_ID' not in loop.tags:
+            tag = loop.category + '.Member_ID'
+            loop.add_tag(tag)
+            lp.add_tag(tag)
+            for row in loop:
+                row.append('.')
+            for row in lp:
+                row.append('.')
         member_id_col = loop.tags.index('Member_ID')
+        if 'Member_logic_code' not in loop.tags:
+            tag = loop.category + '.Member_logic_code'
+            loop.add_tag(tag)
+            lp.add_tag(tag)
+            for row in loop:
+                row.append('.')
+            for row in lp:
+                row.append('.')
         member_logic_code_col = loop.tags.index('Member_logic_code')
 
         chain_id_1_col = loop.tags.index('Auth_asym_ID_1')
@@ -27929,10 +27953,10 @@ class NmrDpUtility:
 
                     if not isAmbigAtomSelection([atom1, _atom1], self.__csStat)\
                        and not isAmbigAtomSelection([atom2, _atom2], self.__csStat):
-                        _row[member_logic_code_col] = 'OR'
-
                         if member_logic_code in emptyValue:
                             modified = True
+
+                        _row[member_logic_code_col] = 'OR'
 
                         if _member_logic_code in emptyValue:
                             lp.data[-1][member_logic_code_col] = 'OR'

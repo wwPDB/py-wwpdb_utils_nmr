@@ -1091,12 +1091,12 @@ class AmberMRParserListener(ParseTreeListener):
 
                     if chk_dihed and mis_dihed:
                         rescued = True
-                        compId = dihed_factors[0]['comp_id']
-                        if len(dihed_factors) < 3 or 0 not in dihed_factors.keys() or 3 not in dihed_factors.keys()\
+                        compId = next((v['comp_id'] for v in dihed_factors.values()), None)
+                        if len(dihed_factors) < 3 or 0 not in dihed_factors or 3 not in dihed_factors\
                            or dihed_factors[0]['seq_id'] != dihed_factors[3]['seq_id'] or not self.__ccU.updateChemCompDict(compId):
                             rescued = False
                         else:
-                            mis_idx = 1 if 1 not in dihed_factors.keys() else 2
+                            mis_idx = 1 if 1 not in dihed_factors else 2
                             atomId1 = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
                                             if cca[self.__ccU.ccaAtomId] == dihed_factors[mis_idx - 1]['atom_id']), None)
                             atomId2 = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
@@ -5358,7 +5358,7 @@ class AmberMRParserListener(ParseTreeListener):
     def exitShf_statement(self, ctx: AmberMRParser.Shf_statementContext):  # pylint: disable=unused-argument
         try:
 
-            if self.nprot < 0 and len(self.iprot.keys()) > 0:  # pylint: disable=chained-comparison
+            if self.nprot < 0 and len(self.iprot) > 0:  # pylint: disable=chained-comparison
                 self.nprot = max(self.iprot.keys())
 
             if self.nprot <= 0:
@@ -5840,7 +5840,7 @@ class AmberMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by AmberMRParser#pcshf_statement.
     def exitPcshf_statement(self, ctx: AmberMRParser.Pcshf_statementContext):  # pylint: disable=unused-argument
-        if self.nprot < 0 and len(self.iprot.keys()) > 0:  # pylint: disable=chained-comparison
+        if self.nprot < 0 and len(self.iprot) > 0:  # pylint: disable=chained-comparison
             self.nprot = max(self.iprot.keys())
 
         if self.nprot <= 0:
@@ -5848,7 +5848,7 @@ class AmberMRParserListener(ParseTreeListener):
                             "The number of observed PCS values 'nprot' is the mandatory variable.")
             return
 
-        if self.nme < 0 and len(self.optphi.keys()) > 0:  # pylint: disable=chained-comparison
+        if self.nme < 0 and len(self.optphi) > 0:  # pylint: disable=chained-comparison
             self.nme = max(self.optphi.keys())
         """
         if self.nme <= 0:
@@ -6222,7 +6222,7 @@ class AmberMRParserListener(ParseTreeListener):
     def exitAlign_statement(self, ctx: AmberMRParser.Align_statementContext):  # pylint: disable=unused-argument
         try:
 
-            if self.ndip < 0 and len(self.id.keys()) > 0:  # pylint: disable=chained-comparison
+            if self.ndip < 0 and len(self.id) > 0:  # pylint: disable=chained-comparison
                 self.ndip = max(self.id.keys())
 
             if self.ndip <= 0:
@@ -6829,7 +6829,7 @@ class AmberMRParserListener(ParseTreeListener):
     def exitCsa_statement(self, ctx: AmberMRParser.Csa_statementContext):  # pylint: disable=unused-argument
         try:
 
-            if self.ncsa < 0 and len(self.icsa.keys()) > 0:  # pylint: disable=chained-comparison
+            if self.ncsa < 0 and len(self.icsa) > 0:  # pylint: disable=chained-comparison
                 self.ncsa = max(self.icsa.keys())
 
             if self.ncsa <= 0:

@@ -26849,6 +26849,17 @@ class NmrDpUtility:
 
                 atom_dim_num = (len_key_items - 1) // 5  # 5 for entity_assembly_id, entity_id, comp_index_id, comp_id, atom_id tags
 
+                if atom_dim_num == 0:
+                    err = f"Unexpected key items {key_items} set for processing {lp_category} loop in {sf_framecode} saveframe of {original_file_name} file."
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ KeyError  - {err}\n")
+
+                    return False
+
                 key_chain_id_names = [key_items[idx] for idx in range(1, len_key_items, 5)]
                 key_entity_id_names = [key_items[idx] for idx in range(2, len_key_items, 5)]
                 key_seq_id_names = [key_items[idx] for idx in range(3, len_key_items, 5)]
@@ -26926,6 +26937,8 @@ class NmrDpUtility:
 
                                 _assign, warn = assignCoordPolymerSequenceWithChainId(self.__caC, self.__nefT, chain_id, seq_id, comp_id, atom_id)
 
+                                rescued = False
+
                                 if warn is not None:
 
                                     _index_tag = index_tag if index_tag is not None else 'ID'
@@ -26953,10 +26966,45 @@ class NmrDpUtility:
                                             if self.__verbose:
                                                 self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
 
-                                    continue
+                                    if content_subtype != 'dihed_restraint' or not self.__remediation_mode:
+                                        continue
 
-                                atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, seq_id, comp_id, atom_id,
-                                                                      allowAmbig=(content_subtype == 'dist_restraint'))
+                                    if d not in (0, 3) or not warn.startswith('[Atom not found]'):
+                                        _d = 1 if d == 0 else 2
+                                        _chain_id = row_[_d]
+                                        _seq_id = int(row_[atom_dim_num + _d])
+                                        _comp_id = row_[atom_dim_num * 2 + _d]
+                                        _atom_id = row_[atom_dim_num * 3 + _d]
+
+                                        if chain_id != _chain_id or abs(seq_id - _seq_id) != 1:
+                                            continue
+
+                                        if not self.__ccU.updateChemCompDict(comp_id.upper()):
+                                            continue
+
+                                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id.upper()), None)
+
+                                        if cca is None:
+                                            continue
+
+                                        __assign, _warn = assignCoordPolymerSequenceWithChainId(self.__caC, self.__nefT, _chain_id, _seq_id, _comp_id, _atom_id)
+
+                                        if len(__assign) != 1 or _warn is not None:
+                                            continue
+
+                                        chainId, cifSeqId, _, _ = __assign[0]
+                                        cifSeqId -= _seq_id - seq_id
+
+                                        atom_sels[d] = [{'chain_id': chainId, 'seq_id': cifSeqId,
+                                                         'comp_id': comp_id.upper(),
+                                                         'atom_id': atom_id.upper(), 'auth_atom_id': atom_id}]
+                                        warn = None
+
+                                        rescued = True
+
+                                if not rescued:
+                                    atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, seq_id, comp_id, atom_id,
+                                                                          allowAmbig=(content_subtype == 'dist_restraint'))
 
                                 if warn is not None:
 
@@ -46454,10 +46502,15 @@ class NmrDpUtility:
             if self.report.error.exists(file_name, sf_framecode):
                 continue
 
-            if __pynmrstar_v3_2__:
-                loop = sf_data.get_loop(lp_category)
-            else:
-                loop = sf_data.get_loop_by_category(lp_category)
+            try:
+
+                if __pynmrstar_v3_2__:
+                    loop = sf_data.get_loop(lp_category)
+                else:
+                    loop = sf_data.get_loop_by_category(lp_category)
+
+            except KeyError:
+                continue
 
             ambig_set_id_name = 'Ambiguity_set_ID'
 

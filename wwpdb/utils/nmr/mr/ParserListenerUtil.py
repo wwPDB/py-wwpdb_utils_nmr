@@ -4901,15 +4901,15 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
     atom5 = atoms[4] if atom_dim_num > 4 else None
 
     if isinstance(atom1, list):
-        atom1 = atom1[0]
+        atom1 = atom1[0] if len(atom1) > 0 else None
     if atom2 is not None and isinstance(atom2, list):
-        atom2 = atom2[0]
+        atom2 = atom2[0] if len(atom2) > 0 else None
     if atom3 is not None and isinstance(atom3, list):
-        atom3 = atom3[0]
+        atom3 = atom3[0] if len(atom3) > 0 else None
     if atom4 is not None and isinstance(atom4, list):
-        atom4 = atom4[0]
+        atom4 = atom4[0] if len(atom4) > 0 else None
     if atom5 is not None and isinstance(atom5, list):
-        atom5 = atom5[0]
+        atom5 = atom5[0] if len(atom5) > 0 else None
 
     star_atom1 = star_atom2 = star_atom3 = star_atom4 = star_atom5 = None
     ins_code1 = ins_code2 = ins_code3 = ins_code4 = None

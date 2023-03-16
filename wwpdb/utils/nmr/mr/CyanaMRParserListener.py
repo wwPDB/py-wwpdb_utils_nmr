@@ -3368,7 +3368,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
                     if carbohydrate:
-                        ps = next(ps for ps in self.__branched if ps['auth_chain_id'] == chainId)
+                        if self.__branched is not None:
+                            ps = next((ps for ps in self.__branched if ps['auth_chain_id'] == chainId), None)
+                        if ps is None:
+                            ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
                     else:
                         ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
 
@@ -6622,7 +6625,13 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
-                    ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
+                    if carbohydrate:
+                        if self.__branched is not None:
+                            ps = next((ps for ps in self.__branched if ps['auth_chain_id'] == chainId), None)
+                        if ps is None:
+                            ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
+                    else:
+                        ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
 
                     peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(cifCompId)
 

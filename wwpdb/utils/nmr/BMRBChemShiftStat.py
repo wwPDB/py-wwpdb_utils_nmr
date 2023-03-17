@@ -452,7 +452,7 @@ class BMRBChemShiftStat:
             @return: one of (1, 2, 3), 0 for not found
         """
 
-        if comp_id in emptyValue:
+        if comp_id in emptyValue or atom_id in emptyValue:
             return 0
 
         if comp_id not in self.__std_comp_ids:
@@ -480,7 +480,7 @@ class BMRBChemShiftStat:
         """ Return geminal or aromatic opposite atom of a given atom.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in emptyValue or atom_id in emptyValue:
             return None
 
         if comp_id not in self.__std_comp_ids:
@@ -687,7 +687,7 @@ class BMRBChemShiftStat:
         """ Return protons in the same group of a given comp_id and atom_id.
         """
 
-        if comp_id in emptyValue:
+        if comp_id in emptyValue or atom_id in emptyValue:
             return []
 
         key = (comp_id, atom_id, excl_self)

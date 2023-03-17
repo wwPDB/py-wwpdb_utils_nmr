@@ -3424,6 +3424,9 @@ def isAmbigAtomSelection(atoms, csStat):
     if len(atoms) < 2:
         return False
 
+    if any(a is None for a in atoms):
+        return False
+
     chainIds = [a['chain_id'] for a in atoms]
 
     if len(collections.Counter(chainIds).most_common()) > 1:

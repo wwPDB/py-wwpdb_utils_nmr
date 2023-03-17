@@ -27419,14 +27419,12 @@ class NmrDpUtility:
 
                     lp = loop
 
-                    sf.add_loop(lp)
                     sf_item['loop'] = lp
 
             else:  # nothing to do because of missing polimer sequence for this loop
 
                 lp = loop
 
-                sf.add_loop(lp)
                 sf_item['loop'] = lp
 
             if content_subtype == 'dist_restraint':
@@ -27966,15 +27964,21 @@ class NmrDpUtility:
                 member_id = row[member_id_col]
                 member_logic_code = row[member_logic_code_col]
 
-                atom1 = {'chain_id': row[chain_id_1_col],
-                         'seq_id': int(row[seq_id_1_col]),
-                         'comp_id': row[comp_id_1_col],
-                         'atom_id': row[atom_id_1_col]}
+                try:
+                    atom1 = {'chain_id': row[chain_id_1_col],
+                             'seq_id': int(row[seq_id_1_col]),
+                             'comp_id': row[comp_id_1_col],
+                             'atom_id': row[atom_id_1_col]}
+                except TypeError:
+                    atom1 = None
 
-                atom2 = {'chain_id': row[chain_id_2_col],
-                         'seq_id': int(row[seq_id_2_col]),
-                         'comp_id': row[comp_id_2_col],
-                         'atom_id': row[atom_id_2_col]}
+                try:
+                    atom2 = {'chain_id': row[chain_id_2_col],
+                             'seq_id': int(row[seq_id_2_col]),
+                             'comp_id': row[comp_id_2_col],
+                             'atom_id': row[atom_id_2_col]}
+                except TypeError:
+                    atom2 = None
 
                 if member_id not in emptyValue:
                     has_member_id = True
@@ -28036,15 +28040,21 @@ class NmrDpUtility:
 
             for row in rows:
 
-                atom1 = {'chain_id': row[chain_id_1_col],
-                         'seq_id': int(row[seq_id_1_col]),
-                         'comp_id': row[comp_id_1_col],
-                         'atom_id': row[atom_id_1_col]}
+                try:
+                    atom1 = {'chain_id': row[chain_id_1_col],
+                             'seq_id': int(row[seq_id_1_col]),
+                             'comp_id': row[comp_id_1_col],
+                             'atom_id': row[atom_id_1_col]}
+                except TypeError:
+                    atom1 = None
 
-                atom2 = {'chain_id': row[chain_id_2_col],
-                         'seq_id': int(row[seq_id_2_col]),
-                         'comp_id': row[comp_id_2_col],
-                         'atom_id': row[atom_id_2_col]}
+                try:
+                    atom2 = {'chain_id': row[chain_id_2_col],
+                             'seq_id': int(row[seq_id_2_col]),
+                             'comp_id': row[comp_id_2_col],
+                             'atom_id': row[atom_id_2_col]}
+                except TypeError:
+                    atom2 = None
 
                 atom_sel1.append(atom1)
                 atom_sel2.append(atom2)
@@ -38562,7 +38572,8 @@ class NmrDpUtility:
                                                 _del_msg_idx.add(msg_idx)
                                     if len(_del_msg_idx) > 0:
                                         for msg_idx in reversed(list(_del_msg_idx)):
-                                            del self.__suspended_errors_for_lazy_eval[msg_idx]
+                                            if msg_idx < len(self.__suspended_errors_for_lazy_eval):
+                                                del self.__suspended_errors_for_lazy_eval[msg_idx]
                                 if len(self.__suspended_warnings_for_lazy_eval) > 0:
                                     _del_msg_idx = set()
                                     for msg_idx, msg in enumerate(self.__suspended_warnings_for_lazy_eval):
@@ -38571,7 +38582,8 @@ class NmrDpUtility:
                                                 _del_msg_idx.add(msg_idx)
                                     if len(_del_msg_idx) > 0:
                                         for msg_idx in reversed(list(_del_msg_idx)):
-                                            del self.__suspended_warnings_for_lazy_eval[msg_idx]
+                                            if msg_idx < len(self.__suspended_warnings_for_lazy_eval):
+                                                del self.__suspended_warnings_for_lazy_eval[msg_idx]
 
                         if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
 
@@ -38953,7 +38965,8 @@ class NmrDpUtility:
                                                 _del_msg_idx.add(msg_idx)
                                     if len(_del_msg_idx) > 0:
                                         for msg_idx in reversed(list(_del_msg_idx)):
-                                            del self.__suspended_errors_for_lazy_eval[msg_idx]
+                                            if msg_idx < len(self.__suspended_errors_for_lazy_eval):
+                                                del self.__suspended_errors_for_lazy_eval[msg_idx]
                                 if len(self.__suspended_warnings_for_lazy_eval) > 0:
                                     _del_msg_idx = set()
                                     for msg_idx, msg in enumerate(self.__suspended_warnings_for_lazy_eval):
@@ -38962,7 +38975,8 @@ class NmrDpUtility:
                                                 _del_msg_idx.add(msg_idx)
                                     if len(_del_msg_idx) > 0:
                                         for msg_idx in reversed(list(_del_msg_idx)):
-                                            del self.__suspended_warnings_for_lazy_eval[msg_idx]
+                                            if msg_idx < len(self.__suspended_warnings_for_lazy_eval):
+                                                del self.__suspended_warnings_for_lazy_eval[msg_idx]
 
                         if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
 
@@ -49494,10 +49508,15 @@ class NmrDpUtility:
             if len(data_file_name) == 0:
                 data_file_name = None
 
-            if __pynmrstar_v3_2__:
-                lp = sf.get_loop(lp_category)
-            else:
-                lp = sf.get_loop_by_category(lp_category)
+            try:
+
+                if __pynmrstar_v3_2__:
+                    lp = sf.get_loop(lp_category)
+                else:
+                    lp = sf.get_loop_by_category(lp_category)
+
+            except KeyError:
+                return False
 
             try:
                 block_id_col = lp.tags.index('Block_ID')

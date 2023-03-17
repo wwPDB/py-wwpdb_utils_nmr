@@ -7785,7 +7785,7 @@ class XplorMRParserListener(ParseTreeListener):
             if _term is not None:
                 _atomSelection.extend(_term)
 
-        atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+        atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)] if len(_atomSelection) > 1 else _atomSelection
 
         if len(atomSelection) > 0:
             self.stackSelections.append(atomSelection)
@@ -7833,7 +7833,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if _term is not None and not isinstance(_term, str):
                     _atomSelection.extend(_term)
 
-            atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+            atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)] if len(_atomSelection) > 1 else _atomSelection
 
             if len(atomSelection) > 0:
                 self.stackSelections.append(atomSelection)

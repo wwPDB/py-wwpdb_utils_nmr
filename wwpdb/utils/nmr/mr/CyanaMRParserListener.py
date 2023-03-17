@@ -3463,7 +3463,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                             _cifCompId = cifCompId if offset == 0\
                                                 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
                                             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, self.__hasCoord)
-                                            cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds if _cifAtomId in coordAtomSite['atom_id']), None)
+                                            if coordAtomSite is not None:
+                                                cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds if _cifAtomId in coordAtomSite['atom_id']), None)
 
                                     else:
                                         cifAtomId = cifAtomIds[0]
@@ -6721,7 +6722,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                             _cifCompId = cifCompId if offset == 0\
                                                 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
                                             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, self.__hasCoord)
-                                            cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds if _cifAtomId in coordAtomSite['atom_id']), None)
+                                            if coordAtomSite is not None:
+                                                cifAtomId = next((_cifAtomId for _cifAtomId in cifAtomIds if _cifAtomId in coordAtomSite['atom_id']), None)
 
                                     else:
                                         cifAtomId = cifAtomIds[0]

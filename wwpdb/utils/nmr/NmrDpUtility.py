@@ -13984,20 +13984,20 @@ class NmrDpUtility:
                             remediated = True
                             continue
 
-                        ign_pk_file = dst_file + '-ignored-as-pea-any'
+                    ign_pk_file = dst_file + '-ignored-as-pea-any'
 
-                        if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
-                            _ar = ar.copy()
+                    if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
+                        _ar = ar.copy()
 
-                            _ar['file_name'] = dst_file
-                            _ar['file_type'] = 'nm-pea-any'
-                            peak_file_list.append(_ar)
+                        _ar['file_name'] = dst_file
+                        _ar['file_type'] = 'nm-pea-any'
+                        peak_file_list.append(_ar)
 
-                            pk_list_paths.append({'nm-pea-any': dst_file})
+                        pk_list_paths.append({'nm-pea-any': dst_file})
 
-                            remediated = True
+                        remediated = True
 
-                            continue
+                        continue
 
                         designated = False
 

@@ -9253,6 +9253,14 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
+            if self.__remediation_mode:
+                dir_path = os.path.dirname(self.__dstPath)
+
+                touch_file = os.path.join(dir_path, '.entry_without_cs')
+                if not os.path.exists(touch_file):
+                    with open(touch_file, 'w') as ofp:
+                        ofp.write('')
+
         if lp_counts[content_subtype] > 0 and content_type == 'nmr-restraints' and not self.__bmrb_only:
 
             if self.__remediation_mode and lp_counts['dist_restraint'] + lp_counts['dihed_restraint'] + lp_counts['rdc_restraint'] > 0:
@@ -9353,7 +9361,7 @@ class NmrDpUtility:
             if self.__remediation_mode and dir_path is not None:
                 touch_file = os.path.join(dir_path, '.entry_with_pk')
                 if not os.path.exists(touch_file):
-                    with open(os.path.join(dir_path, '.entry_with_pk'), 'w') as ofp:
+                    with open(touch_file, 'w') as ofp:
                         ofp.write('')
 
         if self.__combined_mode:
@@ -13442,6 +13450,11 @@ class NmrDpUtility:
 
                 pk_list_paths.append({'nm-pea-any': src_basename + '.mr'})
 
+                touch_file = os.path.join(dir_path, '.entry_with_pk')
+                if not os.path.exists(touch_file):
+                    with open(touch_file, 'w') as ofp:
+                        ofp.write('')
+
                 continue
 
             designated = False
@@ -14935,7 +14948,7 @@ class NmrDpUtility:
 
                     touch_file = os.path.join(dir_path, '.entry_without_mr')
                     if not os.path.exists(touch_file):
-                        with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofp:
+                        with open(touch_file, 'w') as ofp:
                             ofp.write('')
 
                     hint = ' or is not recognized properly'
@@ -14976,7 +14989,7 @@ class NmrDpUtility:
 
             touch_file = os.path.join(dir_path, '.entry_with_pk')
             if not os.path.exists(touch_file):
-                with open(os.path.join(dir_path, '.entry_with_pk'), 'w') as ofp:
+                with open(touch_file, 'w') as ofp:
                     ofp.write('')
 
         if not aborted and remediated and mr_file_path is not None:
@@ -36957,6 +36970,15 @@ class NmrDpUtility:
                         for k, v in msg.items():
                             self.report.error.appendDescription(k, v)
                             self.report.setError()
+
+                            if k == 'missing_mandatory_content' and 'Deposition of assigned chemical shifts is mandatory' in v['description'] and self.__remediation_mode:
+                                dir_path = os.path.dirname(self.__dstPath)
+
+                                touch_file = os.path.join(dir_path, '.entry_without_cs')
+                                if not os.path.exists(touch_file):
+                                    with open(touch_file, 'w') as ofp:
+                                        ofp.write('')
+
                     self.__suspended_errors_for_lazy_eval = []
 
                 if len(self.__suspended_warnings_for_lazy_eval) > 0:
@@ -48101,6 +48123,11 @@ class NmrDpUtility:
                         data_format
                     software_dict[data_format] = (software_id, _code)
 
+            sel_res_file = os.path.join(dir_path, file_path + '-selected-as-res-cif')
+
+            if os.path.exists(sel_res_file):
+                data_format = 'mmCIF'
+
             sf.add_tag('Text_data_format', data_format)
 
             with open(file_path, 'r', encoding='ascii', errors='ignore') as ifp:
@@ -48112,14 +48139,16 @@ class NmrDpUtility:
 
             ext_mr_sf_holder.append(sf)
 
-            err = f"Uninterpreted NMR restraints are stored in {sf_framecode} saveframe as raw text format. "\
-                "@todo: It needs to be reviewed."
+            if not os.path.exists(sel_res_file):
 
-            self.report.error.appendDescription('internal_error', f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {err}")
-            self.report.setError()
+                err = f"Uninterpreted NMR restraints are stored in {sf_framecode} saveframe as raw text format. "\
+                    "@todo: It needs to be reviewed."
 
-            if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {err}\n")
+                self.report.error.appendDescription('internal_error', f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {err}")
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {err}\n")
 
         cst_sf.add_loop(cf_loop)
 

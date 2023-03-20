@@ -4310,6 +4310,8 @@ def getStarAtom(authToStarSeq, atom):
 
     chainId = atom['chain_id']
     seqId = atom['seq_id']
+    if 'comp_id' not in atom:
+        return None
     compId = atom['comp_id']
     seqKey = (chainId, seqId, compId)
     if 'atom_id' not in atom:
@@ -4344,6 +4346,8 @@ def getInsCode(authToInsCode, atom):
 
     chainId = atom['chain_id']
     seqId = atom['seq_id']
+    if 'comp_id' not in atom:
+        return None
     compId = atom['comp_id']
     seqKey = (chainId, seqId, compId)
 

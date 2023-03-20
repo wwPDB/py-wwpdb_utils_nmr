@@ -6179,7 +6179,8 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, fileName):
     if atom_id_1 is None or atom_id_2 is None:
         return None
 
-    if atom1['comp_id'] == atom_id_1 or atom2['comp_id'] == atom_id_2:
+    if ('comp_id' in atom1 and atom1['comp_id'] == atom_id_1)\
+       or ('comp_id' in atom2 and atom2['comp_id'] == atom_id_2):
         return 'metal coordination'
 
     upperLimit = 0.0

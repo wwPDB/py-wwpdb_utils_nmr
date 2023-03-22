@@ -8,6 +8,7 @@
     @author: Masashi Yokochi
 """
 import sys
+import copy
 import itertools
 import numpy
 
@@ -375,7 +376,7 @@ class GromacsMRParserListener(ParseTreeListener):
             atomSelection = []
 
             if ai in self.__atomNumberDict:
-                atomSelection.append(self.__atomNumberDict[ai])
+                atomSelection.append(copy.copy(self.__atomNumberDict[ai]))
                 self.atomSelectionSet.append(atomSelection)
             else:
                 self.__f.append(f"[Missing data] {self.__getCurrentRestraint(n=index)}"
@@ -384,7 +385,7 @@ class GromacsMRParserListener(ParseTreeListener):
             atomSelection = []
 
             if aj in self.__atomNumberDict:
-                atomSelection.append(self.__atomNumberDict[aj])
+                atomSelection.append(copy.copy(self.__atomNumberDict[aj]))
                 self.atomSelectionSet.append(atomSelection)
             else:
                 self.__f.append(f"[Missing data] {self.__getCurrentRestraint(n=index)}"
@@ -591,7 +592,7 @@ class GromacsMRParserListener(ParseTreeListener):
             atomSelection = []
 
             if ai in self.__atomNumberDict:
-                atomSelection.append(self.__atomNumberDict[ai])
+                atomSelection.append(copy.copy(self.__atomNumberDict[ai]))
                 self.atomSelectionSet.append(atomSelection)
             else:
                 self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
@@ -600,7 +601,7 @@ class GromacsMRParserListener(ParseTreeListener):
             atomSelection = []
 
             if aj in self.__atomNumberDict:
-                atomSelection.append(self.__atomNumberDict[aj])
+                atomSelection.append(copy.copy(self.__atomNumberDict[aj]))
                 self.atomSelectionSet.append(atomSelection)
             else:
                 self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
@@ -609,7 +610,7 @@ class GromacsMRParserListener(ParseTreeListener):
             atomSelection = []
 
             if ak in self.__atomNumberDict:
-                atomSelection.append(self.__atomNumberDict[ak])
+                atomSelection.append(copy.copy(self.__atomNumberDict[ak]))
                 self.atomSelectionSet.append(atomSelection)
             else:
                 self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
@@ -618,7 +619,7 @@ class GromacsMRParserListener(ParseTreeListener):
             atomSelection = []
 
             if al in self.__atomNumberDict:
-                atomSelection.append(self.__atomNumberDict[al])
+                atomSelection.append(copy.copy(self.__atomNumberDict[al]))
                 self.atomSelectionSet.append(atomSelection)
             else:
                 self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
@@ -814,7 +815,7 @@ class GromacsMRParserListener(ParseTreeListener):
             atomSelection = []
 
             if ai in self.__atomNumberDict:
-                atomSelection.append(self.__atomNumberDict[ai])
+                atomSelection.append(copy.copy(self.__atomNumberDict[ai]))
                 self.atomSelectionSet.append(atomSelection)
             else:
                 self.__f.append(f"[Missing data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
@@ -823,7 +824,7 @@ class GromacsMRParserListener(ParseTreeListener):
             atomSelection = []
 
             if aj in self.__atomNumberDict:
-                atomSelection.append(self.__atomNumberDict[aj])
+                atomSelection.append(copy.copy(self.__atomNumberDict[aj]))
                 self.atomSelectionSet.append(atomSelection)
             else:
                 self.__f.append(f"[Missing data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
@@ -1068,7 +1069,7 @@ class GromacsMRParserListener(ParseTreeListener):
             atomSelection = []
 
             if ai in self.__atomNumberDict:
-                atomSelection.append(self.__atomNumberDict[ai])
+                atomSelection.append(copy.copy(self.__atomNumberDict[ai]))
                 self.atomSelectionSet.append(atomSelection)
             else:
                 self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
@@ -1077,7 +1078,7 @@ class GromacsMRParserListener(ParseTreeListener):
             atomSelection = []
 
             if aj in self.__atomNumberDict:
-                atomSelection.append(self.__atomNumberDict[aj])
+                atomSelection.append(copy.copy(self.__atomNumberDict[aj]))
                 self.atomSelectionSet.append(atomSelection)
             else:
                 self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
@@ -1086,7 +1087,7 @@ class GromacsMRParserListener(ParseTreeListener):
             atomSelection = []
 
             if ak in self.__atomNumberDict:
-                atomSelection.append(self.__atomNumberDict[ak])
+                atomSelection.append(copy.copy(self.__atomNumberDict[ak]))
                 self.atomSelectionSet.append(atomSelection)
             else:
                 self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
@@ -1095,7 +1096,7 @@ class GromacsMRParserListener(ParseTreeListener):
             atomSelection = []
 
             if al in self.__atomNumberDict:
-                atomSelection.append(self.__atomNumberDict[al])
+                atomSelection.append(copy.copy(self.__atomNumberDict[al]))
                 self.atomSelectionSet.append(atomSelection)
             else:
                 self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
@@ -1264,7 +1265,7 @@ class GromacsMRParserListener(ParseTreeListener):
             atomSelection = []
 
             if ai in self.__atomNumberDict:
-                atomSelection.append(self.__atomNumberDict[ai])
+                atomSelection.append(copy.copy(self.__atomNumberDict[ai]))
                 self.atomSelectionSet.append(atomSelection)
             else:
                 self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
@@ -1273,7 +1274,7 @@ class GromacsMRParserListener(ParseTreeListener):
             atomSelection = []
 
             if aj in self.__atomNumberDict:
-                atomSelection.append(self.__atomNumberDict[aj])
+                atomSelection.append(copy.copy(self.__atomNumberDict[aj]))
                 self.atomSelectionSet.append(atomSelection)
             else:
                 self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
@@ -1367,7 +1368,7 @@ class GromacsMRParserListener(ParseTreeListener):
             atomSelection = []
 
             if ai in self.__atomNumberDict:
-                atomSelection.append(self.__atomNumberDict[ai])
+                atomSelection.append(copy.copy(self.__atomNumberDict[ai]))
                 self.atomSelectionSet.append(atomSelection)
             else:
                 self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"

@@ -452,12 +452,22 @@ class AmberPTParserListener(ParseTreeListener):
                 if 'atom_id' not in atomNum:
                     if 'comp_id' not in atomNum or atomNum['comp_id'] == atomNum['auth_comp_id']:
                         authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
+                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, atomNum['seq_id'], authCompId, atomNum['auth_atom_id'], None, True)
                         if self.__ccU.updateChemCompDict(authCompId):
+                            chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+                            if atomId in chemCompAtomIds:
+                                atomNum['atom_id'] = atomId
+                                continue
                             self.__f.append(f"[Unknown atom name] "
                                             f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['auth_comp_id']!r} residue.")
                     else:
                         authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
+                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, atomNum['seq_id'], authCompId, atomNum['auth_atom_id'], None, True)
                         if self.__ccU.updateChemCompDict(authCompId):
+                            chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+                            if atomId in chemCompAtomIds:
+                                atomNum['atom_id'] = atomId
+                                continue
                             atomNum['atom_id'] = atomNum['auth_atom_id']
                             self.__f.append(f"[Unknown atom name] "
                                             f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "
@@ -597,6 +607,8 @@ class AmberPTParserListener(ParseTreeListener):
             for authSeqKey, nonPoly in zip(authSeqKeys, nonPolys):
                 atomNums = [atomNum for atomNum in self.__atomNumberDict.values()
                             if atomNum['chain_id'] == authSeqKey[0] and atomNum['seq_id'] == authSeqKey[1]]
+                authAtomNames = [atomNum['auth_atom_id'] for atomNum in self.__atomNumberDict.values()
+                                 if atomNum['chain_id'] == authSeqKey[0] and atomNum['seq_id'] == authSeqKey[1]]
 
                 for atomNum in atomNums:
                     atomNum['chain_id'] = nonPoly['auth_chain_id']
@@ -606,12 +618,33 @@ class AmberPTParserListener(ParseTreeListener):
                     if chemCompAtomIds is not None and authAtomId in chemCompAtomIds:
                         atomNum['atom_id'] = authAtomId
                     else:
-                        if authAtomId not in reported_auth_atom_id:
-                            atomNum['atom_id'] = atomNum['auth_atom_id']
-                            self.__f.append(f"[Unknown atom name] "
-                                            f"{authAtomId!r} is not recognized as the atom name of {compId!r} residue "
-                                            f"(the original residue label is {authCompId!r}).")
-                            reported_auth_atom_id.append(authAtomId)
+                        px4NameCode = -1
+                        if compId == 'PX4':
+                            if 'OE' in authAtomNames:
+                                px4NameCode = 1
+                            elif 'OS31' in authAtomNames:
+                                px4NameCode = 2
+                            elif 'O21' in authAtomNames:
+                                if 'C314' in authAtomNames:
+                                    px4NameCode = 3
+                                elif 'C114' in authAtomNames:
+                                    px4NameCode = 4
+
+                        atomId = translateToStdAtomName(authAtomId, compId, chemCompAtomIds, ccU=self.__ccU, px4NameCode=px4NameCode)
+                        if atomId in chemCompAtomIds:
+                            atomNum['atom_id'] = atomId
+                        else:
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, atomNum['seq_id'], compId, authAtomId, None, True)
+
+                            if atomId in chemCompAtomIds:
+                                atomNum['atom_id'] = atomId
+                                continue
+                            elif authAtomId not in reported_auth_atom_id:
+                                atomNum['atom_id'] = atomNum['auth_atom_id']
+                                self.__f.append(f"[Unknown atom name] "
+                                                f"{authAtomId!r} is not recognized as the atom name of {compId!r} residue "
+                                                f"(the original residue label is {authCompId!r}).")
+                                reported_auth_atom_id.append(authAtomId)
 
     # Enter a parse tree produced by AmberPTParser#version_statement.
     def enterVersion_statement(self, ctx: AmberPTParser.Version_statementContext):  # pylint: disable=unused-argument

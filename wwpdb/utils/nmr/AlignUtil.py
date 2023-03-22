@@ -1574,14 +1574,14 @@ def trimSequenceAlignment(seqAlign, chainAssign):
             del seqAlign[idx]
 
 
-def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAtomSite=None):
+def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAtomSite=None, ignoreSeqId=False):
     """ Retrieve atom identifiers from atom name mapping of public MR file.
     """
 
     elemName = atomId[0]
 
     mapping = [item for item in mrAtomNameMapping
-               if item['original_seq_id'] == seqId
+               if (item['original_seq_id'] == seqId or ignoreSeqId)
                and compId in (item['original_comp_id'], item['auth_comp_id'])]
 
     if len(mapping) == 0:
@@ -1773,14 +1773,14 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
     return seqId, compId, atomId
 
 
-def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite=None):
+def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite=None, ignoreSeqId=False):
     """ Retrieve atom_id from atom name mapping of public MR file.
     """
 
     elemName = atomId[0]
 
     mapping = [item for item in mrAtomNameMapping
-               if item['auth_seq_id'] == cifSeqId
+               if (item['auth_seq_id'] == cifSeqId or ignoreSeqId)
                and cifCompId in (item['auth_comp_id'], item['original_comp_id'])]
 
     if len(mapping) == 0:

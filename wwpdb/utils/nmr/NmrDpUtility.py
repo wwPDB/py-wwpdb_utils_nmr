@@ -13984,20 +13984,20 @@ class NmrDpUtility:
                             remediated = True
                             continue
 
-                    ign_pk_file = dst_file + '-ignored-as-pea-any'
+                        ign_pk_file = dst_file + '-ignored-as-pea-any'
 
-                    if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
-                        _ar = ar.copy()
+                        if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
+                            _ar = ar.copy()
 
-                        _ar['file_name'] = dst_file
-                        _ar['file_type'] = 'nm-pea-any'
-                        peak_file_list.append(_ar)
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = 'nm-pea-any'
+                            peak_file_list.append(_ar)
 
-                        pk_list_paths.append({'nm-pea-any': dst_file})
+                            pk_list_paths.append({'nm-pea-any': dst_file})
 
-                        remediated = True
+                            remediated = True
 
-                        continue
+                            continue
 
                         designated = False
 
@@ -27952,14 +27952,27 @@ class NmrDpUtility:
         comp_id_1_col = loop.tags.index('Auth_comp_ID_1')
         atom_id_1_col = loop.tags.index('Auth_atom_ID_1')
 
+        ref_chain_id_1_col = loop.tags.index('Entity_assembly_ID_1')
+
         chain_id_2_col = loop.tags.index('Auth_asym_ID_2')
         seq_id_2_col = loop.tags.index('Auth_seq_ID_2')
         comp_id_2_col = loop.tags.index('Auth_comp_ID_2')
         atom_id_2_col = loop.tags.index('Auth_atom_ID_2')
 
+        ref_chain_id_2_col = loop.tags.index('Entity_assembly_ID_2')
+
+        target_val_col = loop.tags.index('Target_val')
+        target_val_err_col = loop.tags.index('Target_val_uncertainty')
+        lower_linear_limit_col = loop.tags.index('Lower_linear_limit')
+        upper_linear_limit_col = loop.tags.index('Upper_linear_limit')
+        lower_limit_col = loop.tags.index('Distance_lower_bound_val')
+        upper_limit_col = loop.tags.index('Distance_upper_bound_val')
+        weight_col = loop.tags.index('Weight')
+
         _rest_id = None
         _member_logic_code = None
-        _atom1 = _atom2 = None
+        _atom1 = _atom2 = {}
+        _values = ''
 
         modified = False
         has_member_id = False
@@ -27976,22 +27989,27 @@ class NmrDpUtility:
                 rest_id = row[id_col]
                 member_id = row[member_id_col]
                 member_logic_code = row[member_logic_code_col]
+                values = str(row[target_val_col]) + str(row[target_val_err_col])\
+                    + str(row[lower_linear_limit_col]) + str(row[upper_linear_limit_col])\
+                    + str(row[lower_limit_col]) + str(row[upper_limit_col]) + str(row[weight_col])
 
                 try:
                     atom1 = {'chain_id': row[chain_id_1_col],
                              'seq_id': int(row[seq_id_1_col]),
                              'comp_id': row[comp_id_1_col],
-                             'atom_id': row[atom_id_1_col]}
+                             'atom_id': row[atom_id_1_col],
+                             'ref_chain_id': row[ref_chain_id_1_col]}
                 except TypeError:
-                    atom1 = None
+                    atom1 = {}
 
                 try:
                     atom2 = {'chain_id': row[chain_id_2_col],
                              'seq_id': int(row[seq_id_2_col]),
                              'comp_id': row[comp_id_2_col],
-                             'atom_id': row[atom_id_2_col]}
+                             'atom_id': row[atom_id_2_col],
+                             'ref_chain_id': row[ref_chain_id_2_col]}
                 except TypeError:
-                    atom2 = None
+                    atom2 = {}
 
                 if member_id not in emptyValue:
                     has_member_id = True
@@ -28003,8 +28021,12 @@ class NmrDpUtility:
 
                     if member_id in emptyValue or member_logic_code == 'OR':
 
-                        if not isAmbigAtomSelection([atom1, _atom1], self.__csStat)\
-                           and not isAmbigAtomSelection([atom2, _atom2], self.__csStat):
+                        if (not isAmbigAtomSelection([atom1, _atom1], self.__csStat) and not isAmbigAtomSelection([atom2, _atom2], self.__csStat))\
+                           or (values == _values and atom1['ref_chain_id'] != atom2['ref_chain_id']
+                               and ((not isAmbigAtomSelection([atom1, _atom1], self.__csStat)
+                                     and atom1['ref_chain_id'] != _atom2['ref_chain_id'] and atom2['comp_id'] == _atom2['comp_id'])
+                                    or (not isAmbigAtomSelection([atom2, _atom2], self.__csStat)
+                                        and atom2['ref_chain_id'] != _atom1['ref_chain_id'] and atom1['comp_id'] == _atom1['comp_id']))):
                             _row[member_logic_code_col] = 'OR'
 
                             if _member_logic_code in emptyValue:
@@ -28030,10 +28052,10 @@ class NmrDpUtility:
 
                     sf_item['id'] -= 1
 
-                _rest_id, _member_logic_code, _atom1, _atom2 = rest_id, member_logic_code, atom1, atom2
+                _rest_id, _member_logic_code, _atom1, _atom2, _values = rest_id, member_logic_code, atom1, atom2, values
 
             except ValueError:
-                _atom1 = _atom2 = None
+                _atom1 = _atom2 = {}
 
             _row[id_col] = sf_item['id']
             _row[member_id_col] = None
@@ -28059,7 +28081,7 @@ class NmrDpUtility:
                              'comp_id': row[comp_id_1_col],
                              'atom_id': row[atom_id_1_col]}
                 except TypeError:
-                    atom1 = None
+                    atom1 = {}
 
                 try:
                     atom2 = {'chain_id': row[chain_id_2_col],
@@ -28067,7 +28089,7 @@ class NmrDpUtility:
                              'comp_id': row[comp_id_2_col],
                              'atom_id': row[atom_id_2_col]}
                 except TypeError:
-                    atom2 = None
+                    atom2 = {}
 
                 atom_sel1.append(atom1)
                 atom_sel2.append(atom2)

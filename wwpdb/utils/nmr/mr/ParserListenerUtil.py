@@ -1769,11 +1769,546 @@ def stripQuot(string):
     return _string
 
 
-def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None):
+def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None, px4NameCode=-1):
     """ Translate software specific atom nomenclature for standard residues to the CCD one.
     """
 
     atomId = atomId.upper()
+
+    if px4NameCode in (1, 2, 3, 4) and refCompId == 'PX4':
+
+        if px4NameCode == 1:  # 2mzi
+            if atomId.startswith('CN') and len(atomId) == 3:
+                if atomId[-1] == '1':
+                    return 'C3'
+                if atomId[-1] == '2':
+                    return 'C4'
+                if atomId[-1] == '3':
+                    return 'C5'
+            if atomId == 'NTM':
+                return 'N1'
+            if atomId == 'CA':
+                return 'C2'
+            if atomId == 'CB':
+                return 'C1'
+            if atomId == 'P':
+                return 'P1'
+            if atomId == 'OA':
+                return 'O3'
+            if atomId == 'OB':
+                return 'O1'
+            if atomId == 'OC':
+                return 'O2'
+            if atomId == 'OD':
+                return 'O4'
+            if atomId == 'CC':
+                return 'C6'
+            if atomId == 'CD':
+                return 'C7'
+
+            if atomId == 'OE':
+                return 'O7'
+            if atomId == 'OF':
+                return 'O8'
+            if atomId.startswith('C2') and len(atomId) == 3:
+                if atomId[-1] == 'A':
+                    return 'C8'
+                if atomId[-1] == 'B':
+                    return 'C9'
+                if atomId[-1] == 'C':
+                    return 'C10'
+                if atomId[-1] == 'D':
+                    return 'C11'
+                if atomId[-1] == 'E':
+                    return 'C12'
+                if atomId[-1] == 'F':
+                    return 'C13'
+                if atomId[-1] == 'G':
+                    return 'C14'
+                if atomId[-1] == 'H':
+                    return 'C15'
+                if atomId[-1] == 'I':
+                    return 'C16'
+                if atomId[-1] == 'J':
+                    return 'C17'
+                if atomId[-1] == 'K':
+                    return 'C18'
+                if atomId[-1] == 'L':
+                    return 'C19'
+                if atomId[-1] == 'M':
+                    return 'C20'
+                if atomId[-1] == 'N':
+                    return 'C21'
+                if atomId[-1] == 'B':
+                    return 'C22'
+
+            if atomId == 'CE':
+                return 'C8'
+            if atomId == 'OG':
+                return 'O5'
+            if atomId == 'OH':
+                return 'O6'
+            if atomId.startswith('C1') and len(atomId) == 3:
+                if atomId[-1] == 'A':
+                    return 'C23'
+                if atomId[-1] == 'B':
+                    return 'C24'
+                if atomId[-1] == 'C':
+                    return 'C25'
+                if atomId[-1] == 'D':
+                    return 'C26'
+                if atomId[-1] == 'E':
+                    return 'C27'
+                if atomId[-1] == 'F':
+                    return 'C28'
+                if atomId[-1] == 'G':
+                    return 'C29'
+                if atomId[-1] == 'H':
+                    return 'C30'
+                if atomId[-1] == 'I':
+                    return 'C31'
+                if atomId[-1] == 'J':
+                    return 'C32'
+                if atomId[-1] == 'K':
+                    return 'C33'
+                if atomId[-1] == 'L':
+                    return 'C34'
+                if atomId[-1] == 'M':
+                    return 'C35'
+                if atomId[-1] == 'N':
+                    return 'C36'
+
+        elif px4NameCode == 2:  # https://ftp.gromacs.org/contrib/topologies/DMPC.zip
+            if atomId == 'N4':
+                return 'N1'
+            if atomId == 'C5':
+                return 'C2'
+            if atomId == 'C6':
+                return 'C1'
+            if atomId == 'OS7':
+                return 'O3'
+            if atomId == 'P8':
+                return 'P1'
+            if atomId == 'OM9':
+                return 'O1'
+            if atomId == 'OM10':
+                return 'O2'
+            if atomId == 'OS11':
+                return 'O4'
+            if atomId == 'C12':
+                return 'C6'
+            if atomId == 'C13':
+                return 'C7'
+
+            if atomId == 'OS14':
+                return 'O5'
+            if atomId == 'C15':
+                return 'C8'
+            if atomId == 'O16':
+                return 'O6'
+            if atomId == 'C17':
+                return 'C9'
+            if atomId == 'C18':
+                return 'C10'
+            if atomId == 'C19':
+                return 'C11'
+            if atomId == 'C20':
+                return 'C12'
+            if atomId == 'C21':
+                return 'C13'
+            if atomId == 'C22':
+                return 'C14'
+            if atomId == 'C23':
+                return 'C15'
+            if atomId == 'C24':
+                return 'C16'
+            if atomId == 'C25':
+                return 'C17'
+            if atomId == 'C26':
+                return 'C18'
+            if atomId == 'C27':
+                return 'C19'
+            if atomId == 'C28':
+                return 'C20'
+            if atomId == 'C29':
+                return 'C21'
+            if atomId == 'C30':
+                return 'C22'
+
+            if atomId == 'OS31':
+                return 'O7'
+            if atomId == 'C32':
+                return 'C23'
+            if atomId == 'O33':
+                return 'O8'
+            if atomId == 'C34':
+                return 'C24'
+            if atomId == 'C35':
+                return 'C25'
+            if atomId == 'C36':
+                return 'C26'
+            if atomId == 'C37':
+                return 'C27'
+            if atomId == 'C38':
+                return 'C28'
+            if atomId == 'C39':
+                return 'C29'
+            if atomId == 'C40':
+                return 'C30'
+            if atomId == 'C41':
+                return 'C31'
+            if atomId == 'C42':
+                return 'C32'
+            if atomId == 'C43':
+                return 'C33'
+            if atomId == 'C44':
+                return 'C34'
+            if atomId == 'C45':
+                return 'C35'
+            if atomId == 'C46':
+                return 'C36'
+
+        elif px4NameCode == 3:  # https://ftp.gromacs.org/contrib/topologies/AA_DMPC.tar.gz
+            if atomId == 'N':
+                return 'N1'
+            if atomId == 'C13':
+                return 'C3'
+            if atomId.startswith('H13') and len(atomId) == 3:
+                if atomId[-1] == 'A':
+                    return 'H5'
+                if atomId[-1] == 'B':
+                    return 'H6'
+                if atomId[-1] == 'C':
+                    return 'H7'
+            if atomId == 'C14':
+                return 'C4'
+            if atomId.startswith('H14') and len(atomId) == 3:
+                if atomId[-1] == 'A':
+                    return 'H8'
+                if atomId[-1] == 'B':
+                    return 'H9'
+                if atomId[-1] == 'C':
+                    return 'H10'
+            if atomId == 'C15':
+                return 'C5'
+            if atomId.startswith('H15') and len(atomId) == 3:
+                if atomId[-1] == 'A':
+                    return 'H11'
+                if atomId[-1] == 'B':
+                    return 'H12'
+                if atomId[-1] == 'C':
+                    return 'H13'
+            if atomId == 'C12':
+                return 'C2'
+            if atomId.startswith('H12') and len(atomId) == 3:
+                if atomId[-1] == 'A':
+                    return 'H3'
+                if atomId[-1] == 'B':
+                    return 'H4'
+            if atomId == 'C11':
+                return 'C1'
+            if atomId.startswith('H11') and len(atomId) == 3:
+                if atomId[-1] == 'A':
+                    return 'H1'
+                if atomId[-1] == 'B':
+                    return 'H2'
+            if atomId == 'P':
+                return 'P1'
+            if atomId == 'O13':
+                return 'O3'
+            if atomId == 'O14':
+                return 'O4'
+            if atomId == 'O11':
+                return 'O1'
+            if atomId == 'O12':
+                return 'O2'
+            if atomId == 'C1':
+                return 'C6'
+            if atomId == 'HA':
+                return 'H14'
+            if atomId == 'HB':
+                return 'H15'
+            if atomId == 'C2':
+                return 'C7'
+            if atomId == 'HS':
+                return 'H16'
+
+            if atomId == 'O21':
+                return 'O7'
+            if atomId == 'C21':
+                return 'C23'
+            if atomId == 'O22':
+                return 'O8'
+            if atomId == 'C3':
+                return 'C8'
+            if atomId == 'HX':
+                return 'C17'
+            if atomId == 'HY':
+                return 'C18'
+            if atomId == 'O31':
+                return 'O5'
+            if atomId == 'C31':
+                return 'C9'
+            if atomId == 'O32':
+                return 'O6'
+
+            if atomId == 'C32':
+                return 'C10'
+            if atomId == 'H2X':
+                return 'H19'
+            if atomId == 'H2Y':
+                return 'H20'
+            if atomId == 'C33':
+                return 'C11'
+            if atomId == 'H3X':
+                return 'H21'
+            if atomId == 'H3Y':
+                return 'H22'
+            if atomId == 'C34':
+                return 'C12'
+            if atomId == 'H4X':
+                return 'H23'
+            if atomId == 'H4Y':
+                return 'H24'
+            if atomId == 'C35':
+                return 'C13'
+            if atomId == 'H5X':
+                return 'H25'
+            if atomId == 'H5Y':
+                return 'H26'
+            if atomId == 'C36':
+                return 'C14'
+            if atomId == 'H6X':
+                return 'H27'
+            if atomId == 'H6Y':
+                return 'H28'
+            if atomId == 'C37':
+                return 'C15'
+            if atomId == 'H7X':
+                return 'H29'
+            if atomId == 'H7Y':
+                return 'H39'
+            if atomId == 'C38':
+                return 'C16'
+            if atomId == 'H8X':
+                return 'H31'
+            if atomId == 'H8Y':
+                return 'H32'
+            if atomId == 'C39':
+                return 'C17'
+            if atomId == 'H9X':
+                return 'H33'
+            if atomId == 'H9Y':
+                return 'H34'
+            if atomId == 'C310':
+                return 'C18'
+            if atomId == 'H10X':
+                return 'H35'
+            if atomId == 'H10Y':
+                return 'H36'
+            if atomId == 'C311':
+                return 'C19'
+            if atomId == 'H11X':
+                return 'H37'
+            if atomId == 'H11Y':
+                return 'H38'
+            if atomId == 'C312':
+                return 'C20'
+            if atomId == 'H12X':
+                return 'H39'
+            if atomId == 'H12Y':
+                return 'H40'
+            if atomId == 'C313':
+                return 'C21'
+            if atomId == 'H13X':
+                return 'H41'
+            if atomId == 'H13Y':
+                return 'H42'
+            if atomId == 'C314':
+                return 'C22'
+            if atomId == 'H14X':
+                return 'H43'
+            if atomId == 'H14Y':
+                return 'H44'
+            if atomId == 'H14Z':
+                return 'H45'
+
+            if atomId == 'C22':
+                return 'C24'
+            if atomId == 'H2R':
+                return 'H46'
+            if atomId == 'H2S':
+                return 'H47'
+            if atomId == 'C23':
+                return 'C25'
+            if atomId == 'H3R':
+                return 'H48'
+            if atomId == 'H3S':
+                return 'H49'
+            if atomId == 'C24':
+                return 'C26'
+            if atomId == 'H4R':
+                return 'H50'
+            if atomId == 'H4S':
+                return 'H51'
+            if atomId == 'C25':
+                return 'C27'
+            if atomId == 'H5R':
+                return 'H52'
+            if atomId == 'H5S':
+                return 'H53'
+            if atomId == 'C26':
+                return 'C28'
+            if atomId == 'H6R':
+                return 'H54'
+            if atomId == 'H6S':
+                return 'H55'
+            if atomId == 'C27':
+                return 'C29'
+            if atomId == 'H7R':
+                return 'H56'
+            if atomId == 'H7S':
+                return 'H57'
+            if atomId == 'C28':
+                return 'C30'
+            if atomId == 'H8R':
+                return 'H58'
+            if atomId == 'H8S':
+                return 'H59'
+            if atomId == 'C29':
+                return 'C31'
+            if atomId == 'H9R':
+                return 'H60'
+            if atomId == 'H9S':
+                return 'H61'
+            if atomId == 'C210':
+                return 'C32'
+            if atomId == 'H10R':
+                return 'H62'
+            if atomId == 'H10S':
+                return 'H63'
+            if atomId == 'C211':
+                return 'C33'
+            if atomId == 'H11R':
+                return 'H64'
+            if atomId == 'H11S':
+                return 'H65'
+            if atomId == 'C212':
+                return 'C34'
+            if atomId == 'H12R':
+                return 'H66'
+            if atomId == 'H12S':
+                return 'H67'
+            if atomId == 'C213':
+                return 'C35'
+            if atomId == 'H13R':
+                return 'H68'
+            if atomId == 'H13S':
+                return 'H69'
+            if atomId == 'C214':
+                return 'C36'
+            if atomId == 'H14R':
+                return 'H70'
+            if atomId == 'H14S':
+                return 'H71'
+            if atomId == 'H14T':
+                return 'H72'
+
+        elif px4NameCode == 4:  # https://ftp.gromacs.org/contrib/topologies/LipidsForGro96_53a6.zip
+            if atomId == 'C33':
+                return 'C3'
+            if atomId == 'C34':
+                return 'C4'
+            if atomId == 'C35':
+                return 'C5'
+            if atomId == 'N':
+                return 'N1'
+            if atomId == 'C32':
+                return 'C2'
+            if atomId == 'C31':
+                return 'C1'
+            if atomId == 'O32':
+                return 'O3'
+            if atomId == 'P':
+                return 'P1'
+            if atomId == 'O33':
+                return 'O1'
+            if atomId == 'O34':
+                return 'O2'
+            if atomId == 'O31':
+                return 'O4'
+            if atomId == 'C3':
+                return 'C6'
+            if atomId == 'C2':
+                return 'C7'
+
+            if atomId == 'O21':
+                return 'O5'
+            if atomId == 'C21':
+                return 'C23'
+            if atomId == 'O22':
+                return 'O8'
+            if atomId == 'C22':
+                return 'C24'
+            if atomId == 'C23':
+                return 'C25'
+            if atomId == 'C24':
+                return 'C26'
+            if atomId == 'C25':
+                return 'C27'
+            if atomId == 'C26':
+                return 'C28'
+            if atomId == 'C27':
+                return 'C29'
+            if atomId == 'C28':
+                return 'C30'
+            if atomId == 'C29':
+                return 'C31'
+            if atomId == 'C210':
+                return 'C32'
+            if atomId == 'C211':
+                return 'C33'
+            if atomId == 'C212':
+                return 'C34'
+            if atomId == 'C213':
+                return 'C35'
+            if atomId == 'C214':
+                return 'C36'
+
+            if atomId == 'C1':
+                return 'C8'
+            if atomId == 'O11':
+                return 'O5'
+            if atomId == 'C11':
+                return 'C9'
+            if atomId == 'O12':
+                return 'O6'
+            if atomId == 'C12':
+                return 'C10'
+            if atomId == 'C13':
+                return 'C11'
+            if atomId == 'C14':
+                return 'C12'
+            if atomId == 'C15':
+                return 'C13'
+            if atomId == 'C16':
+                return 'C14'
+            if atomId == 'C17':
+                return 'C15'
+            if atomId == 'C18':
+                return 'C16'
+            if atomId == 'C19':
+                return 'C17'
+            if atomId == 'C110':
+                return 'C18'
+            if atomId == 'C111':
+                return 'C19'
+            if atomId == 'C112':
+                return 'C20'
+            if atomId == 'C113':
+                return 'C21'
+            if atomId == 'C114':
+                return 'C22'
 
     if refAtomIdList is not None:
         if atomId in refAtomIdList:
@@ -3438,6 +3973,12 @@ def isAmbigAtomSelection(atoms, csStat):
 
     if len(commonSeqId) > 1:
         return True
+
+    for a in atoms:
+        if 'comp_id' not in a or a['comp_id'] in emptyValue:
+            return True
+        if 'atom_id' not in a or a['atom_id'] in emptyValue:
+            return True
 
     atomIds = list(set(a['atom_id'] for a in atoms))
 

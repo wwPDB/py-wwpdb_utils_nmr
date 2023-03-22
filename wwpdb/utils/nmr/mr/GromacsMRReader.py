@@ -220,6 +220,12 @@ class GromacsMRReader:
 if __name__ == "__main__":
     reader = GromacsMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2mzi/2mzi-trimmed-div_src.mr',
+                 '../../tests-nmr/mock-data-remediation/2mzi/2mzi.cif',
+                 '../../tests-nmr/mock-data-remediation/2mzi/2mzi-trimmed-div_dst.mr')
+
+    reader = GromacsMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6v5d/gromacs_orientation_restraints.itp',
                  '../../tests-nmr/mock-data-remediation/6v5d/6v5d.cif')
 

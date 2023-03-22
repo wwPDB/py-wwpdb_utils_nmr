@@ -184,5 +184,9 @@ class GromacsPTReader:
 
 if __name__ == "__main__":
     reader = GromacsPTReader(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2mzi/2mzi-trimmed-div_dst.mr',
+                 '../../tests-nmr/mock-data-remediation/2mzi/2mzi.cif')
+
+    reader = GromacsPTReader(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mzh/2mzh.top',
                  '../../tests-nmr/mock-data-remediation/2mzh/2mzh.cif')

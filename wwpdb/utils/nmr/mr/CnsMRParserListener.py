@@ -8123,16 +8123,11 @@ class CnsMRParserListener(ParseTreeListener):
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
-    def getListIdCounter(self):
-        """ Return updated list id counter.
-        """
-        return self.__listIdCounter
-
     def getSfDict(self):
         """ Return a dictionary of pynmrstar saveframes.
         """
         if len(self.sfDict) == 0:
-            return None
+            return self.__listIdCounter, None
         ign_keys = []
         for k, v in self.sfDict.items():
             for item in reversed(v):
@@ -8143,6 +8138,6 @@ class CnsMRParserListener(ParseTreeListener):
                     self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
         for k in ign_keys:
             del self.sfDict[k]
-        return None if len(self.sfDict) == 0 else self.sfDict
+        return self.__listIdCounter, None if len(self.sfDict) == 0 else self.sfDict
 
 # del CnsMRParser

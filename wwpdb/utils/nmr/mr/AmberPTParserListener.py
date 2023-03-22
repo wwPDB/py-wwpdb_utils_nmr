@@ -507,7 +507,7 @@ class AmberPTParserListener(ParseTreeListener):
                     nonPolyIndices = [idx for idx, ps in enumerate(self.__polySeqPrmTop)
                                       if not any(ca for ca in self.__chainAssign
                                                  if ca['test_chain_id'] == ps['chain_id'])
-                                      and len(set(ps['comp_id'])) == 1 and ps['comp_id'][0] == '.']
+                                      and len(set(ps['comp_id'])) > 0 and ps['comp_id'][0] == '.']
 
                     if len(nonPolyIndices) > 0:
                         self.assignNonPolymer(nonPolyIndices)

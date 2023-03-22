@@ -28632,9 +28632,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__list_id_counter = listener.getListIdCounter()
-
-                        sf_dict = listener.getSfDict()
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -28799,9 +28797,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__list_id_counter = listener.getListIdCounter()
-
-                        sf_dict = listener.getSfDict()
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -28939,9 +28935,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__list_id_counter = listener.getListIdCounter()
-
-                        sf_dict = listener.getSfDict()
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -29130,9 +29124,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__list_id_counter = listener.getListIdCounter()
-
-                        sf_dict = listener.getSfDict()
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -29291,9 +29283,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__list_id_counter = listener.getListIdCounter()
-
-                        sf_dict = listener.getSfDict()
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -29450,9 +29440,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__list_id_counter = listener.getListIdCounter()
-
-                        sf_dict = listener.getSfDict()
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -29573,9 +29561,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__list_id_counter = listener.getListIdCounter()
-
-                        sf_dict = listener.getSfDict()
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -29740,9 +29726,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__list_id_counter = listener.getListIdCounter()
-
-                        sf_dict = listener.getSfDict()
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -29899,9 +29883,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__list_id_counter = listener.getListIdCounter()
-
-                        sf_dict = listener.getSfDict()
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -30058,9 +30040,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__list_id_counter = listener.getListIdCounter()
-
-                        sf_dict = listener.getSfDict()
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -30225,9 +30205,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__list_id_counter = listener.getListIdCounter()
-
-                        sf_dict = listener.getSfDict()
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])

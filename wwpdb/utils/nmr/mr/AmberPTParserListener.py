@@ -20,6 +20,7 @@ try:
     from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        translateToStdAtomName,
+                                                       translateToStdAtomNameOfDmpc,
                                                        translateToStdResName,
                                                        REPRESENTATIVE_MODEL_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -38,6 +39,7 @@ except ImportError:
     from nmr.mr.AmberPTParser import AmberPTParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            translateToStdAtomName,
+                                           translateToStdAtomNameOfDmpc,
                                            translateToStdResName,
                                            REPRESENTATIVE_MODEL_ID)
     from nmr.ChemCompUtil import ChemCompUtil
@@ -452,7 +454,10 @@ class AmberPTParserListener(ParseTreeListener):
                 if 'atom_id' not in atomNum:
                     if 'comp_id' not in atomNum or atomNum['comp_id'] == atomNum['auth_comp_id']:
                         authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
-                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, atomNum['seq_id'], authCompId, atomNum['auth_atom_id'], None, True)
+                        if self.__mrAtomNameMapping is not None:
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, atomNum['seq_id'], authCompId, atomNum['auth_atom_id'], None, True)
+                        else:
+                            atomId = atomNum['auth_atom_id']
                         if self.__ccU.updateChemCompDict(authCompId):
                             chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                             if atomId in chemCompAtomIds:
@@ -462,7 +467,10 @@ class AmberPTParserListener(ParseTreeListener):
                                             f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['auth_comp_id']!r} residue.")
                     else:
                         authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
-                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, atomNum['seq_id'], authCompId, atomNum['auth_atom_id'], None, True)
+                        if self.__mrAtomNameMapping is not None:
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, atomNum['seq_id'], authCompId, atomNum['auth_atom_id'], None, True)
+                        else:
+                            atomId = atomNum['auth_atom_id']
                         if self.__ccU.updateChemCompDict(authCompId):
                             chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                             if atomId in chemCompAtomIds:
@@ -524,6 +532,30 @@ class AmberPTParserListener(ParseTreeListener):
 
                         for idx in sorted(nonPolyIndices, reverse=True):
                             del self.__polySeqPrmTop[idx]
+
+            if self.__hasNonPolyModel:
+                compIdMapping = {}
+                mappedCompId = []
+                mappedAtomNum = []
+
+                for np in self.__nonPolyModel:
+                    auth_chain_id = np['auth_chain_id']
+                    auth_seq_id = np['auth_seq_id'][0]
+                    comp_id = np['comp_id'][0]
+
+                    for k, v in self.__atomNumberDict.items():
+                        if k in mappedAtomNum:
+                            continue
+                        if v['comp_id'] == comp_id:
+                            seq_key = (v['comp_id'], v['chain_id'], v['seq_id'])
+                            seq_val = (auth_chain_id, auth_seq_id)
+                            if seq_key not in compIdMapping:
+                                if seq_val not in mappedCompId:
+                                    compIdMapping[seq_key] = seq_val
+                            if seq_key in compIdMapping:
+                                v['chain_id'], v['seq_id'] = compIdMapping[seq_key]
+                                mappedCompId.append(seq_val)
+                                mappedAtomNum.append(k)
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
@@ -618,19 +650,23 @@ class AmberPTParserListener(ParseTreeListener):
                     if chemCompAtomIds is not None and authAtomId in chemCompAtomIds:
                         atomNum['atom_id'] = authAtomId
                     else:
-                        px4NameCode = -1
+                        dmpcNameSystemId = -1
                         if compId == 'PX4':
                             if 'OE' in authAtomNames:
-                                px4NameCode = 1
+                                dmpcNameSystemId = 1
                             elif 'OS31' in authAtomNames:
-                                px4NameCode = 2
+                                dmpcNameSystemId = 2
                             elif 'O21' in authAtomNames:
                                 if 'C314' in authAtomNames:
-                                    px4NameCode = 3
+                                    dmpcNameSystemId = 3
                                 elif 'C114' in authAtomNames:
-                                    px4NameCode = 4
+                                    dmpcNameSystemId = 4
 
-                        atomId = translateToStdAtomName(authAtomId, compId, chemCompAtomIds, ccU=self.__ccU, px4NameCode=px4NameCode)
+                        if dmpcNameSystemId != -1:
+                            atomId = translateToStdAtomNameOfDmpc(authAtomId, dmpcNameSystemId)
+                        else:
+                            atomId = translateToStdAtomName(authAtomId, compId, chemCompAtomIds, ccU=self.__ccU)
+
                         if atomId in chemCompAtomIds:
                             atomNum['atom_id'] = atomId
                         else:

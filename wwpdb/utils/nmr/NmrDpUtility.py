@@ -167,6 +167,7 @@
 # 15-Dec-2022  M. Yokochi - merge CS and MR as a single NMR data file in CIF format with comprehensive molecular assembly information (DAOTHER-7407, NMR restraint remediation)
 # 13-Jan-2023  M. Yokochi - add support for small angle X-ray scattering restraints (NMR restraint remediation)
 # 24-Jan-2023  M. Yokochi - add support for heteronuclear relaxation data (NOE, T1, T2, T1rho, Order parameter) (NMR restraint remediation)
+# 23-Feb-2023  M. Yokochi - combine spectral peak lists in any format into single NMR-STAR until Phase 2 release (DAOTHER-7407)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -1004,7 +1005,7 @@ def is_peak_list(line, has_header=True):
     """ Return whether a given input is derived from peak list in any native format.
     """
 
-    if has_header and line.count('E') + line.count('e') >= 2:  # CYANA peak list
+    if has_header and line.count('E') + line.count('e') >= 2:  # XEASY peak list
         s = filter(None, re.split(r'[\t ]', line))
         return 'U' in s or 'T' in s
 
@@ -1015,6 +1016,48 @@ def is_peak_list(line, has_header=True):
         return True
 
     return False
+
+
+def get_peak_list_format(line, has_header=True):
+    """ Return peak list format for a given input.
+    """
+
+    if has_header:  # and line.count('E') + line.count('e') >= 2:  # XEASY peak list
+        s = filter(None, re.split(r'[\t ]', line))
+        if 'U' in s or 'T' in s:
+            return 'XEASY'
+
+    if 'Data Height' in line and 'w1' in line and 'w2' in line:  # SPARKY peak list
+        return 'SPARKY'
+
+    if 'label' in line and 'dataset' in line and 'sw' in line and 'sf' in line:  # NMRView peak list
+        return 'NMRView'
+
+    return None
+
+
+def get_number_of_dimensions_of_peak_list(file_format, line):
+    """ Return number of dimensions of peak list of given format and input.
+    """
+
+    if file_format == 'XEASY':
+        if 'dimensions' in line:
+            col = line.split()
+            if col[-1].isdigit():
+                return int(col[-1])
+
+    if file_format == 'SPARKY':
+        if 'w1' in line:
+            col = line.split()
+            dim = [int(w[1:]) for w in col if w.startswith('w') and w[1:].isdigit()]
+            if len(dim) > 0:
+                return max(dim)
+
+    if file_format == 'NMRView':
+        col = line.split()
+        return len(col)
+
+    return None
 
 
 class NmrDpUtility:
@@ -1039,6 +1082,8 @@ class NmrDpUtility:
         self.__combined_mode = True
         # whether to use datablock name of public release
         self.__release_mode = False
+        # whether to combine spectral peak list in any format into single NMR-STAR file (must be trued off after Phase 2, DAOTHER-7407)
+        self.__combine_pk_any = True
 
         # whether to allow empty coordinate file path
         self.__bmrb_only = False
@@ -1329,7 +1374,7 @@ class NmrDpUtility:
 
         self.__list_id_counter = None
         self.__mr_sf_dict_holder = None
-        self.__pk_sf_dict_holder = None
+        self.__pk_sf_holder = None
 
         # NMR content types
         self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref',
@@ -14039,6 +14084,21 @@ class NmrDpUtility:
 
                         if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
                             remediated = True
+                            continue
+
+                        ign_pk_file = dst_file + '-ignored-as-pea-any'
+
+                        if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
+                            _ar = ar.copy()
+
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = 'nm-pea-any'
+                            peak_file_list.append(_ar)
+
+                            pk_list_paths.append({'nm-pea-any': dst_file})
+
+                            remediated = True
+
                             continue
 
                     _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMr(dst_file, file_name, 'nm-res-mr', [], True)
@@ -28158,7 +28218,12 @@ class NmrDpUtility:
         input_source = self.report.input_sources[src_id]
         input_source_dic = input_source.get()
 
-        list_id = 1
+        if self.__pk_sf_holder is None:
+            self.__pk_sf_holder = []
+
+        list_id = len(self.__pk_sf_holder) + 1
+
+        master_entry = self.__star_data[0]
 
         for fileListId in range(self.__cs_file_path_list_len, self.__file_path_list_len):
 
@@ -28190,7 +28255,9 @@ class NmrDpUtility:
                     self.__c2S.set_entry_id(sf_data, self.__entry_id)
                     self.__c2S.set_local_sf_id(sf_data, list_id)
 
-                    self.__star_data[0].add_saveframe(sf_data)
+                    master_entry.add_saveframe(sf_data)
+
+                    self.__pk_sf_holder.append({'file_type': 'nmr-star', 'saveframe': sf_data})
 
                     list_id += 1
 
@@ -28201,9 +28268,144 @@ class NmrDpUtility:
                         self.__c2S.set_entry_id(sf_data, self.__entry_id)
                         self.__c2S.set_local_sf_id(sf_data, list_id)
 
-                        self.__star_data[0].add_saveframe(sf_data)
+                        master_entry.add_saveframe(sf_data)
+
+                        self.__pk_sf_holder.append({'file_type': 'nmr-star', 'saveframe': sf_data})
 
                         list_id += 1
+
+        return True
+
+    def __mergeAnyPkAsIs(self):
+        """ Merge spectral peak lists in any format (nm-pea-any).
+        """
+
+        if self.__combined_mode:
+            return True
+
+        ar_file_path_list = 'atypical_restraint_file_path_list'
+
+        if ar_file_path_list not in self.__inputParamDict:
+            return True
+
+        if self.__pk_sf_holder is None:
+            self.__pk_sf_holder = []
+
+        fileListId = self.__file_path_list_len
+
+        list_id = len(self.__pk_sf_holder) + 1
+
+        master_entry = self.__star_data[0]
+
+        for ar in self.__inputParamDict[ar_file_path_list]:
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+
+            fileListId += 1
+
+            if file_type != 'nm-pea-any':
+                continue
+
+            original_file_name = None
+            if 'original_file_name' in input_source_dic:
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+
+            file_path = ar['file_name']
+
+            content_subtype = 'spectral_peak'
+
+            sf_category = self.sf_categories['nmr-star'][content_subtype]
+            sf_framecode = f'spectral_peak_list_{list_id}'
+
+            sf_data = pynmrstar.Saveframe.from_scratch(sf_framecode, self.sf_tag_prefixes['nmr-star'][content_subtype])
+            sf_data.add_tag('Sf_category', sf_category)
+            sf_data.add_tag('Sf_framecode', sf_framecode)
+            sf_data.add_tag('Entry_ID', self.__entry_id)
+            sf_data.add_tag('ID', list_id)
+            sf_data.add_tag('Data_file_name', original_file_name if original_file_name is not None else file_name)
+
+            _sf_id = _sf_framecode = None
+            _sf_category = 'sample'
+            if len(master_entry.get_saveframes_by_category(_sf_category)) == 1:
+                _sf_data = master_entry.get_saveframes_by_category(_sf_category)[0]
+                _sf_id = get_first_sf_tag(_sf_data, 'ID')
+                _sf_framecode = f"${get_first_sf_tag(_sf_data, 'sf_framecode')}"
+
+            sf_data.add_tag('Sample_ID', _sf_id)
+            sf_data.add_tag('Sample_label', _sf_framecode)
+
+            _sf_id = _sf_framecode = None
+            _sf_category = 'sample_conditions'
+            if len(master_entry.get_saveframes_by_category(_sf_category)) == 1:
+                _sf_data = master_entry.get_saveframes_by_category(_sf_category)[0]
+                _sf_id = get_first_sf_tag(_sf_data, 'ID')
+                _sf_framecode = f"${get_first_sf_tag(_sf_data, 'sf_framecode')}"
+
+            sf_data.add_tag('Sample_condition_list_ID', _sf_id)
+            sf_data.add_tag('Sample_condition_list_label', _sf_framecode)
+
+            sf_data.add_tag('Experiment_ID', None)
+            sf_data.add_tag('Experiment_name', None)
+            sf_data.add_tag('Experiment_class', None)
+            sf_data.add_tag('Experiment_type', None)
+
+            file_format = None
+
+            with open(file_path, 'r', encoding='utf-8') as ifp:
+                has_header = False
+                for line in ifp:
+                    if line.isspace() or comment_pattern.match(line):
+                        if line.startswith('#INAME'):
+                            has_header = True
+                        continue
+                    file_format = get_peak_list_format(line, has_header)
+                    print(f'{line} {file_format=}')
+                    break
+
+            dimensions = None
+
+            if file_format is not None:
+                with open(file_path, 'r', encoding='utf-8') as ifp:
+                    has_header = False
+                    for line in ifp:
+                        if file_format == 'NMRView' and not has_header:
+                            if line.startswith('label'):
+                                has_header = True
+                            continue
+                        dimensions = get_number_of_dimensions_of_peak_list(file_format, line)
+                        if dimensions is not None and 0 < dimensions <= MAX_DIM_NUM_OF_SPECTRA:
+                            break
+
+            sf_data.add_tag('Number_of_spectral_dimensions', dimensions)
+
+            sf_data.add_tag('Chemical_shift_list', None)
+
+            _sf_id = _sf_framecode = None
+            _sf_category = self.sf_categories['nmr-star']['chem_shift']
+            if len(master_entry.get_saveframes_by_category(_sf_category)) == 1:
+                _sf_data = master_entry.get_saveframes_by_category(_sf_category)[0]
+                _sf_id = get_first_sf_tag(_sf_data, 'ID')
+                _sf_framecode = f"${get_first_sf_tag(_sf_data, 'sf_framecode')}"
+
+            sf_data.add_tag('Assigned_chem_shift_list_ID', _sf_id)
+            sf_data.add_tag('Assigned_chem_shift_list_label', _sf_framecode)
+
+            sf_data.add_tag('Details', None)
+            sf_data.add_tag('Text_data_format', file_format if file_format is not None else 'unknown')
+
+            with open(file_path, 'r', encoding='ascii', errors='ignore') as ifp:
+                sf_data.add_tag('Text_data', ifp.read())
+
+            master_entry.add_saveframe(sf_data)
+
+            self.__pk_sf_holder.append({'file_type': file_type, 'saveframe': sf_data})
+
+            list_id += 1
 
         return True
 
@@ -30499,8 +30701,7 @@ class NmrDpUtility:
 
         list_id = 1
 
-        if self.__pk_sf_dict_holder is None:
-            self.__pk_sf_dict_holder = {}
+        self.__pk_sf_holder = []
 
         for fileListId in range(self.__cs_file_path_list_len, self.__file_path_list_len):
 
@@ -30522,9 +30723,6 @@ class NmrDpUtility:
 
                 if content_subtype not in input_source_dic['content_subtype']:
                     continue
-
-                if content_subtype not in self.__pk_sf_dict_holder:
-                    self.__pk_sf_dict_holder[content_subtype] = []
 
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
@@ -30548,6 +30746,8 @@ class NmrDpUtility:
 
                     self.__validateStrPk__(fileListId, file_type, content_subtype, list_id, sf_data, sf_framecode, lp_category)
 
+                    self.__pk_sf_holder.append({'file_type': 'nmr-star', 'saveframe': sf_data})
+
                     list_id += 1
 
                 else:
@@ -30556,6 +30756,8 @@ class NmrDpUtility:
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                         self.__validateStrPk__(fileListId, file_type, content_subtype, list_id, sf_data, sf_framecode, lp_category)
+
+                        self.__pk_sf_holder.append({'file_type': 'nmr-star', 'saveframe': sf_data})
 
                         list_id += 1
 
@@ -48200,6 +48402,9 @@ class NmrDpUtility:
 
         self.__mergeStrPk()
 
+        if self.__combine_pk_any and not self.__remediation_mode:  # DAOTHER-7407 enable until Phase 2 release
+            self.__mergeAnyPkAsIs()
+
         # Update _Data_set loop
 
         try:
@@ -48254,7 +48459,7 @@ class NmrDpUtility:
 
         self.__list_id_counter = None
         self.__mr_sf_dict_holder = None
-        self.__pk_sf_dict_holder = None
+        self.__pk_sf_holder = None
 
         return True
 

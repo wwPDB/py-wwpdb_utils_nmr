@@ -558,7 +558,7 @@ class GromacsPTParserListener(ParseTreeListener):
                     for k, v in self.__atomNumberDict.items():
                         if k in mappedAtomNum:
                             continue
-                        if v['comp_id'] == compId:
+                        if 'comp_id' in v and v['comp_id'] == compId:
                             seqKey = (v['comp_id'], v['chain_id'], v['seq_id'])
                             seqVal = (authChainId, authSeqId)
                             if seqKey not in compIdMapping:

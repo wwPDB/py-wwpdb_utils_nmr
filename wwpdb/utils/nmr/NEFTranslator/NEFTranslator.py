@@ -2321,6 +2321,31 @@ class NEFTranslator:
                                     raise ValueError(f"Coexisting data item {cw} of {d['name']} must exists in allowed tags.")
 
             for loop in loops:
+
+                if 'Details' in loop.tags and 'Details' not in allowed_tags:
+                    loop.remove_tag('Details')
+
+                if loop.category == '_Assigned_peak_chem_shift' and 'Peak_contribution_ID' in loop.tags and 'Contribution_fractional_val' in allowed_tags:
+                    col = loop.tags.index('Peak_contribution_ID')
+                    loop.tags[col] = 'Contribution_fractional_val'
+
+                if loop.category == '_Atom_chem_shift' and 'NEF_atom_name' in loop.tags and 'PDB_atom_name' in allowed_tags:
+                    col = loop.tags.index('NEF_atom_name')
+                    loop.tags[col] = 'PDB_atom_name'
+
+                if loop.category == '_Bond' and 'Order' in loop.tags and 'Value_order' in allowed_tags:
+                    col = loop.tags.index('Order')
+                    loop.tags[col] = 'Value_order'
+
+                if loop.category == '_Spectral_dim':
+                    if 'Encoded_source_dimension_ID' in loop.tags and 'Encoded_reduced_dimension_ID' in allowed_tags:
+                        col = loop.tags.index('Encoded_source_dimension_ID')
+                        loop.tags[col] = 'Encoded_reduced_dimension_ID'
+
+                    if 'Folding_type' in loop.tags and 'Under_sampling_type' in allowed_tags:
+                        col = loop.tags.index('Folding_type')
+                        loop.tags[col] = 'Under_sampling_type'
+
                 tag_data = []
 
                 if len(key_names) > 0 and set(key_names) & set(loop.tags) != set(key_names):

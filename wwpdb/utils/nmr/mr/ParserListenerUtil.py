@@ -463,7 +463,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                           'no temperature control applied')},
                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                  'enforce-non-zero': True},
-                                                {'name': 'T1_coherence_type', 'type': 'enum', 'mandatory': True,
+                                                {'name': 'T2_coherence_type', 'type': 'enum', 'mandatory': True,
                                                  'enum': ('I(+,-)', 'S(+,-)', 'na')},
                                                 {'name': 'T2_val_units', 'type': 'enum', 'mandatory': True,
                                                  'enum': ('s', 's-1', 'ms', 'ms-1')},

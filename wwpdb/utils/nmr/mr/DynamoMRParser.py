@@ -1,4 +1,4 @@
-# Generated from DynamoMRParser.g4 by ANTLR 4.11.1
+# Generated from DynamoMRParser.g4 by ANTLR 4.12.0
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -647,7 +647,7 @@ class DynamoMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.11.1")
+        self.checkVersion("4.12.0")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -3913,7 +3913,7 @@ class DynamoMRParser ( Parser ):
                 elif token in [32, 33, 34]:
                     self.state = 708
                     _la = self._input.LA(1)
-                    if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 30064771072) != 0):
+                    if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 30064771072) != 0)):
                         self._errHandler.recoverInline(self)
                     else:
                         self._errHandler.reportMatch(self)
@@ -3970,7 +3970,7 @@ class DynamoMRParser ( Parser ):
             elif token in [39, 40, 41, 42, 43, 44]:
                 self.state = 729
                 _la = self._input.LA(1)
-                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 34634616274944) != 0):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 34634616274944) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)

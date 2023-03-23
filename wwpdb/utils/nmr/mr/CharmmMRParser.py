@@ -1,4 +1,4 @@
-# Generated from CharmmMRParser.g4 by ANTLR 4.11.1
+# Generated from CharmmMRParser.g4 by ANTLR 4.12.0
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -684,7 +684,7 @@ class CharmmMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.11.1")
+        self.checkVersion("4.12.0")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -837,7 +837,7 @@ class CharmmMRParser ( Parser ):
             self.state = 118
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 180152781187842058) != 0 or (((_la - 87)) & ~0x3f) == 0 and ((1 << (_la - 87)) & 2305843009282900097) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 180152781187842058) != 0) or ((((_la - 87)) & ~0x3f) == 0 and ((1 << (_la - 87)) & 2305843009282900097) != 0):
                 self.state = 116
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -1046,7 +1046,7 @@ class CharmmMRParser ( Parser ):
             self.state = 136
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la - 56)) & ~0x3f) == 0 and ((1 << (_la - 56)) & 1707229181) != 0:
+            while ((((_la - 56)) & ~0x3f) == 0 and ((1 << (_la - 56)) & 1707229181) != 0):
                 self.state = 133
                 self.noe_statement()
                 self.state = 138
@@ -1110,7 +1110,7 @@ class CharmmMRParser ( Parser ):
             self.state = 145
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la - 56)) & ~0x3f) == 0 and ((1 << (_la - 56)) & 1707343869) != 0:
+            while ((((_la - 56)) & ~0x3f) == 0 and ((1 << (_la - 56)) & 1707343869) != 0):
                 self.state = 142
                 self.pnoe_statement()
                 self.state = 147
@@ -1183,7 +1183,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 155
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 63701504) != 0 or (((_la - 116)) & ~0x3f) == 0 and ((1 << (_la - 116)) & 8858370049) != 0:
+                while (((_la) & ~0x3f) == 0 and ((1 << _la) & 63701504) != 0) or ((((_la - 116)) & ~0x3f) == 0 and ((1 << (_la - 116)) & 8858370049) != 0):
                     self.state = 152
                     self.dihedral_statement()
                     self.state = 157
@@ -1255,7 +1255,7 @@ class CharmmMRParser ( Parser ):
             self.state = 166
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 65504) != 0 or _la==116:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 65504) != 0) or _la==116:
                 self.state = 163
                 self.harmonic_statement()
                 self.state = 168
@@ -1319,7 +1319,7 @@ class CharmmMRParser ( Parser ):
             self.state = 174
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3491758080) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 3491758080) != 0):
                 self.state = 171
                 self.ic_statement()
                 self.state = 176
@@ -1383,7 +1383,7 @@ class CharmmMRParser ( Parser ):
             self.state = 182
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 8589939200) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 8589939200) != 0):
                 self.state = 179
                 self.droplet_statement()
                 self.state = 184
@@ -1577,7 +1577,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 205
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 22553182508941312) != 0 or _la==116:
+                while (((_la) & ~0x3f) == 0 and ((1 << _la) & 22553182508941312) != 0) or _la==116:
                     self.state = 202
                     self.fix_bond_or_angle_statement()
                     self.state = 207
@@ -1644,7 +1644,7 @@ class CharmmMRParser ( Parser ):
             self.state = 215
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la - 56)) & ~0x3f) == 0 and ((1 << (_la - 56)) & 1152921775726657537) != 0:
+            while ((((_la - 56)) & ~0x3f) == 0 and ((1 << (_la - 56)) & 1152921775726657537) != 0):
                 self.state = 212
                 self.restrained_distance_statement()
                 self.state = 217
@@ -1703,7 +1703,7 @@ class CharmmMRParser ( Parser ):
             self.state = 222
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 17592202824192) != 0 or (((_la - 95)) & ~0x3f) == 0 and ((1 << (_la - 95)) & 2097279) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 17592202824192) != 0) or ((((_la - 95)) & ~0x3f) == 0 and ((1 << (_la - 95)) & 2097279) != 0):
                 self.state = 219
                 self.external_force_statement()
                 self.state = 224
@@ -1777,7 +1777,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 230
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 984704) != 0 or (((_la - 103)) & ~0x3f) == 0 and ((1 << (_la - 103)) & 8219) != 0:
+                while (((_la) & ~0x3f) == 0 and ((1 << _la) & 984704) != 0) or ((((_la - 103)) & ~0x3f) == 0 and ((1 << (_la - 103)) & 8219) != 0):
                     self.state = 227
                     self.rmsd_statement()
                     self.state = 232
@@ -1848,7 +1848,7 @@ class CharmmMRParser ( Parser ):
             self.state = 241
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 72057594038452736) != 0 or (((_la - 102)) & ~0x3f) == 0 and ((1 << (_la - 102)) & 18305) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 72057594038452736) != 0) or ((((_la - 102)) & ~0x3f) == 0 and ((1 << (_la - 102)) & 18305) != 0):
                 self.state = 238
                 self.gyration_statement()
                 self.state = 243
@@ -1907,7 +1907,7 @@ class CharmmMRParser ( Parser ):
             self.state = 248
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==9 or _la==11 or (((_la - 109)) & ~0x3f) == 0 and ((1 << (_la - 109)) & 237) != 0:
+            while _la==9 or _la==11 or ((((_la - 109)) & ~0x3f) == 0 and ((1 << (_la - 109)) & 237) != 0):
                 self.state = 245
                 self.distance_matrix_statement()
                 self.state = 250
@@ -3025,7 +3025,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 437
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 61440) != 0:
+                while (((_la) & ~0x3f) == 0 and ((1 << _la) & 61440) != 0):
                     self.state = 434
                     self.absolute_spec()
                     self.state = 439
@@ -3035,7 +3035,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 443
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3584) != 0:
+                while (((_la) & ~0x3f) == 0 and ((1 << _la) & 3584) != 0):
                     self.state = 440
                     self.force_const_spec()
                     self.state = 445
@@ -3058,7 +3058,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 454
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((_la) & ~0x3f) == 0 and ((1 << _la) & 1835008) != 0:
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & 1835008) != 0):
                     self.state = 453
                     self.coordinate_spec()
 
@@ -3090,7 +3090,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 467
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((_la) & ~0x3f) == 0 and ((1 << _la) & 1835008) != 0:
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & 1835008) != 0):
                     self.state = 466
                     self.coordinate_spec()
 
@@ -3111,7 +3111,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 476
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3584) != 0:
+                while (((_la) & ~0x3f) == 0 and ((1 << _la) & 3584) != 0):
                     self.state = 473
                     self.force_const_spec()
                     self.state = 478
@@ -3123,7 +3123,7 @@ class CharmmMRParser ( Parser ):
                 self.state = 483
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3584) != 0:
+                while (((_la) & ~0x3f) == 0 and ((1 << _la) & 3584) != 0):
                     self.state = 480
                     self.force_const_spec()
                     self.state = 485
@@ -3398,7 +3398,7 @@ class CharmmMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 509
             _la = self._input.LA(1)
-            if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 1835008) != 0):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 1835008) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3936,7 +3936,7 @@ class CharmmMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 572
             _la = self._input.LA(1)
-            if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 633320039776256) != 0):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 633320039776256) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -4155,7 +4155,7 @@ class CharmmMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 2)
                 self.state = 601
                 _la = self._input.LA(1)
-                if not((((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & 25) != 0):
+                if not(((((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & 25) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -4289,7 +4289,7 @@ class CharmmMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 2)
                 self.state = 614
                 _la = self._input.LA(1)
-                if not(_la==24 or (((_la - 95)) & ~0x3f) == 0 and ((1 << (_la - 95)) & 79) != 0):
+                if not(_la==24 or ((((_la - 95)) & ~0x3f) == 0 and ((1 << (_la - 95)) & 79) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -4829,7 +4829,7 @@ class CharmmMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 2)
                 self.state = 660
                 _la = self._input.LA(1)
-                if not((((_la - 111)) & ~0x3f) == 0 and ((1 << (_la - 111)) & 19) != 0):
+                if not(((((_la - 111)) & ~0x3f) == 0 and ((1 << (_la - 111)) & 19) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -5545,7 +5545,7 @@ class CharmmMRParser ( Parser ):
             elif token in [126, 128, 130]:
                 self.state = 787
                 _la = self._input.LA(1)
-                if not((((_la - 126)) & ~0x3f) == 0 and ((1 << (_la - 126)) & 21) != 0):
+                if not(((((_la - 126)) & ~0x3f) == 0 and ((1 << (_la - 126)) & 21) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -5677,7 +5677,7 @@ class CharmmMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 812
             _la = self._input.LA(1)
-            if not((((_la - 144)) & ~0x3f) == 0 and ((1 << (_la - 144)) & 262147) != 0):
+            if not(((((_la - 144)) & ~0x3f) == 0 and ((1 << (_la - 144)) & 262147) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -5780,7 +5780,7 @@ class CharmmMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 816
             _la = self._input.LA(1)
-            if not((((_la - 144)) & ~0x3f) == 0 and ((1 << (_la - 144)) & 262147) != 0):
+            if not(((((_la - 144)) & ~0x3f) == 0 and ((1 << (_la - 144)) & 262147) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -5857,7 +5857,7 @@ class CharmmMRParser ( Parser ):
 
             self.state = 823
             _la = self._input.LA(1)
-            if not((((_la - 169)) & ~0x3f) == 0 and ((1 << (_la - 169)) & 7) != 0):
+            if not(((((_la - 169)) & ~0x3f) == 0 and ((1 << (_la - 169)) & 7) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

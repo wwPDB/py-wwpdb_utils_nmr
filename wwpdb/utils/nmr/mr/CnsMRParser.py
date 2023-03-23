@@ -1,4 +1,4 @@
-# Generated from CnsMRParser.g4 by ANTLR 4.11.1
+# Generated from CnsMRParser.g4 by ANTLR 4.12.0
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -1309,7 +1309,7 @@ class CnsMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.11.1")
+        self.checkVersion("4.12.0")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -1581,7 +1581,7 @@ class CnsMRParser ( Parser ):
             self.state = 197
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -3946560614033259480) != 0 or (((_la - 69)) & ~0x3f) == 0 and ((1 << (_la - 69)) & -7457960982855958013) != 0 or (((_la - 135)) & ~0x3f) == 0 and ((1 << (_la - 135)) & 127) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & -3946560614033259480) != 0) or ((((_la - 69)) & ~0x3f) == 0 and ((1 << (_la - 69)) & -7457960982855958013) != 0) or ((((_la - 135)) & ~0x3f) == 0 and ((1 << (_la - 135)) & 127) != 0):
                 self.state = 195
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -1887,7 +1887,7 @@ class CnsMRParser ( Parser ):
             self.state = 218
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3377700057124896) != 0 or _la==124 or _la==141:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 3377700057124896) != 0) or _la==124 or _la==141:
                 self.state = 215
                 self.dihedral_statement()
                 self.state = 220
@@ -1962,7 +1962,7 @@ class CnsMRParser ( Parser ):
             self.state = 230
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 11259033428164608) != 0 or _la==124 or _la==141:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 11259033428164608) != 0) or _la==124 or _la==141:
                 self.state = 227
                 self.plane_statement()
                 self.state = 232
@@ -2101,7 +2101,7 @@ class CnsMRParser ( Parser ):
             self.state = 251
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3458764513898398752) != 0 or _la==141:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 3458764513898398752) != 0) or _la==141:
                 self.state = 248
                 self.sani_statement()
                 self.state = 253
@@ -2165,7 +2165,7 @@ class CnsMRParser ( Parser ):
             self.state = 260
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3458764513899451424) != 0 or _la==141:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 3458764513899451424) != 0) or _la==141:
                 self.state = 257
                 self.coupling_statement()
                 self.state = 262
@@ -2229,7 +2229,7 @@ class CnsMRParser ( Parser ):
             self.state = 269
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la - 5)) & ~0x3f) == 0 and ((1 << (_la - 5)) & -504403158263062495) != 0 or _la==141:
+            while ((((_la - 5)) & ~0x3f) == 0 and ((1 << (_la - 5)) & -504403158263062495) != 0) or _la==141:
                 self.state = 266
                 self.carbon_shift_statement()
                 self.state = 271
@@ -2293,7 +2293,7 @@ class CnsMRParser ( Parser ):
             self.state = 278
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -6917529027563486208) != 0 or (((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & 2041) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & -6917529027563486208) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & 2041) != 0):
                 self.state = 275
                 self.proton_shift_statement()
                 self.state = 280
@@ -2357,7 +2357,7 @@ class CnsMRParser ( Parser ):
             self.state = 287
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 2305843009291551776) != 0 or (((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & 237585) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 2305843009291551776) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & 237585) != 0):
                 self.state = 284
                 self.conformation_statement()
                 self.state = 289
@@ -2421,7 +2421,7 @@ class CnsMRParser ( Parser ):
             self.state = 296
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3458764513898398752) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 3458764513898398752) != 0):
                 self.state = 293
                 self.diffusion_statement()
                 self.state = 298
@@ -2485,7 +2485,7 @@ class CnsMRParser ( Parser ):
             self.state = 305
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3458764513898398752) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 3458764513898398752) != 0):
                 self.state = 302
                 self.one_bond_coupling_statement()
                 self.state = 307
@@ -2549,7 +2549,7 @@ class CnsMRParser ( Parser ):
             self.state = 314
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 2305843009291551776) != 0 or (((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & 4333585) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 2305843009291551776) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & 4333585) != 0):
                 self.state = 311
                 self.angle_db_statement()
                 self.state = 316
@@ -3235,7 +3235,7 @@ class CnsMRParser ( Parser ):
             self.state = 465
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
+            if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0):
                 self.state = 464
                 self.number()
 
@@ -3288,7 +3288,7 @@ class CnsMRParser ( Parser ):
                 self.state = 486
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
+                if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0):
                     self.state = 485
                     self.number()
 
@@ -4579,7 +4579,7 @@ class CnsMRParser ( Parser ):
             self.state = 700
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
+            if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0):
                 self.state = 699
                 self.number()
 
@@ -4736,7 +4736,7 @@ class CnsMRParser ( Parser ):
                 self.state = 719
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
+                if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0):
                     self.state = 718
                     self.number_s()
 
@@ -4903,7 +4903,7 @@ class CnsMRParser ( Parser ):
             self.state = 763
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
+            if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0):
                 self.state = 760
                 self.number()
                 self.state = 761
@@ -5466,7 +5466,7 @@ class CnsMRParser ( Parser ):
                 self.state = 840
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
+                if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0):
                     self.state = 839
                     self.number_s()
 
@@ -5583,7 +5583,7 @@ class CnsMRParser ( Parser ):
             self.state = 863
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
+            if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0):
                 self.state = 862
                 self.number()
 
@@ -6702,7 +6702,7 @@ class CnsMRParser ( Parser ):
             self.state = 1046
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0:
+            if ((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0):
                 self.state = 1045
                 self.number()
 
@@ -7358,7 +7358,7 @@ class CnsMRParser ( Parser ):
             self.state = 1158
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 11259033428164608) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 11259033428164608) != 0):
                 self.state = 1155
                 self.ncs_statement()
                 self.state = 1160
@@ -7432,7 +7432,7 @@ class CnsMRParser ( Parser ):
                 self.state = 1167
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la - 55)) & ~0x3f) == 0 and ((1 << (_la - 55)) & 25769803777) != 0:
+                while ((((_la - 55)) & ~0x3f) == 0 and ((1 << (_la - 55)) & 25769803777) != 0):
                     self.state = 1164
                     self.ncs_group_statement()
                     self.state = 1169
@@ -8548,7 +8548,7 @@ class CnsMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1379
             _la = self._input.LA(1)
-            if not((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0):
+            if not(((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -8651,7 +8651,7 @@ class CnsMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1383
             _la = self._input.LA(1)
-            if not((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0):
+            if not(((((_la - 150)) & ~0x3f) == 0 and ((1 << (_la - 150)) & 524293) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -8825,7 +8825,7 @@ class CnsMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1393
             _la = self._input.LA(1)
-            if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 844424930131976) != 0 or (((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & 3377699720527873) != 0 or _la==157):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 844424930131976) != 0) or ((((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & 3377699720527873) != 0) or _la==157):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -9194,10 +9194,10 @@ class CnsMRParser ( Parser ):
             self.state = 1437
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & 31) != 0:
+            if ((((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & 31) != 0):
                 self.state = 1435
                 _la = self._input.LA(1)
-                if not((((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & 31) != 0):
+                if not(((((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & 31) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -9754,7 +9754,7 @@ class CnsMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1569
             _la = self._input.LA(1)
-            if not((((_la - 235)) & ~0x3f) == 0 and ((1 << (_la - 235)) & 127) != 0):
+            if not(((((_la - 235)) & ~0x3f) == 0 and ((1 << (_la - 235)) & 127) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -9892,10 +9892,10 @@ class CnsMRParser ( Parser ):
             self.state = 1583
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & 31) != 0:
+            if ((((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & 31) != 0):
                 self.state = 1581
                 _la = self._input.LA(1)
-                if not((((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & 31) != 0):
+                if not(((((_la - 196)) & ~0x3f) == 0 and ((1 << (_la - 196)) & 31) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -9987,7 +9987,7 @@ class CnsMRParser ( Parser ):
             self.state = 1587
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((_la) & ~0x3f) == 0 and ((1 << _la) & 844424930131976) != 0 or (((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & 3377699720527873) != 0 or _la==157:
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 844424930131976) != 0) or ((((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & 3377699720527873) != 0) or _la==157:
                 self.state = 1586
                 self.class_name()
 
@@ -10085,7 +10085,7 @@ class CnsMRParser ( Parser ):
             self.state = 1607
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==26 or _la==49 or (((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & 70931694131086337) != 0:
+            while _la==26 or _la==49 or ((((_la - 85)) & ~0x3f) == 0 and ((1 << (_la - 85)) & 70931694131086337) != 0):
                 self.state = 1604
                 self.parameter_statement()
                 self.state = 1609
@@ -10694,7 +10694,7 @@ class CnsMRParser ( Parser ):
             self.state = 1740
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 844424930132000) != 0 or _la==128:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 844424930132000) != 0) or _la==128:
                 self.state = 1738
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
@@ -11474,7 +11474,7 @@ class CnsMRParser ( Parser ):
             self.state = 1896
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 13792273858822144) != 0 or _la==128:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 13792273858822144) != 0) or _la==128:
                 self.state = 1894
                 self._errHandler.sync(self)
                 token = self._input.LA(1)

@@ -1,4 +1,4 @@
-# Generated from RosettaMRParser.g4 by ANTLR 4.11.1
+# Generated from RosettaMRParser.g4 by ANTLR 4.12.0
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -346,7 +346,7 @@ class RosettaMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.11.1")
+        self.checkVersion("4.12.0")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -485,7 +485,7 @@ class RosettaMRParser ( Parser ):
             self.state = 80
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 19140298416455678) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 19140298416455678) != 0):
                 self.state = 78
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -632,10 +632,10 @@ class RosettaMRParser ( Parser ):
             self.state = 89
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 8070450532247928832) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 8070450532247928832) != 0):
                 self.state = 86
                 _la = self._input.LA(1)
-                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 8070450532247928832) != 0):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 8070450532247928832) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -767,7 +767,7 @@ class RosettaMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 99
             _la = self._input.LA(1)
-            if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 518) != 0):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 518) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2084,7 +2084,7 @@ class RosettaMRParser ( Parser ):
                 self.state = 249 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (((_la) & ~0x3f) == 0 and ((1 << _la) & 16382) != 0):
+                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & 16382) != 0)):
                     break
 
             self.state = 251
@@ -2386,7 +2386,7 @@ class RosettaMRParser ( Parser ):
             if token in [18, 25, 39, 40]:
                 self.state = 265
                 _la = self._input.LA(1)
-                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 1649301258240) != 0):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 1649301258240) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2528,7 +2528,7 @@ class RosettaMRParser ( Parser ):
             elif token in [21, 22, 26, 46]:
                 self.state = 314
                 _la = self._input.LA(1)
-                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 70368817577984) != 0):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 70368817577984) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2622,7 +2622,7 @@ class RosettaMRParser ( Parser ):
             elif token in [31, 44, 45]:
                 self.state = 349
                 _la = self._input.LA(1)
-                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 52778705616896) != 0):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 52778705616896) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)

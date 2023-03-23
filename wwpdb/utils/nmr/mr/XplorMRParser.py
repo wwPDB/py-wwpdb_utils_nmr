@@ -1,4 +1,4 @@
-# Generated from XplorMRParser.g4 by ANTLR 4.11.1
+# Generated from XplorMRParser.g4 by ANTLR 4.12.0
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -1978,7 +1978,7 @@ class XplorMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.11.1")
+        self.checkVersion("4.12.0")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -2418,7 +2418,7 @@ class XplorMRParser ( Parser ):
             self.state = 319
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 1332108570988642840) != 0 or (((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & 30962534813024453) != 0 or (((_la - 134)) & ~0x3f) == 0 and ((1 << (_la - 134)) & 4473655115383049) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 1332108570988642840) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & 30962534813024453) != 0) or ((((_la - 134)) & ~0x3f) == 0 and ((1 << (_la - 134)) & 4473655115383049) != 0):
                 self.state = 317
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -2769,7 +2769,7 @@ class XplorMRParser ( Parser ):
             self.state = 328
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 133955568) != 0 or _la==185:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 133955568) != 0) or _la==185:
                 self.state = 325
                 self.noe_statement()
                 self.state = 330
@@ -2844,7 +2844,7 @@ class XplorMRParser ( Parser ):
             self.state = 340
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 824636342288) != 0 or _la==168 or _la==185:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 824636342288) != 0) or _la==168 or _la==185:
                 self.state = 337
                 self.dihedral_statement()
                 self.state = 342
@@ -2955,7 +2955,7 @@ class XplorMRParser ( Parser ):
                 self.state = 349
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 6597070471696) != 0 or _la==185:
+                while (((_la) & ~0x3f) == 0 and ((1 << _la) & 6597070471696) != 0) or _la==185:
                     self.state = 346
                     self.sani_statement()
                     self.state = 351
@@ -2977,7 +2977,7 @@ class XplorMRParser ( Parser ):
                 self.state = 357
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 112150188835408) != 0:
+                while (((_la) & ~0x3f) == 0 and ((1 << _la) & 112150188835408) != 0):
                     self.state = 354
                     self.xdip_statement()
                     self.state = 359
@@ -2994,7 +2994,7 @@ class XplorMRParser ( Parser ):
                 self.state = 365
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 848822977315344) != 0:
+                while (((_la) & ~0x3f) == 0 and ((1 << _la) & 848822977315344) != 0):
                     self.state = 362
                     self.vean_statement()
                     self.state = 367
@@ -3011,7 +3011,7 @@ class XplorMRParser ( Parser ):
                 self.state = 373
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 2199023960592) != 0:
+                while (((_la) & ~0x3f) == 0 and ((1 << _la) & 2199023960592) != 0):
                     self.state = 370
                     self.tenso_statement()
                     self.state = 375
@@ -3028,7 +3028,7 @@ class XplorMRParser ( Parser ):
                 self.state = 381
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((_la) & ~0x3f) == 0 and ((1 << _la) & 41781442560528) != 0:
+                while (((_la) & ~0x3f) == 0 and ((1 << _la) & 41781442560528) != 0):
                     self.state = 378
                     self.anis_statement()
                     self.state = 383
@@ -3107,7 +3107,7 @@ class XplorMRParser ( Parser ):
             self.state = 394
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 27022147520036864) != 0 or _la==168 or _la==185:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 27022147520036864) != 0) or _la==168 or _la==185:
                 self.state = 391
                 self.planar_statement()
                 self.state = 396
@@ -3246,7 +3246,7 @@ class XplorMRParser ( Parser ):
             self.state = 415
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -2305838611166510576) != 0 or _la==185:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & -2305838611166510576) != 0) or _la==185:
                 self.state = 412
                 self.antidistance_statement()
                 self.state = 417
@@ -3310,7 +3310,7 @@ class XplorMRParser ( Parser ):
             self.state = 424
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la - 4)) & ~0x3f) == 0 and ((1 << (_la - 4)) & 2305896198088731681) != 0 or _la==185:
+            while ((((_la - 4)) & ~0x3f) == 0 and ((1 << (_la - 4)) & 2305896198088731681) != 0) or _la==185:
                 self.state = 421
                 self.coupling_statement()
                 self.state = 426
@@ -3374,7 +3374,7 @@ class XplorMRParser ( Parser ):
             self.state = 433
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -6917524629593865712) != 0 or (((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & 7) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & -6917524629593865712) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & 7) != 0):
                 self.state = 430
                 self.carbon_shift_statement()
                 self.state = 435
@@ -3438,7 +3438,7 @@ class XplorMRParser ( Parser ):
             self.state = 442
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 2256197860884992) != 0 or (((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & 8147) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 2256197860884992) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & 8147) != 0):
                 self.state = 439
                 self.proton_shift_statement()
                 self.state = 444
@@ -3502,7 +3502,7 @@ class XplorMRParser ( Parser ):
             self.state = 451
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -4611681620243889648) != 0 or (((_la - 79)) & ~0x3f) == 0 and ((1 << (_la - 79)) & 31) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & -4611681620243889648) != 0) or ((((_la - 79)) & ~0x3f) == 0 and ((1 << (_la - 79)) & 31) != 0):
                 self.state = 448
                 self.ramachandran_statement()
                 self.state = 453
@@ -3566,7 +3566,7 @@ class XplorMRParser ( Parser ):
             self.state = 460
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 2752528) != 0 or _la==185:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 2752528) != 0) or _la==185:
                 self.state = 457
                 self.collapse_statement()
                 self.state = 462
@@ -3630,7 +3630,7 @@ class XplorMRParser ( Parser ):
             self.state = 469
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 41781442560528) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 41781442560528) != 0):
                 self.state = 466
                 self.diffusion_statement()
                 self.state = 471
@@ -3694,7 +3694,7 @@ class XplorMRParser ( Parser ):
             self.state = 478
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -4611681620245986800) != 0 or (((_la - 79)) & ~0x3f) == 0 and ((1 << (_la - 79)) & 3589) != 0 or _la==154:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & -4611681620245986800) != 0) or ((((_la - 79)) & ~0x3f) == 0 and ((1 << (_la - 79)) & 3589) != 0) or _la==154:
                 self.state = 475
                 self.orientation_statement()
                 self.state = 480
@@ -3758,7 +3758,7 @@ class XplorMRParser ( Parser ):
             self.state = 487
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 41781444657680) != 0 or _la==92 or _la==185:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 41781444657680) != 0) or _la==92 or _la==185:
                 self.state = 484
                 self.csa_statement()
                 self.state = 489
@@ -3822,7 +3822,7 @@ class XplorMRParser ( Parser ):
             self.state = 496
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 6597072568848) != 0 or _la==92:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 6597072568848) != 0) or _la==92:
                 self.state = 493
                 self.pcsa_statement()
                 self.state = 498
@@ -3886,7 +3886,7 @@ class XplorMRParser ( Parser ):
             self.state = 505
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 6597070471696) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 6597070471696) != 0):
                 self.state = 502
                 self.one_bond_coupling_statement()
                 self.state = 507
@@ -3950,7 +3950,7 @@ class XplorMRParser ( Parser ):
             self.state = 514
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -2305838611166477808) != 0 or _la==77 or _la==96:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & -2305838611166477808) != 0) or _la==77 or _la==96:
                 self.state = 511
                 self.angle_db_statement()
                 self.state = 516
@@ -4014,7 +4014,7 @@ class XplorMRParser ( Parser ):
             self.state = 523
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 4398047216144) != 0 or (((_la - 98)) & ~0x3f) == 0 and ((1 << (_la - 98)) & 15) != 0 or _la==185:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 4398047216144) != 0) or ((((_la - 98)) & ~0x3f) == 0 and ((1 << (_la - 98)) & 15) != 0) or _la==185:
                 self.state = 520
                 self.pre_statement()
                 self.state = 525
@@ -4078,7 +4078,7 @@ class XplorMRParser ( Parser ):
             self.state = 532
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 6597070438928) != 0 or (((_la - 103)) & ~0x3f) == 0 and ((1 << (_la - 103)) & 1023) != 0 or _la==185:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 6597070438928) != 0) or ((((_la - 103)) & ~0x3f) == 0 and ((1 << (_la - 103)) & 1023) != 0) or _la==185:
                 self.state = 529
                 self.pcs_statement()
                 self.state = 534
@@ -4142,7 +4142,7 @@ class XplorMRParser ( Parser ):
             self.state = 541
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 6597070438928) != 0 or (((_la - 103)) & ~0x3f) == 0 and ((1 << (_la - 103)) & 1023) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 6597070438928) != 0) or ((((_la - 103)) & ~0x3f) == 0 and ((1 << (_la - 103)) & 1023) != 0):
                 self.state = 538
                 self.prdc_statement()
                 self.state = 543
@@ -4206,7 +4206,7 @@ class XplorMRParser ( Parser ):
             self.state = 550
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 4398047183376) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 4398047183376) != 0):
                 self.state = 547
                 self.porientation_statement()
                 self.state = 552
@@ -4270,7 +4270,7 @@ class XplorMRParser ( Parser ):
             self.state = 559
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 6597070438928) != 0 or _la==112 or _la==116:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 6597070438928) != 0) or _la==112 or _la==116:
                 self.state = 556
                 self.pccr_statement()
                 self.state = 561
@@ -4334,7 +4334,7 @@ class XplorMRParser ( Parser ):
             self.state = 568
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 4398047183376) != 0 or _la==185:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 4398047183376) != 0) or _la==185:
                 self.state = 565
                 self.hbond_statement()
                 self.state = 570
@@ -4398,7 +4398,7 @@ class XplorMRParser ( Parser ):
             self.state = 577
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==4 or (((_la - 119)) & ~0x3f) == 0 and ((1 << (_la - 119)) & 8191) != 0 or _la==185:
+            while _la==4 or ((((_la - 119)) & ~0x3f) == 0 and ((1 << (_la - 119)) & 8191) != 0) or _la==185:
                 self.state = 574
                 self.hbond_db_statement()
                 self.state = 579
@@ -4866,7 +4866,7 @@ class XplorMRParser ( Parser ):
             self.state = 674
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                 self.state = 673
                 self.number()
 
@@ -4874,7 +4874,7 @@ class XplorMRParser ( Parser ):
             self.state = 679
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 72339135586631680) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 72339135586631680) != 0):
                 self.state = 676
                 self.noe_annotation()
                 self.state = 681
@@ -4918,7 +4918,7 @@ class XplorMRParser ( Parser ):
                 self.state = 695
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+                if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                     self.state = 694
                     self.number()
 
@@ -5676,7 +5676,7 @@ class XplorMRParser ( Parser ):
             self.state = 823
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                 self.state = 822
                 self.number()
 
@@ -6238,7 +6238,7 @@ class XplorMRParser ( Parser ):
             self.state = 921
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                 self.state = 918
                 self.number()
                 self.state = 919
@@ -6455,7 +6455,7 @@ class XplorMRParser ( Parser ):
             self.state = 948
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                 self.state = 947
                 self.number()
 
@@ -6714,7 +6714,7 @@ class XplorMRParser ( Parser ):
             self.state = 988
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                 self.state = 987
                 self.number()
 
@@ -7617,7 +7617,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1120
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+                if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                     self.state = 1119
                     self.number_s()
 
@@ -7784,7 +7784,7 @@ class XplorMRParser ( Parser ):
             self.state = 1164
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                 self.state = 1161
                 self.number()
                 self.state = 1162
@@ -8327,7 +8327,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1233
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+                if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                     self.state = 1232
                     self.number_s()
 
@@ -8452,7 +8452,7 @@ class XplorMRParser ( Parser ):
             self.state = 1259
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                 self.state = 1258
                 self.number()
 
@@ -9073,7 +9073,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1329
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+                if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                     self.state = 1325
                     self.number_s()
                     self.state = 1326
@@ -9135,7 +9135,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1356
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+                if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                     self.state = 1352
                     self.number_s()
                     self.state = 1353
@@ -9205,7 +9205,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1385
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+                if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                     self.state = 1381
                     self.number_s()
                     self.state = 1382
@@ -9269,7 +9269,7 @@ class XplorMRParser ( Parser ):
                 self.state = 1405
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+                if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                     self.state = 1404
                     self.number_s()
 
@@ -9806,7 +9806,7 @@ class XplorMRParser ( Parser ):
             self.state = 1494
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                 self.state = 1493
                 self.number()
 
@@ -10451,7 +10451,7 @@ class XplorMRParser ( Parser ):
             self.state = 1619
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                 self.state = 1618
                 self.number()
 
@@ -11563,7 +11563,7 @@ class XplorMRParser ( Parser ):
             self.state = 1818
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                 self.state = 1817
                 self.number()
 
@@ -11910,7 +11910,7 @@ class XplorMRParser ( Parser ):
             self.state = 1874
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                 self.state = 1873
                 self.number()
 
@@ -12217,7 +12217,7 @@ class XplorMRParser ( Parser ):
             self.state = 1918
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                 self.state = 1917
                 self.number()
 
@@ -12642,7 +12642,7 @@ class XplorMRParser ( Parser ):
             self.state = 1975
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0:
+            if ((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
                 self.state = 1974
                 self.number()
 
@@ -13258,7 +13258,7 @@ class XplorMRParser ( Parser ):
             self.state = 2079
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 27022147520036864) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 27022147520036864) != 0):
                 self.state = 2076
                 self.ncs_statement()
                 self.state = 2081
@@ -14416,7 +14416,7 @@ class XplorMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 2285
             _la = self._input.LA(1)
-            if not((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
+            if not(((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -14519,7 +14519,7 @@ class XplorMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 2289
             _la = self._input.LA(1)
-            if not((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0):
+            if not(((((_la - 194)) & ~0x3f) == 0 and ((1 << (_la - 194)) & 524293) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -14693,7 +14693,7 @@ class XplorMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 2299
             _la = self._input.LA(1)
-            if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 206158430216) != 0 or _la==95 or (((_la - 179)) & ~0x3f) == 0 and ((1 << (_la - 179)) & 4194307) != 0):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 206158430216) != 0) or _la==95 or ((((_la - 179)) & ~0x3f) == 0 and ((1 << (_la - 179)) & 4194307) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -15062,10 +15062,10 @@ class XplorMRParser ( Parser ):
             self.state = 2343
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & 31) != 0:
+            if ((((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & 31) != 0):
                 self.state = 2341
                 _la = self._input.LA(1)
-                if not((((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & 31) != 0):
+                if not(((((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & 31) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -15622,7 +15622,7 @@ class XplorMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 2475
             _la = self._input.LA(1)
-            if not((((_la - 283)) & ~0x3f) == 0 and ((1 << (_la - 283)) & 127) != 0):
+            if not(((((_la - 283)) & ~0x3f) == 0 and ((1 << (_la - 283)) & 127) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -15760,10 +15760,10 @@ class XplorMRParser ( Parser ):
             self.state = 2489
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & 31) != 0:
+            if ((((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & 31) != 0):
                 self.state = 2487
                 _la = self._input.LA(1)
-                if not((((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & 31) != 0):
+                if not(((((_la - 244)) & ~0x3f) == 0 and ((1 << (_la - 244)) & 31) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -15855,7 +15855,7 @@ class XplorMRParser ( Parser ):
             self.state = 2493
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((_la) & ~0x3f) == 0 and ((1 << _la) & 206158430216) != 0 or _la==95 or (((_la - 179)) & ~0x3f) == 0 and ((1 << (_la - 179)) & 4194307) != 0:
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 206158430216) != 0) or _la==95 or ((((_la - 179)) & ~0x3f) == 0 and ((1 << (_la - 179)) & 4194307) != 0):
                 self.state = 2492
                 self.class_name()
 
@@ -15953,7 +15953,7 @@ class XplorMRParser ( Parser ):
             self.state = 2513
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==19 or _la==37 or _la==95 or _la==142 or (((_la - 179)) & ~0x3f) == 0 and ((1 << (_la - 179)) & 63) != 0:
+            while _la==19 or _la==37 or _la==95 or _la==142 or ((((_la - 179)) & ~0x3f) == 0 and ((1 << (_la - 179)) & 63) != 0):
                 self.state = 2510
                 self.parameter_statement()
                 self.state = 2515
@@ -16562,7 +16562,7 @@ class XplorMRParser ( Parser ):
             self.state = 2646
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 206158430224) != 0 or _la==172:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 206158430224) != 0) or _la==172:
                 self.state = 2644
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
@@ -16757,7 +16757,7 @@ class XplorMRParser ( Parser ):
             self.state = 2685
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 3545924999577616) != 0 or _la==172:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 3545924999577616) != 0) or _la==172:
                 self.state = 2683
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
@@ -18523,7 +18523,7 @@ class XplorMRParser ( Parser ):
             self.state = 3037
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 13510867601588224) != 0 or _la==172:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 13510867601588224) != 0) or _la==172:
                 self.state = 3035
                 self._errHandler.sync(self)
                 token = self._input.LA(1)

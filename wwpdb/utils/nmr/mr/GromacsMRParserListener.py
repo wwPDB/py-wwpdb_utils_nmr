@@ -3,7 +3,6 @@
 # Date: 02-June-2022
 #
 # Updates:
-# Generated from GromacsMRParser.g4 by ANTLR 4.11.1
 """ ParserLister class for GROMACS MR files.
     @author: Masashi Yokochi
 """

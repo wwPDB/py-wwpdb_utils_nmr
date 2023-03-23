@@ -3,7 +3,6 @@
 # Date: 09-Feb-2022
 #
 # Updates:
-# Generated from XplorMRParser.g4 by ANTLR 4.11.1
 """ ParserLister class for XPLOR-NIH MR files.
     @author: Masashi Yokochi
 """

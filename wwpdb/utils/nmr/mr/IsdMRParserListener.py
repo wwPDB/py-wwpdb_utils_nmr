@@ -3,7 +3,6 @@
 # Date: 13-Sep-2022
 #
 # Updates:
-# Generated from IsdMRParser.g4 by ANTLR 4.11.1
 """ ParserLister class for ISD MR files.
     @author: Masashi Yokochi
 """

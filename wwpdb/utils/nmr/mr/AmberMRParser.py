@@ -1,4 +1,4 @@
-# Generated from AmberMRParser.g4 by ANTLR 4.11.1
+# Generated from AmberMRParser.g4 by ANTLR 4.12.0
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -849,7 +849,7 @@ class AmberMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.11.1")
+        self.checkVersion("4.12.0")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -953,7 +953,7 @@ class AmberMRParser ( Parser ):
             self.state = 81
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==2 or (((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & 576461852351954945) != 0 or _la==141 or _la==145:
+            while _la==2 or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & 576461852351954945) != 0) or _la==141 or _la==145:
                 self.state = 79
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -1473,7 +1473,7 @@ class AmberMRParser ( Parser ):
             self.state = 128
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & -8) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & -8) != 0):
                 self.state = 125
                 self.restraint_factor()
                 self.state = 130
@@ -1846,7 +1846,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 1)
                 self.state = 131
                 _la = self._input.LA(1)
-                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 2190433320968) != 0):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 2190433320968) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -1964,7 +1964,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 4)
                 self.state = 156
                 _la = self._input.LA(1)
-                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 2243003720663104) != 0):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 2243003720663104) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -1991,7 +1991,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 5)
                 self.state = 164
                 _la = self._input.LA(1)
-                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 574208952489738368) != 0):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 574208952489738368) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2013,7 +2013,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 6)
                 self.state = 168
                 _la = self._input.LA(1)
-                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 1729386654956820736) != 0):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 1729386654956820736) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2036,7 +2036,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 7)
                 self.state = 174
                 _la = self._input.LA(1)
-                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & -2305843009213667840) != 0):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & -2305843009213667840) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2059,7 +2059,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 8)
                 self.state = 180
                 _la = self._input.LA(1)
-                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 4294901760) != 0):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 4294901760) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2099,7 +2099,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 10)
                 self.state = 190
                 _la = self._input.LA(1)
-                if not(((_la) & ~0x3f) == 0 and ((1 << _la) & 2190433320968) != 0):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 2190433320968) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2442,7 +2442,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 4)
                 self.state = 231
                 _la = self._input.LA(1)
-                if not((((_la - 69)) & ~0x3f) == 0 and ((1 << (_la - 69)) & 7) != 0):
+                if not(((((_la - 69)) & ~0x3f) == 0 and ((1 << (_la - 69)) & 7) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2475,7 +2475,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 5)
                 self.state = 242
                 _la = self._input.LA(1)
-                if not((((_la - 72)) & ~0x3f) == 0 and ((1 << (_la - 72)) & 95) != 0):
+                if not(((((_la - 72)) & ~0x3f) == 0 and ((1 << (_la - 72)) & 95) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2765,7 +2765,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 1)
                 self.state = 277
                 _la = self._input.LA(1)
-                if not((((_la - 80)) & ~0x3f) == 0 and ((1 << (_la - 80)) & 6657) != 0):
+                if not(((((_la - 80)) & ~0x3f) == 0 and ((1 << (_la - 80)) & 6657) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2865,7 +2865,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 5)
                 self.state = 312
                 _la = self._input.LA(1)
-                if not((((_la - 84)) & ~0x3f) == 0 and ((1 << (_la - 84)) & 25) != 0):
+                if not(((((_la - 84)) & ~0x3f) == 0 and ((1 << (_la - 84)) & 25) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3202,7 +3202,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 4)
                 self.state = 364
                 _la = self._input.LA(1)
-                if not((((_la - 86)) & ~0x3f) == 0 and ((1 << (_la - 86)) & 31745) != 0):
+                if not(((((_la - 86)) & ~0x3f) == 0 and ((1 << (_la - 86)) & 31745) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3489,7 +3489,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 1)
                 self.state = 395
                 _la = self._input.LA(1)
-                if not((((_la - 105)) & ~0x3f) == 0 and ((1 << (_la - 105)) & 385) != 0):
+                if not(((((_la - 105)) & ~0x3f) == 0 and ((1 << (_la - 105)) & 385) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3512,7 +3512,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 2)
                 self.state = 401
                 _la = self._input.LA(1)
-                if not((((_la - 106)) & ~0x3f) == 0 and ((1 << (_la - 106)) & 67) != 0):
+                if not(((((_la - 106)) & ~0x3f) == 0 and ((1 << (_la - 106)) & 67) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3541,7 +3541,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 3)
                 self.state = 410
                 _la = self._input.LA(1)
-                if not((((_la - 108)) & ~0x3f) == 0 and ((1 << (_la - 108)) & 7) != 0):
+                if not(((((_la - 108)) & ~0x3f) == 0 and ((1 << (_la - 108)) & 7) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3570,7 +3570,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 4)
                 self.state = 419
                 _la = self._input.LA(1)
-                if not((((_la - 111)) & ~0x3f) == 0 and ((1 << (_la - 111)) & 769) != 0):
+                if not(((((_la - 111)) & ~0x3f) == 0 and ((1 << (_la - 111)) & 769) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3598,7 +3598,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 5)
                 self.state = 426
                 _la = self._input.LA(1)
-                if not((((_la - 111)) & ~0x3f) == 0 and ((1 << (_la - 111)) & 769) != 0):
+                if not(((((_la - 111)) & ~0x3f) == 0 and ((1 << (_la - 111)) & 769) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3625,7 +3625,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 6)
                 self.state = 430
                 _la = self._input.LA(1)
-                if not((((_la - 114)) & ~0x3f) == 0 and ((1 << (_la - 114)) & 31) != 0):
+                if not(((((_la - 114)) & ~0x3f) == 0 and ((1 << (_la - 114)) & 31) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3899,7 +3899,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 2)
                 self.state = 461
                 _la = self._input.LA(1)
-                if not((((_la - 125)) & ~0x3f) == 0 and ((1 << (_la - 125)) & 7) != 0):
+                if not(((((_la - 125)) & ~0x3f) == 0 and ((1 << (_la - 125)) & 7) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3927,7 +3927,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 3)
                 self.state = 470
                 _la = self._input.LA(1)
-                if not((((_la - 128)) & ~0x3f) == 0 and ((1 << (_la - 128)) & 7) != 0):
+                if not(((((_la - 128)) & ~0x3f) == 0 and ((1 << (_la - 128)) & 7) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -3976,7 +3976,7 @@ class AmberMRParser ( Parser ):
                 self.enterOuterAlt(localctx, 5)
                 self.state = 483
                 _la = self._input.LA(1)
-                if not((((_la - 133)) & ~0x3f) == 0 and ((1 << (_la - 133)) & 127) != 0):
+                if not(((((_la - 133)) & ~0x3f) == 0 and ((1 << (_la - 133)) & 127) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -6077,7 +6077,7 @@ class AmberMRParser ( Parser ):
                 self.state = 1016
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la - 216)) & ~0x3f) == 0 and ((1 << (_la - 216)) & 699) != 0:
+                while ((((_la - 216)) & ~0x3f) == 0 and ((1 << (_la - 216)) & 699) != 0):
                     self.state = 1011
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
@@ -6107,7 +6107,7 @@ class AmberMRParser ( Parser ):
                 self.state = 1030
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la - 216)) & ~0x3f) == 0 and ((1 << (_la - 216)) & 699) != 0:
+                while ((((_la - 216)) & ~0x3f) == 0 and ((1 << (_la - 216)) & 699) != 0):
                     self.state = 1025
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
@@ -6137,7 +6137,7 @@ class AmberMRParser ( Parser ):
                 self.state = 1044
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la - 216)) & ~0x3f) == 0 and ((1 << (_la - 216)) & 699) != 0:
+                while ((((_la - 216)) & ~0x3f) == 0 and ((1 << (_la - 216)) & 699) != 0):
                     self.state = 1039
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)

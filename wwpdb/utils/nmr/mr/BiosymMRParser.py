@@ -1,4 +1,4 @@
-# Generated from BiosymMRParser.g4 by ANTLR 4.11.1
+# Generated from BiosymMRParser.g4 by ANTLR 4.12.0
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -123,7 +123,7 @@ class BiosymMRParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.11.1")
+        self.checkVersion("4.12.0")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -213,7 +213,7 @@ class BiosymMRParser ( Parser ):
             self.state = 39
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((_la) & ~0x3f) == 0 and ((1 << _la) & 776) != 0:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 776) != 0):
                 self.state = 37
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)

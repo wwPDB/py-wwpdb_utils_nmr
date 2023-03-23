@@ -3,7 +3,6 @@
 # Date: 27-Jan-2022
 #
 # Updates:
-# Generated from AmberPTParser.g4 by ANTLR 4.11.1
 """ ParserLister class for AMBER PT files.
     @author: Masashi Yokochi
 """

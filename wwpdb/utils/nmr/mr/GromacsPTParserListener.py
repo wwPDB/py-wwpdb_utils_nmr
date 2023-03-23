@@ -200,6 +200,7 @@ class GromacsPTParserListener(ParseTreeListener):
 
             seqIdList = []
             compIdList = []
+            retrievedAtomNumList = []
 
             NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S')
 
@@ -212,8 +213,11 @@ class GromacsPTParserListener(ParseTreeListener):
                 atomType = atom['atom_type']
                 _seqId = atom['auth_seq_id']
                 compId = atom['auth_comp_id']
-                if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                    _, compId, atomName = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, compId, atomName)
+                if compId not in monDict3 and self.__mrAtomNameMapping is not None and atomName[0] in protonBeginCode:
+                    _, compId, _atomName = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, compId, atomName)
+                    if _atomName != atomName:
+                        atomName = _atomName
+                        retrievedAtomNumList.append(atomNum)
                 # the second condition indicates metal ions
                 if terminus[atomNum - 2]\
                    or (compId == atomName and compId.title() in NAMES_ELEMENT)\
@@ -242,6 +246,13 @@ class GromacsPTParserListener(ParseTreeListener):
                                          'seq_id': seqIdList,
                                          'auth_comp_id': compIdList})
 
+            nonPolyCompIdList = []
+            if self.__hasNonPolyModel:
+                for np in self.__nonPolyModel:
+                    compId = np['comp_id'][0]
+                    if compId not in nonPolyCompIdList:
+                        nonPolyCompIdList.append(compId)
+
             for ps in self.__polySeqPrmTop:
                 chainId = ps['chain_id']
                 compIdList = []
@@ -262,19 +273,27 @@ class GromacsPTParserListener(ParseTreeListener):
                                 break
                         if valid:
                             compIdList.append(authCompId)
-                            for atomNum in self.__atomNumberDict.values():
+                            for k, atomNum in self.__atomNumberDict.items():
                                 if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
                                     atomNum['comp_id'] = authCompId
-                                    if atomNum['auth_atom_id'][0] not in protonBeginCode or atomNum['auth_atom_id'] in chemCompAtomIds:
-                                        atomNum['atom_id'] = atomNum['auth_atom_id']
+
+                                    if authCompId in nonPolyCompIdList and self.__mrAtomNameMapping is not None\
+                                       and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, True)
+                                    else:
+                                        atomId = atomNum['auth_atom_id']
+
+                                    if atomId[0] not in protonBeginCode or atomId in chemCompAtomIds:
+                                        atomNum['atom_id'] = atomId
                                         if 'atom_type' in atomNum:
                                             del atomNum['atom_type']
                                     else:
-                                        atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds, ccU=self.__ccU)
+                                        atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.__ccU)
                                         if atomId in chemCompAtomIds:
                                             atomNum['atom_id'] = atomId
                                             if 'atom_type' in atomNum:
                                                 del atomNum['atom_type']
+
                         else:
                             compId = self.__csStat.getSimilarCompIdFromAtomIds([atomNum['auth_atom_id']
                                                                                 for atomNum in self.__atomNumberDict.values()
@@ -285,15 +304,22 @@ class GromacsPTParserListener(ParseTreeListener):
                                 chemCompAtomIds = None
                                 if self.__ccU.updateChemCompDict(compId):
                                     chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-                                for atomNum in self.__atomNumberDict.values():
+                                for k, atomNum in self.__atomNumberDict.items():
                                     if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
                                         atomNum['comp_id'] = compId
-                                        if chemCompAtomIds is not None and atomNum['auth_atom_id'] in chemCompAtomIds:
-                                            atomNum['atom_id'] = atomNum['auth_atom_id']
+
+                                        if compId in nonPolyCompIdList and self.__mrAtomNameMapping is not None\
+                                           and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, True)
+                                        else:
+                                            atomId = atomNum['auth_atom_id']
+
+                                        if chemCompAtomIds is not None and atomId in chemCompAtomIds:
+                                            atomNum['atom_id'] = atomId
                                             if 'atom_type' in atomNum:
                                                 del atomNum['atom_type']
                                         elif chemCompAtomIds is not None:
-                                            atomId = translateToStdAtomName(atomNum['auth_atom_id'], compId, chemCompAtomIds, ccU=self.__ccU)
+                                            atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU)
                                             if atomId in chemCompAtomIds:
                                                 atomNum['atom_id'] = atomId
                                                 if 'atom_type' in atomNum:
@@ -314,15 +340,22 @@ class GromacsPTParserListener(ParseTreeListener):
                             chemCompAtomIds = None
                             if self.__ccU.updateChemCompDict(compId):
                                 chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-                            for atomNum in self.__atomNumberDict.values():
+                            for k, atomNum in self.__atomNumberDict.items():
                                 if atomNum['chain_id'] == chainId and atomNum['seq_id'] == seqId:
                                     atomNum['comp_id'] = compId
-                                    if chemCompAtomIds is not None and atomNum['auth_atom_id'] in chemCompAtomIds:
-                                        atomNum['atom_id'] = atomNum['auth_atom_id']
+
+                                    if compId in nonPolyCompIdList and self.__mrAtomNameMapping is not None\
+                                       and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, True)
+                                    else:
+                                        atomId = atomNum['auth_atom_id']
+
+                                    if chemCompAtomIds is not None and atomId in chemCompAtomIds:
+                                        atomNum['atom_id'] = atomId
                                         if 'atom_type' in atomNum:
                                             del atomNum['atom_type']
                                     elif chemCompAtomIds is not None:
-                                        atomId = translateToStdAtomName(atomNum['auth_atom_id'], compId, chemCompAtomIds, ccU=self.__ccU)
+                                        atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU)
                                         if atomId in chemCompAtomIds:
                                             atomNum['atom_id'] = atomId
                                             if 'atom_type' in atomNum:
@@ -336,7 +369,7 @@ class GromacsPTParserListener(ParseTreeListener):
 
                 ps['comp_id'] = compIdList
 
-            for atomNum in self.__atomNumberDict.values():
+            for k, atomNum in self.__atomNumberDict.items():
                 if 'atom_type' not in atomNum:
                     continue
                 if 'comp_id' in atomNum and atomNum['comp_id'] != atomNum['auth_comp_id']\
@@ -345,7 +378,13 @@ class GromacsPTParserListener(ParseTreeListener):
                     if self.__ccU.updateChemCompDict(compId):
                         chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
 
-                        atomId = translateToStdAtomName(atomNum['auth_atom_id'], compId, chemCompAtomIds, ccU=self.__ccU)
+                        if compId in nonPolyCompIdList and self.__mrAtomNameMapping is not None\
+                           and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, True)
+                        else:
+                            atomId = atomNum['auth_atom_id']
+
+                        atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU)
 
                         if atomId is not None and atomId in chemCompAtomIds:
                             atomNum['atom_id'] = atomId
@@ -356,7 +395,13 @@ class GromacsPTParserListener(ParseTreeListener):
                             if self.__ccU.updateChemCompDict(authCompId):
                                 chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
 
-                                atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds, ccU=self.__ccU)
+                                if authCompId in nonPolyCompIdList and self.__mrAtomNameMapping is not None\
+                                   and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                                    _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, True)
+                                else:
+                                    atomId = atomNum['auth_atom_id']
+
+                                atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.__ccU)
 
                                 if atomId is not None and atomId in chemCompAtomIds:
                                     atomNum['atom_id'] = atomId
@@ -365,7 +410,14 @@ class GromacsPTParserListener(ParseTreeListener):
                 else:
                     authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
                     if self.__ccU.updateChemCompDict(authCompId):
-                        atomId = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, ccU=self.__ccU)
+
+                        if authCompId in nonPolyCompIdList and self.__mrAtomNameMapping is not None\
+                           and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, True)
+                        else:
+                            atomId = atomNum['auth_atom_id']
+
+                        atomId = translateToStdAtomName(atomId, authCompId, ccU=self.__ccU)
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(authCompId, atomId)[0]
                         if len(atomIds) == 1:
                             atomNum['atom_id'] = atomIds[0]
@@ -384,7 +436,7 @@ class GromacsPTParserListener(ParseTreeListener):
                     self.__seqAlign, compIdMapping = alignPolymerSequenceWithConflicts(self.__pA, polySeqModel, self.__polySeqPrmTop, 2)
 
             for cmap in compIdMapping:
-                for atomNum in self.__atomNumberDict.values():
+                for k, atomNum in self.__atomNumberDict.items():
                     if atomNum['chain_id'] == cmap['chain_id'] and atomNum['seq_id'] == cmap['seq_id']:
                         atomNum['comp_id'] = cmap['comp_id']
                         atomNum['auth_comp_id'] = cmap['auth_comp_id']
@@ -392,19 +444,29 @@ class GromacsPTParserListener(ParseTreeListener):
                             authCompId = cmap['auth_comp_id']
                             if self.__ccU.updateChemCompDict(authCompId):
                                 chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-                                atomNum['atom_id'] = translateToStdAtomName(atomNum['auth_atom_id'], authCompId, chemCompAtomIds, ccU=self.__ccU)
+
+                                if authCompId in nonPolyCompIdList and self.__mrAtomNameMapping is not None\
+                                   and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                                    _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, True)
+                                else:
+                                    atomId = atomNum['auth_atom_id']
+
+                                atomNum['atom_id'] = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.__ccU)
                                 del atomNum['atom_type']
 
-            for atomNum in self.__atomNumberDict.values():
+            for k, atomNum in self.__atomNumberDict.items():
                 if 'atom_type' not in atomNum:
                     continue
                 if 'atom_id' not in atomNum:
                     if 'comp_id' not in atomNum or atomNum['comp_id'] == atomNum['auth_comp_id']:
                         authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
-                        if self.__mrAtomNameMapping is not None:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, atomNum['seq_id'], authCompId, atomNum['auth_atom_id'], None, True)
+
+                        if self.__mrAtomNameMapping is not None\
+                           and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
+
                         if self.__ccU.updateChemCompDict(authCompId):
                             chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                             if atomId in chemCompAtomIds:
@@ -414,10 +476,13 @@ class GromacsPTParserListener(ParseTreeListener):
                                             f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['auth_comp_id']!r} residue.")
                     else:
                         authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
-                        if self.__mrAtomNameMapping is not None:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, atomNum['seq_id'], authCompId, atomNum['auth_atom_id'], None, True)
+
+                        if self.__mrAtomNameMapping is not None\
+                           and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
+
                         if self.__ccU.updateChemCompDict(authCompId):
                             chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                             if atomId in chemCompAtomIds:
@@ -482,26 +547,26 @@ class GromacsPTParserListener(ParseTreeListener):
 
             if self.__hasNonPolyModel:
                 compIdMapping = {}
-                mappedCompId = []
+                mappedSeqVal = []
                 mappedAtomNum = []
 
                 for np in self.__nonPolyModel:
-                    auth_chain_id = np['auth_chain_id']
-                    auth_seq_id = np['auth_seq_id'][0]
-                    comp_id = np['comp_id'][0]
+                    authChainId = np['auth_chain_id']
+                    authSeqId = np['auth_seq_id'][0]
+                    compId = np['comp_id'][0]
 
                     for k, v in self.__atomNumberDict.items():
                         if k in mappedAtomNum:
                             continue
-                        if v['comp_id'] == comp_id:
-                            seq_key = (v['comp_id'], v['chain_id'], v['seq_id'])
-                            seq_val = (auth_chain_id, auth_seq_id)
-                            if seq_key not in compIdMapping:
-                                if seq_val not in mappedCompId:
-                                    compIdMapping[seq_key] = seq_val
-                            if seq_key in compIdMapping:
-                                v['chain_id'], v['seq_id'] = compIdMapping[seq_key]
-                                mappedCompId.append(seq_val)
+                        if v['comp_id'] == compId:
+                            seqKey = (v['comp_id'], v['chain_id'], v['seq_id'])
+                            seqVal = (authChainId, authSeqId)
+                            if seqKey not in compIdMapping:
+                                if seqVal not in mappedSeqVal:
+                                    compIdMapping[seqKey] = seqVal
+                            if seqKey in compIdMapping:
+                                v['chain_id'], v['seq_id'] = compIdMapping[seqKey]
+                                mappedSeqVal.append(seqVal)
                                 mappedAtomNum.append(k)
 
         finally:
@@ -617,11 +682,11 @@ class GromacsPTParserListener(ParseTreeListener):
                         if atomId in chemCompAtomIds:
                             atomNum['atom_id'] = atomId
                         else:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, atomNum['seq_id'], compId, authAtomId, None, True)
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, compId, authAtomId, None, True)
                             if atomId in chemCompAtomIds:
                                 atomNum['atom_id'] = atomId
                                 continue
-                            elif authAtomId not in reported_auth_atom_id:
+                            if authAtomId not in reported_auth_atom_id:
                                 atomNum['atom_id'] = atomNum['auth_atom_id']
                                 self.__f.append(f"[Unknown atom name] "
                                                 f"{authAtomId!r} is not recognized as the atom name of {compId!r} residue "

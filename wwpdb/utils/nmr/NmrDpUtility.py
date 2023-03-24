@@ -28029,12 +28029,12 @@ class NmrDpUtility:
         ref_chain_id_2_col = loop.tags.index('Entity_assembly_ID_2')
 
         target_val_col = loop.tags.index('Target_val') if 'Target_val' in loop.tags else -1
-        target_val_err_col = loop.tags.index('Target_val_uncertainty')
-        lower_linear_limit_col = loop.tags.index('Lower_linear_limit')
-        upper_linear_limit_col = loop.tags.index('Upper_linear_limit')
-        lower_limit_col = loop.tags.index('Distance_lower_bound_val')
-        upper_limit_col = loop.tags.index('Distance_upper_bound_val')
-        weight_col = loop.tags.index('Weight')
+        target_val_err_col = loop.tags.index('Target_val_uncertainty') if 'Target_val_uncertainty' in loop.tags else -1
+        lower_linear_limit_col = loop.tags.index('Lower_linear_limit') if 'Lower_linear_limit' in loop.tags else -1
+        upper_linear_limit_col = loop.tags.index('Upper_linear_limit') if 'Upper_linear_limit' in loop.tags else -1
+        lower_limit_col = loop.tags.index('Distance_lower_bound_val') if 'Distance_lower_bound_val' in loop.tags else -1
+        upper_limit_col = loop.tags.index('Distance_upper_bound_val') if 'Distance_upper_bound_val' in loop.tags else -1
+        weight_col = loop.tags.index('Weight') if 'Weight' in loop.tags else -1
 
         _rest_id = None
         _member_logic_code = None
@@ -28056,9 +28056,13 @@ class NmrDpUtility:
                 rest_id = row[id_col]
                 member_id = row[member_id_col]
                 member_logic_code = row[member_logic_code_col]
-                values = (str(row[target_val_col]) if target_val_col != -1 else '') + str(row[target_val_err_col])\
-                    + str(row[lower_linear_limit_col]) + str(row[upper_linear_limit_col])\
-                    + str(row[lower_limit_col]) + str(row[upper_limit_col]) + str(row[weight_col])
+                values = (str(row[target_val_col]) if target_val_col != -1 else '')\
+                    + (str(row[target_val_err_col]) if target_val_err_col != -1 else '')\
+                    + (str(row[lower_linear_limit_col]) if lower_linear_limit_col != -1 else '')\
+                    + (str(row[upper_linear_limit_col]) if upper_linear_limit_col != -1 else '')\
+                    + (str(row[lower_limit_col]) if lower_limit_col != -1 else '')\
+                    + (str(row[upper_limit_col]) if upper_limit_col != -1 else '')\
+                    + (str(row[weight_col]) if weight_col != -1 else '')
 
                 try:
                     atom1 = {'chain_id': row[chain_id_1_col],

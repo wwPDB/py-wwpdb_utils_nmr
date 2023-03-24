@@ -168,6 +168,7 @@
 # 13-Jan-2023  M. Yokochi - add support for small angle X-ray scattering restraints (NMR restraint remediation)
 # 24-Jan-2023  M. Yokochi - add support for heteronuclear relaxation data (NOE, T1, T2, T1rho, Order parameter) (NMR restraint remediation)
 # 23-Feb-2023  M. Yokochi - combine spectral peak lists in any format into single NMR-STAR until Phase 2 release (DAOTHER-7407)
+# 24-Mar-2023  M. Yokochi - add 'nmr-nef2cif-deposit' and 'nmr-str2cif-deposit' workflow operations (DAOTHER-7407)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -228,7 +229,7 @@ try:
     from wwpdb.utils.nmr.io.CifReader import (CifReader, LEN_MAJOR_ASYM_ID)
     from wwpdb.utils.nmr.rci.RCI import RCI
     from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
-    from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
+#    from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName,
                                                        coordAssemblyChecker,
@@ -320,7 +321,7 @@ except ImportError:
     from nmr.io.CifReader import (CifReader, LEN_MAJOR_ASYM_ID)
     from nmr.rci.RCI import RCI
     from nmr.CifToNmrStar import CifToNmrStar
-    from nmr.NmrStarToCif import NmrStarToCif
+#    from nmr.NmrStarToCif import NmrStarToCif
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName,
                                            coordAssemblyChecker,
@@ -1174,7 +1175,9 @@ class NmrDpUtility:
         self.__workFlowOps = ('nmr-nef-consistency-check',
                               'nmr-str-consistency-check',
                               'nmr-nef2str-deposit',
+                              'nmr-nef2cif-deposit',
                               'nmr-str2str-deposit',
+                              'nmr-str2cif-deposit',
                               'nmr-str2nef-release',
                               'nmr-cs-nef-consistency-check',
                               'nmr-cs-str-consistency-check',
@@ -1296,7 +1299,7 @@ class NmrDpUtility:
         __depositTasks.extend(__cifCheckTasks)
         __depositTasks.extend(__crossCheckTasks)
 
-        # additional nmr-nef2str tasks
+        # additional nmr-nef2str/nef2cif tasks
         __nef2strTasks = [self.__translateNef2Str,
                           self.__dumpDpReport,
                           self.__initResourceForNef2Str
@@ -1325,6 +1328,7 @@ class NmrDpUtility:
         self.__procTasksDict = {'consistency-check': __checkTasks,
                                 'deposit': __depositTasks,
                                 'nmr-nef2str-deposit': __nef2strTasks,
+                                'nmr-nef2cif-deposit': __nef2strTasks,
                                 'nmr-str2nef-release': __str2nefTasks,
                                 'nmr-cs-nef-consistency-check': [self.__depositLegacyNmrData],
                                 'nmr-cs-str-consistency-check': [self.__depositLegacyNmrData],
@@ -6312,6 +6316,9 @@ class NmrDpUtility:
         if op not in self.__workFlowOps:
             raise KeyError(f"+NmrDpUtility.op() ++ Error  - Unknown workflow operation {op}.")
 
+        if 'cif' in op and 'nmr_cif_file_path' not in self.__outputParamDict:
+            raise KeyError("+NmrDpUtility.op() ++ Error  - Could not find 'nmr_cif_file_path' output parameter.")
+
         if has_key_value(self.__inputParamDict, 'bmrb_only'):
             if isinstance(self.__inputParamDict['bmrb_only'], bool):
                 self.__bmrb_only = self.__inputParamDict['bmrb_only']
@@ -6365,7 +6372,7 @@ class NmrDpUtility:
                 self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name']
             else:
                 self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name'] in trueValue
-        elif op in ('nmr-str-consistency-check', 'nmr-str2str-deposit', 'nmr-str2nef-release'):
+        elif op in ('nmr-str-consistency-check', 'nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2nef-release'):
             self.__transl_pseudo_name = True
 
         if has_key_value(self.__inputParamDict, 'tolerant_seq_align'):
@@ -6505,7 +6512,7 @@ class NmrDpUtility:
              and self.report.error.getValueList('missing_mandatory_content',
                                                 input_source_dic['file_name'],
                                                 key='_Atom_chem_shift') is not None)
-            or (self.__op == 'nmr-str2str-deposit' and self.__remediation_mode))\
+            or (self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit') and self.__remediation_mode))\
            and self.report.isError() and self.__dstPath is not None:
 
             dir_path = os.path.dirname(self.__dstPath)
@@ -28277,7 +28284,7 @@ class NmrDpUtility:
         return True
 
     def __mergeAnyPkAsIs(self):
-        """ Merge spectral peak lists in any format (nm-pea-any).
+        """ Merge spectral peak list file(s) in any format (file type: nm-pea-any) into a single NMR-STAR file as is.
         """
 
         if self.__combined_mode:
@@ -28364,7 +28371,6 @@ class NmrDpUtility:
                             has_header = True
                         continue
                     file_format = get_peak_list_format(line, has_header)
-                    print(f'{line} {file_format=}')
                     break
 
             dimensions = None
@@ -46970,7 +46976,7 @@ class NmrDpUtility:
         else:
             master_entry.write_to_file(self.__dstPath)
 
-        if self.__op == 'nmr-str2str-deposit' and self.__remediation_mode:
+        if self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit') and self.__remediation_mode:
 
             dir_path = os.path.dirname(self.__dstPath)
 
@@ -46996,35 +47002,36 @@ class NmrDpUtility:
 
         if 'nef' not in self.__op and 'deposit' in self.__op and 'nmr_cif_file_path' in self.__outputParamDict:
 
-            if self.__remediation_mode:
+            # if self.__remediation_mode:
 
-                try:
+            try:
 
-                    myIo = IoAdapterPy(False, sys.stderr)
-                    containerList = myIo.readFile(self.__dstPath)
+                myIo = IoAdapterPy(False, sys.stderr)
+                containerList = myIo.readFile(self.__dstPath)
 
-                    if containerList is not None and len(containerList) > 1:
+                if containerList is not None and len(containerList) > 1:
 
-                        if self.__verbose:
-                            self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
+                    if self.__verbose:
+                        self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
-                        for c in containerList:
-                            c.setType('data')
+                    for c in containerList:
+                        c.setType('data')
 
-                        myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+                    myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
 
-                except Exception as e:
-                    self.__lfh.write(f"+NmrDpUtility.__depositNmrData() ++ Error  - {str(e)}\n")
+            except Exception as e:
+                self.__lfh.write(f"+NmrDpUtility.__depositNmrData() ++ Error  - {str(e)}\n")
+            # """
+            # else:
 
-            else:
+            #     star_to_cif = NmrStarToCif()
 
-                star_to_cif = NmrStarToCif()
+            #     original_file_name = ''
+            #     if 'original_file_name' in self.__inputParamDict:
+            #         original_file_name = self.__inputParamDict['original_file_name']
 
-                original_file_name = ''
-                if 'original_file_name' in self.__inputParamDict:
-                    original_file_name = self.__inputParamDict['original_file_name']
-
-                star_to_cif.convert(self.__dstPath, self.__outputParamDict['nmr_cif_file_path'], original_file_name, 'nm-uni-str')
+            #     star_to_cif.convert(self.__dstPath, self.__outputParamDict['nmr_cif_file_path'], original_file_name, 'nm-uni-str')
+            # """
 
         return not self.report.isError()
 
@@ -48402,7 +48409,7 @@ class NmrDpUtility:
 
         self.__mergeStrPk()
 
-        if self.__combine_pk_any and not self.__remediation_mode:  # DAOTHER-7407 enable until Phase 2 release
+        if self.__combine_pk_any and not self.__remediation_mode:  # DAOTHER-7407 enabled until Phase 2 release
             self.__mergeAnyPkAsIs()
 
         # Update _Data_set loop
@@ -49956,36 +49963,36 @@ class NmrDpUtility:
 
             if 'deposit' in self.__op and 'nmr_cif_file_path' in self.__outputParamDict:
 
-                if self.__remediation_mode:
+                # if self.__remediation_mode:
 
-                    try:
+                try:
 
-                        myIo = IoAdapterPy(False, sys.stderr)
-                        containerList = myIo.readFile(fPath)
+                    myIo = IoAdapterPy(False, sys.stderr)
+                    containerList = myIo.readFile(fPath)
 
-                        if containerList is not None and len(containerList) > 1:
+                    if containerList is not None and len(containerList) > 1:
 
-                            if self.__verbose:
-                                self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
+                        if self.__verbose:
+                            self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
-                            for c in containerList:
-                                c.setType('data')
+                        for c in containerList:
+                            c.setType('data')
 
-                            myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+                        myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
 
-                    except Exception as e:
-                        self.__lfh.write(f"+NmrDpUtility.__translateNef2Str() ++ Error  - {str(e)}\n")
+                except Exception as e:
+                    self.__lfh.write(f"+NmrDpUtility.__translateNef2Str() ++ Error  - {str(e)}\n")
+                # """
+                # else:
 
-                else:
+                #     star_to_cif = NmrStarToCif()
 
-                    star_to_cif = NmrStarToCif()
+                #     original_file_name = ''
+                #     if 'original_file_name' in self.__inputParamDict:
+                #         original_file_name = self.__inputParamDict['original_file_name']
 
-                    original_file_name = ''
-                    if 'original_file_name' in self.__inputParamDict:
-                        original_file_name = self.__inputParamDict['original_file_name']
-
-                    star_to_cif.convert(fPath, self.__outputParamDict['nmr_cif_file_path'], original_file_name, 'nm-uni-nef')
-
+                #     star_to_cif.convert(fPath, self.__outputParamDict['nmr_cif_file_path'], original_file_name, 'nm-uni-nef')
+                # """
             return True
 
         err = f"{file_name} is not compliant with the {self.readable_file_type[file_type]} dictionary."
@@ -50023,7 +50030,7 @@ class NmrDpUtility:
             self.__logPath = None if 'report_file_path' not in self.__outputParamDict else self.__outputParamDict['report_file_path']
             if self.__logPath is not None:
                 self.addInput('report_file_path', self.__logPath, type='file')
-            self.__op = 'nmr-star-consistency-check'
+            self.__op = 'nmr-str-consistency-check'
 
             # reset cache dictionaries
 
@@ -50131,7 +50138,7 @@ class NmrDpUtility:
             self.__logPath = None if 'report_file_path' not in self.__outputParamDict else self.__outputParamDict['report_file_path']
             if self.__logPath is not None:
                 self.addInput('report_file_path', self.__logPath, type='file')
-            self.__op = 'nef-consistency-check'
+            self.__op = 'nmr-nef-consistency-check'
 
             # reset cache dictionaries
 

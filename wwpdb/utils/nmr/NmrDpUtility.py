@@ -25851,7 +25851,7 @@ class NmrDpUtility:
 
                     if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
 
-                        idx_msg = f"[Check row of {index_tag} {row[index_tag]}] "
+                        idx_msg = f"[Check row of {index_tag} {row[index_tag]}] " if index_tag in row else ''
 
                         err = idx_msg + "Non-magnetic susceptible spin appears in RDC vector; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "\
@@ -25891,7 +25891,7 @@ class NmrDpUtility:
                                             if len(ps['identical_auth_chain_id']) + 1 > 2:
                                                 self.__symmetric = 'yes'
 
-                        idx_msg = f"[Check row of {index_tag} {row[index_tag]}] "
+                        idx_msg = f"[Check row of {index_tag} {row[index_tag]}] " if index_tag in row else ''
 
                         if self.__symmetric == 'no':
 
@@ -25922,7 +25922,7 @@ class NmrDpUtility:
 
                     elif abs(seq_id_1 - seq_id_2) > 1:
 
-                        idx_msg = f"[Check row of {index_tag} {row[index_tag]}] "
+                        idx_msg = f"[Check row of {index_tag} {row[index_tag]}] " if index_tag in row else ''
 
                         err = idx_msg + "Found inter-residue RDC vector; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) in a loop {lp_category}."
@@ -25946,7 +25946,7 @@ class NmrDpUtility:
 
                         else:
 
-                            idx_msg = f"[Check row of {index_tag} {row[index_tag]}] "
+                            idx_msg = f"[Check row of {index_tag} {row[index_tag]}] " if index_tag in row else ''
 
                             err = idx_msg + "Found inter-residue RDC vector; "\
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) in a loop {lp_category}."
@@ -25961,7 +25961,7 @@ class NmrDpUtility:
 
                     elif atom_id_1 == atom_id_2:
 
-                        idx_msg = f"[Check row of {index_tag} {row[index_tag]}] "
+                        idx_msg = f"[Check row of {index_tag} {row[index_tag]}] " if index_tag in row else ''
 
                         err = idx_msg + "Found zero RDC vector; "\
                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2})."
@@ -25982,7 +25982,7 @@ class NmrDpUtility:
 
                                 if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
 
-                                    idx_msg = f"[Check row of {index_tag} {row[index_tag]}] "
+                                    idx_msg = f"[Check row of {index_tag} {row[index_tag]}] " if index_tag in row else ''
 
                                     warn = idx_msg + "Found an RDC vector over multiple covalent bonds; "\
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2})."
@@ -28028,7 +28028,7 @@ class NmrDpUtility:
 
         ref_chain_id_2_col = loop.tags.index('Entity_assembly_ID_2')
 
-        target_val_col = loop.tags.index('Target_val')
+        target_val_col = loop.tags.index('Target_val') if 'Target_val' in loop.tags else -1
         target_val_err_col = loop.tags.index('Target_val_uncertainty')
         lower_linear_limit_col = loop.tags.index('Lower_linear_limit')
         upper_linear_limit_col = loop.tags.index('Upper_linear_limit')
@@ -28056,7 +28056,7 @@ class NmrDpUtility:
                 rest_id = row[id_col]
                 member_id = row[member_id_col]
                 member_logic_code = row[member_logic_code_col]
-                values = str(row[target_val_col]) + str(row[target_val_err_col])\
+                values = (str(row[target_val_col]) if target_val_col != -1 else '') + str(row[target_val_err_col])\
                     + str(row[lower_linear_limit_col]) + str(row[upper_linear_limit_col])\
                     + str(row[lower_limit_col]) + str(row[upper_limit_col]) + str(row[weight_col])
 

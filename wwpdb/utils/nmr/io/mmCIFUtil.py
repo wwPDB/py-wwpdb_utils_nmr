@@ -75,14 +75,17 @@ class mmCIFUtil:
         iList = catObj.getAttributeList()
         rowList = catObj.getRowList()
         for row in rowList:
-            tD = {}
-            for idxIt, itName in enumerate(iList):
-                if row[idxIt] != "?" and row[idxIt] != ".":
-                    tD[itName] = row[idxIt]
-            #
-            if tD:
-                dList.append(tD)
-            #
+            try:
+                tD = {}
+                for idxIt, itName in enumerate(iList):
+                    if row[idxIt] != "?" and row[idxIt] != ".":
+                        tD[itName] = row[idxIt]
+                #
+                if tD:
+                    dList.append(tD)
+                #
+            except IndexError:
+                pass
         #
         return dList, iList
 

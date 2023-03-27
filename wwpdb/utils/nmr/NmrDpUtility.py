@@ -22601,6 +22601,9 @@ class NmrDpUtility:
                                     atom_id2 = _row[atom_id_name]
                                     value2 = _row[value_name]
 
+                                    if comp_id2 not in monDict3:
+                                        continue
+
                                     _atom_id2 = atom_id2
 
                                     if self.__isNmrAtomName(comp_id2, atom_id2):
@@ -23405,8 +23408,11 @@ class NmrDpUtility:
                         if _common_auth_asym_ids[_auth_chain_id_1] != _common_auth_asym_ids[_auth_chain_id_2]:
                             continue
 
-                        _auth_seq_id_1 = next(int(row[1]) for row in auth_dat if row[0] == _auth_chain_id_1)
-                        _auth_seq_id_2 = next(int(row[1]) for row in auth_dat if row[0] == _auth_chain_id_2)
+                        try:
+                            _auth_seq_id_1 = next(int(row[1]) for row in auth_dat if row[0] == _auth_chain_id_1)
+                            _auth_seq_id_2 = next(int(row[1]) for row in auth_dat if row[0] == _auth_chain_id_2)
+                        except ValueError:
+                            continue
 
                         _seq_key_1 = (_auth_chain_id_1, _auth_seq_id_1, row[2])
                         _seq_key_2 = (_auth_chain_id_2, _auth_seq_id_2, row[2])

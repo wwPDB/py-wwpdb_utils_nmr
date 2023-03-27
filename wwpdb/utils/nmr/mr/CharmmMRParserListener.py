@@ -4174,22 +4174,22 @@ class CharmmMRParserListener(ParseTreeListener):
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> chemical")
                 if ctx.Colon():  # range expression
-                    self.factor['type_symbols'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
+                    self.factor['type_symbols'] = [str(ctx.Simple_name(0)).upper(), str(ctx.Simple_name(1)).upper()]
 
                 elif ctx.Simple_name(0):
-                    self.factor['type_symbol'] = [str(ctx.Simple_name(0))]
+                    self.factor['type_symbol'] = [str(ctx.Simple_name(0)).upper()]
 
                 elif ctx.Simple_names(0):
-                    self.factor['type_symbols'] = [str(ctx.Simple_names(0))]
+                    self.factor['type_symbols'] = [str(ctx.Simple_names(0)).upper()]
 
                 elif ctx.Symbol_name():
                     symbol_name = str(ctx.Symbol_name())
                     if symbol_name in self.evaluate:
                         val = self.evaluate[symbol_name]
                         if isinstance(val, list):
-                            self.factor['type_symbol'] = val
+                            self.factor['type_symbol'] = [v.upper() for v in val]
                         else:
-                            self.factor['type_symbol'] = [val]
+                            self.factor['type_symbol'] = [val.upper()]
                     else:
                         self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                         f"The symbol {symbol_name!r} is not defined.")
@@ -4474,22 +4474,22 @@ class CharmmMRParserListener(ParseTreeListener):
                     eval_factor = True
 
                 if ctx.Colon():  # range expression
-                    self.factor['comp_ids'] = [str(ctx.Simple_name(0)), str(ctx.Simple_name(1))]
+                    self.factor['comp_ids'] = [str(ctx.Simple_name(0)).upper(), str(ctx.Simple_name(1)).upper()]
 
                 elif ctx.Simple_name(0):
-                    self.factor['comp_id'] = [str(ctx.Simple_name(0))]
+                    self.factor['comp_id'] = [str(ctx.Simple_name(0)).upper()]
 
                 elif ctx.Simple_names(0):
-                    self.factor['comp_ids'] = [str(ctx.Simple_names(0))]
+                    self.factor['comp_ids'] = [str(ctx.Simple_names(0)).upper()]
 
                 elif ctx.Symbol_name():
                     symbol_name = str(ctx.Symbol_name())
                     if symbol_name in self.evaluate:
                         val = self.evaluate[symbol_name]
                         if isinstance(val, list):
-                            self.factor['comp_id'] = val
+                            self.factor['comp_id'] = [v.upper() for v in val]
                         else:
-                            self.factor['comp_id'] = [val]
+                            self.factor['comp_id'] = [val.upper()]
                     else:
                         self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                         f"The symbol {symbol_name!r} is not defined.")

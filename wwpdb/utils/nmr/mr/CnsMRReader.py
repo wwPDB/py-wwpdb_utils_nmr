@@ -208,6 +208,11 @@ class CnsMRReader:
 if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2ltq/2ltq-corrected-div_src.mr',
+                 '../../tests-nmr/mock-data-remediation/2ltq/2ltq.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-combine-at-upload/bmr36473/data/D_1300028046_mr-upload_P2.cns.V1',
                  '../../tests-nmr/mock-data-combine-at-upload/bmr36473/data/D_1300028046_model-annotate_P1.cif.V2')
 

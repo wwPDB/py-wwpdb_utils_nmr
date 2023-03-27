@@ -22744,6 +22744,7 @@ class NmrDpUtility:
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
+            original_file_name = input_source_dic['original_file_name']
 
             if input_source_dic['content_subtype'] is None:
                 continue
@@ -22764,11 +22765,24 @@ class NmrDpUtility:
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = ''
 
+                if original_file_name not in emptyValue:
+                    set_sf_tag(sf_data, 'Data_file_name', original_file_name)
+
                 modified |= self.__remediateCsLoop__(fileListId, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+
+                data_file_name = get_first_sf_tag(sf_data, 'Data_file_name')
+                len_data_file_name = len(data_file_name)
+                if len_data_file_name > 0:
+                    data_file_name.strip("'").strip('"')
+                    _len_data_file_name = len(data_file_name)
+                    if _len_data_file_name > 0 and _len_data_file_name != len_data_file_name:
+                        set_sf_tag(sf_data, 'Data_file_name', data_file_name)
+                elif original_file_name not in emptyValue:
+                    set_sf_tag(sf_data, 'Data_file_name', original_file_name)
 
                 modified |= self.__remediateCsLoop__(fileListId, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category)
 
@@ -22779,6 +22793,16 @@ class NmrDpUtility:
 
                     if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                         continue
+
+                    data_file_name = get_first_sf_tag(sf_data, 'Data_file_name')
+                    len_data_file_name = len(data_file_name)
+                    if len_data_file_name > 0:
+                        data_file_name.strip("'").strip('"')
+                        _len_data_file_name = len(data_file_name)
+                        if _len_data_file_name > 0 and _len_data_file_name != len_data_file_name:
+                            set_sf_tag(sf_data, 'Data_file_name', data_file_name)
+                    elif original_file_name not in emptyValue:
+                        set_sf_tag(sf_data, 'Data_file_name', original_file_name)
 
                     modified |= self.__remediateCsLoop__(fileListId, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category)
 

@@ -3149,7 +3149,7 @@ class CharmmMRParserListener(ParseTreeListener):
     def getAtomIdList(self, factor, compId, atomId):
         key = (compId, atomId, 'alt_atom_id' in factor)
         if key in self.__cachedDictForAtomIdList:
-            return self.__cachedDictForAtomIdList[key]
+            return copy.copy(self.__cachedDictForAtomIdList[key])
         atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
         if 'alt_atom_id' in factor and details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
             atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)

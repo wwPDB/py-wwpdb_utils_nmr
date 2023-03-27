@@ -4473,9 +4473,11 @@ class NEFTranslator:
         if comp_id in emptyValue:
             return [], None, None
 
-        key = (comp_id, atom_id, details, leave_unmatched)
+        methyl_only = atom_id[0] == 'M'
+
+        key = (comp_id, atom_id, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForValidStarAtomInXplor:
-            return self.__cachedDictForValidStarAtomInXplor[key]
+            return copy.copy(self.__cachedDictForValidStarAtomInXplor[key])
 
         atom_list = []
         ambiguity_code = None
@@ -4490,7 +4492,7 @@ class NEFTranslator:
                 atom_id = atom_id.replace('#', '%')
 
             if atom_id[0] in ('1', '2', '3'):
-                atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched)
+                atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
                 if details is None:
                     return (atom_list, ambiguity_code, details)
                 atom_id = atom_id[1:] + atom_id[0]
@@ -4500,42 +4502,42 @@ class NEFTranslator:
                 if atom_id.endswith('1') and not self.validate_comp_atom(comp_id, atom_id):
                     _atom_id = atom_id[:-1] + '3'
                     if self.validate_comp_atom(comp_id, _atom_id):
-                        atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched)
+                        atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
                 if atom_id.endswith('1*') or atom_id.endswith('1%'):
                     _atom_id = atom_id[:-2] + '3' + atom_id[-1]
-                    _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, _atom_id, None, True)
+                    _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, _atom_id, None, True, methyl_only)
                     if _details is None:
                         if leave_unmatched:
                             atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                             return (atom_list, ambiguity_code, details)
-                        atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched)
+                        atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
-                    _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, _atom_id[:-1], None, True)
+                    _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, _atom_id[:-1], None, True, methyl_only)
                     if _details is None:
                         if leave_unmatched:
                             atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                             return (atom_list, ambiguity_code, details)
-                        atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched)
+                        atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
-            atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched)
+            atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
 
             if details is not None and atom_id[-1] not in ('%', '*'):
-                _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, atom_id + '%', details, leave_unmatched)
+                _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, atom_id + '%', details, leave_unmatched, methyl_only)
                 if _details is None:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                 else:
-                    atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id + '*', details, leave_unmatched)
+                    atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id + '*', details, leave_unmatched, methyl_only)
 
             return (atom_list, ambiguity_code, details)
 
         finally:
             self.__cachedDictForValidStarAtomInXplor[key] = (atom_list, ambiguity_code, details)
 
-    def get_valid_star_atom(self, comp_id, atom_id, details=None, leave_unmatched=True):
+    def get_valid_star_atom(self, comp_id, atom_id, details=None, leave_unmatched=True, methyl_only=False):
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
             @author: Masashi Yokochi
             @return: list of instanced atom_id, ambiguity_code, and description
@@ -4544,9 +4546,11 @@ class NEFTranslator:
         if comp_id in emptyValue:
             return [], None, None
 
-        key = (comp_id, atom_id, details, leave_unmatched)
+        methyl_only |= atom_id[0] == 'M'
+
+        key = (comp_id, atom_id, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForValidStarAtom:
-            return self.__cachedDictForValidStarAtom[key]
+            return copy.copy(self.__cachedDictForValidStarAtom[key])
 
         atom_list = []
         ambiguity_code = None
@@ -4558,11 +4562,11 @@ class NEFTranslator:
                 atom_id = atom_id.replace('#', '%')
 
             if atom_id == 'HN' or atom_id.endswith('%') or atom_id.endswith('*'):
-                atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id, details, leave_unmatched)
+                atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
                 return (atom_list, ambiguity_code, details)
 
             if atom_id.startswith('QQ'):
-                atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', details, leave_unmatched)
+                atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', details, leave_unmatched, methyl_only)
                 return (atom_list, ambiguity_code, details)
 
             if atom_id.startswith('QR') or atom_id.startswith('QX'):
@@ -4572,25 +4576,25 @@ class NEFTranslator:
                     return (atom_list, ambiguity_code, details)
                 atom_list = []
                 for qr_atom in qr_atoms:
-                    _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, qr_atom, details, leave_unmatched)
+                    _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, qr_atom, details, leave_unmatched, methyl_only)
                     atom_list.extend(_atom_list)
                 return (atom_list, ambiguity_code, details)
 
             if atom_id.startswith('Q') or atom_id.startswith('M'):
                 if atom_id[-1].isalnum():
-                    atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched)
+                    atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched, methyl_only)
                     return (atom_list, ambiguity_code, details)
-                atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:-1] + '*', details, leave_unmatched)
+                atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:-1] + '*', details, leave_unmatched, methyl_only)
                 return (atom_list, ambiguity_code, details)
 
             if len(atom_id) > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
-                atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id + '%', details, leave_unmatched)
+                atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id + '%', details, leave_unmatched, methyl_only)
                 return (atom_list, ambiguity_code, details)
 
-            atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id, details, leave_unmatched)
+            atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
 
             if details is not None and atom_id[-1] not in ('%', '*'):
-                _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, atom_id + '%', details, leave_unmatched)
+                _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, atom_id + '%', details, leave_unmatched, methyl_only)
                 if _details is None:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
 
@@ -4599,7 +4603,7 @@ class NEFTranslator:
         finally:
             self.__cachedDictForValidStarAtom[key] = (atom_list, ambiguity_code, details)
 
-    def get_star_atom(self, comp_id, nef_atom, details=None, leave_unmatched=True):
+    def get_star_atom(self, comp_id, nef_atom, details=None, leave_unmatched=True, methyl_only=False):
         """ Return list of instanced atom_id of a given NEF atom (including wildcard codes) and its ambiguity code.
             @change: support non-standard residue by Masashi Yokochi
             @change: rename the original get_nmrstar_atom() to get_star_atom() by Masashi Yokochi
@@ -4609,9 +4613,9 @@ class NEFTranslator:
         if comp_id in emptyValue:
             return [], None, None
 
-        key = (comp_id, nef_atom, details, leave_unmatched)
+        key = (comp_id, nef_atom, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForStarAtom:
-            return self.__cachedDictForStarAtom[key]
+            return copy.copy(self.__cachedDictForStarAtom[key])
 
         comp_id = comp_id.upper()
         is_std_comp_id = comp_id in monDict3
@@ -4623,7 +4627,10 @@ class NEFTranslator:
         try:
 
             if self.__ccU.updateChemCompDict(comp_id):
-                atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
+                methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+                not_methyl = not methyl_only or nef_atom[0] not in protonBeginCode or len(methyl_atoms) == 0
+                atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
+                         if not_methyl or (not not_methyl and a[self.__ccU.ccaAtomId] in methyl_atoms)]
 
             else:
 
@@ -4701,8 +4708,6 @@ class NEFTranslator:
 
                     atom_list = [a for a in atoms if re.search(pattern, a) and nef_atom[0] in ('H', '1', '2', '3', a[0])]
 
-                    methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
-
                     ambiguity_code = 1 if atom_list[0] in methyl_atoms else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
                 elif atm_set == [5, 6]:  # endswith [xyXY]
@@ -4742,8 +4747,6 @@ class NEFTranslator:
 
                     atom_list = [a for a in atoms if re.search(pattern, a)]
 
-                    methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
-
                     ambiguity_code = 1 if atom_list[0] in methyl_atoms else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
                 elif self.__verbose:
@@ -4762,20 +4765,18 @@ class NEFTranslator:
 
                 if self.__csStat.hasCompId(comp_id):
 
-                    methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
-
                     if is_std_comp_id and not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
                         atom_list, ambiguity_code, details =\
                             self.get_star_atom(comp_id, nef_atom + '%', None,
                                                # f"{nef_atom} converted to {nef_atom}%."
-                                               leave_unmatched)
+                                               leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
                     if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
                         atom_list, ambiguity_code, details =\
                             self.get_star_atom(comp_id, nef_atom[:-1] + '%', None,
                                                # f"{nef_atom} converted to {nef_atom[:-1]}%."
-                                               leave_unmatched)
+                                               leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
                     if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and (nef_atom[:-1] + '1' not in methyl_atoms) and\
@@ -4783,14 +4784,14 @@ class NEFTranslator:
                         atom_list, ambiguity_code, details =\
                             self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%', None,
                                                # f"{nef_atom} converted to {nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2')}%."
-                                               leave_unmatched)
+                                               leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
                     if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and nef_atom[:-1] in atoms:
                         atom_list, ambiguity_code, details =\
                             self.get_star_atom(comp_id, nef_atom[:-1], None,
                                                # f"{nef_atom} converted to {nef_atom[:-1]}."
-                                               leave_unmatched)
+                                               leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
                 if nef_atom in atoms:
@@ -4820,7 +4821,7 @@ class NEFTranslator:
 
         key = (comp_id, str(star_atom_list), str(details), leave_unmatched)
         if key in self.__cachedDictForNefAtom:
-            return self.__cachedDictForNefAtom[key]
+            return copy.copy(self.__cachedDictForNefAtom[key])
 
         atom_list = []
         atom_id_map = {}

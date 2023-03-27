@@ -142,7 +142,7 @@ class BMRBChemShiftStat:
             return False
 
         if comp_id in self.__cachedDictForPeptideLike:
-            return self.__cachedDictForPeptideLike[comp_id]
+            return copy.copy(self.__cachedDictForPeptideLike[comp_id])
 
         try:
 
@@ -184,7 +184,7 @@ class BMRBChemShiftStat:
             return False, True, False
 
         if comp_id in self.__cachedDictForTypeOfCompId:
-            return self.__cachedDictForTypeOfCompId[comp_id]
+            return copy.copy(self.__cachedDictForTypeOfCompId[comp_id])
 
         try:
 
@@ -225,7 +225,7 @@ class BMRBChemShiftStat:
 
         key = str(atom_ids)
         if key in self.__cachedDictForSimilarCompId:
-            return self.__cachedDictForSimilarCompId[key]
+            return copy.copy(self.__cachedDictForSimilarCompId[key])
 
         aa_bb = {'C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N'}
         dn_bb = {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "H5'1", "H5'2", "H2'1", "H2'2", 'P'}
@@ -634,7 +634,7 @@ class BMRBChemShiftStat:
             return []
 
         if comp_id in self.__cachedDictForMethylProtons:
-            return self.__cachedDictForMethylProtons[comp_id]
+            return copy.copy(self.__cachedDictForMethylProtons[comp_id])
 
         try:
 
@@ -653,7 +653,7 @@ class BMRBChemShiftStat:
             return []
 
         if comp_id in self.__cachedDictForRepMethylProtons:
-            return self.__cachedDictForRepMethylProtons[comp_id]
+            return copy.copy(self.__cachedDictForRepMethylProtons[comp_id])
 
         try:
 
@@ -672,7 +672,7 @@ class BMRBChemShiftStat:
             return []
 
         if comp_id in self.__cachedDictForNonRepMethylProtons:
-            return self.__cachedDictForNonRepMethylProtons[comp_id]
+            return copy.copy(self.__cachedDictForNonRepMethylProtons[comp_id])
 
         try:
 
@@ -692,7 +692,7 @@ class BMRBChemShiftStat:
 
         key = (comp_id, atom_id, excl_self)
         if key in self.__cachedDictForProtonInSameGroup:
-            return self.__cachedDictForProtonInSameGroup[key]
+            return copy.copy(self.__cachedDictForProtonInSameGroup[key])
 
         try:
 

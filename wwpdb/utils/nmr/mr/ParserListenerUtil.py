@@ -3969,6 +3969,16 @@ def isAmbigAtomSelection(atoms, csStat):
     if any(a is None for a in atoms):
         return False
 
+    for a in atoms:
+        if 'chain_id' not in a or a['chain_id'] in emptyValue:
+            return True
+        if 'seq_id' not in a or a['seq_id'] in emptyValue:
+            return True
+        if 'comp_id' not in a or a['comp_id'] in emptyValue:
+            return True
+        if 'atom_id' not in a or a['atom_id'] in emptyValue:
+            return True
+
     chainIds = [a['chain_id'] for a in atoms]
 
     if len(collections.Counter(chainIds).most_common()) > 1:
@@ -3981,12 +3991,6 @@ def isAmbigAtomSelection(atoms, csStat):
     if len(commonSeqId) > 1:
         return True
 
-    for a in atoms:
-        if 'comp_id' not in a or a['comp_id'] in emptyValue:
-            return True
-        if 'atom_id' not in a or a['atom_id'] in emptyValue:
-            return True
-
     atomIds = list(set(a['atom_id'] for a in atoms))
 
     commonAtomId = collections.Counter(atomIds).most_common()
@@ -3997,7 +4001,7 @@ def isAmbigAtomSelection(atoms, csStat):
     atomId0 = atomIds[0]
     compId = atoms[0]['comp_id']
 
-    _protonsInGroup = copy.copy(csStat.getProtonsInSameGroup(compId, atomId0, True))
+    _protonsInGroup = csStat.getProtonsInSameGroup(compId, atomId0, True)
     geminalAtom = csStat.getGeminalAtom(compId, atomId0)
 
     if geminalAtom is not None:

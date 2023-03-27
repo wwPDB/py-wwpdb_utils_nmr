@@ -142,6 +142,7 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getProtonsInSameGroup('ARG', 'HB2'), ['HB2', 'HB3'])
         self.assertEqual(self.bmrb_cs_stat.getProtonsInSameGroup('VAL', 'HG11'), ['HG11', 'HG12', 'HG13'])
         self.assertEqual(self.bmrb_cs_stat.getProtonsInSameGroup('TYR', 'HD2'), ['HD2'])
+        self.assertEqual(self.bmrb_cs_stat.getProtonsInSameGroup('ILE', 'HD11'), ['HD11', 'HD12', 'HD13'])
 
 
 if __name__ == '__main__':

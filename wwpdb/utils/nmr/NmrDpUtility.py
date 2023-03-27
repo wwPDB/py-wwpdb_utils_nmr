@@ -28088,7 +28088,7 @@ class NmrDpUtility:
                 if _rest_id is None:
                     pass
 
-                elif rest_id != _rest_id:
+                elif rest_id != _rest_id and len(atom1) > 0 and len(atom2) > 0:
 
                     if member_id in emptyValue or member_logic_code == 'OR':
 

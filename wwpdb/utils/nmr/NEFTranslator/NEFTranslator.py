@@ -3221,9 +3221,15 @@ class NEFTranslator:
                                                 ent[name] = None
                                                 continue
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 remove_bad_pattern = True
                                                 continue
                                             if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 clear_bad_pattern = True
                                                 continue
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
@@ -3242,9 +3248,15 @@ class NEFTranslator:
                                                 ent[name] = None
                                                 continue
                                             elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 remove_bad_pattern = True
                                                 continue
                                             elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 clear_bad_pattern = True
                                                 continue
                                             else:
@@ -3268,9 +3280,15 @@ class NEFTranslator:
                                                 ent[name] = None
                                                 continue
                                             elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 remove_bad_pattern = True
                                                 continue
                                             elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 clear_bad_pattern = True
                                                 continue
                                             else:
@@ -3307,9 +3325,15 @@ class NEFTranslator:
                                                 ent[name] = None
                                                 continue
                                             elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 remove_bad_pattern = True
                                                 continue
                                             elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 clear_bad_pattern = True
                                                 continue
                                             else:
@@ -3331,9 +3355,15 @@ class NEFTranslator:
                                                 ent[name] = None
                                                 continue
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 remove_bad_pattern = True
                                                 continue
                                             if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 clear_bad_pattern = True
                                                 continue
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
@@ -3346,9 +3376,15 @@ class NEFTranslator:
                                                 ent[name] = None
                                                 continue
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 remove_bad_pattern = True
                                                 continue
                                             if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 clear_bad_pattern = True
                                                 continue
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
@@ -3379,9 +3415,15 @@ class NEFTranslator:
                                                 ent[name] = None
                                                 continue
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 remove_bad_pattern = True
                                                 continue
                                             if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 clear_bad_pattern = True
                                                 continue
                                             f.append(f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
@@ -3417,9 +3459,15 @@ class NEFTranslator:
                                                              f"{name} {val!r} should not be zero, "
                                                              f"as defined by {self.readableItemType[type]}, {_range}.")
                                             elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 remove_bad_pattern = True
                                                 continue
                                             elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 clear_bad_pattern = True
                                                 continue
                                         elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or\
@@ -3433,9 +3481,15 @@ class NEFTranslator:
                                             elif not enforce_range:
                                                 ent[name] = None
                                             elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 remove_bad_pattern = True
                                                 continue
                                             elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                if val in emptyValue:
+                                                    ent[name] = None
+                                                    continue
                                                 clear_bad_pattern = True
                                                 continue
                                             else:
@@ -3461,9 +3515,15 @@ class NEFTranslator:
                                                     f.append(f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                              f"{name} {val!r} should be one of {enum}.")
                                                 elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                    if val in emptyValue:
+                                                        ent[name] = None
+                                                        continue
                                                     remove_bad_pattern = True
                                                     continue
                                                 elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                    if val in emptyValue:
+                                                        ent[name] = None
+                                                        continue
                                                     clear_bad_pattern = True
                                                     continue
                                             ent[name] = val
@@ -3483,9 +3543,15 @@ class NEFTranslator:
                                                     f.append(f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                              f"{name} {val!r} should be one of {enum}.")
                                                 elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                    if val in emptyValue:
+                                                        ent[name] = None
+                                                        continue
                                                     remove_bad_pattern = True
                                                     continue
                                                 elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                    if val in emptyValue:
+                                                        ent[name] = None
+                                                        continue
                                                     clear_bad_pattern = True
                                                     continue
                                             ent[name] = int(val)
@@ -3501,9 +3567,15 @@ class NEFTranslator:
                                         if ('remove-bad-pattern' in d and d['remove-bad-pattern']) or ('clear-bad-pattern' in d and d['clear-bad-pattern']):
                                             if isinstance(val, str) and badPattern.match(val):
                                                 if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                    if val in emptyValue:
+                                                        ent[name] = None
+                                                        continue
                                                     remove_bad_pattern = True
                                                     continue
                                                 if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                    if val in emptyValue:
+                                                        ent[name] = None
+                                                        continue
                                                     clear_bad_pattern = True
                                                     continue
                                         if 'uppercase' in d and d['uppercase']:

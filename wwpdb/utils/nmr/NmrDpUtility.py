@@ -1327,9 +1327,11 @@ class NmrDpUtility:
         # dictionary of processing tasks of each workflow operation
         self.__procTasksDict = {'consistency-check': __checkTasks,
                                 'deposit': __depositTasks,
-                                ('nmr-nef2str-deposit', 'nmr-nef2cif-deposit'): __nef2strTasks,
+                                'nmr-nef2str-deposit': __nef2strTasks,
+                                'nmr-nef2cif-deposit': __nef2strTasks,
                                 'nmr-str2nef-release': __str2nefTasks,
-                                ('nmr-cs-nef-consistency-check', 'nmr-cs-str-consistency-check'): [self.__depositLegacyNmrData],
+                                'nmr-cs-nef-consistency-check': [self.__depositLegacyNmrData],
+                                'nmr-cs-str-consistency-check': [self.__depositLegacyNmrData],
                                 'nmr-cs-mr-merge': __mergeCsAndMrTasks
                                 }
 

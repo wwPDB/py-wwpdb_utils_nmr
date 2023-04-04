@@ -197,8 +197,8 @@ class CifReader:
         # clustering parameters for recognition of well-defined regions
         self.__min_features_for_clustering = 4
         self.__max_features_for_clustering = 8
-        self.__min_samples_for_clustering = 2
-        self.__max_samples_for_clustering = 2
+        self.__min_samples_for_clustering = 6
+        self.__max_samples_for_clustering = 8
 
         # minimum monomers for domain recognition
         self.__min_monomers_for_domain = 8
@@ -564,7 +564,39 @@ class CifReader:
                                                                          'enum': ('A')},
                                                                         {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
 
-                            ca_rmsd, well_defined_region = self.__calculateRMSD(c, len(seqDict[c]), total_models, ca_atom_sites, randomM)
+                            co_atom_sites = self.getDictListWithFilter('atom_site',
+                                                                       [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                        {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                        {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                                        {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                        {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
+                                                                        ],
+                                                                       [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                                                        {'name': 'label_atom_id', 'type': 'str', 'value': 'C'},
+                                                                        {'name': 'label_alt_id', 'type': 'enum',
+                                                                         'enum': ('A')},
+                                                                        {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
+
+                            bb_atom_sites = self.getDictListWithFilter('atom_site',
+                                                                       [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                        {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                        {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                                        {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                        {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
+                                                                        ],
+                                                                       [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                                                        {'name': 'label_atom_id', 'type': 'str', 'value': 'N'},
+                                                                        {'name': 'label_alt_id', 'type': 'enum',
+                                                                         'enum': ('A')},
+                                                                        {'name': 'type_symbol', 'type': 'str', 'value': 'N'}])
+
+                            bb_atom_sites.extend(ca_atom_sites)
+                            bb_atom_sites.extend(co_atom_sites)
+
+                            ca_rmsd, well_defined_region = self.__calculateRmsd(c, len(seqDict[c]), total_models,
+                                                                                ca_atom_sites, bb_atom_sites, randomM)
 
                             if ca_rmsd is not None:
                                 ent['ca_rmsd'] = ca_rmsd
@@ -587,7 +619,25 @@ class CifReader:
                                                                         'enum': ('A')},
                                                                        {'name': 'type_symbol', 'type': 'str', 'value': 'P'}])
 
-                            p_rmsd, well_defined_region = self.__calculateRMSD(c, len(seqDict[c]), total_models, p_atom_sites, randomM)
+                            bb_atom_sites = self.getDictListWithFilter('atom_site',
+                                                                       [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                        {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                        {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                                        {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                                        {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
+                                                                        ],
+                                                                       [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                                                        {'name': 'label_atom_id', 'type': 'enum',
+                                                                         'enum': ("C5'", "C4'", "C3'")},
+                                                                        {'name': 'label_alt_id', 'type': 'enum',
+                                                                         'enum': ('A')},
+                                                                        {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
+
+                            bb_atom_sites.extend(p_atom_sites)
+
+                            p_rmsd, well_defined_region = self.__calculateRmsd(c, len(seqDict[c]), total_models,
+                                                                               p_atom_sites, bb_atom_sites, randomM)
 
                             if p_rmsd is not None:
                                 ent['p_rmsd'] = p_rmsd
@@ -650,19 +700,23 @@ class CifReader:
 
         return ret
 
-    def __calculateRMSD(self, chain_id, length, total_models=1, atom_sites=None, randomM=None):
+    def __calculateRmsd(self, chain_id, length, total_models=1, atom_sites=None, bb_atom_sites=None, randomM=None):
         """ Calculate RMSD of alpha carbons/phosphates in the ensemble.
         """
 
         rlist = None
         dlist = None
 
-        if atom_sites is None:
+        if atom_sites is None or bb_atom_sites is None:
             return rlist, dlist
 
         _atom_site_dict = {}
         for model_id in range(1, total_models + 1):
             _atom_site_dict[model_id] = [a for a in atom_sites if a['model_id'] == model_id]
+
+        _bb_atom_site_dict = {}
+        for model_id in range(1, total_models + 1):
+            _bb_atom_site_dict[model_id] = [a for a in bb_atom_sites if a['model_id'] == model_id]
 
         size = len(_atom_site_dict[1])
 
@@ -799,6 +853,10 @@ class CifReader:
                     for label in set_labels:
 
                         monomers = list_labels.count(label)
+
+                        if monomers < self.__min_monomers_for_domain:
+                            continue
+
                         fraction = float(monomers) / size
 
                         _rmsd = []
@@ -892,6 +950,7 @@ class CifReader:
 
             item = {'model_id': ref_model_id}
             _atom_site_ref = _atom_site_dict[ref_model_id]
+            _bb_atom_site_ref = _bb_atom_site_dict[ref_model_id]
 
             min_label = -1
             min_core_rmsd = mean_align_rmsd = 1000000.0
@@ -905,6 +964,9 @@ class CifReader:
 
                 _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
 
+                _seq_ids = sorted(set(_a['seq_id'] for _a in _atom_site_p))
+                _bb_atom_site_p = [_a for _a in _bb_atom_site_ref if _a['seq_id'] in _seq_ids]
+
                 core_rmsd = []
                 align_rmsd = []
                 exact_overlaid_model_ids = []
@@ -916,6 +978,9 @@ class CifReader:
 
                     _atom_site_test = _atom_site_dict[test_model_id]
                     _atom_site_q = [_a for _a, _l in zip(_atom_site_test, list_labels) if _l == label]
+
+                    _bb_atom_site_test = _bb_atom_site_dict[test_model_id]
+                    _bb_atom_site_q = [_a for _a in _bb_atom_site_test if _a['seq_id'] in _seq_ids]
 
                     _core_rmsd = []
 
@@ -935,7 +1000,7 @@ class CifReader:
                         _core_rmsd.append(np.dot(d, d))
 
                     core_rmsd.append(math.sqrt(np.mean(np.array(_core_rmsd))))
-                    _rmsd = calculate_rmsd(_atom_site_p, _atom_site_q)
+                    _rmsd = calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q)
                     align_rmsd.append(_rmsd)
                     if _rmsd < self.__rmsd_overlaid_exactly and ref_model_id < test_model_id:
                         exact_overlaid_model_ids.append({'ref_model_id': ref_model_id,
@@ -1001,15 +1066,22 @@ class CifReader:
                 _atom_site_ref = _atom_site_dict[ref_model_id]
                 _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
 
+                _bb_atom_site_ref = _bb_atom_site_dict[ref_model_id]
+                _seq_ids = sorted(set(_a['seq_id'] for _a in _atom_site_p))
+                _bb_atom_site_p = [_a for _a in _bb_atom_site_ref if _a['seq_id'] in _seq_ids]
+
                 for test_model_id in range(2, _total_models + 1):
 
                     if ref_model_id >= test_model_id:
                         continue
 
-                    _atom_site_test = _atom_site_dict[test_model_id]
-                    _atom_site_q = [_a for _a, _l in zip(_atom_site_test, list_labels) if _l == label]
+                    # _atom_site_test = _atom_site_dict[test_model_id]
+                    # _atom_site_q = [_a for _a, _l in zip(_atom_site_test, list_labels) if _l == label]
 
-                    _rmsd_ = calculate_rmsd(_atom_site_p, _atom_site_q)
+                    _bb_atom_site_test = _bb_atom_site_dict[test_model_id]
+                    _bb_atom_site_q = [_a for _a in _bb_atom_site_test if _a['seq_id'] in _seq_ids]
+
+                    _rmsd_ = calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q)
 
                     r[ref_model_id - 1, test_model_id - 1] = _rmsd_
                     r[test_model_id - 1, ref_model_id - 1] = _rmsd_
@@ -1026,6 +1098,9 @@ class CifReader:
 
             _atom_site_ref = _atom_site_dict[ref_model_id]
             _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
+            _bb_atom_site_ref = _bb_atom_site_dict[ref_model_id]
+            _seq_ids = sorted(set(_a['seq_id'] for _a in _atom_site_p))
+            _bb_atom_site_p = [_a for _a in _bb_atom_site_ref if _a['seq_id'] in _seq_ids]
 
             _rmsd = []
 
@@ -1034,10 +1109,13 @@ class CifReader:
                 if ref_model_id == test_model_id:
                     continue
 
-                _atom_site_test = _atom_site_dict[test_model_id]
-                _atom_site_q = [_a for _a, _l in zip(_atom_site_test, list_labels) if _l == label]
+                # _atom_site_test = _atom_site_dict[test_model_id]
+                # _atom_site_q = [_a for _a, _l in zip(_atom_site_test, list_labels) if _l == label]
 
-                _rmsd.append(calculate_rmsd(_atom_site_p, _atom_site_q))
+                _bb_atom_site_test = _bb_atom_site_dict[test_model_id]
+                _bb_atom_site_q = [_a for _a in _bb_atom_site_test if _a['seq_id'] in _seq_ids]
+
+                _rmsd.append(calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q))
 
             item['medoid_rmsd'] = float(f"{np.mean(np.array(_rmsd)):.4f}")
 

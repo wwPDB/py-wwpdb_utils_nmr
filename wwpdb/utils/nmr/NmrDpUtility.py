@@ -33117,11 +33117,22 @@ class NmrDpUtility:
 
                                 cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(chain_id)
 
-                                if cif_ps is not None and 'ca_rmsd' in cif_ps:
+                                if cif_ps is not None and 'well_defined_region' in cif_ps:
 
-                                    if len(cif_ps['ca_rmsd']) > 0 and 'rmsd_in_well_defined_region' in cif_ps['ca_rmsd'][0]:
-                                        rmsd = cif_ps['ca_rmsd'][0]['rmsd_in_well_defined_region']
-                                        result['rmsd_in_well_defined_region'] = rmsd
+                                    _score = 0.0
+                                    dom_idx = -1
+
+                                    for i, r in enumerate(cif_ps['well_defined_region']):
+                                        try:
+                                            score = r['percent_of_core'] / r['medoid_rmsd']
+                                            if score > _score:
+                                                _score = score
+                                                dom_idx = i
+                                        except Exception:
+                                            continue
+
+                                    if dom_idx != -1:
+                                        result['rmsd_in_well_defined_region'] = cif_ps['well_defined_region'][dom_idx]['medoid_rmsd']
 
                                 rci.append(result)
 

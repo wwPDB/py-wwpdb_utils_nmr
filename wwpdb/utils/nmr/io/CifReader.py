@@ -197,7 +197,7 @@ class CifReader:
         # clustering parameters for recognition of well-defined regions
         self.__min_features_for_clustering = 4
         self.__max_features_for_clustering = 8
-        self.__min_samples_for_clustering = 6
+        self.__min_samples_for_clustering = 2
         self.__max_samples_for_clustering = 8
 
         # minimum monomers for domain recognition
@@ -807,11 +807,16 @@ class CifReader:
         min_score = 1000000.0
         min_result = None
 
-        for features in range(self.__min_features_for_clustering, self.__max_features_for_clustering + 1):
+        stop_min_samples = -1
 
-            x = np.delete(v, np.s_[features:], 1)
+        for min_samples in reversed(range(self.__min_samples_for_clustering, self.__max_samples_for_clustering + 1)):
 
-            for min_samples in range(self.__min_samples_for_clustering, self.__max_samples_for_clustering + 1):
+            if min_samples == stop_min_samples:
+                break
+
+            for features in range(self.__min_features_for_clustering, self.__max_features_for_clustering + 1):
+
+                x = np.delete(v, np.s_[features:], 1)
 
                 if min_samples >= features:
                     continue
@@ -854,8 +859,8 @@ class CifReader:
 
                         monomers = list_labels.count(label)
 
-                        if monomers < self.__min_monomers_for_domain:
-                            continue
+                        # if monomers < self.__min_monomers_for_domain:
+                        #     continue
 
                         fraction = float(monomers) / size
 
@@ -891,6 +896,9 @@ class CifReader:
                         continue
 
                     result['score'] = score
+
+                    if n_clusters > 0 and stop_min_samples == -1:
+                        stop_min_samples = min_samples - 2
 
                     if self.__verbose:
                         self.__lfh.write(f'{result}\n')
@@ -1120,6 +1128,9 @@ class CifReader:
             item['medoid_rmsd'] = float(f"{np.mean(np.array(_rmsd)):.4f}")
 
             dlist.append(item)
+
+        if self.__verbose:
+            print(dlist)
 
         return rlist, dlist
 

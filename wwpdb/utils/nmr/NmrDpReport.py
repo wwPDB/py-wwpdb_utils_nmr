@@ -263,6 +263,7 @@ class NmrDpReport:
 
     def getNmrRestraints(self):
         """ Return stats of NMR restraints.
+            @deprecated: Please extract _Constraint_file loop of converted NMR-STAR file instead (DAOTHER-7407)
         """
 
         content_subtypes = self.getNmrContentSubTypes()

@@ -198,7 +198,7 @@ class CifReader:
         self.__min_features_for_clustering = 4
         self.__max_features_for_clustering = 8
         self.__min_samples_for_clustering = 2
-        self.__max_samples_for_clustering = 8
+        self.__max_samples_for_clustering = 6
 
         # minimum monomers for domain recognition
         self.__min_monomers_for_domain = 8

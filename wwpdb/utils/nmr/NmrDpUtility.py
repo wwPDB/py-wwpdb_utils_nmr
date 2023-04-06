@@ -1165,6 +1165,9 @@ class NmrDpUtility:
         # whether stereo-array isotope labeling method has been applied for the study
         self.__sail_flag = False
 
+        # whether _Constraint_stat_list saveframe has been updated
+        self.__const_stat_updated = False
+
         # source, destination, and log file paths
         self.__srcPath = None
         self.__srcName = None
@@ -6261,6 +6264,7 @@ class NmrDpUtility:
 
             self.__remediation_mode = True
             self.__has_star_chem_shift = True
+            self.__const_stat_updated = False
 
             if self.__inputParamDictCopy is None:
                 self.__inputParamDictCopy = copy.deepcopy(self.__inputParamDict)
@@ -40479,6 +40483,8 @@ class NmrDpUtility:
 
             self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
 
+            self.__const_stat_updated = False
+
             return True
 
         return False
@@ -48672,7 +48678,7 @@ class NmrDpUtility:
         """ Update _Constraint_stat_list saveframe.
         """
 
-        if (not self.__combined_mode and not self.__remediation_mode) or self.__dstPath is None:
+        if (not self.__combined_mode and not self.__remediation_mode) or self.__dstPath is None or self.__const_stat_updated:
             return True
 
         input_source = self.report.input_sources[0]
@@ -49961,6 +49967,8 @@ class NmrDpUtility:
             master_entry.write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
         else:
             master_entry.write_to_file(self.__dstPath)
+
+        self.__const_stat_updated = True
 
         return True
 

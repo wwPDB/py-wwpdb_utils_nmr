@@ -50053,13 +50053,14 @@ class NmrDpUtility:
             sf_data.add_loop(lp)
 
         except IndexError:
-            """
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updateConstraintStats() ++ Error  - " + str(e))
-            self.report.setError()
+            # """
+            # self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updateConstraintStats() ++ Error  - " + str(e))
+            # self.report.setError()
 
-            if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__updateConstraintStats() ++ Error  - {str(e)}\n")
-            """
+            # if self.__verbose:
+            #     self.__lfh.write(f"+NmrDpUtility.__updateConstraintStats() ++ Error  - {str(e)}\n")
+            # """
+            pass
 
         master_entry = self.__c2S.normalize_str(master_entry)
 

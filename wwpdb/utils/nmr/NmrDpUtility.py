@@ -37695,18 +37695,18 @@ class NmrDpUtility:
                                     if _seq_key not in self.__coord_unobs_res:
                                         self.__coord_unobs_res.append(_seq_key)
 
-                if self.__cifHashCode is not None:
-                    cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_atom_site.pkl")
-                    write_as_pickle(self.__coord_atom_site, cache_path)
+            if self.__cifHashCode is not None:
+                cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_atom_site.pkl")
+                write_as_pickle(self.__coord_atom_site, cache_path)
 
-                    cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_unobs_res.pkl")
-                    write_as_pickle(self.__coord_unobs_res, cache_path)
+                cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_unobs_res.pkl")
+                write_as_pickle(self.__coord_unobs_res, cache_path)
 
-                    cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_auth_to_label.pkl")
-                    write_as_pickle(self.__auth_to_label_seq, cache_path)
+                cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_auth_to_label.pkl")
+                write_as_pickle(self.__auth_to_label_seq, cache_path)
 
-                    cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_label_to_auth.pkl")
-                    write_as_pickle(self.__label_to_auth_seq, cache_path)
+                cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_label_to_auth.pkl")
+                write_as_pickle(self.__label_to_auth_seq, cache_path)
 
             return True
 

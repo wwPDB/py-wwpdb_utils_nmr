@@ -187,6 +187,7 @@ import hashlib
 import pynmrstar
 import gzip
 import chardet
+import pickle
 
 from packaging import version
 from munkres import Munkres
@@ -1077,6 +1078,29 @@ def get_number_of_dimensions_of_peak_list(file_format, line):
     return None
 
 
+def load_from_pickle(file_name, default=None):
+    """ Load object from pickle file.
+    """
+
+    if os.path.exists(file_name):
+
+        with open(file_name, 'rb') as ifp:
+            obj = pickle.load(ifp)
+            return obj if obj is not None else default
+
+    return default
+
+
+def write_as_pickle(obj, file_name):
+    """ Write a given object as pickle file.
+    """
+
+    if obj is not None:
+
+        with open(file_name, 'wb') as ofp:
+            pickle.dump(obj, ofp)
+
+
 class NmrDpUtility:
     """ Wrapper class for data processing for NMR data.
     """
@@ -1180,6 +1204,9 @@ class NmrDpUtility:
         self.__tmpPath = None
 
         self.__dirPath = None
+
+        # hash code of the coordinate file
+        self.__cifHashCode = None
 
         # auxiliary input resource
         self.__inputParamDict = {}
@@ -6249,6 +6276,8 @@ class NmrDpUtility:
             if mr_file_path_list in self.__inputParamDict:
                 self.__file_path_list_len += len(self.__inputParamDict[mr_file_path_list])
 
+        self.__cifPath = self.__cifHashCode = None
+
         # incomplete assignments are edited by biocurators for conventional assigned cemical shifts (DAOTHER-7662)
         for key in self.key_items['nmr-star']['chem_shift']:
             if 'remove-bad-pattern' in key:
@@ -9506,6 +9535,7 @@ class NmrDpUtility:
         fileListId = self.__file_path_list_len
 
         for ar in self.__inputParamDict[ar_file_path_list]:
+            file_path = ar['file_name']
 
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
@@ -9516,10 +9546,12 @@ class NmrDpUtility:
             fileListId += 1
 
             if file_type in ('nm-res-mr', 'nm-res-sax', 'nm-pea-any'):
-                md5_list.append(None)
+                if file_type == 'nm-res-mr':
+                    md5_list.append(None)
+                else:
+                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifp:
+                        md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
                 continue
-
-            file_path = ar['file_name']
 
             original_file_name = None
             if 'original_file_name' in input_source_dic:
@@ -10928,7 +10960,19 @@ class NmrDpUtility:
                     file_name_1 = os.path.basename(self.__inputParamDict[ar_file_path_list][i]['file_name'])
                     file_name_2 = os.path.basename(self.__inputParamDict[ar_file_path_list][j]['file_name'])
 
-                    err = f"You have uploaded the same NMR restraint file twice. "\
+                    file_type_1 = self.__inputParamDict[ar_file_path_list][i]['file_type']
+                    file_type_2 = self.__inputParamDict[ar_file_path_list][j]['file_type']
+
+                    if file_type_1.startswith('nm-res') and file_type_2.startswith('nm-res'):
+                        file_type = 'restraint'
+                    elif file_type_1.startswith('nm-pea') and file_type_2.startswith('nm-pea'):
+                        file_type = 'spectral peak list'
+                    elif file_type_1.startswith('nm-res'):
+                        file_type = 'restraint/spectral peak list'
+                    else:
+                        file_type = 'spectral peak list/restraint'
+
+                    err = f"You have uploaded the same NMR {file_type} file twice. "\
                         f"Please replace/delete either {file_name_1} or {file_name_2}."
 
                     self.report.error.appendDescription('content_mismatch',
@@ -22936,9 +22980,7 @@ class NmrDpUtility:
             pass
 
         if self.__caC is None:
-            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
-                                              self.__representative_model_id,
-                                              self.__cR, None)
+            self.__retrieveCoordAssemblyChecker()
 
         polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
@@ -26722,6 +26764,24 @@ class NmrDpUtility:
 
         return msg[:-2]
 
+    def __retrieveCoordAssemblyChecker(self):
+        """ Wrapper function for ParserListenerUtil.coordAssemblyChecker.
+        """
+
+        cache_path = None
+        if self.__cifHashCode is not None:
+            cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_asm_chk.pkl")
+            self.__caC = load_from_pickle(cache_path)
+            if self.__caC is not None:
+                return
+
+        self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
+                                          self.__representative_model_id,
+                                          self.__cR, None)
+
+        if self.__caC is not None and cache_path:
+            write_as_pickle(self.__caC, cache_path)
+
     def __validateStrMr(self):
         """ Validate restraints of NMR-STAR restraint files.
         """
@@ -26748,9 +26808,7 @@ class NmrDpUtility:
             return False
 
         if self.__caC is None:
-            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
-                                              self.__representative_model_id,
-                                              self.__cR, None)
+            self.__retrieveCoordAssemblyChecker()
 
         if self.__list_id_counter is None:
             self.__list_id_counter = {}
@@ -26875,9 +26933,7 @@ class NmrDpUtility:
             if has_poly_seq_in_loop:
 
                 if self.__caC is None:
-                    self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
-                                                      self.__representative_model_id,
-                                                      self.__cR, None)
+                    self.__retrieveCoordAssemblyChecker()
 
                 polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
@@ -28508,9 +28564,7 @@ class NmrDpUtility:
             return False
 
         if self.__caC is None:
-            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
-                                              self.__representative_model_id,
-                                              self.__cR, None)
+            self.__retrieveCoordAssemblyChecker()
 
         amberAtomNumberDict = None
         gromacsAtomNumberDict = None
@@ -30768,9 +30822,7 @@ class NmrDpUtility:
             return False
 
         if self.__caC is None:
-            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
-                                              self.__representative_model_id,
-                                              self.__cR, None)
+            self.__retrieveCoordAssemblyChecker()
 
         list_id = 1
 
@@ -30869,9 +30921,7 @@ class NmrDpUtility:
             return False
 
         if self.__caC is None:
-            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
-                                              self.__representative_model_id,
-                                              self.__cR, None)
+            self.__retrieveCoordAssemblyChecker()
 
         auth_to_star_seq = self.__caC['auth_to_star_seq']
 
@@ -37053,6 +37103,8 @@ class NmrDpUtility:
         if self.__cifPath is not None:
             return True
 
+        self.__cifHashCode = None
+
         if 'coordinate_file_path' in self.__inputParamDict:
 
             fPath = self.__inputParamDict['coordinate_file_path']
@@ -37119,6 +37171,10 @@ class NmrDpUtility:
                 self.__is_cyclic_polymer = {}
                 self.__chain_id_map_for_remediation = {}
                 self.__seq_id_map_for_remediation = {}
+
+                if os.path.exists(self.__cifPath):
+                    with open(self.__cifPath, 'r', encoding='utf-8', errors='ignore') as ifp:
+                        self.__cifHashCode = hashlib.md5(ifp.read().encode('utf-8')).hexdigest()
 
         return False
 
@@ -37213,35 +37269,45 @@ class NmrDpUtility:
 
         try:
 
-            try:
-                poly_seq = self.__cR.getPolymerSequence(lp_category, key_items,
-                                                        withStructConf=True, withRmsd=True, alias=alias, total_models=self.__total_models)
-            except KeyError:  # pdbx_PDB_ins_code throws KeyError
-                if content_subtype + ('_ins_alias' if alias else '_ins') in self.key_items[file_type]:
-                    key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
-                    poly_seq = self.__cR.getPolymerSequence(lp_category, key_items,
-                                                            withStructConf=True, withRmsd=True, alias=alias, total_models=self.__total_models)
-                else:
-                    poly_seq = []
+            poly_seq = cache_path = None
+            if self.__cifHashCode is not None:
+                cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_poly_seq_full.pkl")
+                poly_seq = load_from_pickle(cache_path)
 
-            if len(poly_seq) == 0:
-                return False
-
-            content_subtype = 'branched'
-
-            lp_category = self.lp_categories[file_type][content_subtype]
-
-            if self.__cR.hasCategory(lp_category):
-
-                key_items = self.key_items[file_type][content_subtype]
+            if poly_seq is None:
 
                 try:
-                    branched_seq = self.__cR.getPolymerSequence(lp_category, key_items,
-                                                                withStructConf=False, withRmsd=False, alias=False, total_models=self.__total_models)
-                    if len(branched_seq) > 0:
-                        poly_seq.extend(branched_seq)
-                except Exception:
-                    pass
+                    poly_seq = self.__cR.getPolymerSequence(lp_category, key_items,
+                                                            withStructConf=True, withRmsd=True, alias=alias, total_models=self.__total_models)
+                except KeyError:  # pdbx_PDB_ins_code throws KeyError
+                    if content_subtype + ('_ins_alias' if alias else '_ins') in self.key_items[file_type]:
+                        key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
+                        poly_seq = self.__cR.getPolymerSequence(lp_category, key_items,
+                                                                withStructConf=True, withRmsd=True, alias=alias, total_models=self.__total_models)
+                    else:
+                        poly_seq = []
+
+                if len(poly_seq) == 0:
+                    return False
+
+                content_subtype = 'branched'
+
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                if self.__cR.hasCategory(lp_category):
+
+                    key_items = self.key_items[file_type][content_subtype]
+
+                    try:
+                        branched_seq = self.__cR.getPolymerSequence(lp_category, key_items,
+                                                                    withStructConf=False, withRmsd=False, alias=False, total_models=self.__total_models)
+                        if len(branched_seq) > 0:
+                            poly_seq.extend(branched_seq)
+                    except Exception:
+                        pass
+
+                if poly_seq is not None and len(poly_seq) > 0 and cache_path is not None:
+                    write_as_pickle(poly_seq, cache_path)
 
             input_source.setItemValue('polymer_sequence', poly_seq)
 
@@ -37477,6 +37543,22 @@ class NmrDpUtility:
         if self.__coord_atom_site is not None:
             return True
 
+        if self.__cifHashCode is not None:
+            cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_atom_site.pkl")
+            self.__coord_atom_site = load_from_pickle(cache_path, None)
+
+            cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_unobs_res.pkl")
+            self.__coord_unobs_res = load_from_pickle(cache_path, [])
+
+            cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_auth_to_label.pkl")
+            self.__auth_to_label_seq = load_from_pickle(cache_path, {})
+
+            cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_label_to_auth.pkl")
+            self.__label_to_auth_seq = load_from_pickle(cache_path, {})
+
+            if self.__coord_atom_site is not None:
+                return True
+
         input_source = self.report.input_sources[src_id]
         input_source_dic = input_source.get()
 
@@ -37613,6 +37695,19 @@ class NmrDpUtility:
                                     if _seq_key not in self.__coord_unobs_res:
                                         self.__coord_unobs_res.append(_seq_key)
 
+                if self.__cifHashCode is not None:
+                    cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_atom_site.pkl")
+                    write_as_pickle(self.__coord_atom_site, cache_path)
+
+                    cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_unobs_res.pkl")
+                    write_as_pickle(self.__coord_unobs_res, cache_path)
+
+                    cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_auth_to_label.pkl")
+                    write_as_pickle(self.__auth_to_label_seq, cache_path)
+
+                    cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_label_to_auth.pkl")
+                    write_as_pickle(self.__label_to_auth_seq, cache_path)
+
             return True
 
         except Exception as e:
@@ -37670,16 +37765,26 @@ class NmrDpUtility:
 
             try:
 
-                try:
-                    poly_seq = self.__cR.getPolymerSequence(lp_category, key_items)
-                except KeyError:  # pdbx_PDB_ins_code throws KeyError
-                    if content_subtype + ('_ins_alias' if alias else '_ins') in self.key_items[file_type]:
-                        key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
+                poly_seq = cache_path = None
+                if self.__cifHashCode is not None:
+                    cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_poly_seq.pkl")
+                    poly_seq = load_from_pickle(cache_path)
+
+                if poly_seq is None:
+
+                    try:
                         poly_seq = self.__cR.getPolymerSequence(lp_category, key_items)
-                    else:
-                        poly_seq = []
+                    except KeyError:  # pdbx_PDB_ins_code throws KeyError
+                        if content_subtype + ('_ins_alias' if alias else '_ins') in self.key_items[file_type]:
+                            key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
+                            poly_seq = self.__cR.getPolymerSequence(lp_category, key_items)
+                        else:
+                            poly_seq = []
 
                 if len(poly_seq) > 0:
+
+                    if cache_path is not None:
+                        write_as_pickle(poly_seq, cache_path)
 
                     poly_seq_list_set[content_subtype].append({'list_id': list_id, 'polymer_sequence': poly_seq})
 
@@ -40588,9 +40693,7 @@ class NmrDpUtility:
             pass
 
         if self.__caC is None:
-            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
-                                              self.__representative_model_id,
-                                              self.__cR, None)
+            self.__retrieveCoordAssemblyChecker()
 
         if self.__caC['entity_assembly'] is None:
             return False
@@ -47255,9 +47358,7 @@ class NmrDpUtility:
                 del master_entry[cst_sf]
 
         if self.__caC is None:
-            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
-                                              self.__representative_model_id,
-                                              self.__cR, None)
+            self.__retrieveCoordAssemblyChecker()
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -48747,9 +48848,7 @@ class NmrDpUtility:
                     del master_entry[cst_sf]
 
         if self.__caC is None:
-            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
-                                              self.__representative_model_id,
-                                              self.__cR, None)
+            self.__retrieveCoordAssemblyChecker()
 
         sf_item = {}
 

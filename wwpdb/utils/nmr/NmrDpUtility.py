@@ -1189,9 +1189,6 @@ class NmrDpUtility:
         # whether stereo-array isotope labeling method has been applied for the study
         self.__sail_flag = False
 
-        # whether _Constraint_stat_list saveframe has been updated
-        self.__const_stat_updated = False
-
         # source, destination, and log file paths
         self.__srcPath = None
         self.__srcName = None
@@ -1320,7 +1317,6 @@ class NmrDpUtility:
                           self.__deleteSkippedSf,
                           self.__deleteSkippedLoop,
                           self.__deleteUnparsedEntryLoop,
-                          self.__updateEntryInformtion,
                           self.__updatePolymerSequence,
                           self.__updateAuthSequence,
                           self.__updateDihedralAngleType,
@@ -1366,11 +1362,9 @@ class NmrDpUtility:
         __str2nefTasks.extend(__depositTasks)
 
         __mergeCsAndMrTasks = __checkTasks
-        __mergeCsAndMrTasks.append(self.__convertToStrEntry)
         __mergeCsAndMrTasks.append(self.__updatePolymerSequence)
         __mergeCsAndMrTasks.append(self.__mergeLegacyCsAndMr)
         __mergeCsAndMrTasks.append(self.__detectSimpleDistanceRestraint)
-        __mergeCsAndMrTasks.append(self.__updateConstraintStats)
 
         # dictionary of processing tasks of each workflow operation
         self.__procTasksDict = {'consistency-check': __checkTasks,
@@ -6293,7 +6287,6 @@ class NmrDpUtility:
 
             self.__remediation_mode = True
             self.__has_star_chem_shift = True
-            self.__const_stat_updated = False
 
             if self.__inputParamDictCopy is None:
                 self.__inputParamDictCopy = copy.deepcopy(self.__inputParamDict)
@@ -7146,6 +7139,14 @@ class NmrDpUtility:
 
                             self.__rescueFormerNef(csListId)
                             self.__rescueImmatureStr(csListId)
+
+                        if star_data_type != 'Entry':
+                            _star_data = self.__convertToStrEntry(star_data, csListId + 1)
+                            if isinstance(_star_data, pynmrstar.Entry):
+                                self.__star_data[-1] = _star_data
+                                self.__star_data_type[-1] = 'Entry'
+                        else:
+                            self.__star_data[-1] = self.__convertToStrEntry(star_data)
 
                 elif not self.__fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message):
                     is_done = False
@@ -40486,73 +40487,48 @@ class NmrDpUtility:
 
         return True
 
-    def __updateEntryInformtion(self):
-        """ Update entry information.
+    def __convertToStrEntry(self, src_data=None, list_id=1):
+        """ Convert NMR-STAR CS loop/saveframe to pynmrstar Entry object.
         """
 
-        if not self.__combined_mode:  # and not self.__remediation_mode:
-            return True
-
-        if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
-            return False
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        # file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if file_type == 'nef':
-            return True
-
-        master_entry = self.__star_data[0]
+        if src_data is None:
+            return None
 
         file_type = 'nmr-star'
-        content_subtype = 'entry_info'
 
-        sf_category = self.sf_categories[file_type][content_subtype]
+        def update_entry_info_saveframe(master_entry):
+            content_subtype = 'entry_info'
 
-        try:
+            sf_category = self.sf_categories[file_type][content_subtype]
 
-            orig_ent_sf = master_entry.get_saveframes_by_category(sf_category)[0]
+            try:
 
-            tagNames = [t[0] for t in orig_ent_sf.tags]
+                orig_ent_sf = master_entry.get_saveframes_by_category(sf_category)[0]
 
-            if 'Sf_category' not in tagNames:
-                orig_ent_sf.add_tag('Sf_category', sf_category)
-            if 'Sf_framecode' not in tagNames:
-                orig_ent_sf.add_tag('Sf_framecode', orig_ent_sf.name)
-            set_sf_tag(orig_ent_sf, 'ID', self.__entry_id)
+                tagNames = [t[0] for t in orig_ent_sf.tags]
 
-        except IndexError:
+                if 'Sf_category' not in tagNames:
+                    orig_ent_sf.add_tag('Sf_category', sf_category)
+                if 'Sf_framecode' not in tagNames:
+                    orig_ent_sf.add_tag('Sf_framecode', orig_ent_sf.name)
+                set_sf_tag(orig_ent_sf, 'ID', self.__entry_id)
 
-            ent_sf = pynmrstar.Saveframe.from_scratch(sf_category, self.sf_tag_prefixes[file_type][content_subtype])
-            ent_sf.add_tag('Sf_category', sf_category)
-            ent_sf.add_tag('Sf_framecode', sf_category)
-            ent_sf.add_tag('ID', self.__entry_id)
+            except IndexError:
 
-            master_entry.add_saveframe(ent_sf)
+                ent_sf = pynmrstar.Saveframe.from_scratch(sf_category, self.sf_tag_prefixes[file_type][content_subtype])
+                ent_sf.add_tag('Sf_category', sf_category)
+                ent_sf.add_tag('Sf_framecode', sf_category)
+                ent_sf.add_tag('ID', self.__entry_id)
 
-        return True
+                master_entry.add_saveframe(ent_sf)
 
-    def __convertToStrEntry(self):
-        """ Convert pynmrstar.Loop or Saveframe to pynmrstar.Entry.
-        """
+            return master_entry
 
-        if self.__combined_mode or len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] == 'Entry':
-            return True
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_type = input_source_dic['file_type']
+        if isinstance(src_data, pynmrstar.Entry):
+            return update_entry_info_saveframe(src_data)
 
         content_subtype = 'chem_shift'
 
-        if file_type != 'nmr-star' or not has_key_value(input_source_dic['content_subtype'], content_subtype):
-            return False
-
-        src_data = self.__star_data[0]
         master_entry = pynmrstar.Entry.from_scratch(self.__entry_id)
 
         if isinstance(src_data, (pynmrstar.Saveframe, pynmrstar.Loop)):
@@ -40560,13 +40536,13 @@ class NmrDpUtility:
             if isinstance(src_data, pynmrstar.Saveframe):
                 set_sf_tag(src_data, 'Sf_category', self.sf_categories[file_type][content_subtype])
                 set_sf_tag(src_data, 'Entry_ID', self.__entry_id)
-                set_sf_tag(src_data, 'ID', 1)
+                set_sf_tag(src_data, 'ID', list_id)
                 set_sf_tag(src_data, 'Data_file_name', self.__srcName)
 
                 master_entry.add_saveframe(src_data)
 
             else:
-                sf_framecode = 'assigned_chemical_shifts_1'
+                sf_framecode = f'assigned_chemical_shifts_{list_id}'
                 sf_tag_prefix = self.sf_tag_prefixes[file_type][content_subtype]
 
                 acs_sf = pynmrstar.Saveframe.from_scratch(sf_framecode, sf_tag_prefix)
@@ -40574,25 +40550,16 @@ class NmrDpUtility:
                 acs_sf.add_tag('Sf_category', self.sf_categories[file_type][content_subtype])
                 acs_sf.add_tag('Sf_framecode', sf_framecode)
                 acs_sf.add_tag('Entry_ID', self.__entry_id)
-                acs_sf.add_tag('ID', 1)
+                acs_sf.add_tag('ID', list_id)
                 acs_sf.add_tag('Data_file_name', self.__srcName)
 
                 acs_sf.add_loop(src_data)
 
                 master_entry.add_saveframe(acs_sf)
 
-            self.__star_data[0] = master_entry
-            self.__star_data_type[0] = 'Entry'
+            src_data = update_entry_info_saveframe(master_entry)
 
-            self.__updateEntryInformtion()
-
-            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
-
-            self.__const_stat_updated = False
-
-            return True
-
-        return False
+        return src_data
 
     def __updatePolymerSequence(self):
         """ Update polymer sequence.
@@ -47339,6 +47306,7 @@ class NmrDpUtility:
         master_entry = self.__star_data[0]
 
         if not isinstance(master_entry, pynmrstar.Entry):
+            """"
             err = f"The assigned chemical shift file {self.__srcName!r} is not instance of pynmrstar.Entry."
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - " + err)
@@ -47346,7 +47314,7 @@ class NmrDpUtility:
 
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {err}\n")
-
+            """
             return False
 
         sf_framecode = 'constraint_statistics'
@@ -48755,7 +48723,6 @@ class NmrDpUtility:
                 sf_data.add_loop(lp)
 
         except IndexError as e:
-
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - " + str(e))
             self.report.setError()
 
@@ -48779,7 +48746,7 @@ class NmrDpUtility:
         """ Update _Constraint_stat_list saveframe.
         """
 
-        if (not self.__combined_mode and not self.__remediation_mode) or self.__dstPath is None or self.__const_stat_updated:
+        if (not self.__combined_mode and not self.__remediation_mode) or self.__dstPath is None:
             return True
 
         input_source = self.report.input_sources[0]
@@ -50017,8 +49984,6 @@ class NmrDpUtility:
 
         # Update _Data_set loop
 
-        self.__updateEntryInformtion()
-
         try:
 
             content_subtype = 'entry_info'
@@ -50067,8 +50032,6 @@ class NmrDpUtility:
             master_entry.write_to_file(self.__dstPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
         else:
             master_entry.write_to_file(self.__dstPath)
-
-        self.__const_stat_updated = True
 
         return True
 

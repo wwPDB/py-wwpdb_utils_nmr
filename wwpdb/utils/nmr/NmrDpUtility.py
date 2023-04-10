@@ -47306,15 +47306,15 @@ class NmrDpUtility:
         master_entry = self.__star_data[0]
 
         if not isinstance(master_entry, pynmrstar.Entry):
-            """"
-            err = f"The assigned chemical shift file {self.__srcName!r} is not instance of pynmrstar.Entry."
+            # """"
+            # err = f"The assigned chemical shift file {self.__srcName!r} is not instance of pynmrstar.Entry."
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - " + err)
-            self.report.setError()
+            # self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - " + err)
+            # self.report.setError()
 
-            if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {err}\n")
-            """
+            # if self.__verbose:
+            #     self.__lfh.write(f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {err}\n")
+            # """
             return False
 
         sf_framecode = 'constraint_statistics'

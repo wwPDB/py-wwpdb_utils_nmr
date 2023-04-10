@@ -1011,7 +1011,7 @@ def is_peak_list(line, has_header=True):
         s = filter(None, re.split(r'[\t ]', line))
         return 'U' in s or 'T' in s
 
-    if 'Data Height' in line and 'w1' in line and 'w2' in line:  # SPARKY peak list
+    if 'Data Height' in line and 'w1' in line and 'w2' in line:  # Sparky peak list
         return True
 
     if 'label' in line and 'dataset' in line and 'sw' in line and 'sf' in line:  # NMRView peak list
@@ -1032,14 +1032,14 @@ def get_peak_list_format(line, has_header=True):
         if 'U' in s or 'T' in s:
             return 'XEASY'
 
-    if 'Data Height' in line and 'w1' in line and 'w2' in line:  # SPARKY peak list
-        return 'SPARKY'
+    if 'Data Height' in line and 'w1' in line and 'w2' in line:  # Sparky peak list
+        return 'Sparky'
 
     if 'label' in line and 'dataset' in line and 'sw' in line and 'sf' in line:  # NMRView peak list
-        return 'NMRVIEW'
+        return 'NMRView'
 
     if 'VARS' in line and 'X_PPM' in line and 'Y_PPM' in line:
-        return 'NMRPIPE'
+        return 'NMRPipe'
 
     return None
 
@@ -1054,18 +1054,18 @@ def get_number_of_dimensions_of_peak_list(file_format, line):
             if col[-1].isdigit():
                 return int(col[-1])
 
-    if file_format == 'SPARKY':
+    if file_format == 'Sparky':
         if 'w1' in line:
             col = line.split()
             dim = [int(w[1:]) for w in col if w.startswith('w') and w[1:].isdigit()]
             if len(dim) > 0:
                 return max(dim)
 
-    if file_format == 'NMRVIEW':
+    if file_format == 'NMRView':
         col = line.split()
         return len(col)
 
-    if file_format == 'NMRPIPE':
+    if file_format == 'NMRPipe':
         if 'VARS' in line:
             col = line.split()
             if 'A_PPM' in col:
@@ -28503,7 +28503,7 @@ class NmrDpUtility:
                 with open(file_path, 'r', encoding='utf-8') as ifp:
                     has_header = False
                     for line in ifp:
-                        if file_format == 'NMRVIEW' and not has_header:
+                        if file_format == 'NMRView' and not has_header:
                             if line.startswith('label'):
                                 has_header = True
                             continue

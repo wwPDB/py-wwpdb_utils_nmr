@@ -247,6 +247,7 @@ try:
                                                        assignCoordPolymerSequenceWithChainId,
                                                        selectCoordAtoms,
                                                        getPotentialType,
+                                                       getPdbxNmrSoftwareName,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        HALF_SPIN_NUCLEUS,
                                                        ALLOWED_AMBIGUITY_CODES,
@@ -339,6 +340,7 @@ except ImportError:
                                            assignCoordPolymerSequenceWithChainId,
                                            selectCoordAtoms,
                                            getPotentialType,
+                                           getPdbxNmrSoftwareName,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            HALF_SPIN_NUCLEUS,
                                            ALLOWED_AMBIGUITY_CODES,
@@ -48498,6 +48500,7 @@ class NmrDpUtility:
                     _name = get_first_sf_tag(sf, 'Sf_framecode').split('_')[0]
                     _name_ = _name.upper()
                     if _name == _name_:
+                        _name = getPdbxNmrSoftwareName(_name_)
                         if _name in software_dict:
                             row[2], row[3], row[4] =\
                                 software_dict[_name][0],\

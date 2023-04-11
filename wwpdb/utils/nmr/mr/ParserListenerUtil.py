@@ -6887,6 +6887,25 @@ def getPotentialType(fileType, mrSubtype, dstFunc):
     return None
 
 
+def getPdbxNmrSoftwareName(name):
+    """ Return _pdbx_nmr_software.name enumarated value for a given software name.
+    """
+
+    if name == 'AMBER':
+        return 'Amber'
+    if name == 'BIOSYM':
+        return 'Discover'
+    if name in 'ISD':
+        return 'Inferential Structure Determination (ISD)'
+    if name == 'ROSETTA':
+        return 'Rosetta'
+    if name == 'XPLOR-NIH':
+        return 'X-PLOR NIH'
+    if name == 'XPLOR-NIH/CNS':
+        return 'X-PLOR NIH/CNS'
+    return name  # 'CHARMM', 'CNS', 'CYANA', 'DYNAMO', 'PALES', 'TALOS', 'GROMACS', 'SYBYL'
+
+
 def hasKeyValue(d=None, key=None):
     """ Return whether a given dictionary has effective value for a key.
         @return: True if d[key] has effective value, False otherwise

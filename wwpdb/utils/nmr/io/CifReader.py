@@ -570,7 +570,7 @@ class CifReader:
 
                                     etype2 = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c2 in e['pdbx_strand_id'].split(',')), None)
 
-                                    if 'polypeptide' in etype2:
+                                    if etype2 is not None and 'polypeptide' in etype2:
                                         polypeptide_chains.append(c2)
                                         polypeptide_lengths.append(len(seqDict[c2]))
 

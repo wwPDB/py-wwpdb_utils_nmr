@@ -40503,9 +40503,9 @@ class NmrDpUtility:
 
             sf_category = self.sf_categories[file_type][content_subtype]
 
-            try:
+            orig_ent_sf = next((sf for sf in master_entry.frame_list if sf_category in (sf.category, sf.name)), None)
 
-                orig_ent_sf = master_entry.get_saveframes_by_category(sf_category)[0]
+            if orig_ent_sf is not None:
 
                 tagNames = [t[0] for t in orig_ent_sf.tags]
 
@@ -40515,7 +40515,7 @@ class NmrDpUtility:
                     orig_ent_sf.add_tag('Sf_framecode', orig_ent_sf.name)
                 set_sf_tag(orig_ent_sf, 'ID', self.__entry_id)
 
-            except IndexError:
+            else:
 
                 ent_sf = pynmrstar.Saveframe.from_scratch(sf_category, self.sf_tag_prefixes[file_type][content_subtype])
                 ent_sf.add_tag('Sf_category', sf_category)

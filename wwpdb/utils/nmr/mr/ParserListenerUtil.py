@@ -1463,7 +1463,7 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                 'enforce-enum': True},
                                                {'name': 'Order_param_val', 'type': 'range-float', 'mandatory': True,
                                                 'range': PROBABILITY_RANGE},
-                                               {'name': 'Order_param_fit_err', 'type': 'range-float', 'mandatory': False,
+                                               {'name': 'Order_param_val_fit_err', 'type': 'range-float', 'mandatory': False,
                                                 'range': PROBABILITY_RANGE},
                                                {'name': 'Tau_e_val', 'type': 'positive-float', 'mandatory': False},
                                                {'name': 'Tau_e_val_fit_err', 'type': 'positive-float', 'mandatory': False},
@@ -1482,19 +1482,19 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                          'S2f, tf, S2, ts, Rex', 'S2f, tf, S2s, ts, Rex', 'na')},
                                                {'name': 'Sf2_val', 'type': 'range-float', 'mandatory': False,
                                                 'range': PROBABILITY_RANGE},
-                                               {'name': 'Sf2_fit_err', 'type': 'range-float', 'mandatory': False,
+                                               {'name': 'Sf2_val_fit_err', 'type': 'range-float', 'mandatory': False,
                                                 'range': PROBABILITY_RANGE},
                                                {'name': 'Ss2_val', 'type': 'range-float', 'mandatory': False,
                                                 'range': PROBABILITY_RANGE},
-                                               {'name': 'Ss2_fit_err', 'type': 'range-float', 'mandatory': False,
+                                               {'name': 'Ss2_val_fit_err', 'type': 'range-float', 'mandatory': False,
                                                 'range': PROBABILITY_RANGE},
                                                {'name': 'SH2_val', 'type': 'range-float', 'mandatory': False,
                                                 'range': PROBABILITY_RANGE},
-                                               {'name': 'SH2_fit_err', 'type': 'range-float', 'mandatory': False,
+                                               {'name': 'SH2_val_fit_err', 'type': 'range-float', 'mandatory': False,
                                                 'range': PROBABILITY_RANGE},
                                                {'name': 'SN2_val', 'type': 'range-float', 'mandatory': False,
                                                 'range': PROBABILITY_RANGE},
-                                               {'name': 'SN2_fit_err', 'type': 'range-float', 'mandatory': False,
+                                               {'name': 'SN2_val_fit_err', 'type': 'range-float', 'mandatory': False,
                                                 'range': PROBABILITY_RANGE},
                                                {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
                                                {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
@@ -6106,7 +6106,7 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if val is not None:
             row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
-        val = getRowValue('Order_param_fit_err')
+        val = getRowValue('Order_param_val_fit_err')
         if val is not None:
             row[key_size + 3] = val
             float_row_idx.append(key_size + 3)
@@ -6114,7 +6114,7 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if val is not None:
             row[key_size + 4] = val
             float_row_idx.append(key_size + 4)
-        val = getRowValue('Tau_e_fit_err')
+        val = getRowValue('Tau_e_val_fit_err')
         if val is not None:
             row[key_size + 5] = val
             float_row_idx.append(key_size + 5)
@@ -6122,7 +6122,7 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if val is not None:
             row[key_size + 6] = val
             float_row_idx.append(key_size + 6)
-        val = getRowValue('Tau_f_fit_err')
+        val = getRowValue('Tau_f_val_fit_err')
         if val is not None:
             row[key_size + 7] = val
             float_row_idx.append(key_size + 7)
@@ -6130,7 +6130,7 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if val is not None:
             row[key_size + 8] = val
             float_row_idx.append(key_size + 8)
-        val = getRowValue('Tau_s_fit_err')
+        val = getRowValue('Tau_s_val_fit_err')
         if val is not None:
             row[key_size + 9] = val
             float_row_idx.append(key_size + 9)
@@ -6138,7 +6138,7 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if val is not None:
             row[key_size + 10] = val
             float_row_idx.append(key_size + 10)
-        val = getRowValue('Rex_fit_err')
+        val = getRowValue('Rex_val_fit_err')
         if val is not None:
             row[key_size + 11] = val
             float_row_idx.append(key_size + 11)
@@ -6153,7 +6153,7 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if val is not None:
             row[key_size + 14] = val
             float_row_idx.append(key_size + 14)
-        val = getRowValue('Sf2_fit_err')
+        val = getRowValue('Sf2_val_fit_err')
         if val is not None:
             row[key_size + 15] = val
             float_row_idx.append(key_size + 15)
@@ -6161,7 +6161,7 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if val is not None:
             row[key_size + 16] = val
             float_row_idx.append(key_size + 16)
-        val = getRowValue('Ss2_fit_err')
+        val = getRowValue('Ss2_val_fit_err')
         if val is not None:
             row[key_size + 17] = val
             float_row_idx.append(key_size + 17)
@@ -6169,7 +6169,7 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if val is not None:
             row[key_size + 18] = val
             float_row_idx.append(key_size + 18)
-        val = getRowValue('SH2_fit_err')
+        val = getRowValue('SH2_val_fit_err')
         if val is not None:
             row[key_size + 19] = val
             float_row_idx.append(key_size + 19)
@@ -6177,7 +6177,7 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if val is not None:
             row[key_size + 20] = val
             float_row_idx.append(key_size + 20)
-        val = getRowValue('SN2_fit_err')
+        val = getRowValue('SN2_val_fit_err')
         if val is not None:
             row[key_size + 21] = val
             float_row_idx.append(key_size + 21)

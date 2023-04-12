@@ -948,17 +948,17 @@ class CifReader:
                         _atom_site_ref = _atom_site_dict[1]
                         _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
 
-                        """
-                        if label != -1:
-                            for chain_id in chain_ids:
-                                seq_ids = sorted(set(a['seq_id'] for a in _atom_site_p if a['chain_id'] == chain_id))
-                                if len(seq_ids) > 0:
-                                    gaps = seq_ids[-1] + 1 - seq_ids[0] - len(seq_ids)
+                        # """
+                        # if label != -1:
+                        #     for chain_id in chain_ids:
+                        #         seq_ids = sorted(set(a['seq_id'] for a in _atom_site_p if a['chain_id'] == chain_id))
+                        #         if len(seq_ids) > 0:
+                        #             gaps = seq_ids[-1] + 1 - seq_ids[0] - len(seq_ids)
 
-                                    if gaps > monomers:
-                                        score = 0.0
-                                        break
-                        """
+                        #             if gaps > monomers:
+                        #                 score = 0.0
+                        #                 break
+                        # """
 
                         for model_id in range(2, total_models + 1):
 

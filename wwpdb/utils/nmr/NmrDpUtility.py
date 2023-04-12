@@ -4814,7 +4814,7 @@ class NmrDpUtility:
                                                                 'enum': ('s', 'ms', 'us', 'ns', 'ps')},
                                                                {'name': 'Tau_s_val_units', 'type': 'enum', 'mandatory': False,
                                                                 'enum': ('s', 'ms', 'us', 'ns', 'ps')},
-                                                               {'name': 'Rex_units', 'type': 'enum', 'mandatory': False,
+                                                               {'name': 'Rex_val_units', 'type': 'enum', 'mandatory': False,
                                                                 'enum': ('s-1', 'ms-1', 'us-1')},
                                                                {'name': 'Rex_field_strength', 'type': 'positive-float', 'mandatory': False,
                                                                 'enforce-non-zero': True}

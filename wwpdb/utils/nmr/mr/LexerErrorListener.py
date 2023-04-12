@@ -67,8 +67,8 @@ class LexerErrorListener(ErrorListener):
 
         if self.__filePath is not None:
             _line = 1
-            with open(self.__filePath, 'r', encoding='utf-8') as ifp:
-                for content in ifp:
+            with open(self.__filePath, 'r', encoding='utf-8') as ifh:
+                for content in ifh:
                     if _line == line:
                         _dict['input'] = content.replace('\t', ' ')\
                             .replace('\r', ' ').replace('\n', ' ')\

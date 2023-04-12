@@ -13,6 +13,10 @@ from ccpnmr.format.converters.PdbFormat import PdbFormat
 from pdbe.nmrStar.IO.NmrStarExport import NmrStarExport
 
 class CcpnConversionException( Exception ):
+    """
+    @deprecated: This class has never been implemented.
+    """
+
     def __init__(s,e):
         print("CCpnConversionException")
         print(e)
@@ -25,6 +29,9 @@ class CcpnConversionException( Exception ):
         return s.__str__()
 
 class CcpnProject:
+    """
+    @deprecated: This class has never been implemented.
+    """
 
     def __init__(s,ccpn = None, star = None, pdb = None, uniq = None):
 
@@ -78,7 +85,7 @@ class CcpnProject:
               shutil.rmtree(tempDir)
           os.mkdir(tempDir)
           print('Created temp dir')
-        except Exception,e:
+        except Exception:
           return "Failed to create temporary folder"
 
         #Copy and extract project file
@@ -95,7 +102,7 @@ class CcpnProject:
                 break
           if not ok:
               return "Unsafe files in archive"
-             
+
           for member in members:
               tf.extract(member, path = tempDir)
 
@@ -109,8 +116,8 @@ class CcpnProject:
           s.projectName = os.path.join( dirs[0] )
           try: tf.close()
           except: pass
-        except Exception,e:
-          print(e)
+        except Exception as e:
+          print(str(e))
           try: tf.close()
           except: pass
           return "Failed to extract CCPN project from file"

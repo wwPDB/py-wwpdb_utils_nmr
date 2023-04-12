@@ -38,6 +38,7 @@ import collections
 import re
 import copy
 import inspect
+import pickle
 
 import numpy as np
 
@@ -176,6 +177,12 @@ class CifReader:
         # active data block
         self.__dBlock = None
 
+        # hash code of current cif file
+        self.__hashCode = None
+
+        # cache file path
+        self.__cachePath = None
+
         # preset values
         self.emptyValue = (None, '', '.', '?', 'null')
         self.trueValue = ('true', 't', 'yes', 'y', '1')
@@ -189,6 +196,9 @@ class CifReader:
         # random rotation test for detection of non-superimposed models (DAOTHER-4060)
         self.__random_rotaion_test = False
         self.__single_model_rotation_test = True
+
+        # whether to use cache file
+        self.__use_cache = True
 
         if self.__random_rotaion_test:
             self.__lfh.write("+WARNING- CifReader.__init__() Enabled random rotation test\n")
@@ -221,7 +231,7 @@ class CifReader:
         if self.__dBlock is not None and self.__filePath == filePath:
             return True
 
-        self.__dBlock = None
+        self.__dBlock = self.__hashCode = None
         self.__filePath = filePath
 
         try:
@@ -229,18 +239,32 @@ class CifReader:
                 if self.__verbose:
                     self.__lfh.write(f"+ERROR- CifReader.parse() Missing file {self.__filePath}\n")
                 return False
-            block = self.__getDataBlock()
+            with open(self.__filePath, 'r', encoding='utf-8', errors='ignore') as ifh:
+                self.__hashCode = hashlib.md5(ifh.read().encode('utf-8')).hexdigest()
+            block = self.__getDataBlockFromFile()
             return self.__setDataBlock(block)
         except Exception:
             if self.__verbose:
                 self.__lfh.write(f"+ERROR- CifReader.parse() Missing file {self.__filePath}\n")
             return False
 
-    def __getDataBlock(self, blockId=None):
-        """ Worker method to read cif file and set the target datablock
+    def __getDataBlockFromFile(self, blockId=None):
+        """ Worker method to read cif file and set the target datablock.
             If no blockId is provided return the first data block.
             @return: target data block
         """
+
+        self.__cachePath = os.path.join(os.path.dirname(self.__filePath), f"{self.__hashCode}{'' if blockId is None else '_' + blockId}.pkl")
+
+        if self.__use_cache and os.path.exists(self.__cachePath):
+            try:
+                with open(self.__cachePath, 'rb') as ifh:
+                    block = pickle.load(ifh)
+                    if block is not None:
+                        return block
+                os.remove(self.__cachePath)
+            except Exception:
+                pass
 
         with open(self.__filePath, 'r', encoding='utf-8') as ifh:
             myBlockList = []
@@ -268,12 +292,35 @@ class CifReader:
             if dataBlock.getType() == 'data':
                 self.__dBlock = dataBlock
                 ok = True
+                if self.__use_cache and not os.path.exists(self.__cachePath):
+                    with open(self.__cachePath, 'wb') as ofh:
+                        pickle.dump(dataBlock, ofh)
             else:
                 self.__dBlock = None
         except Exception:
             pass
 
         return ok
+
+    def getDataBlock(self, blockId=None):
+        """ Return target datablock.
+            Return None in case current blockId does not exist or no blockId does not match.
+            @return: target data block
+        """
+
+        if self.__dBlock is None or self.__dBlock.getType != 'data':
+            return None
+
+        if blockId is not None and self.__dBlock.getName() == blockId:
+            return self.__dBlock
+
+        return self.__getDataBlockFromFile(blockId)
+
+    def getHashCode(self):
+        """ Return hash code of the cif file.
+        """
+
+        return self.__hashCode
 
     def hasCategory(self, catName):
         """ Return whether a given category exists.

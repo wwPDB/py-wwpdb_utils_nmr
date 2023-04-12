@@ -93,7 +93,7 @@ class AmberMRReader:
             @return: AmberMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
-        ifp = None
+        ifh = None
 
         try:
 
@@ -137,8 +137,8 @@ class AmberMRReader:
             while True:
 
                 if isFilePath:
-                    ifp = open(mrFilePath, 'r')  # pylint: disable=consider-using-with
-                    input = InputStream(ifp.read())
+                    ifh = open(mrFilePath, 'r')  # pylint: disable=consider-using-with
+                    input = InputStream(ifh.read())
                 else:
                     input = InputStream(mrString)
 
@@ -207,12 +207,12 @@ class AmberMRReader:
 
                 if reasons is not None:
 
-                    if isFilePath and ifp is not None:
-                        ifp.close()
+                    if isFilePath and ifh is not None:
+                        ifh.close()
 
                     if isFilePath:
-                        ifp = open(mrFilePath, 'r')  # pylint: disable=consider-using-with
-                        input = InputStream(ifp.read())
+                        ifh = open(mrFilePath, 'r')  # pylint: disable=consider-using-with
+                        input = InputStream(ifh.read())
                     else:
                         input = InputStream(mrString)
 
@@ -283,8 +283,8 @@ class AmberMRReader:
                 else:
                     break
 
-                if isFilePath and ifp is not None:
-                    ifp.close()
+                if isFilePath and ifh is not None:
+                    ifh.close()
 
             return listener, parser_error_listener, lexer_error_listener
 
@@ -300,8 +300,8 @@ class AmberMRReader:
             return None, None, None
             """
         finally:
-            if isFilePath and ifp is not None:
-                ifp.close()
+            if isFilePath and ifh is not None:
+                ifh.close()
 
 
 if __name__ == "__main__":

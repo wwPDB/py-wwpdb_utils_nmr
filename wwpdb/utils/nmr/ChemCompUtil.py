@@ -28,28 +28,6 @@ except ImportError:
     CC_CVS_PATH = os.path.dirname(__file__) + '/ligand_dict'  # need to setup 'ligand_dict' CCD resource for NMR restraint processing
 
 
-def load_dict_from_pickle(file_name):
-    """ Load cached dictionary from pickle file.
-    """
-
-    if os.path.exists(file_name):
-
-        with open(file_name, 'rb') as ifp:
-            return pickle.load(ifp)
-
-    return {}
-
-
-def write_dict_as_pickle(obj, file_name):
-    """ Write dictionary as pickle file.
-    """
-
-    if isinstance(obj, dict):
-
-        with open(file_name, 'wb') as ofp:
-            pickle.dump(obj, ofp)
-
-
 class ChemCompUtil:
     """ Wrapper class for retrieving chemical component dictionary.
     """
@@ -128,6 +106,17 @@ class ChemCompUtil:
 
         aromaticFlag = next(d for d in _chemCompBondDict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
         self.ccbAromaticFlag = _chemCompBondDict.index(aromaticFlag)
+
+        def load_dict_from_pickle(file_name):
+            """ Load cached dictionary from pickle file.
+            """
+
+            if os.path.exists(file_name):
+
+                with open(file_name, 'rb') as ifh:
+                    return pickle.load(ifh)
+
+            return {}
 
         self.__cachedDict = load_dict_from_pickle(self.__cacheFile)
         self.__failedCompId = []
@@ -272,5 +261,14 @@ class ChemCompUtil:
 
         for compId in monDict3:
             self.updateChemCompDict(compId)
+
+        def write_dict_as_pickle(obj, file_name):
+            """ Write dictionary as pickle file.
+            """
+
+            if isinstance(obj, dict):
+
+                with open(file_name, 'wb') as ofh:
+                    pickle.dump(obj, ofh)
 
         write_dict_as_pickle(self.__cachedDict, self.__cacheFile)

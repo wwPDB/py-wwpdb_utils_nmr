@@ -481,8 +481,8 @@ def detect_bom(fPath, default='utf-8'):
     """ Detect BOM of input file.
     """
 
-    with open(fPath, 'rb') as ifp:
-        raw = ifp.read(4)
+    with open(fPath, 'rb') as ifh:
+        raw = ifh.read(4)
 
     for enc, boms in \
             ('utf-8-sig', (codecs.BOM_UTF8,)),\
@@ -498,18 +498,18 @@ def convert_codec(inPath, outPath, in_codec='utf-8', out_codec='utf-8'):
     """ Convert codec of input file.
     """
 
-    with open(inPath, 'rb') as ifp,\
-            open(outPath, 'w+b') as ofp:
-        contents = ifp.read()
-        ofp.write(contents.decode(in_codec).encode(out_codec))
+    with open(inPath, 'rb') as ifh,\
+            open(outPath, 'w+b') as ofh:
+        contents = ifh.read()
+        ofh.write(contents.decode(in_codec).encode(out_codec))
 
 
 def is_binary_file(fPath):
     """ Check if there are non-ascii or non-printable characters in a file.
     """
 
-    with open(fPath, 'rb') as ifp:
-        chunk = ifp.read(1024)
+    with open(fPath, 'rb') as ifh:
+        chunk = ifh.read(1024)
         if b'\0' in chunk:
             return True
 
@@ -531,18 +531,18 @@ def uncompress_gzip_file(inPath, outPath):
     """ Uncompress a given gzip file.
     """
 
-    with gzip.open(inPath, mode='rt') as ifp, open(outPath, 'w') as ofp:
-        for line in ifp:
-            ofp.write(line)
+    with gzip.open(inPath, mode='rt') as ifh, open(outPath, 'w') as ofh:
+        for line in ifh:
+            ofh.write(line)
 
 
 def compress_as_gzip_file(inPath, outPath):
     """ Compress a given file as a gzip file.
     """
 
-    with open(inPath, mode='r') as ifp, gzip.open(outPath, 'wt') as ofp:
-        for line in ifp:
-            ofp.write(line)
+    with open(inPath, mode='r') as ifh, gzip.open(outPath, 'wt') as ofh:
+        for line in ifh:
+            ofh.write(line)
 
 
 def get_type_of_star_file(fPath):
@@ -569,8 +569,8 @@ def get_type_of_star_file(fPath):
         has_loop = False
         has_stop = False
 
-        with open(fPath, 'r', encoding='utf-8') as ifp:
-            for line in ifp:
+        with open(fPath, 'r', encoding='utf-8') as ifh:
+            for line in ifh:
                 str_syntax = False
                 if datablock_pattern.match(line):
                     str_syntax = has_datablock = True
@@ -1086,8 +1086,8 @@ def load_from_pickle(file_name, default=None):
 
     if os.path.exists(file_name):
 
-        with open(file_name, 'rb') as ifp:
-            obj = pickle.load(ifp)
+        with open(file_name, 'rb') as ifh:
+            obj = pickle.load(ifh)
             return obj if obj is not None else default
 
     return default
@@ -1099,8 +1099,8 @@ def write_as_pickle(obj, file_name):
 
     if obj is not None:
 
-        with open(file_name, 'wb') as ofp:
-            pickle.dump(obj, ofp)
+        with open(file_name, 'wb') as ofh:
+            pickle.dump(obj, ofh)
 
 
 class NmrDpUtility:
@@ -7419,14 +7419,14 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
 
-            with open(_srcPath, 'r', encoding='utf-8') as ifp,\
-                    open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                for line in ifp:
-                    ofp.write(line)
+            with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                    open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                for line in ifh:
+                    ofh.write(line)
 
-                ofp.write('save_\n')
+                ofh.write('save_\n')
 
-                _srcPath = ofp.name
+                _srcPath = ofh.name
                 tmpPaths.append(_srcPath)
 
         msg_template = "Loop improperly terminated at end of file."
@@ -7441,14 +7441,14 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
 
-            with open(_srcPath, 'r', encoding='utf-8') as ifp,\
-                    open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                for line in ifp:
-                    ofp.write(line)
+            with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                    open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                for line in ifh:
+                    ofh.write(line)
 
-                ofp.write('save_\n')
+                ofh.write('save_\n')
 
-                _srcPath = ofp.name
+                _srcPath = ofh.name
                 tmpPaths.append(_srcPath)
 
 #        if __pynmrstar_v3_1__:
@@ -7469,8 +7469,8 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Warning  - {warn}\n")
 
-            with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                lines = ifp.read().splitlines()
+            with open(_srcPath, 'r', encoding='utf-8') as ifh:
+                lines = ifh.read().splitlines()
                 total = len(lines)
 
                 j = total - 1
@@ -7483,15 +7483,15 @@ class NmrDpUtility:
             j += 1
             i = 1
 
-            with open(_srcPath, 'r', encoding='utf-8') as ifp,\
-                    open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                ofp.write('data_' + os.path.basename(srcPath) + '\n\n')
-                for line in ifp:
+            with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                    open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                ofh.write('data_' + os.path.basename(srcPath) + '\n\n')
+                for line in ifh:
                     if i <= j:
-                        ofp.write(line)
+                        ofh.write(line)
                     i += 1
 
-                _srcPath = ofp.name
+                _srcPath = ofh.name
                 tmpPaths.append(_srcPath)
 
         msg_template = "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'."
@@ -7508,17 +7508,17 @@ class NmrDpUtility:
 
             pass_datablock = False
 
-            with open(_srcPath, 'r', encoding='utf-8') as ifp,\
-                    open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                for line in ifp:
+            with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                    open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                for line in ifh:
                     if pass_datablock:
-                        ofp.write(line)
+                        ofh.write(line)
                     elif datablock_pattern.match(line):
                         pass_datablock = True
                     else:
-                        ofp.write(line)
+                        ofh.write(line)
 
-                _srcPath = ofp.name
+                _srcPath = ofh.name
                 tmpPaths.append(_srcPath)
 
         msg_template = "Cannot use keywords as data values unless quoted or semi-colon delineated. Perhaps this is a loop that wasn't properly terminated? Illegal value:"
@@ -7550,15 +7550,15 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifp,\
-                        open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                    for line in ifp:
+                with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                        open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                    for line in ifh:
                         if i == line_num:
-                            ofp.write('stop_\n')
-                        ofp.write(line)
+                            ofh.write('stop_\n')
+                        ofh.write(line)
                         i += 1
 
-                    _srcPath = ofp.name
+                    _srcPath = ofh.name
                     tmpPaths.append(_srcPath)
 
             except AttributeError:
@@ -7594,15 +7594,15 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifp,\
-                        open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                    for line in ifp:
+                with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                        open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                    for line in ifh:
                         if i == line_num - 1:
-                            ofp.write('loop_\n')
-                        ofp.write(line)
+                            ofh.write('loop_\n')
+                        ofh.write(line)
                         i += 1
 
-                    _srcPath = ofp.name
+                    _srcPath = ofh.name
                     tmpPaths.append(_srcPath)
 
             except AttributeError:
@@ -7623,8 +7623,8 @@ class NmrDpUtility:
 
                 try:
 
-                    with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                        for line in ifp:
+                    with open(_srcPath, 'r', encoding='utf-8') as ifh:
+                        for line in ifh:
                             if save_pattern.match(line) or stop_pattern.match(line):
                                 is_cs_cif = False
                                 break
@@ -7635,8 +7635,8 @@ class NmrDpUtility:
                         has_sf_category = False
                         has_sf_framecode = False
 
-                        with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                            for line in ifp:
+                        with open(_srcPath, 'r', encoding='utf-8') as ifh:
+                            for line in ifh:
                                 if loop_pattern.match(line):
                                     loop_count += 1
                                 elif sf_category_pattern.match(line):
@@ -7648,30 +7648,30 @@ class NmrDpUtility:
 
                             in_loop = False
 
-                            with open(_srcPath, 'r', encoding='utf-8') as ifp,\
-                                    open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                                for line in ifp:
+                            with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                                    open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                                for line in ifh:
                                     if datablock_pattern.match(line):
                                         g = datablock_pattern.search(line).groups()
                                         if loop_count < 2:
-                                            ofp.write(f"save_{g[0]}\n")
+                                            ofh.write(f"save_{g[0]}\n")
                                     elif cif_stop_pattern.match(line):
                                         if in_loop:
                                             if loop_count < 2:
-                                                ofp.write('stop_\nsave_\n')
+                                                ofh.write('stop_\nsave_\n')
                                             else:
-                                                ofp.write('stop_\n')
+                                                ofh.write('stop_\n')
                                         else:
-                                            ofp.write(line)
+                                            ofh.write(line)
                                         in_loop = False
                                     elif loop_pattern.match(line):
                                         in_loop = True
-                                        ofp.write(line)
+                                        ofh.write(line)
                                     else:
                                         if in_loop or loop_count < 2:
-                                            ofp.write(line)
+                                            ofh.write(line)
 
-                                _srcPath = ofp.name
+                                _srcPath = ofh.name
                                 tmpPaths.append(_srcPath)
 
                         else:
@@ -7705,15 +7705,15 @@ class NmrDpUtility:
 
                     tag_name_pattern = re.compile(r'\s*' + tag_name + r'\s*')
 
-                    with open(_srcPath, 'r', encoding='utf-8') as ifp,\
-                            open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                        for line in ifp:
+                    with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                            open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                        for line in ifh:
                             if tag_name_pattern.match(line) is None:
-                                ofp.write(line)
+                                ofh.write(line)
                             else:
-                                ofp.write('loop_\n')
+                                ofh.write('loop_\n')
 
-                        _srcPath = ofp.name
+                        _srcPath = ofh.name
                         tmpPaths.append(_srcPath)
 
                 except AttributeError:
@@ -7749,16 +7749,16 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifp,\
-                        open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                    for line in ifp:
+                with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                        open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                    for line in ifh:
                         if i != line_num:
-                            ofp.write(line)
+                            ofh.write(line)
                         else:
-                            ofp.write(f"save_{os.path.basename(srcPath)}\n")
+                            ofh.write(f"save_{os.path.basename(srcPath)}\n")
                         i += 1
 
-                    _srcPath = ofp.name
+                    _srcPath = ofh.name
                     tmpPaths.append(_srcPath)
 
             except AttributeError:
@@ -7812,8 +7812,8 @@ class NmrDpUtility:
 
                     sf_named_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
 
-                    with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                        for line in ifp:
+                    with open(_srcPath, 'r', encoding='utf-8') as ifh:
+                        for line in ifh:
                             if pass_sf_framecode:
                                 if pass_sf_loop:
                                     if category_pattern.match(line):
@@ -7842,26 +7842,26 @@ class NmrDpUtility:
 
                 sf_named_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifp,\
-                        open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                    for line in ifp:
+                with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                        open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                    for line in ifh:
                         if pass_sf_loop:
-                            ofp.write(line)
+                            ofh.write(line)
                         elif pass_sf_framecode:
                             if loop_pattern.match(line):
                                 pass_sf_loop = True
                                 if 'sf_category' in target:
-                                    ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + sf_framecode + '\n')
-                                    ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
-                                    ofp.write('#\n')
-                                ofp.write(line)
+                                    ofh.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + sf_framecode + '\n')
+                                    ofh.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
+                                    ofh.write('#\n')
+                                ofh.write(line)
                         elif sf_named_pattern.match(line):
                             pass_sf_framecode = True
-                            ofp.write(line)
+                            ofh.write(line)
                         elif not pass_sf_framecode:
-                            ofp.write(line)
+                            ofh.write(line)
 
-                    _srcPath = ofp.name
+                    _srcPath = ofh.name
                     tmpPaths.append(_srcPath)
 
         except StopIteration:
@@ -7910,8 +7910,8 @@ class NmrDpUtility:
                         lp_loc = -1
                         i = 1
 
-                        with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                            for line in ifp:
+                        with open(_srcPath, 'r', encoding='utf-8') as ifh:
+                            for line in ifh:
                                 if pass_loop:
                                     if category_pattern.match(line):
                                         _lp_category = '_' + category_pattern.search(line).groups()[0]
@@ -7948,27 +7948,27 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifp,\
-                        open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                    ofp.write('data_' + os.path.basename(srcPath) + '\n\n')
-                    for line in ifp:
+                with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                        open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                    ofh.write('data_' + os.path.basename(srcPath) + '\n\n')
+                    for line in ifh:
                         if i in target_loop_locations:
                             target = next(target for target in targets if target['loop_location'] == i)
                             if 'sf_category' in target:
-                                ofp.write('save_' + target['sf_framecode'] + '\n')
-                                ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + target['sf_framecode'] + '\n')
-                                ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
-                                ofp.write('#\n')
+                                ofh.write('save_' + target['sf_framecode'] + '\n')
+                                ofh.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + target['sf_framecode'] + '\n')
+                                ofh.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
+                                ofh.write('#\n')
                         if i not in ignored_loop_locations:
-                            ofp.write(line)
+                            ofh.write(line)
                         if i in target_stop_locations:
                             target = next(target for target in targets if target['stop_location'] == i)
                             if 'sf_category' in target:
-                                ofp.write('save_\n')
+                                ofh.write('save_\n')
 
                         i += 1
 
-                    _srcPath = ofp.name
+                    _srcPath = ofh.name
                     tmpPaths.append(_srcPath)
 
         except StopIteration:
@@ -8013,8 +8013,8 @@ class NmrDpUtility:
 
                     i = 1
 
-                    with open(_srcPath, 'r', encoding='utf-8') as ifp:
-                        for line in ifp:
+                    with open(_srcPath, 'r', encoding='utf-8') as ifh:
+                        for line in ifh:
                             if pass_sf_framecode:
                                 if save_pattern.match(line):
                                     if 'category_1_begin' in target and 'category_2_begin' in target:
@@ -8096,28 +8096,28 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifp,\
-                        open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                    for line in ifp:
+                with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                        open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                    for line in ifh:
                         if i in target_category_begins:
                             target = next(target for target in targets if target['category_2_begin'] == i)
                             if target['content_subtype_1'] != target['content_subtype_2']:
-                                ofp.write('save_\n')
+                                ofh.write('save_\n')
                                 if target['category_type_2'] == 'saveframe':
-                                    ofp.write('save_' + target['sf_framecode_2'] + '\n')
+                                    ofh.write('save_' + target['sf_framecode_2'] + '\n')
                                 else:
-                                    ofp.write('save_' + target['sf_framecode_2'] + '\n')
-                                    ofp.write(target['sf_tag_prefix_2'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode')
+                                    ofh.write('save_' + target['sf_framecode_2'] + '\n')
+                                    ofh.write(target['sf_tag_prefix_2'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode')
                                               + '   ' + target['sf_framecode_2'] + '\n')
-                                    ofp.write(target['sf_tag_prefix_2'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category')
+                                    ofh.write(target['sf_tag_prefix_2'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category')
                                               + '    ' + target['category_2'] + '\n')
-                                    ofp.write('loop_\n')
+                                    ofh.write('loop_\n')
                                     lp_tags = lp_vals = ''
                             elif target['category_type_2'] == 'loop':
-                                ofp.write('loop_\n')
+                                ofh.write('loop_\n')
                                 lp_tags = lp_vals = ''
                         if i not in loop_category_locations:
-                            ofp.write(line)
+                            ofh.write(line)
                         else:
                             g = tagvalue_pattern.search(line).groups()
                             try:
@@ -8131,17 +8131,17 @@ class NmrDpUtility:
                                 if target['category_type_2'] == 'saveframe':
                                     pass
                                 else:
-                                    ofp.write(lp_tags)
-                                    ofp.write(lp_vals.rstrip(' ') + '\n')
-                                    ofp.write('stop_\n')
+                                    ofh.write(lp_tags)
+                                    ofh.write(lp_vals.rstrip(' ') + '\n')
+                                    ofh.write('stop_\n')
                             elif target['category_type_2'] == 'loop':
-                                ofp.write(lp_tags)
-                                ofp.write(lp_vals.rstrip(' ') + '\n')
-                                ofp.write('stop_\n')
+                                ofh.write(lp_tags)
+                                ofh.write(lp_vals.rstrip(' ') + '\n')
+                                ofh.write('stop_\n')
 
                         i += 1
 
-                    _srcPath = ofp.name
+                    _srcPath = ofh.name
                     tmpPaths.append(_srcPath)
 
         except StopIteration:
@@ -8178,16 +8178,16 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifp,\
-                        open(_srcPath + '~', 'w', encoding='utf-8') as ofp:
-                    for line in ifp:
+                with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                        open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                    for line in ifh:
                         if i == line_num:
-                            ofp.write(re.sub(sf_framecode + r'\s$', saveframe_name + r'\n', line))
+                            ofh.write(re.sub(sf_framecode + r'\s$', saveframe_name + r'\n', line))
                         else:
-                            ofp.write(line)
+                            ofh.write(line)
                         i += 1
 
-                    _srcPath = ofp.name
+                    _srcPath = ofh.name
                     tmpPaths.append(_srcPath)
 
             except AttributeError:
@@ -9373,8 +9373,8 @@ class NmrDpUtility:
 
                 touch_file = os.path.join(dir_path, '.entry_without_cs')
                 if not os.path.exists(touch_file):
-                    with open(touch_file, 'w') as ofp:
-                        ofp.write('')
+                    with open(touch_file, 'w') as ofh:
+                        ofh.write('')
 
         if lp_counts[content_subtype] > 0 and content_type == 'nmr-restraints' and not self.__bmrb_only:
 
@@ -9476,8 +9476,8 @@ class NmrDpUtility:
             if self.__remediation_mode and dir_path is not None:
                 touch_file = os.path.join(dir_path, '.entry_with_pk')
                 if not os.path.exists(touch_file):
-                    with open(touch_file, 'w') as ofp:
-                        ofp.write('')
+                    with open(touch_file, 'w') as ofh:
+                        ofh.write('')
 
         if self.__combined_mode:
 
@@ -9552,8 +9552,8 @@ class NmrDpUtility:
                 if file_type == 'nm-res-mr':
                     md5_list.append(None)
                 else:
-                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifp:
-                        md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
+                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
+                        md5_list.append(hashlib.md5(ifh.read().encode('utf-8')).hexdigest())
                 continue
 
             original_file_name = None
@@ -9565,8 +9565,8 @@ class NmrDpUtility:
 
             self.__cur_original_ar_file_name = original_file_name
 
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifp:
-                md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
+                md5_list.append(hashlib.md5(ifh.read().encode('utf-8')).hexdigest())
 
             is_aux_amb = file_type == 'nm-aux-amb'
             is_aux_gro = file_type == 'nm-aux-gro'
@@ -9600,7 +9600,7 @@ class NmrDpUtility:
 
             if file_type in ('nm-res-xpl', 'nm-res-cns'):
 
-                with open(file_path, 'r', encoding='utf-8') as ifp:
+                with open(file_path, 'r', encoding='utf-8') as ifh:
 
                     atom_likes = 0
                     atom_unlikes = 0
@@ -9617,7 +9617,7 @@ class NmrDpUtility:
                     dihed_range_like = False
                     rdc_range_like = False
 
-                    for line in ifp:
+                    for line in ifh:
 
                         if line.startswith('ATOM ') and line.count('.') >= 3:
                             has_coordinate = True
@@ -9718,7 +9718,7 @@ class NmrDpUtility:
 
                             _t_lower = t_lower
 
-                with open(file_path, 'r', encoding='utf-8') as ifp:
+                with open(file_path, 'r', encoding='utf-8') as ifh:
 
                     atom_likes = 0
                     names = []
@@ -9728,7 +9728,7 @@ class NmrDpUtility:
                     has_sele = False
                     has_resi = False
 
-                    for line in ifp:
+                    for line in ifh:
 
                         _line = ' '.join(line.split())
 
@@ -9791,7 +9791,7 @@ class NmrDpUtility:
 
             elif file_type == 'nm-res-amb':
 
-                with open(file_path, 'r', encoding='utf-8') as ifp:
+                with open(file_path, 'r', encoding='utf-8') as ifh:
 
                     in_rst = False
                     in_iat = False
@@ -9807,7 +9807,7 @@ class NmrDpUtility:
                     dihed_range_like = False
                     rdc_range_like = False
 
-                    for line in ifp:
+                    for line in ifh:
 
                         if line.startswith('ATOM ') and line.count('.') >= 3:
                             has_coordinate = True
@@ -10043,11 +10043,11 @@ class NmrDpUtility:
 
                 prohibited_col = set()
 
-                with open(file_path, 'r', encoding='utf-8') as ifp:
+                with open(file_path, 'r', encoding='utf-8') as ifh:
 
                     pos = 0
 
-                    for line in ifp:
+                    for line in ifh:
                         pos += 1
 
                         if line.startswith('ATOM ') and line.count('.') >= 3:
@@ -10307,9 +10307,9 @@ class NmrDpUtility:
 
                 if file_type == 'nm-res-oth' and has_chem_shift and not has_dist_restraint and not has_dihed_restraint:
 
-                    with open(file_path, 'r', encoding='utf-8') as ifp:
+                    with open(file_path, 'r', encoding='utf-8') as ifh:
 
-                        for line in ifp:
+                        for line in ifh:
 
                             _line = ' '.join(line.split())
 
@@ -10376,9 +10376,9 @@ class NmrDpUtility:
 
                 if file_type == 'nm-res-oth':
 
-                    with open(file_path, 'r', encoding='utf-8') as ifp:
+                    with open(file_path, 'r', encoding='utf-8') as ifh:
                         has_header = False
-                        for idx, line in enumerate(ifp):
+                        for idx, line in enumerate(ifh):
                             if line.isspace() or comment_pattern.match(line):
                                 if line.startswith('#INAME'):
                                     has_header = True
@@ -10388,8 +10388,8 @@ class NmrDpUtility:
                             if has_spectral_peak or idx >= self.mr_max_spacer_lines:
                                 break
 
-                    with open(file_path, 'r', encoding='utf-8') as ifp:
-                        for pos, line in enumerate(ifp, start=1):
+                    with open(file_path, 'r', encoding='utf-8') as ifh:
+                        for pos, line in enumerate(ifh, start=1):
                             if pos == 1:
                                 if 'Structures from CYANA' not in line:
                                     break
@@ -10404,8 +10404,8 @@ class NmrDpUtility:
                                     has_coordinate = True
                                 break
 
-                    with open(file_path, 'r', encoding='utf-8') as ifp:
-                        for pos, line in enumerate(ifp, start=1):
+                    with open(file_path, 'r', encoding='utf-8') as ifh:
+                        for pos, line in enumerate(ifh, start=1):
                             if pos == 1:
                                 if line.isdigit():
                                     break
@@ -10439,9 +10439,9 @@ class NmrDpUtility:
             if file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
                              'nm-res-isd', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
 
-                with open(file_path, 'r', encoding='utf-8') as ifp:
+                with open(file_path, 'r', encoding='utf-8') as ifh:
 
-                    for line in ifp:
+                    for line in ifh:
 
                         _line = ' '.join(line.split())
 
@@ -11383,14 +11383,14 @@ class NmrDpUtility:
 
                                 j = 0
 
-                                with open(src_path, 'r') as ifp,\
-                                        open(cor_src_path, 'w') as ofp:
-                                    for line in ifp:
+                                with open(src_path, 'r') as ifh,\
+                                        open(cor_src_path, 'w') as ofh:
+                                    for line in ifh:
                                         if j == offset:
-                                            ofp.write(line[:err_column_position + 1] + '\n')
-                                            ofp.write(line[err_column_position + 1:])
+                                            ofh.write(line[:err_column_position + 1] + '\n')
+                                            ofh.write(line[err_column_position + 1:])
                                         else:
-                                            ofp.write(line)
+                                            ofh.write(line)
                                         j += 1
 
                                 if cor_test:
@@ -11419,10 +11419,10 @@ class NmrDpUtility:
 
         interval = []
 
-        with open(file_path, 'r') as ifp,\
-                open(div_src_file, 'w') as ofp,\
-                open(div_try_file, 'w') as ofp2:
-            for line in ifp:
+        with open(file_path, 'r') as ifh,\
+                open(div_src_file, 'w') as ofh,\
+                open(div_try_file, 'w') as ofh2:
+            for line in ifh:
                 i += 1
                 if i < err_line_number - self.mr_max_spacer_lines:
                     if ws_or_comment:
@@ -11431,7 +11431,7 @@ class NmrDpUtility:
                             pass
                         else:
                             ws_or_comment = False
-                    ofp.write(line)
+                    ofh.write(line)
                     j += 1
                     continue
                 if i < err_line_number:
@@ -11459,15 +11459,15 @@ class NmrDpUtility:
                         break
                     for k, _interval in enumerate(interval):
                         if k <= _k:
-                            ofp.write(_interval['line'])
+                            ofh.write(_interval['line'])
                             j += 1
                         else:
-                            ofp2.write(_interval['line'])
+                            ofh2.write(_interval['line'])
                             j_offset += 1
                     continue
                 if i == err_line_number + 1:
                     next_input = line
-                ofp2.write(line)
+                ofh2.write(line)
 
         offset += err_line_number - 1
 
@@ -11500,8 +11500,8 @@ class NmrDpUtility:
 
                     k = k2 = 0
 
-                    with open(file_path, 'r') as ifp:
-                        for line in ifp:
+                    with open(file_path, 'r') as ifh:
+                        for line in ifh:
                             k += 1
                             if k <= err_line_number:
                                 continue
@@ -11522,16 +11522,16 @@ class NmrDpUtility:
 
                             k = 0
 
-                            with open(src_path, 'r') as ifp,\
-                                    open(cor_src_path, 'w') as ofp:
-                                for line in ifp:
+                            with open(src_path, 'r') as ifh,\
+                                    open(cor_src_path, 'w') as ofh:
+                                for line in ifh:
                                     k += 1
                                     if k < err_line_number:
-                                        ofp.write(line)
+                                        ofh.write(line)
                                     elif k < k2:
-                                        ofp.write(comment_code + line)
+                                        ofh.write(comment_code + line)
                                     else:
-                                        ofp.write(line)
+                                        ofh.write(line)
 
                             if cor_test:
                                 os.rename(cor_src_path, src_path)
@@ -11560,13 +11560,13 @@ class NmrDpUtility:
 
                 if cor_src_path is not None:
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
+                    with open(src_path, 'r') as ifh,\
+                            open(cor_src_path, 'w') as ofh:
+                        for line in ifh:
                             if ' 00' in line:
-                                ofp.write(re.sub(r' 00', ' OO', line))
+                                ofh.write(re.sub(r' 00', ' OO', line))
                             else:
-                                ofp.write(line)
+                                ofh.write(line)
 
                     if cor_test:
                         os.rename(cor_src_path, src_path)
@@ -11582,8 +11582,8 @@ class NmrDpUtility:
 
                 k = 0
 
-                with open(src_path, 'r') as ifp:
-                    for line in ifp:
+                with open(src_path, 'r') as ifh:
+                    for line in ifh:
                         if k == offset:
                             if xplor_ends_wo_statement and xplor_end_pattern.match(line):
                                 has_end_tag = True
@@ -11600,13 +11600,13 @@ class NmrDpUtility:
 
                         k = 0
 
-                        with open(src_path, 'r') as ifp,\
-                                open(cor_src_path, 'w') as ofp:
-                            for line in ifp:
+                        with open(src_path, 'r') as ifh,\
+                                open(cor_src_path, 'w') as ofh:
+                            for line in ifh:
                                 if k == offset:
-                                    ofp.write('#' + line)
+                                    ofh.write('#' + line)
                                 else:
-                                    ofp.write(line)
+                                    ofh.write(line)
                                 k += 1
 
                         if cor_test:
@@ -11655,9 +11655,9 @@ class NmrDpUtility:
 
                                 k = 0
 
-                                with open(src_path, 'r') as ifp,\
-                                        open(cor_src_path, 'w') as ofp:
-                                    for line in ifp:
+                                with open(src_path, 'r') as ifh,\
+                                        open(cor_src_path, 'w') as ofh:
+                                    for line in ifh:
                                         if k == offset:
                                             if typo_for_comment_out:
                                                 g = possible_typo_for_comment_out_pattern.search(test_line).groups()
@@ -11665,11 +11665,11 @@ class NmrDpUtility:
                                                     test_line = re.sub(r'1', '!', test_line)
                                                 else:
                                                     test_line = re.sub(r'3', '#', test_line)
-                                                ofp.write(f"{test_line}{err_input[code_index:]}\n")
+                                                ofh.write(f"{test_line}{err_input[code_index:]}\n")
                                             else:
-                                                ofp.write(f"{test_line}\n{err_input[code_index:]}\n")
+                                                ofh.write(f"{test_line}\n{err_input[code_index:]}\n")
                                         else:
-                                            ofp.write(line)
+                                            ofh.write(line)
                                         k += 1
 
                                 if cor_test:
@@ -11741,13 +11741,13 @@ class NmrDpUtility:
 
                             k = 0
 
-                            with open(src_path, 'r') as ifp,\
-                                    open(cor_src_path, 'w') as ofp:
-                                for line in ifp:
+                            with open(src_path, 'r') as ifh,\
+                                    open(cor_src_path, 'w') as ofh:
+                                for line in ifh:
                                     if k == offset:
-                                        ofp.write(f"{test_line} {err_input[comment_code_index:]}\n")
+                                        ofh.write(f"{test_line} {err_input[comment_code_index:]}\n")
                                     else:
-                                        ofp.write(line)
+                                        ofh.write(line)
                                     k += 1
 
                             if cor_test:
@@ -11771,19 +11771,19 @@ class NmrDpUtility:
 
                         k = 0 if xplor_missing_end else 1
 
-                        with open(src_path, 'r') as ifp,\
-                                open(cor_src_path, 'w') as ofp:
-                            for line in ifp:
+                        with open(src_path, 'r') as ifh,\
+                                open(cor_src_path, 'w') as ofh:
+                            for line in ifh:
                                 if middle:
                                     if k == err_line_number - 2 and comment_pattern.match(line):
-                                        ofp.write('end\n')
+                                        ofh.write('end\n')
                                         is_done = True
                                     elif k == err_line_number - 1 and not is_done:
-                                        ofp.write('end\n')
-                                ofp.write(line)
+                                        ofh.write('end\n')
+                                ofh.write(line)
                                 k += 1
                             if not middle:
-                                ofp.write('end\n')
+                                ofh.write('end\n')
 
                         if cor_test:
                             os.rename(cor_src_path, src_path)
@@ -11801,13 +11801,13 @@ class NmrDpUtility:
 
                     k = 1
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
+                    with open(src_path, 'r') as ifh,\
+                            open(cor_src_path, 'w') as ofh:
+                        for line in ifh:
                             if k == err_line_number:
-                                ofp.write(',' + line)
+                                ofh.write(',' + line)
                             else:
-                                ofp.write(line)
+                                ofh.write(line)
                             k += 1
 
                     if cor_test:
@@ -11824,11 +11824,11 @@ class NmrDpUtility:
 
                 if cor_src_path is not None:
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
-                            ofp.write(line)
-                        ofp.write('&end\n')
+                    with open(src_path, 'r') as ifh,\
+                            open(cor_src_path, 'w') as ofh:
+                        for line in ifh:
+                            ofh.write(line)
+                        ofh.write('&end\n')
 
                     if cor_test:
                         os.rename(cor_src_path, src_path)
@@ -11858,13 +11858,13 @@ class NmrDpUtility:
 
                         k = 0
 
-                        with open(src_path, 'r') as ifp,\
-                                open(cor_src_path, 'w') as ofp:
-                            for line in ifp:
+                        with open(src_path, 'r') as ifh,\
+                                open(cor_src_path, 'w') as ofh:
+                            for line in ifh:
                                 if k == offset:
-                                    ofp.write('#' + line)
+                                    ofh.write('#' + line)
                                 else:
-                                    ofp.write(line)
+                                    ofh.write(line)
                                 k += 1
 
                         if cor_test:
@@ -11980,8 +11980,8 @@ class NmrDpUtility:
 
                                 k = l = 0  # noqa: E741
 
-                                with open(div_dst_file, 'r') as ifp:
-                                    for line in ifp:
+                                with open(div_dst_file, 'r') as ifh:
+                                    for line in ifh:
                                         if k > 0 and not (line.isspace() or bool(comment_pattern.match(line))):
                                             listener, parser_err_listener, lexer_err_listener = test_reader.parse(line, None, isFilePath=False)
                                             has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
@@ -12014,14 +12014,14 @@ class NmrDpUtility:
 
                                     l = 0  # noqa: E741
 
-                                    with open(div_dst_file, 'r') as ifp,\
-                                            open(_div_src_file, 'w') as ofp,\
-                                            open(_div_dst_file, 'w') as ofp2:
-                                        for line in ifp:
+                                    with open(div_dst_file, 'r') as ifh,\
+                                            open(_div_src_file, 'w') as ofh,\
+                                            open(_div_dst_file, 'w') as ofh2:
+                                        for line in ifh:
                                             if l < k:
-                                                ofp.write(line)
+                                                ofh.write(line)
                                             else:
-                                                ofp2.write(line)
+                                                ofh2.write(line)
                                             l += 1  # noqa: E741
 
                                     os.remove(div_dst_file)
@@ -12207,8 +12207,8 @@ class NmrDpUtility:
 
             k = 0
 
-            with open(src_path, 'r') as ifp:
-                for line in ifp:
+            with open(src_path, 'r') as ifh:
+                for line in ifh:
                     if k == _offset:
                         if xplor_ends_wo_statement and xplor_end_pattern.match(line):
                             has_end_tag = True
@@ -12225,13 +12225,13 @@ class NmrDpUtility:
 
                     k = 0
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
+                    with open(src_path, 'r') as ifh,\
+                            open(cor_src_path, 'w') as ofh:
+                        for line in ifh:
                             if k == _offset:
-                                ofp.write('#' + line)
+                                ofh.write('#' + line)
                             else:
-                                ofp.write(line)
+                                ofh.write(line)
                             k += 1
 
                     if cor_test:
@@ -12291,8 +12291,8 @@ class NmrDpUtility:
 
             prev_input = None
 
-            with open(file_path, 'r') as ifp:
-                for line in ifp:
+            with open(file_path, 'r') as ifh:
+                for line in ifh:
                     i += 1
                     if i < err_line_number - self.mr_max_spacer_lines:
                         continue
@@ -12330,16 +12330,16 @@ class NmrDpUtility:
 
                         i = 0
 
-                        with open(file_path, 'r') as ifp,\
-                                open(div_src_file, 'w') as ofp,\
-                                open(div_try_file, 'w') as ofp3:
-                            for line in ifp:
+                        with open(file_path, 'r') as ifh,\
+                                open(div_src_file, 'w') as ofh,\
+                                open(div_try_file, 'w') as ofh3:
+                            for line in ifh:
                                 i += 1
                                 if i < err_line_number:
-                                    ofp.write(line)
+                                    ofh.write(line)
                                     j += 1
                                     continue
-                                ofp3.write(line)
+                                ofh3.write(line)
                                 j3 += 1
 
                         is_done = True
@@ -12353,14 +12353,14 @@ class NmrDpUtility:
             is_valid = False
             ws_or_comment = True
 
-            with open(file_path, 'r') as ifp,\
-                    open(div_src_file, 'w') as ofp,\
-                    open(div_ext_file, 'w') as ofp2,\
-                    open(div_try_file, 'w') as ofp3:
-                for line in ifp:
+            with open(file_path, 'r') as ifh,\
+                    open(div_src_file, 'w') as ofh,\
+                    open(div_ext_file, 'w') as ofh2,\
+                    open(div_try_file, 'w') as ofh3:
+                for line in ifh:
                     i += 1
                     if i < err_line_number - self.mr_max_spacer_lines:
-                        ofp.write(line)
+                        ofh.write(line)
                         j += 1
                         continue
                     if i < err_line_number:
@@ -12380,42 +12380,42 @@ class NmrDpUtility:
                             break
                         for k, _interval in enumerate(interval):
                             if k <= _k:
-                                ofp.write(_interval['line'])
+                                ofh.write(_interval['line'])
                                 j += 1
                             else:
-                                ofp2.write(_interval['line'])
+                                ofh2.write(_interval['line'])
                                 j2 += 1
                         continue
                     if not is_valid:
                         if line.isspace() or comment_pattern.match(line)\
                            or (gromacs_file_type and gromacs_comment_pattern.match(line)):
-                            ofp2.write(line)
+                            ofh2.write(line)
                             j2 += 1
                             continue
                         _, parser_err_listener, lexer_err_listener = reader.parse(line, None, isFilePath=False)
                         if lexer_err_listener is None or lexer_err_listener.getMessageList() is not None:
-                            ofp2.write(line)
+                            ofh2.write(line)
                             j2 += 1
                             continue
                         if parser_err_listener is not None:
                             messageList = parser_err_listener.getMessageList()
                             if messageList is not None and messageList[0]['line_number'] == 1:
-                                ofp2.write(line)
+                                ofh2.write(line)
                                 j2 += 1
                                 continue
                         is_valid = True
                     if ws_or_comment:
                         if line.isspace() or comment_pattern.match(line)\
                            or (gromacs_file_type and gromacs_comment_pattern.match(line)):
-                            ofp2.write(line)
+                            ofh2.write(line)
                             j2 += 1
                             continue
                     if cyana_unset_info_pattern.match(line) or cyana_print_pattern.match(line):
-                        ofp2.write(line)
+                        ofh2.write(line)
                         j2 += 1
                         continue
                     ws_or_comment = False
-                    ofp3.write(line)
+                    ofh3.write(line)
                     j3 += 1
 
         offset += j + j2
@@ -12486,10 +12486,10 @@ class NmrDpUtility:
 
             if div_src:
                 os.remove(file_path)
-            with open(div_try_file, 'r') as ifp,\
-                    open(div_ext_file, 'a') as ofp:
-                for line in ifp:
-                    ofp.write(line)
+            with open(div_try_file, 'r') as ifh,\
+                    open(div_ext_file, 'a') as ofh:
+                for line in ifh:
+                    ofh.write(line)
             os.remove(div_try_file)
 
             if self.__mr_debug:
@@ -12644,10 +12644,10 @@ class NmrDpUtility:
 
         ws_or_comment = True
 
-        with open(file_path, 'r') as ifp,\
-                open(div_src_file, 'w') as ofp,\
-                open(div_try_file, 'w') as ofp2:
-            for line in ifp:
+        with open(file_path, 'r') as ifh,\
+                open(div_src_file, 'w') as ofh,\
+                open(div_try_file, 'w') as ofh2:
+            for line in ifh:
                 i += 1
                 if i < err_line_number:
                     if ws_or_comment:
@@ -12658,15 +12658,15 @@ class NmrDpUtility:
                             ws_or_comment = False
                     if i == err_line_number - 1:
                         prev_input = line
-                    ofp.write(line)
+                    ofh.write(line)
                     j += 1
                     continue
                 if i == err_line_number:
-                    ofp.write(line[0:err_column_position] + '\n')
+                    ofh.write(line[0:err_column_position] + '\n')
                     j += 1
-                    ofp2.write(line[err_column_position:])
+                    ofh2.write(line[err_column_position:])
                     continue
-                ofp2.write(line)
+                ofh2.write(line)
 
         offset += err_line_number - 1
 
@@ -12713,13 +12713,13 @@ class NmrDpUtility:
 
                 if cor_src_path is not None:
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
+                    with open(src_path, 'r') as ifh,\
+                            open(cor_src_path, 'w') as ofh:
+                        for line in ifh:
                             if ' 00' in line:
-                                ofp.write(re.sub(r' 00', ' OO', line))
+                                ofh.write(re.sub(r' 00', ' OO', line))
                             else:
-                                ofp.write(line)
+                                ofh.write(line)
 
                     if cor_test:
                         os.rename(cor_src_path, src_path)
@@ -12735,8 +12735,8 @@ class NmrDpUtility:
 
                 k = 0
 
-                with open(src_path, 'r') as ifp:
-                    for line in ifp:
+                with open(src_path, 'r') as ifh:
+                    for line in ifh:
                         if k == offset:
                             if xplor_ends_wo_statement and xplor_end_pattern.match(line):
                                 has_end_tag = True
@@ -12753,13 +12753,13 @@ class NmrDpUtility:
 
                         k = 0
 
-                        with open(src_path, 'r') as ifp,\
-                                open(cor_src_path, 'w') as ofp:
-                            for line in ifp:
+                        with open(src_path, 'r') as ifh,\
+                                open(cor_src_path, 'w') as ofh:
+                            for line in ifh:
                                 if k == offset:
-                                    ofp.write('#' + line)
+                                    ofh.write('#' + line)
                                 else:
-                                    ofp.write(line)
+                                    ofh.write(line)
                                 k += 1
 
                         if cor_test:
@@ -12808,9 +12808,9 @@ class NmrDpUtility:
 
                                 k = 0
 
-                                with open(src_path, 'r') as ifp,\
-                                        open(cor_src_path, 'w') as ofp:
-                                    for line in ifp:
+                                with open(src_path, 'r') as ifh,\
+                                        open(cor_src_path, 'w') as ofh:
+                                    for line in ifh:
                                         if k == offset:
                                             if typo_for_comment_out:
                                                 g = possible_typo_for_comment_out_pattern.search(test_line).groups()
@@ -12818,11 +12818,11 @@ class NmrDpUtility:
                                                     test_line = re.sub(r'1', '!', test_line)
                                                 else:
                                                     test_line = re.sub(r'3', '#', test_line)
-                                                ofp.write(f"{test_line}{err_input[code_index:]}\n")
+                                                ofh.write(f"{test_line}{err_input[code_index:]}\n")
                                             else:
-                                                ofp.write(f"{test_line}\n{err_input[code_index:]}\n")
+                                                ofh.write(f"{test_line}\n{err_input[code_index:]}\n")
                                         else:
-                                            ofp.write(line)
+                                            ofh.write(line)
                                         k += 1
 
                                 if cor_test:
@@ -12863,13 +12863,13 @@ class NmrDpUtility:
 
                             k = 0
 
-                            with open(src_path, 'r') as ifp,\
-                                    open(cor_src_path, 'w') as ofp:
-                                for line in ifp:
+                            with open(src_path, 'r') as ifh,\
+                                    open(cor_src_path, 'w') as ofh:
+                                for line in ifh:
                                     if k == offset:
-                                        ofp.write(f"{test_line} {err_input[comment_code_index:]}\n")
+                                        ofh.write(f"{test_line} {err_input[comment_code_index:]}\n")
                                     else:
-                                        ofp.write(line)
+                                        ofh.write(line)
                                     k += 1
 
                             if cor_test:
@@ -12893,19 +12893,19 @@ class NmrDpUtility:
 
                         k = 0 if xplor_missing_end else 1
 
-                        with open(src_path, 'r') as ifp,\
-                                open(cor_src_path, 'w') as ofp:
-                            for line in ifp:
+                        with open(src_path, 'r') as ifh,\
+                                open(cor_src_path, 'w') as ofh:
+                            for line in ifh:
                                 if middle:
                                     if k == err_line_number - 2 and comment_pattern.match(line):
-                                        ofp.write('end\n')
+                                        ofh.write('end\n')
                                         is_done = True
                                     elif k == err_line_number - 1 and not is_done:
-                                        ofp.write('end\n')
-                                ofp.write(line)
+                                        ofh.write('end\n')
+                                ofh.write(line)
                                 k += 1
                             if not middle:
-                                ofp.write('end\n')
+                                ofh.write('end\n')
 
                         if cor_test:
                             os.rename(cor_src_path, src_path)
@@ -12923,13 +12923,13 @@ class NmrDpUtility:
 
                     k = 1
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
+                    with open(src_path, 'r') as ifh,\
+                            open(cor_src_path, 'w') as ofh:
+                        for line in ifh:
                             if k == err_line_number:
-                                ofp.write(',' + line)
+                                ofh.write(',' + line)
                             else:
-                                ofp.write(line)
+                                ofh.write(line)
                             k += 1
 
                     if cor_test:
@@ -12946,11 +12946,11 @@ class NmrDpUtility:
 
                 if cor_src_path is not None:
 
-                    with open(src_path, 'r') as ifp,\
-                            open(cor_src_path, 'w') as ofp:
-                        for line in ifp:
-                            ofp.write(line)
-                        ofp.write('&end\n')
+                    with open(src_path, 'r') as ifh,\
+                            open(cor_src_path, 'w') as ofh:
+                        for line in ifh:
+                            ofh.write(line)
+                        ofh.write('&end\n')
 
                     if cor_test:
                         os.rename(cor_src_path, src_path)
@@ -12980,13 +12980,13 @@ class NmrDpUtility:
 
                         k = 0
 
-                        with open(src_path, 'r') as ifp,\
-                                open(cor_src_path, 'w') as ofp:
-                            for line in ifp:
+                        with open(src_path, 'r') as ifh,\
+                                open(cor_src_path, 'w') as ofh:
+                            for line in ifh:
                                 if k == offset:
-                                    ofp.write('#' + line)
+                                    ofh.write('#' + line)
                                 else:
-                                    ofp.write(line)
+                                    ofh.write(line)
                                 k += 1
 
                         if cor_test:
@@ -13583,8 +13583,8 @@ class NmrDpUtility:
 
                 touch_file = os.path.join(dir_path, '.entry_with_pk')
                 if not os.path.exists(touch_file):
-                    with open(touch_file, 'w') as ofp:
-                        ofp.write('')
+                    with open(touch_file, 'w') as ofh:
+                        ofh.write('')
 
                 continue
 
@@ -13652,17 +13652,17 @@ class NmrDpUtility:
 
                 i = 0
 
-                with open(src_file, 'r') as ifp,\
-                        open(dst_file, 'w') as ofp,\
-                        open(header_file, 'w') as hofp,\
-                        open(footer_file, 'w') as fofp:
-                    for line in ifp:
+                with open(src_file, 'r') as ifh,\
+                        open(dst_file, 'w') as ofh,\
+                        open(header_file, 'w') as hofh,\
+                        open(footer_file, 'w') as fofh:
+                    for line in ifh:
                         i += 1
 
                         # skip MR header
                         if header:
                             if line.startswith('*'):
-                                hofp.write(line)
+                                hofh.write(line)
                                 continue
                             if startsWithPdbRecord(line):
                                 continue
@@ -13704,12 +13704,12 @@ class NmrDpUtility:
 
                         # skip MR footer
                         if 'Submitted Coord H atom name' in line:
-                            fofp.write(line)
+                            fofh.write(line)
                             footer = True
                             continue
 
                         if footer:
-                            fofp.write(line)
+                            fofh.write(line)
                             col = line.split()
                             if len(col) == 10:
                                 original_comp_id = col[5]
@@ -13726,7 +13726,7 @@ class NmrDpUtility:
                                         pass
 
                         else:
-                            ofp.write(line)
+                            ofh.write(line)
 
                 if last_str_line_num - first_str_line_num < 10:
                     has_str_format = has_cif_format = False
@@ -13746,10 +13746,10 @@ class NmrDpUtility:
 
                         i = 0
 
-                        with open(src_file, 'r') as ifp,\
-                                open(dst_file, 'w') as ofp,\
-                                open(mrPath, 'w') as ofp2:
-                            for line in ifp:
+                        with open(src_file, 'r') as ifh,\
+                                open(dst_file, 'w') as ofh,\
+                                open(mrPath, 'w') as ofh2:
+                            for line in ifh:
                                 i += 1
 
                                 # skip MR header
@@ -13769,14 +13769,14 @@ class NmrDpUtility:
                                             continue
 
                                 if first_str_line_num <= i <= last_str_line_num:
-                                    ofp2.write(line)
+                                    ofh2.write(line)
                                     continue
 
                                 # skip MR footer
                                 if 'Submitted Coord H atom name' in line:
                                     break
 
-                                ofp.write(line)
+                                ofh.write(line)
 
                         _mrPath = os.path.splitext(src_file)[0] + '-corrected.str'
 
@@ -13909,10 +13909,10 @@ class NmrDpUtility:
 
                         i = 0
 
-                        with open(src_file, 'r') as ifp,\
-                                open(dst_file, 'w') as ofp,\
-                                open(mrPath, 'w') as ofp2:
-                            for line in ifp:
+                        with open(src_file, 'r') as ifh,\
+                                open(dst_file, 'w') as ofh,\
+                                open(mrPath, 'w') as ofh2:
+                            for line in ifh:
                                 i += 1
 
                                 # skip MR header
@@ -13923,9 +13923,9 @@ class NmrDpUtility:
 
                                 if first_str_line_num <= i and not has_sharp:
                                     if i <= last_str_line_num:
-                                        ofp2.write(line)
+                                        ofh2.write(line)
                                         continue
-                                    ofp2.write(line)
+                                    ofh2.write(line)
                                     if line.startswith('#'):
                                         has_sharp = True
                                     continue
@@ -13944,7 +13944,7 @@ class NmrDpUtility:
                                 if 'Submitted Coord H atom name' in line:
                                     break
 
-                                ofp.write(line)
+                                ofh.write(line)
 
                         _mrPath = os.path.splitext(mrPath)[0] + '.cif2str'
 
@@ -14075,16 +14075,16 @@ class NmrDpUtility:
                 return False
 
             has_content = False
-            with open(dst_file, 'r') as ifp:
-                for line in ifp:
+            with open(dst_file, 'r') as ifh:
+                for line in ifh:
                     if line.isspace() or comment_pattern.match(line):
                         continue
                     has_content = True
                     break
 
             if not has_content and not has_mr_str:
-                with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofp:
-                    ofp.write('')
+                with open(os.path.join(dir_path, '.entry_without_mr'), 'w') as ofh:
+                    ofh.write('')
 
                 remediated = False
 
@@ -14324,38 +14324,38 @@ class NmrDpUtility:
 
                 original_file_path_list = []
 
-                ofp = None
+                ofh = None
                 j = 0
 
-                with open(dst_file, 'r') as ifp:
-                    for line in ifp:
+                with open(dst_file, 'r') as ifh:
+                    for line in ifh:
 
                         if mr_file_header_pattern.match(line):
                             g = mr_file_header_pattern.search(line).groups()
 
-                            if ofp is not None:
+                            if ofh is not None:
                                 if len(g[0]) > 0:
                                     j += 1
-                                    ofp.write(g[0] + '\n')
-                                ofp.close()
+                                    ofh.write(g[0] + '\n')
+                                ofh.close()
                                 if j == 0:
                                     os.remove(original_file_path_list.pop())
 
                             j = 0
                             _dst_file = os.path.join(dir_path, g[2])
                             original_file_path_list.append(_dst_file)
-                            ofp = open(_dst_file, 'w')  # pylint: disable=consider-using-with
+                            ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
 
                         elif not line.isspace() and not comment_pattern.match(line):
                             j += 1
-                            if ofp is None:
+                            if ofh is None:
                                 _dst_file = os.path.join(dir_path, src_basename + '-noname.mr')
                                 original_file_path_list.append(_dst_file)
-                                ofp = open(_dst_file, 'w')  # pylint: disable=consider-using-with
-                            ofp.write(line)
+                                ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
+                            ofh.write(line)
 
-                if ofp is not None:
-                    ofp.close()
+                if ofh is not None:
+                    ofh.close()
                     if j == 0:
                         os.remove(original_file_path_list.pop())
 
@@ -14384,8 +14384,8 @@ class NmrDpUtility:
                     if file_ext in ('x', 'rc', 'crd', 'rst', 'inp', 'inpcrd', 'restrt')\
                        or 'rc' in file_ext or 'crd' in file_ext or 'rst' in file_ext or 'inp' in file_ext:  # AMBER coordinate file extensions
                         is_crd = False
-                        with open(dst_file, 'r') as ifp:
-                            for pos, line in enumerate(ifp, start=1):
+                        with open(dst_file, 'r') as ifh:
+                            for pos, line in enumerate(ifh, start=1):
                                 if pos == 1:
                                     if line.isdigit():
                                         break
@@ -14408,8 +14408,8 @@ class NmrDpUtility:
 
                     if file_ext in ('frc', 'known') or 'frc' in file_ext:
                         is_frc = False
-                        with open(dst_file, 'r') as ifp:
-                            for pos, line in enumerate(ifp, start=1):
+                        with open(dst_file, 'r') as ifh:
+                            for pos, line in enumerate(ifh, start=1):
                                 if pos == 1:
                                     if not line.startswith('FRCMOD'):
                                         break
@@ -14426,8 +14426,8 @@ class NmrDpUtility:
                     if file_ext == 'seq':
                         is_seq = False
                         _len_seq = None
-                        with open(dst_file, 'r') as ifp:
-                            for line in ifp:
+                        with open(dst_file, 'r') as ifh:
+                            for line in ifh:
                                 if line.isspace() or comment_pattern.match(line):
                                     continue
                                 seq = line.upper().split()
@@ -14461,8 +14461,8 @@ class NmrDpUtility:
 
                     if file_ext == 'cor':
                         is_cor = False
-                        with open(dst_file, 'r') as ifp:
-                            for pos, line in enumerate(ifp, start=1):
+                        with open(dst_file, 'r') as ifh:
+                            for pos, line in enumerate(ifh, start=1):
                                 if pos == 1:
                                     if 'Structures from CYANA' not in line:
                                         break
@@ -14546,9 +14546,9 @@ class NmrDpUtility:
 
                     has_spectral_peak = False
 
-                    with open(dst_file, 'r') as ifp:
+                    with open(dst_file, 'r') as ifh:
                         has_header = False
-                        for line in ifp:
+                        for line in ifh:
                             if line.isspace() or comment_pattern.match(line):
                                 if line.startswith('#INAME'):
                                     has_header = True
@@ -15094,8 +15094,8 @@ class NmrDpUtility:
 
                     touch_file = os.path.join(dir_path, '.entry_without_mr')
                     if not os.path.exists(touch_file):
-                        with open(touch_file, 'w') as ofp:
-                            ofp.write('')
+                        with open(touch_file, 'w') as ofh:
+                            ofh.write('')
 
                     hint = ' or is not recognized properly'
 
@@ -15135,16 +15135,16 @@ class NmrDpUtility:
 
             touch_file = os.path.join(dir_path, '.entry_with_pk')
             if not os.path.exists(touch_file):
-                with open(touch_file, 'w') as ofp:
-                    ofp.write('')
+                with open(touch_file, 'w') as ofh:
+                    ofh.write('')
 
         if not aborted and remediated and mr_file_path is not None:
-            with open(mr_file_path, 'w') as ofp:
+            with open(mr_file_path, 'w') as ofh:
 
                 header_file = next(mr_part_path['header'] for mr_part_path in mr_part_paths if 'header' in mr_part_path)
-                with open(header_file, 'r') as ifp:
-                    for line in ifp:
-                        ofp.write(line)
+                with open(header_file, 'r') as ifh:
+                    for line in ifh:
+                        ofh.write(line)
 
                 file_idx = 1
                 for mr_part_path in mr_part_paths:
@@ -15162,12 +15162,12 @@ class NmrDpUtility:
                             else:
                                 original_file_name = f'{os.path.basename(src_basename)}-division_P{file_idx}.mr'
 
-                            ofp.write(f'# Restraints file {file_idx}: {original_file_name}\n')
-                            ofp.write(f'# Restraint file format: {getRestraintFormatName(file_type).split()[0]}\n')
+                            ofh.write(f'# Restraints file {file_idx}: {original_file_name}\n')
+                            ofh.write(f'# Restraint file format: {getRestraintFormatName(file_type).split()[0]}\n')
 
-                            with open(file_path, 'r') as ifp:
-                                for line in ifp:
-                                    ofp.write(line)
+                            with open(file_path, 'r') as ifh:
+                                for line in ifh:
+                                    ofh.write(line)
 
                             break
 
@@ -15175,18 +15175,18 @@ class NmrDpUtility:
 
                 if file_idx == 1 and len(split_file_list) > 0:
 
-                    ofp.write(f'# Restraints file {file_idx}: {os.path.basename(src_basename)}.mr\n')
+                    ofh.write(f'# Restraints file {file_idx}: {os.path.basename(src_basename)}.mr\n')
                     file_type = split_file_list[0]['file_type']
-                    ofp.write(f'# Restraint file format: {getRestraintFormatName(file_type).split()[0]}\n')
+                    ofh.write(f'# Restraint file format: {getRestraintFormatName(file_type).split()[0]}\n')
 
-                    with open(mr_core_path, 'r') as ifp:
-                        for line in ifp:
-                            ofp.write(line)
+                    with open(mr_core_path, 'r') as ifh:
+                        for line in ifh:
+                            ofh.write(line)
 
                 footer_file = next(mr_part_path['footer'] for mr_part_path in mr_part_paths if 'footer' in mr_part_path)
-                with open(footer_file, 'r') as ifp:
-                    for line in ifp:
-                        ofp.write(line)
+                with open(footer_file, 'r') as ifh:
+                    for line in ifh:
+                        ofh.write(line)
 
             if os.path.exists(mr_file_link):
                 os.remove(mr_file_link)
@@ -28488,9 +28488,9 @@ class NmrDpUtility:
 
             file_format = None
 
-            with open(file_path, 'r', encoding='utf-8') as ifp:
+            with open(file_path, 'r', encoding='utf-8') as ifh:
                 has_header = False
-                for idx, line in enumerate(ifp):
+                for idx, line in enumerate(ifh):
                     if line.isspace() or comment_pattern.match(line):
                         if line.startswith('#INAME'):
                             has_header = True
@@ -28502,9 +28502,9 @@ class NmrDpUtility:
             dimensions = None
 
             if file_format is not None:
-                with open(file_path, 'r', encoding='utf-8') as ifp:
+                with open(file_path, 'r', encoding='utf-8') as ifh:
                     has_header = False
-                    for line in ifp:
+                    for line in ifh:
                         if file_format == 'NMRView' and not has_header:
                             if line.startswith('label'):
                                 has_header = True
@@ -28530,8 +28530,8 @@ class NmrDpUtility:
             sf_data.add_tag('Details', None)
             sf_data.add_tag('Text_data_format', file_format if file_format is not None else 'unknown')
 
-            with open(file_path, 'r', encoding='ascii', errors='ignore') as ifp:
-                sf_data.add_tag('Text_data', ifp.read())
+            with open(file_path, 'r', encoding='ascii', errors='ignore') as ifh:
+                sf_data.add_tag('Text_data', ifh.read())
 
             master_entry.add_saveframe(sf_data)
 
@@ -30677,8 +30677,8 @@ class NmrDpUtility:
 
             lp_count = 0
 
-            with open(file_path, 'r') as ifp:
-                for line in ifp:
+            with open(file_path, 'r') as ifh:
+                for line in ifh:
 
                     line = ' '.join(line.split())
 
@@ -37175,9 +37175,7 @@ class NmrDpUtility:
                 self.__chain_id_map_for_remediation = {}
                 self.__seq_id_map_for_remediation = {}
 
-                if os.path.exists(self.__cifPath):
-                    with open(self.__cifPath, 'r', encoding='utf-8', errors='ignore') as ifp:
-                        self.__cifHashCode = hashlib.md5(ifp.read().encode('utf-8')).hexdigest()
+                self.__cifHashCode = self.__cR.getHashCode()
 
         return False
 
@@ -37309,7 +37307,7 @@ class NmrDpUtility:
                     except Exception:
                         pass
 
-                if poly_seq is not None and len(poly_seq) > 0 and cache_path is not None:
+                if len(poly_seq) > 0 and cache_path is not None:
                     write_as_pickle(poly_seq, cache_path)
 
             input_source.setItemValue('polymer_sequence', poly_seq)
@@ -37331,8 +37329,8 @@ class NmrDpUtility:
 
                                 touch_file = os.path.join(dir_path, '.entry_without_cs')
                                 if not os.path.exists(touch_file):
-                                    with open(touch_file, 'w') as ofp:
-                                        ofp.write('')
+                                    with open(touch_file, 'w') as ofh:
+                                        ofh.write('')
 
                     self.__suspended_errors_for_lazy_eval = []
 
@@ -37783,12 +37781,11 @@ class NmrDpUtility:
                             poly_seq = self.__cR.getPolymerSequence(lp_category, key_items)
                         else:
                             poly_seq = []
-
-                if len(poly_seq) > 0:
-
-                    if cache_path is not None:
+                            
+                    if len(poly_seq) > 0 and cache_path is not None:
                         write_as_pickle(poly_seq, cache_path)
 
+                if len(poly_seq) > 0:
                     poly_seq_list_set[content_subtype].append({'list_id': list_id, 'polymer_sequence': poly_seq})
 
                     has_poly_seq = True
@@ -48573,8 +48570,8 @@ class NmrDpUtility:
 
             unknown_mr_desc = os.path.join(dir_path, '.entry_with_unknown_mr')
             if os.path.exists(unknown_mr_desc):
-                with open(unknown_mr_desc, 'r') as ifp:
-                    details = ifp.read().splitlines()
+                with open(unknown_mr_desc, 'r') as ifh:
+                    details = ifh.read().splitlines()
                     data_format = details.split(' ')[0]
                     if not data_format.isupper():
                         data_format = None
@@ -48615,8 +48612,8 @@ class NmrDpUtility:
 
             sf.add_tag('Text_data_format', data_format)
 
-            with open(file_path, 'r', encoding='ascii', errors='ignore') as ifp:
-                sf.add_tag('Text_data', ifp.read())
+            with open(file_path, 'r', encoding='ascii', errors='ignore') as ifh:
+                sf.add_tag('Text_data', ifh.read())
 
             row[10], row[11] = 1, self.__entry_id
 

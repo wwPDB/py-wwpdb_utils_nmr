@@ -36,28 +36,6 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
 
 
-def load_stat_from_pickle(file_name):
-    """ Load BMRB chemical shift statistics from pickle file if possible.
-    """
-
-    if os.path.exists(file_name):
-
-        with open(file_name, 'rb') as ifp:
-            return pickle.load(ifp)
-
-    return []
-
-
-def write_stat_as_pickle(obj, file_name):
-    """ Write BMRB chemical shift statistics as pickle file.
-    """
-
-    if isinstance(obj, list):
-
-        with open(file_name, 'wb') as ofp:
-            pickle.dump(obj, ofp)
-
-
 class BMRBChemShiftStat:
     """ Wrapper class for retrieving BMRB chemical shift statistics.
     """
@@ -846,8 +824,8 @@ class BMRBChemShiftStat:
 
         atm_list = []
 
-        with open(file_name, 'r', encoding='utf-8') as ifp:
-            reader = csv.DictReader(ifp)
+        with open(file_name, 'r', encoding='utf-8') as ifh:
+            reader = csv.DictReader(ifh)
 
             for row in reader:
 
@@ -1518,6 +1496,15 @@ class BMRBChemShiftStat:
         """ Write all BMRB chemical shift statistics as pickle files.
         """
 
+        def write_stat_as_pickle(obj, file_name):
+            """ Write BMRB chemical shift statistics as pickle file.
+            """
+
+            if isinstance(obj, list):
+
+                with open(file_name, 'wb') as ofh:
+                    pickle.dump(obj, ofh)
+
         write_stat_as_pickle(self.aa_filt, self.stat_dir + 'aa_filt.pkl')
         write_stat_as_pickle(self.aa_full, self.stat_dir + 'aa_full.pkl')
 
@@ -1543,6 +1530,17 @@ class BMRBChemShiftStat:
         for pickle_file in pickle_files:
             if not os.path.exists(pickle_file):
                 return False
+
+        def load_stat_from_pickle(file_name):
+            """ Load BMRB chemical shift statistics from pickle file if possible.
+            """
+
+            if os.path.exists(file_name):
+
+                with open(file_name, 'rb') as ifh:
+                    return pickle.load(ifh)
+
+            return []
 
         self.aa_filt = load_stat_from_pickle(self.stat_dir + 'aa_filt.pkl')
         self.aa_full = load_stat_from_pickle(self.stat_dir + 'aa_full.pkl')

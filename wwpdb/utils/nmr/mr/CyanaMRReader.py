@@ -102,7 +102,7 @@ class CyanaMRReader:
             @return: CyanaMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
-        ifp = None
+        ifh = None
 
         try:
 
@@ -114,8 +114,8 @@ class CyanaMRReader:
                         self.__lfh.write(f"CyanaMRReader.parse() {mrFilePath} is not accessible.\n")
                     return None, None, None
 
-                ifp = open(mrFilePath, 'r')  # pylint: disable=consider-using-with
-                input = InputStream(ifp.read())
+                ifh = open(mrFilePath, 'r')  # pylint: disable=consider-using-with
+                input = InputStream(ifh.read())
 
             else:
                 mrFilePath, mrString = None, mrFilePath
@@ -210,8 +210,8 @@ class CyanaMRReader:
             return None, None, None
             """
         finally:
-            if isFilePath and ifp is not None:
-                ifp.close()
+            if isFilePath and ifh is not None:
+                ifh.close()
 
 
 if __name__ == "__main__":

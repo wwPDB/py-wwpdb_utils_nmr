@@ -41,26 +41,6 @@ else:
     logging.getLogger().setLevel(logging.ERROR)  # set level for pynmrstar
 
 
-def load_schema_from_pickle(file_name):
-    """ Load NMR-STAR schema from pickle file.
-    """
-
-    if os.path.exists(file_name):
-
-        with open(file_name, 'rb') as ifp:
-            return pickle.load(ifp)
-
-    return None
-
-
-def write_schema_as_pickle(obj, file_name):
-    """ Write NMR-STAR schema as pickle file.
-    """
-
-    with open(file_name, 'wb') as ofp:
-        pickle.dump(obj, ofp)
-
-
 class CifToNmrStar:
     """ Simple CIF to NMR-STAR converter.
     """
@@ -70,6 +50,17 @@ class CifToNmrStar:
 
         # directory
         self.schema_dir = os.path.dirname(__file__) + '/nmr-star_schema/'
+
+        def load_schema_from_pickle(file_name):
+            """ Load NMR-STAR schema from pickle file.
+            """
+
+            if os.path.exists(file_name):
+
+                with open(file_name, 'rb') as ifh:
+                    return pickle.load(ifh)
+
+            return None
 
         # NMR-STAR schema
         self.schema = load_schema_from_pickle(self.schema_dir + 'schema.pkl')
@@ -99,12 +90,19 @@ class CifToNmrStar:
         """ Retrieve NMR-STAR schema from pynmrstar.Schema, then write schema objects as each pickle file.
         """
 
+        def write_schema_as_pickle(obj, file_name):
+            """ Write NMR-STAR schema as pickle file.
+            """
+
+            with open(file_name, 'wb') as ofh:
+                pickle.dump(obj, ofh)
+
         schema = pynmrstar.Schema()  # retrieve the latest schema via interet access
 
         # print(schema.headers)
-        with open(self.schema_dir + 'headers.txt', 'w') as ofp:
+        with open(self.schema_dir + 'headers.txt', 'w') as ofh:
             for header in schema.headers:
-                ofp.write(header + '\n')
+                ofh.write(header + '\n')
         self.__lfh.write('headers.txt: Done.\n')
 
         # print(schema.schema)
@@ -123,8 +121,8 @@ class CifToNmrStar:
         write_schema_as_pickle(schema.data_types, self.schema_dir + 'data_types.pkl')
         self.__lfh.write('data_types.pkl: Done.\n')
 
-        with open(self.schema_dir + 'version.txt', 'w') as ofp:
-            ofp.write(schema.version)
+        with open(self.schema_dir + 'version.txt', 'w') as ofh:
+            ofh.write(schema.version)
         self.__lfh.write(f"version: {schema.version}\n")
 
     def convert(self, cifPath=None, strPath=None, datablockName=None, maxRepeat=1):
@@ -411,14 +409,14 @@ class CifToNmrStar:
 
             changed = False
 
-            with open(cifPath, 'r') as ifp,\
-                    open(_cifPath, 'w') as ofp:
-                for line in ifp:
+            with open(cifPath, 'r') as ifh,\
+                    open(_cifPath, 'w') as ofh:
+                for line in ifh:
                     if sf_anonymous_pattern.match(line) or save_pattern.match(line):
-                        ofp.write('#' + line)
+                        ofh.write('#' + line)
                         changed = True
                     else:
-                        ofp.write(line)
+                        ofh.write(line)
 
             if changed and maxRepeat > 0:
                 return self.convert(_cifPath, strPath, datablockName, maxRepeat=maxRepeat - 1)

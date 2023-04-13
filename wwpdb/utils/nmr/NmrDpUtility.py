@@ -4384,6 +4384,7 @@ class NmrDpUtility:
                                                                'Dipole_2_atom_type_1', 'Dipole_2_atom_isotope_number_1',
                                                                'Dipole_2_assembly_atom_ID_2', 'Dipole_2_entity_assembly_ID_2',
                                                                'Dipole_2_entity_ID_2', 'Dipole_2_chem_comp_index_ID_2',
+                                                               'Dipole_2_comp_index_ID_2',  # 'Dipole_2_comp_index_ID_2' is inferred from NMR-STAR Dictionary
                                                                'Dipole_2_seq_ID_2', 'Dipole_2_comp_ID_2', 'Dipole_2_atom_ID_2',
                                                                'Dipole_2_atom_type_2', 'Dipole_2_atom_isotope_number_2',
                                                                'Val', 'Val_err',
@@ -19352,6 +19353,14 @@ class NmrDpUtility:
             key_items = self.key_items[file_type][content_subtype]
             data_items = self.data_items[file_type][content_subtype]
 
+            if file_type == 'nmr-star' and content_subtype == 'ccr_dd_restraint':
+                loop = sf_data.get_loop_by_category(lp_category)
+                if 'Dipole_2_chem_comp_index_ID_2' in loop.tags:
+                    key_items = copy.copy(key_items)
+                    key_item = next((key_item for key_item in key_items if key_item['name'] == 'Dipole_2_comp_index_ID_2'), None)
+                    if key_item is not None:
+                        key_item['name'] = 'Dipole_2_chem_comp_index_ID_2'
+
         lp_data = None
 
         try:
@@ -19579,6 +19588,14 @@ class NmrDpUtility:
             return
 
         key_items = self.consist_key_items[file_type][content_subtype]
+
+        if file_type == 'nmr-star' and content_subtype == 'ccr_dd_restraint':
+            loop = sf_data.get_loop_by_category(lp_category)
+            if 'Dipole_2_chem_comp_index_ID_2' in loop.tags:
+                key_items = copy.copy(key_items)
+                key_item = next((key_item for key_item in key_items if key_item['name'] == 'Dipole_2_comp_index_ID_2'), None)
+                if key_item is not None:
+                    key_item['name'] = 'Dipole_2_chem_comp_index_ID_2'
 
         conflict_id_set = self.__nefT.get_conflict_id_set(sf_data, lp_category, key_items)[0]
 
@@ -27054,6 +27071,13 @@ class NmrDpUtility:
                         upper_limit_col = loop.tags.index('Distance_upper_bound_val')
 
                 key_items = [item['name'] for item in NMR_STAR_LP_KEY_ITEMS[content_subtype]]
+
+                if content_subtype == 'ccr_dd_restraint' and 'Dipole_2_chem_comp_index_ID_2' in loop.tags:
+                    key_items = copy.copy(key_items)
+                    key_item = next((key_item for key_item in key_items if key_item['name'] == 'Dipole_2_comp_index_ID_2'), None)
+                    if key_item is not None:
+                        key_item['name'] = 'Dipole_2_chem_comp_index_ID_2'
+
                 len_key_items = len(key_items)
 
                 atom_dim_num = (len_key_items - 1) // 5  # 5 for entity_assembly_id, entity_id, comp_index_id, comp_id, atom_id tags

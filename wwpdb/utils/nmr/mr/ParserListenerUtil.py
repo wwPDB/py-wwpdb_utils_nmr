@@ -815,6 +815,7 @@ NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int
                                               {'name': 'Dipole_2_atom_ID_1', 'type': 'str'},
                                               {'name': 'Dipole_2_entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
                                               {'name': 'Dipole_2_entity_ID_2', 'type': 'positive-int'},
+                                              # 'Dipole_2_comp_index_ID_2' is inferred from NMR-STAR Dictionary
                                               {'name': 'Dipole_2_comp_index_ID_2', 'type': 'int', 'default-from': 'Dipole_2_seq_ID_2'},
                                               {'name': 'Dipole_2_comp_ID_2', 'type': 'str', 'uppercase': True},
                                               {'name': 'Dipole_2_atom_ID_2', 'type': 'str'}

@@ -41769,6 +41769,11 @@ class NmrDpUtility:
 
             del master_entry[orig_asm_sf]
 
+        for sf in master_entry.frame_list:
+            if sf.name == sf_framecode:
+                master_entry.remove_saveframe(sf_framecode)
+                break
+
         master_entry.add_saveframe(asm_sf)
 
         try:

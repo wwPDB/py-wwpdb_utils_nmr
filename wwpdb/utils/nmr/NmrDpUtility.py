@@ -9417,6 +9417,10 @@ class NmrDpUtility:
                        "The wwPDB NEF Working Group strongly recommends the submission of distance restraints "\
                        "used for the structure determination."
 
+                if 'noepk_restraint' in lp_counts and lp_counts['noepk_restraint'] > 0:
+                    warn += " '_Homonucl_NOE' category is only useful for describing assigned NOE peak height/volume. "\
+                        "Please use the '_Gen_dist_constraint' category to describe general distance restraint."
+
                 self.report.warning.appendDescription('encouragement',
                                                       {'file_name': file_name, 'description': warn})
                 self.report.setWarning()

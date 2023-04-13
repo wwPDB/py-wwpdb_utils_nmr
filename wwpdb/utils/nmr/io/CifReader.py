@@ -311,7 +311,7 @@ class CifReader:
         if self.__dBlock is None or self.__dBlock.getType != 'data':
             return None
 
-        if blockId is not None and self.__dBlock.getName() == blockId:
+        if blockId is None and self.__dBlock.getName() == blockId:
             return self.__dBlock
 
         return self.__getDataBlockFromFile(blockId)

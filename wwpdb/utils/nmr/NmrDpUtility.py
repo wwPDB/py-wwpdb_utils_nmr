@@ -40713,10 +40713,10 @@ class NmrDpUtility:
             if self.__cR.hasCategory('struct_conn'):
                 bonds = self.__cR.getDictList('struct_conn')
                 for bond in bonds:
-                    auth_seq_id_1 = bond['ptnr1_auth_seq_id']
+                    # auth_seq_id_1 = bond['ptnr1_auth_seq_id']
                     auth_comp_id_1 = bond['ptnr1_auth_comp_id']
                     atom_id_1 = bond['ptnr1_label_atom_id']
-                    auth_seq_id_2 = bond['ptnr2_auth_seq_id']
+                    # auth_seq_id_2 = bond['ptnr2_auth_seq_id']
                     auth_comp_id_2 = bond['ptnr2_auth_comp_id']
                     atom_id_2 = bond['ptnr2_label_atom_id']
 
@@ -41146,17 +41146,28 @@ class NmrDpUtility:
 
                     row = [None] * len(tags)
 
-                    seq_key_1 = (auth_asym_id_1, int(auth_seq_id_1), auth_comp_id_1)
+                    try:
 
-                    if seq_key_1 in self.__caC['auth_to_star_seq']:
-                        row[0], row[1], row[2], row[3] = auth_asym_id_1, auth_seq_id_1, auth_comp_id_1, atom_id_1
+                        seq_key_1 = (auth_asym_id_1, int(auth_seq_id_1), auth_comp_id_1)
 
-                    seq_key_2 = (auth_asym_id_2, int(auth_seq_id_2), auth_comp_id_2)
+                        if seq_key_1 in self.__caC['auth_to_star_seq']:
+                            row[0], row[1], row[2], row[3] = auth_asym_id_1, auth_seq_id_1, auth_comp_id_1, atom_id_1
 
-                    if seq_key_2 in self.__caC['auth_to_star_seq']:
-                        row[4], row[5], row[6], row[7] = auth_asym_id_2, auth_seq_id_2, auth_comp_id_2, atom_id_2
+                    except ValueError:
+                        pass
 
-                    b_loop.add_data(row)
+                    try:
+
+                        seq_key_2 = (auth_asym_id_2, int(auth_seq_id_2), auth_comp_id_2)
+
+                        if seq_key_2 in self.__caC['auth_to_star_seq']:
+                            row[4], row[5], row[6], row[7] = auth_asym_id_2, auth_seq_id_2, auth_comp_id_2, atom_id_2
+
+                    except ValueError:
+                        pass
+
+                    if row[0] is not None and row[4] is not None:
+                        b_loop.add_data(row)
 
                 if len(b_loop.data) > 0:
                     asm_sf.add_loop(b_loop)
@@ -41361,15 +41372,21 @@ class NmrDpUtility:
                 non_std_bond = False
 
                 for bond in bonds:
-                    bond_type = bond['conn_type_id']
-                    auth_asym_id_1 = bond['ptnr1_auth_asym_id']
-                    auth_seq_id_1 = int(bond['ptnr1_auth_seq_id'])
-                    auth_comp_id_1 = bond['ptnr1_auth_comp_id']
-                    atom_id_1 = bond['ptnr1_label_atom_id']
-                    auth_asym_id_2 = bond['ptnr2_auth_asym_id']
-                    auth_seq_id_2 = int(bond['ptnr2_auth_seq_id'])
-                    auth_comp_id_2 = bond['ptnr2_auth_comp_id']
-                    atom_id_2 = bond['ptnr2_label_atom_id']
+
+                    try:
+
+                        bond_type = bond['conn_type_id']
+                        auth_asym_id_1 = bond['ptnr1_auth_asym_id']
+                        auth_seq_id_1 = int(bond['ptnr1_auth_seq_id'])
+                        auth_comp_id_1 = bond['ptnr1_auth_comp_id']
+                        atom_id_1 = bond['ptnr1_label_atom_id']
+                        auth_asym_id_2 = bond['ptnr2_auth_asym_id']
+                        auth_seq_id_2 = int(bond['ptnr2_auth_seq_id'])
+                        auth_comp_id_2 = bond['ptnr2_auth_comp_id']
+                        atom_id_2 = bond['ptnr2_label_atom_id']
+
+                    except ValueError:
+                        continue
 
                     row = [None] * len(tags)
 
@@ -41496,6 +41513,9 @@ class NmrDpUtility:
                             auth_asym_id = bond['ptnr1_auth_asym_id']
                             auth_seq_id = bond['ptnr1_auth_seq_id']
 
+                            if not auth_seq_id.isdigit():
+                                continue
+
                             if self.__ccU.updateChemCompDict(comp_id):
                                 for b in self.__ccU.lastBonds:
                                     if atom_id in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2]):
@@ -41536,6 +41556,9 @@ class NmrDpUtility:
                                 auth_asym_id = bond['ptnr2_auth_asym_id']
                                 auth_seq_id = bond['ptnr2_auth_seq_id']
 
+                                if not auth_seq_id.isdigit():
+                                    continue
+
                                 if self.__ccU.updateChemCompDict(comp_id):
                                     for b in self.__ccU.lastBonds:
                                         if atom_id in (b[self.__ccU.ccbAtomId1], b[self.__ccU.ccbAtomId2]):
@@ -41575,6 +41598,10 @@ class NmrDpUtility:
                                 atom_id = 'SG'
                                 auth_asym_id = bond['ptnr1_auth_asym_id']
                                 auth_seq_id = bond['ptnr1_auth_seq_id']
+
+                                if not auth_seq_id.isdigit():
+                                    continue
+
                                 leaving_atom_id = 'HG'
 
                                 seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
@@ -41603,6 +41630,10 @@ class NmrDpUtility:
                                 atom_id = bond['ptnr1_label_atom_id']
                                 auth_asym_id = bond['ptnr1_auth_asym_id']
                                 auth_seq_id = bond['ptnr1_auth_seq_id']
+
+                                if not auth_seq_id.isdigit():
+                                    continue
+
                                 leaving_atom_id = 'HD1' if atom_id == 'ND1' else 'HE2'
 
                                 seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
@@ -41631,6 +41662,10 @@ class NmrDpUtility:
                                 atom_id = 'SG'
                                 auth_asym_id = bond['ptnr2_auth_asym_id']
                                 auth_seq_id = bond['ptnr2_auth_seq_id']
+
+                                if not auth_seq_id.isdigit():
+                                    continue
+
                                 leaving_atom_id = 'HG'
 
                                 seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
@@ -41659,6 +41694,10 @@ class NmrDpUtility:
                                 atom_id = bond['ptnr2_label_atom_id']
                                 auth_asym_id = bond['ptnr2_auth_asym_id']
                                 auth_seq_id = bond['ptnr2_auth_seq_id']
+
+                                if not auth_seq_id.isdigit():
+                                    continue
+
                                 leaving_atom_id = 'HD1' if atom_id == 'ND1' else 'HE2'
 
                                 seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
@@ -41880,16 +41919,22 @@ class NmrDpUtility:
                         bonds = self.__cR.getDictList('struct_conn')
 
                         for bond in bonds:
-                            auth_asym_id_1 = bond['ptnr1_auth_asym_id']
-                            auth_seq_id_1 = int(bond['ptnr1_auth_seq_id'])
-                            atom_id_1 = bond['ptnr1_label_atom_id']
-                            auth_asym_id_2 = bond['ptnr2_auth_asym_id']
-                            auth_seq_id_2 = int(bond['ptnr2_auth_seq_id'])
-                            atom_id_2 = bond['ptnr2_label_atom_id']
 
-                            if auth_asym_id_1 == auth_asym_id_2 and auth_asym_id_1 in auth_asym_ids\
-                               and {atom_id_1, atom_id_2} == {'C', 'N'} and abs(auth_seq_id_1 - auth_seq_id_2) > 1:
-                                _poly_type = 'cyclic-pseudo-peptide'
+                            try:
+
+                                auth_asym_id_1 = bond['ptnr1_auth_asym_id']
+                                auth_seq_id_1 = int(bond['ptnr1_auth_seq_id'])
+                                atom_id_1 = bond['ptnr1_label_atom_id']
+                                auth_asym_id_2 = bond['ptnr2_auth_asym_id']
+                                auth_seq_id_2 = int(bond['ptnr2_auth_seq_id'])
+                                atom_id_2 = bond['ptnr2_label_atom_id']
+
+                                if auth_asym_id_1 == auth_asym_id_2 and auth_asym_id_1 in auth_asym_ids\
+                                   and {atom_id_1, atom_id_2} == {'C', 'N'} and abs(auth_seq_id_1 - auth_seq_id_2) > 1:
+                                    _poly_type = 'cyclic-pseudo-peptide'
+
+                            except ValueError:
+                                continue
 
                 elif any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('DA', 'DC', 'DG', 'DT'))\
                         and any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('A', 'C', 'G', 'U')):
@@ -41940,11 +41985,11 @@ class NmrDpUtility:
                     bonds = self.__cR.getDictList('struct_conn')
                     for bond in bonds:
                         label_asym_id_1 = bond['ptnr1_label_asym_id']
-                        auth_seq_id_1 = bond['ptnr1_auth_seq_id']
+                        # auth_seq_id_1 = bond['ptnr1_auth_seq_id']
                         auth_comp_id_1 = bond['ptnr1_auth_comp_id']
                         label_asym_id_2 = bond['ptnr2_label_asym_id']
                         atom_id_1 = bond['ptnr1_label_atom_id']
-                        auth_seq_id_2 = bond['ptnr2_auth_seq_id']
+                        # auth_seq_id_2 = bond['ptnr2_auth_seq_id']
                         auth_comp_id_2 = bond['ptnr2_auth_comp_id']
                         atom_id_2 = bond['ptnr2_label_atom_id']
 

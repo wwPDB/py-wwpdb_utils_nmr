@@ -1202,7 +1202,11 @@ class NmrDpUtility:
         # temporary file path to be removed (release mode)
         self.__tmpPath = None
 
+        # current working directory
         self.__dirPath = None
+
+        # directory for cache files
+        self.__cacheDirPath = None
 
         # hash code of the coordinate file
         self.__cifHashCode = None
@@ -6120,8 +6124,13 @@ class NmrDpUtility:
         # bond length in model
         self.__coord_bond_length = {}
 
+        # sub-directory name for cache file
+        self.__sub_dir_name_for_cache = 'nmr_dp_util'
+
         # CIF reader
-        self.__cR = CifReader(self.__verbose, self.__lfh)
+        self.__cR = CifReader(self.__verbose, self.__lfh,
+                              use_cache=True,
+                              sub_dir_name_for_cache=self.__sub_dir_name_for_cache)
 
         # ParserListerUtil.coordAssemblyChecker()
         self.__caC = None
@@ -9421,7 +9430,7 @@ class NmrDpUtility:
                     warn += " '_Homonucl_NOE' category is only useful for describing assigned NOE peak height/volume. "\
                         "Please use the '_Gen_dist_constraint' category to describe general distance restraint."
 
-                self.report.warning.appendDescription('encouragement',
+                self.report.warning.appendDescription('missing_content',
                                                       {'file_name': file_name, 'description': warn})
                 self.report.setWarning()
 
@@ -10935,7 +10944,7 @@ class NmrDpUtility:
                                 "The wwPDB NMR Validation Task Force highly recommends the submission of distance restraints "\
                                 "used for the structure determination."
 
-                            self.__suspended_warnings_for_lazy_eval.append({'encouragement':
+                            self.__suspended_warnings_for_lazy_eval.append({'missing_content':
                                                                             {'file_name': file_name, 'description': warn}})
 
                             if self.__verbose:
@@ -26802,7 +26811,7 @@ class NmrDpUtility:
 
         cache_path = None
         if self.__cifHashCode is not None:
-            cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_asm_chk.pkl")
+            cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_asm_chk.pkl")
             self.__caC = load_from_pickle(cache_path)
             if self.__caC is not None:
                 return
@@ -37172,6 +37181,22 @@ class NmrDpUtility:
 
             try:
 
+                if self.__dirPath is None:
+                    self.__dirPath = os.path.dirname(fPath)
+
+                self.__cacheDirPath = os.path.join(self.__dirPath, self.__sub_dir_name_for_cache)
+
+                if not os.path.isdir(self.__cacheDirPath):
+                    os.makedirs(self.__cacheDirPath)
+
+                # move curernt cache files to sub-directory (temporaly code)
+                # for cache_file_name in os.listdir(self.__dirPath):
+                #     if cache_file_name.endswith('.pkl') and len(cache_file_name) >= 36:
+                #         src_path = os.path.join(self.__dirPath, cache_file_name)
+                #         dst_path = os.path.join(self.__cacheDirPath, cache_file_name)
+                #         if not os.path.exists(dst_path):
+                #             shutil.move(src_path, dst_path)
+
                 self.__cifPath = fPath
 
                 if self.__cR.parse(fPath):
@@ -37308,7 +37333,7 @@ class NmrDpUtility:
 
             poly_seq = cache_path = None
             if self.__cifHashCode is not None:
-                cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_poly_seq_full.pkl")
+                cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_poly_seq_full.pkl")
                 poly_seq = load_from_pickle(cache_path)
 
             if poly_seq is None:
@@ -37581,16 +37606,16 @@ class NmrDpUtility:
             return True
 
         if self.__cifHashCode is not None:
-            cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_atom_site.pkl")
+            cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_atom_site.pkl")
             self.__coord_atom_site = load_from_pickle(cache_path, None)
 
-            cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_unobs_res.pkl")
+            cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_unobs_res.pkl")
             self.__coord_unobs_res = load_from_pickle(cache_path, [])
 
-            cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_auth_to_label.pkl")
+            cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_auth_to_label.pkl")
             self.__auth_to_label_seq = load_from_pickle(cache_path, {})
 
-            cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_label_to_auth.pkl")
+            cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_label_to_auth.pkl")
             self.__label_to_auth_seq = load_from_pickle(cache_path, {})
 
             if self.__coord_atom_site is not None:
@@ -37733,16 +37758,16 @@ class NmrDpUtility:
                                         self.__coord_unobs_res.append(_seq_key)
 
             if self.__cifHashCode is not None:
-                cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_atom_site.pkl")
+                cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_atom_site.pkl")
                 write_as_pickle(self.__coord_atom_site, cache_path)
 
-                cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_unobs_res.pkl")
+                cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_unobs_res.pkl")
                 write_as_pickle(self.__coord_unobs_res, cache_path)
 
-                cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_auth_to_label.pkl")
+                cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_auth_to_label.pkl")
                 write_as_pickle(self.__auth_to_label_seq, cache_path)
 
-                cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_label_to_auth.pkl")
+                cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_label_to_auth.pkl")
                 write_as_pickle(self.__label_to_auth_seq, cache_path)
 
             return True
@@ -37804,7 +37829,7 @@ class NmrDpUtility:
 
                 poly_seq = cache_path = None
                 if self.__cifHashCode is not None:
-                    cache_path = os.path.join(self.__dirPath, f"{self.__cifHashCode}_poly_seq.pkl")
+                    cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_poly_seq.pkl")
                     poly_seq = load_from_pickle(cache_path)
 
                 if poly_seq is None:

@@ -167,9 +167,17 @@ class CifReader:
     """ Accessor methods for parsing CIF files.
     """
 
-    def __init__(self, verbose=True, log=sys.stdout):
+    def __init__(self, verbose=True, log=sys.stdout,
+                 use_cache=True,
+                 sub_dir_name_for_cache='.'):
         self.__verbose = verbose
         self.__lfh = log
+
+        # whether to use cache file
+        self.__use_cache = use_cache
+
+        # sub_directory name for cache file
+        self.__sub_dir_name_for_cache = sub_dir_name_for_cache
 
         # file path
         self.__filePath = None
@@ -196,9 +204,6 @@ class CifReader:
         # random rotation test for detection of non-superimposed models (DAOTHER-4060)
         self.__random_rotaion_test = False
         self.__single_model_rotation_test = True
-
-        # whether to use cache file
-        self.__use_cache = True
 
         if self.__random_rotaion_test:
             self.__lfh.write("+WARNING- CifReader.__init__() Enabled random rotation test\n")
@@ -254,17 +259,23 @@ class CifReader:
             @return: target data block
         """
 
-        self.__cachePath = os.path.join(os.path.dirname(self.__filePath), f"{self.__hashCode}{'' if blockId is None else '_' + blockId}.pkl")
+        if self.__use_cache:
+            cache_dir = os.path.join(os.path.dirname(self.__filePath), self.__sub_dir_name_for_cache)
 
-        if self.__use_cache and os.path.exists(self.__cachePath):
-            try:
-                with open(self.__cachePath, 'rb') as ifh:
-                    block = pickle.load(ifh)
-                    if block is not None:
-                        return block
-                os.remove(self.__cachePath)
-            except Exception:
-                pass
+            if not os.path.isdir(cache_dir):
+                os.makedirs(cache_dir)
+
+            self.__cachePath = os.path.join(cache_dir, f"{self.__hashCode}{'' if blockId is None else '_' + blockId}.pkl")
+
+            if os.path.exists(self.__cachePath):
+                try:
+                    with open(self.__cachePath, 'rb') as ifh:
+                        block = pickle.load(ifh)
+                        if block is not None:
+                            return block
+                    os.remove(self.__cachePath)
+                except Exception:
+                    pass
 
         with open(self.__filePath, 'r', encoding='utf-8') as ifh:
             myBlockList = []

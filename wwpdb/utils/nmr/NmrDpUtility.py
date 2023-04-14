@@ -48809,6 +48809,8 @@ class NmrDpUtility:
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = '_Data_set'
 
+            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
+
             if sf_category in self.__sf_category_list:
 
                 sf_data = master_entry.get_saveframes_by_category(sf_category)[0]

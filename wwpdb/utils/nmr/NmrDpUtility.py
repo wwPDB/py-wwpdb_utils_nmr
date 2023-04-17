@@ -50189,7 +50189,7 @@ class NmrDpUtility:
 
             data_file_name = get_first_sf_tag(sf, 'Data_file_name')
             if len(data_file_name) == 0:
-                data_file_name = None
+                data_file_name = self.__srcName
 
             try:
 
@@ -50245,11 +50245,9 @@ class NmrDpUtility:
                        "The wwPDB NMR Validation Task Force highly recommends the submission of unambiguous distance restraints "\
                        "used for the structure determination."
 
-                desc = {'category': lp_category, 'description': warn}
-                if data_file_name is not None:
-                    desc['file_name'] = data_file_name
-
-                self.report.warning.appendDescription('missing_content', desc)
+                self.report.warning.appendDescription('missing_content',
+                                                      {'file_name': data_file_name, 'category': lp_category,
+                                                       'description': warn})
 
                 self.report.setWarning()
 

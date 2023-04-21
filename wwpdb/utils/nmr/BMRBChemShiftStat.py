@@ -14,6 +14,7 @@
 # 14-Feb-2022  M. Yokochi - add getSimilarCompIdFromAtomIds() (NMR restraint remediation)
 # 25-Feb-2022  M. Yokochi - add peptideLike() (NMR restraint remediation)
 # 11-Nov-2022  M. Yokochi - add getProtonsInSameGroup() (NMR restraint remediation)
+# 20-Apr-2023  M. Yokochi - change backbone definition to be consistent with NMR restraint validation
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -205,10 +206,10 @@ class BMRBChemShiftStat:
         if key in self.__cachedDictForSimilarCompId:
             return copy.copy(self.__cachedDictForSimilarCompId[key])
 
-        aa_bb = {'C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N'}
+        aa_bb = {"C", "CA", "CB", "H", "HA", "HA2", "HA3", "N"}
         dn_bb = {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "H5'1", "H5'2", "H2'1", "H2'2", 'P'}
         rn_bb = {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", "H5'1", "H5'2", "H2'1", "HO'2", 'P', "O2'"}
-        ch_bb = {'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'H61', 'H62'}
+        ch_bb = {"C1", "C2", "C3", "C4", "C5", "C6", "H1", "H2", "H3", "H4", "H5", "H61", "H62"}
 
         try:
 
@@ -549,35 +550,37 @@ class BMRBChemShiftStat:
 
         if comp_id in self.__aa_comp_ids:
             return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ('C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N')
+                    if item['atom_id'] in ("C", "CA", "H", "HA", "HA2", "HA3", "N", "O")
                     and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
         if comp_id in self.__dna_comp_ids:
             return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'",
-                                           "H1'", "H2'", "H2''", "H3'", "H4'",
-                                           "H5'", "H5''",
-                                           'P') and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
+                    if item['atom_id'] in ("C3'", "C4'", "C5'",
+                                           "H3'", "H4'", "H5'", "H5''",
+                                           "P", "OP1", "OP2", "O5'", "O3'") and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
         if comp_id in self.__rna_comp_ids:
             return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'",
-                                           "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'",
-                                           'P') and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
+                    if item['atom_id'] in ("C3'", "C4'", "C5'",
+                                           "H3'", "H4'", "H5'", "H5''",
+                                           "P", "OP1", "OP2", "O5'", "O3'") and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
         if polypeptide_like:
             return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ('C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N')
+                    if item['atom_id'] in ("C", "CA", "H", "HA", "HA2", "HA3", "N", "O")
                     and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
         if polynucleotide_like:
             return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''",
-                                           'P') and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
+                    if item['atom_id'] in ("C3'", "C4'", "C5'",
+                                           "H3'", "H4'", "H5'", "H5''",
+                                           "P", "OP1", "OP2", "O5'", "O3'") and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
         if carbohydrates_like:
             return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ('C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'H61', 'H62')
+                    if item["atom_id"] in ("C1", "C2", "C3", "C4", "C5", "C6",
+                                           "H1", "H2", "H3", "H4", "H5", "H61", "H62",
+                                           "O1", "O4", "O6")
                     and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
         return []
@@ -698,13 +701,13 @@ class BMRBChemShiftStat:
             polypeptide_like, polynucleotide_like, carbohydrates_like = self.getTypeOfCompId(comp_id)
 
         bb_atoms = self.getBackBoneAtoms(comp_id, excl_minor_atom, polypeptide_like, polynucleotide_like, carbohydrates_like)
-
-        try:
-            if polypeptide_like:
-                bb_atoms.remove('CB')
-        except ValueError:
-            pass
-
+        # """
+        # try:
+        #     if polypeptide_like:
+        #         bb_atoms.remove('CB')
+        # except ValueError:
+        #     pass
+        # """
         cs_stat = self.__get(comp_id)
 
         if comp_id in self.__std_comp_ids or polypeptide_like:

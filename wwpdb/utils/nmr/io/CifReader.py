@@ -24,6 +24,8 @@
 # 06-Apr-2022   my  - add support for auth_comp_id (DAOTHER-7690)
 # 04-Aug-2022   my  - detect sequence gaps in auth_seq_id, 'gap_in_auth_seq' (NMR restraint remediation)
 # 10-Feb-2023   my  - add 'fetch_first_match' filter to process large assembly avoiding forced timeout (NMR restraint remediation)
+# 14-Apr-2023   my  - enable to use cache datablock (NMR restraint remediation)
+# 19-Apr-2023   my  - support multiple datablock (NMR restraint validation)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -182,7 +184,10 @@ class CifReader:
         # file path
         self.__filePath = None
 
-        # active data block
+        # data block list
+        self.__dBlockList = None
+
+        # the primary data block
         self.__dBlock = None
 
         # hash code of current cif file
@@ -236,18 +241,22 @@ class CifReader:
         if self.__dBlock is not None and self.__filePath == filePath:
             return True
 
-        self.__dBlock = self.__hashCode = None
+        self.__dBlockList = self.__dBlock = self.__hashCode = None
         self.__filePath = filePath
 
         try:
+
             if not os.access(self.__filePath, os.R_OK):
                 if self.__verbose:
                     self.__lfh.write(f"+ERROR- CifReader.parse() Missing file {self.__filePath}\n")
                 return False
-            with open(self.__filePath, 'r', encoding='utf-8', errors='ignore') as ifh:
-                self.__hashCode = hashlib.md5(ifh.read().encode('utf-8')).hexdigest()
-            block = self.__getDataBlockFromFile()
-            return self.__setDataBlock(block)
+
+            if self.__use_cache:
+                with open(self.__filePath, 'r', encoding='utf-8', errors='ignore') as ifh:
+                    self.__hashCode = hashlib.md5(ifh.read().encode('utf-8')).hexdigest()
+
+            return self.__setDataBlock(self.__getDataBlockFromFile())
+
         except Exception:
             if self.__verbose:
                 self.__lfh.write(f"+ERROR- CifReader.parse() Missing file {self.__filePath}\n")
@@ -270,27 +279,31 @@ class CifReader:
             if os.path.exists(self.__cachePath):
                 try:
                     with open(self.__cachePath, 'rb') as ifh:
-                        block = pickle.load(ifh)
-                        if block is not None:
-                            return block
+                        dBlock = pickle.load(ifh)
+                        if dBlock is not None:
+                            return dBlock
                     os.remove(self.__cachePath)
                 except Exception:
                     pass
 
-        with open(self.__filePath, 'r', encoding='utf-8') as ifh:
-            myBlockList = []
-            pRd = PdbxReader(ifh)
-            pRd.read(myBlockList)
-            if blockId is not None:
-                for block in myBlockList:
-                    if block.getType() == 'data' and block.getName() == blockId:
-                        return block
-            else:
-                for block in myBlockList:
-                    if block.getType() == 'data':
-                        return block
+        if self.__dBlockList is None:
+            self.__dBlockList = []
 
-            return None
+            with open(self.__filePath, 'r', encoding='utf-8') as ifh:
+                pRd = PdbxReader(ifh)
+                pRd.read(self.__dBlockList)
+
+        if blockId is not None:
+            for dBlock in self.__dBlockList:
+                if dBlock.getType() == 'data' and dBlock.getName() == blockId:
+                    return dBlock
+
+        else:
+            for dBlock in self.__dBlockList:
+                if dBlock.getType() == 'data':
+                    return dBlock
+
+        return None
 
     def __setDataBlock(self, dataBlock=None):
         """ Assigns the input data block as the active internal data block.
@@ -300,6 +313,7 @@ class CifReader:
         ok = False
 
         try:
+
             if dataBlock.getType() == 'data':
                 self.__dBlock = dataBlock
                 ok = True
@@ -308,10 +322,29 @@ class CifReader:
                         pickle.dump(dataBlock, ofh)
             else:
                 self.__dBlock = None
+
         except Exception:
             pass
 
         return ok
+
+    def getFilePath(self):
+        """ Return cif file path.
+        """
+
+        return self.__filePath
+
+    def getHashCode(self):
+        """ Return hash code of the cif file.
+        """
+
+        return self.__hashCode
+
+    def getDataBlockList(self):
+        """ Return whole list of datablock.
+        """
+
+        return self.__dBlockList
 
     def getDataBlock(self, blockId=None):
         """ Return target datablock.
@@ -325,26 +358,28 @@ class CifReader:
         if blockId is None and self.__dBlock.getName() == blockId:
             return self.__dBlock
 
-        return self.__getDataBlockFromFile(blockId)
+        dBlock = self.__getDataBlockFromFile(blockId)
 
-    def getHashCode(self):
-        """ Return hash code of the cif file.
-        """
+        return dBlock if self.__setDataBlock(dBlock) else None
 
-        return self.__hashCode
-
-    def hasCategory(self, catName):
+    def hasCategory(self, catName, blockId=None):
         """ Return whether a given category exists.
         """
+
+        if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
+            self.__setDataBlock(self.getDataBlock(blockId))
 
         if self.__dBlock is None:
             return False
 
         return catName in self.__dBlock.getObjNameList()
 
-    def hasItem(self, catName, itName):
+    def hasItem(self, catName, itName, blockId=None):
         """ Return whether a given item exists in a category.
         """
+
+        if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
+            self.__setDataBlock(self.getDataBlock(blockId))
 
         if self.__dBlock is None:
             return False
@@ -359,11 +394,14 @@ class CifReader:
 
         return itName in [name[len_catName:] for name in catObj.getItemNameList()]
 
-    def getDictList(self, catName):
+    def getDictList(self, catName, blockId=None):
         """ Return a list of dictionaries of a given category.
         """
 
         dList = []
+
+        if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
+            self.__setDataBlock(self.getDataBlock(blockId))
 
         if self.__dBlock is None:
             return dList
@@ -388,6 +426,143 @@ class CifReader:
                 for k, v in itDict.items():
                     tD[k] = row[v]
                 dList.append(tD)
+
+        return dList
+
+    def getDictListWithFilter(self, catName, dataItems, filterItems=None, blockId=None):
+        """ Return a list of dictionaries of a given category with filter.
+        """
+
+        dataNames = [d['name'] for d in dataItems]
+
+        for d in dataItems:
+            if d['type'] not in self.itemTypes:
+                raise TypeError(f"Type {d['type']} of data item {d['name']} must be one of {self.itemTypes}.")
+
+        if filterItems is not None:
+            filterNames = [f['name'] for f in filterItems]
+
+            for f in filterItems:
+                if f['type'] not in self.itemTypes:
+                    raise TypeError(f"Type {f['type']} of filter item {f['name']} must be one of {self.itemTypes}.")
+
+        dList = []
+
+        if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
+            self.__setDataBlock(self.getDataBlock(blockId))
+
+        if self.__dBlock is None:
+            return dList
+
+        # get category object
+        catObj = self.__dBlock.getObj(catName)
+
+        if catObj is not None:
+            len_catName = len(catName) + 2
+
+            # get column name index
+            colDict = {}
+            fcolDict = {}
+            fetchDict = {}  # 'fetch_first_match': True
+
+            itNameList = [name[len_catName:] for name in catObj.getItemNameList()]
+
+            for idxIt, itName in enumerate(itNameList):
+                if itName in dataNames:
+                    colDict[itName] = idxIt
+                if filterItems is not None and itName in filterNames:
+                    fcolDict[itName] = idxIt
+
+            if set(dataNames) & set(itNameList) != set(dataNames):
+                raise LookupError(f"Missing one of data items {dataNames}.")
+
+            if filterItems is not None and set(filterNames) & set(itNameList) != set(filterNames):
+                raise LookupError(f"Missing one of filter items {filterNames}.")
+
+            # get row list
+            rowList = catObj.getRowList()
+
+            abort = False
+
+            for row in rowList:
+                keep = True
+                if filterItems is not None:
+                    for filterItem in filterItems:
+                        name = filterItem['name']
+                        val = row[fcolDict[name]]
+                        if val in self.emptyValue:
+                            if 'value' in filterItem and filterItem['value'] not in self.emptyValue:
+                                keep = False
+                                break
+                        else:
+                            filterItemType = filterItem['type']
+                            if filterItemType in ('str', 'enum'):
+                                pass
+                            elif filterItemType == 'bool':
+                                val = val.lower() in self.trueValue
+                            elif filterItemType == 'int':
+                                val = int(val)
+                            elif filterItemType == 'float':
+                                val = float(val)
+                            elif filterItemType in ('abs-int', 'range-abs-int'):
+                                val = abs(int(val))
+                            else:  # 'range-float', 'range-abs-float'
+                                val = abs(float(val))
+                            if filterItemType in ('range-int', 'range-abs-int', 'range-float', 'range-abs-float'):
+                                _range = filterItem['range']
+                                if ('min_exclusive' in _range and val <= _range['min_exclusive'])\
+                                   or ('min_inclusive' in _range and val < _range['min_inclusive'])\
+                                   or ('max_inclusive' in _range and val > _range['max_inclusive'])\
+                                   or ('max_exclusive' in _range and val >= _range['max_exclusive'])\
+                                   or ('not_equal_to' in _range and val == _range['not_equal_to']):
+                                    keep = False
+                                    break
+                            elif filterItemType == 'enum':
+                                if val not in filterItem['enum']:
+                                    keep = False
+                                    break
+                                if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
+                                    if name not in fetchDict:
+                                        fetchDict[name] = val
+                                    elif val != fetchDict[name]:
+                                        keep = False
+                                        abort = True
+                                        break
+                            else:
+                                if val != filterItem['value']:
+                                    keep = False
+                                    break
+                                if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
+                                    if name not in fetchDict:
+                                        fetchDict[name] = val
+                                    elif val != fetchDict[name]:
+                                        keep = False
+                                        abort = True
+                                        break
+
+                if keep:
+                    tD = {}
+                    for dataItem in dataItems:
+                        val = row[colDict[dataItem['name']]]
+                        if val in self.emptyValue:
+                            val = None
+                        dataItemType = dataItem['type']
+                        if dataItemType in ('str', 'enum'):
+                            pass
+                        elif dataItemType == 'bool':
+                            val = val.lower() in self.trueValue
+                        elif dataItemType == 'int' and val is not None:
+                            val = int(val)
+                        elif val is not None:
+                            val = float(val)
+                        if 'alt_name' in dataItem:
+                            tD[dataItem['alt_name']] = val
+                        else:
+                            tD[dataItem['name']] = val
+                    dList.append(tD)
+
+                elif abort:
+                    break
 
         return dList
 
@@ -1249,137 +1424,3 @@ class CifReader:
             print(dlist)
 
         return rlist, dlist
-
-    def getDictListWithFilter(self, catName, dataItems, filterItems=None):
-        """ Return a list of dictionaries of a given category with filter.
-        """
-
-        dataNames = [d['name'] for d in dataItems]
-
-        for d in dataItems:
-            if d['type'] not in self.itemTypes:
-                raise TypeError(f"Type {d['type']} of data item {d['name']} must be one of {self.itemTypes}.")
-
-        if filterItems is not None:
-            filterNames = [f['name'] for f in filterItems]
-
-            for f in filterItems:
-                if f['type'] not in self.itemTypes:
-                    raise TypeError(f"Type {f['type']} of filter item {f['name']} must be one of {self.itemTypes}.")
-
-        dList = []
-
-        if self.__dBlock is None:
-            return dList
-
-        # get category object
-        catObj = self.__dBlock.getObj(catName)
-
-        if catObj is not None:
-            len_catName = len(catName) + 2
-
-            # get column name index
-            colDict = {}
-            fcolDict = {}
-            fetchDict = {}  # 'fetch_first_match': True
-
-            itNameList = [name[len_catName:] for name in catObj.getItemNameList()]
-
-            for idxIt, itName in enumerate(itNameList):
-                if itName in dataNames:
-                    colDict[itName] = idxIt
-                if filterItems is not None and itName in filterNames:
-                    fcolDict[itName] = idxIt
-
-            if set(dataNames) & set(itNameList) != set(dataNames):
-                raise LookupError(f"Missing one of data items {dataNames}.")
-
-            if filterItems is not None and set(filterNames) & set(itNameList) != set(filterNames):
-                raise LookupError(f"Missing one of filter items {filterNames}.")
-
-            # get row list
-            rowList = catObj.getRowList()
-
-            abort = False
-
-            for row in rowList:
-                keep = True
-                if filterItems is not None:
-                    for filterItem in filterItems:
-                        name = filterItem['name']
-                        val = row[fcolDict[name]]
-                        if val in self.emptyValue:
-                            if 'value' in filterItem and filterItem['value'] not in self.emptyValue:
-                                keep = False
-                                break
-                        else:
-                            filterItemType = filterItem['type']
-                            if filterItemType in ('str', 'enum'):
-                                pass
-                            elif filterItemType == 'bool':
-                                val = val.lower() in self.trueValue
-                            elif filterItemType == 'int':
-                                val = int(val)
-                            elif filterItemType == 'float':
-                                val = float(val)
-                            elif filterItemType in ('abs-int', 'range-abs-int'):
-                                val = abs(int(val))
-                            else:  # 'range-float', 'range-abs-float'
-                                val = abs(float(val))
-                            if filterItemType in ('range-int', 'range-abs-int', 'range-float', 'range-abs-float'):
-                                _range = filterItem['range']
-                                if ('min_exclusive' in _range and val <= _range['min_exclusive'])\
-                                   or ('min_inclusive' in _range and val < _range['min_inclusive'])\
-                                   or ('max_inclusive' in _range and val > _range['max_inclusive'])\
-                                   or ('max_exclusive' in _range and val >= _range['max_exclusive'])\
-                                   or ('not_equal_to' in _range and val == _range['not_equal_to']):
-                                    keep = False
-                                    break
-                            elif filterItemType == 'enum':
-                                if val not in filterItem['enum']:
-                                    keep = False
-                                    break
-                                if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
-                                    if name not in fetchDict:
-                                        fetchDict[name] = val
-                                    elif val != fetchDict[name]:
-                                        keep = False
-                                        abort = True
-                                        break
-                            else:
-                                if val != filterItem['value']:
-                                    keep = False
-                                    break
-                                if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
-                                    if name not in fetchDict:
-                                        fetchDict[name] = val
-                                    elif val != fetchDict[name]:
-                                        keep = False
-                                        abort = True
-                                        break
-
-                if keep:
-                    tD = {}
-                    for dataItem in dataItems:
-                        val = row[colDict[dataItem['name']]]
-                        if val in self.emptyValue:
-                            val = None
-                        dataItemType = dataItem['type']
-                        if dataItemType in ('str', 'enum'):
-                            pass
-                        elif dataItemType == 'bool':
-                            val = val.lower() in self.trueValue
-                        elif dataItemType == 'int' and val is not None:
-                            val = int(val)
-                        elif val is not None:
-                            val = float(val)
-                        if 'alt_name' in dataItem:
-                            tD[dataItem['alt_name']] = val
-                        else:
-                            tD[dataItem['name']] = val
-                    dList.append(tD)
-
-                elif abort:
-                    break
-
-        return dList

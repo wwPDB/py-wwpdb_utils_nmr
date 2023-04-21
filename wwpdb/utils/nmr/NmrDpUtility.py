@@ -188,10 +188,11 @@ import pynmrstar
 import gzip
 import chardet
 import pickle
+import numpy
 
 from packaging import version
 from munkres import Munkres
-import numpy
+
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
 try:
@@ -6125,7 +6126,7 @@ class NmrDpUtility:
         self.__coord_bond_length = {}
 
         # sub-directory name for cache file
-        self.__sub_dir_name_for_cache = 'nmr_dp_util'
+        self.__sub_dir_name_for_cache = 'utils_nmr'
 
         # CIF reader
         self.__cR = CifReader(self.__verbose, self.__lfh,
@@ -26809,10 +26810,12 @@ class NmrDpUtility:
         """ Wrapper function for ParserListenerUtil.coordAssemblyChecker.
         """
 
-        cache_path = None
+        asm_chk_cache_path = None
+
         if self.__cifHashCode is not None:
-            cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_asm_chk.pkl")
-            self.__caC = load_from_pickle(cache_path)
+            asm_chk_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_asm_chk.pkl")
+            self.__caC = load_from_pickle(asm_chk_cache_path)
+
             if self.__caC is not None:
                 return
 
@@ -26820,8 +26823,8 @@ class NmrDpUtility:
                                           self.__representative_model_id,
                                           self.__cR, None)
 
-        if self.__caC is not None and cache_path:
-            write_as_pickle(self.__caC, cache_path)
+        if self.__caC is not None and asm_chk_cache_path:
+            write_as_pickle(self.__caC, asm_chk_cache_path)
 
     def __validateStrMr(self):
         """ Validate restraints of NMR-STAR restraint files.
@@ -37079,6 +37082,7 @@ class NmrDpUtility:
                     pass
 
             if len(ensemble) == 0 or not self.__trust_pdbx_nmr_ens:
+
                 ensemble = self.__cR.getDictList('rcsb_nmr_ensemble')
 
                 if self.__trust_pdbx_nmr_ens and len(ensemble) > 0 and 'conformers_submitted_total_number' in ensemble[0]:
@@ -37183,6 +37187,11 @@ class NmrDpUtility:
 
                 if self.__dirPath is None:
                     self.__dirPath = os.path.dirname(fPath)
+
+                # rename old chche directory name 'nmr_dp_util' to 'utils_nmr' (temporaly code)
+                if self.__sub_dir_name_for_cache != 'nmr_dp_util' and os.path.isdir(os.path.join(self.__dirPath, 'nmr_dp_util')):
+                    os.rename(os.path.join(self.__dirPath, 'nmr_dp_util'),
+                              os.path.join(self.__dirPath, self.__sub_dir_name_for_cache))
 
                 self.__cacheDirPath = os.path.join(self.__dirPath, self.__sub_dir_name_for_cache)
 
@@ -37331,10 +37340,11 @@ class NmrDpUtility:
 
         try:
 
-            poly_seq = cache_path = None
+            poly_seq = poly_seq_cache_path = None
+
             if self.__cifHashCode is not None:
-                cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_poly_seq_full.pkl")
-                poly_seq = load_from_pickle(cache_path)
+                poly_seq_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_poly_seq_full.pkl")
+                poly_seq = load_from_pickle(poly_seq_cache_path)
 
             if poly_seq is None:
 
@@ -37368,8 +37378,8 @@ class NmrDpUtility:
                     except Exception:
                         pass
 
-                if len(poly_seq) > 0 and cache_path is not None:
-                    write_as_pickle(poly_seq, cache_path)
+                if len(poly_seq) > 0 and poly_seq_cache_path is not None:
+                    write_as_pickle(poly_seq, poly_seq_cache_path)
 
             input_source.setItemValue('polymer_sequence', poly_seq)
 
@@ -37605,18 +37615,21 @@ class NmrDpUtility:
         if self.__coord_atom_site is not None:
             return True
 
+        atom_site_cache_path = unobs_res_cache_path =\
+            auth_to_label_cache_path = label_to_auth_cache_path = None
+
         if self.__cifHashCode is not None:
-            cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_atom_site.pkl")
-            self.__coord_atom_site = load_from_pickle(cache_path, None)
+            atom_site_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_atom_site.pkl")
+            self.__coord_atom_site = load_from_pickle(atom_site_cache_path, None)
 
-            cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_unobs_res.pkl")
-            self.__coord_unobs_res = load_from_pickle(cache_path, [])
+            unobs_res_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_unobs_res.pkl")
+            self.__coord_unobs_res = load_from_pickle(unobs_res_cache_path, [])
 
-            cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_auth_to_label.pkl")
-            self.__auth_to_label_seq = load_from_pickle(cache_path, {})
+            auth_to_label_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_auth_to_label.pkl")
+            self.__auth_to_label_seq = load_from_pickle(auth_to_label_cache_path, {})
 
-            cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_label_to_auth.pkl")
-            self.__label_to_auth_seq = load_from_pickle(cache_path, {})
+            label_to_auth_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_label_to_auth.pkl")
+            self.__label_to_auth_seq = load_from_pickle(label_to_auth_cache_path, {})
 
             if self.__coord_atom_site is not None:
                 return True
@@ -37758,17 +37771,10 @@ class NmrDpUtility:
                                         self.__coord_unobs_res.append(_seq_key)
 
             if self.__cifHashCode is not None:
-                cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_atom_site.pkl")
-                write_as_pickle(self.__coord_atom_site, cache_path)
-
-                cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_unobs_res.pkl")
-                write_as_pickle(self.__coord_unobs_res, cache_path)
-
-                cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_auth_to_label.pkl")
-                write_as_pickle(self.__auth_to_label_seq, cache_path)
-
-                cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_label_to_auth.pkl")
-                write_as_pickle(self.__label_to_auth_seq, cache_path)
+                write_as_pickle(self.__coord_atom_site, atom_site_cache_path)
+                write_as_pickle(self.__coord_unobs_res, unobs_res_cache_path)
+                write_as_pickle(self.__auth_to_label_seq, auth_to_label_cache_path)
+                write_as_pickle(self.__label_to_auth_seq, label_to_auth_cache_path)
 
             return True
 
@@ -37827,10 +37833,11 @@ class NmrDpUtility:
 
             try:
 
-                poly_seq = cache_path = None
+                poly_seq = poly_seq_cache_path = None
+
                 if self.__cifHashCode is not None:
-                    cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_poly_seq.pkl")
-                    poly_seq = load_from_pickle(cache_path)
+                    poly_seq_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_poly_seq.pkl")
+                    poly_seq = load_from_pickle(poly_seq_cache_path)
 
                 if poly_seq is None:
 
@@ -37843,8 +37850,8 @@ class NmrDpUtility:
                         else:
                             poly_seq = []
 
-                    if len(poly_seq) > 0 and cache_path is not None:
-                        write_as_pickle(poly_seq, cache_path)
+                    if len(poly_seq) > 0 and poly_seq_cache_path is not None:
+                        write_as_pickle(poly_seq, poly_seq_cache_path)
 
                 if len(poly_seq) > 0:
                     poly_seq_list_set[content_subtype].append({'list_id': list_id, 'polymer_sequence': poly_seq})

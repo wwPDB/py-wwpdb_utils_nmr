@@ -555,14 +555,14 @@ class BMRBChemShiftStat:
 
         if comp_id in self.__dna_comp_ids:
             return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ("C3'", "C4'", "C5'",
-                                           "H3'", "H4'", "H5'", "H5''",
+                    if item['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'",
+                                           "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''",
                                            "P", "OP1", "OP2", "O5'", "O3'") and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
         if comp_id in self.__rna_comp_ids:
             return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ("C3'", "C4'", "C5'",
-                                           "H3'", "H4'", "H5'", "H5''",
+                    if item['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'",
+                                           "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'",
                                            "P", "OP1", "OP2", "O5'", "O3'") and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
         if polypeptide_like:
@@ -572,8 +572,8 @@ class BMRBChemShiftStat:
 
         if polynucleotide_like:
             return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ("C3'", "C4'", "C5'",
-                                           "H3'", "H4'", "H5'", "H5''",
+                    if item['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'",
+                                           "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "HO2'",
                                            "P", "OP1", "OP2", "O5'", "O3'") and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
         if carbohydrates_like:

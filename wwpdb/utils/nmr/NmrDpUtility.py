@@ -9845,9 +9845,7 @@ class NmrDpUtility:
                         elif pos == 2 and has_amb_inpcrd:
                             try:
                                 int(line.lstrip().split()[0])
-                            except ValueError:
-                                has_amb_inpcrd = False
-                            except IndexError:
+                            except (ValueError, IndexError):
                                 has_amb_inpcrd = False
 
                         elif pos == 3 and has_amb_inpcrd:
@@ -10088,9 +10086,7 @@ class NmrDpUtility:
                             elif pos == 2 and has_amb_inpcrd:
                                 try:
                                     int(line.lstrip().split()[0])
-                                except ValueError:
-                                    has_amb_inpcrd = False
-                                except IndexError:
+                                except (ValueError, IndexError):
                                     has_amb_inpcrd = False
 
                             elif pos == 3 and has_amb_inpcrd:
@@ -10428,9 +10424,7 @@ class NmrDpUtility:
                             elif pos == 2:
                                 try:
                                     int(line.lstrip().split()[0])
-                                except ValueError:
-                                    break
-                                except IndexError:
+                                except (ValueError, IndexError):
                                     break
                             elif pos == 3:
                                 if line.count('.') == 6:
@@ -14408,9 +14402,7 @@ class NmrDpUtility:
                                 elif pos == 2:
                                     try:
                                         int(line.lstrip().split()[0])
-                                    except ValueError:
-                                        break
-                                    except IndexError:
+                                    except (ValueError, IndexError):
                                         break
                                 elif pos == 3:
                                     if line.count('.') == 6:
@@ -16635,7 +16627,7 @@ class NmrDpUtility:
                     if c not in seq:
                         seq[c] = set()
                     seq[c].add((int(row[0]), row[1]))
-                except ValueError:
+                except (ValueError, TypeError):
                     return False
 
         for chain_id in chain_ids:
@@ -16716,7 +16708,7 @@ class NmrDpUtility:
                     if c not in seq:
                         seq[c] = set()
                     seq[c].add((int(row[0]), row[1]))
-                except ValueError:
+                except (ValueError, TypeError):
                     return None
 
         if chain_id in chain_ids:
@@ -23376,7 +23368,7 @@ class NmrDpUtility:
 
                 try:
                     seq_key = (row[chain_id_col], int(row[seq_id_col]))
-                except ValueError:
+                except (ValueError, TypeError):
                     continue
 
                 if seq_key in self.__seq_id_map_for_remediation:
@@ -23464,7 +23456,7 @@ class NmrDpUtility:
                                 if seq_key not in auth_to_star_seq:
                                     valid_auth_seq = False
                                     break
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 has_auth_seq = valid_auth_seq = False
                                 break
 
@@ -23549,7 +23541,7 @@ class NmrDpUtility:
                         try:
                             _auth_seq_id_1 = next(int(row[1]) for row in auth_dat if row[0] == _auth_chain_id_1)
                             _auth_seq_id_2 = next(int(row[1]) for row in auth_dat if row[0] == _auth_chain_id_2)
-                        except ValueError:
+                        except (ValueError, TypeError):
                             continue
 
                         _seq_key_1 = (_auth_chain_id_1, _auth_seq_id_1, row[2])
@@ -23871,7 +23863,7 @@ class NmrDpUtility:
 
                     try:
                         seq_id = int(row[seq_id_col])
-                    except ValueError:
+                    except (ValueError, TypeError):
                         seq_id = None
 
                     auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
@@ -24009,7 +24001,7 @@ class NmrDpUtility:
 
                                     index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 resolved = False
 
                         else:
@@ -24020,7 +24012,7 @@ class NmrDpUtility:
                         if self.__combined_mode and entity_id_col != -1:
                             try:
                                 entity_id = int(row[entity_id_col])
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 entity_id = None
 
                         _row[1], _row[2], _row[3], _row[4], _row[5] = chain_id, entity_id, seq_id, seq_id, comp_id
@@ -24435,7 +24427,7 @@ class NmrDpUtility:
                         seq_key = (row[0], int(row[1]))
                         if seq_key in self.__seq_id_map_for_remediation:
                             row[0], row[1] = self.__seq_id_map_for_remediation[seq_key]
-                    except ValueError:
+                    except (ValueError, TypeError):
                         if row[0] in self.__chain_id_map_for_remediation:
                             row[0] = self.__chain_id_map_for_remediation[row[0]]
 
@@ -24452,7 +24444,7 @@ class NmrDpUtility:
                             seq_key = (row[0], int(row[1]))
                             if seq_key in self.__seq_id_map_for_remediation:
                                 row[0], row[1] = self.__seq_id_map_for_remediation[seq_key]
-                        except ValueError:
+                        except (ValueError, TypeError):
                             if row[0] in self.__chain_id_map_for_remediation:
                                 row[0] = self.__chain_id_map_for_remediation[row[0]]
 
@@ -24473,7 +24465,7 @@ class NmrDpUtility:
                                     if seq_key in self.__seq_id_map_for_remediation:
                                         row[0], row[1] = self.__seq_id_map_for_remediation[seq_key]
                                         row[2] = row[1]
-                                except ValueError:
+                                except (ValueError, TypeError):
                                     if row[0] in self.__chain_id_map_for_remediation:
                                         row[0] = self.__chain_id_map_for_remediation[row[0]]
 
@@ -24485,7 +24477,7 @@ class NmrDpUtility:
                                     seq_key = (row[0], int(row[1]))
                                     if seq_key in self.__seq_id_map_for_remediation:
                                         row[0], row[1] = self.__seq_id_map_for_remediation[seq_key]
-                                except ValueError:
+                                except (ValueError, TypeError):
                                     if row[0] in self.__chain_id_map_for_remediation:
                                         row[0] = self.__chain_id_map_for_remediation[row[0]]
 
@@ -24504,7 +24496,7 @@ class NmrDpUtility:
                                     if seq_key in self.__seq_id_map_for_remediation:
                                         row[0], row[1] = self.__seq_id_map_for_remediation[seq_key]
                                         row[2] = row[1]
-                                except ValueError:
+                                except (ValueError, TypeError):
                                     if row[0] in self.__chain_id_map_for_remediation:
                                         row[0] = self.__chain_id_map_for_remediation[row[0]]
 
@@ -24516,7 +24508,7 @@ class NmrDpUtility:
                                     seq_key = (row[0], int(row[1]))
                                     if seq_key in self.__seq_id_map_for_remediation:
                                         row[0], row[1] = self.__seq_id_map_for_remediation[seq_key]
-                                except ValueError:
+                                except (ValueError, TypeError):
                                     if row[0] in self.__chain_id_map_for_remediation:
                                         row[0] = self.__chain_id_map_for_remediation[row[0]]
 
@@ -24535,7 +24527,7 @@ class NmrDpUtility:
                                 if seq_key in self.__seq_id_map_for_remediation:
                                     row[0], row[1] = self.__seq_id_map_for_remediation[seq_key]
                                     row[2] = row[1]
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 if row[0] in self.__chain_id_map_for_remediation:
                                     row[0] = self.__chain_id_map_for_remediation[row[0]]
 
@@ -24547,7 +24539,7 @@ class NmrDpUtility:
                                 seq_key = (row[0], int(row[1]))
                                 if seq_key in self.__seq_id_map_for_remediation:
                                     row[0], row[1] = self.__seq_id_map_for_remediation[seq_key]
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 if row[0] in self.__chain_id_map_for_remediation:
                                     row[0] = self.__chain_id_map_for_remediation[row[0]]
 
@@ -24567,7 +24559,7 @@ class NmrDpUtility:
                                     if seq_key in self.__seq_id_map_for_remediation:
                                         row[0], row[1] = self.__seq_id_map_for_remediation[seq_key]
                                         row[2] = row[1]
-                                except ValueError:
+                                except (ValueError, TypeError):
                                     if row[0] in self.__chain_id_map_for_remediation:
                                         row[0] = self.__chain_id_map_for_remediation[row[0]]
                         else:
@@ -24578,7 +24570,7 @@ class NmrDpUtility:
                                     seq_key = (row[0], int(row[1]))
                                     if seq_key in self.__seq_id_map_for_remediation:
                                         row[0], row[1] = self.__seq_id_map_for_remediation[seq_key]
-                                except ValueError:
+                                except (ValueError, TypeError):
                                     if row[0] in self.__chain_id_map_for_remediation:
                                         row[0] = self.__chain_id_map_for_remediation[row[0]]
 
@@ -24833,7 +24825,7 @@ class NmrDpUtility:
                         chain_id = row[chain_id_col]
                         try:
                             seq_id = int(row[seq_id_col])
-                        except ValueError:
+                        except (ValueError, TypeError):
                             continue
                         comp_id = row[comp_id_col]
                         atom_id = row[atom_id_col]
@@ -27146,7 +27138,7 @@ class NmrDpUtility:
                             try:
                                 for d in range(atom_dim_num):
                                     int(row[d])
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 has_key_seq = False
                                 break
 
@@ -27165,7 +27157,7 @@ class NmrDpUtility:
                                         break
                                 if not valid_auth_seq:
                                     break
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 has_auth_seq = valid_auth_seq = False
                                 break
 
@@ -28239,7 +28231,7 @@ class NmrDpUtility:
                              'comp_id': row[comp_id_1_col],
                              'atom_id': row[atom_id_1_col],
                              'ref_chain_id': row[ref_chain_id_1_col]}
-                except TypeError:
+                except (ValueError, TypeError):
                     atom1 = {}
 
                 try:
@@ -28248,7 +28240,7 @@ class NmrDpUtility:
                              'comp_id': row[comp_id_2_col],
                              'atom_id': row[atom_id_2_col],
                              'ref_chain_id': row[ref_chain_id_2_col]}
-                except TypeError:
+                except (ValueError, TypeError):
                     atom2 = {}
 
                 if member_id not in emptyValue:
@@ -28320,7 +28312,7 @@ class NmrDpUtility:
                              'seq_id': int(row[seq_id_1_col]),
                              'comp_id': row[comp_id_1_col],
                              'atom_id': row[atom_id_1_col]}
-                except TypeError:
+                except (ValueError, TypeError):
                     atom1 = {}
 
                 try:
@@ -28328,7 +28320,7 @@ class NmrDpUtility:
                              'seq_id': int(row[seq_id_2_col]),
                              'comp_id': row[comp_id_2_col],
                              'atom_id': row[atom_id_2_col]}
-                except TypeError:
+                except (ValueError, TypeError):
                     atom2 = {}
 
                 atom_sel1.append(atom1)
@@ -31134,7 +31126,7 @@ class NmrDpUtility:
                                        row[loop.tags.index(auth_assign_item_temps[2] % dim)])
                             if seq_key not in auth_to_star_seq:
                                 valid_auth_seq = False
-                        except ValueError:
+                        except (ValueError, TypeError):
                             has_auth_seq = valid_auth_seq = False
 
                     if valid_auth_seq:
@@ -31164,13 +31156,13 @@ class NmrDpUtility:
                             elif col == 2:
                                 try:
                                     seq_id = int(row[loop.tags.index(assign_item)])
-                                except ValueError:
+                                except (ValueError, TypeError):
                                     pass
                             elif col == 3:
                                 if seq_id is None:
                                     try:
                                         seq_id = int(row[loop.tags.index(assign_item)])
-                                    except ValueError:
+                                    except (ValueError, TypeError):
                                         pass
                             elif col == 4:
                                 comp_id = row[loop.tags.index(assign_item)]
@@ -31223,7 +31215,7 @@ class NmrDpUtility:
                                    row[loop.tags.index(auth_assign_items[2])])
                         if seq_key not in auth_to_star_seq:
                             valid_auth_seq = False
-                    except ValueError:
+                    except (ValueError, TypeError):
                         has_auth_seq = valid_auth_seq = False
 
                 if valid_auth_seq:
@@ -31250,7 +31242,7 @@ class NmrDpUtility:
                         elif col == 2:
                             try:
                                 seq_id = int(row[loop.tags.index(assign_item)])
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 pass
                         elif col == 3:
                             comp_id = row[loop.tags.index(assign_item)]
@@ -41060,9 +41052,7 @@ class NmrDpUtility:
                 #     try:
                 #         idx = ps['auth_seq_id'].index(auth_seq_id)
                 #         comp_id = ps['comp_id'][idx]
-                #     except IndexError:
-                #         comp_id = None
-                #     except ValueError:
+                #     except (IndexError, ValueError):
                 #         comp_id = None
 
                 # elif entity_type == 'branched':
@@ -41274,9 +41264,7 @@ class NmrDpUtility:
                 #     try:
                 #         idx = ps['auth_seq_id'].index(auth_seq_id)
                 #         comp_id = ps['comp_id'][idx]
-                #     except IndexError:
-                #         comp_id = None
-                #     except ValueError:
+                #     except (IndexError, ValueError):
                 #         comp_id = None
 
                 # elif entity_type == 'branched':

@@ -43,19 +43,19 @@ class TestBMRBChemShiftStat(unittest.TestCase):
 
     def test_bb_atoms(self):
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('GLY'), ['C', 'CA', 'H', 'HA2', 'HA3', 'N'])
-        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('PRO'), ['C', 'CA', 'CB', 'HA', 'N'])
-        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('ALA'), ['C', 'CA', 'CB', 'H', 'HA', 'N'])
-        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('CYS'), ['C', 'CA', 'CB', 'H', 'HA', 'N'])
-        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('PTR'), ['C', 'CA', 'CB', 'H', 'HA', 'N'])
-        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('PTR', polypeptide_like=True), ['C', 'CA', 'CB', 'H', 'HA', 'N'])
+        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('PRO'), ['C', 'CA', 'HA', 'N'])
+        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('ALA'), ['C', 'CA', 'H', 'HA', 'N'])
+        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('CYS'), ['C', 'CA', 'H', 'HA', 'N'])
+        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('PTR'), ['C', 'CA', 'H', 'HA', 'N'])
+        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('PTR', polypeptide_like=True), ['C', 'CA', 'H', 'HA', 'N'])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('PTR', polynucleotide_like=True), ['P'])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('DA'), ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P'])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('DA', excl_minor_atom=True), ["H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''"])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('A'), ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", 'P'])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('A', excl_minor_atom=True), ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''"])
-        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC'), ["H1'", "H2'", "H3'", "H4'", "H5'", "H5''", 'P', "C5'", "C4'", "C3'", "C2'", "C1'"])
+        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC'), ["H1'", "H2'", "H3'", "H4'", "H5'", "H5''", 'P', "C5'", "C4'", "C3'", "C2'", "C1'", "HO2'"])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC', polypeptide_like=True), [])
-        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC', polynucleotide_like=True), ["H1'", "H2'", "H3'", "H4'", "H5'", "H5''", 'P', "C5'", "C4'", "C3'", "C2'", "C1'"])
+        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC', polynucleotide_like=True), ["H1'", "H2'", "H3'", "H4'", "H5'", "H5''", 'P', "C5'", "C4'", "C3'", "C2'", "C1'", "HO2'"])
 
     def test_arom_atoms(self):
         self.assertEqual(self.bmrb_cs_stat.getAromaticAtoms('ALA'), [])
@@ -113,7 +113,7 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('DA', excl_minor_atom=True), ['H2', 'H8'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('A'), ['C2', 'C4', 'C5', 'C6', 'C8', 'H2', 'H61', 'H62', 'H8', 'N1', 'N3', 'N6', 'N7', 'N9'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('5MC', polynucleotide_like=True), ['H6', 'HM51', 'HM52', 'HM53', 'HN41',
-                                                                                                'HN42', 'N1', 'C2', 'N3', 'C4', 'N4', 'C5', 'C6', 'CM5', 'HOP2', 'HOP3', "HO2'"])
+                                                                                                'HN42', 'N1', 'C2', 'N3', 'C4', 'N4', 'C5', 'C6', 'CM5', 'HOP2', 'HOP3'])
 
     def test_geminal_atom(self):
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('ARG', 'HB2'), 'HB3')

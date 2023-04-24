@@ -746,7 +746,7 @@ class NmrVrptUtility:
                       {'name': 'label_comp_id', 'type': 'str'},
                       {'name': 'label_atom_id', 'type': 'str'},
                       {'name': 'label_entity_id', 'type': 'int'},
-                      {'name': 'label_alt_id', 'type': 'str', 'default': '?'},
+                      {'name': 'label_alt_id', 'type': 'str', 'default': '.'},
                       {'name': 'pdbx_PDB_ins_code', 'type': 'str', 'default': '?'},
                       {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},

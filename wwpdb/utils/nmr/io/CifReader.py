@@ -352,7 +352,7 @@ class CifReader:
             @return: target data block
         """
 
-        if self.__dBlock is None or self.__dBlock.getType != 'data':
+        if self.__dBlock is None or self.__dBlock.getType() != 'data':
             return None
 
         if blockId is None and self.__dBlock.getName() == blockId:
@@ -1439,6 +1439,6 @@ class CifReader:
                 dlist[chain_ids.index(chain_id)].append(_item)
 
         if self.__verbose:
-            print(dlist)
+            self.__lfh.write(f"{dlist}\n")
 
         return rlist, dlist

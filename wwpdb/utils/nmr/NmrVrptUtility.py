@@ -188,6 +188,9 @@ def get_violation_statistics_for_each_bin(beg_err_bin, end_err_bin, total_models
         for viol_per_model in viol_dict.values():
             err = viol_per_model[m]
 
+            if err is None or err == 0.0:
+                continue
+
             if (end_err_bin is None and beg_err_bin < err)\
                or beg_err_bin < err <= end_err_bin\
                or (beg_err_bin is None and err < end_err_bin):
@@ -918,7 +921,7 @@ class NmrVrptUtility:
                                                           'atom_key_2': (auth_asym_id_2, auth_seq_id_2, auth_comp_id_2,
                                                                          auth_atom_id_2, ins_code_2),
                                                           'combination_id': r['combination_id'],
-                                                          'memeber_id': r['member_id'],
+                                                          'member_id': r['member_id'],
                                                           'distance_type': distance_type,
                                                           'distance_sub_type': distance_sub_type,
                                                           'bond_flag': bond_flag,
@@ -928,7 +931,7 @@ class NmrVrptUtility:
                     seq_key_1 = (auth_asym_id_1, auth_seq_id_1, auth_comp_id_1)
                     seq_key_2 = (auth_asym_id_2, auth_seq_id_2, auth_comp_id_2)
 
-                    seq_keys = set(seq_key_1, seq_key_2)
+                    seq_keys = set([seq_key_1, seq_key_2])
 
                     for seq_key in seq_keys:
                         if seq_key not in self.__distRestSeqDict:
@@ -1075,7 +1078,7 @@ class NmrVrptUtility:
                     seq_key_3 = (auth_asym_id_3, auth_seq_id_3, auth_comp_id_3)
                     seq_key_4 = (auth_asym_id_4, auth_seq_id_4, auth_comp_id_4)
 
-                    seq_keys = set(seq_key_1, seq_key_2, seq_key_3, seq_key_4)
+                    seq_keys = set([seq_key_1, seq_key_2, seq_key_3, seq_key_4])
 
                     for seq_key in seq_keys:
                         if seq_key not in self.__dihedRestSeqDict:
@@ -1215,8 +1218,11 @@ class NmrVrptUtility:
                      support combinational restraints (_Gen_dist_constraint.Combination_ID, Member_ID)
         """
 
-        if self.__coordinates is None or self.__distRestDict is None:
+        if self.__coordinates is None:
             return False
+
+        if self.__distRestDict is None:
+            return True
 
         self.__distRestViolDict = {}
         self.__distRestViolCombKeyDict = {}
@@ -1322,13 +1328,8 @@ class NmrVrptUtility:
 
             for rest_key, restraints in self.__distRestDict.items():
 
-                has_member_logic_code = any(r for r in restraints if r['member_logic_code'] == 'OR')
-
-                if has_member_logic_code:
-                    has_combination_id = any(r for r in restraints if r['combination_id'] is not None)
-                    has_member_id = any(r for r in restraints if r['member_id'] is not None)
-                else:
-                    has_combination_id = has_member_id = False
+                has_combination_id = any(r for r in restraints if r['combination_id'] is not None)
+                has_member_id = any(r for r in restraints if r['member_id'] is not None)
 
                 min_error_per_model = {model_id: DIST_ERROR_MAX for model_id in range(1, self.__total_models + 1)}
                 min_comb_key_per_model = {model_id: {'combination_id': None, 'member_id': None}
@@ -1401,8 +1402,11 @@ class NmrVrptUtility:
                      support combinational restraints (_Torsion_angle_constraint.Combination_ID)
         """
 
-        if self.__coordinates is None or self.__dihedRestDict is None:
+        if self.__coordinates is None:
             return False
+
+        if self.__dihedRestDict is None:
+            return True
 
         self.__dihedRestViolDict = {}
         self.__dihedRestViolCombKeyDict = {}
@@ -1551,7 +1555,7 @@ class NmrVrptUtility:
         """ Summarize common results.
         """
 
-        self.__results = {'max_models': self.__total_models, 'atom_ids': self.__atomIdList, 'key_list': {}}
+        self.__results = {'max_models': self.__total_models, 'atom_ids': self.__atomIdList, 'key_lists': {}}
 
         for dBlock in self.__rR.getDataBlockList():
 
@@ -1623,13 +1627,17 @@ class NmrVrptUtility:
                             distance_violations_vs_models[t][s][b] = [0] * (self.__total_models + 1)
                             distance_violations_in_models[m][t][s][b] = []
 
-            for rest_key, rest_list in self.__distRestDict().items():
+            for rest_key, restraints in self.__distRestDict.items():
                 comb_key = self.__distRestViolCombKeyDict[rest_key][self.__representative_model_id]
-                combination_id = comb_key['combination_id']
-                member_id = comb_key['member_id']
+                if comb_key is not None:
+                    combination_id = comb_key['combination_id']
+                    member_id = comb_key['member_id']
 
-                r = next(r for r in rest_list
-                         if r['combination_id'] == combination_id and r['member_id'] == member_id)
+                    r = next(r for r in restraints
+                             if r['combination_id'] == combination_id and r['member_id'] == member_id)
+                else:
+                    r = restraints[0]
+
                 t = r['distance_type']
                 s = r['distance_sub_type']
                 b = r['bond_flag']
@@ -1707,7 +1715,7 @@ class NmrVrptUtility:
                         comb_key = self.__distRestViolCombKeyDict[rest_key][_m]
                         combination_id = comb_key['combination_id']
                         member_id = comb_key['member_id']
-                        comb_key.append((combination_id, member_id))
+                        comb_keys.add((combination_id, member_id))
 
                     for r in self.__distRestDict[rest_key]:
                         comb_key = (r['combination_id'], r['member_id'])
@@ -1764,6 +1772,8 @@ class NmrVrptUtility:
 
                     for rest_key in rest_keys:
                         comb_key = self.__distRestViolCombKeyDict[rest_key][m]
+                        if comb_key is None:
+                            continue
                         combination_id = comb_key['combination_id']
                         member_id = comb_key['member_id']
 
@@ -1861,12 +1871,16 @@ class NmrVrptUtility:
                     angle_violations_vs_models[t] = [0] * (self.__total_models + 1)
                     angle_violations_in_models[m][t] = []
 
-            for rest_key in self.__dihedRestDict():
+            for rest_key, restraints in self.__dihedRestDict.items():
                 comb_key = self.__dihedRestViolCombKeyDict[rest_key][self.__representative_model_id]
-                combination_id = comb_key['combination_id']
+                if comb_key is not None:
+                    combination_id = comb_key['combination_id']
 
-                r = next(r for r in self.__dihedRestDict[rest_key]
-                         if r['combination_id'] == combination_id)
+                    r = next(r for r in restraints
+                             if r['combination_id'] == combination_id)
+                else:
+                    r = restraints[0]
+
                 t = r['angle_type']
 
                 angle_summary[t] += 1
@@ -1938,7 +1952,7 @@ class NmrVrptUtility:
                     for _m in set(vm):
                         comb_key = self.__dihedRestViolCombKeyDict[rest_key][_m]
                         combination_id = comb_key['combination_id']
-                        comb_key.append(combination_id)
+                        comb_keys.add(combination_id)
 
                     for r in self.__dihedRestDict[rest_key]:
                         comb_key = r['combination_id']
@@ -1994,6 +2008,8 @@ class NmrVrptUtility:
 
                     for rest_key in rest_keys:
                         comb_key = self.__dihedRestViolCombKeyDict[rest_key][m]
+                        if comb_key is None:
+                            continue
                         combination_id = comb_key['combination_id']
 
                         atom_ids = []

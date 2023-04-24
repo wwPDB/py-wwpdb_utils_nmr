@@ -746,14 +746,14 @@ class NmrVrptUtility:
                       {'name': 'label_comp_id', 'type': 'str'},
                       {'name': 'label_atom_id', 'type': 'str'},
                       {'name': 'label_entity_id', 'type': 'int'},
-                      {'name': 'label_alt_id', 'type': 'str'},
-                      {'name': 'pdbx_PDB_ins_code', 'type': 'str'},
+                      {'name': 'label_alt_id', 'type': 'str', 'default': '?'},
+                      {'name': 'pdbx_PDB_ins_code', 'type': 'str', 'default': '?'},
                       {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                       ]
 
-        _filter_items = [{'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}]
+        _filter_items = []  # {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}]
 
         if len(self.__caC['polymer_sequence']) >= LEN_MAJOR_ASYM_ID:
             _filter_items.append({'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID,
@@ -851,9 +851,9 @@ class NmrVrptUtility:
                 has_pdb_ins_code_2 = self.__rR.hasItem('Gen_dist_constraint', 'PDB_ins_code_2')
 
                 if has_pdb_ins_code_1:
-                    data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1'})
+                    data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1', 'default': '?'})
                 if has_pdb_ins_code_2:
-                    data_items.append({'name': 'PDB_ins_code_2', 'type': 'str', 'alt_name': 'ins_code_2'})
+                    data_items.append({'name': 'PDB_ins_code_2', 'type': 'str', 'alt_name': 'ins_code_2', 'default': '?'})
 
                 filter_items = [{'name': 'Gen_dist_constraint_list_ID', 'type': 'int', 'value': list_id}]
 
@@ -875,8 +875,8 @@ class NmrVrptUtility:
                     auth_comp_id_2 = r['auth_comp_id_2']
                     auth_atom_id_1 = r['auth_atom_id_1']
                     auth_atom_id_2 = r['auth_atom_id_2']
-                    ins_code_1 = r['ins_code_1'] if has_pdb_ins_code_1 else None
-                    ins_code_2 = r['ins_code_2'] if has_pdb_ins_code_2 else None
+                    ins_code_1 = r['ins_code_1'] if has_pdb_ins_code_1 else '?'
+                    ins_code_2 = r['ins_code_2'] if has_pdb_ins_code_2 else '?'
 
                     offset = abs(auth_seq_id_1 - auth_seq_id_2)
 
@@ -1009,13 +1009,13 @@ class NmrVrptUtility:
                 has_pdb_ins_code_4 = self.__rR.hasItem('Torsion_angle_constraint', 'PDB_ins_code_4')
 
                 if has_pdb_ins_code_1:
-                    data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1'})
+                    data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1', 'default': '?'})
                 if has_pdb_ins_code_2:
-                    data_items.append({'name': 'PDB_ins_code_2', 'type': 'str', 'alt_name': 'ins_code_2'})
+                    data_items.append({'name': 'PDB_ins_code_2', 'type': 'str', 'alt_name': 'ins_code_2', 'default': '?'})
                 if has_pdb_ins_code_3:
-                    data_items.append({'name': 'PDB_ins_code_3', 'type': 'str', 'alt_name': 'ins_code_3'})
+                    data_items.append({'name': 'PDB_ins_code_3', 'type': 'str', 'alt_name': 'ins_code_3', 'default': '?'})
                 if has_pdb_ins_code_4:
-                    data_items.append({'name': 'PDB_ins_code_4', 'type': 'str', 'alt_name': 'ins_code_4'})
+                    data_items.append({'name': 'PDB_ins_code_4', 'type': 'str', 'alt_name': 'ins_code_4', 'default': '?'})
 
                 filter_items = [{'name': 'Torsion_angle_constraint_list_ID', 'type': 'int', 'value': list_id}]
 
@@ -1045,10 +1045,10 @@ class NmrVrptUtility:
                     auth_atom_id_2 = r['auth_atom_id_2']
                     auth_atom_id_3 = r['auth_atom_id_3']
                     auth_atom_id_4 = r['auth_atom_id_4']
-                    ins_code_1 = r['ins_code_1'] if has_pdb_ins_code_1 else None
-                    ins_code_2 = r['ins_code_2'] if has_pdb_ins_code_2 else None
-                    ins_code_3 = r['ins_code_3'] if has_pdb_ins_code_3 else None
-                    ins_code_4 = r['ins_code_4'] if has_pdb_ins_code_4 else None
+                    ins_code_1 = r['ins_code_1'] if has_pdb_ins_code_1 else '?'
+                    ins_code_2 = r['ins_code_2'] if has_pdb_ins_code_2 else '?'
+                    ins_code_3 = r['ins_code_3'] if has_pdb_ins_code_3 else '?'
+                    ins_code_4 = r['ins_code_4'] if has_pdb_ins_code_4 else '?'
 
                     lower_bound = r['lower_bound']
                     upper_bound = r['upper_bound']
@@ -1140,9 +1140,9 @@ class NmrVrptUtility:
                 has_pdb_ins_code_2 = self.__rR.hasItem('RDC_constraint', 'PDB_ins_code_2')
 
                 if has_pdb_ins_code_1:
-                    data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1'})
+                    data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1', 'default': '?'})
                 if has_pdb_ins_code_2:
-                    data_items.append({'name': 'PDB_ins_code_2', 'type': 'str', 'alt_name': 'ins_code_2'})
+                    data_items.append({'name': 'PDB_ins_code_2', 'type': 'str', 'alt_name': 'ins_code_2', 'default': '?'})
 
                 filter_items = [{'name': 'RDC_constraint_list_ID', 'type': 'int', 'value': list_id}]
 
@@ -1164,8 +1164,8 @@ class NmrVrptUtility:
                     auth_comp_id_2 = r['auth_comp_id_2']
                     auth_atom_id_1 = r['auth_atom_id_1']
                     auth_atom_id_2 = r['auth_atom_id_2']
-                    ins_code_1 = r['ins_code_1'] if has_pdb_ins_code_1 else None
-                    ins_code_2 = r['ins_code_2'] if has_pdb_ins_code_2 else None
+                    ins_code_1 = r['ins_code_1'] if has_pdb_ins_code_1 else '?'
+                    ins_code_2 = r['ins_code_2'] if has_pdb_ins_code_2 else '?'
 
                     lower_bound = r['lower_bound']
                     upper_bound = r['upper_bound']

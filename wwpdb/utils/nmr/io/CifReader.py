@@ -26,6 +26,7 @@
 # 10-Feb-2023   my  - add 'fetch_first_match' filter to process large assembly avoiding forced timeout (NMR restraint remediation)
 # 14-Apr-2023   my  - enable to use cache datablock (NMR restraint remediation)
 # 19-Apr-2023   my  - support multiple datablock (NMR restraint validation)
+# 24-Apr-2023   my  - add 'default' attribute for data items (NMR restraint validation)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -563,7 +564,7 @@ class CifReader:
                     for dataItem in dataItems:
                         val = row[colDict[dataItem['name']]]
                         if val in self.emptyValue:
-                            val = None
+                            val = None if 'default' not in dataItem else dataItem['default']
                         dataItemType = dataItem['type']
                         if dataItemType in ('str', 'enum'):
                             pass

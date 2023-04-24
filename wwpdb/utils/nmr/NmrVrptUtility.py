@@ -6,6 +6,7 @@
 ##
 """ Wrapper class for NMR restraint validation.
     @author: Masashi Yokochi
+    @note: This class is alternative implementation of wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis
 """
 import os
 import sys
@@ -173,6 +174,46 @@ def angle_diff(lower_limit, upper_limit, target_value, angle):
     return min(ac(upper_limit, angle), ac(lower_limit, angle))
 
 
+def get_violated_model_ids(viol_per_model):
+    return [m for m, err in viol_per_model.items() if err is not None and err > 0.0]
+
+
+def get_violation_statistics_for_each_bin(beg_err_bin, end_err_bin, total_models, viol_dict):
+    viol_stat_per_model = []
+
+    all_err_list = []
+    for m in range(1, total_models + 1):
+        err_list = []
+
+        for viol_per_model in viol_dict.values():
+            err = viol_per_model[m]
+
+            if (end_err_bin is None and beg_err_bin < err)\
+               or beg_err_bin < err <= end_err_bin\
+               or (beg_err_bin is None and err < end_err_bin):
+                err_list.append(err)
+                all_err_list.append(err)
+
+        if len(err_list) == 0:
+            viol_stat = [None, None, None]
+        else:
+            viol_stat = [round(min(err_list), 2),
+                         round(max(err_list), 2),
+                         len(err_list)]
+
+        viol_stat_per_model.append(viol_stat)
+
+    if len(all_err_list) == 0:
+        viol_stat_all_model = [None, None, None, None]
+    else:
+        viol_stat_all_model = [round(min(all_err_list), 2),
+                               round(max(all_err_list), 2),
+                               len(all_err_list),
+                               round(float(len(all_err_list)) / float(total_models), 1)]
+
+    return viol_stat_all_model, viol_stat_per_model
+
+
 class NmrVrptUtility:
     """ Wrapper class for NMR restraint validation.
     """
@@ -259,7 +300,7 @@ class NmrVrptUtility:
         self.__dihedRestViolCombKeyDict = None
 
         # summarized restraint validation results
-        self.__results = {'key_list': {}}
+        self.__results = None
 
         # list of known workflow operations
         self.__workFlowOps = ('nmr-restraint-validation')
@@ -273,6 +314,7 @@ class NmrVrptUtility:
                         self.__extractRdcConstraint,
                         self.__calculateDistanceRestraintViolations,
                         self.__calculateDihedralAngleRestraintViolations,
+                        self.__summarizeCommonResults,
                         self.__summarizeDistanceRestraintValidation,
                         self.__summarizeDihedralAngleRestraintValidation,
                         self.__outputResultsAsJsonFileIfPossible]
@@ -1505,6 +1547,23 @@ class NmrVrptUtility:
 
         return False
 
+    def __summarizeCommonResults(self):
+        """ Summarize common results.
+        """
+
+        self.__results = {'max_models': self.__total_models, 'atom_ids': self.__atomIdList, 'key_list': {}}
+
+        for dBlock in self.__rR.getDataBlockList():
+
+            if not self.__rR.hasCategory('Chem_comp_assembly', dBlock.getName()):
+                continue
+
+            self.__results['seq_length'] = self.__rR.getRowLength('Chem_comp_assembly')
+
+            break
+
+        return True
+
     def __summarizeDistanceRestraintValidation(self):
         """ Summarize distance restraint validation results.
             @author: Masashi Yokochi
@@ -1515,66 +1574,17 @@ class NmrVrptUtility:
 
         try:
 
-            def count_violated_models(viol_per_model):
-                return len([m for m, v in viol_per_model.items() if v is not None and v > 0.0])
-
-            def get_violation_statistics(beg_err_bin, end_err_bin, viol_dict):
-                viol_stat_per_model = []
-
-                all_err_list = []
-                for m in range(1, self.__total_models + 1):
-                    err_list = []
-
-                    for viol_per_model in viol_dict.values():
-                        err = viol_per_model[m]
-
-                        if (end_err_bin is None and beg_err_bin < err)\
-                           or beg_err_bin < err <= end_err_bin\
-                           or (beg_err_bin is None and err < end_err_bin):
-                            err_list.append(err)
-                            all_err_list.append(err)
-
-                    if len(err_list) == 0:
-                        viol_stat = [None, None, None]
-                    else:
-                        viol_stat = [round(min(err_list), 2),
-                                     round(max(err_list), 2),
-                                     len(err_list)]
-
-                    viol_stat_per_model.append(viol_stat)
-
-                if len(all_err_list) == 0:
-                    viol_stat_all_model = [None, None, None, None]
-                else:
-                    viol_stat_all_model = [round(min(all_err_list), 2),
-                                           round(max(all_err_list), 2),
-                                           len(all_err_list),
-                                           round(float(len(all_err_list)) / float(self.__total_models), 1)]
-
-                return viol_stat_all_model, viol_stat_per_model
-
-            if 'seq_length' not in self.__results:
-                for dBlock in self.__rR.getDataBlockList():
-
-                    if not self.__rR.hasCategory('Chem_comp_assembly', dBlock.getName()):
-                        continue
-
-                    self.__results['seq_length'] = self.__rR.getRowLength('Chem_comp_assembly')
-
-                    break
-
             self.__results['distance'] = self.__distRestViolDict is not None and len(self.__distRestViolDict) > 0
 
             if not self.__results['distance']:
                 return True
 
-            if 'max_models' not in self.__results:
-                self.__results['max_models'] = self.__total_models
+            self.__results['dist_seq_dict'] = self.__distRestSeqDict
+            self.__results['unmapped_dist'] = self.__distRestUnmapped
 
-            if 'atom_ids' not in self.__results:
-                self.__results['atom_ids'] = self.__atomIdList
+            any_type = 'total'
 
-            distance_type = ('intraresidue', 'sequential', 'medium', 'long', 'interchain', 'total')
+            distance_type = ('intraresidue', 'sequential', 'medium', 'long', 'interchain', any_type)
             distance_sub_type = ('backbone-backbone', 'backbone-sidechain', 'sidechain-sidechain')
             bond_flag = ('hbond', 'sbond', None)
 
@@ -1625,37 +1635,25 @@ class NmrVrptUtility:
                 b = r['bond_flag']
 
                 distance_summary[t][s][b] += 1
-                distance_summary['total'][s][b] += 1
+                distance_summary[any_type][s][b] += 1
 
-                models = count_violated_models(self.__distRestViolDict[rest_key])
+                len_vm = len(get_violated_model_ids(self.__distRestViolDict[rest_key]))
 
-                if models > 0:
+                if len_vm > 0:
                     distance_violation[t][s][b] += 1
-                    distance_violation['total'][s][b] += 1
+                    distance_violation[any_type][s][b] += 1
 
-                if models == self.__total_models:
+                if len_vm == self.__total_models:
                     consistent_distance_violation[t][s][b] += 1
-                    consistent_distance_violation['total'][s][b] += 1
+                    consistent_distance_violation[any_type][s][b] += 1
 
-                distance_violations_vs_models[t][s][b][models] += 1
-                distance_violations_vs_models['total'][s][b][models] += 1
+                distance_violations_vs_models[t][s][b][len_vm] += 1
+                distance_violations_vs_models[any_type][s][b][len_vm] += 1
 
-            dist_range = []
-
-            residual_distance_violation = {}
-            for idx, beg_err_bin in enumerate(NMR_VTF_DIST_ERR_BINS):
-                if idx == len(NMR_VTF_DIST_ERR_BINS) - 1:
-                    end_err_bin = None
-                    dist_err_range = f">{beg_err_bin}"
-                else:
-                    end_err_bin = NMR_VTF_DIST_ERR_BINS[idx + 1]
-                    dist_err_range = f"{beg_err_bin}-{end_err_bin}"
-
-                dist_range.append(dist_err_range)
-                residual_distance_violation[dist_err_range] =\
-                    get_violation_statistics(beg_err_bin, end_err_bin, self.__distRestViolDict)
-
-            self.__results['key_lists']['dist_range'] = dist_range
+            self.__results['distance_summary'] = distance_summary
+            self.__results['distance_violation'] = distance_violation
+            self.__results['consistent_distance_violation'] = consistent_distance_violation
+            self.__results['distance_violations_vs_models'] = distance_violations_vs_models
 
             for rest_key, viol_per_model in self.__distRestViolDict.items():
                 for m in range(1, self.__total_models + 1):
@@ -1673,11 +1671,33 @@ class NmrVrptUtility:
                         b = r['bond_flag']
 
                         distance_violations_in_models[m][t][s][b].append(err)
-                        distance_violations_in_models[m]['total'][s][b].append(err)
+                        distance_violations_in_models[m][any_type][s][b].append(err)
+
+            self.__results['distance_violations_in_models'] = distance_violations_in_models
+
+            dist_range = []
+
+            residual_distance_violation = {}
+            for idx, beg_err_bin in enumerate(NMR_VTF_DIST_ERR_BINS):
+                if idx == len(NMR_VTF_DIST_ERR_BINS) - 1:
+                    end_err_bin = None
+                    dist_err_range = f">{beg_err_bin}"
+                else:
+                    end_err_bin = NMR_VTF_DIST_ERR_BINS[idx + 1]
+                    dist_err_range = f"{beg_err_bin}-{end_err_bin}"
+
+                dist_range.append(dist_err_range)
+                residual_distance_violation[dist_err_range] =\
+                    get_violation_statistics_for_each_bin(beg_err_bin, end_err_bin,
+                                                          self.__total_models,
+                                                          self.__distRestViolDict)
+
+            self.__results['key_lists']['dist_range'] = dist_range
+            self.__results['residual_distance_violation'] = residual_distance_violation
 
             most_violated_distance = []
             for rest_key, viol_per_model in self.__distRestViolDict.items():
-                vm = [m for m, err in viol_per_model.items() if err is not None and err > 0.0]
+                vm = get_violated_model_ids(viol_per_model)
 
                 if len(vm) > 1:
                     e = np.array([err for err in viol_per_model.values() if err is not None and err > 0.0])
@@ -1707,7 +1727,8 @@ class NmrVrptUtility:
                                                            np.std(e),
                                                            np.median(e)])
 
-            sorted_most_violated_distance = sorted(most_violated_distance, reverse=True, key=itemgetter(6, 10))
+            self.__results['most_violated_distance'] =\
+                sorted(most_violated_distance, reverse=True, key=itemgetter(6, 10))
 
             all_distance_violations = []
             for rest_key, viol_per_model in self.__distRestViolDict.items():
@@ -1730,12 +1751,13 @@ class NmrVrptUtility:
                                                                 r['bond_flag'],
                                                                 err])
 
-            sorted_all_distance_violation = sorted(all_distance_violations, reverse=True, key=itemgetter(7, 0))
+            self.__results['all_distance_violations'] =\
+                sorted(all_distance_violations, reverse=True, key=itemgetter(7, 0))
 
             dist_violation_seq = {}
             for seq_key, rest_keys in self.__distRestSeqDict.items():
                 for m in range(1, self.__total_models + 1):
-                    _seq_key = (seq_key[0], seq_key[1], seq_key[2], str(m))
+                    _seq_key = (seq_key[0], seq_key[1], seq_key[2], m)
 
                     if _seq_key not in dist_violation_seq:
                         dist_violation_seq[_seq_key] = []
@@ -1746,6 +1768,7 @@ class NmrVrptUtility:
                         member_id = comb_key['member_id']
 
                         atom_ids_1 = atom_ids_2 = []
+                        distance_type = None
 
                         for r in self.__distRestDict[rest_key]:
                             if r['combination_id'] == combination_id and r['member_id'] == member_id:
@@ -1754,9 +1777,10 @@ class NmrVrptUtility:
                                 atom_ids_2.append(r['atom_key_2'][3])
                                 seq_key_2 = (r['atom_key_2'][0], r['atom_key_2'][1], r['atom_key_2'][2])
 
-                                distance_type = r['distance_type']
-                                distance_sub_type = r['distance_sub_type']
-                                bond_flag = r['bond_flag']
+                                if distance_type is None:
+                                    distance_type = r['distance_type']
+                                    distance_sub_type = r['distance_sub_type']
+                                    bond_flag = r['bond_flag']
 
                         atom_ids_1 = list(set(atom_ids_1))
                         atom_ids_2 = list(set(atom_ids_2))
@@ -1784,16 +1808,6 @@ class NmrVrptUtility:
                                                                  err])
 
             self.__results['dist_violation_seq'] = dist_violation_seq
-            self.__results['distance_summary'] = distance_summary
-            self.__results['distance_violation'] = distance_violation
-            self.__results['consistent_distance_violation'] = consistent_distance_violation
-            self.__results['distance_violations_vs_models'] = distance_violations_vs_models
-            self.__results['residual_distance_violation'] = residual_distance_violation
-            self.__results['distance_violations_in_models'] = distance_violations_in_models
-            self.__results['most_violated_distance'] = sorted_most_violated_distance
-            self.__results['all_distance_violations'] = sorted_all_distance_violation
-            self.__results['dist_seq_dict'] = self.__distRestSeqDict
-            self.__results['unmapped_dist'] = self.__distRestUnmapped
 
             return True
 
@@ -1812,67 +1826,18 @@ class NmrVrptUtility:
 
         try:
 
-            def count_violated_models(viol_per_model):
-                return len([m for m, v in viol_per_model.items() if v is not None and v > 0.0])
-
-            def get_violation_statistics(beg_err_bin, end_err_bin, viol_dict):
-                viol_stat_per_model = []
-
-                all_err_list = []
-                for m in range(1, self.__total_models + 1):
-                    err_list = []
-
-                    for viol_per_model in viol_dict.values():
-                        err = viol_per_model[m]
-
-                        if (end_err_bin is None and beg_err_bin < err)\
-                           or beg_err_bin < err <= end_err_bin\
-                           or (beg_err_bin is None and err < end_err_bin):
-                            err_list.append(err)
-                            all_err_list.append(err)
-
-                    if len(err_list) == 0:
-                        viol_stat = [None, None, None]
-                    else:
-                        viol_stat = [round(min(err_list), 2),
-                                     round(max(err_list), 2),
-                                     len(err_list)]
-
-                    viol_stat_per_model.append(viol_stat)
-
-                if len(all_err_list) == 0:
-                    viol_stat_all_model = [None, None, None, None]
-                else:
-                    viol_stat_all_model = [round(min(all_err_list), 2),
-                                           round(max(all_err_list), 2),
-                                           len(all_err_list),
-                                           round(float(len(all_err_list)) / float(self.__total_models), 1)]
-
-                return viol_stat_all_model, viol_stat_per_model
-
-            if 'seq_length' not in self.__results:
-                for dBlock in self.__rR.getDataBlockList():
-
-                    if not self.__rR.hasCategory('Chem_comp_assembly', dBlock.getName()):
-                        continue
-
-                    self.__results['seq_length'] = self.__rR.getRowLength('Chem_comp_assembly')
-
-                    break
-
             self.__results['angle'] = self.__dihedRestViolDict is not None and len(self.__dihedRestViolDict) > 0
 
             if not self.__results['angle']:
                 return True
 
-            if 'max_models' not in self.__results:
-                self.__results['max_models'] = self.__total_models
+            self.__results['angle_seq_dict'] = self.__dihedRestSeqDict
+            self.__results['unmapped_angle'] = self.__dihedRestUnmapped
 
-            if 'atom_ids' not in self.__results:
-                self.__results['atom_ids'] = self.__atomIdList
+            any_type = 'Total'
 
             try:
-                angle_type = list(set(r_list[0]['angle_type'] for r_list in self.__dihedRestDict.values())) + ['Total']
+                angle_type = list(set(r_list[0]['angle_type'] for r_list in self.__dihedRestDict.values())) + [any_type]
             except IndexError:
                 self.__lfh("Restraints validation failed due to data error in the dihedral angle restraints.\n")
                 return False
@@ -1905,37 +1870,25 @@ class NmrVrptUtility:
                 t = r['angle_type']
 
                 angle_summary[t] += 1
-                angle_summary['Total'] += 1
+                angle_summary[any_type] += 1
 
-                models = count_violated_models(self.__dihedRestViolDict[rest_key])
+                len_vm = len(get_violated_model_ids(self.__dihedRestViolDict[rest_key]))
 
-                if models > 0:
+                if len_vm > 0:
                     angle_violation[t] += 1
-                    angle_violation['Total'] += 1
+                    angle_violation[any_type] += 1
 
-                if models == self.__total_models:
+                if len_vm == self.__total_models:
                     consistent_angle_violation[t] += 1
-                    consistent_angle_violation['Total'] += 1
+                    consistent_angle_violation[any_type] += 1
 
-                angle_violations_vs_models[t][models] += 1
-                angle_violations_vs_models['Total'][models] += 1
+                angle_violations_vs_models[t][len_vm] += 1
+                angle_violations_vs_models[any_type][len_vm] += 1
 
-            angle_range = []
-
-            residual_angle_violation = {}
-            for idx, beg_err_bin in enumerate(NMR_VTF_DIHED_ERR_BINS):
-                if idx == len(NMR_VTF_DIHED_ERR_BINS) - 1:
-                    end_err_bin = None
-                    dihed_err_range = f">{beg_err_bin}"
-                else:
-                    end_err_bin = NMR_VTF_DIHED_ERR_BINS[idx + 1]
-                    dihed_err_range = f"{beg_err_bin}-{end_err_bin}"
-
-                angle_range.append(dihed_err_range)
-                residual_angle_violation[dihed_err_range] =\
-                    get_violation_statistics(beg_err_bin, end_err_bin, self.__dihedRestViolDict)
-
-            self.__results['key_lists']['angle_range'] = angle_range
+            self.__results['angle_summary'] = angle_summary
+            self.__results['angle_violation'] = angle_violation
+            self.__results['consistent_angle_violation'] = consistent_angle_violation
+            self.__results['angle_violations_vs_models'] = angle_violations_vs_models
 
             for rest_key, viol_per_model in self.__dihedRestViolDict.items():
                 for m in range(1, self.__total_models + 1):
@@ -1950,11 +1903,33 @@ class NmrVrptUtility:
                         t = r['angle_type']
 
                         angle_violations_in_models[m][t].append(err)
-                        angle_violations_in_models[m]['Total'].append(err)
+                        angle_violations_in_models[m][any_type].append(err)
+
+            self.__results['angle_violations_in_models'] = angle_violations_in_models
+
+            angle_range = []
+
+            residual_angle_violation = {}
+            for idx, beg_err_bin in enumerate(NMR_VTF_DIHED_ERR_BINS):
+                if idx == len(NMR_VTF_DIHED_ERR_BINS) - 1:
+                    end_err_bin = None
+                    dihed_err_range = f">{beg_err_bin}"
+                else:
+                    end_err_bin = NMR_VTF_DIHED_ERR_BINS[idx + 1]
+                    dihed_err_range = f"{beg_err_bin}-{end_err_bin}"
+
+                angle_range.append(dihed_err_range)
+                residual_angle_violation[dihed_err_range] =\
+                    get_violation_statistics_for_each_bin(beg_err_bin, end_err_bin,
+                                                          self.__total_models,
+                                                          self.__dihedRestViolDict)
+
+            self.__results['key_lists']['angle_range'] = angle_range
+            self.__results['residual_angle_violation'] = residual_angle_violation
 
             most_violated_angle = []
             for rest_key, viol_per_model in self.__dihedRestViolDict.items():
-                vm = [m for m, err in viol_per_model.items() if err is not None and err > 0.0]
+                vm = get_violated_model_ids(viol_per_model)
 
                 if len(vm) > 1:
                     e = np.array([err for err in viol_per_model.values() if err is not None and err > 0.0])
@@ -1983,7 +1958,8 @@ class NmrVrptUtility:
                                                         np.std(e),
                                                         np.median(e)])
 
-            sorted_most_violated_angle = sorted(most_violated_angle, reverse=True, key=itemgetter(6, 10))
+            self.__results['most_violated_angle'] =\
+                sorted(most_violated_angle, reverse=True, key=itemgetter(6, 10))
 
             all_angle_violations = []
             for rest_key, viol_per_model in self.__dihedRestViolDict.items():
@@ -2005,12 +1981,13 @@ class NmrVrptUtility:
                                                             r['angle_type'],
                                                             err])
 
-            sorted_all_angle_violation = sorted(all_angle_violations, reverse=True, key=itemgetter(7, 0))
+            self.__results['all_angle_violations'] =\
+                sorted(all_angle_violations, reverse=True, key=itemgetter(7, 0))
 
             angle_violation_seq = {}
             for seq_key, rest_keys in self.__dihedRestSeqDict.items():
                 for m in range(1, self.__total_models + 1):
-                    _seq_key = (seq_key[0], seq_key[1], seq_key[2], str(m))
+                    _seq_key = (seq_key[0], seq_key[1], seq_key[2], m)
 
                     if _seq_key not in angle_violation_seq:
                         angle_violation_seq[_seq_key] = []
@@ -2020,6 +1997,7 @@ class NmrVrptUtility:
                         combination_id = comb_key['combination_id']
 
                         atom_ids = []
+                        angle_type = None
 
                         for r in self.__dihedRestDict[rest_key]:
                             if r['combination_id'] == combination_id:
@@ -2036,7 +2014,8 @@ class NmrVrptUtility:
                                 if seq_key_4 == seq_key:
                                     atom_ids.append(r['atom_key_4'][3])
 
-                                angle_type = r['angle_type']
+                                if angle_type is None:
+                                    angle_type = r['angle_type']
 
                         err = self.__dihedRestViolDict[rest_key][m]
 
@@ -2048,16 +2027,6 @@ class NmrVrptUtility:
                                                                   err])
 
             self.__results['angle_violation_seq'] = angle_violation_seq
-            self.__results['angle_summary'] = angle_summary
-            self.__results['angle_violation'] = angle_violation
-            self.__results['consistent_angle_violation'] = consistent_angle_violation
-            self.__results['angle_violations_vs_models'] = angle_violations_vs_models
-            self.__results['residual_angle_violation'] = residual_angle_violation
-            self.__results['angle_violations_in_models'] = angle_violations_in_models
-            self.__results['most_violated_angle'] = sorted_most_violated_angle
-            self.__results['all_angle_violations'] = sorted_all_angle_violation
-            self.__results['angle_seq_dict'] = self.__dihedRestSeqDict
-            self.__results['unmapped_angle'] = self.__dihedRestUnmapped
 
             return True
 

@@ -321,6 +321,9 @@ class NmrVrptUtility:
         # summarized restraint validation results
         self.__results = None
 
+        # whether the previous results have been retrieved
+        self.__has_prev_results = False
+
         # list of known workflow operations
         self.__workFlowOps = ('nmr-restraint-validation')
 
@@ -734,13 +737,15 @@ class NmrVrptUtility:
 
             self.__results = load_from_pickle(cache_path)
 
+            self.__has_prev_results = self.__results is not None
+
         return True
 
     def __retrieveCoordAssemblyChecker(self):
         """ Wrapper function for ParserListenerUtil.coordAssemblyChecker.
         """
 
-        if self.__results is not None:
+        if self.__has_prev_results:
             return True
 
         cache_path = None
@@ -768,7 +773,7 @@ class NmrVrptUtility:
             @change: class method, use of wwpdb.utils.nmr.io.CifReader, use PDB_ins_code for atom identification, performance optimization
         """
 
-        if self.__results is not None:
+        if self.__has_prev_results:
             return True
 
         if self.__cifPath is None:
@@ -860,7 +865,7 @@ class NmrVrptUtility:
                      support combinational restraints (_Gen_dist_constraint.Combination_ID, Member_ID)
         """
 
-        if self.__results is not None:
+        if self.__has_prev_results:
             return True
 
         if self.__nmrDataPath is None:
@@ -1017,7 +1022,7 @@ class NmrVrptUtility:
                      support combinational restraints (_Torsion_angle_constraint.Combination_ID)
         """
 
-        if self.__results is not None:
+        if self.__has_prev_results:
             return True
 
         if self.__nmrDataPath is None:
@@ -1162,7 +1167,7 @@ class NmrVrptUtility:
         """ Extract RDC_constraint category of NMR data file.
         """
 
-        if self.__results is not None:
+        if self.__has_prev_results:
             return True
 
         if self.__nmrDataPath is None:
@@ -1286,7 +1291,7 @@ class NmrVrptUtility:
                      support combinational restraints (_Gen_dist_constraint.Combination_ID, Member_ID)
         """
 
-        if self.__distRestDict is None or self.__results is not None:
+        if self.__distRestDict is None or self.__has_prev_results:
             return True
 
         if self.__coordinates is None:
@@ -1470,7 +1475,7 @@ class NmrVrptUtility:
                      support combinational restraints (_Torsion_angle_constraint.Combination_ID)
         """
 
-        if self.__dihedRestDict is None or self.__results is not None:
+        if self.__dihedRestDict is None or self.__has_prev_results:
             return True
 
         if self.__coordinates is None:
@@ -1623,7 +1628,7 @@ class NmrVrptUtility:
         """ Summarize common results.
         """
 
-        if self.__results is not None:
+        if self.__has_prev_results:
             return True
 
         self.__results = {'max_models': self.__total_models, 'atom_ids': self.__atomIdList, 'key_lists': {}}
@@ -1647,7 +1652,7 @@ class NmrVrptUtility:
             @change: class method, improve readability of restraints, support combinational restraints, performance optimization
         """
 
-        if self.__results is not None:
+        if self.__has_prev_results:
             return True
 
         try:
@@ -1908,7 +1913,7 @@ class NmrVrptUtility:
             @change: class method, improve readability of restraints, support combinational restraints, performance optimization
         """
 
-        if self.__results is not None:
+        if self.__has_prev_results:
             return True
 
         try:

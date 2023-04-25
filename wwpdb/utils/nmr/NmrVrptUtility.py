@@ -899,7 +899,7 @@ class NmrVrptUtility:
 
                     if atom_id_1 in bb_atoms_1 and atom_id_2 in bb_atoms_2:
                         distance_sub_type = 'backbone-backbone'
-                    elif atom_id_1 in bb_atoms_1 and atom_id_2 in bb_atoms_2:
+                    elif atom_id_1 in bb_atoms_1 or atom_id_2 in bb_atoms_2:
                         distance_sub_type = 'backbone-sidechain'
                     else:
                         distance_sub_type = 'sidechain-sidechain'

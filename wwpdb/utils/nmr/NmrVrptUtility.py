@@ -232,7 +232,7 @@ class NmrVrptUtility:
         self.__verbose = verbose
         self.__lfh = log
 
-        self.__debug = False
+        self.__debug = True
 
         # auxiliary input resource
         self.__inputParamDict = {}
@@ -738,6 +738,10 @@ class NmrVrptUtility:
             self.__results = load_from_pickle(cache_path)
 
             self.__has_prev_results = self.__results is not None
+
+            if self.__debug:
+                self.__has_prev_results = False
+                self.__results = None
 
         return True
 

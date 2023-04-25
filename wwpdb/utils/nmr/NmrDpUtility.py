@@ -27130,6 +27130,8 @@ class NmrDpUtility:
                 auth_to_star_seq = self.__caC['auth_to_star_seq']
                 auth_to_ins_code = self.__caC['auth_to_ins_code'] if has_ins_code else None
 
+                offset_holder = {}
+
                 has_key_seq = False
 
                 if set(key_tags) & set(loop.tags) == set(key_tags):
@@ -27368,7 +27370,9 @@ class NmrDpUtility:
                                         sf_item['index_id'] += 1
                                         _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
-                                                              loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
+                                                              loop.tags, loop.data[idx],
+                                                              auth_to_star_seq, auth_to_ins_code, offset_holder,
+                                                              [atom1, atom2])
                                         lp.add_data(_row)
                                 elif atom_sels[0] is not None:
                                     atom2 = None
@@ -27376,7 +27380,9 @@ class NmrDpUtility:
                                         sf_item['index_id'] += 1
                                         _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
-                                                              loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
+                                                              loop.tags, loop.data[idx],
+                                                              auth_to_star_seq, auth_to_ins_code, offset_holder,
+                                                              [atom1, atom2])
                                         lp.add_data(_row)
                                 elif atom_sels[1] is not None:
                                     atom1 = None
@@ -27384,14 +27390,18 @@ class NmrDpUtility:
                                         sf_item['index_id'] += 1
                                         _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
-                                                              loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
+                                                              loop.tags, loop.data[idx],
+                                                              auth_to_star_seq, auth_to_ins_code, offset_holder,
+                                                              [atom1, atom2])
                                         lp.add_data(_row)
                                 else:
                                     atom1 = atom2 = None
                                     sf_item['index_id'] += 1
                                     _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                           memberId, memberLogicCode, list_id, self.__entry_id,
-                                                          loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
+                                                          loop.tags, loop.data[idx],
+                                                          auth_to_star_seq, auth_to_ins_code, offset_holder,
+                                                          [atom1, atom2])
                                     lp.add_data(_row)
 
                             else:
@@ -27399,7 +27409,9 @@ class NmrDpUtility:
                                 sf_item['index_id'] += 1
                                 _row = getRowForStrMr(content_subtype, sf_item['id'], sf_item['index_id'],
                                                       None, None, list_id, self.__entry_id,
-                                                      loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, atom_sels)
+                                                      loop.tags, loop.data[idx],
+                                                      auth_to_star_seq, auth_to_ins_code, offset_holder,
+                                                      atom_sels)
                                 lp.add_data(_row)
 
                     else:
@@ -27628,7 +27640,9 @@ class NmrDpUtility:
                                         sf_item['index_id'] += 1
                                         _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
-                                                              loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
+                                                              loop.tags, loop.data[idx],
+                                                              auth_to_star_seq, auth_to_ins_code, offset_holder,
+                                                              [atom1, atom2])
                                         lp.add_data(_row)
                                 elif atom_sels[0] is not None:
                                     atom2 = None
@@ -27636,7 +27650,9 @@ class NmrDpUtility:
                                         sf_item['index_id'] += 1
                                         _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
-                                                              loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
+                                                              loop.tags, loop.data[idx],
+                                                              auth_to_star_seq, auth_to_ins_code, offset_holder,
+                                                              [atom1, atom2])
                                         lp.add_data(_row)
                                 elif atom_sels[1] is not None:
                                     atom1 = None
@@ -27644,14 +27660,18 @@ class NmrDpUtility:
                                         sf_item['index_id'] += 1
                                         _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
-                                                              loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
+                                                              loop.tags, loop.data[idx],
+                                                              auth_to_star_seq, auth_to_ins_code, offset_holder,
+                                                              [atom1, atom2])
                                         lp.add_data(_row)
                                 else:
                                     atom1 = atom2 = None
                                     sf_item['index_id'] += 1
                                     _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
                                                           memberId, memberLogicCode, list_id, self.__entry_id,
-                                                          loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, [atom1, atom2])
+                                                          loop.tags, loop.data[idx],
+                                                          auth_to_star_seq, auth_to_ins_code, offset_holder,
+                                                          [atom1, atom2])
                                     lp.add_data(_row)
 
                             else:
@@ -27659,7 +27679,9 @@ class NmrDpUtility:
                                 sf_item['index_id'] += 1
                                 _row = getRowForStrMr(content_subtype, sf_item['id'], sf_item['index_id'],
                                                       None, None, list_id, self.__entry_id,
-                                                      loop.tags, loop.data[idx], auth_to_star_seq, auth_to_ins_code, atom_sels)
+                                                      loop.tags, loop.data[idx],
+                                                      auth_to_star_seq, auth_to_ins_code, offset_holder,
+                                                      atom_sels)
                                 lp.add_data(_row)
 
                 else:  # nothing to do because of insufficient sequence tags
@@ -30819,7 +30841,7 @@ class NmrDpUtility:
                             sf_item['index_id'] += 1
 
                             row = getRow('saxs', sf_item['id'], sf_item['index_id'], None, None, _line[0].replace('E', 'e'),
-                                         sf_item['list_id'], self.__entry_id, dstFunc, None, None, None)
+                                         sf_item['list_id'], self.__entry_id, dstFunc, None, None, None, None)
                             sf_item['loop'].add_data(row)
 
                             _q_value = q_value
@@ -30827,7 +30849,7 @@ class NmrDpUtility:
                         else:
 
                             _row = getRow('saxs', 1, 1, None, None, _line[0].replace('E', 'e'),
-                                          sf_item['list_id'] + 1, self.__entry_id, dstFunc, None, None, None)
+                                          sf_item['list_id'] + 1, self.__entry_id, dstFunc, None, None, None, None)
 
                             _q_value = 0.0
 

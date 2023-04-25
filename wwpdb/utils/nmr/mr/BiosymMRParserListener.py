@@ -191,6 +191,8 @@ class BiosymMRParserListener(ParseTreeListener):
     __authToStarSeq = None
     __authToInsCode = None
 
+    __offsetHolder = None
+
     __representativeModelId = REPRESENTATIVE_MODEL_ID
     __hasPolySeq = False
     __hasNonPoly = False
@@ -263,6 +265,8 @@ class BiosymMRParserListener(ParseTreeListener):
             self.__authToLabelSeq = ret['auth_to_label_seq']
             self.__authToStarSeq = ret['auth_to_star_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
+
+        self.__offsetHolder = {}
 
         self.__hasPolySeq = self.__polySeq is not None and len(self.__polySeq) > 0
         self.__hasNonPoly = self.__nonPoly is not None and len(self.__nonPoly) > 0
@@ -595,7 +599,8 @@ class BiosymMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberId, memberLogicCode,
-                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, self.__authToInsCode,
+                                 sf['list_id'], self.__entryId, dstFunc,
+                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -717,7 +722,8 @@ class BiosymMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberId, memberLogicCode,
-                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, self.__authToInsCode,
+                                 sf['list_id'], self.__entryId, dstFunc,
+                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -1650,28 +1656,32 @@ class BiosymMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.' if dstFunc2 is None else 1, None, angleName,
-                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, self.__authToInsCode,
+                                 sf['list_id'], self.__entryId, dstFunc,
+                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
                     if dstFunc2 is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      2, None, angleName,
-                                     sf['list_id'], self.__entryId, dstFunc2, self.__authToStarSeq, self.__authToInsCode,
+                                     sf['list_id'], self.__entryId, dstFunc2,
+                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
                     if dstFunc3 is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      3, None, angleName,
-                                     sf['list_id'], self.__entryId, dstFunc3, self.__authToStarSeq, self.__authToInsCode,
+                                     sf['list_id'], self.__entryId, dstFunc3,
+                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
                     if dstFunc4 is not None:
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      4, None, angleName,
-                                     sf['list_id'], self.__entryId, dstFunc4, self.__authToStarSeq, self.__authToInsCode,
+                                     sf['list_id'], self.__entryId, dstFunc4,
+                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
@@ -1776,7 +1786,8 @@ class BiosymMRParserListener(ParseTreeListener):
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, angleName,
-                                 sf['list_id'], self.__entryId, dstFunc, self.__authToStarSeq, self.__authToInsCode,
+                                 sf['list_id'], self.__entryId, dstFunc,
+                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 

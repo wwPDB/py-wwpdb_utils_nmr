@@ -4865,7 +4865,7 @@ def getAuxLoops(mrSubtype):
     return aux_lps
 
 
-def getStarAtom(authToStarSeq, atom):
+def getStarAtom(authToStarSeq, offsetHolder, atom):
     """ Return NMR-STAR sequence including entity ID for a given auth atom of the cooridnates.
         @return: a dictionary of NMR-STAR sequence/entity, None otherwise
     """
@@ -4885,15 +4885,25 @@ def getStarAtom(authToStarSeq, atom):
         starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
         return starAtom
 
-    for offset in range(1, 1000):
+    if chainId in offsetHolder:
+        offset = offsetHolder[chainId]
         seqKey = (chainId, seqId + offset, compId)
         if seqKey in authToStarSeq:
             starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
             atom['seq_id'] = seqId + offset
             return starAtom
+
+    for offset in range(1, 1000):
+        seqKey = (chainId, seqId + offset, compId)
+        if seqKey in authToStarSeq:
+            starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
+            offsetHolder[chainId] = offset
+            atom['seq_id'] = seqId + offset
+            return starAtom
         seqKey = (chainId, seqId - offset, compId)
         if seqKey in authToStarSeq:
             starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
+            offsetHolder[chainId] = -offset
             atom['seq_id'] = seqId - offset
             return starAtom
 
@@ -4930,7 +4940,7 @@ def getInsCode(authToInsCode, atom):
 
 
 def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryId, dstFunc,
-           authToStarSeq, authToInsCode,
+           authToStarSeq, authToInsCode, offsetHolder,
            atom1, atom2=None, atom3=None, atom4=None, atom5=None):
     """ Return row data for a given internal restraint subtype.
         @return: data array
@@ -4959,31 +4969,31 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
     ins_code1 = ins_code2 = ins_code3 = ins_code4 = ins_code5 = None
 
     if atom1 is not None:
-        star_atom1 = getStarAtom(authToStarSeq, atom1)
+        star_atom1 = getStarAtom(authToStarSeq, offsetHolder, atom1)
         if 'atom_id' not in atom1:
             atom1['atom_id'] = None
         if has_ins_code:
             ins_code1 = getInsCode(authToInsCode, atom1)
     if atom2 is not None:
-        star_atom2 = getStarAtom(authToStarSeq, atom2)
+        star_atom2 = getStarAtom(authToStarSeq, offsetHolder, atom2)
         if 'atom_id' not in atom2:
             atom2['atom_id'] = None
         if has_ins_code:
             ins_code2 = getInsCode(authToInsCode, atom2)
     if atom3 is not None:
-        star_atom3 = getStarAtom(authToStarSeq, atom3)
+        star_atom3 = getStarAtom(authToStarSeq, offsetHolder, atom3)
         if 'atom_id' not in atom3:
             atom3['atom_id'] = None
         if has_ins_code:
             ins_code3 = getInsCode(authToInsCode, atom3)
     if atom4 is not None:
-        star_atom4 = getStarAtom(authToStarSeq, atom4)
+        star_atom4 = getStarAtom(authToStarSeq, offsetHolder, atom4)
         if 'atom_id' not in atom4:
             atom4['atom_id'] = None
         if has_ins_code:
             ins_code4 = getInsCode(authToInsCode, atom4)
     if atom5 is not None:
-        star_atom5 = getStarAtom(authToStarSeq, atom5)
+        star_atom5 = getStarAtom(authToStarSeq, offsetHolder, atom5)
         if 'atom_id' not in atom5:
             atom5['atom_id'] = None
         if has_ins_code:
@@ -5448,7 +5458,8 @@ def getDstFuncForSsBond(atom1, atom2):
 
 
 def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
-                   originalTagNames, originalRow, authToStarSeq, authToInsCode,
+                   originalTagNames, originalRow,
+                   authToStarSeq, authToInsCode, offsetHolder,
                    atoms):
     """ Return row data for a given constraint subtype and corresponding NMR-STAR row.
         @return: data array
@@ -5486,27 +5497,27 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
     ins_code1 = ins_code2 = ins_code3 = ins_code4 = None
 
     if atom1 is not None:
-        star_atom1 = getStarAtom(authToStarSeq, atom1)
+        star_atom1 = getStarAtom(authToStarSeq, offsetHolder, atom1)
         if 'atom_id' not in atom1:
             atom1['atom_id'] = None
         ins_code1 = getInsCode(authToInsCode, atom1)
     if atom2 is not None:
-        star_atom2 = getStarAtom(authToStarSeq, atom2)
+        star_atom2 = getStarAtom(authToStarSeq, offsetHolder, atom2)
         if 'atom_id' not in atom2:
             atom2['atom_id'] = None
         ins_code2 = getInsCode(authToInsCode, atom2)
     if atom3 is not None:
-        star_atom3 = getStarAtom(authToStarSeq, atom3)
+        star_atom3 = getStarAtom(authToStarSeq, offsetHolder, atom3)
         if 'atom_id' not in atom3:
             atom3['atom_id'] = None
         ins_code3 = getInsCode(authToInsCode, atom3)
     if atom4 is not None:
-        star_atom4 = getStarAtom(authToStarSeq, atom4)
+        star_atom4 = getStarAtom(authToStarSeq, offsetHolder, atom4)
         if 'atom_id' not in atom4:
             atom4['atom_id'] = None
         ins_code4 = getInsCode(authToInsCode, atom4)
     if atom5 is not None:
-        star_atom5 = getStarAtom(authToStarSeq, atom5)
+        star_atom5 = getStarAtom(authToStarSeq, offsetHolder, atom5)
         if 'atom_id' not in atom5:
             atom5['atom_id'] = None
 

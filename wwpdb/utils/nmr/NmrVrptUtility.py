@@ -27,7 +27,7 @@ try:
                                                        ANGLE_RESTRAINT_ERROR,
                                                        RDC_RESTRAINT_ERROR,
                                                        coordAssemblyChecker)
-    from wwpdb.utils.nmr.AlignUtil import LARGE_ASYM_ID, getPrettyJson
+    from wwpdb.utils.nmr.AlignUtil import LARGE_ASYM_ID
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 except ImportError:
@@ -37,7 +37,7 @@ except ImportError:
                                            ANGLE_RESTRAINT_ERROR,
                                            RDC_RESTRAINT_ERROR,
                                            coordAssemblyChecker)
-    from nmr.AlignUtil import LARGE_ASYM_ID, getPrettyJson
+    from nmr.AlignUtil import LARGE_ASYM_ID
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
@@ -138,7 +138,7 @@ def dist_inv_6_summed(r_list: [float]) -> float:
     return sum(r ** (-6.0) for r in r_list) ** (-1.0 / 6.0)
 
 
-def angle_diff(lower_limit, upper_limit, target_value, angle):
+def angle_diff(lower_bound, upper_bound, target_value, angle):
     """
         @author: Kumaran Baskaran
         @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.angle_diff
@@ -164,14 +164,14 @@ def angle_diff(lower_limit, upper_limit, target_value, angle):
 
         return abs(g - (l + r)) < t
 
-    ld = ac(lower_limit, target_value)
-    rd = ac(upper_limit, target_value)
+    ld = ac(lower_bound, target_value)
+    rd = ac(upper_bound, target_value)
 
-    if check_ac(lower_limit, target_value, angle, ld, 0.5)\
-       or check_ac(upper_limit, target_value, angle, rd, 0.5):
+    if check_ac(lower_bound, target_value, angle, ld, 0.5)\
+       or check_ac(upper_bound, target_value, angle, rd, 0.5):
         return 0.0
 
-    return min(ac(upper_limit, angle), ac(lower_limit, angle))
+    return min(ac(upper_bound, angle), ac(lower_bound, angle))
 
 
 def get_violated_model_ids(viol_per_model):
@@ -320,7 +320,7 @@ class NmrVrptUtility:
                         self.__summarizeCommonResults,
                         self.__summarizeDistanceRestraintValidation,
                         self.__summarizeDihedralAngleRestraintValidation,
-                        self.__outputResultsAsJsonFileIfPossible]
+                        self.__outputResultsAsPickleFileIfPossible]
 
         # dictionary of processing tasks of each workflow operation
         self.__procTasksDict = {'nmr-restraint-validation': __checkTasks}
@@ -830,26 +830,28 @@ class NmrVrptUtility:
 
                 data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
                               {'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'},
-                              {'name': 'Member_ID', 'type': 'int', 'alt_name': 'member_id'},
                               {'name': 'Member_logic_code', 'type': 'enum', 'alt_name': 'member_logic_code',
                                'enum': ('OR', 'AND')},
                               {'name': 'Entity_assembly_ID_1', 'type': 'str', 'alt_name': 'entity_asm_id_1'},
                               {'name': 'Auth_asym_ID_1', 'type': 'str', 'alt_name': 'auth_asym_id_1'},
                               {'name': 'Auth_seq_ID_1', 'type': 'int', 'alt_name': 'auth_seq_id_1'},
-                              {'name': 'Auth_comp_ID_1', 'type': 'str', 'alt_name': 'auth_comp_id_1'},
-                              {'name': 'Auth_atom_ID_1', 'type': 'str', 'alt_name': 'auth_atom_id_1'},
+                              {'name': 'Comp_ID_1', 'type': 'str', 'alt_name': 'comp_id_1'},
+                              {'name': 'Atom_ID_1', 'type': 'str', 'alt_name': 'atom_id_1'},
                               {'name': 'Entity_assembly_ID_2', 'type': 'str', 'alt_name': 'entity_asm_id_2'},
                               {'name': 'Auth_asym_ID_2', 'type': 'str', 'alt_name': 'auth_asym_id_2'},
                               {'name': 'Auth_seq_ID_2', 'type': 'int', 'alt_name': 'auth_seq_id_2'},
-                              {'name': 'Auth_comp_ID_2', 'type': 'str', 'alt_name': 'auth_comp_id_2'},
-                              {'name': 'Auth_atom_ID_2', 'type': 'str', 'alt_name': 'auth_atom_id_2'},
+                              {'name': 'Comp_ID_2', 'type': 'str', 'alt_name': 'comp_id_2'},
+                              {'name': 'Atom_ID_2', 'type': 'str', 'alt_name': 'atom_id_2'},
                               {'name': 'Distance_lower_bound_val', 'type': 'float', 'alt_name': 'lower_bound'},
                               {'name': 'Distance_upper_bound_val', 'type': 'float', 'alt_name': 'upper_bound'}
                               ]
 
+                has_member_id = self.__rR.hasItem('Gen_dist_constraint', 'Member_ID')
                 has_pdb_ins_code_1 = self.__rR.hasItem('Gen_dist_constraint', 'PDB_ins_code_1')
                 has_pdb_ins_code_2 = self.__rR.hasItem('Gen_dist_constraint', 'PDB_ins_code_2')
 
+                if has_member_id:
+                    data_items.append({'name': 'Member_ID', 'type': 'int', 'alt_name': 'member_id'})
                 if has_pdb_ins_code_1:
                     data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1', 'default': '?'})
                 if has_pdb_ins_code_2:
@@ -871,10 +873,11 @@ class NmrVrptUtility:
                     auth_asym_id_2 = r['auth_asym_id_2']
                     auth_seq_id_1 = r['auth_seq_id_1']
                     auth_seq_id_2 = r['auth_seq_id_2']
-                    auth_comp_id_1 = r['auth_comp_id_1']
-                    auth_comp_id_2 = r['auth_comp_id_2']
-                    auth_atom_id_1 = r['auth_atom_id_1']
-                    auth_atom_id_2 = r['auth_atom_id_2']
+                    comp_id_1 = r['comp_id_1']
+                    comp_id_2 = r['comp_id_2']
+                    atom_id_1 = r['atom_id_1']
+                    atom_id_2 = r['atom_id_2']
+                    member_id = r['member_id'] if has_member_id else None
                     ins_code_1 = r['ins_code_1'] if has_pdb_ins_code_1 else '?'
                     ins_code_2 = r['ins_code_2'] if has_pdb_ins_code_2 else '?'
 
@@ -891,19 +894,19 @@ class NmrVrptUtility:
                     else:
                         distance_type = 'long'
 
-                    bb_atoms_1 = self.__csStat.getBackBoneAtoms(auth_comp_id_1)
-                    bb_atoms_2 = self.__csStat.getBackBoneAtoms(auth_comp_id_2)
+                    bb_atoms_1 = self.__csStat.getBackBoneAtoms(comp_id_1)
+                    bb_atoms_2 = self.__csStat.getBackBoneAtoms(comp_id_2)
 
-                    if auth_atom_id_1 in bb_atoms_1 and auth_atom_id_2 in bb_atoms_2:
+                    if atom_id_1 in bb_atoms_1 and atom_id_2 in bb_atoms_2:
                         distance_sub_type = 'backbone-backbone'
-                    elif auth_atom_id_1 in bb_atoms_1 and auth_atom_id_2 in bb_atoms_2:
+                    elif atom_id_1 in bb_atoms_1 and atom_id_2 in bb_atoms_2:
                         distance_sub_type = 'backbone-sidechain'
                     else:
                         distance_sub_type = 'sidechain-sidechain'
 
-                    if 'O' in (auth_atom_id_1[0], auth_atom_id_2[0]):
+                    if 'O' in (atom_id_1[0], atom_id_2[0]):
                         bond_flag = 'hbond'
-                    elif 'SG' in (auth_atom_id_1, auth_atom_id_2):
+                    elif 'SG' in (atom_id_1, atom_id_2):
                         bond_flag = 'sbond'
                     else:
                         bond_flag = None
@@ -916,20 +919,20 @@ class NmrVrptUtility:
                             self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Warning  - distance restraint {rest_key} {r} is not interpretable.\n")
                         continue
 
-                    self.__distRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, auth_comp_id_1,
-                                                                         auth_atom_id_1, ins_code_1),
-                                                          'atom_key_2': (auth_asym_id_2, auth_seq_id_2, auth_comp_id_2,
-                                                                         auth_atom_id_2, ins_code_2),
+                    self.__distRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, comp_id_1,
+                                                                         atom_id_1, ins_code_1),
+                                                          'atom_key_2': (auth_asym_id_2, auth_seq_id_2, comp_id_2,
+                                                                         atom_id_2, ins_code_2),
                                                           'combination_id': r['combination_id'],
-                                                          'member_id': r['member_id'],
+                                                          'member_id': member_id,
                                                           'distance_type': distance_type,
                                                           'distance_sub_type': distance_sub_type,
                                                           'bond_flag': bond_flag,
                                                           'lower_bound': r['lower_bound'],
                                                           'upper_bound': r['upper_bound']})
 
-                    seq_key_1 = (auth_asym_id_1, auth_seq_id_1, auth_comp_id_1)
-                    seq_key_2 = (auth_asym_id_2, auth_seq_id_2, auth_comp_id_2)
+                    seq_key_1 = (auth_asym_id_1, auth_seq_id_1, comp_id_1)
+                    seq_key_2 = (auth_asym_id_2, auth_seq_id_2, comp_id_2)
 
                     seq_keys = set([seq_key_1, seq_key_2])
 
@@ -984,20 +987,20 @@ class NmrVrptUtility:
                               {'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'},
                               {'name': 'Auth_asym_ID_1', 'type': 'str', 'alt_name': 'auth_asym_id_1'},
                               {'name': 'Auth_seq_ID_1', 'type': 'int', 'alt_name': 'auth_seq_id_1'},
-                              {'name': 'Auth_comp_ID_1', 'type': 'str', 'alt_name': 'auth_comp_id_1'},
-                              {'name': 'Auth_atom_ID_1', 'type': 'str', 'alt_name': 'auth_atom_id_1'},
+                              {'name': 'Comp_ID_1', 'type': 'str', 'alt_name': 'comp_id_1'},
+                              {'name': 'Atom_ID_1', 'type': 'str', 'alt_name': 'atom_id_1'},
                               {'name': 'Auth_asym_ID_2', 'type': 'str', 'alt_name': 'auth_asym_id_2'},
                               {'name': 'Auth_seq_ID_2', 'type': 'int', 'alt_name': 'auth_seq_id_2'},
-                              {'name': 'Auth_comp_ID_2', 'type': 'str', 'alt_name': 'auth_comp_id_2'},
-                              {'name': 'Auth_atom_ID_2', 'type': 'str', 'alt_name': 'auth_atom_id_2'},
+                              {'name': 'Comp_ID_2', 'type': 'str', 'alt_name': 'comp_id_2'},
+                              {'name': 'Atom_ID_2', 'type': 'str', 'alt_name': 'atom_id_2'},
                               {'name': 'Auth_asym_ID_3', 'type': 'str', 'alt_name': 'auth_asym_id_3'},
                               {'name': 'Auth_seq_ID_3', 'type': 'int', 'alt_name': 'auth_seq_id_3'},
-                              {'name': 'Auth_comp_ID_3', 'type': 'str', 'alt_name': 'auth_comp_id_3'},
-                              {'name': 'Auth_atom_ID_3', 'type': 'str', 'alt_name': 'auth_atom_id_3'},
+                              {'name': 'Comp_ID_3', 'type': 'str', 'alt_name': 'comp_id_3'},
+                              {'name': 'Atom_ID_3', 'type': 'str', 'alt_name': 'atom_id_3'},
                               {'name': 'Auth_asym_ID_4', 'type': 'str', 'alt_name': 'auth_asym_id_4'},
                               {'name': 'Auth_seq_ID_4', 'type': 'int', 'alt_name': 'auth_seq_id_4'},
-                              {'name': 'Auth_comp_ID_4', 'type': 'str', 'alt_name': 'auth_comp_id_4'},
-                              {'name': 'Auth_atom_ID_4', 'type': 'str', 'alt_name': 'auth_atom_id_4'},
+                              {'name': 'Comp_ID_4', 'type': 'str', 'alt_name': 'comp_id_4'},
+                              {'name': 'Atom_ID_4', 'type': 'str', 'alt_name': 'atom_id_4'},
                               {'name': 'Angle_lower_bound_val', 'type': 'float', 'alt_name': 'lower_bound'},
                               {'name': 'Angle_upper_bound_val', 'type': 'float', 'alt_name': 'upper_bound'},
                               {'name': 'Angle_target_val', 'type': 'float', 'alt_name': 'target_value'}
@@ -1037,14 +1040,14 @@ class NmrVrptUtility:
                     auth_seq_id_2 = r['auth_seq_id_2']
                     auth_seq_id_3 = r['auth_seq_id_3']
                     auth_seq_id_4 = r['auth_seq_id_4']
-                    auth_comp_id_1 = r['auth_comp_id_1']
-                    auth_comp_id_2 = r['auth_comp_id_2']
-                    auth_comp_id_3 = r['auth_comp_id_3']
-                    auth_comp_id_4 = r['auth_comp_id_4']
-                    auth_atom_id_1 = r['auth_atom_id_1']
-                    auth_atom_id_2 = r['auth_atom_id_2']
-                    auth_atom_id_3 = r['auth_atom_id_3']
-                    auth_atom_id_4 = r['auth_atom_id_4']
+                    comp_id_1 = r['comp_id_1']
+                    comp_id_2 = r['comp_id_2']
+                    comp_id_3 = r['comp_id_3']
+                    comp_id_4 = r['comp_id_4']
+                    atom_id_1 = r['atom_id_1']
+                    atom_id_2 = r['atom_id_2']
+                    atom_id_3 = r['atom_id_3']
+                    atom_id_4 = r['atom_id_4']
                     ins_code_1 = r['ins_code_1'] if has_pdb_ins_code_1 else '?'
                     ins_code_2 = r['ins_code_2'] if has_pdb_ins_code_2 else '?'
                     ins_code_3 = r['ins_code_3'] if has_pdb_ins_code_3 else '?'
@@ -1059,24 +1062,24 @@ class NmrVrptUtility:
                             self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Warning  - dihedral angle restraint {rest_key} {r} is not interpretable.\n")
                         continue
 
-                    self.__dihedRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, auth_comp_id_1,
-                                                                          auth_atom_id_1, ins_code_1),
-                                                           'atom_key_2': (auth_asym_id_2, auth_seq_id_2, auth_comp_id_2,
-                                                                          auth_atom_id_2, ins_code_2),
-                                                           'atom_key_3': (auth_asym_id_3, auth_seq_id_3, auth_comp_id_3,
-                                                                          auth_atom_id_3, ins_code_3),
-                                                           'atom_key_4': (auth_asym_id_4, auth_seq_id_4, auth_comp_id_4,
-                                                                          auth_atom_id_4, ins_code_4),
+                    self.__dihedRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, comp_id_1,
+                                                                          atom_id_1, ins_code_1),
+                                                           'atom_key_2': (auth_asym_id_2, auth_seq_id_2, comp_id_2,
+                                                                          atom_id_2, ins_code_2),
+                                                           'atom_key_3': (auth_asym_id_3, auth_seq_id_3, comp_id_3,
+                                                                          atom_id_3, ins_code_3),
+                                                           'atom_key_4': (auth_asym_id_4, auth_seq_id_4, comp_id_4,
+                                                                          atom_id_4, ins_code_4),
                                                            'combination_id': r['combination_id'],
                                                            'angle_type': r['angle_type'],
                                                            'lower_bound': lower_bound,
                                                            'upper_bound': upper_bound,
                                                            'target_value': target_value})
 
-                    seq_key_1 = (auth_asym_id_1, auth_seq_id_1, auth_comp_id_1)
-                    seq_key_2 = (auth_asym_id_2, auth_seq_id_2, auth_comp_id_2)
-                    seq_key_3 = (auth_asym_id_3, auth_seq_id_3, auth_comp_id_3)
-                    seq_key_4 = (auth_asym_id_4, auth_seq_id_4, auth_comp_id_4)
+                    seq_key_1 = (auth_asym_id_1, auth_seq_id_1, comp_id_1)
+                    seq_key_2 = (auth_asym_id_2, auth_seq_id_2, comp_id_2)
+                    seq_key_3 = (auth_asym_id_3, auth_seq_id_3, comp_id_3)
+                    seq_key_4 = (auth_asym_id_4, auth_seq_id_4, comp_id_4)
 
                     seq_keys = set([seq_key_1, seq_key_2, seq_key_3, seq_key_4])
 
@@ -1125,20 +1128,25 @@ class NmrVrptUtility:
                               {'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'},
                               {'name': 'Auth_asym_ID_1', 'type': 'str', 'alt_name': 'auth_asym_id_1'},
                               {'name': 'Auth_seq_ID_1', 'type': 'int', 'alt_name': 'auth_seq_id_1'},
-                              {'name': 'Auth_comp_ID_1', 'type': 'str', 'alt_name': 'auth_comp_id_1'},
-                              {'name': 'Auth_atom_ID_1', 'type': 'str', 'alt_name': 'auth_atom_id_1'},
+                              {'name': 'Comp_ID_1', 'type': 'str', 'alt_name': 'comp_id_1'},
+                              {'name': 'Atom_ID_1', 'type': 'str', 'alt_name': 'atom_id_1'},
                               {'name': 'Auth_asym_ID_2', 'type': 'str', 'alt_name': 'auth_asym_id_2'},
                               {'name': 'Auth_seq_ID_2', 'type': 'int', 'alt_name': 'auth_seq_id_2'},
-                              {'name': 'Auth_comp_ID_2', 'type': 'str', 'alt_name': 'auth_comp_id_2'},
-                              {'name': 'Auth_atom_ID_2', 'type': 'str', 'alt_name': 'auth_atom_id_2'},
-                              {'name': 'RDC_lower_bound_val', 'type': 'float', 'alt_name': 'lower_bound'},
-                              {'name': 'RDC_upper_bound_val', 'type': 'float', 'alt_name': 'upper_bound'},
-                              {'name': 'Target_val', 'type': 'float', 'alt_name': 'target_value'}
+                              {'name': 'Comp_ID_2', 'type': 'str', 'alt_name': 'comp_id_2'},
+                              {'name': 'Atom_ID_2', 'type': 'str', 'alt_name': 'atom_id_2'},
+                              {'name': 'Target_value', 'type': 'float', 'alt_name': 'target_value'},
+                              {'name': 'Target_value_uncertainty', 'type': 'float', 'alt_name': 'target_value_uncertainty'}
                               ]
 
+                has_lower_bound = self.__rR.hasItem('RDC_constraint', 'RDC_lower_bound_val')
+                has_upper_bound = self.__rR.hasItem('RDC_constraint', 'RDC_upper_bound_val')
                 has_pdb_ins_code_1 = self.__rR.hasItem('RDC_constraint', 'PDB_ins_code_1')
                 has_pdb_ins_code_2 = self.__rR.hasItem('RDC_constraint', 'PDB_ins_code_2')
 
+                if has_lower_bound:
+                    data_items.append({'name': 'RDC_lower_bound_val', 'type': 'float', 'alt_name': 'lower_bound'})
+                if has_upper_bound:
+                    data_items.append({'name': 'RDC_upper_bound_val', 'type': 'float', 'alt_name': 'upper_bound'})
                 if has_pdb_ins_code_1:
                     data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1', 'default': '?'})
                 if has_pdb_ins_code_2:
@@ -1160,34 +1168,36 @@ class NmrVrptUtility:
                     auth_asym_id_2 = r['auth_asym_id_2']
                     auth_seq_id_1 = r['auth_seq_id_1']
                     auth_seq_id_2 = r['auth_seq_id_2']
-                    auth_comp_id_1 = r['auth_comp_id_1']
-                    auth_comp_id_2 = r['auth_comp_id_2']
-                    auth_atom_id_1 = r['auth_atom_id_1']
-                    auth_atom_id_2 = r['auth_atom_id_2']
+                    comp_id_1 = r['comp_id_1']
+                    comp_id_2 = r['comp_id_2']
+                    atom_id_1 = r['atom_id_1']
+                    atom_id_2 = r['atom_id_2']
                     ins_code_1 = r['ins_code_1'] if has_pdb_ins_code_1 else '?'
                     ins_code_2 = r['ins_code_2'] if has_pdb_ins_code_2 else '?'
 
-                    lower_bound = r['lower_bound']
-                    upper_bound = r['upper_bound']
+                    target_value = r['target_value']
+                    lower_bound = r['lower_bound'] if has_lower_bound else None
+                    upper_bound = r['upper_bound'] if has_upper_bound else None
 
-                    if lower_bound is None and upper_bound is None:
+                    if target_value is None and lower_bound is None and upper_bound is None:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Warning  - RDC restraint {rest_key} {r} is not interpretable.\n")
                         continue
 
-                    self.__rdcRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, auth_comp_id_1,
-                                                                        auth_atom_id_1, ins_code_1),
-                                                         'atom_key_2': (auth_asym_id_2, auth_seq_id_2, auth_comp_id_2,
-                                                                        auth_atom_id_2, ins_code_2),
+                    self.__rdcRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, comp_id_1,
+                                                                        atom_id_1, ins_code_1),
+                                                         'atom_key_2': (auth_asym_id_2, auth_seq_id_2, comp_id_2,
+                                                                        atom_id_2, ins_code_2),
                                                          'combination_id': r['combination_id'],
                                                          'lower_bound': lower_bound,
                                                          'upper_bound': upper_bound,
-                                                         'target_value': r['target_value']})
+                                                         'target_value': target_value,
+                                                         'target_value_uncertainty': r['target_value_uncertainty']})
 
-                    seq_key_1 = (auth_asym_id_1, auth_seq_id_1, auth_comp_id_1)
-                    seq_key_2 = (auth_asym_id_2, auth_seq_id_2, auth_comp_id_2)
+                    seq_key_1 = (auth_asym_id_1, auth_seq_id_1, comp_id_1)
+                    seq_key_2 = (auth_asym_id_2, auth_seq_id_2, comp_id_2)
 
-                    seq_keys = set(seq_key_1, seq_key_2)
+                    seq_keys = set([seq_key_1, seq_key_2])
 
                     for seq_key in seq_keys:
                         if seq_key not in self.__rdcRestSeqDict:
@@ -1251,7 +1261,7 @@ class NmrVrptUtility:
                         except KeyError:
                             if self.__verbose:
                                 self.__lfh.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
-                                                 f"auth_comp_id: {atom_key_1[2]}, auth_atom_id: {atom_key_1[3]}) "
+                                                 f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
                                                  f"not found in the coordinates for distance restraint {rest_key}.")
                             atom_present = False
 
@@ -1260,7 +1270,7 @@ class NmrVrptUtility:
                         except KeyError:
                             if self.__verbose:
                                 self.__lfh.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
-                                                 f"auth_comp_id: {atom_key_2[2]}, auth_atom_id: {atom_key_2[3]}) "
+                                                 f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
                                                  f"not found in the coordinates for distance restraint {rest_key}.")
                             atom_present = False
 
@@ -1438,7 +1448,7 @@ class NmrVrptUtility:
                         except KeyError:
                             if self.__verbose:
                                 self.__lfh.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
-                                                 f"auth_comp_id: {atom_key_1[2]}, auth_atom_id: {atom_key_1[3]}) "
+                                                 f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
                                                  f"not found in the coordinates for dihedral angle restraint {rest_key}.")
                             atom_present = False
 
@@ -1447,7 +1457,7 @@ class NmrVrptUtility:
                         except KeyError:
                             if self.__verbose:
                                 self.__lfh.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
-                                                 f"auth_comp_id: {atom_key_2[2]}, auth_atom_id: {atom_key_2[3]}) "
+                                                 f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
                                                  f"not found in the coordinates for dihedral angle restraint {rest_key}.")
                             atom_present = False
 
@@ -1456,7 +1466,7 @@ class NmrVrptUtility:
                         except KeyError:
                             if self.__verbose:
                                 self.__lfh.write(f"Atom (auth_asym_id: {atom_key_3[0]}, auth_seq_id: {atom_key_3[1]}, "
-                                                 f"auth_comp_id: {atom_key_3[2]}, auth_atom_id: {atom_key_3[3]}) "
+                                                 f"comp_id: {atom_key_3[2]}, atom_id: {atom_key_3[3]}) "
                                                  f"not found in the coordinates for dihedral angle restraint {rest_key}.")
                             atom_present = False
 
@@ -1465,7 +1475,7 @@ class NmrVrptUtility:
                         except KeyError:
                             if self.__verbose:
                                 self.__lfh.write(f"Atom (auth_asym_id: {atom_key_4[0]}, auth_seq_id: {atom_key_4[1]}, "
-                                                 f"auth_comp_id: {atom_key_4[2]}, auth_atom_id: {atom_key_4[3]}) "
+                                                 f"comp_id: {atom_key_4[2]}, atom_id: {atom_key_4[3]}) "
                                                  f"not found in the coordinates for dihedral angle restraint {rest_key}.")
                             atom_present = False
 
@@ -2051,13 +2061,11 @@ class NmrVrptUtility:
 
         return False
 
-    def __outputResultsAsJsonFileIfPossible(self):
-        """ Output results if 'result_json_file_path' was set in output parameter.
+    def __outputResultsAsPickleFileIfPossible(self):
+        """ Output results if 'result_pickle_file_path' was set in output parameter.
         """
 
-        if 'result_json_file_path' in self.__outputParamDict:
-
-            with open(self.__outputParamDict['result_json_file_path'], 'w', encoding='utf-8') as file:
-                file.write(getPrettyJson(self.__results))
+        if 'result_pickle_file_path' in self.__outputParamDict:
+            write_as_pickle(self.__results, self.__outputParamDict['result_pickle_file_path'])
 
         return True

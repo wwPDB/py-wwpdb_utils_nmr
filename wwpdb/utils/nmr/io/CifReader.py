@@ -185,6 +185,9 @@ class CifReader:
         # file path
         self.__filePath = None
 
+        # current working directory path
+        self.__dirPath = None
+
         # data block list
         self.__dBlockList = None
 
@@ -234,10 +237,14 @@ class CifReader:
         # criterion for detection of exactly overlaid models
         self.__rmsd_overlaid_exactly = 0.01
 
-    def parse(self, filePath):
+    def parse(self, filePath, dirPath=None):
         """ Parse CIF file, and set internal active data block if possible.
             @return: True for success or False otherwise.
         """
+
+        if dirPath is not None:
+            if os.path.isdir(dirPath):
+                self.__dirPath = dirPath
 
         if self.__dBlock is not None and self.__filePath == filePath:
             return True
@@ -270,7 +277,11 @@ class CifReader:
         """
 
         if self.__use_cache:
-            cache_dir = os.path.join(os.path.dirname(self.__filePath), self.__sub_dir_name_for_cache)
+
+            if self.__dirPath is None:
+                self.__dirPath = os.path.dirname(self.__filePath)
+
+            cache_dir = os.path.join(self.__dirPath, self.__sub_dir_name_for_cache)
 
             if not os.path.isdir(cache_dir):
                 os.makedirs(cache_dir)
@@ -338,6 +349,10 @@ class CifReader:
     def getHashCode(self):
         """ Return hash code of the cif file.
         """
+
+        if self.__hashCode is None:
+            with open(self.__filePath, 'r', encoding='utf-8', errors='ignore') as ifh:
+                self.__hashCode = hashlib.md5(ifh.read().encode('utf-8')).hexdigest()
 
         return self.__hashCode
 

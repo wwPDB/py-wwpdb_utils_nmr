@@ -133,45 +133,51 @@ def dist_inv_6_summed(r_list: [float]) -> float:
           Michael Nilges.
           J. Mol. Biol. (1995) 245, 645–660.
           DOI: 10.1006/jmbi.1994.0053
+        @author: Kumaran Baskaran
+        @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.r6sum
     """
 
     return sum(r ** (-6.0) for r in r_list) ** (-1.0 / 6.0)
 
 
-def angle_diff(lower_bound, upper_bound, target_value, angle):
-    """
+def angle_error(lower_bound, upper_bound, target_value, angle):
+    """ Return angle outlier for given lower_bound, upper_bound, and target_value.
         @author: Kumaran Baskaran
         @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.angle_diff
     """
 
-    def ac(x, y):
+    def angle_diff(x, y):
+        """ Return normalized angular difference.
+        """
         if x < 0.0:
             x += 360.0
         if y < 0.0:
             y += 360.0
 
-        min_a, max_a = sorted([x, y])
+        a, b = sorted([x, y])
 
-        ad = max_a - min_a
-        if ad > 180.0:
-            ad = 360.0 - ad
+        d = b - a
+        if d > 180.0:
+            d = 360.0 - d
 
-        return ad
+        return d
 
-    def check_ac(x, y, c, g, t=0.5):
-        l = ac(x, c)  # noqa: E741
-        r = ac(y, c)
+    def check_angle_range_overlap(x, y, c, g, t=0.5):
+        """ Return whether angular range formed by (x, c) and (c, y) matches to a given range (g) with tolerance (t).
+        """
+        l = angle_diff(x, c)  # noqa: E741
+        r = angle_diff(y, c)
 
         return abs(g - (l + r)) < t
 
-    ld = ac(lower_bound, target_value)
-    rd = ac(upper_bound, target_value)
+    ld = angle_diff(lower_bound, target_value)
+    rd = angle_diff(upper_bound, target_value)
 
-    if check_ac(lower_bound, target_value, angle, ld, 0.5)\
-       or check_ac(upper_bound, target_value, angle, rd, 0.5):
+    if check_angle_range_overlap(lower_bound, target_value, angle, ld, 0.5)\
+       or check_angle_range_overlap(upper_bound, target_value, angle, rd, 0.5):
         return 0.0
 
-    return min(ac(upper_bound, angle), ac(lower_bound, angle))
+    return min(angle_diff(upper_bound, angle), angle_diff(lower_bound, angle))
 
 
 def get_violated_model_ids(viol_per_model):
@@ -237,7 +243,10 @@ class NmrVrptUtility:
         # sub-directory name for cache file
         self.__sub_dir_name_for_cache = 'utils_nmr'
 
+        # CIF file path
         self.__cifPath = None
+
+        # NMR data file path
         self.__nmrDataPath = None
 
         # current working directory
@@ -249,9 +258,16 @@ class NmrVrptUtility:
         # hash code of the coordinate file
         self.__cifHashCode = None
 
+        # hash code of the NMR data file
+        self.__nmrDataHashCode = None
+
+        # cache file name for results
+        self.__resultsCacheName = None
+
         # CIF reader
         self.__cR = None
-        # NMR restraint reader
+
+        # NMR data reader
         self.__rR = None
 
         # CCD accessing utility
@@ -310,6 +326,7 @@ class NmrVrptUtility:
 
         __checkTasks = [self.__parseCoordinate,
                         self.__parseNmrData,
+                        self.__checkPreviousResultsIfAvailable,
                         self.__retrieveCoordAssemblyChecker,
                         self.__extractCoordAtomSite,
                         self.__extractGenDistConstraint,
@@ -600,10 +617,12 @@ class NmrVrptUtility:
 
             try:
 
-                self.__rR = CifReader(self.__verbose, self.__lfh, use_cache=False)
+                self.__rR = CifReader(self.__verbose, self.__lfh,
+                                      use_cache=False)
 
                 if self.__rR.parse(fPath):
                     self.__nmrDataPath = fPath
+                    self.__nmrDataHashCode = self.__rR.getHashCode()
                     return True
 
             except Exception:
@@ -614,6 +633,8 @@ class NmrVrptUtility:
             self.__rR = self.__inputParamDict['nmr_cif_reader_object']
 
             self.__nmrDataPath = self.__rR.getFilePath()
+
+            self.__nmrDataHashCode = self.__rR.getHashCode()
 
             return True
 
@@ -641,17 +662,22 @@ class NmrVrptUtility:
 
                     myIo.writeFile(_fPath, containerList=containerList[1:])
 
-                    self.__rR = CifReader(self.__verbose, self.__lfh, use_cache=False)
+                    self.__rR = CifReader(self.__verbose, self.__lfh,
+                                          use_cache=False)
 
-                    if self.__rR.parse(_fPath):
+                    if self.__rR.parse(_fPath, self.__dirPath):
                         self.__nmrDataPath = _fPath
+                        self.__nmrDataHashCode = self.__rR.getHashCode()
                         return True
 
             except Exception as e:
                 self.__lfh.write(f"+NmrVrptUtility.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
             finally:
-                if os.path.exists(_fPath):
-                    os.remove(_fPath)
+                try:
+                    if os.path.exists(_fPath):
+                        os.remove(_fPath)
+                except OSError:
+                    pass
 
         if 'pynmrstar_object' in self.__inputParamDict:
 
@@ -677,25 +703,45 @@ class NmrVrptUtility:
 
                     myIo.writeFile(__fPath, containerList=containerList[1:])
 
-                    self.__rR = CifReader(self.__verbose, self.__lfh, use_cache=False)
+                    self.__rR = CifReader(self.__verbose, self.__lfh,
+                                          use_cache=False)
 
-                    if self.__rR.parse(__fPath):
+                    if self.__rR.parse(__fPath, self.__dirPath):
                         self.__nmrDataPath = __fPath
+                        self.__nmrDataHashCode = self.__rR.getHashCode()
                         return True
 
             except Exception as e:
                 self.__lfh.write(f"+NmrVrptUtility.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
             finally:
-                if os.path.exists(_fPath):
-                    os.remove(_fPath)
-                if os.path.exists(__fPath):
-                    os.remove(__fPath)
+                try:
+                    if os.path.exists(_fPath):
+                        os.remove(_fPath)
+                    if os.path.exists(__fPath):
+                        os.remove(__fPath)
+                except OSError:
+                    pass
 
         return False
+
+    def __checkPreviousResultsIfAvailable(self):
+        """ Retrieve the previous results using the identical data sources, if available.
+        """
+
+        if self.__cifHashCode is not None and self.__nmrDataHashCode is not None:
+            self.__resultsCacheName = f"{self.__cifHashCode}_{self.__nmrDataHashCode}_vrpt_results.pkl"
+            cache_path = os.path.join(self.__cacheDirPath, self.__resultsCacheName)
+
+            self.__results = load_from_pickle(cache_path)
+
+        return True
 
     def __retrieveCoordAssemblyChecker(self):
         """ Wrapper function for ParserListenerUtil.coordAssemblyChecker.
         """
+
+        if self.__results is not None:
+            return True
 
         cache_path = None
         if self.__cifHashCode is not None:
@@ -718,9 +764,12 @@ class NmrVrptUtility:
         """ Extract atom_site of coordinate file.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.get_coordinates,
-                   originally written by Kumaran Baskaran
+                   written by Kumaran Baskaran
             @change: class method, use of wwpdb.utils.nmr.io.CifReader, use PDB_ins_code for atom identification, performance optimization
         """
+
+        if self.__results is not None:
+            return True
 
         if self.__cifPath is None:
             return False
@@ -806,10 +855,13 @@ class NmrVrptUtility:
         """ Extract Gen_dist_constraint category of NMR data file.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.get_restraints2,
-                   originally written by Kumaran Baskaran
+                   written by Kumaran Baskaran
             @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of restraints,
                      support combinational restraints (_Gen_dist_constraint.Combination_ID, Member_ID)
         """
+
+        if self.__results is not None:
+            return True
 
         if self.__nmrDataPath is None:
             return False
@@ -960,10 +1012,13 @@ class NmrVrptUtility:
         """ Extract Torsion_angle_constraint category of NMR data file.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.get_restraints2,
-                   originally written by Kumaran Baskaran
+                   written by Kumaran Baskaran
             @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of restraints,
                      support combinational restraints (_Torsion_angle_constraint.Combination_ID)
         """
+
+        if self.__results is not None:
+            return True
 
         if self.__nmrDataPath is None:
             return False
@@ -1107,6 +1162,9 @@ class NmrVrptUtility:
         """ Extract RDC_constraint category of NMR data file.
         """
 
+        if self.__results is not None:
+            return True
+
         if self.__nmrDataPath is None:
             return False
 
@@ -1223,16 +1281,16 @@ class NmrVrptUtility:
         """ Calculate distance restraint violations.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.calculate_distance_violations,
-                   originally written by Kumaran Baskaran
+                   written by Kumaran Baskaran
             @change: class method,
                      support combinational restraints (_Gen_dist_constraint.Combination_ID, Member_ID)
         """
 
+        if self.__distRestDict is None or self.__results is not None:
+            return True
+
         if self.__coordinates is None:
             return False
-
-        if self.__distRestDict is None:
-            return True
 
         self.__distRestViolDict = {}
         self.__distRestViolCombKeyDict = {}
@@ -1407,16 +1465,16 @@ class NmrVrptUtility:
         """ Calculate dihedral angle restraint violations.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.calculate_angle_violations,
-                   originally written by Kumaran Baskaran
+                   written by Kumaran Baskaran
             @change: class method,
                      support combinational restraints (_Torsion_angle_constraint.Combination_ID)
         """
 
+        if self.__dihedRestDict is None or self.__results is not None:
+            return True
+
         if self.__coordinates is None:
             return False
-
-        if self.__dihedRestDict is None:
-            return True
 
         self.__dihedRestViolDict = {}
         self.__dihedRestViolCombKeyDict = {}
@@ -1490,7 +1548,7 @@ class NmrVrptUtility:
                     if len(angle_list) > 0:
                         avr_a = np.mean(np.array(angle_list))
 
-                        error = angle_diff(lower_bound, upper_bound, target_value, avr_a)
+                        error = angle_error(lower_bound, upper_bound, target_value, avr_a)
 
                     error_per_model[model_id] = error
 
@@ -1565,6 +1623,9 @@ class NmrVrptUtility:
         """ Summarize common results.
         """
 
+        if self.__results is not None:
+            return True
+
         self.__results = {'max_models': self.__total_models, 'atom_ids': self.__atomIdList, 'key_lists': {}}
 
         for dBlock in self.__rR.getDataBlockList():
@@ -1582,9 +1643,12 @@ class NmrVrptUtility:
         """ Summarize distance restraint validation results.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.generate_output,
-                   originally written by Kumaran Baskaran
+                   written by Kumaran Baskaran
             @change: class method, improve readability of restraints, support combinational restraints, performance optimization
         """
+
+        if self.__results is not None:
+            return True
 
         try:
 
@@ -1840,9 +1904,12 @@ class NmrVrptUtility:
         """ Summarize dihedral angle restraint validation results.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.generate_output,
-                   originally written by Kumaran Baskaran
+                   written by Kumaran Baskaran
             @change: class method, improve readability of restraints, support combinational restraints, performance optimization
         """
+
+        if self.__results is not None:
+            return True
 
         try:
 
@@ -2067,5 +2134,11 @@ class NmrVrptUtility:
 
         if 'result_pickle_file_path' in self.__outputParamDict:
             write_as_pickle(self.__results, self.__outputParamDict['result_pickle_file_path'])
+
+        if self.__resultsCacheName is not None:
+            cache_path = os.path.join(self.__cacheDirPath, self.__resultsCacheName)
+
+            if not os.path.exists(cache_path):
+                write_as_pickle(self.__results, cache_path)
 
         return True

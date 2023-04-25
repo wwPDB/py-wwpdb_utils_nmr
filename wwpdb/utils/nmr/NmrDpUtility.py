@@ -235,6 +235,7 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName,
                                                        coordAssemblyChecker,
+                                                       isIdenticalRestraint,
                                                        isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
                                                        startsWithPdbRecord,
@@ -328,6 +329,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName,
                                            coordAssemblyChecker,
+                                           isIdenticalRestraint,
                                            isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
                                            startsWithPdbRecord,
@@ -27356,6 +27358,8 @@ class NmrDpUtility:
 
                                 if valid_atom_sels:
                                     for atom1, atom2 in itertools.product(atom_sels[0], atom_sels[1]):
+                                        if isIdenticalRestraint([atom1, atom2]):
+                                            continue
                                         if isinstance(memberId, int):
                                             if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
                                                or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
@@ -27614,6 +27618,8 @@ class NmrDpUtility:
 
                                 if valid_atom_sels:
                                     for atom1, atom2 in itertools.product(atom_sels[0], atom_sels[1]):
+                                        if isIdenticalRestraint([atom1, atom2]):
+                                            continue
                                         if isinstance(memberId, int):
                                             if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
                                                or isAmbigAtomSelection([_atom2, atom2], self.__csStat):

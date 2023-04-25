@@ -25,6 +25,7 @@ try:
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        hasInterChainRestraint,
+                                                       isIdenticalRestraint,
                                                        isLongRangeRestraint,
                                                        isAsymmetricRangeRestraint,
                                                        isAmbigAtomSelection,
@@ -103,6 +104,7 @@ except ImportError:
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            hasInterChainRestraint,
+                                           isIdenticalRestraint,
                                            isLongRangeRestraint,
                                            isAsymmetricRangeRestraint,
                                            isAmbigAtomSelection,
@@ -1372,6 +1374,8 @@ class CnsMRParserListener(ParseTreeListener):
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else '.'
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
+                    if isIdenticalRestraint([atom1, atom2]):
+                        continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -2238,6 +2242,8 @@ class CnsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if self.__symmetric == 'no':
                     if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
@@ -3533,6 +3539,8 @@ class CnsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:

@@ -17,6 +17,7 @@ try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.GromacsMRParser import GromacsMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                                       isIdenticalRestraint,
                                                        isLongRangeRestraint,
                                                        isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
@@ -54,6 +55,7 @@ except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.GromacsMRParser import GromacsMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                           isIdenticalRestraint,
                                            isLongRangeRestraint,
                                            isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
@@ -412,6 +414,8 @@ class GromacsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} (index={index}) "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -906,6 +910,8 @@ class GromacsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
@@ -1298,6 +1304,8 @@ class GromacsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:

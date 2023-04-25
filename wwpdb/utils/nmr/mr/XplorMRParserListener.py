@@ -25,6 +25,7 @@ try:
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        hasInterChainRestraint,
+                                                       isIdenticalRestraint,
                                                        isLongRangeRestraint,
                                                        isAsymmetricRangeRestraint,
                                                        isAmbigAtomSelection,
@@ -116,6 +117,7 @@ except ImportError:
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            hasInterChainRestraint,
+                                           isIdenticalRestraint,
                                            isLongRangeRestraint,
                                            isAsymmetricRangeRestraint,
                                            isAmbigAtomSelection,
@@ -1744,6 +1746,8 @@ class XplorMRParserListener(ParseTreeListener):
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else '.'
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
+                    if isIdenticalRestraint([atom1, atom2]):
+                        continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -2469,6 +2473,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if self.__symmetric == 'no':
                     if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
@@ -2859,6 +2865,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
@@ -3395,6 +3403,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
@@ -3818,6 +3828,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                               self.atomSelectionSet[1]):
+            if isIdenticalRestraint([atom1, atom2]):
+                continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (XADC) id={self.adistRestraints} "
                       f"atom1={atom1} atom2={atom2} "
@@ -5100,6 +5112,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
@@ -6694,6 +6708,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
@@ -6851,6 +6867,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
@@ -6997,6 +7015,8 @@ class XplorMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[1],
                                                   self.atomSelectionSet[2]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
@@ -7456,6 +7476,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[self.donor_columnSel],
                                               self.atomSelectionSet[self.acceptor_columnSel]):
+            if isIdenticalRestraint([atom1, atom2]):
+                continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (HBDB) id={self.hbondRestraints} "
                       f"donor={atom1} acceptor={atom2}")

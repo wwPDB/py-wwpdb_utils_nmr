@@ -1043,7 +1043,7 @@ class NmrVrptUtility:
                 list_id = int(sf_tag[0]['ID'])
 
                 data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
-                              {'name': 'Torsion_angle_name', 'type': 'str', 'alt_name': 'angle_type'},
+                              {'name': 'Torsion_angle_name', 'type': 'str', 'alt_name': 'angle_type', 'default': 'UNNAMED'},
                               {'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'},
                               {'name': 'Auth_asym_ID_1', 'type': 'str', 'alt_name': 'auth_asym_id_1'},
                               {'name': 'Auth_seq_ID_1', 'type': 'int', 'alt_name': 'auth_seq_id_1'},
@@ -1117,10 +1117,13 @@ class NmrVrptUtility:
                     upper_bound = r['upper_bound']
                     target_value = r['target_value']
 
-                    if (lower_bound is None and upper_bound is None) or target_value is None:
+                    if lower_bound is None and upper_bound is None:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Warning  - dihedral angle restraint {rest_key} {r} is not interpretable.\n")
                         continue
+
+                    if target_value is None:  # target values are not always filled (e.g. AMBER dihedral restraints)
+                        target_value = (lower_bound + upper_bound) / 2.0
 
                     self.__dihedRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, comp_id_1,
                                                                           atom_id_1, ins_code_1),
@@ -1931,7 +1934,7 @@ class NmrVrptUtility:
             try:
                 angle_type = list(set(r_list[0]['angle_type'] for r_list in self.__dihedRestDict.values())) + [any_type]
             except IndexError:
-                self.__lfh("Restraints validation failed due to data error in the dihedral angle restraints.\n")
+                self.__lfh.write(f"Restraints validation failed due to data error in the dihedral angle restraints. {self.__dihedRestDict.values()}\n")
                 return False
 
             self.__results['key_lists']['angle_type'] = angle_type

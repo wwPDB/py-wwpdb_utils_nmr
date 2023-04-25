@@ -24,6 +24,7 @@ try:
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        getRdcCode,
+                                                       isIdenticalRestraint,
                                                        isLongRangeRestraint,
                                                        hasIntraChainRestraint,
                                                        hasInterChainRestraint,
@@ -93,6 +94,7 @@ except ImportError:
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            getRdcCode,
+                                           isIdenticalRestraint,
                                            isLongRangeRestraint,
                                            hasIntraChainRestraint,
                                            hasInterChainRestraint,
@@ -953,6 +955,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
+                                if isIdenticalRestraint([atom1, atom2]):
+                                    continue
                                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                                     continue
                                 if self.__debug:
@@ -1017,6 +1021,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if isIdenticalRestraint([atom1, atom2]):
+                        continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__debug:
@@ -1446,6 +1452,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
+                                if isIdenticalRestraint([atom1, atom2]):
+                                    continue
                                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                                     continue
                                 if self.__debug:
@@ -1510,6 +1518,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if isIdenticalRestraint([atom1, atom2]):
+                        continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__debug:
@@ -3891,6 +3901,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
@@ -4400,6 +4412,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if isIdenticalRestraint([atom1, atom2]):
+                        continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__debug:
@@ -4718,6 +4732,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if isIdenticalRestraint([atom1, atom2]):
+                        continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__debug:
@@ -4948,6 +4964,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if isIdenticalRestraint([atom1, atom2]):
+                        continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__debug:
@@ -5194,6 +5212,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if isIdenticalRestraint([atom1, atom2]):
+                        continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__debug:
@@ -5512,6 +5532,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if isIdenticalRestraint([atom1, atom2]):
+                        continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__debug:
@@ -5742,6 +5764,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if isIdenticalRestraint([atom1, atom2]):
+                        continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__debug:
@@ -5907,6 +5931,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__debug:
@@ -6329,6 +6355,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                               self.atomSelectionSet[1]):
+                            if isIdenticalRestraint([atom1, atom2]):
+                                continue
                             if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                                 continue
                             if self.__debug:
@@ -6403,6 +6431,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -7168,6 +7198,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__debug:
@@ -7276,6 +7308,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__debug:
@@ -7417,6 +7451,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__debug:
@@ -7506,6 +7542,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if isIdenticalRestraint([atom1, atom2]):
+                        continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (CYANA macro: atom stereo) id={self.fchiralRestraints} "
                               f"atom1={atom1} atom2={atom2}")
@@ -7537,6 +7575,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                           self.atomSelectionSet[1]):
+                        if isIdenticalRestraint([atom1, atom2]):
+                            continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} (CYANA macro: atom stereo) id={self.fchiralRestraints} "
                                   f"atom1={atom1} atom2={atom2}")
@@ -7583,6 +7623,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
+                    if isIdenticalRestraint([atom1, atom2]):
+                        continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (CYANA macro: atom stereo) id={self.fchiralRestraints} "
                               f"atom1={atom1} atom2={atom2}")
@@ -7630,6 +7672,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                           self.atomSelectionSet[1]):
+                        if isIdenticalRestraint([atom1, atom2]):
+                            continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} (CYANA macro: atom stereo) id={self.fchiralRestraints} "
                                   f"atom1={atom1} atom2={atom2}")

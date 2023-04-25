@@ -20,6 +20,7 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toNpArray,
                                                        coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
+                                                       isIdenticalRestraint,
                                                        isLongRangeRestraint,
                                                        hasIntraChainRestraint,
                                                        hasInterChainRestraint,
@@ -80,6 +81,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (toNpArray,
                                            coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
+                                           isIdenticalRestraint,
                                            isLongRangeRestraint,
                                            hasIntraChainRestraint,
                                            hasInterChainRestraint,
@@ -681,6 +683,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__debug:
@@ -2033,6 +2037,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__debug:
@@ -3539,6 +3545,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if self.__debug:
@@ -3700,6 +3708,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__debug:

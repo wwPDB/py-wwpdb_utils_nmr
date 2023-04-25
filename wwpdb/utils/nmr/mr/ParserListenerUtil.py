@@ -3839,8 +3839,19 @@ def extendCoordChainsForExactNoes(modelChainIdExt,
     return _polySeq, _altPolySeq, _coordAtomSite, _coordUnobsRes, _labelToAuthSeq, _authToLabelSeq, _authToStarSeq
 
 
+def isIdenticalRestraint(atoms):
+    """ Return whether restraint contains identical atom selection.
+    """
+
+    for a1, a2 in itertools.combinations(atoms, 2):
+        if a1['chain_id'] == a2['chain_id'] and a1['seq_id'] == a2['seq_id'] and a1['atom_id'] == a2['atom_id']:
+            return True
+
+    return False
+
+
 def isLongRangeRestraint(atoms, polySeq=None):
-    """ Return whether restraint is neither an intra residue nor sequential residues.
+    """ Return whether restraint is neither an intra residue nor sequential residue restraint.
     """
 
     chainIds = [a['chain_id'] for a in atoms]

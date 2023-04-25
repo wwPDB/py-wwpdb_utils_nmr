@@ -24,6 +24,7 @@ try:
                                                        extendCoordChainsForExactNoes,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
+                                                       isIdenticalRestraint,
                                                        hasInterChainRestraint,
                                                        isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
@@ -84,6 +85,7 @@ except ImportError:
                                            extendCoordChainsForExactNoes,
                                            translateToStdResName,
                                            translateToStdAtomName,
+                                           isIdenticalRestraint,
                                            hasInterChainRestraint,
                                            isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
@@ -702,6 +704,8 @@ class CharmmMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2]):
+                    continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")

@@ -2132,13 +2132,23 @@ class NmrVrptUtility:
         """ Output results if 'result_pickle_file_path' was set in output parameter.
         """
 
-        if 'result_pickle_file_path' in self.__outputParamDict:
-            write_as_pickle(self.__results, self.__outputParamDict['result_pickle_file_path'])
-
+        cache_path = None
         if self.__resultsCacheName is not None:
             cache_path = os.path.join(self.__cacheDirPath, self.__resultsCacheName)
 
             if not os.path.exists(cache_path):
                 write_as_pickle(self.__results, cache_path)
+
+        if 'result_pickle_file_path' in self.__outputParamDict:
+            pickle_file = self.__outputParamDict['result_pickle_file_path']
+
+            if cache_path is None:
+                write_as_pickle(self.__results, pickle_file)
+                return True
+
+            if os.path.exists(pickle_file):
+                os.remove(pickle_file)
+
+            os.symlink(cache_path, pickle_file)
 
         return True

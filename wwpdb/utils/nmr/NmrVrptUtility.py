@@ -43,8 +43,11 @@ except ImportError:
 
 NMR_VTF_DIST_VIOL_CUTOFF = 0.1
 NMR_VTF_DIHED_VIOL_CUTOFF = 1.0
+NMR_VTF_RDC_VIOL_CUTOFF = 1.0  # to be decided
+
 NMR_VTF_DIST_ERR_BINS = (0.1, 0.2, 0.5)
 NMR_VTF_DIHED_ERR_BINS = (1.0, 10.0, 20.0)
+NMR_VTF_RDC_ERR_BINS = (1.0, 2.0, 5.0)  # to be decided
 
 DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
 ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
@@ -308,15 +311,22 @@ class NmrVrptUtility:
         self.__distRestViolDict = None
         # list of restraint key of unmapped distance restraints
         self.__distRestUnmapped = None
-        # combination keys (Combination_ID/Mmember_ID) of violated_distance restraints for each restraint key
+        # combination keys (Combination_ID/Mmember_ID) of violated distance restraints for each restraint key
         self.__distRestViolCombKeyDict = None
 
         # dihedral angle restraint violations for each restraint key
         self.__dihedRestViolDict = None
         # list of restraint key of unmapped dihedral angle restraints
         self.__dihedRestUnmapped = None
-        # combination key (Combination_ID) of violated_distance angle restraints for each restraint key
+        # combination key (Combination_ID) of violated dihedral angle restraints for each restraint key
         self.__dihedRestViolCombKeyDict = None
+
+        # RDC restraint violations for each restraint key
+        self.__rdcRestViolDict = None
+        # list of restraint key of unmapped RDC restraints
+        self.__rdcRestUnmapped = None
+        # combination key (Combination_ID) of violated RDC restraints for each restraint key
+        self.__rdcRestViolCombKeyDict = None
 
         # summarized restraint validation results
         self.__results = None
@@ -337,9 +347,11 @@ class NmrVrptUtility:
                         self.__extractRdcConstraint,
                         self.__calculateDistanceRestraintViolations,
                         self.__calculateDihedralAngleRestraintViolations,
+                        self.__calculateRdcRestraintViolations,
                         self.__summarizeCommonResults,
                         self.__summarizeDistanceRestraintValidation,
                         self.__summarizeDihedralAngleRestraintValidation,
+                        self.__summarizeRdcRestraintValidation,
                         self.__outputResultsAsPickleFileIfPossible]
 
         # dictionary of processing tasks of each workflow operation
@@ -1235,7 +1247,9 @@ class NmrVrptUtility:
         if self.__nmrDataPath is None:
             return False
 
-        self.__rdcRestDict = {}
+        return True  # TODO, pylint: disable='fixme'
+
+        self.__rdcRestDict = {}  # pylint: disable='unreachable'
         self.__rdcRestSeqDict = {}
 
         lp_category = 'RDC_constraint'
@@ -1707,9 +1721,162 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__lfh.write(f"+NmrVrptUtility.__calculateDistanceRestraintViolations() ++ Error  - {str(e)}\n")
+            self.__lfh.write(f"+NmrVrptUtility.__calculateDihedralAngleRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__dihedRestViolDict = self.__dihedRestUnmapped = None
+
+        return False
+
+    def __calculateRdcRestraintViolations(self):
+        """ Calculate RDC restraint violations.
+            @author: Masashi Yokochi
+        """
+
+        if self.__rdcRestDict is None or self.__has_prev_results:
+            return True
+
+        if self.__coordinates is None:
+            return False
+
+        self.__rdcRestViolDict = {}
+        self.__rdcRestViolCombKeyDict = {}
+        self.__rdcRestUnmapped = []
+
+        try:
+
+            def calc_rdc_rest_viol(rest_key, restraints):
+
+                error_per_model = {}
+
+                for model_id in self.__coordinates:
+
+                    rdc_list = []
+
+                    for r in restraints:
+                        atom_key_1 = r['atom_key_1']
+                        atom_key_2 = r['atom_key_2']
+                        lower_bound = r['lower_bound']
+                        upper_bound = r['upper_bound']
+
+                        atom_present = True
+
+                        try:
+                            pos_1 = self.__coordinates[model_id][atom_key_1]  # noqa: F841, pylint: disable='unused-variable'
+                        except KeyError:
+                            if self.__verbose:
+                                self.__lfh.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
+                                                 f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
+                                                 f"not found in the coordinates for RDC restraint {rest_key}.")
+                            atom_present = False
+
+                        try:
+                            pos_2 = self.__coordinates[model_id][atom_key_2]  # noqa: F841, pylint: disable='unused-variable'
+                        except KeyError:
+                            if self.__verbose:
+                                self.__lfh.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
+                                                 f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
+                                                 f"not found in the coordinates for RDC restraint {rest_key}.")
+                            atom_present = False
+
+                        if atom_present:
+                            """ TODO: rdc() returns calculated RDC value (RDC_calc) for a given vector using the RDC alignment tensor of rest_key[0], pylint: disable='fixme'
+                            r = rdc_error(rest_key[0], pos_1, pos_2)
+                            rdc_list.append(r)
+                            """
+                        else:
+                            self.__rdcRestUnmapped.append(rest_key)
+
+                    error = None
+
+                    if len(rdc_list) > 0:
+                        avr_r = np.mean(np.array(rdc_list))
+
+                        if lower_bound is not None and upper_bound is not None:
+                            if lower_bound <= avr_r <= upper_bound:
+                                error = 0.0
+                            elif avr_r > upper_bound:
+                                error = abs(avr_r - upper_bound)
+                            else:
+                                error = abs(avr_r - lower_bound)
+
+                        elif upper_bound is not None:
+                            if avr_r <= upper_bound:
+                                error = 0.0
+                            elif avr_r > upper_bound:
+                                error = abs(avr_r - upper_bound)
+
+                        elif lower_bound is not None:
+                            if lower_bound <= avr_r:
+                                error = 0.0
+                            else:
+                                error = abs(avr_r - lower_bound)
+
+                    error_per_model[model_id] = error
+
+                return error_per_model
+
+            def fill_smaller_error_for_each_model(error_per_model, min_error_per_model,
+                                                  combination_id, min_comb_key_per_model):
+                for model_id in range(1, self.__total_models + 1):
+                    error = error_per_model[model_id]
+
+                    if error is not None and error < min_error_per_model[model_id]:
+                        min_error_per_model[model_id] = error
+                        min_comb_key_per_model[model_id]['combination_id'] = combination_id
+
+            def get_viol_per_model(min_error_per_model, min_comb_key_per_model):
+                viol_per_model = {}
+                comb_key_per_model = {}
+
+                for model_id in range(1, self.__total_models + 1):
+                    error = min_error_per_model[model_id]
+                    comb_key = min_comb_key_per_model[model_id]
+
+                    if NMR_VTF_RDC_VIOL_CUTOFF < error < RDC_ERROR_MAX:
+                        viol_per_model[model_id] = round(error, 2)
+                        comb_key_per_model[model_id] = comb_key
+                    else:
+                        viol_per_model[model_id] = None
+                        comb_key_per_model[model_id] = None
+
+                return viol_per_model, comb_key_per_model
+
+            for rest_key, restraints in self.__rdcRestDict.items():
+
+                has_combination_id = any(r for r in restraints if r['combination_id'] is not None)
+
+                min_error_per_model = {model_id: RDC_ERROR_MAX for model_id in range(1, self.__total_models + 1)}
+                min_comb_key_per_model = {model_id: {'combination_id': None}
+                                          for model_id in range(1, self.__total_models + 1)}
+
+                if not has_combination_id:
+                    error_per_model = calc_rdc_rest_viol(rest_key, restraints)
+
+                    fill_smaller_error_for_each_model(error_per_model, min_error_per_model,
+                                                      None, min_comb_key_per_model)
+
+                else:
+                    combination_ids = set(r['combination_id'] for r in restraints)
+
+                    for combination_id in combination_ids:
+                        _restraints = [r for r in restraints if r['combination_id'] == combination_id]
+
+                        _error_per_model = calc_rdc_rest_viol(rest_key, _restraints)
+
+                        fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,
+                                                          combination_id, min_comb_key_per_model)
+
+                self.__rdcRestViolDict[rest_key], self.__rdcRestViolCombKeyDict[rest_key] =\
+                    get_viol_per_model(min_error_per_model, min_comb_key_per_model)
+
+            self.__rdcRestUnmapped = list(set(self.__rdcRestUnmapped))
+
+            return True
+
+        except Exception as e:
+            self.__lfh.write(f"+NmrVrptUtility.__calculateRdcRestraintViolations() ++ Error  - {str(e)}\n")
+
+            self.__rdcRestViolDict = self.__rdcRestUnmapped = None
 
         return False
 
@@ -2219,6 +2386,221 @@ class NmrVrptUtility:
 
         except Exception as e:
             self.__lfh.write(f"+NmrVrptUtility.__summarizeDihedralAngleRestraintValidation() ++ Error  - {str(e)}\n")
+
+        return False
+
+    def __summarizeRdcRestraintValidation(self):
+        """ Summarize RDC restraint validation results.
+            @author: Masashi Yokochi
+        """
+
+        if self.__has_prev_results:
+            return True
+
+        try:
+
+            self.__results['rdc'] = self.__rdcRestViolDict is not None and len(self.__rdcRestViolDict) > 0
+
+            if not self.__results['rdc']:
+                return True
+
+            self.__results['rdc_seq_dict'] = self.__rdcRestSeqDict
+            self.__results['unmapped_rdc'] = self.__rdcRestUnmapped
+
+            any_type = 'Total'
+
+            try:
+                rdc_type = list(set(r_list[0]['rdc_type'] for r_list in self.__rdcRestDict.values())) + [any_type]
+            except IndexError:
+                self.__lfh.write(f"Restraints validation failed due to data error in the RDC restraints. {self.__rdcRestDict.values()}\n")
+                return False
+
+            self.__results['key_lists']['rdc_type'] = rdc_type
+
+            rdc_summary = {}
+            rdc_violation = {}
+
+            consistent_rdc_violation = {}
+            rdc_violations_vs_models = {}
+            rdc_violations_in_models = {}
+
+            for m in range(1, self.__total_models + 1):
+                rdc_violations_in_models[m] = {}
+
+                for t in rdc_type:
+                    rdc_summary[t] = 0
+                    rdc_violation[t] = 0
+                    consistent_rdc_violation[t] = 0
+                    rdc_violations_vs_models[t] = [0] * (self.__total_models + 1)
+                    rdc_violations_in_models[m][t] = []
+
+            for rest_key, restraints in self.__rdcRestDict.items():
+                comb_key = self.__rdcRestViolCombKeyDict[rest_key][self.__representative_model_id]
+                if comb_key is not None:
+                    combination_id = comb_key['combination_id']
+
+                    r = next(r for r in restraints
+                             if r['combination_id'] == combination_id)
+                else:
+                    r = restraints[0]
+
+                t = r['rdc_type']
+
+                rdc_summary[t] += 1
+                rdc_summary[any_type] += 1
+
+                len_vm = len(get_violated_model_ids(self.__rdcRestViolDict[rest_key]))
+
+                if len_vm > 0:
+                    rdc_violation[t] += 1
+                    rdc_violation[any_type] += 1
+
+                if len_vm == self.__total_models:
+                    consistent_rdc_violation[t] += 1
+                    consistent_rdc_violation[any_type] += 1
+
+                rdc_violations_vs_models[t][len_vm] += 1
+                rdc_violations_vs_models[any_type][len_vm] += 1
+
+            self.__results['rdc_summary'] = rdc_summary
+            self.__results['rdc_violation'] = rdc_violation
+            self.__results['consistent_rdc_violation'] = consistent_rdc_violation
+            self.__results['rdc_violations_vs_models'] = rdc_violations_vs_models
+
+            for rest_key, viol_per_model in self.__rdcRestViolDict.items():
+                for m in range(1, self.__total_models + 1):
+                    err = viol_per_model[m]
+
+                    if err is not None and err > 0.0:
+                        comb_key = self.__rdcRestViolCombKeyDict[rest_key][m]
+                        combination_id = comb_key['combination_id']
+
+                        r = next(r for r in self.__rdcRestDict[rest_key]
+                                 if r['combination_id'] == combination_id)
+                        t = r['rdc_type']
+
+                        rdc_violations_in_models[m][t].append(err)
+                        rdc_violations_in_models[m][any_type].append(err)
+
+            self.__results['rdc_violations_in_models'] = rdc_violations_in_models
+
+            rdc_range = []
+
+            residual_rdc_violation = {}
+            for idx, beg_err_bin in enumerate(NMR_VTF_RDC_ERR_BINS):
+                if idx == len(NMR_VTF_RDC_ERR_BINS) - 1:
+                    end_err_bin = None
+                    rdc_err_range = f">{beg_err_bin}"
+                else:
+                    end_err_bin = NMR_VTF_RDC_ERR_BINS[idx + 1]
+                    rdc_err_range = f"{beg_err_bin}-{end_err_bin}"
+
+                rdc_range.append(rdc_err_range)
+                residual_rdc_violation[rdc_err_range] =\
+                    get_violation_statistics_for_each_bin(beg_err_bin, end_err_bin,
+                                                          self.__total_models,
+                                                          self.__rdcRestViolDict)
+
+            self.__results['key_lists']['rdc_range'] = rdc_range
+            self.__results['residual_rdc_violation'] = residual_rdc_violation
+
+            most_violated_rdc = []
+            for rest_key, viol_per_model in self.__rdcRestViolDict.items():
+                vm = get_violated_model_ids(viol_per_model)
+
+                if len(vm) > 1:
+                    e = np.array([err for err in viol_per_model.values() if err is not None and err > 0.0])
+
+                    comb_keys = set()
+                    for _m in set(vm):
+                        comb_key = self.__rdcRestViolCombKeyDict[rest_key][_m]
+                        combination_id = comb_key['combination_id']
+                        comb_keys.add(combination_id)
+
+                    for r in self.__rdcRestDict[rest_key]:
+                        comb_key = r['combination_id']
+
+                        if comb_key in comb_keys:
+                            most_violated_rdc.append([rest_key,
+                                                      r['atom_key_1'],
+                                                      r['atom_key_2'],
+                                                      r['rdc_type'],
+                                                      len(vm),
+                                                      vm,
+                                                      np.min(e),
+                                                      np.max(e),
+                                                      np.mean(e),
+                                                      np.std(e),
+                                                      np.median(e)])
+
+            self.__results['most_violated_rdc'] =\
+                sorted(most_violated_rdc, reverse=True, key=itemgetter(4, 8))
+
+            all_rdc_violations = []
+            for rest_key, viol_per_model in self.__rdcRestViolDict.items():
+                for m in range(1, self.__total_models + 1):
+                    err = viol_per_model[m]
+
+                    if err is not None and err > 0.0:
+                        comb_key = self.__rdcRestViolCombKeyDict[rest_key][m]
+                        combination_id = comb_key['combination_id']
+
+                        for r in self.__rdcRestDict[rest_key]:
+                            if r['combination_id'] == combination_id:
+                                all_rdc_violations.append([rest_key,
+                                                          r['atom_key_1'],
+                                                          r['atom_key_2'],
+                                                          m,
+                                                          r['rdc_type'],
+                                                          err])
+
+            self.__results['all_rdc_violations'] =\
+                sorted(all_rdc_violations, reverse=True, key=itemgetter(5, 0))
+
+            rdc_violation_seq = {}
+            for seq_key, rest_keys in self.__rdcRestSeqDict.items():
+                for m in range(1, self.__total_models + 1):
+                    _seq_key = (seq_key[0], seq_key[1], seq_key[2], m)
+
+                    if _seq_key not in rdc_violation_seq:
+                        rdc_violation_seq[_seq_key] = []
+
+                    for rest_key in rest_keys:
+                        comb_key = self.__rdcRestViolCombKeyDict[rest_key][m]
+                        if comb_key is None:
+                            continue
+                        combination_id = comb_key['combination_id']
+
+                        atom_ids = []
+                        rdc_type = None
+
+                        for r in self.__rdcRestDict[rest_key]:
+                            if r['combination_id'] == combination_id:
+                                seq_key_1 = (r['atom_key_1'][0], r['atom_key_1'][1], r['atom_key_1'][2])
+                                if seq_key_1 == seq_key:
+                                    atom_ids.append(r['atom_key_1'][3])
+                                seq_key_2 = (r['atom_key_2'][0], r['atom_key_2'][1], r['atom_key_2'][2])
+                                if seq_key_2 == seq_key:
+                                    atom_ids.append(r['atom_key_2'][3])
+
+                                if rdc_type is None:
+                                    rdc_type = r['rdc_type']
+
+                        err = self.__rdcRestViolDict[rest_key][m]
+
+                        if err is not None and err > 0.0:
+                            rdc_violation_seq[_seq_key].append([rest_key[0],
+                                                                rest_key[1],
+                                                                atom_ids,
+                                                                rdc_type,
+                                                                err])
+
+            self.__results['rdc_violation_seq'] = rdc_violation_seq
+
+            return True
+
+        except Exception as e:
+            self.__lfh.write(f"+NmrVrptUtility.__summarizeRdcRestraintValidation() ++ Error  - {str(e)}\n")
 
         return False
 

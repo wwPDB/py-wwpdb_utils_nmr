@@ -4398,6 +4398,11 @@ def getRdcCode(atoms):
                 return 'RDC_HH'
             if atom_id_1[0] == 'C':
                 return 'RDC_CC'
+        if offset == 0:
+            if atom1['comp_id'] == 'TRP' and vector == {'HE1', 'NE1'}:
+                return 'RDC_NH'
+            if atom1['comp_id'] == 'ARG' and vector == {'HE', 'NE'}:
+                return 'RDC_NH'
 
     return 'RDC_other'
 

@@ -48219,6 +48219,7 @@ class NmrDpUtility:
                 chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
                 seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
                 seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
+                comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
                 atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                 atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
                 try:
@@ -48239,6 +48240,7 @@ class NmrDpUtility:
                         seq_id_2 = int(row[seq_id_2_col])
                     except (ValueError, TypeError):
                         continue
+                    comp_id_1 = row[comp_id_1_col]
                     atom_id_1 = row[atom_id_1_col]
                     atom_id_2 = row[atom_id_2_col]
                     if atom_id_1 is None or atom_id_2 is None:
@@ -48272,6 +48274,10 @@ class NmrDpUtility:
                                 RDC_CC_tot_num += 1
                             else:
                                 RDC_other_tot_num += 1
+                        elif offset == 0 and comp_id_1 == 'TRP' and vector == {'HE1', 'NE1'}:
+                            RDC_NH_tot_num += 1
+                        elif offset == 0 and comp_id_1 == 'ARG' and vector == {'HE', 'NE'}:
+                            RDC_NH_tot_num += 1
                         else:
                             RDC_other_tot_num += 1
 
@@ -49887,6 +49893,7 @@ class NmrDpUtility:
                         chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
                         seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
                         seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
+                        comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
                         atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                         atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
                         try:
@@ -49907,6 +49914,7 @@ class NmrDpUtility:
                                 seq_id_2 = int(row[seq_id_2_col]) if row[seq_id_2_col] not in emptyValue else None
                             except (ValueError, TypeError):
                                 continue
+                            comp_id_1 = row[comp_id_1_col]
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
                             if atom_id_1 is None or atom_id_2 is None:
@@ -49940,6 +49948,10 @@ class NmrDpUtility:
                                         RDC_CC_tot_num += 1
                                     else:
                                         RDC_other_tot_num += 1
+                                elif offset == 0 and comp_id_1 == 'TRP' and vector == {'HE1', 'NE1'}:
+                                    RDC_NH_tot_num += 1
+                                elif offset == 0 and comp_id_1 == 'ARG' and vector == {'HE', 'NE'}:
+                                    RDC_NH_tot_num += 1
                                 else:
                                     RDC_other_tot_num += 1
 

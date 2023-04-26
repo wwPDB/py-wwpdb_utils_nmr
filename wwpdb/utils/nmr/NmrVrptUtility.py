@@ -1337,19 +1337,23 @@ class NmrVrptUtility:
                     lower_linear_limit = r['lower_linear_limit'] if has_lower_linear_limit else None
                     upper_linear_limit = r['upper_linear_limit'] if has_upper_linear_limit else None
 
-                    if target_value is None:
-                        self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Warning  - RDC restraint {rest_key} {r} is not interpretable.\n")
-                        continue
-
-                    if lower_bound is None and upper_bound is None:
+                    if lower_bound is None and upper_bound is None and lower_linear_limit is None and upper_linear_limit is None:
+                        if target_value is None:
+                            self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Warning  - RDC restraint {rest_key} {r} is not interpretable.\n")
+                            continue
                         if target_value_uncertainty is not None:
                             lower_bound = target_value - target_value_uncertainty
                             upper_bound = target_value + target_value_uncertainty
-                        elif lower_linear_limit is not None and upper_linear_limit is None:
-                            lower_bound = lower_linear_limit
-                            upper_bound = upper_linear_limit
                         else:
                             lower_bound = upper_bound = target_value
+
+                    if lower_bound is None and lower_linear_limit is not None:
+                        lower_bound = lower_linear_limit
+                    if upper_bound is None and upper_linear_limit is not None:
+                        upper_bound = upper_linear_limit
+
+                    if target_value is None:  # target values are not always filled (e.g. AMBER dihedral restraints)
+                        target_value = (lower_bound + upper_bound) / 2.0
 
                     self.__rdcRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, comp_id_1,
                                                                         atom_id_1, ins_code_1),

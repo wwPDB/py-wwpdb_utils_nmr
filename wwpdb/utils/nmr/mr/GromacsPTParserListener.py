@@ -501,11 +501,16 @@ class GromacsPTParserListener(ParseTreeListener):
             if self.__chainAssign is not None:
 
                 if len(self.__polySeqModel) < len(self.__polySeqPrmTop):
+                    assi_ref_chain_ids = set()
+                    proc_test_chain_ids = []
                     atom_nums = []
 
                     def update_atom_num(seq_align):
                         ref_chain_id = seq_align['ref_chain_id']
                         test_chain_id = seq_align['test_chain_id']
+
+                        assi_ref_chain_ids.add(ref_chain_id)
+                        proc_test_chain_ids.append()
 
                         offset = None
 
@@ -536,9 +541,6 @@ class GromacsPTParserListener(ParseTreeListener):
 
                                 atom_nums.append(atom_num)
 
-                    proc_test_chain_ids = []
-                    assi_ref_chain_ids = set()
-
                     while True:
 
                         orphanPolySeqPrmTop = []
@@ -556,11 +558,11 @@ class GromacsPTParserListener(ParseTreeListener):
 
                                 if sa is not None:  # and sa['conflict'] == 0:
                                     update_atom_num(sa)
-                                    proc_test_chain_ids.append(test_chain_id)
-                                    assi_ref_chain_ids.add(ref_chain_id)
 
                             except StopIteration:
                                 orphanPolySeqPrmTop.append(ps)
+
+                        resolved = False
 
                         if len(orphanPolySeqPrmTop) > 0:
                             __seqAlign__, _ = alignPolymerSequence(self.__pA, polySeqModel, orphanPolySeqPrmTop)
@@ -568,10 +570,10 @@ class GromacsPTParserListener(ParseTreeListener):
                                 for sa in __seqAlign__:
                                     if sa['conflict'] == 0:
                                         update_atom_num(sa)
-                                        proc_test_chain_ids.append(sa['test_chain_id'])
-                                        assi_ref_chain_ids.add(sa['ref_chain_id'])
 
-                        else:
+                                        resolved = True
+
+                        if not resolved:
                             break
 
                     for ps in self.__polySeqPrmTop:
@@ -600,8 +602,8 @@ class GromacsPTParserListener(ParseTreeListener):
                                     if len_gap == 0:
                                         atomNum['seq_id'] += offset
 
-                            proc_test_chain_ids.append(test_chain_id)
                             assi_ref_chain_ids.add(ref_chain_id)
+                            proc_test_chain_ids.append(test_chain_id)
 
                 if len(self.__polySeqModel) == len(self.__polySeqPrmTop):
 

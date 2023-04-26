@@ -4885,9 +4885,7 @@ def getStarAtom(authToStarSeq, offsetHolder, atom):
 
     chainId = atom['chain_id']
     seqId = atom['seq_id']
-    if 'comp_id' not in atom:
-        return None
-    compId = atom['comp_id']
+    compId = atom['comp_id'] if 'comp_id' in atom else None
     seqKey = (chainId, seqId, compId)
     if 'atom_id' not in atom:
         starAtom['atom_id'] = None
@@ -4921,9 +4919,9 @@ def getStarAtom(authToStarSeq, offsetHolder, atom):
     _seqKey = next((_seqKey for _seqKey in authToStarSeq if chainId == _seqKey[0] and seqId == _seqKey[1]), None)
 
     if _seqKey is not None:
-        if _seqKey[2] not in monDict3 and compId not in monDict3:
+        if compId in emptyValue or compId not in monDict3:
             starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[_seqKey]
-            if compId != _seqKey[2]:
+            if compId in emptyValue or compId != _seqKey[2]:
                 atom['comp_id'] = starAtom['comp_id'] = _seqKey[2]
             return starAtom
 
@@ -4940,9 +4938,7 @@ def getInsCode(authToInsCode, offsetHolder, atom):
 
     chainId = atom['chain_id']
     seqId = atom['seq_id']
-    if 'comp_id' not in atom:
-        return None
-    compId = atom['comp_id']
+    compId = atom['comp_id'] if 'comp_id' in atom else None
     seqKey = (chainId, seqId, compId)
 
     if seqKey in authToInsCode:
@@ -4967,8 +4963,8 @@ def getInsCode(authToInsCode, offsetHolder, atom):
     _seqKey = next((_seqKey for _seqKey in authToInsCode if chainId == _seqKey[0] and seqId == _seqKey[1]), None)
 
     if _seqKey is not None:
-        if _seqKey[2] not in monDict3 and compId not in monDict3:
-            if compId != _seqKey[2]:
+        if compId in emptyValue or compId not in monDict3:
+            if compId in emptyValue or compId != _seqKey[2]:
                 atom['comp_id'] = _seqKey[2]
             return authToInsCode[_seqKey]
 

@@ -350,7 +350,6 @@ class NmrVrptUtility:
         """
 
         self.__verbose = verbose
-        self.__debug = verbose
 
     def getResults(self):
         """ Return NMR restraint validation result.
@@ -414,7 +413,7 @@ class NmrVrptUtility:
                 if not task():
                     break
 
-                if self.__debug:
+                if self.__debug and self.__verbose:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
                         self.__lfh.write(f"op: {op}, task: {task.__name__}, elapsed time: {end_time - start_time:.1f} sec\n")
@@ -735,13 +734,13 @@ class NmrVrptUtility:
             self.__resultsCacheName = f"{self.__cifHashCode}_{self.__nmrDataHashCode}_vrpt_results.pkl"
             cache_path = os.path.join(self.__cacheDirPath, self.__resultsCacheName)
 
-            self.__results = load_from_pickle(cache_path)
-
-            self.__has_prev_results = self.__results is not None
-
             if self.__debug:
-                self.__has_prev_results = False
-                self.__results = None
+                if os.path.exists(cache_path):
+                    os.remove(cache_path)
+                return True
+
+            self.__results = load_from_pickle(cache_path)
+            self.__has_prev_results = self.__results is not None
 
         return True
 
@@ -878,14 +877,17 @@ class NmrVrptUtility:
         self.__distRestDict = {}
         self.__distRestSeqDict = {}
 
+        lp_category = 'Gen_dist_constraint'
+        sf_category = 'Gen_dist_constraint_list'
+
         try:
 
             for dBlock in self.__rR.getDataBlockList():
 
-                if not self.__rR.hasCategory('Gen_dist_constraint', dBlock.getName()):
+                if not self.__rR.hasCategory(lp_category, dBlock.getName()):
                     continue
 
-                sf_tag = self.__rR.getDictList('Gen_dist_constraint_list')
+                sf_tag = self.__rR.getDictList(sf_category)
 
                 list_id = int(sf_tag[0]['ID'])
 
@@ -907,9 +909,11 @@ class NmrVrptUtility:
                               {'name': 'Distance_upper_bound_val', 'type': 'float', 'alt_name': 'upper_bound'}
                               ]
 
-                has_member_id = self.__rR.hasItem('Gen_dist_constraint', 'Member_ID')
-                has_pdb_ins_code_1 = self.__rR.hasItem('Gen_dist_constraint', 'PDB_ins_code_1')
-                has_pdb_ins_code_2 = self.__rR.hasItem('Gen_dist_constraint', 'PDB_ins_code_2')
+                tags = self.__rR.getItemTags(lp_category)
+
+                has_member_id = 'Member_ID' in tags
+                has_pdb_ins_code_1 = 'PDB_ins_code_1' in tags
+                has_pdb_ins_code_2 = 'PDB_ins_code_2' in tags
 
                 if has_member_id:
                     data_items.append({'name': 'Member_ID', 'type': 'int', 'alt_name': 'member_id'})
@@ -920,7 +924,7 @@ class NmrVrptUtility:
 
                 filter_items = [{'name': 'Gen_dist_constraint_list_ID', 'type': 'int', 'value': list_id}]
 
-                rest = self.__rR.getDictListWithFilter('Gen_dist_constraint',
+                rest = self.__rR.getDictListWithFilter(lp_category,
                                                        data_items,
                                                        filter_items)
 
@@ -976,8 +980,7 @@ class NmrVrptUtility:
                     upper_bound = r['upper_bound']
 
                     if lower_bound is None and upper_bound is None:
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Warning  - distance restraint {rest_key} {r} is not interpretable.\n")
+                        self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Warning  - distance restraint {rest_key} {r} is not interpretable.\n")
                         continue
 
                     self.__distRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, comp_id_1,
@@ -1002,6 +1005,10 @@ class NmrVrptUtility:
                             self.__distRestSeqDict[seq_key] = []
                         self.__distRestSeqDict[seq_key].append(rest_key)
 
+                for k, v in self.__distRestDict:
+                    if len(v) == 0:
+                        del self.__distRestDict[k]
+
             for v in self.__distRestSeqDict.values():
                 v = list(set(v))
 
@@ -1023,7 +1030,9 @@ class NmrVrptUtility:
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.get_restraints2,
                    written by Kumaran Baskaran
             @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of restraints,
-                     support combinational restraints (_Torsion_angle_constraint.Combination_ID)
+                     support combinational restraints (_Torsion_angle_constraint.Combination_ID),
+                     support for the case target_value is not set,
+                     support for the case upper/lower linear limits are set, but missing upper/lower limits
         """
 
         if self.__has_prev_results:
@@ -1035,14 +1044,17 @@ class NmrVrptUtility:
         self.__dihedRestDict = {}
         self.__dihedRestSeqDict = {}
 
+        lp_category = 'Torsion_angle_constraint'
+        sf_category = 'Torsion_angle_constraint_list'
+
         try:
 
             for dBlock in self.__rR.getDataBlockList():
 
-                if not self.__rR.hasCategory('Torsion_angle_constraint', dBlock.getName()):
+                if not self.__rR.hasCategory(lp_category, dBlock.getName()):
                     continue
 
-                sf_tag = self.__rR.getDictList('Torsion_angle_constraint_list')
+                sf_tag = self.__rR.getDictList(sf_category)
 
                 list_id = int(sf_tag[0]['ID'])
 
@@ -1070,10 +1082,14 @@ class NmrVrptUtility:
                               {'name': 'Angle_target_val', 'type': 'float', 'alt_name': 'target_value'}
                               ]
 
-                has_pdb_ins_code_1 = self.__rR.hasItem('Torsion_angle_constraint', 'PDB_ins_code_1')
-                has_pdb_ins_code_2 = self.__rR.hasItem('Torsion_angle_constraint', 'PDB_ins_code_2')
-                has_pdb_ins_code_3 = self.__rR.hasItem('Torsion_angle_constraint', 'PDB_ins_code_3')
-                has_pdb_ins_code_4 = self.__rR.hasItem('Torsion_angle_constraint', 'PDB_ins_code_4')
+                tags = self.__rR.getItemTags(lp_category)
+
+                has_pdb_ins_code_1 = 'PDB_ins_code_1' in tags
+                has_pdb_ins_code_2 = 'PDB_ins_code_2' in tags
+                has_pdb_ins_code_3 = 'PDB_ins_code_3' in tags
+                has_pdb_ins_code_4 = 'PDB_ins_code_4' in tags
+                has_lower_linear_limit = 'Angle_lower_linear_limit' in tags
+                has_upper_linear_limit = 'Angle_upper_linear_limit' in tags
 
                 if has_pdb_ins_code_1:
                     data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1', 'default': '?'})
@@ -1083,10 +1099,14 @@ class NmrVrptUtility:
                     data_items.append({'name': 'PDB_ins_code_3', 'type': 'str', 'alt_name': 'ins_code_3', 'default': '?'})
                 if has_pdb_ins_code_4:
                     data_items.append({'name': 'PDB_ins_code_4', 'type': 'str', 'alt_name': 'ins_code_4', 'default': '?'})
+                if has_lower_linear_limit:
+                    data_items.append({'name': 'Angle_lower_linear_limit', 'type': 'float', 'alt_name': 'lower_linear_limit'})
+                if has_upper_linear_limit:
+                    data_items.append({'name': 'Angle_upper_linear_limit', 'type': 'float', 'alt_name': 'upper_linear_limit'})
 
                 filter_items = [{'name': 'Torsion_angle_constraint_list_ID', 'type': 'int', 'value': list_id}]
 
-                rest = self.__rR.getDictListWithFilter('Torsion_angle_constraint',
+                rest = self.__rR.getDictListWithFilter(lp_category,
                                                        data_items,
                                                        filter_items)
 
@@ -1120,11 +1140,17 @@ class NmrVrptUtility:
                     lower_bound = r['lower_bound']
                     upper_bound = r['upper_bound']
                     target_value = r['target_value']
+                    lower_linear_limit = r['lower_linear_limit'] if has_lower_linear_limit else None
+                    upper_linear_limit = r['upper_linear_limit'] if has_upper_linear_limit else None
 
-                    if lower_bound is None and upper_bound is None:
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Warning  - dihedral angle restraint {rest_key} {r} is not interpretable.\n")
+                    if lower_bound is None and upper_bound is None and lower_linear_limit is None and upper_linear_limit is None:
+                        self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Warning  - dihedral angle restraint {rest_key} {r} is not interpretable.\n")
                         continue
+
+                    if lower_bound is None and lower_linear_limit is not None:
+                        lower_bound = lower_linear_limit
+                    if upper_bound is None and upper_linear_limit is not None:
+                        upper_bound = upper_linear_limit
 
                     if target_value is None:  # target values are not always filled (e.g. AMBER dihedral restraints)
                         target_value = (lower_bound + upper_bound) / 2.0
@@ -1155,6 +1181,10 @@ class NmrVrptUtility:
                             self.__dihedRestSeqDict[seq_key] = []
                         self.__dihedRestSeqDict[seq_key].append(rest_key)
 
+                for k, v in self.__dihedRestDict:
+                    if len(v) == 0:
+                        del self.__dihedRestDict[k]
+
             for v in self.__dihedRestSeqDict.values():
                 v = list(set(v))
 
@@ -1183,14 +1213,17 @@ class NmrVrptUtility:
         self.__rdcRestDict = {}
         self.__rdcRestSeqDict = {}
 
+        lp_category = 'RDC_constraint'
+        sf_category = 'RDC_constraint_list'
+
         try:
 
             for dBlock in self.__rR.getDataBlockList():
 
-                if not self.__rR.hasCategory('RDC_constraint', dBlock.getName()):
+                if not self.__rR.hasCategory(lp_category, dBlock.getName()):
                     continue
 
-                sf_tag = self.__rR.getDictList('RDC_constraint_list')
+                sf_tag = self.__rR.getDictList(sf_category)
 
                 list_id = int(sf_tag[0]['ID'])
 
@@ -1208,23 +1241,25 @@ class NmrVrptUtility:
                               {'name': 'Target_value_uncertainty', 'type': 'float', 'alt_name': 'target_value_uncertainty'}
                               ]
 
-                has_lower_bound = self.__rR.hasItem('RDC_constraint', 'RDC_lower_bound_val')
-                has_upper_bound = self.__rR.hasItem('RDC_constraint', 'RDC_upper_bound_val')
-                has_pdb_ins_code_1 = self.__rR.hasItem('RDC_constraint', 'PDB_ins_code_1')
-                has_pdb_ins_code_2 = self.__rR.hasItem('RDC_constraint', 'PDB_ins_code_2')
+                tags = self.__rR.getItemTags(lp_category)
 
-                if has_lower_bound:
-                    data_items.append({'name': 'RDC_lower_bound_val', 'type': 'float', 'alt_name': 'lower_bound'})
-                if has_upper_bound:
-                    data_items.append({'name': 'RDC_upper_bound_val', 'type': 'float', 'alt_name': 'upper_bound'})
+                has_pdb_ins_code_1 = 'PDB_ins_code_1' in tags
+                has_pdb_ins_code_2 = 'PDB_ins_code_2' in tags
+                has_lower_bound = 'RDC_lower_bound_val' in tags
+                has_upper_bound = 'RDC_upper_bound_val' in tags
+
                 if has_pdb_ins_code_1:
                     data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1', 'default': '?'})
                 if has_pdb_ins_code_2:
                     data_items.append({'name': 'PDB_ins_code_2', 'type': 'str', 'alt_name': 'ins_code_2', 'default': '?'})
+                if has_lower_bound:
+                    data_items.append({'name': 'RDC_lower_bound_val', 'type': 'float', 'alt_name': 'lower_bound'})
+                if has_upper_bound:
+                    data_items.append({'name': 'RDC_upper_bound_val', 'type': 'float', 'alt_name': 'upper_bound'})
 
                 filter_items = [{'name': 'RDC_constraint_list_ID', 'type': 'int', 'value': list_id}]
 
-                rest = self.__rR.getDictListWithFilter('RDC_constraint',
+                rest = self.__rR.getDictListWithFilter(lp_category,
                                                        data_items,
                                                        filter_items)
 
@@ -1250,8 +1285,7 @@ class NmrVrptUtility:
                     upper_bound = r['upper_bound'] if has_upper_bound else None
 
                     if target_value is None and lower_bound is None and upper_bound is None:
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Warning  - RDC restraint {rest_key} {r} is not interpretable.\n")
+                        self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Warning  - RDC restraint {rest_key} {r} is not interpretable.\n")
                         continue
 
                     self.__rdcRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, comp_id_1,
@@ -1273,6 +1307,10 @@ class NmrVrptUtility:
                         if seq_key not in self.__rdcRestSeqDict:
                             self.__rdcRestSeqDict[seq_key] = []
                         self.__rdcRestSeqDict[seq_key].append(rest_key)
+
+                for k, v in self.__rdcRestDict:
+                    if len(v) == 0:
+                        del self.__rdcRestDict[k]
 
             for v in self.__rdcRestSeqDict.values():
                 v = list(set(v))

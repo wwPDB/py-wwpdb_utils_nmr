@@ -3127,15 +3127,17 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
     try:
 
+        tags = cR.getItemTags('atom_site')
+
         if modelNumName is None:
-            modelNumName = 'pdbx_PDB_model_num' if cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+            modelNumName = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in tags else 'ndb_model'
         if authAsymId is None:
-            authAsymId = 'pdbx_auth_asym_id' if cR.hasItem('atom_site', 'pdbx_auth_asym_id') else 'auth_asym_id'
+            authAsymId = 'pdbx_auth_asym_id' if 'pdbx_auth_asym_id' in tags else 'auth_asym_id'
         if authSeqId is None:
-            authSeqId = 'pdbx_auth_seq_id' if cR.hasItem('atom_site', 'pdbx_auth_seq_id') else 'auth_seq_id'
+            authSeqId = 'pdbx_auth_seq_id' if 'pdbx_auth_seq_id' in tags else 'auth_seq_id'
         if authAtomId is None:
             authAtomId = 'auth_atom_id'
-        altAuthAtomId = 'pdbx_auth_atom_name' if cR.hasItem('atom_site', 'pdbx_auth_atom_name') else None
+        altAuthAtomId = 'pdbx_auth_atom_name' if 'pdbx_auth_atom_name' in tags else None
 
         if coordAtomSite is None or labelToAuthSeq is None or authToLabelSeq is None:
             changed = True
@@ -3252,7 +3254,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                     if any(seqKey for seqKey in coordUnobsRes.keys() if seqKey not in authToLabelSeq):
 
-                        if cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_asym_id') and cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_seq_id'):
+                        tags = cR.getItemTags('pdbx_unobs_or_zero_occ_residues')
+
+                        if 'label_asym_id' in tags and 'label_seq_id' in tags:
 
                             unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
                                                              [{'name': 'auth_asym_id', 'type': 'str'},
@@ -3314,11 +3318,13 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                     nstdChirality = None
                     if cR.hasCategory('entity_poly'):
 
-                        hasSeqOneLetterCodeCan = cR.hasItem('entity_poly', 'pdbx_seq_one_letter_code_can')
-                        hasPdbxTargetIdentifier = cR.hasItem('entity_poly', 'pdbx_target_identifier')
-                        hasNstdMonomer = cR.hasItem('entity_poly', 'nstd_monomer')
-                        hasNstdLinkage = cR.hasItem('entity_poly', 'nstd_linkage')
-                        hasNstdChirality = cR.hasItem('entity_poly', 'nstd_chirality')
+                        tags = cR.getItemTags('entity_poly')
+
+                        hasSeqOneLetterCodeCan = 'pdbx_seq_one_letter_code_can' in tags
+                        hasPdbxTargetIdentifier = 'pdbx_target_identifier' in tags
+                        hasNstdMonomer = 'nstd_monomer' in tags
+                        hasNstdLinkage = 'nstd_linkage' in tags
+                        hasNstdChirality = 'nstd_chirality' in tags
 
                         dataItems = [{'name': 'type', 'type': 'str'},
                                      {'name': 'pdbx_seq_one_letter_code', 'type': 'str'}]

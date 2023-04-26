@@ -6108,6 +6108,8 @@ class NmrDpUtility:
         self.__representative_model_id = REPRESENTATIVE_MODEL_ID
         # total number of models
         self.__total_models = 0
+        # item tag names of 'atom_site' category of the coordinates
+        self.__coord_atom_site_tags = None
         # atom id list in model
         self.__coord_atom_site = None
         # residues not observed in the coordinates (DAOTHER-7665)
@@ -26335,7 +26337,7 @@ class NmrDpUtility:
 
         try:
 
-            model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+            model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
 
             data_items = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                           {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
@@ -37116,7 +37118,7 @@ class NmrDpUtility:
 
                     try:
 
-                        model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+                        model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
 
                         model_ids = self.__cR.getDictListWithFilter('atom_site',
                                                                     [{'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
@@ -37266,6 +37268,8 @@ class NmrDpUtility:
                 self.__seq_id_map_for_remediation = {}
 
                 self.__cifHashCode = self.__cR.getHashCode()
+
+                self.__coord_atom_site_tags = self.__cR.getItemTags('atom_site')
 
         return False
 
@@ -37666,8 +37670,8 @@ class NmrDpUtility:
 
         try:
 
-            model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
-            has_pdbx_auth_atom_name = self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name')
+            model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
+            has_pdbx_auth_atom_name = 'pdbx_auth_atom_name' in self.__coord_atom_site_tags
 
             data_items = [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                           {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
@@ -37732,10 +37736,10 @@ class NmrDpUtility:
 
             if self.__cR.hasCategory('pdbx_unobs_or_zero_occ_residues'):
 
-                unobs_has_label_seq = self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_asym_id')\
-                    and self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'label_seq_id')
-                unobs_has_auth_seq = self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'auth_asym_id')\
-                    and self.__cR.hasItem('pdbx_unobs_or_zero_occ_residues', 'auth_seq_id')
+                tags = self.__cR.getItemTags('pdbx_unobs_or_zero_occ_residues')
+
+                unobs_has_label_seq = 'label_asym_id' in tags and 'label_seq_id' in tags
+                unobs_has_auth_seq = 'auth_asym_id' in tags and 'auth_seq_id' in tags
 
                 filter_item_by_rep_model_id = [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}]
 
@@ -37843,7 +37847,7 @@ class NmrDpUtility:
                 lp_category = self.lp_categories[file_type][content_subtype + '_alias']
                 key_items = self.key_items[file_type][content_subtype + '_alias']
 
-            elif content_subtype == 'coordinate' and not self.__cR.hasItem(lp_category, 'pdbx_PDB_model_num'):
+            elif content_subtype == 'coordinate' and 'pdbx_PDB_model_num' not in self.__coord_atom_site_tags:
                 alias = True
                 key_items = self.key_items[file_type][content_subtype + '_alias']
 
@@ -42717,7 +42721,7 @@ class NmrDpUtility:
 
             try:
 
-                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+                model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
 
                 protons = self.__cR.getDictListWithFilter('atom_site',
                                                           [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
@@ -42805,7 +42809,7 @@ class NmrDpUtility:
 
             try:
 
-                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+                model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
 
                 atoms = self.__cR.getDictListWithFilter('atom_site',
                                                         [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
@@ -42914,7 +42918,7 @@ class NmrDpUtility:
 
             try:
 
-                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+                model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
 
                 atoms = self.__cR.getDictListWithFilter('atom_site',
                                                         [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
@@ -43044,7 +43048,7 @@ class NmrDpUtility:
 
             try:
 
-                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+                model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
 
                 atoms = self.__cR.getDictListWithFilter('atom_site',
                                                         [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
@@ -43953,7 +43957,7 @@ class NmrDpUtility:
 
             try:
 
-                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+                model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
 
                 _origin = self.__cR.getDictListWithFilter('atom_site',
                                                           [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
@@ -44295,7 +44299,7 @@ class NmrDpUtility:
 
             try:
 
-                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+                model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
 
                 _origin = self.__cR.getDictListWithFilter('atom_site',
                                                           [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},

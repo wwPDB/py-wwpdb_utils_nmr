@@ -914,6 +914,8 @@ class NmrVrptUtility:
                 has_member_id = 'Member_ID' in tags
                 has_pdb_ins_code_1 = 'PDB_ins_code_1' in tags
                 has_pdb_ins_code_2 = 'PDB_ins_code_2' in tags
+                has_target_val = 'Target_val' in tags
+                has_target_val_uncertainty = 'Target_val_uncertainty' in tags
 
                 if has_member_id:
                     data_items.append({'name': 'Member_ID', 'type': 'int', 'alt_name': 'member_id'})
@@ -921,6 +923,10 @@ class NmrVrptUtility:
                     data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1', 'default': '?'})
                 if has_pdb_ins_code_2:
                     data_items.append({'name': 'PDB_ins_code_2', 'type': 'str', 'alt_name': 'ins_code_2', 'default': '?'})
+                if has_target_val:
+                    data_items.append({'name': 'Target_val', 'type': 'float', 'alt_name': 'target_value'})
+                if has_target_val_uncertainty:
+                    data_items.append({'name': 'Target_val_uncertainty', 'type': 'abs-float', 'alt_name': 'target_value_uncertainty'})
 
                 filter_items = [{'name': 'Gen_dist_constraint_list_ID', 'type': 'int', 'value': list_id}]
 
@@ -945,6 +951,8 @@ class NmrVrptUtility:
                     member_id = r['member_id'] if has_member_id else None
                     ins_code_1 = r['ins_code_1'] if has_pdb_ins_code_1 else '?'
                     ins_code_2 = r['ins_code_2'] if has_pdb_ins_code_2 else '?'
+                    target_value = r['target_value'] if has_target_val else None
+                    target_value_uncertainty = r['target_value_uncertainty'] if has_target_val_uncertainty else None
 
                     offset = abs(auth_seq_id_1 - auth_seq_id_2)
 
@@ -980,8 +988,14 @@ class NmrVrptUtility:
                     upper_bound = r['upper_bound']
 
                     if lower_bound is None and upper_bound is None:
-                        self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Warning  - distance restraint {rest_key} {r} is not interpretable.\n")
-                        continue
+                        if target_value is None:
+                            self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Warning  - distance restraint {rest_key} {r} is not interpretable.\n")
+                            continue
+                        if target_value_uncertainty is not None:
+                            lower_bound = max(target_value - target_value_uncertainty, 0.0)
+                            upper_bound = target_value + target_value_uncertainty
+                        else:
+                            lower_bound = upper_bound = target_value
 
                     self.__distRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, comp_id_1,
                                                                          atom_id_1, ins_code_1),
@@ -993,7 +1007,8 @@ class NmrVrptUtility:
                                                           'distance_sub_type': distance_sub_type,
                                                           'bond_flag': bond_flag,
                                                           'lower_bound': r['lower_bound'],
-                                                          'upper_bound': r['upper_bound']})
+                                                          'upper_bound': r['upper_bound'],
+                                                          'target_value': r['target_value']})
 
                     seq_key_1 = (auth_asym_id_1, auth_seq_id_1, comp_id_1)
                     seq_key_2 = (auth_asym_id_2, auth_seq_id_2, comp_id_2)
@@ -1005,9 +1020,9 @@ class NmrVrptUtility:
                             self.__distRestSeqDict[seq_key] = []
                         self.__distRestSeqDict[seq_key].append(rest_key)
 
-                for k, v in self.__distRestDict:
-                    if len(v) == 0:
-                        del self.__distRestDict[k]
+            for k, v in self.__distRestDict.items():
+                if len(v) == 0:
+                    del self.__distRestDict[k]
 
             for v in self.__distRestSeqDict.values():
                 v = list(set(v))
@@ -1090,6 +1105,7 @@ class NmrVrptUtility:
                 has_pdb_ins_code_4 = 'PDB_ins_code_4' in tags
                 has_lower_linear_limit = 'Angle_lower_linear_limit' in tags
                 has_upper_linear_limit = 'Angle_upper_linear_limit' in tags
+                has_target_val_err = 'Angle_target_val_err' in tags
 
                 if has_pdb_ins_code_1:
                     data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1', 'default': '?'})
@@ -1103,6 +1119,8 @@ class NmrVrptUtility:
                     data_items.append({'name': 'Angle_lower_linear_limit', 'type': 'float', 'alt_name': 'lower_linear_limit'})
                 if has_upper_linear_limit:
                     data_items.append({'name': 'Angle_upper_linear_limit', 'type': 'float', 'alt_name': 'upper_linear_limit'})
+                if has_target_val_err:
+                    data_items.append({'name': 'Angle_target_val_err', 'type': 'abs-float', 'alt_name': 'target_value_uncertainty'})
 
                 filter_items = [{'name': 'Torsion_angle_constraint_list_ID', 'type': 'int', 'value': list_id}]
 
@@ -1142,10 +1160,17 @@ class NmrVrptUtility:
                     target_value = r['target_value']
                     lower_linear_limit = r['lower_linear_limit'] if has_lower_linear_limit else None
                     upper_linear_limit = r['upper_linear_limit'] if has_upper_linear_limit else None
+                    target_value_uncertainty = r['target_value_uncertainty'] if has_target_val_err else None
 
                     if lower_bound is None and upper_bound is None and lower_linear_limit is None and upper_linear_limit is None:
-                        self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Warning  - dihedral angle restraint {rest_key} {r} is not interpretable.\n")
-                        continue
+                        if target_value is None:
+                            self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Warning  - dihedral angle restraint {rest_key} {r} is not interpretable.\n")
+                            continue
+                        if target_value_uncertainty is not None:
+                            lower_bound = target_value - target_value_uncertainty
+                            upper_bound = target_value + target_value_uncertainty
+                        else:
+                            lower_bound = upper_bound = target_value
 
                     if lower_bound is None and lower_linear_limit is not None:
                         lower_bound = lower_linear_limit
@@ -1181,9 +1206,9 @@ class NmrVrptUtility:
                             self.__dihedRestSeqDict[seq_key] = []
                         self.__dihedRestSeqDict[seq_key].append(rest_key)
 
-                for k, v in self.__dihedRestDict:
-                    if len(v) == 0:
-                        del self.__dihedRestDict[k]
+            for k, v in self.__dihedRestDict.items():
+                if len(v) == 0:
+                    del self.__dihedRestDict[k]
 
             for v in self.__dihedRestSeqDict.values():
                 v = list(set(v))
@@ -1238,24 +1263,30 @@ class NmrVrptUtility:
                               {'name': 'Comp_ID_2', 'type': 'str', 'alt_name': 'comp_id_2'},
                               {'name': 'Atom_ID_2', 'type': 'str', 'alt_name': 'atom_id_2'},
                               {'name': 'Target_value', 'type': 'float', 'alt_name': 'target_value'},
-                              {'name': 'Target_value_uncertainty', 'type': 'float', 'alt_name': 'target_value_uncertainty'}
+                              {'name': 'Target_value_uncertainty', 'type': 'abs-float', 'alt_name': 'target_value_uncertainty'}
                               ]
 
                 tags = self.__rR.getItemTags(lp_category)
 
                 has_pdb_ins_code_1 = 'PDB_ins_code_1' in tags
                 has_pdb_ins_code_2 = 'PDB_ins_code_2' in tags
-                has_lower_bound = 'RDC_lower_bound_val' in tags
-                has_upper_bound = 'RDC_upper_bound_val' in tags
+                has_lower_bound = 'RDC_lower_bound' in tags
+                has_upper_bound = 'RDC_upper_bound' in tags
+                has_lower_linear_limit = 'RDC_lower_linear_limit' in tags
+                has_upper_linear_limit = 'RDC_upper_linear_limit' in tags
 
                 if has_pdb_ins_code_1:
                     data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1', 'default': '?'})
                 if has_pdb_ins_code_2:
                     data_items.append({'name': 'PDB_ins_code_2', 'type': 'str', 'alt_name': 'ins_code_2', 'default': '?'})
                 if has_lower_bound:
-                    data_items.append({'name': 'RDC_lower_bound_val', 'type': 'float', 'alt_name': 'lower_bound'})
+                    data_items.append({'name': 'RDC_lower_bound', 'type': 'float', 'alt_name': 'lower_bound'})
                 if has_upper_bound:
-                    data_items.append({'name': 'RDC_upper_bound_val', 'type': 'float', 'alt_name': 'upper_bound'})
+                    data_items.append({'name': 'RDC_upper_bound', 'type': 'float', 'alt_name': 'upper_bound'})
+                if has_lower_linear_limit:
+                    data_items.append({'name': 'RDC_lower_linear_limit', 'type': 'float', 'alt_name': 'lower_linear_limit'})
+                if has_upper_linear_limit:
+                    data_items.append({'name': 'RDC_upper_linear_limit', 'type': 'float', 'alt_name': 'upper_linear_limit'})
 
                 filter_items = [{'name': 'RDC_constraint_list_ID', 'type': 'int', 'value': list_id}]
 
@@ -1281,12 +1312,25 @@ class NmrVrptUtility:
                     ins_code_2 = r['ins_code_2'] if has_pdb_ins_code_2 else '?'
 
                     target_value = r['target_value']
+                    target_value_uncertainty = r['target_value_uncertainty']
                     lower_bound = r['lower_bound'] if has_lower_bound else None
                     upper_bound = r['upper_bound'] if has_upper_bound else None
+                    lower_linear_limit = r['lower_linear_limit'] if has_lower_linear_limit else None
+                    upper_linear_limit = r['upper_linear_limit'] if has_upper_linear_limit else None
 
-                    if target_value is None and lower_bound is None and upper_bound is None:
+                    if target_value is None:
                         self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Warning  - RDC restraint {rest_key} {r} is not interpretable.\n")
                         continue
+
+                    if lower_bound is None and upper_bound is None:
+                        if target_value_uncertainty is not None:
+                            lower_bound = target_value - target_value_uncertainty
+                            upper_bound = target_value + target_value_uncertainty
+                        elif lower_linear_limit is not None and upper_linear_limit is None:
+                            lower_bound = lower_linear_limit
+                            upper_bound = upper_linear_limit
+                        else:
+                            lower_bound = upper_bound = target_value
 
                     self.__rdcRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, comp_id_1,
                                                                         atom_id_1, ins_code_1),
@@ -1308,9 +1352,9 @@ class NmrVrptUtility:
                             self.__rdcRestSeqDict[seq_key] = []
                         self.__rdcRestSeqDict[seq_key].append(rest_key)
 
-                for k, v in self.__rdcRestDict:
-                    if len(v) == 0:
-                        del self.__rdcRestDict[k]
+            for k, v in self.__rdcRestDict.items():
+                if len(v) == 0:
+                    del self.__rdcRestDict[k]
 
             for v in self.__rdcRestSeqDict.values():
                 v = list(set(v))

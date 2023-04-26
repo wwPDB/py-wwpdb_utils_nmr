@@ -1266,6 +1266,13 @@ class NmrVrptUtility:
 
                 list_id = int(sf_tag[0]['ID'])
 
+                try:
+                    rdc_type = sf_tag[0]['Details']  # i.e. RDC_HNC, RDC_NH, RDC_CN_i_1, RDC_CAHA, RDC_HNHA, RDC_HNHA_i_1, RDC_CAC, RDC_CAN, RDC_HH, RDC_CC, RDC_other
+                    if rdc_type in (None, '', '.', '?', 'null'):
+                        rdc_type = 'UNNAMED'
+                except KeyError:
+                    rdc_type = 'UNNAMED'
+
                 data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
                               {'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'},
                               {'name': 'Auth_asym_ID_1', 'type': 'str', 'alt_name': 'auth_asym_id_1'},
@@ -1351,10 +1358,10 @@ class NmrVrptUtility:
                                                          'atom_key_2': (auth_asym_id_2, auth_seq_id_2, comp_id_2,
                                                                         atom_id_2, ins_code_2),
                                                          'combination_id': r['combination_id'],
+                                                         'rdc_type': rdc_type,
                                                          'lower_bound': lower_bound,
                                                          'upper_bound': upper_bound,
-                                                         'target_value': target_value,
-                                                         'target_value_uncertainty': r['target_value_uncertainty']})
+                                                         'target_value': target_value})
 
                     seq_key_1 = (auth_asym_id_1, auth_seq_id_1, comp_id_1)
                     seq_key_2 = (auth_asym_id_2, auth_seq_id_2, comp_id_2)

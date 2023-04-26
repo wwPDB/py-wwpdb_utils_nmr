@@ -1247,9 +1247,7 @@ class NmrVrptUtility:
         if self.__nmrDataPath is None:
             return False
 
-        return True  # TODO, pylint: disable='fixme'
-
-        self.__rdcRestDict = {}  # pylint: disable='unreachable'
+        self.__rdcRestDict = {}
         self.__rdcRestSeqDict = {}
 
         lp_category = 'RDC_constraint'
@@ -1745,7 +1743,9 @@ class NmrVrptUtility:
         if self.__coordinates is None:
             return False
 
-        self.__rdcRestViolDict = {}
+        return True  # TODO, pylint: disable='fixme'
+
+        self.__rdcRestViolDict = {}  # pylint: disable='unreachable'
         self.__rdcRestViolCombKeyDict = {}
         self.__rdcRestUnmapped = []
 
@@ -1787,7 +1787,7 @@ class NmrVrptUtility:
 
                         if atom_present:
                             """ TODO: rdc() returns calculated RDC value (RDC_calc) for a given vector using the RDC alignment tensor of rest_key[0], pylint: disable='fixme'
-                            r = rdc_error(rest_key[0], pos_1, pos_2)
+                            r = rdc(rest_key[0], pos_1, pos_2)
                             rdc_list.append(r)
                             """
                         else:

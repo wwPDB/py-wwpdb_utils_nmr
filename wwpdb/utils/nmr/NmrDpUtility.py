@@ -30899,7 +30899,7 @@ class NmrDpUtility:
 
         list_id = 1
 
-        self.__pk_sf_holder = []
+        # self.__pk_sf_holder = []
 
         for fileListId in range(self.__cs_file_path_list_len, self.__file_path_list_len):
 
@@ -30944,7 +30944,7 @@ class NmrDpUtility:
 
                     self.__validateStrPk__(fileListId, file_type, content_subtype, list_id, sf_data, sf_framecode, lp_category)
 
-                    self.__pk_sf_holder.append({'file_type': 'nmr-star', 'saveframe': sf_data})
+                    # self.__pk_sf_holder.append({'file_type': 'nmr-star', 'saveframe': sf_data})
 
                     list_id += 1
 
@@ -30955,7 +30955,7 @@ class NmrDpUtility:
 
                         self.__validateStrPk__(fileListId, file_type, content_subtype, list_id, sf_data, sf_framecode, lp_category)
 
-                        self.__pk_sf_holder.append({'file_type': 'nmr-star', 'saveframe': sf_data})
+                        # self.__pk_sf_holder.append({'file_type': 'nmr-star', 'saveframe': sf_data})
 
                         list_id += 1
 

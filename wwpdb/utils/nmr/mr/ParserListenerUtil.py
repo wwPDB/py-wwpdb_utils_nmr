@@ -6770,9 +6770,9 @@ def testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, atomId, seqKey,
     return None
 
 
-def getDistConstraintType(atomSelectionSet, dstFunc, csStat, fileName):
+def getDistConstraintType(atomSelectionSet, dstFunc, csStat, hint='.'):
     """ Return distance constraint type for _Constraint_file.Constraint_type tag value.
-        @return 'hydrogen bond', 'disulfide bond', None for others
+        @return 'hydrogen bond', 'disulfide bond', etc., None for unclassified distance constraint
     """
 
     if len(atomSelectionSet) != 2:
@@ -6806,36 +6806,36 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, fileName):
             return 'general distance'
         return None
 
-    _fileName = fileName.lower()
+    _hint = hint.lower()
 
     ambig = len(atomSelectionSet[0]) * len(atomSelectionSet[1]) > 1\
         and (isAmbigAtomSelection(atomSelectionSet[0], csStat)
              or isAmbigAtomSelection(atomSelectionSet[1], csStat))
 
     if atom1['chain_id'] != atom2['chain_id'] or ambig:
-        if (upperLimit >= DIST_AMBIG_UP or ambig) and ('pre' in _fileName or 'paramag' in _fileName):
+        if (upperLimit >= DIST_AMBIG_UP or ambig) and ('pre' in _hint or 'paramag' in _hint):
             return 'paramagnetic relaxation'
-        if (upperLimit >= DIST_AMBIG_UP or ambig) and ('cidnp' in _fileName):
+        if (upperLimit >= DIST_AMBIG_UP or ambig) and ('cidnp' in _hint):
             return 'photo cidnp'
-        if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED or ambig) and ('csp' in _fileName or 'perturb' in _fileName):
+        if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED or ambig) and ('csp' in _hint or 'perturb' in _hint):
             return 'chemical shift perturbation'
-        if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED or ambig) and 'mutat' in _fileName:
+        if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED or ambig) and 'mutat' in _hint:
             return 'mutation'
-        if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED or ambig) and 'protect' in _fileName:
+        if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED or ambig) and 'protect' in _hint:
             return 'hydrogen exchange protection'
-        if atom1['chain_id'] != atom2['chain_id'] and 'symm' in _fileName:
+        if atom1['chain_id'] != atom2['chain_id'] and 'symm' in _hint:
             return 'symmetry'
 
-    if 'build' in _fileName and 'up' in _fileName:
-        if 'roe' in _fileName:
+    if 'build' in _hint and 'up' in _hint:
+        if 'roe' in _hint:
             return 'ROE build-up'
         return 'NOE build-up'
 
-    if 'not' in _fileName and 'seen' in _fileName:
+    if 'not' in _hint and 'seen' in _hint:
         if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED):
             return 'NOE not seen'
 
-    if 'roe' in _fileName:
+    if 'roe' in _hint:
         return 'ROE'
 
     if upperLimit >= DIST_AMBIG_UP or lowerLimit >= DIST_AMBIG_UP:
@@ -6848,10 +6848,10 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, fileName):
 
         if upperLimit >= DIST_AMBIG_BND:
 
-            if (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _fileName:
+            if (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _hint:
                 return 'general distance'
 
-            if (atom_id_1 == 'SG' and atom_id_2 == 'SG') or ('disulfide' in _fileName or ('ss' in _fileName and 'bond' in _fileName)):
+            if (atom_id_1 == 'SG' and atom_id_2 == 'SG') or ('disulfide' in _hint or ('ss' in _hint and 'bond' in _hint)):
                 return 'general distance'
 
             if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
@@ -6880,10 +6880,10 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, fileName):
 
         return None
 
-    if (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _fileName:
+    if (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _hint:
         return 'diselenide bond'
 
-    if (atom_id_1 == 'SG' and atom_id_2 == 'SG') or ('disulfide' in _fileName or ('ss' in _fileName and 'bond' in _fileName)):
+    if (atom_id_1 == 'SG' and atom_id_2 == 'SG') or ('disulfide' in _hint or ('ss' in _hint and 'bond' in _hint)):
         return 'disulfide bond'
 
     if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):

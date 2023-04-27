@@ -26,7 +26,8 @@ try:
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_ERROR,
                                                        RDC_RESTRAINT_ERROR,
-                                                       coordAssemblyChecker)
+                                                       coordAssemblyChecker,
+                                                       getDistConstraintType)
     from wwpdb.utils.nmr.AlignUtil import LARGE_ASYM_ID
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -36,7 +37,8 @@ except ImportError:
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_ERROR,
                                            RDC_RESTRAINT_ERROR,
-                                           coordAssemblyChecker)
+                                           coordAssemblyChecker,
+                                           getDistConstraintType)
     from nmr.AlignUtil import LARGE_ASYM_ID
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -989,13 +991,6 @@ class NmrVrptUtility:
                     else:
                         distance_sub_type = 'sidechain-sidechain'
 
-                    if 'O' in (atom_id_1[0], atom_id_2[0]):
-                        bond_flag = 'hbond'
-                    elif 'SG' in (atom_id_1, atom_id_2):
-                        bond_flag = 'sbond'
-                    else:
-                        bond_flag = None
-
                     lower_bound = r['lower_bound']
                     upper_bound = r['upper_bound']
 
@@ -1008,6 +1003,31 @@ class NmrVrptUtility:
                             upper_bound = target_value + target_value_uncertainty
                         else:
                             lower_bound = upper_bound = target_value
+
+                    atom_sels = [[{'chain_id': auth_asym_id_1,
+                                   'seq_id': auth_seq_id_1,
+                                   'comp_id': comp_id_1,
+                                   'atom_id': atom_id_1}],
+                                 [{'chain_id': auth_asym_id_2,
+                                   'seq_id': auth_seq_id_2,
+                                   'comp_id': comp_id_2,
+                                   'atom_id': atom_id_2}]]
+
+                    dst_func = {'lower_limit': str(lower_bound),
+                                'upper_limit': str(upper_bound)}
+
+                    const_type = getDistConstraintType(atom_sels, dst_func, self.__csStat)
+
+                    if const_type == 'hydrogen bond':
+                        bond_flag = 'hbond'
+                    elif const_type == 'disulfide bond':
+                        bond_flag = 'sbond'
+                    elif const_type == 'diselenide bond':
+                        bond_flag = 'sebond'
+                    elif const_type == 'metal coordination':
+                        bond_flag = 'metal'
+                    else:
+                        bond_flag = None
 
                     self.__distRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, comp_id_1,
                                                                          atom_id_1, ins_code_1),

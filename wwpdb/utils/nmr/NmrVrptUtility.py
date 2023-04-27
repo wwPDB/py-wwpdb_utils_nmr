@@ -1956,7 +1956,7 @@ class NmrVrptUtility:
 
             distance_type = ('intraresidue', 'sequential', 'medium', 'long', 'interchain', any_type)
             distance_sub_type = ('backbone-backbone', 'backbone-sidechain', 'sidechain-sidechain')
-            bond_flag = ('hbond', 'sbond', None)
+            bond_flag = ('hbond', 'sbond', 'sebond', 'metal', None)
 
             self.__results['key_lists']['distance_type'] = distance_type
             self.__results['key_lists']['distance_sub_type'] = distance_sub_type

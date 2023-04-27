@@ -555,21 +555,25 @@ class AmberPTParserListener(ParseTreeListener):
                     assi_ref_chain_ids = set()
                     proc_test_chain_ids = []
                     atom_nums = []
+                    delete_atom_nums = []
 
-                    def update_atom_num(seq_align):
+                    def update_atom_num(seq_align, orphan):
                         ref_chain_id = seq_align['ref_chain_id']
                         test_chain_id = seq_align['test_chain_id']
 
                         assi_ref_chain_ids.add(ref_chain_id)
-                        proc_test_chain_ids.append()
+                        proc_test_chain_ids.append(test_chain_id)
 
-                        offset = None
+                        offset = first_seq_id = None
 
                         for atom_num, atomNum in self.__atomNumberDict.items():
                             if atom_num in atom_nums:
                                 continue
                             if atomNum['chain_id'] == test_chain_id:
                                 test_seq_id = atomNum['seq_id']
+
+                                if first_seq_id is None:
+                                    first_seq_id = test_seq_id
 
                                 if test_seq_id in seq_align['test_seq_id']:
                                     idx = seq_align['test_seq_id'].index(test_seq_id)
@@ -592,6 +596,14 @@ class AmberPTParserListener(ParseTreeListener):
 
                                 atom_nums.append(atom_num)
 
+                                if orphan and test_seq_id == first_seq_id:
+                                    if self.__ccU.updateChemCompDict(atomNum['comp_id']):
+                                        chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+                                        leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
+                                                          if cca[self.__ccU.ccaLeavingAtomFlag] == 'Y']
+                                    if atomNum['atom_id'] not in chemCompAtomIds or atomNum['atom_id'] in leavingAtomIds:
+                                        delete_atom_nums.append(atom_num)
+
                     while True:
 
                         orphanPolySeqPrmTop = []
@@ -608,7 +620,7 @@ class AmberPTParserListener(ParseTreeListener):
                                            if sa['ref_chain_id'] == ref_chain_id and sa['test_chain_id'] == test_chain_id), None)
 
                                 if sa is not None:  # and sa['conflict'] == 0:
-                                    update_atom_num(sa)
+                                    update_atom_num(sa, False)
 
                             except StopIteration:
                                 orphanPolySeqPrmTop.append(ps)
@@ -620,7 +632,7 @@ class AmberPTParserListener(ParseTreeListener):
                             if len(__seqAlign__) > 0:
                                 for sa in __seqAlign__:
                                     if sa['conflict'] == 0:
-                                        update_atom_num(sa)
+                                        update_atom_num(sa, True)
 
                                         resolved = True
 
@@ -655,6 +667,10 @@ class AmberPTParserListener(ParseTreeListener):
 
                             proc_test_chain_ids.append(test_chain_id)
                             assi_ref_chain_ids.add(ref_chain_id)
+
+                    if len(delete_atom_nums) > 0:
+                        for atom_num in sorted(delete_atom_nums, reverse=True):
+                            del self.__atomNumberDict[atom_num]
 
                 if len(self.__polySeqModel) == len(self.__polySeqPrmTop):
 

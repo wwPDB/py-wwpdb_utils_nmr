@@ -336,6 +336,16 @@ class GromacsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by GromacsMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: GromacsMRParser.Distance_restraintContext):
 
+        def get_eff_digits(val):
+            eff_digits = 0
+            if '.' in val and val[-1] == '0':
+                period = val.index('.')
+                last = len(val) - 1
+                while val[last] == '0':
+                    last -= 1
+                eff_digits = last - period
+            return max(eff_digits, 0)
+
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
@@ -350,6 +360,16 @@ class GromacsMRParserListener(ParseTreeListener):
             upper_limit = self.numberSelection[1]
             upper_linear_limit = self.numberSelection[2]
             weight = self.numberSelection[3]
+
+            if lower_limit is not None:
+                eff_digits = get_eff_digits(str(lower_limit))
+                lower_limit = round(lower_limit * 10.0, eff_digits)
+            if upper_limit is not None:
+                eff_digits = get_eff_digits(str(upper_limit))
+                upper_limit = round(upper_limit * 10.0, eff_digits)
+            if upper_linear_limit is not None:
+                eff_digits = get_eff_digits(str(upper_linear_limit))
+                upper_linear_limit = round(upper_linear_limit * 10.0, eff_digits)
 
             if funct != 1:
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index)}"

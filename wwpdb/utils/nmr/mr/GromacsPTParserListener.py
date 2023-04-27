@@ -31,7 +31,9 @@ try:
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
                                            retrieveAtomIdentFromMRMap,
-                                           alignPolymerSequenceWithConflicts)
+                                           alignPolymerSequenceWithConflicts,
+                                           getRestraintFormatName,
+                                           getOneLetterCodeSequence)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.GromacsPTParser import GromacsPTParser
@@ -50,7 +52,9 @@ except ImportError:
                                assignPolymerSequence,
                                trimSequenceAlignment,
                                retrieveAtomIdentFromMRMap,
-                               alignPolymerSequenceWithConflicts)
+                               alignPolymerSequenceWithConflicts,
+                               getRestraintFormatName,
+                               getOneLetterCodeSequence)
 
 
 # This class defines a complete listener for a parse tree produced by GromacsPTParser.
@@ -513,129 +517,139 @@ class GromacsPTParserListener(ParseTreeListener):
             if len(message) > 0:
                 self.__f.extend(message)
 
-            if self.__chainAssign is not None:
+            if len(self.__seqAlign) == 0:
+                mrFormatName = getRestraintFormatName(self.__file_type)
+                _a_mr_format_name = 'the ' + mrFormatName
 
-                if len(self.__polySeqModel) < len(self.__polySeqPrmTop):
-                    assi_ref_chain_ids = set()
-                    proc_test_chain_ids = []
-                    atom_nums = []
-                    delete_atom_nums = []
+                ref_code = getOneLetterCodeSequence(self.__polySeqModel[0]['comp_id'])
+                test_code = getOneLetterCodeSequence(self.__polySeqPrmTop[0]['comp_id'])
 
-                    def update_atom_num(seq_align, orphan):
-                        ref_chain_id = seq_align['ref_chain_id']
-                        test_chain_id = seq_align['test_chain_id']
+                self.__f.append(f"[Sequence mismatch] Polymer sequence between the coordinate and {_a_mr_format_name} data does not match. "
+                                f"For example, coordinates ({self.__polySeqModel[0]['auth_chain_id']}): {ref_code} vs topology: {test_code}."
+                                "Please verify the two sequences and re-upload the correct file(s) if required.")
 
-                        assi_ref_chain_ids.add(ref_chain_id)
-                        proc_test_chain_ids.append(test_chain_id)
+            assi_ref_chain_ids = set()
+            proc_test_chain_ids = []
+            atom_nums = []
+            delete_atom_nums = []
 
-                        offset = first_seq_id = None
+            def update_atom_num(seq_align, orphan):
+                ref_chain_id = seq_align['ref_chain_id']
+                test_chain_id = seq_align['test_chain_id']
 
-                        for atom_num, atomNum in self.__atomNumberDict.items():
-                            if atom_num in atom_nums:
+                assi_ref_chain_ids.add(ref_chain_id)
+                proc_test_chain_ids.append(test_chain_id)
+
+                offset = first_seq_id = None
+
+                for atom_num, atomNum in self.__atomNumberDict.items():
+                    if atom_num in atom_nums:
+                        continue
+                    if atomNum['chain_id'] == test_chain_id:
+                        atom_nums.append(atom_num)
+
+                        test_seq_id = atomNum['seq_id']
+
+                        if first_seq_id is None:
+                            first_seq_id = test_seq_id
+
+                        if test_seq_id in seq_align['test_seq_id']:
+                            idx = seq_align['test_seq_id'].index(test_seq_id)
+                            if idx < len(seq_align['ref_auth_seq_id']):
+                                ref_seq_id = seq_align['ref_auth_seq_id'][idx]
+                            elif offset is not None:
+                                ref_seq_id = test_seq_id + offset
+                            else:
                                 continue
-                            if atomNum['chain_id'] == test_chain_id:
-                                atom_nums.append(atom_num)
-
-                                test_seq_id = atomNum['seq_id']
-
-                                if first_seq_id is None:
-                                    first_seq_id = test_seq_id
-
-                                if test_seq_id in seq_align['test_seq_id']:
-                                    idx = seq_align['test_seq_id'].index(test_seq_id)
-                                    if idx < len(seq_align['ref_auth_seq_id']):
-                                        ref_seq_id = seq_align['ref_auth_seq_id'][idx]
-                                    elif offset is not None:
-                                        ref_seq_id = test_seq_id + offset
-                                    else:
-                                        continue
-                                elif offset is not None:
-                                    ref_seq_id = test_seq_id + offset
-                                else:
-                                    continue
-
-                                if offset is None:
-                                    offset = ref_seq_id - test_seq_id
-
-                                atomNum['chain_id'] = ref_chain_id
-                                atomNum['seq_id'] = ref_seq_id
-
-                                if orphan and test_seq_id == first_seq_id:
-                                    if self.__ccU.updateChemCompDict(atomNum['comp_id']):
-                                        chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-                                        leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
-                                                          if cca[self.__ccU.ccaLeavingAtomFlag] == 'Y']
-                                    if atomNum['atom_id'] not in chemCompAtomIds or atomNum['atom_id'] in leavingAtomIds:
-                                        delete_atom_nums.append(atom_num)
-
-                    while True:
-
-                        orphanPolySeqPrmTop = []
-
-                        for ps in self.__polySeqPrmTop:
-                            test_chain_id = ps['chain_id']
-                            if test_chain_id in proc_test_chain_ids:
-                                continue
-                            try:
-                                ca = next(ca for ca in self.__chainAssign if ca['test_chain_id'] == test_chain_id)
-
-                                ref_chain_id = ca['ref_chain_id']
-                                sa = next((sa for sa in self.__seqAlign
-                                           if sa['ref_chain_id'] == ref_chain_id and sa['test_chain_id'] == test_chain_id), None)
-
-                                if sa is not None:  # and sa['conflict'] == 0:
-                                    update_atom_num(sa, False)
-
-                            except StopIteration:
-                                orphanPolySeqPrmTop.append(ps)
-
-                        resolved = False
-
-                        if len(orphanPolySeqPrmTop) > 0:
-                            __seqAlign__, _ = alignPolymerSequence(self.__pA, polySeqModel, orphanPolySeqPrmTop)
-                            if len(__seqAlign__) > 0:
-                                for sa in __seqAlign__:
-                                    if sa['conflict'] == 0:
-                                        update_atom_num(sa, True)
-
-                                        resolved = True
-
-                        if not resolved:
-                            break
-
-                    for ps in self.__polySeqPrmTop:
-                        test_chain_id = ps['chain_id']
-
-                        if test_chain_id in proc_test_chain_ids:
+                        elif offset is not None:
+                            ref_seq_id = test_seq_id + offset
+                        else:
                             continue
 
-                        for cif_ps in self.__polySeqModel:
-                            ref_chain_id = cif_ps['auth_chain_id']
+                        if offset is None:
+                            offset = ref_seq_id - test_seq_id
 
-                            if ref_chain_id in assi_ref_chain_ids:
-                                continue
+                        atomNum['chain_id'] = ref_chain_id
+                        atomNum['seq_id'] = ref_seq_id
 
-                            len_gap = abs(len(ps['seq_id']) - len(cif_ps['auth_seq_id']))
+                        if orphan and test_seq_id == first_seq_id:
+                            if self.__ccU.updateChemCompDict(atomNum['comp_id']):
+                                chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+                                leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
+                                                  if cca[self.__ccU.ccaLeavingAtomFlag] == 'Y']
+                            if atomNum['atom_id'] not in chemCompAtomIds or atomNum['atom_id'] in leavingAtomIds:
+                                delete_atom_nums.append(atom_num)
 
-                            if len_gap > 20:
-                                continue
+            while True:
 
+                orphanPolySeqPrmTop = []
+
+                for ps in self.__polySeqPrmTop:
+                    test_chain_id = ps['chain_id']
+                    if test_chain_id in proc_test_chain_ids:
+                        continue
+                    try:
+                        ca = next(ca for ca in self.__chainAssign if ca['test_chain_id'] == test_chain_id)
+
+                        ref_chain_id = ca['ref_chain_id']
+                        sa = next((sa for sa in self.__seqAlign
+                                   if sa['ref_chain_id'] == ref_chain_id and sa['test_chain_id'] == test_chain_id), None)
+
+                        if sa is not None:  # and sa['conflict'] == 0:
+                            update_atom_num(sa, False)
+
+                    except StopIteration:
+                        orphanPolySeqPrmTop.append(ps)
+
+                resolved = False
+
+                if len(orphanPolySeqPrmTop) > 0:
+                    __seqAlign__, _ = alignPolymerSequence(self.__pA, polySeqModel, orphanPolySeqPrmTop)
+                    if len(__seqAlign__) > 0:
+                        for sa in __seqAlign__:
+                            if sa['conflict'] == 0:
+                                update_atom_num(sa, True)
+
+                                resolved = True
+
+                if not resolved:
+                    break
+
+            for ps in self.__polySeqPrmTop:
+                test_chain_id = ps['chain_id']
+
+                if test_chain_id in proc_test_chain_ids:
+                    continue
+
+                for cif_ps in self.__polySeqModel:
+                    ref_chain_id = cif_ps['auth_chain_id']
+
+                    if ref_chain_id in assi_ref_chain_ids:
+                        continue
+
+                    len_gap = abs(len(ps['seq_id']) - len(cif_ps['auth_seq_id']))
+
+                    if len_gap > 20:
+                        continue
+
+                    if len_gap == 0:
+                        offset = cif_ps['auth_seq_id'][0] - ps['seq_id'][0]
+
+                    for atomNum in self.__atomNumberDict.values():
+                        if atomNum['chain_id'] == test_chain_id:
+                            atomNum['chain_id'] = ref_chain_id
                             if len_gap == 0:
-                                offset = cif_ps['auth_seq_id'][0] - ps['seq_id'][0]
+                                atomNum['seq_id'] += offset
 
-                            for atomNum in self.__atomNumberDict.values():
-                                if atomNum['chain_id'] == test_chain_id:
-                                    atomNum['chain_id'] = ref_chain_id
-                                    if len_gap == 0:
-                                        atomNum['seq_id'] += offset
+                    proc_test_chain_ids.append(test_chain_id)
+                    assi_ref_chain_ids.add(ref_chain_id)
 
-                            proc_test_chain_ids.append(test_chain_id)
-                            assi_ref_chain_ids.add(ref_chain_id)
+            if len(delete_atom_nums) > 0:
+                for atom_num in sorted(delete_atom_nums, reverse=True):
+                    del self.__atomNumberDict[atom_num]
 
-                    if len(delete_atom_nums) > 0:
-                        for atom_num in sorted(delete_atom_nums, reverse=True):
-                            del self.__atomNumberDict[atom_num]
-
+            if self.__chainAssign is not None:
+                """
                 if len(self.__polySeqModel) == len(self.__polySeqPrmTop):
 
                     chain_mapping = {}
@@ -659,7 +673,7 @@ class GromacsPTParserListener(ParseTreeListener):
 
                         self.__seqAlign, _ = alignPolymerSequence(self.__pA, polySeqModel, self.__polySeqPrmTop)
                         self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
-
+                """
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
                 if self.__hasNonPolyModel:

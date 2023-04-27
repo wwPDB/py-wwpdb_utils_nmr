@@ -1013,8 +1013,8 @@ class NmrVrptUtility:
                                    'comp_id': comp_id_2,
                                    'atom_id': atom_id_2}]]
 
-                    dst_func = {'lower_limit': str(lower_bound),
-                                'upper_limit': str(upper_bound)}
+                    dst_func = {'lower_limit': str(lower_bound) if lower_bound is not None else None,
+                                'upper_limit': str(upper_bound) if upper_bound is not None else None}
 
                     const_type = getDistConstraintType(atom_sels, dst_func, self.__csStat)
 

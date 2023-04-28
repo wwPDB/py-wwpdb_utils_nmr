@@ -1817,10 +1817,11 @@ class NmrVrptUtility:
                             atom_present = False
 
                         if atom_present:
-                            """ TODO: rdc() returns calculated RDC value (RDC_calc) for a given vector using the RDC alignment tensor of rest_key[0], pylint: disable='fixme'
-                            r = rdc(rest_key[0], pos_1, pos_2)
-                            rdc_list.append(r)
-                            """
+                            # """ TODO: rdc() returns calculated RDC value (RDC_calc) for a given vector using the RDC alignment tensor of rest_key[0], pylint: disable='fixme'
+                            # r = rdc(rest_key[0], pos_1, pos_2)
+                            # rdc_list.append(r)
+                            # """
+                            pass
                         else:
                             self.__rdcRestUnmapped.append(rest_key)
 

@@ -865,12 +865,16 @@ class GromacsMRParserListener(ParseTreeListener):
             chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
             seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
             comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
-            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+            atom_id_1 = self.atomSelectionSet[0][0].get('atom_id', None)
+            if atom_id_1 is None:
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id'] = self.atomSelectionSet[0][0]['auth_atom_id']
 
             chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
             seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
             comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
-            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+            atom_id_2 = self.atomSelectionSet[1][0].get('atom_id', None)
+            if atom_id_2 is None:
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id'] = self.atomSelectionSet[1][0]['auth_atom_id']
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"

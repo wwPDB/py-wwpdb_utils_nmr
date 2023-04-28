@@ -5085,7 +5085,9 @@ class AmberMRParserListener(ParseTreeListener):
                         chain_id = atomSelection[0]['chain_id']
                         seq_id = atomSelection[0]['seq_id']
                         comp_id = atomSelection[0]['comp_id']
-                        atom_id = atomSelection[0]['atom_id']
+                        atom_id = atomSelection[0].get('atom_id', None)
+                        if atom_id is None:
+                            atom_id = atomSelection[0]['atom_id'] = atomSelection[0]['auth_atom_id']
 
                         self.atomSelectionSet.append(atomSelection)
 
@@ -5106,7 +5108,9 @@ class AmberMRParserListener(ParseTreeListener):
                         chain_id = atomSelection[0]['chain_id']
                         seq_id = atomSelection[0]['seq_id']
                         comp_id = atomSelection[0]['comp_id']
-                        atom_id = atomSelection[0]['atom_id']
+                        atom_id = atomSelection[0].get('atom_id', None)
+                        if atom_id is None:
+                            atom_id = atomSelection[0]['atom_id'] = atomSelection[0]['auth_atom_id']
 
                         self.atomSelectionSet.append(atomSelection)
 
@@ -5428,7 +5432,9 @@ class AmberMRParserListener(ParseTreeListener):
                     chain_id = atomSelection[0]['chain_id']
                     seq_id = atomSelection[0]['seq_id']
                     comp_id = atomSelection[0]['comp_id']
-                    atom_id = atomSelection[0]['atom_id']
+                    atom_id = atomSelection[0].get('atom_id', None)
+                    if atom_id is None:
+                        atom_id = atomSelection[0]['atom_id'] = atomSelection[0]['auth_atom_id']
 
                     self.atomSelectionSet.append(atomSelection)
 
@@ -5506,7 +5512,9 @@ class AmberMRParserListener(ParseTreeListener):
                         chain_id = atomSelection[0]['chain_id']
                         seq_id = atomSelection[0]['seq_id']
                         comp_id = atomSelection[0]['comp_id']
-                        atom_id = atomSelection[0]['atom_id']
+                        atom_id = atomSelection[0].get('atom_id', None)
+                        if atom_id is None:
+                            atom_id = atomSelection[0]['atom_id'] = atomSelection[0]['auth_atom_id']
 
                         self.atomSelectionSet.append(atomSelection)
 
@@ -5927,7 +5935,9 @@ class AmberMRParserListener(ParseTreeListener):
                 chain_id = atomSelection[0]['chain_id']
                 seq_id = atomSelection[0]['seq_id']
                 comp_id = atomSelection[0]['comp_id']
-                atom_id = atomSelection[0]['atom_id']
+                atom_id = atomSelection[0].get('atom_id', None)
+                if atom_id is None:
+                    atom_id = atomSelection[0]['atom_id'] = atomSelection[0]['auth_atom_id']
 
                 self.atomSelectionSet.append(atomSelection)
 
@@ -6326,7 +6336,9 @@ class AmberMRParserListener(ParseTreeListener):
                     chain_id_1 = atomSelection[0]['chain_id']
                     seq_id_1 = atomSelection[0]['seq_id']
                     comp_id_1 = atomSelection[0]['comp_id']
-                    atom_id_1 = atomSelection[0]['atom_id']
+                    atom_id_1 = atomSelection[0].get('atom_id', None)
+                    if atom_id_1 is None:
+                        atom_id_1 = atomSelection[0]['atom_id'] = atomSelection[0]['auth_atom_id']
 
                     self.atomSelectionSet.append(atomSelection)
 
@@ -6362,7 +6374,9 @@ class AmberMRParserListener(ParseTreeListener):
                     chain_id_2 = atomSelection[0]['chain_id']
                     seq_id_2 = atomSelection[0]['seq_id']
                     comp_id_2 = atomSelection[0]['comp_id']
-                    atom_id_2 = atomSelection[0]['atom_id']
+                    atom_id_2 = atomSelection[0].get('atom_id', None)
+                    if atom_id_2 is None:
+                        atom_id_2 = atomSelection[0]['atom_id'] = atomSelection[0]['auth_atom_id']
 
                     self.atomSelectionSet.append(atomSelection)
 
@@ -6927,7 +6941,9 @@ class AmberMRParserListener(ParseTreeListener):
                     chain_id_1 = atomSelection[0]['chain_id']
                     seq_id_1 = atomSelection[0]['seq_id']
                     comp_id_1 = atomSelection[0]['comp_id']
-                    atom_id_1 = atomSelection[0]['atom_id']
+                    atom_id_1 = atomSelection[0].get('atom_id', None)
+                    if atom_id_1 is None:
+                        atom_id_1 = atomSelection[0]['atom_id'] = atomSelection[0]['auth_atom_id']
 
                     self.atomSelectionSet.append(atomSelection)
 
@@ -6943,7 +6959,9 @@ class AmberMRParserListener(ParseTreeListener):
                     chain_id_2 = atomSelection[0]['chain_id']
                     seq_id_2 = atomSelection[0]['seq_id']
                     comp_id_2 = atomSelection[0]['comp_id']
-                    atom_id_2 = atomSelection[0]['atom_id']
+                    atom_id_2 = atomSelection[0].get('atom_id', None)
+                    if atom_id_2 is None:
+                        atom_id_2 = atomSelection[0]['atom_id'] = atomSelection[0]['auth_atom_id']
 
                     self.atomSelectionSet.append(atomSelection)
 
@@ -6959,7 +6977,9 @@ class AmberMRParserListener(ParseTreeListener):
                     chain_id_3 = atomSelection[0]['chain_id']
                     seq_id_3 = atomSelection[0]['seq_id']
                     comp_id_3 = atomSelection[0]['comp_id']
-                    atom_id_3 = atomSelection[0]['atom_id']
+                    atom_id_3 = atomSelection[0].get('atom_id', None)
+                    if atom_id_3 is None:
+                        atom_id_3 = atomSelection[0]['atom_id'] = atomSelection[0]['auth_atom_id']
 
                     self.atomSelectionSet.append(atomSelection)
 

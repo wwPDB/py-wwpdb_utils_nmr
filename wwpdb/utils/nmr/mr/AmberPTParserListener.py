@@ -262,7 +262,7 @@ class AmberPTParserListener(ParseTreeListener):
             NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S')
 
             prevAtomName = ''
-            prevSeqId = None
+            prevSeqId = prevCompId = None
             offset = 0
             for atomNum, (atomName, atomType) in enumerate(zip(self.__atomName, self.__amberAtomType), start=1):
                 _seqId = next(resNum for resNum, (atomNumBegin, atomNumEnd)
@@ -277,6 +277,7 @@ class AmberPTParserListener(ParseTreeListener):
                 overrun = False
                 # the second condition indicates metal ions
                 if terminus[atomNum - 2]\
+                   or (prevCompId is not None and prevCompId.endswith('3') and compId.endswith('5'))\
                    or (compId == atomName and compId.title() in NAMES_ELEMENT)\
                    or (len(prevAtomName) > 0 and prevAtomName[0] not in NON_METAL_ELEMENTS and prevSeqId != _seqId):
 
@@ -308,6 +309,7 @@ class AmberPTParserListener(ParseTreeListener):
                                                   'atom_type': atomType}
                 prevAtomName = atomName
                 prevSeqId = _seqId
+                prevCompId = compId
 
             self.__polySeqPrmTop.append({'chain_id': chainId,
                                          'seq_id': seqIdList,
@@ -506,9 +508,10 @@ class AmberPTParserListener(ParseTreeListener):
             self.__seqAlign, compIdMapping = alignPolymerSequence(self.__pA, polySeqModel, self.__polySeqPrmTop)
 
             if len(self.__seqAlign) == 0:
-                self.__seqAlign, compIdMapping = alignPolymerSequenceWithConflicts(self.__pA, polySeqModel, self.__polySeqPrmTop, 1)
-                if len(self.__seqAlign) == 0:
-                    self.__seqAlign, compIdMapping = alignPolymerSequenceWithConflicts(self.__pA, polySeqModel, self.__polySeqPrmTop, 2)
+                for c in range(1, 5):
+                    self.__seqAlign, compIdMapping = alignPolymerSequenceWithConflicts(self.__pA, polySeqModel, self.__polySeqPrmTop, c)
+                    if len(self.__seqAlign) > 0:
+                        break
 
             # test chain assignment before applying comp_id mapping
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
@@ -601,6 +604,8 @@ class AmberPTParserListener(ParseTreeListener):
                 ref_chain_id = seq_align['ref_chain_id']
                 test_chain_id = seq_align['test_chain_id']
 
+                ps_cif = next(ps for ps in self.__polySeqModel if ps['auth_chain_id'] == ref_chain_id)
+
                 assi_ref_chain_ids.add(ref_chain_id)
                 proc_test_chain_ids.append(test_chain_id)
 
@@ -636,7 +641,10 @@ class AmberPTParserListener(ParseTreeListener):
                         atomNum['chain_id'] = ref_chain_id
                         atomNum['seq_id'] = ref_seq_id
 
-                        if orphan and test_seq_id == first_seq_id:
+                        idx = ps_cif['auth_seq_id'].index(ref_seq_id)
+                        atomNum['comp_id'] = ps_cif['comp_id'][idx]
+
+                        if orphan and test_seq_id == first_seq_id and self.__csStat.getTypeOfCompId(atomNum['comp_id'])[0]:
                             if self.__ccU.updateChemCompDict(atomNum['comp_id']):
                                 chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                                 leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
@@ -668,13 +676,26 @@ class AmberPTParserListener(ParseTreeListener):
                 resolved = False
 
                 if len(orphanPolySeqPrmTop) > 0:
-                    __seqAlign__, _ = alignPolymerSequence(self.__pA, polySeqModel, orphanPolySeqPrmTop)
+                    __polySeqModel__ = [ps for ps in self.__polySeqModel if ps['auth_chain_id'] not in assi_ref_chain_ids]
+                    __seqAlign__, _ = alignPolymerSequence(self.__pA, __polySeqModel__, orphanPolySeqPrmTop)
                     if len(__seqAlign__) > 0:
                         for sa in __seqAlign__:
                             if sa['conflict'] == 0:
                                 update_atom_num(sa, True)
 
                                 resolved = True
+
+                    if not resolved:
+                        for c in range(1, 5):
+                            __seqAlign__, _ = alignPolymerSequenceWithConflicts(self.__pA, __polySeqModel__, orphanPolySeqPrmTop, c)
+                            if len(__seqAlign__) > 0:
+                                for sa in __seqAlign__:
+                                    if sa['conflict'] <= c:
+                                        update_atom_num(sa, True)
+
+                                        resolved = True
+                            if resolved:
+                                break
 
                 if not resolved:
                     break
@@ -713,31 +734,6 @@ class AmberPTParserListener(ParseTreeListener):
                     del self.__atomNumberDict[atom_num]
 
             if self.__chainAssign is not None:
-                """
-                if len(self.__polySeqModel) == len(self.__polySeqPrmTop):
-
-                    chain_mapping = {}
-
-                    for ca in self.__chainAssign:
-                        ref_chain_id = ca['ref_chain_id']
-                        test_chain_id = ca['test_chain_id']
-
-                        if ref_chain_id != test_chain_id:
-                            chain_mapping[test_chain_id] = ref_chain_id
-
-                    if len(chain_mapping) == len(self.__polySeqModel):
-
-                        for ps in self.__polySeqPrmTop:
-                            if ps['chain_id'] in chain_mapping:
-                                ps['chain_id'] = chain_mapping[ps['chain_id']]
-
-                        for atomNum in self.__atomNumberDict.values():
-                            if atomNum['chain_id'] in chain_mapping:
-                                atomNum['chain_id'] = chain_mapping[atomNum['chain_id']]
-
-                        self.__seqAlign, _ = alignPolymerSequence(self.__pA, polySeqModel, self.__polySeqPrmTop)
-                        self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
-                """
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
                 if self.__hasNonPolyModel:

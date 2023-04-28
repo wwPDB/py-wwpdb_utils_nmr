@@ -13,6 +13,7 @@ import itertools
 import numpy
 
 from antlr4 import ParseTreeListener
+from operator import itemgetter
 
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -4436,7 +4437,7 @@ class AmberMRParserListener(ParseTreeListener):
                 atomList.append({'chain_id': n['chain_id'], 'seq_id': n['seq_id'], 'comp_id': n['comp_id'], 'atom_id': n['atom_id'],
                                  'distance': numpy.linalg.norm(toNpArray(n) - origin)})
 
-            p = sorted(atomList, key=lambda a: a['distance'])[0]
+            p = sorted(atomList, key=itemgetter('distance'))[0]
             factor['auth_atom_id'] = p['atom_id']
             return factor
 

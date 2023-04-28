@@ -20,6 +20,7 @@ import logging
 import hashlib
 
 from packaging import version
+from operator import itemgetter
 
 try:
     from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
@@ -222,7 +223,7 @@ class CifToNmrStar:
                 strData.entry_id = f'cs_{entry_id.lower()}'
 
             # reorder
-            category_order.sort(key=lambda k: k['category_order'])
+            category_order.sort(key=itemgetter('category_order'))
 
             # correct block name in case
             reserved_block_names = []

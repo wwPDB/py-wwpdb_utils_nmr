@@ -14,6 +14,7 @@ import numpy
 
 from antlr4 import ParseTreeListener
 from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
+from operator import itemgetter
 
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -3956,7 +3957,7 @@ class CnsMRParserListener(ParseTreeListener):
                 atomSelection.remove('*')
 
             if self.__createSfDict:
-                atomSelection = sorted(atomSelection, key=lambda x: (x['chain_id'], x['seq_id'], x['atom_id']))
+                atomSelection = sorted(atomSelection, key=itemgetter('chain_id', 'seq_id', 'atom_id'))
 
             if self.__sel_expr_debug:
                 print("  " * self.depth + f"atom selection: {atomSelection}")
@@ -4021,7 +4022,7 @@ class CnsMRParserListener(ParseTreeListener):
             atomSelection.remove('*')
 
         if self.__createSfDict:
-            atomSelection = sorted(atomSelection, key=lambda x: (x['chain_id'], x['seq_id'], x['atom_id']))
+            atomSelection = sorted(atomSelection, key=itemgetter('chain_id', 'seq_id', 'atom_id'))
 
         if self.__sel_expr_debug:
             print("  " * self.depth + f"atom selection: {atomSelection}")

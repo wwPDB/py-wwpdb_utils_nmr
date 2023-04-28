@@ -86,6 +86,8 @@ import json
 import copy
 import re
 
+from operator import itemgetter
+
 try:
     from wwpdb.utils.nmr.AlignUtil import emptyValue, monDict3, getPrettyJson
 except ImportError:
@@ -2462,7 +2464,7 @@ class NmrDpReportWarning:
                 if 'sigma' not in c:
                     c['sigma'] = 0.0
 
-            for c in sorted(sorted(d, key=lambda i: i['sigma'], reverse=True), key=lambda j: j['status']):
+            for c in sorted(sorted(d, key=itemgetter('sigma'), reverse=True), key=itemgetter('status')):
                 if 'description_alt' in c:
                     c['description'] = c['description_alt']
                     del c['description_alt']
@@ -2476,7 +2478,7 @@ class NmrDpReportWarning:
                 if 'sigma' not in c:
                     c['sigma'] = 0.0
 
-            for c in sorted(d, key=lambda i: i['sigma'], reverse=True):
+            for c in sorted(d, key=itemgetter('sigma'), reverse=True):
                 if 'description_alt' in c:
                     c['description'] = c['description_alt']
                     del c['description_alt']
@@ -2497,7 +2499,7 @@ class NmrDpReportWarning:
 
         self.__contents[item] = []
 
-        for c in sorted(d, key=lambda i: i['sigma'], reverse=True):
+        for c in sorted(d, key=itemgetter('sigma'), reverse=True):
             self.__contents[item].append(c)
 
     def clean(self):

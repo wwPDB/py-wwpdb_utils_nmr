@@ -44,6 +44,7 @@ import inspect
 import pickle
 
 import numpy as np
+from operator import itemgetter
 
 from mmcif.io.PdbxReader import PdbxReader
 
@@ -684,7 +685,7 @@ class CifReader:
             if ins_code_col == -1:
                 if catName == 'pdbx_nonpoly_scheme':
                     sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList),
-                                       key=lambda x: x[1])
+                                       key=itemgetter(1))
                 else:
                     sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList),
                                        key=lambda x: (len(x[0]), x[0], x[1]))
@@ -710,7 +711,7 @@ class CifReader:
             else:
                 if catName == 'pdbx_nonpoly_scheme':
                     sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList),
-                                       key=lambda x: x[1])
+                                       key=itemgetter(1))
                 else:
                     if all(row[label_seq_col].isdigit() for row in rowList):
                         sortedSeq = sorted(set((row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], int(row[label_seq_col]), row[comp_id_col]) for row in rowList),
@@ -1301,7 +1302,7 @@ class CifReader:
 
                 _dst_chain_ids = set(_a['chain_id'] for _a in _atom_site_p)
                 _seq_keys = sorted(set((_a['chain_id'], _a['seq_id']) for _a in _atom_site_p),
-                                   key=lambda x: (x[0], x[1]))
+                                   key=itemgetter(0, 1))
                 _bb_atom_site_p = [_a for _a in _bb_atom_site_ref if (_a['chain_id'], _a['seq_id']) in _seq_keys]
 
                 core_rmsd = []
@@ -1382,7 +1383,7 @@ class CifReader:
 
                 _bb_atom_site_ref = _bb_atom_site_dict[ref_model_id]
                 _seq_keys = sorted(set((_a['chain_id'], _a['seq_id']) for _a in _atom_site_p),
-                                   key=lambda x: (x[0], x[1]))
+                                   key=itemgetter(0, 1))
                 _bb_atom_site_p = [_a for _a in _bb_atom_site_ref if (_a['chain_id'], _a['seq_id']) in _seq_keys]
 
                 for test_model_id in range(2, _total_models + 1):
@@ -1440,7 +1441,7 @@ class CifReader:
 
             dst_chain_ids = set(a['chain_id'] for a, l in zip(_atom_site_ref, list_labels) if l == label)  # noqa: E741
             seq_keys = sorted(set((a['chain_id'], a['seq_id']) for a, l in zip(_atom_site_ref, list_labels) if l == label),  # noqa: E741
-                              key=lambda x: (x[0], x[1]))
+                              key=itemgetter(0, 1))
 
             for chain_id in dst_chain_ids:
                 seq_ids = [s for c, s in seq_keys if c == chain_id]

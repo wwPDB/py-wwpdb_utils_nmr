@@ -192,6 +192,7 @@ import numpy
 
 from packaging import version
 from munkres import Munkres
+from operator import itemgetter
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
@@ -13336,8 +13337,8 @@ class NmrDpUtility:
                 possible_types.update(_possible_types)
 
         if len(genuine_type) != 1:
-            _valid_types = [k for k, v in sorted(valid_types.items(), key=lambda x: x[1], reverse=True)]
-            _possible_types = [k for k, v in sorted(possible_types.items(), key=lambda x: x[1], reverse=True)]
+            _valid_types = [k for k, v in sorted(valid_types.items(), key=itemgetter(1), reverse=True)]
+            _possible_types = [k for k, v in sorted(possible_types.items(), key=itemgetter(1), reverse=True)]
         else:
             _valid_types = [genuine_type[0]]
             _possible_types = []
@@ -13570,7 +13571,7 @@ class NmrDpUtility:
                                     or div_file_name.endswith('-div_dst.mr')
                                     or div_file_name.endswith('-div_ext.mr'))}
 
-            div_file_names = [k for k, v in sorted(_div_file_names.items(), key=lambda x: x[1])]
+            div_file_names = [k for k, v in sorted(_div_file_names.items(), key=itemgetter(1))]
 
             src_basename = os.path.splitext(src_file)[0]
             ar['original_file_name'] = src_basename + '.mr'
@@ -16548,7 +16549,7 @@ class NmrDpUtility:
 
                     seq.add((seq_id, comp_id))
 
-                sorted_seq = sorted(seq, key=lambda x: x[0])
+                sorted_seq = sorted(seq, key=itemgetter(0))
 
                 asm.append({'chain_id': chain_id,
                             'seq_id': [x[0] for x in sorted_seq],
@@ -16636,7 +16637,7 @@ class NmrDpUtility:
 
         for chain_id in chain_ids:
 
-            sorted_seq = sorted(seq[chain_id], key=lambda x: x[0])
+            sorted_seq = sorted(seq[chain_id], key=itemgetter(0))
 
             asm.append({'chain_id': chain_id,
                         'seq_id': [x[0] for x in sorted_seq],
@@ -16717,7 +16718,7 @@ class NmrDpUtility:
 
         if chain_id in chain_ids:
 
-            sorted_seq = sorted(seq[chain_id], key=lambda x: x[0])
+            sorted_seq = sorted(seq[chain_id], key=itemgetter(0))
 
             return {'chain_id': chain_id,
                     'seq_id': [x[0] for x in sorted_seq],
@@ -23560,8 +23561,8 @@ class NmrDpUtility:
                         _auth_cs_1 = [row[1:] for row in get_lp_tag(loop, auth_cs_tags) if row[0] == _auth_chain_id_1]
                         _auth_cs_2 = [row[1:] for row in get_lp_tag(loop, auth_cs_tags) if row[0] == _auth_chain_id_2]
 
-                        _auth_cs_1 = sorted(_auth_cs_1, key=lambda x: (x[0], x[2]))
-                        _auth_cs_2 = sorted(_auth_cs_2, key=lambda x: (x[0], x[2]))
+                        _auth_cs_1 = sorted(_auth_cs_1, key=itemgetter(0, 2))
+                        _auth_cs_2 = sorted(_auth_cs_2, key=itemgetter(0, 2))
 
                         if _auth_cs_1 == _auth_cs_2:
                             copied_auth_chain_ids.add(_auth_chain_id_2)
@@ -23588,8 +23589,8 @@ class NmrDpUtility:
                         _cs_1 = [row[1:] for row in get_lp_tag(loop, cs_tags) if row[0] == _chain_id_1]
                         _cs_2 = [row[1:] for row in get_lp_tag(loop, cs_tags) if row[0] == _chain_id_2]
 
-                        _cs_1 = sorted(_cs_1, key=lambda x: (x[0], x[2]))
-                        _cs_2 = sorted(_cs_2, key=lambda x: (x[0], x[2]))
+                        _cs_1 = sorted(_cs_1, key=itemgetter(0, 2))
+                        _cs_2 = sorted(_cs_2, key=itemgetter(0, 2))
 
                         if _cs_1 == _cs_2:
                             copied_chain_ids.add(_chain_id_2)
@@ -44070,7 +44071,7 @@ class NmrDpUtility:
             if len(atom_list) == 0:
                 return None
 
-            na = sorted(atom_list, key=lambda a: a['distance'])[0]
+            na = sorted(atom_list, key=itemgetter('distance'))[0]
 
             na_atom_id = na['atom_id']
 
@@ -44384,7 +44385,7 @@ class NmrDpUtility:
             if len(atom_list) == 0:
                 return None
 
-            p = sorted(atom_list, key=lambda a: a['distance'])[0]
+            p = sorted(atom_list, key=itemgetter('distance'))[0]
 
             try:
 
@@ -47029,7 +47030,7 @@ class NmrDpUtility:
                                   seq_id - min_seq_ids[chain_id],
                                   iso_number, atom_id, idx))
 
-                sorted_atoms = sorted(atoms, key=lambda x: (x[0], x[1], x[2], x[3], x[4]))
+                sorted_atoms = sorted(atoms, key=itemgetter(0, 1, 2, 3, 4))
 
                 sorted_idx = []
 
@@ -48392,7 +48393,7 @@ class NmrDpUtility:
                                 continue
                     p1 = (chain_id_1, seq_id_1, atom_id_1)
                     p2 = (chain_id_2, seq_id_2, atom_id_2)
-                    hbond_pair = sorted([p1, p2], key=lambda x: (x[0], x[1], x[2]))
+                    hbond_pair = sorted([p1, p2], key=itemgetter(0, 1, 2))
                     hbond_pairs.add(str(hbond_pair))
 
         H_bonds_constrained_tot_num = len(hbond_pairs)
@@ -48464,7 +48465,7 @@ class NmrDpUtility:
                                 continue
                     p1 = (chain_id_1, seq_id_1, atom_id_1)
                     p2 = (chain_id_2, seq_id_2, atom_id_2)
-                    ssbond_pair = sorted([p1, p2], key=lambda x: (x[0], x[1], x[2]))
+                    ssbond_pair = sorted([p1, p2], key=itemgetter(0, 1, 2))
                     ssbond_pairs.add(str(ssbond_pair))
 
         SS_bonds_constrained_tot_num = len(ssbond_pairs)

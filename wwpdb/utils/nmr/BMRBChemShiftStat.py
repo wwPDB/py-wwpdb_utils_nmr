@@ -27,6 +27,8 @@ import copy
 import pickle
 import collections
 
+from operator import itemgetter
+
 try:
     from wwpdb.utils.nmr.AlignUtil import (emptyValue,
                                            protonBeginCode)
@@ -1519,7 +1521,7 @@ class BMRBChemShiftStat:
 
         self.loadOtherStatFromCsvFiles()
 
-        write_stat_as_pickle(sorted(self.others, key=lambda k: k['comp_id']), self.stat_dir + 'others.pkl')
+        write_stat_as_pickle(sorted(self.others, key=itemgetter('comp_id')), self.stat_dir + 'others.pkl')
 
     def loadStatFromPickleFiles(self):
         """ Load all BMRB chemical shift statistics from pickle files if possible.

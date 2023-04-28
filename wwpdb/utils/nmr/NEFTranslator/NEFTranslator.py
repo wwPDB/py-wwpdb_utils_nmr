@@ -107,6 +107,7 @@ import copy
 import pynmrstar
 
 from packaging import version
+from operator import itemgetter
 
 try:
     from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue, monDict3,
@@ -1323,7 +1324,7 @@ class NEFTranslator:
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
                 sorted_seq = sorted(set((row[2], int(row[0]) + offset_seq_ids[row[2]], row[1].upper()) for row in seq_data),
-                                    key=lambda x: (x[0], x[1]))
+                                    key=itemgetter(0, 1))
 
                 chk_dict = {(row[2], int(row[0])): row[1].upper() for row in seq_data}
 
@@ -1544,7 +1545,7 @@ class NEFTranslator:
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
                 sorted_seq = sorted(set((row[2], int(row[0]) + offset_seq_ids[row[2]], row[1].upper()) for row in seq_data),
-                                    key=lambda x: (x[0], x[1]))
+                                    key=itemgetter(0, 1))
 
                 chk_dict = {(row[2], int(row[0])): row[1].upper() for row in seq_data}
 
@@ -1758,7 +1759,7 @@ class NEFTranslator:
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
                 sorted_seq = sorted(set((row[4], int(row[3]) + offset_seq_ids[row[4]], row[2], row[0].strip(), row[1]) for row in seq_data),
-                                    key=lambda x: (x[0], x[1]))
+                                    key=itemgetter(0, 1))
 
                 chk_dict = {(row[4], int(row[3]), row[2], row[0].strip()): row[1] for row in seq_data}
 
@@ -1906,7 +1907,7 @@ class NEFTranslator:
 
             comps = sorted(set(row[0].upper() for row in pair_data if row[0] not in emptyValue))
             sorted_comp_atom = sorted(set((row[0].upper(), row[1]) for row in pair_data),
-                                      key=lambda x: (x[0], x[1]))
+                                      key=itemgetter(0, 1))
 
             for c in comps:
                 atm_dict[c] = [x[1] for x in sorted_comp_atom if x[0] == c]
@@ -2015,10 +2016,10 @@ class NEFTranslator:
 
                 a_types = sorted(set(row[0] for row in a_type_data))
                 sorted_ist = sorted(set((row[0], int(row[1])) for row in a_type_data),
-                                    key=lambda x: (x[0], x[1]))
+                                    key=itemgetter(0, 1))
                 sorted_atm = sorted(set((row[0], row[2]) for row in a_type_data
                                         if not (row[2] in emptyValue or (isinstance(row[2], str) and badPattern.match(row[2])))),
-                                    key=lambda x: (x[0], x[1]))  # DAOTHER-7389, issue #3
+                                    key=itemgetter(0, 1))  # DAOTHER-7389, issue #3
 
                 for t in a_types:
                     ist_dict[t] = [x[1] for x in sorted_ist if x[0] == t]
@@ -2152,9 +2153,9 @@ class NEFTranslator:
                 continue
 
             ambigs = sorted(set((row[0].upper(), row[2]) for row in _ambig_data),
-                            key=lambda x: (x[0], x[1]))
+                            key=itemgetter(0, 1))
             sorted_atm = sorted(set((row[0].upper(), row[2], row[1]) for row in _ambig_data),
-                                key=lambda x: (x[0], x[1], x[2]))
+                                key=itemgetter(0, 1, 2))
 
             for a in ambigs:
                 atm_dict[a] = [x[2] for x in sorted_atm if x[0] == a[0] and x[1] == a[1]]
@@ -4340,7 +4341,7 @@ class NEFTranslator:
             if auth_tag != data_tag:
                 out_tag_w_ordinal[auth_tag] = ordinal + 100
 
-        out_tag = [t[0] for t in sorted(out_tag_w_ordinal.items(), key=lambda x:x[1])]
+        out_tag = [t[0] for t in sorted(out_tag_w_ordinal.items(), key=itemgetter(1))]
 
         lp_category = nef_loop_tags[0].split('.')[0]
 
@@ -4420,7 +4421,7 @@ class NEFTranslator:
             if auth_tag != data_tag:
                 out_tag_w_ordinal[auth_tag] = ordinal + 100
 
-        out_tag = [t[0] for t in sorted(out_tag_w_ordinal.items(), key=lambda x:x[1])]
+        out_tag = [t[0] for t in sorted(out_tag_w_ordinal.items(), key=itemgetter(1))]
 
         lp_category = star_loop_tags[0].split('.')[0]
 
@@ -4529,7 +4530,7 @@ class NEFTranslator:
             if data_tag is not None:
                 out_tag_w_ordinal[data_tag] = ordinal
 
-        out_tag = [t[0] for t in sorted(out_tag_w_ordinal.items(), key=lambda x:x[1])]
+        out_tag = [t[0] for t in sorted(out_tag_w_ordinal.items(), key=itemgetter(1))]
 
         if len(out_tag) > 0 and out_tag[0].startswith('_nef_sequence.') and '_nef_sequence.index' not in out_tag:
             out_tag.insert(0, '_nef_sequence.index')

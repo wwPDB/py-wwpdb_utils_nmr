@@ -245,6 +245,8 @@ class AmberPTParserListener(ParseTreeListener):
 
             terminus = [atomName.endswith('T') for atomName in self.__atomName]
 
+            canceledTermNum = []
+
             atomTotal = len(self.__atomName)
             if terminus[0]:
                 terminus[0] = False
@@ -252,6 +254,7 @@ class AmberPTParserListener(ParseTreeListener):
                 j = i + 1
                 if terminus[i] and terminus[j]:
                     terminus[i] = False
+                    canceledTermNum.append(j)
             if terminus[-1]:
                 terminus[-1] = False
 
@@ -277,7 +280,8 @@ class AmberPTParserListener(ParseTreeListener):
                 overrun = False
                 # the second condition indicates metal ions
                 if terminus[atomNum - 2]\
-                   or (prevCompId is not None and prevCompId.endswith('3') and compId.endswith('5'))\
+                   or (prevCompId is not None and prevCompId.endswith('3') and compId.endswith('5')
+                       and not any(t for t in canceledTermNum if t - 10 < atomNum < t + 10))\
                    or (compId == atomName and compId.title() in NAMES_ELEMENT)\
                    or (len(prevAtomName) > 0 and prevAtomName[0] not in NON_METAL_ELEMENTS and prevSeqId != _seqId):
 
@@ -595,7 +599,7 @@ class AmberPTParserListener(ParseTreeListener):
                 self.__f.append(f"[Sequence mismatch] Polymer sequence between the coordinate and {_a_mr_format_name} data does not match. {hint}"
                                 "Please verify the two sequences and re-upload the correct file(s) if required.")
 
-            assi_ref_chain_ids = set()
+            assi_ref_chain_ids = {}
             proc_test_chain_ids = []
             atom_nums = []
             delete_atom_nums = []
@@ -606,7 +610,10 @@ class AmberPTParserListener(ParseTreeListener):
 
                 ps_cif = next(ps for ps in self.__polySeqModel if ps['auth_chain_id'] == ref_chain_id)
 
-                assi_ref_chain_ids.add(ref_chain_id)
+                if ref_chain_id not in assi_ref_chain_ids:
+                    assi_ref_chain_ids[ref_chain_id] = seq_align['length'] - seq_align['matched'] - seq_align['conflict']
+                else:
+                    assi_ref_chain_ids[ref_chain_id] -= seq_align['matched'] + seq_align['conflict']
                 proc_test_chain_ids.append(test_chain_id)
 
                 offset = first_seq_id = None
@@ -641,8 +648,9 @@ class AmberPTParserListener(ParseTreeListener):
                         atomNum['chain_id'] = ref_chain_id
                         atomNum['seq_id'] = ref_seq_id
 
-                        idx = ps_cif['auth_seq_id'].index(ref_seq_id)
-                        atomNum['comp_id'] = ps_cif['comp_id'][idx]
+                        if ref_seq_id in ps_cif['auth_seq_id']:
+                            idx = ps_cif['auth_seq_id'].index(ref_seq_id)
+                            atomNum['comp_id'] = ps_cif['comp_id'][idx]
 
                         if orphan and test_seq_id == first_seq_id and self.__csStat.getTypeOfCompId(atomNum['comp_id'])[0]:
                             if self.__ccU.updateChemCompDict(atomNum['comp_id']):
@@ -676,7 +684,10 @@ class AmberPTParserListener(ParseTreeListener):
                 resolved = False
 
                 if len(orphanPolySeqPrmTop) > 0:
-                    __polySeqModel__ = [ps for ps in self.__polySeqModel if ps['auth_chain_id'] not in assi_ref_chain_ids]
+                    max_length = max(len(ps['seq_id']) for ps in orphanPolySeqPrmTop)
+                    __polySeqModel__ = [ps for ps in self.__polySeqModel
+                                        if ps['auth_chain_id'] not in assi_ref_chain_ids
+                                        or assi_ref_chain_ids[ps['auth_chain_id']] >= max_length]
                     __seqAlign__, _ = alignPolymerSequence(self.__pA, __polySeqModel__, orphanPolySeqPrmTop)
                     if len(__seqAlign__) > 0:
                         for sa in __seqAlign__:
@@ -727,7 +738,7 @@ class AmberPTParserListener(ParseTreeListener):
                                 atomNum['seq_id'] += offset
 
                     proc_test_chain_ids.append(test_chain_id)
-                    assi_ref_chain_ids.add(ref_chain_id)
+                    assi_ref_chain_ids[ref_chain_id] = len_gap
 
             if len(delete_atom_nums) > 0:
                 for atom_num in sorted(delete_atom_nums, reverse=True):

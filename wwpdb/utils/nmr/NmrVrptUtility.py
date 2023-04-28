@@ -15,8 +15,9 @@ import tempfile
 import time
 import pickle
 import copy
-from operator import itemgetter
 import numpy as np
+
+from operator import itemgetter
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
@@ -237,7 +238,7 @@ class NmrVrptUtility:
         self.__verbose = verbose
         self.__lfh = log
 
-        self.__debug = True
+        self.__debug = False
 
         # auxiliary input resource
         self.__inputParamDict = {}
@@ -364,6 +365,12 @@ class NmrVrptUtility:
         """
 
         self.__verbose = verbose
+
+    def setDebugMode(self, debug):
+        """ Set debug mode.
+        """
+
+        self.__debug = debug
 
     def getResults(self):
         """ Return NMR restraint validation result.
@@ -2210,6 +2217,8 @@ class NmrVrptUtility:
             if not self.__results['angle']:
                 return True
 
+            self.__results['error_message_angle'] = None
+
             self.__results['angle_seq_dict'] = self.__dihedRestSeqDict
             self.__results['unmapped_angle'] = self.__dihedRestUnmapped
 
@@ -2218,7 +2227,9 @@ class NmrVrptUtility:
             try:
                 angle_type = list(set(r_list[0]['angle_type'] for r_list in self.__dihedRestDict.values())) + [any_type]
             except IndexError:
-                self.__lfh.write(f"Restraints validation failed due to data error in the dihedral angle restraints. {self.__dihedRestDict.values()}\n")
+                self.__lfh.write(f"Dihedral angle analysis failed due to data error in the dihedral angle restraints. {self.__dihedRestDict.values()}\n")
+                self.__results['error_message_angle'] = 'Dihedral angle analysis failed due to data error in the dihedral angle restraints, possibly missing target value'
+                self.__results['angle'] = False
                 return False
 
             self.__results['key_lists']['angle_type'] = angle_type

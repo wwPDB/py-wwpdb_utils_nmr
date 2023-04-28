@@ -40708,6 +40708,26 @@ class NmrDpUtility:
         for sf_data in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
+            try:
+
+                _lp_category = '_Entity_assembly'
+
+                if __pynmrstar_v3_2__:
+                    _loop = sf_data.get_loop(_lp_category)
+                else:
+                    _loop = sf_data.get_loop_by_category(_lp_category)
+
+                tags = ['Conformational_isomer', 'Details']
+
+                dat = get_lp_tag(_loop, tags)
+
+                for row in dat:
+                    if row[0] == 'yes' and 'Conformational isomer' in row[1]:
+                        return True
+
+            except KeyError:
+                pass
+
             orig_lp_data = next((lp['data'] for lp in self.__lp_data[content_subtype]
                                  if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode), None)
 

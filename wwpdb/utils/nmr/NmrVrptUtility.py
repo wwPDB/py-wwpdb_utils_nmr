@@ -2213,11 +2213,10 @@ class NmrVrptUtility:
         try:
 
             self.__results['angle'] = self.__dihedRestViolDict is not None and len(self.__dihedRestViolDict) > 0
+            self.__results['error_message_angle'] = None
 
             if not self.__results['angle']:
                 return True
-
-            self.__results['error_message_angle'] = None
 
             self.__results['angle_seq_dict'] = self.__dihedRestSeqDict
             self.__results['unmapped_angle'] = self.__dihedRestUnmapped
@@ -2230,7 +2229,7 @@ class NmrVrptUtility:
                 self.__lfh.write(f"Dihedral angle analysis failed due to data error in the dihedral angle restraints. {self.__dihedRestDict.values()}\n")
                 self.__results['error_message_angle'] = 'Dihedral angle analysis failed due to data error in the dihedral angle restraints, possibly missing target value'
                 self.__results['angle'] = False
-                return False
+                return True
 
             self.__results['key_lists']['angle_type'] = angle_type
 
@@ -2442,6 +2441,7 @@ class NmrVrptUtility:
         try:
 
             self.__results['rdc'] = self.__rdcRestViolDict is not None and len(self.__rdcRestViolDict) > 0
+            self.__results['error_message_rdc'] = None
 
             if not self.__results['rdc']:
                 return True
@@ -2454,8 +2454,10 @@ class NmrVrptUtility:
             try:
                 rdc_type = list(set(r_list[0]['rdc_type'] for r_list in self.__rdcRestDict.values())) + [any_type]
             except IndexError:
-                self.__lfh.write(f"Restraints validation failed due to data error in the RDC restraints. {self.__rdcRestDict.values()}\n")
-                return False
+                self.__lfh.write(f"RDC analysis failed due to data error in the RDC restraints. {self.__rdcRestDict.values()}\n")
+                self.__results['error_message_rdc'] = 'RDC analysis failed due to data error in the RDC angle restraints'
+                self.__results['rdc'] = False
+                return True
 
             self.__results['key_lists']['rdc_type'] = rdc_type
 

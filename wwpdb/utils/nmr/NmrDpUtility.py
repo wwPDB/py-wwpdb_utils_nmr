@@ -27703,7 +27703,13 @@ class NmrDpUtility:
 
                 # MR parser for XPLOR-NIH/CNS/CHARMM already fills _Gen_dist_constraint.ID with genuine IDs
                 if sf_item['file_type'] not in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cha'):
-                    self.__updateGenDistConstIdInMrStr(sf_item)
+                    if not self.__updateGenDistConstIdInMrStr(sf_item):
+                        err = 'Atoms in distance restraints can not be properly identified. Please re-upload the NMR-STAR file.'
+                        self.report.error.appendDescription('missing_mandatory_content',
+                                                            {'file_name': original_file_name,
+                                                             'sf_framecode': sf_framecode,
+                                                             'category': lp_category,
+                                                             'description': err})
 
                 sf_item['constraint_type'] = 'distance'
                 sf_item['constraint_subsubtype'] = 'simple'
@@ -28325,7 +28331,7 @@ class NmrDpUtility:
             lp.add_data(_row)
 
         if not modified and not has_member_id:
-            return
+            return True
 
         member_id_dict = {}
 
@@ -28396,10 +28402,17 @@ class NmrDpUtility:
                 if index_id in member_id_dict:
                     row[member_id_col] = member_id_dict[index_id]
 
-        del sf_item['saveframe'][loop]
+        try:
 
-        sf_item['saveframe'].add_loop(lp)
-        sf_item['loop'] = lp
+            del sf_item['saveframe'][loop]
+
+            sf_item['saveframe'].add_loop(lp)
+            sf_item['loop'] = lp
+
+            return True
+
+        except ValueError:
+            return False
 
     def __mergeStrPk(self):
         """ Merge spectral peak lists in NMR-STAR restraint files.

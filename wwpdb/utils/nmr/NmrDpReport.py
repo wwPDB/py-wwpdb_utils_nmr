@@ -1304,6 +1304,42 @@ class NmrDpReport:
 
         return sum(rmsd) / len(rmsd)
 
+    def getNumberOfSubmittedConformers(self):
+        """ Return number of submitted conformers for the ensemble.
+        """
+
+        cif_polymer_sequence = self.getPolymerSequenceByInputSrcId(self.getInputSourceIdOfCoord())
+
+        if cif_polymer_sequence is None:
+            return None
+
+        total_models = []
+
+        for poly_seq in cif_polymer_sequence:
+
+            if poly_seq is None or 'type' not in poly_seq:
+                continue
+
+            stype = poly_seq['type']
+
+            if 'polypeptide' in stype:
+                rmsd_label = 'ca_rmsd'
+            elif 'ribonucleotide' in stype:
+                rmsd_label = 'p_rmsd'
+            else:
+                continue
+
+            if rmsd_label not in poly_seq:
+                continue
+
+            for rmsd in poly_seq[rmsd_label]:
+                total_models.append(rmsd['model_id'])
+
+        if len(total_models) == 0:
+            return None
+
+        return max(total_models)
+
     def getLabelSeqSchemeOf(self, auth_asym_id, auth_seq_id):
         """ Convert author sequence scheme to label sequence scheme of the coordinates.
         """

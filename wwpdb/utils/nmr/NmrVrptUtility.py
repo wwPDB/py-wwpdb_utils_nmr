@@ -234,11 +234,12 @@ class NmrVrptUtility:
     """
 
     def __init__(self, verbose=False, log=sys.stderr,
-                 ccU=None, csStat=None):
+                 cR=None, caC=None, ccU=None, csStat=None):
         self.__verbose = verbose
         self.__lfh = log
 
         self.__debug = False
+        self.__use_cache = cR is not None and caC is not None
 
         # auxiliary input resource
         self.__inputParamDict = {}
@@ -271,7 +272,7 @@ class NmrVrptUtility:
         self.__resultsCacheName = None
 
         # CIF reader
-        self.__cR = None
+        self.__cR = cR
 
         # NMR data reader
         self.__rR = None
@@ -283,7 +284,7 @@ class NmrVrptUtility:
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
 
         # ParserListerUtil.coordAssemblyChecker()
-        self.__caC = None
+        self.__caC = caC
 
         # representative model id
         self.__representative_model_id = REPRESENTATIVE_MODEL_ID
@@ -372,6 +373,13 @@ class NmrVrptUtility:
 
         self.__debug = debug
 
+    def useCache(self, use_cache):
+        """ Use cache file(s) of the previous run.
+            Do not enable this for generation of wwPDB validation report because of no performance improvement.
+        """
+
+        self.__use_cache = use_cache
+
     def getResults(self):
         """ Return NMR restraint validation result.
         """
@@ -404,6 +412,8 @@ class NmrVrptUtility:
                 self.__outputParamDict[name] = value
             elif type == 'file':
                 self.__outputParamDict[name] = os.path.abspath(value)
+                if name == 'result_pickle_file_path':
+                    self.__use_cache = True
             else:
                 raise ValueError(f"+NmrVrptUtility.addOutput() ++ Error  - Unknown output type {type}.")
 
@@ -417,7 +427,7 @@ class NmrVrptUtility:
         """
 
         if self.__verbose:
-            self.__lfh.write(f"+NmrVrptUtility.op() starting op {op}\n")
+            self.__lfh.write(f"+NmrVrptUtility.op() starting op {op}, use_cache {self.__use_cache}\n")
 
         if op not in self.__workFlowOps:
             raise KeyError(f"+NmrVrptUtility.op() ++ Error  - Unknown workflow operation {op}.")
@@ -444,6 +454,26 @@ class NmrVrptUtility:
     def __parseCoordinate(self):
         """ Parse coordinates.
         """
+
+        if self.__cR is not None:
+
+            self.__cifPath = self.__cR.getFilePath()
+
+            if self.__use_cache:
+
+                if self.__dirPath is None:
+                    self.__dirPath = os.path.dirname(self.__cifPath)
+
+                self.__sub_dir_name_for_cache = self.__cR.__sub_dir_name_for_cache  # pylint: disable=protected-access
+
+                self.__cacheDirPath = os.path.join(self.__dirPath, self.__sub_dir_name_for_cache)
+
+                if not os.path.isdir(self.__cacheDirPath):
+                    os.makedirs(self.__cacheDirPath)
+
+                self.__cifHashCode = self.__cR.getHashCode()
+
+            return True
 
         if not self.__checkCoordInputSource():
 
@@ -549,21 +579,24 @@ class NmrVrptUtility:
 
             try:
 
-                if self.__dirPath is None:
-                    self.__dirPath = os.path.dirname(fPath)
+                if self.__use_cache:
 
-                self.__cacheDirPath = os.path.join(self.__dirPath, self.__sub_dir_name_for_cache)
+                    if self.__dirPath is None:
+                        self.__dirPath = os.path.dirname(fPath)
 
-                if not os.path.isdir(self.__cacheDirPath):
-                    os.makedirs(self.__cacheDirPath)
+                    self.__cacheDirPath = os.path.join(self.__dirPath, self.__sub_dir_name_for_cache)
+
+                    if not os.path.isdir(self.__cacheDirPath):
+                        os.makedirs(self.__cacheDirPath)
 
                 self.__cR = CifReader(self.__verbose, self.__lfh,
-                                      use_cache=True,
+                                      use_cache=self.__use_cache,
                                       sub_dir_name_for_cache=self.__sub_dir_name_for_cache)
 
                 if self.__cR.parse(fPath):
                     self.__cifPath = fPath
-                    self.__cifHashCode = self.__cR.getHashCode()
+                    if self.__use_cache:
+                        self.__cifHashCode = self.__cR.getHashCode()
                     return True
 
             except Exception:
@@ -575,17 +608,19 @@ class NmrVrptUtility:
 
             self.__cifPath = self.__cR.getFilePath()
 
-            if self.__dirPath is None:
-                self.__dirPath = os.path.dirname(self.__cifPath)
+            if self.__use_cache:
 
-            self.__sub_dir_name_for_cache = self.__cR.__sub_dir_name_for_cache  # pylint: disable=protected-access
+                if self.__dirPath is None:
+                    self.__dirPath = os.path.dirname(self.__cifPath)
 
-            self.__cacheDirPath = os.path.join(self.__dirPath, self.__sub_dir_name_for_cache)
+                self.__sub_dir_name_for_cache = self.__cR.__sub_dir_name_for_cache  # pylint: disable=protected-access
 
-            if not os.path.isdir(self.__cacheDirPath):
-                os.makedirs(self.__cacheDirPath)
+                self.__cacheDirPath = os.path.join(self.__dirPath, self.__sub_dir_name_for_cache)
 
-            self.__cifHashCode = self.__cR.getHashCode()
+                if not os.path.isdir(self.__cacheDirPath):
+                    os.makedirs(self.__cacheDirPath)
+
+                self.__cifHashCode = self.__cR.getHashCode()
 
             return True
 
@@ -645,7 +680,8 @@ class NmrVrptUtility:
 
                 if self.__rR.parse(fPath):
                     self.__nmrDataPath = fPath
-                    self.__nmrDataHashCode = self.__rR.getHashCode()
+                    if self.__use_cache:
+                        self.__nmrDataHashCode = self.__rR.getHashCode()
                     return True
 
             except Exception:
@@ -657,7 +693,8 @@ class NmrVrptUtility:
 
             self.__nmrDataPath = self.__rR.getFilePath()
 
-            self.__nmrDataHashCode = self.__rR.getHashCode()
+            if self.__use_cache:
+                self.__nmrDataHashCode = self.__rR.getHashCode()
 
             return True
 
@@ -690,7 +727,8 @@ class NmrVrptUtility:
 
                     if self.__rR.parse(_fPath, self.__dirPath):
                         self.__nmrDataPath = _fPath
-                        self.__nmrDataHashCode = self.__rR.getHashCode()
+                        if self.__use_cache:
+                            self.__nmrDataHashCode = self.__rR.getHashCode()
                         return True
 
             except Exception as e:
@@ -731,7 +769,8 @@ class NmrVrptUtility:
 
                     if self.__rR.parse(__fPath, self.__dirPath):
                         self.__nmrDataPath = __fPath
-                        self.__nmrDataHashCode = self.__rR.getHashCode()
+                        if self.__use_cache:
+                            self.__nmrDataHashCode = self.__rR.getHashCode()
                         return True
 
             except Exception as e:
@@ -772,20 +811,30 @@ class NmrVrptUtility:
         if self.__has_prev_results:
             return True
 
-        cache_path = None
-        if self.__cifHashCode is not None:
-            cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_asm_chk.pkl")
-            self.__caC = load_from_pickle(cache_path)
+        if self.__caC is not None:
+            return True
 
-            if self.__caC is not None:
-                return True
+        if self.__use_cache:
 
-        self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
-                                          self.__representative_model_id,
-                                          self.__cR, None)
+            cache_path = None
+            if self.__cifHashCode is not None:
+                cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_asm_chk.pkl")
+                self.__caC = load_from_pickle(cache_path)
 
-        if self.__caC is not None and cache_path:
-            write_as_pickle(self.__caC, cache_path)
+                if self.__caC is not None:
+                    return True
+
+            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
+                                              self.__representative_model_id,
+                                              self.__cR, None)
+
+            if self.__caC is not None and cache_path:
+                write_as_pickle(self.__caC, cache_path)
+
+        else:
+            self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
+                                              self.__representative_model_id,
+                                              self.__cR, None, False)
 
         return True
 
@@ -2653,23 +2702,30 @@ class NmrVrptUtility:
         """ Output results if 'result_pickle_file_path' was set in output parameter.
         """
 
-        cache_path = None
-        if self.__resultsCacheName is not None:
-            cache_path = os.path.join(self.__cacheDirPath, self.__resultsCacheName)
+        if self.__use_cache:
 
-            if not os.path.exists(cache_path):
-                write_as_pickle(self.__results, cache_path)
+            cache_path = None
+            if self.__resultsCacheName is not None:
+                cache_path = os.path.join(self.__cacheDirPath, self.__resultsCacheName)
 
-        if 'result_pickle_file_path' in self.__outputParamDict:
+                if not os.path.exists(cache_path):
+                    write_as_pickle(self.__results, cache_path)
+
+            if 'result_pickle_file_path' in self.__outputParamDict:
+                pickle_file = self.__outputParamDict['result_pickle_file_path']
+
+                if cache_path is None:
+                    write_as_pickle(self.__results, pickle_file)
+                    return True
+
+                if os.path.exists(pickle_file):
+                    os.remove(pickle_file)
+
+                os.symlink(cache_path, pickle_file)
+
+        elif 'result_pickle_file_path' in self.__outputParamDict:
             pickle_file = self.__outputParamDict['result_pickle_file_path']
 
-            if cache_path is None:
-                write_as_pickle(self.__results, pickle_file)
-                return True
-
-            if os.path.exists(pickle_file):
-                os.remove(pickle_file)
-
-            os.symlink(cache_path, pickle_file)
+            write_as_pickle(self.__results, pickle_file)
 
         return True

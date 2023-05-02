@@ -4762,11 +4762,10 @@ class CnsMRParserListener(ParseTreeListener):
                         else:
                             self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {__factor}.")
+                            self.__preferAuthSeq = not self.__preferAuthSeq
+                            self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
+                            self.__setLocalSeqScheme()
                             # """
-                            # self.__preferAuthSeq = not self.__preferAuthSeq
-                            # self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
-                            # self.__setLocalSeqScheme()
-                            #
                             # if 'atom_id' in __factor and __factor['atom_id'][0] is None:
                             #     if 'label_seq_scheme' not in self.reasonsForReParsing:
                             #         self.reasonsForReParsing['label_seq_scheme'] = True

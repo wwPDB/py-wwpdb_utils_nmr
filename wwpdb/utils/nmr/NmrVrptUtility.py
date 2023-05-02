@@ -1563,24 +1563,20 @@ class NmrVrptUtility:
                                 error = 0.0
                             elif avr_d > upper_bound:
                                 error = abs(avr_d - upper_bound)
-                                print(f'{rest_key} {lower_bound=} {avr_d=} {upper_bound=}')
                             else:
                                 error = abs(avr_d - lower_bound)
-                                print(f'{rest_key} {lower_bound=} {avr_d=} {upper_bound=}')
 
                         elif upper_bound is not None:
                             if avr_d <= upper_bound:
                                 error = 0.0
                             elif avr_d > upper_bound:
                                 error = abs(avr_d - upper_bound)
-                                print(f'{rest_key} {lower_bound=} {avr_d=} {upper_bound=}')
 
                         elif lower_bound is not None:
                             if lower_bound <= avr_d:
                                 error = 0.0
                             else:
                                 error = abs(avr_d - lower_bound)
-                                print(f'{rest_key} {lower_bound=} {avr_d=} {upper_bound=}')
 
                     error_per_model[model_id] = error
 

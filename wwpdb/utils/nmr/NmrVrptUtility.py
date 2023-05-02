@@ -726,7 +726,7 @@ class NmrVrptUtility:
                                           use_cache=False)
 
                     if self.__rR.parse(_fPath, self.__dirPath):
-                        self.__nmrDataPath = _fPath
+                        self.__nmrDataPath = fPath
                         if self.__use_cache:
                             self.__nmrDataHashCode = self.__rR.getHashCode()
                         return True
@@ -768,7 +768,7 @@ class NmrVrptUtility:
                                           use_cache=False)
 
                     if self.__rR.parse(__fPath, self.__dirPath):
-                        self.__nmrDataPath = __fPath
+                        self.__nmrDataPath = _fPath
                         if self.__use_cache:
                             self.__nmrDataHashCode = self.__rR.getHashCode()
                         return True
@@ -936,6 +936,7 @@ class NmrVrptUtility:
                    written by Kumaran Baskaran
             @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of restraints,
                      support combinational restraints (_Gen_dist_constraint.Combination_ID, Member_ID)
+                     define bond types for deselenide bond and metal coordination (sebond, metal)
         """
 
         if self.__has_prev_results:
@@ -951,6 +952,8 @@ class NmrVrptUtility:
         sf_category = 'Gen_dist_constraint_list'
 
         try:
+
+            skipped = False
 
             for dBlock in self.__rR.getDataBlockList():
 
@@ -1052,7 +1055,9 @@ class NmrVrptUtility:
 
                     if lower_bound is None and upper_bound is None:
                         if target_value is None:
-                            self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Warning  - distance restraint {rest_key} {r} is not interpretable.\n")
+                            self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
+                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
+                            skipped = True
                             continue
                         if target_value_uncertainty is not None:
                             lower_bound = max(target_value - target_value_uncertainty, 0.0)
@@ -1108,9 +1113,11 @@ class NmrVrptUtility:
                             self.__distRestSeqDict[seq_key] = []
                         self.__distRestSeqDict[seq_key].append(rest_key)
 
-            for k, v in self.__distRestDict.items():
-                if len(v) == 0:
-                    del self.__distRestDict[k]
+            if skipped:
+                __distRestDict__ = copy.copy(self.__distRestDict)
+                for k, v in __distRestDict__.items():
+                    if len(v) == 0:
+                        del self.__distRestDict[k]
 
             for v in self.__distRestSeqDict.values():
                 v = list(set(v))
@@ -1134,8 +1141,8 @@ class NmrVrptUtility:
                    written by Kumaran Baskaran
             @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of restraints,
                      support combinational restraints (_Torsion_angle_constraint.Combination_ID),
-                     support for the case target_value is not set,
-                     support for the case upper/lower linear limits are set, but missing upper/lower limits
+                     support for the case target_value is not set (i.e. AMBER restraint format),
+                     support for the case upper/lower linear limits are set, but missing upper/lower limits (i.e. XPLOR-NIH/CNS exponent parameter (ed) equals 1)
         """
 
         if self.__has_prev_results:
@@ -1151,6 +1158,8 @@ class NmrVrptUtility:
         sf_category = 'Torsion_angle_constraint_list'
 
         try:
+
+            skipped = False
 
             for dBlock in self.__rR.getDataBlockList():
 
@@ -1252,7 +1261,9 @@ class NmrVrptUtility:
 
                     if lower_bound is None and upper_bound is None and lower_linear_limit is None and upper_linear_limit is None:
                         if target_value is None:
-                            self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Warning  - dihedral angle restraint {rest_key} {r} is not interpretable.\n")
+                            self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
+                            skipped = True
                             continue
                         if target_value_uncertainty is not None:
                             lower_bound = target_value - target_value_uncertainty
@@ -1294,9 +1305,11 @@ class NmrVrptUtility:
                             self.__dihedRestSeqDict[seq_key] = []
                         self.__dihedRestSeqDict[seq_key].append(rest_key)
 
-            for k, v in self.__dihedRestDict.items():
-                if len(v) == 0:
-                    del self.__dihedRestDict[k]
+            if skipped:
+                __dihedRestDict__ = copy.copy(self.__dihedRestDict)
+                for k, v in __dihedRestDict__.items():
+                    if len(v) == 0:
+                        del self.__dihedRestDict[k]
 
             for v in self.__dihedRestSeqDict.values():
                 v = list(set(v))
@@ -1330,6 +1343,8 @@ class NmrVrptUtility:
         sf_category = 'RDC_constraint_list'
 
         try:
+
+            skipped = False
 
             for dBlock in self.__rR.getDataBlockList():
 
@@ -1415,7 +1430,9 @@ class NmrVrptUtility:
 
                     if lower_bound is None and upper_bound is None and lower_linear_limit is None and upper_linear_limit is None:
                         if target_value is None:
-                            self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Warning  - RDC restraint {rest_key} {r} is not interpretable.\n")
+                            self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
+                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
+                            skipped = True
                             continue
                         if target_value_uncertainty is not None:
                             lower_bound = target_value - target_value_uncertainty
@@ -1451,9 +1468,11 @@ class NmrVrptUtility:
                             self.__rdcRestSeqDict[seq_key] = []
                         self.__rdcRestSeqDict[seq_key].append(rest_key)
 
-            for k, v in self.__rdcRestDict.items():
-                if len(v) == 0:
-                    del self.__rdcRestDict[k]
+            if skipped:
+                __rdcRestDict__ = copy.copy(self.__rdcRestDict)
+                for k, v in __rdcRestDict__.items():
+                    if len(v) == 0:
+                        del self.__rdcRestDict[k]
 
             for v in self.__rdcRestSeqDict.values():
                 v = list(set(v))
@@ -1513,7 +1532,7 @@ class NmrVrptUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
                                                  f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
-                                                 f"not found in the coordinates for distance restraint {rest_key}.")
+                                                 f"not found in the coordinates for distance restraint {rest_key}.\n")
                             atom_present = False
 
                         try:
@@ -1522,11 +1541,14 @@ class NmrVrptUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
                                                  f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
-                                                 f"not found in the coordinates for distance restraint {rest_key}.")
+                                                 f"not found in the coordinates for distance restraint {rest_key}.\n")
                             atom_present = False
 
                         if atom_present:
                             d = distance(pos_1, pos_2)
+                            if d == 0.0:
+                                self.__lfh.write(f"+NmrVrptUtility.__calculateDistanceRestraintViolations() ++ Error  - distance restraint {rest_key} {r} does not make sense, "
+                                                 f"{os.path.basename(self.__nmrDataPath)}.\n")
                             dist_list.append(d)
                         else:
                             self.__distRestUnmapped.append(rest_key)
@@ -1541,20 +1563,24 @@ class NmrVrptUtility:
                                 error = 0.0
                             elif avr_d > upper_bound:
                                 error = abs(avr_d - upper_bound)
+                                print(f'{rest_key} {lower_bound=} {avr_d=} {upper_bound=}')
                             else:
                                 error = abs(avr_d - lower_bound)
+                                print(f'{rest_key} {lower_bound=} {avr_d=} {upper_bound=}')
 
                         elif upper_bound is not None:
                             if avr_d <= upper_bound:
                                 error = 0.0
                             elif avr_d > upper_bound:
                                 error = abs(avr_d - upper_bound)
+                                print(f'{rest_key} {lower_bound=} {avr_d=} {upper_bound=}')
 
                         elif lower_bound is not None:
                             if lower_bound <= avr_d:
                                 error = 0.0
                             else:
                                 error = abs(avr_d - lower_bound)
+                                print(f'{rest_key} {lower_bound=} {avr_d=} {upper_bound=}')
 
                     error_per_model[model_id] = error
 
@@ -1700,7 +1726,7 @@ class NmrVrptUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
                                                  f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
-                                                 f"not found in the coordinates for dihedral angle restraint {rest_key}.")
+                                                 f"not found in the coordinates for dihedral angle restraint {rest_key}.\n")
                             atom_present = False
 
                         try:
@@ -1709,7 +1735,7 @@ class NmrVrptUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
                                                  f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
-                                                 f"not found in the coordinates for dihedral angle restraint {rest_key}.")
+                                                 f"not found in the coordinates for dihedral angle restraint {rest_key}.\n")
                             atom_present = False
 
                         try:
@@ -1718,7 +1744,7 @@ class NmrVrptUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"Atom (auth_asym_id: {atom_key_3[0]}, auth_seq_id: {atom_key_3[1]}, "
                                                  f"comp_id: {atom_key_3[2]}, atom_id: {atom_key_3[3]}) "
-                                                 f"not found in the coordinates for dihedral angle restraint {rest_key}.")
+                                                 f"not found in the coordinates for dihedral angle restraint {rest_key}.\n")
                             atom_present = False
 
                         try:
@@ -1727,7 +1753,7 @@ class NmrVrptUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"Atom (auth_asym_id: {atom_key_4[0]}, auth_seq_id: {atom_key_4[1]}, "
                                                  f"comp_id: {atom_key_4[2]}, atom_id: {atom_key_4[3]}) "
-                                                 f"not found in the coordinates for dihedral angle restraint {rest_key}.")
+                                                 f"not found in the coordinates for dihedral angle restraint {rest_key}.\n")
                             atom_present = False
 
                         if atom_present:
@@ -1853,7 +1879,7 @@ class NmrVrptUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
                                                  f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
-                                                 f"not found in the coordinates for RDC restraint {rest_key}.")
+                                                 f"not found in the coordinates for RDC restraint {rest_key}.\n")
                             atom_present = False
 
                         try:
@@ -1862,11 +1888,11 @@ class NmrVrptUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
                                                  f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
-                                                 f"not found in the coordinates for RDC restraint {rest_key}.")
+                                                 f"not found in the coordinates for RDC restraint {rest_key}.\n")
                             atom_present = False
 
                         if atom_present:
-                            # """ TODO: rdc() returns calculated RDC value (RDC_calc) for a given vector using the RDC alignment tensor of rest_key[0], pylint: disable='fixme'
+                            # """ TODO: rdc() should return calculated RDC value for a given vector using the RDC alignment tensor of rest_key[0], pylint: disable='fixme'
                             # r = rdc(rest_key[0], pos_1, pos_2)
                             # rdc_list.append(r)
                             # """

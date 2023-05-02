@@ -2620,10 +2620,11 @@ class CharmmMRParserListener(ParseTreeListener):
                         else:
                             self.__f.append(f"[{error_type}] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {__factor}.")
-                            self.__preferAuthSeq = not self.__preferAuthSeq
-                            self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
-                            self.__setLocalSeqScheme()
                             # """
+                            # self.__preferAuthSeq = not self.__preferAuthSeq
+                            # self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
+                            # self.__setLocalSeqScheme()
+                            #
                             # if 'atom_id' in __factor and __factor['atom_id'][0] is None:
                             #     if 'label_seq_scheme' not in self.reasonsForReParsing:
                             #         self.reasonsForReParsing['label_seq_scheme'] = True
@@ -2857,16 +2858,19 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                """
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
                                                 seqKey = _seqKey
                                                 chainId, seqId = seqKey
                                                 if len(self.atomSelectionSet) > 0:
                                                     self.__setLocalSeqScheme()
+                                                """
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
+                                                """
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
                                                 self.__authAtomId = 'auth_atom_id'
@@ -2874,6 +2878,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 chainId, seqId = seqKey
                                                 if len(self.atomSelectionSet) > 0:
                                                     self.__setLocalSeqScheme()
+                                                """
                                     elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
                                         self.__preferAuthSeq = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck)
@@ -2914,16 +2919,19 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                """
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
                                                 seqKey = _seqKey
                                                 chainId, seqId = seqKey
                                                 if len(self.atomSelectionSet) > 0:
                                                     self.__setLocalSeqScheme()
+                                                """
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
+                                                """
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
                                                 self.__authAtomId = 'auth_atom_id'
@@ -2931,6 +2939,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 chainId, seqId = seqKey
                                                 if len(self.atomSelectionSet) > 0:
                                                     self.__setLocalSeqScheme()
+                                                """
                                 elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
                                     if len(self.atomSelectionSet) == 0:
                                         self.__preferAuthSeq = True

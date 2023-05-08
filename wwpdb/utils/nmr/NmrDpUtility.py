@@ -417,6 +417,7 @@ RDC_UNCERT_MAX = RDC_UNCERTAINTY_RANGE['max_inclusive']
 bmrb_nmr_star_file_name_pattern = re.compile(r'^bmr\d[0-9]{1,5}_3.str$')
 mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
 pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}$')
+dep_id_pattern = re.compile(r'^D_[0-9]{6,10}$')
 
 datablock_pattern = re.compile(r'\s*data_(\S+)\s*')
 sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
@@ -9131,7 +9132,7 @@ class NmrDpUtility:
             data_file_name = get_first_sf_tag(_sf_data, 'Data_file_name')
             if mr_file_name_pattern.match(data_file_name):
                 entry_id = get_first_sf_tag(_sf_data, 'Entry_ID')
-                if pdb_id_pattern.match(entry_id):
+                if pdb_id_pattern.match(entry_id) or dep_id_pattern.match(entry_id):
                     self.__remediation_mode = True
 
         is_valid, messages, corrections = self.__nefT.resolve_sf_names_for_cif(self.__star_data[file_list_id])  # DAOTHER-7389, issue #4

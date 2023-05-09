@@ -4895,7 +4895,7 @@ def getStarAtom(authToStarSeq, offsetHolder, atom):
 
     chainId = atom['chain_id']
     seqId = atom['seq_id']
-    compId = atom['comp_id'] if 'comp_id' in atom else None
+    compId = atom.get('comp_id')
     seqKey = (chainId, seqId, compId)
     if 'atom_id' not in atom:
         starAtom['atom_id'] = None
@@ -4948,7 +4948,7 @@ def getInsCode(authToInsCode, offsetHolder, atom):
 
     chainId = atom['chain_id']
     seqId = atom['seq_id']
-    compId = atom['comp_id'] if 'comp_id' in atom else None
+    compId = atom.get('comp_id')
     seqKey = (chainId, seqId, compId)
 
     if seqKey in authToInsCode:

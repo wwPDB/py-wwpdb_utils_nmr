@@ -1531,11 +1531,11 @@ class RosettaMRParserListener(ParseTreeListener):
                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
                                            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
-                                           dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                           dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                           dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                           dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                           dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                           dstFunc.get('target_value'), None,
+                                           dstFunc.get('lower_linear_limit'),
+                                           dstFunc.get('lower_limit'),
+                                           dstFunc.get('upper_limit'),
+                                           dstFunc.get('upper_linear_limit'),
                                            sf['list_id'], self.__entryId])
 
     def validateAngleRange(self, weight):
@@ -2247,11 +2247,11 @@ class RosettaMRParserListener(ParseTreeListener):
                 sf['loop']['data'].append([sf['index_id'], sf['id'],
                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                            opposingChainId,
-                                           dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                           dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                           dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                           dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                           dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                           dstFunc.get('target_value'), None,
+                                           dstFunc.get('lower_linear_limit'),
+                                           dstFunc.get('lower_limit'),
+                                           dstFunc.get('upper_limit'),
+                                           dstFunc.get('upper_linear_limit'),
                                            sf['list_id'], self.__entryId])
 
     # Enter a parse tree produced by RosettaMRParser#site_residues_restraints.
@@ -2336,11 +2336,11 @@ class RosettaMRParserListener(ParseTreeListener):
                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                            res2['chain_id'], res2['seq_id'], res2['comp_id'],
                                            res3['chain_id'], res3['seq_id'], res3['comp_id'],
-                                           dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                           dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                           dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                           dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                           dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                           dstFunc.get('target_value'), None,
+                                           dstFunc.get('lower_linear_limit'),
+                                           dstFunc.get('lower_limit'),
+                                           dstFunc.get('upper_limit'),
+                                           dstFunc.get('upper_linear_limit'),
                                            sf['list_id'], self.__entryId])
 
     # Enter a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraints.
@@ -2432,11 +2432,11 @@ class RosettaMRParserListener(ParseTreeListener):
                     sf['loop']['data'].append([sf['index_id'], sf['id'],
                                                res1['chain_id'], res1['seq_id'], res1['comp_id'],
                                                res2['chain_id'], res2['seq_id'], res2['comp_id'],
-                                               dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                               dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                               dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                               dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                               dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                               dstFunc.get('target_value'), None,
+                                               dstFunc.get('lower_linear_limit'),
+                                               dstFunc.get('lower_limit'),
+                                               dstFunc.get('upper_limit'),
+                                               dstFunc.get('upper_linear_limit'),
                                                sf['list_id'], self.__entryId])
 
         except ValueError:

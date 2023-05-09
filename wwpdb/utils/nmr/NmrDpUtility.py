@@ -11282,7 +11282,7 @@ class NmrDpUtility:
         err_message = err_desc['message']
         err_line_number = err_desc['line_number']
         err_column_position = err_desc['column_position']
-        err_input = err_desc['input'] if 'input' in err_desc else ''
+        err_input = err_desc('input', '')
 
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
         amber_file_type = file_type == 'nm-res-amb'
@@ -12200,7 +12200,7 @@ class NmrDpUtility:
         err_message = err_desc['message']
         err_line_number = err_desc['line_number']
         err_column_position = err_desc['column_position']
-        err_input = err_desc['input'] if 'input' in err_desc else ''
+        err_input = err_desc.get('input', '')
 
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
         amber_file_type = file_type = 'nm-res-amb'
@@ -12597,7 +12597,7 @@ class NmrDpUtility:
         err_message = err_desc['message']
         err_line_number = err_desc['line_number']
         err_column_position = err_desc['column_position']
-        err_input = err_desc['input'] if 'input' in err_desc else ''
+        err_input = err_desc.get('input', '')
 
         if err_column_position == 0 or len(err_input) == 0:
 
@@ -33398,10 +33398,10 @@ class NmrDpUtility:
             _atom1 = _atom2 = None
 
             for idx, row in enumerate(lp_data):
-                index = row[index_tag] if index_tag in row else None
-                combination_id = row[combination_id_name] if combination_id_name in row else None
-                member_id = row[member_id_name] if file_type == 'nmr-star' and member_id_name in row else None
-                member_logic_code = row[member_logic_code_name] if file_type == 'nmr-star' and member_logic_code_name in row else None
+                index = row.get(index_tag)
+                combination_id = row.get(combination_id_name)
+                member_id = row.get(member_id_name) if file_type == 'nmr-star' else None
+                member_logic_code = row.get(member_logic_code_name) if file_type == 'nmr-star' else None
 
                 chain_id_1 = row[chain_id_1_name]
                 chain_id_2 = row[chain_id_2_name]
@@ -33411,7 +33411,7 @@ class NmrDpUtility:
                 comp_id_2 = row[comp_id_2_name]
                 atom_id_1 = row[atom_id_1_name]
                 atom_id_2 = row[atom_id_2_name]
-                weight = row[weight_name] if weight_name in row else None
+                weight = row.get(weight_name)
 
                 rest_id = row[id_tag]
                 set_id.add(id)
@@ -33433,7 +33433,7 @@ class NmrDpUtility:
 
                 _rest_id = rest_id
 
-                target_value = row[target_value_name] if target_value_name in row else None
+                target_value = row.get(target_value_name)
 
                 upper_limit = None
                 lower_limit = None
@@ -33617,11 +33617,11 @@ class NmrDpUtility:
 
                 # detect potential type
 
-                # targe_value = row[target_value_name] if target_value_name in row else None
-                lower_limit = row[lower_limit_name] if lower_limit_name in row else None
-                upper_limit = row[upper_limit_name] if upper_limit_name in row else None
-                lower_linear_limit = row[lower_linear_limit_name] if lower_linear_limit_name in row else None
-                upper_linear_limit = row[upper_linear_limit_name] if upper_linear_limit_name in row else None
+                # targe_value = row.get(target_value_name)
+                lower_limit = row.get(lower_limit_name)
+                upper_limit = row.get(upper_limit_name)
+                lower_linear_limit = row.get(lower_linear_limit_name)
+                upper_linear_limit = row.get(upper_linear_limit_name)
 
                 if (lower_limit is not None) and (upper_limit is not None)\
                         and lower_linear_limit is None and upper_linear_limit is None:
@@ -33760,7 +33760,7 @@ class NmrDpUtility:
                     _count[k] = 0
 
                 for idx, row in enumerate(lp_data):
-                    member_id = row[member_id_name] if file_type == 'nmr-star' and member_id_name in row else None
+                    member_id = row.get(member_id_name) if file_type == 'nmr-star' else None
 
                     chain_id_1 = row[chain_id_1_name]
                     chain_id_2 = row[chain_id_2_name]
@@ -33771,7 +33771,7 @@ class NmrDpUtility:
                     atom_id_1 = row[atom_id_1_name]
                     atom_id_2 = row[atom_id_2_name]
 
-                    target_value = row[target_value_name] if target_value_name in row else None
+                    target_value = row.get(target_value_name)
 
                     upper_limit = None
                     lower_limit = None
@@ -33855,7 +33855,7 @@ class NmrDpUtility:
                             row_1 = lp_data[id_set[i]]
                             row_2 = lp_data[id_set[j]]
 
-                            target_value_1 = row_1[target_value_name] if target_value_name in row_1 else None
+                            target_value_1 = row_1.get(target_value_name)
 
                             if target_value_1 is None:
 
@@ -33879,7 +33879,7 @@ class NmrDpUtility:
                                 elif has_key_value(row_1, lower_limit_name):
                                     target_value_1 = row_1[lower_limit_name]
 
-                            target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
+                            target_value_2 = row_2.get(target_value_name)
 
                             if target_value_2 is None:
 
@@ -33979,7 +33979,7 @@ class NmrDpUtility:
                                     row_1 = lp_data[row_id_1]
                                     row_2 = lp_data[row_id_2]
 
-                                    target_value_1 = row_1[target_value_name] if target_value_name in row_1 else None
+                                    target_value_1 = row_1.get(target_value_name)
 
                                     if target_value_1 is None:
 
@@ -34003,7 +34003,7 @@ class NmrDpUtility:
                                         elif has_key_value(row_1, lower_limit_name):
                                             target_value_1 = row_1[lower_limit_name]
 
-                                    target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
+                                    target_value_2 = row_2.get(target_value_name)
 
                                     if target_value_2 is None:
 
@@ -34044,7 +34044,7 @@ class NmrDpUtility:
                                     if discrepancy < v or discrepancy >= v + scale:
                                         continue
 
-                                    target_value = row_1[target_value_name] if target_value_name in row_1 else None
+                                    target_value = row_1.get(target_value_name)
 
                                     upper_limit = None
                                     lower_limit = None
@@ -34080,7 +34080,7 @@ class NmrDpUtility:
                                         else:
                                             continue
 
-                                    member_id = row_1[member_id_name] if file_type == 'nmr-star' and member_id_name in row_1 else None
+                                    member_id = row_1.get(member_id_name) if file_type == 'nmr-star' else None
 
                                     chain_id_1 = row_1[chain_id_1_name]
                                     chain_id_2 = row_1[chain_id_2_name]
@@ -34099,7 +34099,7 @@ class NmrDpUtility:
 
                             if 0.0 <= v < scale and redundant:
 
-                                target_value = row_1[target_value_name] if target_value_name in row_1 else None
+                                target_value = row_1.get(target_value_name)
 
                                 upper_limit = None
                                 lower_limit = None
@@ -34135,7 +34135,7 @@ class NmrDpUtility:
                                     else:
                                         continue
 
-                                member_id = row_1[member_id_name] if file_type == 'nmr-star' and member_id_name in row_1 else None
+                                member_id = row_1.get(member_id_name) if file_type == 'nmr-star' else None
 
                                 chain_id_1 = row_1[chain_id_1_name]
                                 chain_id_2 = row_1[chain_id_2_name]
@@ -35130,10 +35130,10 @@ class NmrDpUtility:
                                               'struct_conf': struct_conf})
 
             for row in lp_data:
-                index = row[index_tag] if index_tag in row else None
-                combination_id = row[combination_id_name] if combination_id_name in row else None
+                index = row.get(index_tag)
+                combination_id = row.get(combination_id_name)
 
-                target_value = row[target_value_name] if target_value_name in row else None
+                target_value = row.get(target_value_name)
 
                 if target_value is None:
 
@@ -35206,7 +35206,7 @@ class NmrDpUtility:
                 atom_id_3 = row[atom_id_3_name]
                 atom_id_4 = row[atom_id_4_name]
                 data_type = row[angle_type_name]
-                weight = row[weight_name] if weight_name in row else None
+                weight = row.get(weight_name)
                 set_id.add(row[id_tag])
 
                 peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
@@ -35324,11 +35324,11 @@ class NmrDpUtility:
 
                 # detect potential type
 
-                # targe_value = i[target_value_name] if target_value_name in i else None
-                lower_limit = row[lower_limit_name] if lower_limit_name in row else None
-                upper_limit = row[upper_limit_name] if upper_limit_name in row else None
-                lower_linear_limit = row[lower_linear_limit_name] if lower_linear_limit_name in row else None
-                upper_linear_limit = row[upper_linear_limit_name] if upper_linear_limit_name in row else None
+                # targe_value = row.get(target_value_name)
+                lower_limit = row.get(lower_limit_name)
+                upper_limit = row.get(upper_limit_name)
+                lower_linear_limit = row.get(lower_linear_limit_name)
+                upper_linear_limit = row.get(upper_linear_limit_name)
 
                 if (lower_limit is not None) and (upper_limit is not None)\
                         and lower_linear_limit is None and upper_linear_limit is None:
@@ -35501,7 +35501,7 @@ class NmrDpUtility:
                             row_1 = lp_data[id_set[i]]
                             row_2 = lp_data[id_set[j]]
 
-                            target_value_1 = row_1[target_value_name] if target_value_name in row_1 else None
+                            target_value_1 = row_1.get(target_value_name)
 
                             if target_value_1 is None:
 
@@ -35525,7 +35525,7 @@ class NmrDpUtility:
                                 elif has_key_value(row_1, lower_limit_name):
                                     target_value_1 = row_1[lower_limit_name]
 
-                            target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
+                            target_value_2 = row_2.get(target_value_name)
 
                             if target_value_2 is None:
 
@@ -35655,7 +35655,7 @@ class NmrDpUtility:
                                     row_1 = lp_data[id_set[i]]
                                     row_2 = lp_data[id_set[j]]
 
-                                    target_value_1 = row_1[target_value_name] if target_value_name in row_1 else None
+                                    target_value_1 = row_1.get(target_value_name)
 
                                     if target_value_1 is None:
 
@@ -35679,7 +35679,7 @@ class NmrDpUtility:
                                         elif has_key_value(row_1, lower_limit_name):
                                             target_value_1 = row_1[lower_limit_name]
 
-                                    target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
+                                    target_value_2 = row_2.get(target_value_name)
 
                                     if target_value_2 is None:
 
@@ -35864,7 +35864,7 @@ class NmrDpUtility:
             min_val_ = 100.0
 
             for row in lp_data:
-                target_value = row[target_value_name] if target_value_name in row else None
+                target_value = row.get(target_value_name)
 
                 if target_value is None:
 
@@ -35936,14 +35936,14 @@ class NmrDpUtility:
                                               'struct_conf': struct_conf})
 
             for row in lp_data:
-                index = row[index_tag] if index_tag in row else None
-                combination_id = row[combination_id_name] if combination_id_name in row else None
+                index = row.get(index_tag)
+                combination_id = row.get(combination_id_name)
 
                 chain_id_1 = row[chain_id_1_name]
                 seq_id_1 = row[seq_id_1_name]
                 atom_id_1 = row[atom_id_1_name]
                 atom_id_2 = row[atom_id_2_name]
-                weight = row[weight_name] if weight_name in row else None
+                weight = row.get(weight_name)
                 set_id.add(row[id_tag])
 
                 data_type = self.__getTypeOfRdcRestraint(atom_id_1, atom_id_2)
@@ -35982,11 +35982,11 @@ class NmrDpUtility:
 
                 # detect potential type
 
-                targe_value = row[target_value_name] if target_value_name in row else None
-                lower_limit = row[lower_limit_name] if lower_limit_name in row else None
-                upper_limit = row[upper_limit_name] if upper_limit_name in row else None
-                lower_linear_limit = row[lower_linear_limit_name] if lower_linear_limit_name in row else None
-                upper_linear_limit = row[upper_linear_limit_name] if upper_linear_limit_name in row else None
+                targe_value = row.get(target_value_name)
+                lower_limit = row.get(lower_limit_name)
+                upper_limit = row.get(upper_limit_name)
+                lower_linear_limit = row.get(lower_linear_limit_name)
+                upper_linear_limit = row.get(upper_linear_limit_name)
 
                 if (lower_limit is not None) and (upper_limit is not None)\
                         and lower_linear_limit is None and upper_linear_limit is None:
@@ -36095,7 +36095,7 @@ class NmrDpUtility:
                     _count[k] = 0
 
                 for row in lp_data:
-                    target_value = row[target_value_name] if target_value_name in row else None
+                    target_value = row.get(target_value_name)
 
                     if target_value is None:
 
@@ -36169,7 +36169,7 @@ class NmrDpUtility:
                             row_1 = lp_data[id_set[i]]
                             row_2 = lp_data[id_set[j]]
 
-                            target_value_1 = row_1[target_value_name] if target_value_name in row_1 else None
+                            target_value_1 = row_1.get(target_value_name)
 
                             if target_value_1 is None:
 
@@ -36193,7 +36193,7 @@ class NmrDpUtility:
                                 elif has_key_value(row_1, lower_limit_name):
                                     target_value_1 = row_1[lower_limit_name]
 
-                            target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
+                            target_value_2 = row_2.get(target_value_name)
 
                             if target_value_2 is None:
 
@@ -36282,7 +36282,7 @@ class NmrDpUtility:
                                     row_1 = lp_data[id_set[i]]
                                     row_2 = lp_data[id_set[j]]
 
-                                    target_value_1 = row_1[target_value_name] if target_value_name in row_1 else None
+                                    target_value_1 = row_1.get(target_value_name)
 
                                     if target_value_1 is None:
 
@@ -36306,7 +36306,7 @@ class NmrDpUtility:
                                         elif has_key_value(row_1, lower_limit_name):
                                             target_value_1 = row_1[lower_limit_name]
 
-                                    target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
+                                    target_value_2 = row_2.get(target_value_name)
 
                                     if target_value_2 is None:
 
@@ -41620,7 +41620,7 @@ class NmrDpUtility:
 
                     for bond in bonds_w_leaving:
 
-                        leaving_flag = bond['pdbx_leaving_atom_flag'] if 'pdbx_leaving_atom_flag' in bond else ''
+                        leaving_flag = bond.get('pdbx_leaving_atom_flag', '')
 
                         if leaving_flag in ('one', 'both'):
                             leaving_atom_id = None
@@ -42221,7 +42221,7 @@ class NmrDpUtility:
                         row = [None] * len(tags)
 
                         row[0], row[1], row[2], row[3] =\
-                            ent_name_sys['name'], ent_name_sys['system'] if 'system' in ent_name_sys else None, entity_id, self.__entry_id
+                            ent_name_sys['name'], ent_name_sys.get('system'), entity_id, self.__entry_id
 
                         esn_loop.add_data(row)
 
@@ -45664,7 +45664,7 @@ class NmrDpUtility:
                 if chain_id_1 == chain_id_2 and seq_id_1 == seq_id_2:
                     return False
 
-                target_value = row[target_value_name] if target_value_name in row else None
+                target_value = row.get(target_value_name)
 
                 upper_limit = None
                 lower_limit = None
@@ -45798,7 +45798,7 @@ class NmrDpUtility:
                 if chain_id_1 == chain_id_2 and seq_id_1 == seq_id_2:
                     return False
 
-                target_value = row[target_value_name] if target_value_name in row else None
+                target_value = row.get(target_value_name)
 
                 upper_limit = None
                 lower_limit = None
@@ -48708,7 +48708,7 @@ class NmrDpUtility:
                         constraint_subtype = 'SAXS'
                     if constraint_subtype is not None and constraint_subtype == 'RDC':
                         constraint_type = 'residual dipolar coupling'
-                    constraint_subsubtype = sf_item['constraint_subsubtype'] if 'constraint_subsubtype' in sf_item else None
+                    constraint_subsubtype = sf_item.get('constraint_subsubtype')
                     row[6], row[7], row[8], row[9] =\
                         constraint_type, constraint_subtype, constraint_subsubtype, sf_item['id']
                     row[10], row[11] = 1, self.__entry_id

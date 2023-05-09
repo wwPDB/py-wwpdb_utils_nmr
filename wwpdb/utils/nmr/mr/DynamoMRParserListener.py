@@ -3714,7 +3714,8 @@ class DynamoMRParserListener(ParseTreeListener):
                         atomSelection = []
 
                         _cifSeqId = cifSeqId + offset
-                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)]
+                                                                    if _cifSeqId in ps['auth_seq_id'] else None)
 
                         if _cifCompId is None:
                             try:
@@ -3723,7 +3724,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                 pass
                             if _cifCompId is None:
                                 self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                f"The residue number '{seqId+offset}' is not present in polymer sequence "
+                                                f"of chain {chainId} of the coordinates. "
                                                 "Please update the sequence in the Macromolecules page.")
                                 return
                                 # _cifCompId = '.'
@@ -3732,7 +3734,8 @@ class DynamoMRParserListener(ParseTreeListener):
                         else:
                             self.__ccU.updateChemCompDict(_cifCompId)
 
-                            cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+                            cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
+                                              if cca[self.__ccU.ccaAtomId] == atomId), None)
 
                             if cifAtomId is None:
                                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -3891,7 +3894,8 @@ class DynamoMRParserListener(ParseTreeListener):
                         atomSelection = []
 
                         _cifSeqId = cifSeqId + offset
-                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
+                        _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)]
+                                                                    if _cifSeqId in ps['auth_seq_id'] else None)
 
                         if _cifCompId is None:
                             try:
@@ -3900,7 +3904,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                 pass
                             if _cifCompId is None:
                                 self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                                f"The residue number '{seqId+offset}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                f"The residue number '{seqId+offset}' is not present in polymer sequence "
+                                                f"of chain {chainId} of the coordinates. "
                                                 "Please update the sequence in the Macromolecules page.")
                                 return
                                 # _cifCompId = '.'
@@ -3909,7 +3914,8 @@ class DynamoMRParserListener(ParseTreeListener):
                         else:
                             self.__ccU.updateChemCompDict(_cifCompId)
 
-                            cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+                            cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
+                                              if cca[self.__ccU.ccaAtomId] == atomId), None)
 
                             if cifAtomId is None:
                                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"

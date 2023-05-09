@@ -1021,11 +1021,11 @@ class NmrVrptUtility:
                     comp_id_2 = r['comp_id_2']
                     atom_id_1 = r['atom_id_1']
                     atom_id_2 = r['atom_id_2']
-                    member_id = r['member_id'] if has_member_id else None
-                    ins_code_1 = r['ins_code_1'] if has_pdb_ins_code_1 else '?'
-                    ins_code_2 = r['ins_code_2'] if has_pdb_ins_code_2 else '?'
-                    target_value = r['target_value'] if has_target_val else None
-                    target_value_uncertainty = r['target_value_uncertainty'] if has_target_val_uncertainty else None
+                    member_id = r.get('member_id')
+                    ins_code_1 = r.get('ins_code_1', '?')
+                    ins_code_2 = r.get('ins_code_2', '?')
+                    target_value = r.get('target_value')
+                    target_value_uncertainty = r.get('target_value_uncertainty')
 
                     offset = abs(auth_seq_id_1 - auth_seq_id_2)
 
@@ -1247,17 +1247,17 @@ class NmrVrptUtility:
                     atom_id_2 = r['atom_id_2']
                     atom_id_3 = r['atom_id_3']
                     atom_id_4 = r['atom_id_4']
-                    ins_code_1 = r['ins_code_1'] if has_pdb_ins_code_1 else '?'
-                    ins_code_2 = r['ins_code_2'] if has_pdb_ins_code_2 else '?'
-                    ins_code_3 = r['ins_code_3'] if has_pdb_ins_code_3 else '?'
-                    ins_code_4 = r['ins_code_4'] if has_pdb_ins_code_4 else '?'
+                    ins_code_1 = r.get('ins_code_1', '?')
+                    ins_code_2 = r.get('ins_code_2', '?')
+                    ins_code_3 = r.get('ins_code_3', '?')
+                    ins_code_4 = r.get('ins_code_4', '?')
 
                     lower_bound = r['lower_bound']
                     upper_bound = r['upper_bound']
                     target_value = r['target_value']
-                    lower_linear_limit = r['lower_linear_limit'] if has_lower_linear_limit else None
-                    upper_linear_limit = r['upper_linear_limit'] if has_upper_linear_limit else None
-                    target_value_uncertainty = r['target_value_uncertainty'] if has_target_val_err else None
+                    lower_linear_limit = r.get('lower_linear_limit')
+                    upper_linear_limit = r.get('upper_linear_limit')
+                    target_value_uncertainty = r.get('target_value_uncertainty')
 
                     if lower_bound is None and upper_bound is None and lower_linear_limit is None and upper_linear_limit is None:
                         if target_value is None:
@@ -1418,15 +1418,15 @@ class NmrVrptUtility:
                     comp_id_2 = r['comp_id_2']
                     atom_id_1 = r['atom_id_1']
                     atom_id_2 = r['atom_id_2']
-                    ins_code_1 = r['ins_code_1'] if has_pdb_ins_code_1 else '?'
-                    ins_code_2 = r['ins_code_2'] if has_pdb_ins_code_2 else '?'
+                    ins_code_1 = r.get('ins_code_1', '?')
+                    ins_code_2 = r.get('ins_code_2', '?')
 
                     target_value = r['target_value']
                     target_value_uncertainty = r['target_value_uncertainty']
-                    lower_bound = r['lower_bound'] if has_lower_bound else None
-                    upper_bound = r['upper_bound'] if has_upper_bound else None
-                    lower_linear_limit = r['lower_linear_limit'] if has_lower_linear_limit else None
-                    upper_linear_limit = r['upper_linear_limit'] if has_upper_linear_limit else None
+                    lower_bound = r.get('lower_bound')
+                    upper_bound = r.get('upper_bound')
+                    lower_linear_limit = r.get('lower_linear_limit')
+                    upper_linear_limit = r.get('upper_linear_limit')
 
                     if lower_bound is None and upper_bound is None and lower_linear_limit is None and upper_linear_limit is None:
                         if target_value is None:

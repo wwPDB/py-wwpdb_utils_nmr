@@ -772,7 +772,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                         for atomNum in self.__sanderAtomNumberDict.values():
                             updatePolySeqRst(self.__polySeqRst, atomNum['chain_id'], atomNum['seq_id'],
-                                             atomNum['comp_id'], atomNum['auth_comp_id'])
+                                             atomNum['comp_id'], atomNum.get('auth_comp_id'))
 
                         sortPolySeqRst(self.__polySeqRst)
 
@@ -1270,11 +1270,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
                                                                    atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
                                                                    atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
-                                                                   dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                                                   dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                                                   dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                                                   dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                                                   dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                                   dstFunc.get('target_value'), None,
+                                                                   dstFunc.get('lower_linear_limit'),
+                                                                   dstFunc.get('lower_limit'),
+                                                                   dstFunc.get('upper_limit'),
+                                                                   dstFunc.get('upper_linear_limit'),
                                                                    self.inGenDist_weight[0], self.inGenDist_weight[1],
                                                                    sf['list_id'], self.__entryId])
 
@@ -1319,11 +1319,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
                                                                    atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
                                                                    atom6['chain_id'], atom6['seq_id'], atom6['comp_id'], atom6['atom_id'],
-                                                                   dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                                                   dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                                                   dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                                                   dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                                                   dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                                   dstFunc.get('target_value'), None,
+                                                                   dstFunc.get('lower_linear_limit'),
+                                                                   dstFunc.get('lower_limit'),
+                                                                   dstFunc.get('upper_limit'),
+                                                                   dstFunc.get('upper_linear_limit'),
                                                                    self.inGenDist_weight[0], self.inGenDist_weight[1], self.inGenDist_weight[2],
                                                                    sf['list_id'], self.__entryId])
 
@@ -1375,12 +1375,13 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    atom6['chain_id'], atom6['seq_id'], atom6['comp_id'], atom6['atom_id'],
                                                                    atom7['chain_id'], atom7['seq_id'], atom7['comp_id'], atom7['atom_id'],
                                                                    atom8['chain_id'], atom8['seq_id'], atom8['comp_id'], atom8['atom_id'],
-                                                                   dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                                                   dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                                                   dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                                                   dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                                                   dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
-                                                                   self.inGenDist_weight[0], self.inGenDist_weight[1], self.inGenDist_weight[2], self.inGenDist_weight[3],
+                                                                   dstFunc.get('target_value'), None,
+                                                                   dstFunc.get('lower_linear_limit'),
+                                                                   dstFunc.get('lower_limit'),
+                                                                   dstFunc.get('upper_limit'),
+                                                                   dstFunc.get('upper_linear_limit'),
+                                                                   self.inGenDist_weight[0], self.inGenDist_weight[1],
+                                                                   self.inGenDist_weight[2], self.inGenDist_weight[3],
                                                                    sf['list_id'], self.__entryId])
 
                             self.rstwt = [0.0, 0.0, 0.0, 0.0]
@@ -1427,11 +1428,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                                            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
                                                            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
-                                                           dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                                           dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                                           dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                                           dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                                           dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                           dstFunc.get('target_value'), None,
+                                                           dstFunc.get('lower_linear_limit'),
+                                                           dstFunc.get('lower_limit'),
+                                                           dstFunc.get('upper_limit'),
+                                                           dstFunc.get('upper_linear_limit'),
                                                            sf['list_id'], self.__entryId])
 
                     # torsional angle
@@ -1535,11 +1536,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                                atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
                                                                atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
                                                                atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
-                                                               dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                                               dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                                               dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                                               dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                                               dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                               dstFunc.get('target_value'), None,
+                                                               dstFunc.get('lower_linear_limit'),
+                                                               dstFunc.get('lower_limit'),
+                                                               dstFunc.get('upper_limit'),
+                                                               dstFunc.get('upper_linear_limit'),
                                                                sf['list_id'], self.__entryId])
 
                         # plane-plane angle
@@ -1586,11 +1587,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                                atom6['chain_id'], atom6['seq_id'], atom6['comp_id'], atom6['atom_id'],
                                                                atom7['chain_id'], atom7['seq_id'], atom7['comp_id'], atom7['atom_id'],
                                                                atom8['chain_id'], atom8['seq_id'], atom8['comp_id'], atom8['atom_id'],
-                                                               dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                                               dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                                               dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                                               dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                                               dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                               dstFunc.get('target_value'), None,
+                                                               dstFunc.get('lower_linear_limit'),
+                                                               dstFunc.get('lower_limit'),
+                                                               dstFunc.get('upper_limit'),
+                                                               dstFunc.get('upper_linear_limit'),
                                                                sf['list_id'], self.__entryId])
 
                 # try to update AMBER atom number dictionary based on Sander comments
@@ -2165,11 +2166,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
                                                                    atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
                                                                    atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
-                                                                   dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                                                   dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                                                   dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                                                   dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                                                   dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                                   dstFunc.get('target_value'), None,
+                                                                   dstFunc.get('lower_linear_limit'),
+                                                                   dstFunc.get('lower_limit'),
+                                                                   dstFunc.get('upper_limit'),
+                                                                   dstFunc.get('upper_linear_limit'),
                                                                    self.inGenDist_weight[0], self.inGenDist_weight[1],
                                                                    sf['list_id'], self.__entryId])
 
@@ -2214,11 +2215,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
                                                                    atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
                                                                    atom6['chain_id'], atom6['seq_id'], atom6['comp_id'], atom6['atom_id'],
-                                                                   dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                                                   dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                                                   dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                                                   dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                                                   dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                                   dstFunc.get('target_value'), None,
+                                                                   dstFunc.get('lower_linear_limit'),
+                                                                   dstFunc.get('lower_limit'),
+                                                                   dstFunc.get('upper_limit'),
+                                                                   dstFunc.get('upper_linear_limit'),
                                                                    self.inGenDist_weight[0], self.inGenDist_weight[1], self.inGenDist_weight[2],
                                                                    sf['list_id'], self.__entryId])
 
@@ -2270,12 +2271,13 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    atom6['chain_id'], atom6['seq_id'], atom6['comp_id'], atom6['atom_id'],
                                                                    atom7['chain_id'], atom7['seq_id'], atom7['comp_id'], atom7['atom_id'],
                                                                    atom8['chain_id'], atom8['seq_id'], atom8['comp_id'], atom8['atom_id'],
-                                                                   dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                                                   dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                                                   dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                                                   dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                                                   dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
-                                                                   self.inGenDist_weight[0], self.inGenDist_weight[1], self.inGenDist_weight[2], self.inGenDist_weight[3],
+                                                                   dstFunc.get('target_value'), None,
+                                                                   dstFunc.get('lower_linear_limit'),
+                                                                   dstFunc.get('lower_limit'),
+                                                                   dstFunc.get('upper_limit'),
+                                                                   dstFunc.get('upper_linear_limit'),
+                                                                   self.inGenDist_weight[0], self.inGenDist_weight[1],
+                                                                   self.inGenDist_weight[2], self.inGenDist_weight[3],
                                                                    sf['list_id'], self.__entryId])
 
                             self.rstwt = [0.0, 0.0, 0.0, 0.0]
@@ -2328,11 +2330,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                                            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
                                                            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
-                                                           dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                                           dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                                           dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                                           dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                                           dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                           dstFunc.get('target_value'), None,
+                                                           dstFunc.get('lower_linear_limit'),
+                                                           dstFunc.get('lower_limit'),
+                                                           dstFunc.get('upper_limit'),
+                                                           dstFunc.get('upper_linear_limit'),
                                                            sf['list_id'], self.__entryId])
 
                     # torsional angle
@@ -2446,11 +2448,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                                atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
                                                                atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
                                                                atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
-                                                               dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                                               dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                                               dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                                               dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                                               dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                               dstFunc.get('target_value'), None,
+                                                               dstFunc.get('lower_linear_limit'),
+                                                               dstFunc.get('lower_limit'),
+                                                               dstFunc.get('upper_limit'),
+                                                               dstFunc.get('upper_linear_limit'),
                                                                sf['list_id'], self.__entryId])
 
                         # plane-plane angle
@@ -2527,11 +2529,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                                atom6['chain_id'], atom6['seq_id'], atom6['comp_id'], atom6['atom_id'],
                                                                atom7['chain_id'], atom7['seq_id'], atom7['comp_id'], atom7['atom_id'],
                                                                atom8['chain_id'], atom8['seq_id'], atom8['comp_id'], atom8['atom_id'],
-                                                               dstFunc['target_value'] if 'target_value' in dstFunc else None, None,
-                                                               dstFunc['lower_linear_limit'] if 'lower_linear_limit' in dstFunc else None,
-                                                               dstFunc['lower_limit'] if 'lower_limit' in dstFunc else None,
-                                                               dstFunc['upper_limit'] if 'upper_limit' in dstFunc else None,
-                                                               dstFunc['upper_linear_limit'] if 'upper_linear_limit' in dstFunc else None,
+                                                               dstFunc.get('target_value'), None,
+                                                               dstFunc.get('lower_linear_limit'),
+                                                               dstFunc.get('lower_limit'),
+                                                               dstFunc.get('upper_limit'),
+                                                               dstFunc.get('upper_linear_limit'),
                                                                sf['list_id'], self.__entryId])
 
                 # try to update AMBER atom number dictionary based on Sander comments

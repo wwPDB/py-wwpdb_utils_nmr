@@ -325,7 +325,7 @@ class mmCIFUtil:
         """ Get a list of dictionaries of a given Data Block and Category
         """
         dList, iList = self.GetValueAndItemByBlock(blockName, catName)
-        data = [[x[y] if y in x else None for y in iList] for x in dList]
+        data = [[x.get(y) for y in iList] for x in dList]
         #
         return {catName: {"Items": iList, "Values": data}}
 

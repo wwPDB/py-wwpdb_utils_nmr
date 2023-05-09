@@ -521,7 +521,7 @@ def updatePolySeqRstFromAtomSelectionSet(polySeqRst, atomSelectionSet):
         for atom in atomSelection:
             chainId = atom['chain_id']
             seqId = atom['seq_id']
-            compId = atom['comp_id'] if 'comp_id' in atom else '.'
+            compId = atom.get('comp_id', '.')
 
             updatePolySeqRst(polySeqRst, chainId, seqId, compId)
 

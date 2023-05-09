@@ -2849,7 +2849,7 @@ def translateToStdResName(compId, ccU=None):
         #     if _compId in monDict3:
         #         return _compId
         # """
-    if compId in ('HIE', 'HIP', 'HID'):
+    if compId in ('HIE', 'HIP', 'HID', 'HIZ'):
         return 'HIS'
 
     if compId.startswith('CY') and ccU is not None:
@@ -2857,6 +2857,9 @@ def translateToStdResName(compId, ccU=None):
             if ccU.lastChemCompDict['_chem_comp.type'] == 'L-PEPTIDE LINKING'\
                and 'CYSTEINE' in ccU.lastChemCompDict['_chem_comp.name']:
                 return 'CYS'
+
+    if compId == 'CYZ':
+        return 'CYS'
 
     if len(compId) == 3:
         if compId == 'ADE' or compId.startswith('DA'):

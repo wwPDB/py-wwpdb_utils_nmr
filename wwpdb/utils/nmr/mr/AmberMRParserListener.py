@@ -64,6 +64,7 @@ try:
                                            protonBeginCode,
                                            aminoProtonCode,
                                            rdcBbPairCode,
+                                           updatePolySeqRst,
                                            updatePolySeqRstFromAtomSelectionSet,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -119,6 +120,7 @@ except ImportError:
                                protonBeginCode,
                                aminoProtonCode,
                                rdcBbPairCode,
+                               updatePolySeqRst,
                                updatePolySeqRstFromAtomSelectionSet,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -765,6 +767,44 @@ class AmberMRParserListener(ParseTreeListener):
                             self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
+
+                    if self.__atomNumberDict is None and self.__sanderAtomNumberDict is not None and len(self.__polySeqRst) == 0:
+
+                        for atomNum in self.__sanderAtomNumberDict.values():
+                            updatePolySeqRst(self.__polySeqRst, atomNum['chain_id'], atomNum['seq_id'],
+                                             atomNum['comp_id'], atomNum['auth_comp_id'])
+
+                        sortPolySeqRst(self.__polySeqRst)
+
+                        self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst)
+                        self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+
+                        seq_id_mapping = {}
+
+                        for ca in self.__chainAssign:
+                            ref_chain_id = ca['ref_chain_id']
+                            test_chain_id = ca['test_chain_id']
+
+                            sa = next((sa for sa in self.__seqAlign
+                                       if sa['ref_chain_id'] == ref_chain_id
+                                       and sa['test_chain_id'] == test_chain_id), None)
+
+                            if sa is not None:
+                                for ref_auth_seq_id, test_seq_id in zip(sa['ref_auth_seq_id'], sa['test_seq_id']):
+                                    seq_key = (test_chain_id, test_seq_id)
+                                    seq_id_mapping[seq_key] = (ref_chain_id, ref_auth_seq_id)
+
+                        for atomNum in self.__sanderAtomNumberDict.values():
+                            test_chain_id = atomNum['chain_id']
+                            test_seq_id = atomNum['seq_id']
+
+                            seq_key = (test_chain_id, test_seq_id)
+
+                            if seq_key in seq_id_mapping:
+                                ref_chain_id, ref_auth_seq_id = seq_id_mapping[seq_key]
+                                atomNum['chain_id'] = ref_chain_id
+                                atomNum['seq_id'] = ref_auth_seq_id
+                                atomNum['auth_seq_id'] = test_seq_id
 
                 if self.__reasons is None and any(f for f in self.__f if 'Missing data' in f):
                     if len(self.unambigAtomNameMapping) > 0:

@@ -11282,7 +11282,7 @@ class NmrDpUtility:
         err_message = err_desc['message']
         err_line_number = err_desc['line_number']
         err_column_position = err_desc['column_position']
-        err_input = err_desc('input', '')
+        err_input = err_desc.get('input', '')
 
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
         amber_file_type = file_type == 'nm-res-amb'

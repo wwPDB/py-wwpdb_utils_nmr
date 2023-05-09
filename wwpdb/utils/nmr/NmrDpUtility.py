@@ -24744,7 +24744,9 @@ class NmrDpUtility:
                                         else:
                                             subtype_name = "RDC restraint"
 
-                                        if _atom_id_ in self.__csStat.getMethylAtoms(comp_id) and not self.__remediation_mode:
+                                        if _atom_id_ in self.__csStat.getMethylAtoms(comp_id)\
+                                           and content_subtype == 'dist_restraint'\
+                                           and not self.__remediation_mode:
 
                                             cs_atom_id_map = {'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id,
                                                               'src_atom_id': gem_atom_id_w_cs, 'dst_atom_id': atom_id,

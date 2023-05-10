@@ -1380,6 +1380,8 @@ class NmrVrptUtility:
 
                 has_pdb_ins_code_1 = 'PDB_ins_code_1' in tags
                 has_pdb_ins_code_2 = 'PDB_ins_code_2' in tags
+                has_val = 'RDC_val' in tags
+                has_val_err = 'RDC_val_err' in tags
                 has_lower_bound = 'RDC_lower_bound' in tags
                 has_upper_bound = 'RDC_upper_bound' in tags
                 has_lower_linear_limit = 'RDC_lower_linear_limit' in tags
@@ -1389,6 +1391,10 @@ class NmrVrptUtility:
                     data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1', 'default': '?'})
                 if has_pdb_ins_code_2:
                     data_items.append({'name': 'PDB_ins_code_2', 'type': 'str', 'alt_name': 'ins_code_2', 'default': '?'})
+                if has_val:
+                    data_items.append({'name': 'RDC_val', 'type': 'float', 'alt_name': 'value'})
+                if has_val_err:
+                    data_items.append({'name': 'RDC_val_err', 'type': 'abs-float', 'alt_name': 'value_uncertainty'})
                 if has_lower_bound:
                     data_items.append({'name': 'RDC_lower_bound', 'type': 'float', 'alt_name': 'lower_bound'})
                 if has_upper_bound:
@@ -1423,22 +1429,33 @@ class NmrVrptUtility:
 
                     target_value = r['target_value']
                     target_value_uncertainty = r['target_value_uncertainty']
+                    value = r.get('value')
+                    value_uncertainty = r.get('value_uncertainty')
                     lower_bound = r.get('lower_bound')
                     upper_bound = r.get('upper_bound')
                     lower_linear_limit = r.get('lower_linear_limit')
                     upper_linear_limit = r.get('upper_linear_limit')
 
                     if lower_bound is None and upper_bound is None and lower_linear_limit is None and upper_linear_limit is None:
-                        if target_value is None:
+                        if target_value is None and value is None:
                             self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
                                              f"{os.path.basename(self.__nmrDataPath)}.\n")
                             skipped = True
                             continue
-                        if target_value_uncertainty is not None:
-                            lower_bound = target_value - target_value_uncertainty
-                            upper_bound = target_value + target_value_uncertainty
+                        if target_value is not None:
+                            if target_value_uncertainty is not None:
+                                lower_bound = target_value - target_value_uncertainty
+                                upper_bound = target_value + target_value_uncertainty
+                            else:
+                                lower_bound = upper_bound = target_value
                         else:
-                            lower_bound = upper_bound = target_value
+                            target_value = value
+                            target_value_uncertainty = value_uncertainty
+                            if target_value_uncertainty is not None:
+                                lower_bound = target_value - target_value_uncertainty
+                                upper_bound = target_value + target_value_uncertainty
+                            else:
+                                lower_bound = upper_bound = target_value
 
                     if lower_bound is None and lower_linear_limit is not None:
                         lower_bound = lower_linear_limit

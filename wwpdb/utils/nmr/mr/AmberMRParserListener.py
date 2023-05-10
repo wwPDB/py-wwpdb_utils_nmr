@@ -790,7 +790,8 @@ class AmberMRParserListener(ParseTreeListener):
                                        and sa['test_chain_id'] == test_chain_id), None)
 
                             if sa is not None:
-                                for ref_auth_seq_id, test_seq_id in zip(sa['ref_auth_seq_id'], sa['test_seq_id']):
+                                for ref_auth_seq_id, test_seq_id in zip(sa['ref_auth_seq_id'] if 'ref_auth_seq_id' in sa else sa['ref_seq_id'],
+                                                                        sa['test_seq_id']):
                                     seq_key = (test_chain_id, test_seq_id)
                                     seq_id_mapping[seq_key] = (ref_chain_id, ref_auth_seq_id)
 

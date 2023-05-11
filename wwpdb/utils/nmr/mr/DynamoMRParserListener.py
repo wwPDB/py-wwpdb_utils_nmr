@@ -1054,7 +1054,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         if target_value is not None:
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX or (target_value == 0.0 and self.__allowZeroUpperLimit):
-                dstFunc['target_value'] = f"{target_value:.3f}"
+                dstFunc['target_value'] = f"{target_value:.3f}" if target_value > 0.0 else "0.0"
             else:
                 if target_value <= DIST_ERROR_MIN and omit_dist_limit_outlier:
                     self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
@@ -1067,7 +1067,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         if lower_limit is not None:
             if DIST_ERROR_MIN <= lower_limit < DIST_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.3f}"
+                dstFunc['lower_limit'] = f"{lower_limit:.3f}" if lower_limit > 0.0 else "0.0"
             else:
                 if lower_limit <= DIST_ERROR_MIN and omit_dist_limit_outlier:
                     self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
@@ -1080,7 +1080,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX or (upper_limit == 0.0 and self.__allowZeroUpperLimit):
-                dstFunc['upper_limit'] = f"{upper_limit:.3f}"
+                dstFunc['upper_limit'] = f"{upper_limit:.3f}" if upper_limit > 0.0 else "0.0"
             else:
                 if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
                     self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"

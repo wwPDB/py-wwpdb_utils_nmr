@@ -625,7 +625,7 @@ class IsdMRParserListener(ParseTreeListener):
 
         if target_value is not None:
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX or (target_value == 0.0 and self.__allowZeroUpperLimit):
-                dstFunc['target_value'] = f"{target_value}"
+                dstFunc['target_value'] = f"{target_value}" if target_value > 0.0 else "0.0"
             else:
                 if target_value <= DIST_ERROR_MIN and omit_dist_limit_outlier:
                     self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
@@ -638,7 +638,7 @@ class IsdMRParserListener(ParseTreeListener):
 
         if lower_limit is not None:
             if DIST_ERROR_MIN <= lower_limit < DIST_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit}"
+                dstFunc['lower_limit'] = f"{lower_limit}" if lower_limit > 0.0 else "0.0"
             else:
                 if lower_limit <= DIST_ERROR_MIN and omit_dist_limit_outlier:
                     self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
@@ -651,7 +651,7 @@ class IsdMRParserListener(ParseTreeListener):
 
         if upper_limit is not None:
             if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX or (upper_limit == 0.0 and self.__allowZeroUpperLimit):
-                dstFunc['upper_limit'] = f"{upper_limit}"
+                dstFunc['upper_limit'] = f"{upper_limit}" if upper_limit > 0.0 else "0.0"
             else:
                 if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
                     self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"

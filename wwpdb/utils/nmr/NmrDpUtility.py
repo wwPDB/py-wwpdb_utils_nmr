@@ -29077,12 +29077,12 @@ class NmrDpUtility:
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype in self.__mr_sf_dict_holder:
-                                    for sf in v:
-                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
-                                else:
-                                    self.__mr_sf_dict_holder[content_subtype] = v
+                                print(f"{content_subtype} {len(v)}")
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-cns':
                 reader = CnsMRReader(self.__verbose, self.__lfh,
@@ -29242,12 +29242,11 @@ class NmrDpUtility:
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype in self.__mr_sf_dict_holder:
-                                    for sf in v:
-                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
-                                else:
-                                    self.__mr_sf_dict_holder[content_subtype] = v
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-amb':
                 reader = AmberMRReader(self.__verbose, self.__lfh,
@@ -29380,12 +29379,11 @@ class NmrDpUtility:
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype in self.__mr_sf_dict_holder:
-                                    for sf in v:
-                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
-                                else:
-                                    self.__mr_sf_dict_holder[content_subtype] = v
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-cya':
                 has_dist_restraint = 'dist_restraint' in content_subtype
@@ -29569,12 +29567,11 @@ class NmrDpUtility:
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype in self.__mr_sf_dict_holder:
-                                    for sf in v:
-                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
-                                else:
-                                    self.__mr_sf_dict_holder[content_subtype] = v
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-ros':
                 reader = RosettaMRReader(self.__verbose, self.__lfh,
@@ -29728,12 +29725,11 @@ class NmrDpUtility:
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype in self.__mr_sf_dict_holder:
-                                    for sf in v:
-                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
-                                else:
-                                    self.__mr_sf_dict_holder[content_subtype] = v
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-bio':
                 reader = BiosymMRReader(self.__verbose, self.__lfh,
@@ -29885,12 +29881,11 @@ class NmrDpUtility:
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype in self.__mr_sf_dict_holder:
-                                    for sf in v:
-                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
-                                else:
-                                    self.__mr_sf_dict_holder[content_subtype] = v
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-gro':
                 reader = GromacsMRReader(self.__verbose, self.__lfh,
@@ -30006,12 +30001,11 @@ class NmrDpUtility:
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype in self.__mr_sf_dict_holder:
-                                    for sf in v:
-                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
-                                else:
-                                    self.__mr_sf_dict_holder[content_subtype] = v
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-dyn':
                 reader = DynamoMRReader(self.__verbose, self.__lfh,
@@ -30171,12 +30165,11 @@ class NmrDpUtility:
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype in self.__mr_sf_dict_holder:
-                                    for sf in v:
-                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
-                                else:
-                                    self.__mr_sf_dict_holder[content_subtype] = v
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-syb':
                 reader = SybylMRReader(self.__verbose, self.__lfh,
@@ -30328,12 +30321,11 @@ class NmrDpUtility:
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype in self.__mr_sf_dict_holder:
-                                    for sf in v:
-                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
-                                else:
-                                    self.__mr_sf_dict_holder[content_subtype] = v
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-isd':
                 reader = IsdMRReader(self.__verbose, self.__lfh,
@@ -30485,12 +30477,11 @@ class NmrDpUtility:
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype in self.__mr_sf_dict_holder:
-                                    for sf in v:
-                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
-                                else:
-                                    self.__mr_sf_dict_holder[content_subtype] = v
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-cha':
                 reader = CharmmMRReader(self.__verbose, self.__lfh,
@@ -30650,12 +30641,11 @@ class NmrDpUtility:
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype in self.__mr_sf_dict_holder:
-                                    for sf in v:
-                                        if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                            self.__mr_sf_dict_holder[content_subtype].append(sf)
-                                else:
-                                    self.__mr_sf_dict_holder[content_subtype] = v
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
 
         if len(poly_seq_set) > 1:
 

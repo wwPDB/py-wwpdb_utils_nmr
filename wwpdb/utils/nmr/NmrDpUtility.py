@@ -29077,7 +29077,6 @@ class NmrDpUtility:
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                print(f"{content_subtype} {len(v)}")
                                 if content_subtype not in self.__mr_sf_dict_holder:
                                     self.__mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
@@ -48923,7 +48922,9 @@ class NmrDpUtility:
         """ Update _Constraint_stat_list saveframe.
         """
 
-        if (not self.__combined_mode and not self.__remediation_mode) or self.__dstPath is None:
+        if (not self.__combined_mode and not self.__remediation_mode)\
+           or self.__dstPath is None\
+           or self.report.getInputSourceIdOfCoord() < 0:
             return True
 
         input_source = self.report.input_sources[0]

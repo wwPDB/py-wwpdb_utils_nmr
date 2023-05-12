@@ -1143,9 +1143,9 @@ class NmrVrptUtility:
             @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of restraints,
                      support combinational restraints (_Torsion_angle_constraint.Combination_ID),
                      support for the case target_value is not set, but upper/lower_limit and upper/lower_linear_limit are set
-                             (i.e. AMBER restraint format, decide target_value by comparing anti-clockwise and clockwise mean),
+                             (i.e. AMBER restraint format, decide target_value by testing anti-clockwise and clockwise mean),
                      support for the case target_value is not set, but upper/lower_limit are set
-                             (i.e. CYANA restraint format, estimate target_value by anti-clockwise(arithmetic) mean),
+                             (i.e. CYANA restraint format, decide target_value by comparing lower_limit and upper_limit values),
                      support for the case upper/lower_linear_limit are set, but missing upper/lower_limit
                              (i.e. XPLOR-NIH/CNS exponent parameter (ed) equals 1)
         """
@@ -1285,12 +1285,12 @@ class NmrVrptUtility:
                         has_valid_lower_limit = lower_bound is not None and lower_linear_limit is not None and lower_bound != lower_linear_limit
                         has_valid_upper_limit = upper_bound is not None and upper_linear_limit is not None and upper_bound != upper_linear_limit
 
-                        if has_valid_lower_limit or has_valid_upper_limit:  # decide target value from upper/lower_limit and upper/lower_linear_limit (AMBER)
-                            target_value_aclock = (lower_bound + upper_bound) / 2.0
-                            target_value_clock = target_value_aclock + 180.0
-                            if target_value_clock >= 360.0:
-                                target_value_clock -= 360.0
+                        target_value_aclock = (lower_bound + upper_bound) / 2.0
+                        target_value_clock = target_value_aclock + 180.0
+                        if target_value_clock >= 360.0:
+                            target_value_clock -= 360.0
 
+                        if has_valid_lower_limit or has_valid_upper_limit:  # decide target value from upper/lower_limit and upper/lower_linear_limit (AMBER)
                             target_value_vote = {'aclock': 0, 'clock': 0}
 
                             if has_valid_lower_limit:
@@ -1312,14 +1312,8 @@ class NmrVrptUtility:
 
                             target_value = target_value_aclock if target_value_vote['aclock'] > target_value_vote['clock'] else target_value_clock
 
-                        elif lower_bound < upper_bound:
-                            target_value = (lower_bound + upper_bound) / 2.0  # estimate target value by anti-clockwise (arithmetic) mean, CYANA)
-
-                        else:
-                            self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
-                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
-                            skipped = True
-                            continue
+                        else:  # estimate target value by comparing lower_limit and upper_limit value, CYANA)
+                            target_value = target_value_aclock if lower_bound <= upper_bound else target_value_clock
 
                     self.__dihedRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, comp_id_1,
                                                                           atom_id_1, ins_code_1),

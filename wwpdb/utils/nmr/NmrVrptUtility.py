@@ -1312,8 +1312,14 @@ class NmrVrptUtility:
 
                             target_value = target_value_aclock if target_value_vote['aclock'] > target_value_vote['clock'] else target_value_clock
 
-                        else:
+                        elif lower_bound < upper_bound:
                             target_value = (lower_bound + upper_bound) / 2.0  # estimate target value by anti-clockwise (arithmetic) mean, CYANA)
+
+                        else:
+                            self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
+                            skipped = True
+                            continue
 
                         target_value = target_value_aclock if target_value_vote['aclock'] > target_value_vote['clock'] else target_value_clock
 

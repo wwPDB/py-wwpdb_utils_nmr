@@ -9456,8 +9456,8 @@ class NmrDpUtility:
                     if len(sf_framecodes_wo_loop) > 0:
                         _sf_framecodes_wo_loop = "', '".join(sf_framecodes_wo_loop)
                         warn += f" Uninterpreted NMR restraints are stored in {_sf_framecodes_wo_loop!r} "\
-                             f"saveframe{'s' if len(sf_framecodes_wo_loop) > 1 else ''} as raw text format. "\
-                             "Please consider incorporating those restraints into well-known formats that OneDep supports, if possible."
+                            f"saveframe{'s' if len(sf_framecodes_wo_loop) > 1 else ''} as raw text format. "\
+                            "Please consider incorporating those restraints into well-known formats that OneDep supports, if possible."
 
                 self.report.warning.appendDescription('missing_content',
                                                       {'file_name': file_name, 'description': warn})

@@ -1539,6 +1539,27 @@ class DynamoMRParserListener(ParseTreeListener):
                 cifCompId = compId
 
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+
+            if self.__cur_subtype == 'dist' and _compId.startswith('MTS') and cifCompId != _compId\
+               and _atomId[0] in ('O', 'N') and coordAtomSite is not None:
+
+                if cifCompId == 'CYS' and 'SG' in coordAtomSite['atom_id']:
+                    atomId = 'SG'
+                elif cifCompId == 'SER' and 'OG' in coordAtomSite['atom_id']:
+                    atomId = 'OG'
+                elif cifCompId == 'GLU' and 'OE2' in coordAtomSite['atom_id']:
+                    atomId = 'OE2'
+                elif cifCompId == 'ASP' and 'OD2' in coordAtomSite['atom_id']:
+                    atomId = 'OD2'
+                elif cifCompId == 'GLN' and 'NE2' in coordAtomSite['atom_id']:
+                    atomId = 'NE2'
+                elif cifCompId == 'ASN' and 'ND2' in coordAtomSite['atom_id']:
+                    atomId = 'ND2'
+                elif cifCompId == 'LYS' and 'NZ' in coordAtomSite['atom_id']:
+                    atomId = 'NZ'
+                elif cifCompId == 'THR' and 'OG1' in coordAtomSite['atom_id']:
+                    atomId = 'OG1'
+
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
                 _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
                 if atomId != _atomId and coordAtomSite is not None and _atomId in coordAtomSite['atom_id']:

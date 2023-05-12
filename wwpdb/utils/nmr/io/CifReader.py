@@ -1161,7 +1161,7 @@ class CifReader:
                     n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
                     n_noise = list_labels.count(-1)
 
-                    if n_clusters == 0 or n_clusters >= features:
+                    if n_clusters == 0 or n_clusters >= features - 2:
                         continue
 
                     md5 = hashlib.md5(str(list_labels).encode('utf-8'))

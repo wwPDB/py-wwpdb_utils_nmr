@@ -148,6 +148,8 @@ def dist_inv_6_summed(r_list: [float]) -> float:
 
 def angle_diff(x, y):
     """ Return normalized angular difference.
+        @author: Kumaran Baskaran
+        @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.angle_diff.ac
     """
     if x < 0.0:
         x += 360.0
@@ -171,6 +173,8 @@ def angle_error(lower_bound, upper_bound, target_value, angle):
 
     def check_angle_range_overlap(x, y, c, g, t=0.5):
         """ Return whether angular range formed by (x, c) and (c, y) matches to a given range (g) with tolerance (t).
+            @author: Kumaran Baskaran
+            @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.angle_diff.check_ac
         """
         l = angle_diff(x, c)  # noqa: E741
         r = angle_diff(y, c)
@@ -1282,23 +1286,23 @@ class NmrVrptUtility:
                         upper_bound = upper_linear_limit
 
                     if target_value is None:  # target values are not always filled (e.g. AMBER/CYANA dihedral angle restraints)
-                        has_valid_lower_limit = lower_bound is not None and lower_linear_limit is not None and lower_bound != lower_linear_limit
-                        has_valid_upper_limit = upper_bound is not None and upper_linear_limit is not None and upper_bound != upper_linear_limit
+                        has_valid_lower_linear_limit = lower_bound is not None and lower_linear_limit is not None and lower_bound != lower_linear_limit
+                        has_valid_upper_linear_limit = upper_bound is not None and upper_linear_limit is not None and upper_bound != upper_linear_limit
 
                         target_value_aclock = (lower_bound + upper_bound) / 2.0
                         target_value_clock = target_value_aclock + 180.0
                         if target_value_clock >= 360.0:
                             target_value_clock -= 360.0
 
-                        if has_valid_lower_limit or has_valid_upper_limit:  # decide target value from upper/lower_limit and upper/lower_linear_limit (AMBER)
+                        if has_valid_lower_linear_limit or has_valid_upper_linear_limit:  # decide target value from upper/lower_limit and upper/lower_linear_limit (AMBER)
                             target_value_vote = {'aclock': 0, 'clock': 0}
 
-                            if has_valid_lower_limit:
+                            if has_valid_lower_linear_limit:
                                 if angle_diff(lower_bound, target_value_aclock) < angle_diff(lower_linear_limit, target_value_aclock):
                                     target_value_vote['aclock'] += 1
                                 elif angle_diff(lower_bound, target_value_clock) < angle_diff(lower_linear_limit, target_value_clock):
                                     target_value_vote['clock'] += 1
-                            if has_valid_upper_limit:
+                            if has_valid_upper_linear_limit:
                                 if angle_diff(upper_bound, target_value_aclock) < angle_diff(upper_linear_limit, target_value_aclock):
                                     target_value_vote['aclock'] += 1
                                 elif angle_diff(upper_bound, target_value_clock) < angle_diff(upper_linear_limit, target_value_clock):

@@ -9437,6 +9437,28 @@ class NmrDpUtility:
                     warn += " '_Homonucl_NOE' category is only useful for describing assigned NOE peak height/volume. "\
                         "Please use the '_Gen_dist_constraint' category to describe general distance restraint."
 
+                if 'other_data_types' in self.__sf_category_list:
+                    sf_framecodes_wo_loop = []
+                    for sf_data in self.__star_data[file_list_id].get_saveframes_by_category('other_data_types'):
+
+                        try:
+                            if __pynmrstar_v3_2__:
+                                loop = sf_data.get_loop('_Other_data')
+                            else:
+                                loop = sf_data.get_loop_by_category('_Other_data')
+                        except KeyError:
+                            sf_framecodes_wo_loop.append(get_first_sf_tag(sf_data, 'sf_framecode'))
+                            continue
+
+                        if loop is None:
+                            sf_framecodes_wo_loop.append(get_first_sf_tag(sf_data, 'sf_framecode'))
+
+                    if len(sf_framecodes_wo_loop) > 0:
+                        _sf_framecodes_wo_loop = "', '".join(sf_framecodes_wo_loop)
+                        warn += f" Uninterpreted NMR restraints are stored in {_sf_framecodes_wo_loop!r} "\
+                             f"saveframe{'s' if len(sf_framecodes_wo_loop) > 1 else ''} as raw text format. "\
+                             "Please consider incorporating those restraints into well-known formats that OneDep supports, if possible."
+
                 self.report.warning.appendDescription('missing_content',
                                                       {'file_name': file_name, 'description': warn})
                 self.report.setWarning()
@@ -9511,15 +9533,17 @@ class NmrDpUtility:
 
             if mr_loops == 0:
 
-                err = "Deposition of NMR restraints used for the structure determination is mandatory. "\
-                    f"Please re-upload the {file_type.upper()} file."
+                if 'other_data_types' not in self.__sf_category_list:
 
-                self.report.error.appendDescription('missing_mandatory_content',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
+                    err = "Deposition of NMR restraints used for the structure determination is mandatory. "\
+                        f"Please re-upload the {file_type.upper()} file."
 
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+                    self.report.error.appendDescription('missing_mandatory_content',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
@@ -10903,7 +10927,7 @@ class NmrDpUtility:
 
                 fileListId += 1
 
-                if file_type in ('nmr-star', 'nm-res-mr', 'nm-res-sax', 'nm-pea-any'):
+                if file_type in ('nmr-star', 'nm-res-mr', 'nm-res-oth', 'nm-res-sax', 'nm-pea-any'):
                     continue
 
                 if (content_subtype is not None and 'dist_restraint' in content_subtype) or file_type in ('nm-aux-amb', 'nm-aux-gro'):
@@ -10913,7 +10937,7 @@ class NmrDpUtility:
 
                     if self.__allow_missing_legacy_dist_restraint:
 
-                        err = "NMR restraint file is not recognized properly. "\
+                        err = f"NMR restraint file is not recognized properly {file_type}. "\
                             "Please fix the file so that it conformes to the format specifications."
 
                         self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
@@ -48791,11 +48815,11 @@ class NmrDpUtility:
 
                 row[10], row[11] = 1, self.__entry_id
 
-                cf_loop.add_data(row)
+                # cf_loop.add_data(row)
 
                 ext_mr_sf_holder.append(sf)
 
-                if not os.path.exists(sel_res_file):
+                if not os.path.exists(sel_res_file) and 'original_file_name' not in input_source_dic:
 
                     err = f"Uninterpreted NMR restraints are stored in {sf_framecode} saveframe as raw text format. "\
                         "@todo: It needs to be reviewed."

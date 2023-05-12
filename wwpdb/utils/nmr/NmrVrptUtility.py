@@ -146,27 +146,28 @@ def dist_inv_6_summed(r_list: [float]) -> float:
     return sum(r ** (-6.0) for r in r_list) ** (-1.0 / 6.0)
 
 
+def angle_diff(x, y):
+    """ Return normalized angular difference.
+    """
+    if x < 0.0:
+        x += 360.0
+    if y < 0.0:
+        y += 360.0
+
+    a, b = sorted([x, y])
+
+    d = b - a
+    if d > 180.0:
+        d = 360.0 - d
+
+    return d
+
+
 def angle_error(lower_bound, upper_bound, target_value, angle):
     """ Return angle outlier for given lower_bound, upper_bound, and target_value.
         @author: Kumaran Baskaran
         @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.angle_diff
     """
-
-    def angle_diff(x, y):
-        """ Return normalized angular difference.
-        """
-        if x < 0.0:
-            x += 360.0
-        if y < 0.0:
-            y += 360.0
-
-        a, b = sorted([x, y])
-
-        d = b - a
-        if d > 180.0:
-            d = 360.0 - d
-
-        return d
 
     def check_angle_range_overlap(x, y, c, g, t=0.5):
         """ Return whether angular range formed by (x, c) and (c, y) matches to a given range (g) with tolerance (t).
@@ -1141,8 +1142,8 @@ class NmrVrptUtility:
                    written by Kumaran Baskaran
             @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of restraints,
                      support combinational restraints (_Torsion_angle_constraint.Combination_ID),
-                     support for the case target_value is not set (i.e. AMBER restraint format),
-                     support for the case upper/lower linear limits are set, but missing upper/lower limits (i.e. XPLOR-NIH/CNS exponent parameter (ed) equals 1)
+                     support for the case target_value is not set, but upper/lower_limit and upper/lower_linear_limit are set (i.e. AMBER restraint format),
+                     support for the case upper/lower_linear_limit are set, but missing upper/lower_limit (i.e. XPLOR-NIH/CNS exponent parameter (ed) equals 1)
         """
 
         if self.__has_prev_results:
@@ -1277,7 +1278,40 @@ class NmrVrptUtility:
                         upper_bound = upper_linear_limit
 
                     if target_value is None:  # target values are not always filled (e.g. AMBER dihedral restraints)
-                        target_value = (lower_bound + upper_bound) / 2.0
+                        has_valid_lower_limit = lower_bound is not None and lower_linear_limit is not None and lower_bound != lower_linear_limit
+                        has_valid_upper_limit = upper_bound is not None and upper_linear_limit is not None and upper_bound != upper_linear_limit
+
+                        if not has_valid_lower_limit and not has_valid_upper_limit:
+                            self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
+                            skipped = True
+                            continue
+
+                        target_value_aclock = (lower_bound + upper_bound) / 2.0
+                        target_value_clock = target_value_aclock + 180.0
+                        if target_value_clock >= 360.0:
+                            target_value_clock -= 360.0
+
+                        target_value_vote = {'aclock': 0, 'clock': 0}
+
+                        if has_valid_lower_limit:
+                            if angle_diff(lower_bound, target_value_aclock) < angle_diff(lower_linear_limit, target_value_aclock):
+                                target_value_vote['aclock'] += 1
+                            elif angle_diff(lower_bound, target_value_clock) < angle_diff(lower_linear_limit, target_value_clock):
+                                target_value_vote['clock'] += 1
+                        if has_valid_upper_limit:
+                            if angle_diff(upper_bound, target_value_aclock) < angle_diff(upper_linear_limit, target_value_aclock):
+                                target_value_vote['aclock'] += 1
+                            elif angle_diff(upper_bound, target_value_clock) < angle_diff(upper_linear_limit, target_value_clock):
+                                target_value_vote['clock'] += 1
+
+                        if target_value_vote['aclock'] + target_value_vote['clock'] == 0 or target_value_vote['aclock'] * target_value_vote['clock'] != 0:
+                            self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
+                            skipped = True
+                            continue
+
+                        target_value = target_value_aclock if target_value_vote['aclock'] > target_value_vote['clock'] else target_value_clock
 
                     self.__dihedRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, comp_id_1,
                                                                           atom_id_1, ins_code_1),

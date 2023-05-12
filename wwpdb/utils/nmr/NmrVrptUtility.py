@@ -1142,8 +1142,12 @@ class NmrVrptUtility:
                    written by Kumaran Baskaran
             @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of restraints,
                      support combinational restraints (_Torsion_angle_constraint.Combination_ID),
-                     support for the case target_value is not set, but upper/lower_limit and upper/lower_linear_limit are set (i.e. AMBER restraint format),
-                     support for the case upper/lower_linear_limit are set, but missing upper/lower_limit (i.e. XPLOR-NIH/CNS exponent parameter (ed) equals 1)
+                     support for the case target_value is not set, but upper/lower_limit and upper/lower_linear_limit are set
+                             (i.e. AMBER restraint format, decide target_value by comparing anti-clockwise and clockwise mean),
+                     support for the case target_value is not set, but upper/lower_limit are set
+                             (i.e. CYANA restraint format, estimate target_value by anti-clockwise(arithmetic) mean),
+                     support for the case upper/lower_linear_limit are set, but missing upper/lower_limit
+                             (i.e. XPLOR-NIH/CNS exponent parameter (ed) equals 1)
         """
 
         if self.__has_prev_results:
@@ -1277,39 +1281,39 @@ class NmrVrptUtility:
                     if upper_bound is None and upper_linear_limit is not None:
                         upper_bound = upper_linear_limit
 
-                    if target_value is None:  # target values are not always filled (e.g. AMBER dihedral restraints)
+                    if target_value is None:  # target values are not always filled (e.g. AMBER/CYANA dihedral angle restraints)
                         has_valid_lower_limit = lower_bound is not None and lower_linear_limit is not None and lower_bound != lower_linear_limit
                         has_valid_upper_limit = upper_bound is not None and upper_linear_limit is not None and upper_bound != upper_linear_limit
 
-                        if not has_valid_lower_limit and not has_valid_upper_limit:
-                            self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
-                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
-                            skipped = True
-                            continue
+                        if has_valid_lower_limit or has_valid_upper_limit:  # decide target value from upper/lower_limit and upper/lower_linear_limit (AMBER)
+                            target_value_aclock = (lower_bound + upper_bound) / 2.0
+                            target_value_clock = target_value_aclock + 180.0
+                            if target_value_clock >= 360.0:
+                                target_value_clock -= 360.0
 
-                        target_value_aclock = (lower_bound + upper_bound) / 2.0
-                        target_value_clock = target_value_aclock + 180.0
-                        if target_value_clock >= 360.0:
-                            target_value_clock -= 360.0
+                            target_value_vote = {'aclock': 0, 'clock': 0}
 
-                        target_value_vote = {'aclock': 0, 'clock': 0}
+                            if has_valid_lower_limit:
+                                if angle_diff(lower_bound, target_value_aclock) < angle_diff(lower_linear_limit, target_value_aclock):
+                                    target_value_vote['aclock'] += 1
+                                elif angle_diff(lower_bound, target_value_clock) < angle_diff(lower_linear_limit, target_value_clock):
+                                    target_value_vote['clock'] += 1
+                            if has_valid_upper_limit:
+                                if angle_diff(upper_bound, target_value_aclock) < angle_diff(upper_linear_limit, target_value_aclock):
+                                    target_value_vote['aclock'] += 1
+                                elif angle_diff(upper_bound, target_value_clock) < angle_diff(upper_linear_limit, target_value_clock):
+                                    target_value_vote['clock'] += 1
 
-                        if has_valid_lower_limit:
-                            if angle_diff(lower_bound, target_value_aclock) < angle_diff(lower_linear_limit, target_value_aclock):
-                                target_value_vote['aclock'] += 1
-                            elif angle_diff(lower_bound, target_value_clock) < angle_diff(lower_linear_limit, target_value_clock):
-                                target_value_vote['clock'] += 1
-                        if has_valid_upper_limit:
-                            if angle_diff(upper_bound, target_value_aclock) < angle_diff(upper_linear_limit, target_value_aclock):
-                                target_value_vote['aclock'] += 1
-                            elif angle_diff(upper_bound, target_value_clock) < angle_diff(upper_linear_limit, target_value_clock):
-                                target_value_vote['clock'] += 1
+                            if target_value_vote['aclock'] + target_value_vote['clock'] == 0 or target_value_vote['aclock'] * target_value_vote['clock'] != 0:
+                                self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                                                 f"{os.path.basename(self.__nmrDataPath)}.\n")
+                                skipped = True
+                                continue
 
-                        if target_value_vote['aclock'] + target_value_vote['clock'] == 0 or target_value_vote['aclock'] * target_value_vote['clock'] != 0:
-                            self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
-                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
-                            skipped = True
-                            continue
+                            target_value = target_value_aclock if target_value_vote['aclock'] > target_value_vote['clock'] else target_value_clock
+
+                        else:
+                            target_value = (lower_bound + upper_bound) / 2.0  # estimate target value by anti-clockwise (arithmetic) mean, CYANA)
 
                         target_value = target_value_aclock if target_value_vote['aclock'] > target_value_vote['clock'] else target_value_clock
 

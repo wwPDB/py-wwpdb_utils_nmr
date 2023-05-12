@@ -1321,8 +1321,6 @@ class NmrVrptUtility:
                             skipped = True
                             continue
 
-                        target_value = target_value_aclock if target_value_vote['aclock'] > target_value_vote['clock'] else target_value_clock
-
                     self.__dihedRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, comp_id_1,
                                                                           atom_id_1, ins_code_1),
                                                            'atom_key_2': (auth_asym_id_2, auth_seq_id_2, comp_id_2,

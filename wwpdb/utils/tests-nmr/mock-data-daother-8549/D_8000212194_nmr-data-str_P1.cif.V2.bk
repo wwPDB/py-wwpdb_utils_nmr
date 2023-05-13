@@ -1,0 +1,2454 @@
+data_entry_information_1
+# 
+_Entry.Sf_category                    entry_information 
+_Entry.Sf_framecode                   entry_information_1 
+_Entry.ID                             0932 
+_Entry.Title                          
+;
+
+
+1H, 13C, and 15N Chemical Shift Assignments for amyloidogenic PAP(85-120) peptide
+;
+_Entry.Type                           macromolecule 
+_Entry.Version_type                   original 
+_Entry.Submission_date                2021-12-16 
+_Entry.Accession_date                 2021-12-16 
+_Entry.Last_release_date              2021-12-16 
+_Entry.Original_release_date          2021-12-16 
+_Entry.Origination                    author 
+_Entry.Format_name                    . 
+_Entry.NMR_STAR_version               3.2.14.0 
+_Entry.NMR_STAR_dict_location         . 
+_Entry.Original_NMR_STAR_version      3.1 
+_Entry.Experimental_method            NMR 
+_Entry.Experimental_method_subtype    solution 
+_Entry.Source_data_format             . 
+_Entry.Source_data_format_version     . 
+_Entry.Generated_software_name        . 
+_Entry.Generated_software_version     . 
+_Entry.Generated_software_ID          . 
+_Entry.Generated_software_label       . 
+_Entry.Generated_date                 . 
+_Entry.DOI                            . 
+_Entry.UUID                           . 
+_Entry.Related_coordinate_file_name   . 
+_Entry.Details                        . 
+_Entry.BMRB_internal_directory_name   . 
+# 
+loop_
+_Entry_author.Ordinal 
+_Entry_author.Given_name 
+_Entry_author.Family_name 
+_Entry_author.First_initial 
+_Entry_author.Middle_initials 
+_Entry_author.Family_title 
+_Entry_author.ORCID 
+_Entry_author.Entry_ID 
+1 Dmitriy    Blokhin    . S. . . 0932 
+2 Aleksandra Kusova     . M. . . 0932 
+3 Maria      Abramova   . .  . . 0932 
+4 Polina     Skvortsova . V. . . 0932 
+5 Aydar      Yulmetov   . R. . . 0932 
+6 Vladimir   Klochkov   . V. . . 0932 
+# 
+_Entry_src.ID                       1 
+_Entry_src.Project_name             . 
+_Entry_src.Organization_full_name   "Kazan Federal University" 
+_Entry_src.Organization_initials    . 
+_Entry_src.Entry_ID                 0932 
+# 
+loop_
+_Datum.Type 
+_Datum.Count 
+_Datum.Entry_ID 
+"13C chemical shifts" 134 0932 
+"15N chemical shifts" 33  0932 
+"1H chemical shifts"  220 0932 
+# 
+_Release.Release_number    1 
+_Release.Format_type       . 
+_Release.Format_version    . 
+_Release.Date              2021-12-20 
+_Release.Submission_date   . 
+_Release.Type              original 
+_Release.Author            BMRB 
+_Release.Detail            . 
+_Release.Entry_ID          0932 
+# 
+loop_
+_Data_set.Type 
+_Data_set.Count 
+_Data_set.Entry_ID 
+assigned_chemical_shifts     1 0932 
+general_distance_constraints 1 0932 
+# 
+data_citations_1
+# 
+_Citation.Sf_category                  citations 
+_Citation.Sf_framecode                 citations_1 
+_Citation.Entry_ID                     0932 
+_Citation.ID                           1 
+_Citation.Name                         "entry citation" 
+_Citation.Class                        "entry citation" 
+_Citation.CAS_abstract_code            . 
+_Citation.MEDLINE_UI_code              . 
+_Citation.PubMed_ID                    . 
+_Citation.DOI                          . 
+_Citation.Full_citation                . 
+_Citation.Title                        
+;
+
+
+1H, 13C and 15N Assigned Chemical Shifts for amyloidogenic PAP(85-120) peptide
+;
+_Citation.Status                       "in preparation" 
+_Citation.Type                         journal 
+_Citation.Journal_abbrev               "J. Mol. Struct." 
+_Citation.Journal_name_full            . 
+_Citation.Journal_volume               . 
+_Citation.Journal_issue                . 
+_Citation.Journal_ASTM                 . 
+_Citation.Journal_ISSN                 . 
+_Citation.Journal_CSD                  . 
+_Citation.Book_title                   . 
+_Citation.Book_chapter_title           . 
+_Citation.Book_volume                  . 
+_Citation.Book_series                  . 
+_Citation.Book_publisher               . 
+_Citation.Book_publisher_city          . 
+_Citation.Book_ISBN                    . 
+_Citation.Conference_title             . 
+_Citation.Conference_site              . 
+_Citation.Conference_state_province    . 
+_Citation.Conference_country           . 
+_Citation.Conference_start_date        . 
+_Citation.Conference_end_date          . 
+_Citation.Conference_abstract_number   . 
+_Citation.Thesis_institution           . 
+_Citation.Thesis_institution_city      . 
+_Citation.Thesis_institution_country   . 
+_Citation.WWW_URL                      . 
+_Citation.Page_first                   . 
+_Citation.Page_last                    . 
+_Citation.Year                         . 
+_Citation.Details                      . 
+# 
+_Citation_author.Ordinal           1 
+_Citation_author.Given_name        Dmitriy 
+_Citation_author.Family_name       Blokhin 
+_Citation_author.First_initial     . 
+_Citation_author.Middle_initials   S. 
+_Citation_author.Family_title      . 
+_Citation_author.ORCID             . 
+_Citation_author.Entry_ID          0932 
+_Citation_author.Citation_ID       1 
+# 
+loop_
+_Citation_keyword.Keyword 
+_Citation_keyword.Entry_ID 
+_Citation_keyword.Citation_ID 
+"NMR spectroscopy"           0932 1 
+"prostatic acid phosphatase" 0932 1 
+# 
+data_assembly_1
+# 
+_Assembly.Sf_category                       assembly 
+_Assembly.Sf_framecode                      assembly_1 
+_Assembly.Entry_ID                          0932 
+_Assembly.ID                                1 
+_Assembly.Name                              ? 
+_Assembly.BMRB_code                         . 
+_Assembly.Number_of_components              1 
+_Assembly.Organic_ligands                   . 
+_Assembly.Metal_ions                        . 
+_Assembly.Non_standard_bonds                . 
+_Assembly.Ambiguous_conformational_states   . 
+_Assembly.Ambiguous_chem_comp_sites         . 
+_Assembly.Molecules_in_chemical_exchange    . 
+_Assembly.Paramagnetic                      no 
+_Assembly.Thiol_state                       "not present" 
+_Assembly.Molecular_mass                    4473.167 
+_Assembly.Enzyme_commission_number          . 
+_Assembly.Details                           . 
+_Assembly.DB_query_date                     . 
+_Assembly.DB_query_revised_last_date        . 
+# 
+_Entity_assembly.ID                                1 
+_Entity_assembly.Entity_assembly_name              entity_1 
+_Entity_assembly.Entity_ID                         1 
+_Entity_assembly.Entity_label                      "$entity_1" 
+_Entity_assembly.Asym_ID                           A 
+_Entity_assembly.PDB_chain_ID                      A 
+_Entity_assembly.Experimental_data_reported        yes 
+_Entity_assembly.Physical_state                    . 
+_Entity_assembly.Conformational_isomer             . 
+_Entity_assembly.Chemical_exchange_state           . 
+_Entity_assembly.Magnetic_equivalence_group_code   . 
+_Entity_assembly.Role                              . 
+_Entity_assembly.Details                           ? 
+_Entity_assembly.Entry_ID                          0932 
+_Entity_assembly.Assembly_ID                       1 
+# 
+loop_
+_Chem_comp_assembly.Entity_assembly_ID 
+_Chem_comp_assembly.Entity_ID 
+_Chem_comp_assembly.Comp_index_ID 
+_Chem_comp_assembly.Comp_ID 
+_Chem_comp_assembly.Seq_ID 
+_Chem_comp_assembly.Auth_asym_ID 
+_Chem_comp_assembly.Auth_seq_ID 
+_Chem_comp_assembly.Auth_comp_ID 
+_Chem_comp_assembly.Auth_variant_ID 
+_Chem_comp_assembly.Sequence_linking 
+_Chem_comp_assembly.Cis_residue 
+_Chem_comp_assembly.Entry_ID 
+_Chem_comp_assembly.Assembly_ID 
+1 1 1  ILE 1  A 85  ILE . start  . 0932 1 
+1 1 2  ARG 2  A 86  ARG . middle . 0932 1 
+1 1 3  LYS 3  A 87  LYS . middle . 0932 1 
+1 1 4  ARG 4  A 88  ARG . middle . 0932 1 
+1 1 5  TYR 5  A 89  TYR . middle . 0932 1 
+1 1 6  ARG 6  A 90  ARG . middle . 0932 1 
+1 1 7  LYS 7  A 91  LYS . middle . 0932 1 
+1 1 8  PHE 8  A 92  PHE . middle . 0932 1 
+1 1 9  LEU 9  A 93  LEU . middle . 0932 1 
+1 1 10 ASN 10 A 94  ASN . middle . 0932 1 
+1 1 11 GLU 11 A 95  GLU . middle . 0932 1 
+1 1 12 SER 12 A 96  SER . middle . 0932 1 
+1 1 13 TYR 13 A 97  TYR . middle . 0932 1 
+1 1 14 LYS 14 A 98  LYS . middle . 0932 1 
+1 1 15 HIS 15 A 99  HIS . middle . 0932 1 
+1 1 16 GLU 16 A 100 GLU . middle . 0932 1 
+1 1 17 GLN 17 A 101 GLN . middle . 0932 1 
+1 1 18 VAL 18 A 102 VAL . middle . 0932 1 
+1 1 19 TYR 19 A 103 TYR . middle . 0932 1 
+1 1 20 ILE 20 A 104 ILE . middle . 0932 1 
+1 1 21 ARG 21 A 105 ARG . middle . 0932 1 
+1 1 22 SER 22 A 106 SER . middle . 0932 1 
+1 1 23 THR 23 A 107 THR . middle . 0932 1 
+1 1 24 ASP 24 A 108 ASP . middle . 0932 1 
+1 1 25 VAL 25 A 109 VAL . middle . 0932 1 
+1 1 26 ASP 26 A 110 ASP . middle . 0932 1 
+1 1 27 ARG 27 A 111 ARG . middle . 0932 1 
+1 1 28 THR 28 A 112 THR . middle . 0932 1 
+1 1 29 LEU 29 A 113 LEU . middle . 0932 1 
+1 1 30 MET 30 A 114 MET . middle . 0932 1 
+1 1 31 SER 31 A 115 SER . middle . 0932 1 
+1 1 32 ALA 32 A 116 ALA . middle . 0932 1 
+1 1 33 MET 33 A 117 MET . middle . 0932 1 
+1 1 34 THR 34 A 118 THR . middle . 0932 1 
+1 1 35 ASN 35 A 119 ASN . middle . 0932 1 
+1 1 36 LEU 36 A 120 LEU . end    . 0932 1 
+# 
+data_entity_1
+# 
+_Entity.Sf_category                       entity 
+_Entity.Sf_framecode                      entity_1 
+_Entity.Entry_ID                          0932 
+_Entity.ID                                1 
+_Entity.BMRB_code                         . 
+_Entity.Name                              ? 
+_Entity.Type                              polymer 
+_Entity.Polymer_common_type               protein 
+_Entity.Polymer_type                      "polypeptide(L)" 
+_Entity.Polymer_type_details              . 
+_Entity.Polymer_strand_ID                 A 
+_Entity.Polymer_seq_one_letter_code_can   IRKRYRKFLNESYKHEQVYIRSTDVDRTLMSAMTNL 
+_Entity.Polymer_seq_one_letter_code       IRKRYRKFLNESYKHEQVYIRSTDVDRTLMSAMTNL 
+_Entity.Target_identifier                 . 
+_Entity.Polymer_author_defined_seq        . 
+_Entity.Polymer_author_seq_details        . 
+_Entity.Ambiguous_conformational_states   . 
+_Entity.Ambiguous_chem_comp_sites         . 
+_Entity.Nstd_monomer                      no 
+_Entity.Nstd_chirality                    . 
+_Entity.Nstd_linkage                      no 
+_Entity.Nonpolymer_comp_ID                . 
+_Entity.Nonpolymer_comp_label             . 
+_Entity.Number_of_monomers                36 
+_Entity.Number_of_nonpolymer_components   . 
+_Entity.Paramagnetic                      no 
+_Entity.Thiol_state                       "not present" 
+_Entity.Src_method                        man 
+_Entity.Parent_entity_ID                  . 
+_Entity.Fragment                          ? 
+_Entity.Mutation                          ? 
+_Entity.EC_number                         ? 
+_Entity.Calc_isoelectric_point            . 
+_Entity.Formula_weight                    4473.167 
+_Entity.Formula_weight_exptl              . 
+_Entity.Formula_weight_exptl_meth         . 
+_Entity.Details                           ? 
+_Entity.DB_query_date                     . 
+_Entity.DB_query_revised_last_date        . 
+# 
+loop_
+_Entity_comp_index.ID 
+_Entity_comp_index.Auth_seq_ID 
+_Entity_comp_index.Comp_ID 
+_Entity_comp_index.Comp_label 
+_Entity_comp_index.Entry_ID 
+_Entity_comp_index.Entity_ID 
+1  85  ILE . 0932 1 
+2  86  ARG . 0932 1 
+3  87  LYS . 0932 1 
+4  88  ARG . 0932 1 
+5  89  TYR . 0932 1 
+6  90  ARG . 0932 1 
+7  91  LYS . 0932 1 
+8  92  PHE . 0932 1 
+9  93  LEU . 0932 1 
+10 94  ASN . 0932 1 
+11 95  GLU . 0932 1 
+12 96  SER . 0932 1 
+13 97  TYR . 0932 1 
+14 98  LYS . 0932 1 
+15 99  HIS . 0932 1 
+16 100 GLU . 0932 1 
+17 101 GLN . 0932 1 
+18 102 VAL . 0932 1 
+19 103 TYR . 0932 1 
+20 104 ILE . 0932 1 
+21 105 ARG . 0932 1 
+22 106 SER . 0932 1 
+23 107 THR . 0932 1 
+24 108 ASP . 0932 1 
+25 109 VAL . 0932 1 
+26 110 ASP . 0932 1 
+27 111 ARG . 0932 1 
+28 112 THR . 0932 1 
+29 113 LEU . 0932 1 
+30 114 MET . 0932 1 
+31 115 SER . 0932 1 
+32 116 ALA . 0932 1 
+33 117 MET . 0932 1 
+34 118 THR . 0932 1 
+35 119 ASN . 0932 1 
+36 120 LEU . 0932 1 
+# 
+loop_
+_Entity_poly_seq.Hetero 
+_Entity_poly_seq.Mon_ID 
+_Entity_poly_seq.Num 
+_Entity_poly_seq.Comp_index_ID 
+_Entity_poly_seq.Entry_ID 
+_Entity_poly_seq.Entity_ID 
+. ILE 1  1  0932 1 
+. ARG 2  2  0932 1 
+. LYS 3  3  0932 1 
+. ARG 4  4  0932 1 
+. TYR 5  5  0932 1 
+. ARG 6  6  0932 1 
+. LYS 7  7  0932 1 
+. PHE 8  8  0932 1 
+. LEU 9  9  0932 1 
+. ASN 10 10 0932 1 
+. GLU 11 11 0932 1 
+. SER 12 12 0932 1 
+. TYR 13 13 0932 1 
+. LYS 14 14 0932 1 
+. HIS 15 15 0932 1 
+. GLU 16 16 0932 1 
+. GLN 17 17 0932 1 
+. VAL 18 18 0932 1 
+. TYR 19 19 0932 1 
+. ILE 20 20 0932 1 
+. ARG 21 21 0932 1 
+. SER 22 22 0932 1 
+. THR 23 23 0932 1 
+. ASP 24 24 0932 1 
+. VAL 25 25 0932 1 
+. ASP 26 26 0932 1 
+. ARG 27 27 0932 1 
+. THR 28 28 0932 1 
+. LEU 29 29 0932 1 
+. MET 30 30 0932 1 
+. SER 31 31 0932 1 
+. ALA 32 32 0932 1 
+. MET 33 33 0932 1 
+. THR 34 34 0932 1 
+. ASN 35 35 0932 1 
+. LEU 36 36 0932 1 
+# 
+data_natural_source_1
+# 
+_Entity_natural_src_list.Sf_category    natural_source 
+_Entity_natural_src_list.Sf_framecode   natural_source_1 
+_Entity_natural_src_list.Entry_ID       0932 
+_Entity_natural_src_list.ID             1 
+# 
+_Entity_natural_src.ID                           1 
+_Entity_natural_src.Entity_ID                    1 
+_Entity_natural_src.Entity_label                 "$entity_1" 
+_Entity_natural_src.Entity_chimera_segment_ID    . 
+_Entity_natural_src.NCBI_taxonomy_ID             . 
+_Entity_natural_src.Type                         syntetic 
+_Entity_natural_src.Common                       . 
+_Entity_natural_src.Organism_name_scientific     . 
+_Entity_natural_src.Organism_name_common         . 
+_Entity_natural_src.Organism_acronym             . 
+_Entity_natural_src.ICTVdb_decimal_code          . 
+_Entity_natural_src.Superkingdom                 . 
+_Entity_natural_src.Kingdom                      . 
+_Entity_natural_src.Genus                        . 
+_Entity_natural_src.Species                      . 
+_Entity_natural_src.Strain                       . 
+_Entity_natural_src.Variant                      . 
+_Entity_natural_src.Organ                        . 
+_Entity_natural_src.Tissue                       . 
+_Entity_natural_src.Tissue_fraction              . 
+_Entity_natural_src.Cell_line                    . 
+_Entity_natural_src.Cell_type                    . 
+_Entity_natural_src.ATCC_number                  . 
+_Entity_natural_src.Organelle                    . 
+_Entity_natural_src.Secretion                    . 
+_Entity_natural_src.Plasmid                      . 
+_Entity_natural_src.Gene_mnemonic                . 
+_Entity_natural_src.Details                      . 
+_Entity_natural_src.Entry_ID                     0932 
+_Entity_natural_src.Entity_natural_src_list_ID   1 
+# 
+data_experimental_source_1
+# 
+_Entity_experimental_src_list.Sf_category    experimental_source 
+_Entity_experimental_src_list.Sf_framecode   experimental_source_1 
+_Entity_experimental_src_list.Entry_ID       0932 
+_Entity_experimental_src_list.ID             1 
+# 
+_Entity_experimental_src.ID                                1 
+_Entity_experimental_src.Entity_ID                         1 
+_Entity_experimental_src.Entity_label                      "$entity_1" 
+_Entity_experimental_src.Entity_chimera_segment_ID         . 
+_Entity_experimental_src.Production_method                 "chemical synthesis" 
+_Entity_experimental_src.Host_org_scientific_name          . 
+_Entity_experimental_src.Host_org_name_common              . 
+_Entity_experimental_src.Host_org_details                  . 
+_Entity_experimental_src.Host_org_NCBI_taxonomy_ID         . 
+_Entity_experimental_src.Host_org_genus                    . 
+_Entity_experimental_src.Host_org_species                  . 
+_Entity_experimental_src.Host_org_strain                   . 
+_Entity_experimental_src.Host_org_variant                  . 
+_Entity_experimental_src.Host_org_ATCC_number              . 
+_Entity_experimental_src.Vector_type                       . 
+_Entity_experimental_src.PDBview_host_org_vector_name      . 
+_Entity_experimental_src.PDBview_plasmid_name              . 
+_Entity_experimental_src.Vector_name                       . 
+_Entity_experimental_src.Vector_details                    . 
+_Entity_experimental_src.Vendor_name                       . 
+_Entity_experimental_src.Details                           . 
+_Entity_experimental_src.Entry_ID                          0932 
+_Entity_experimental_src.Entity_experimental_src_list_ID   1 
+# 
+data_sample_1
+# 
+_Sample.Sf_category                      sample 
+_Sample.Sf_framecode                     sample_1 
+_Sample.Entry_ID                         0932 
+_Sample.ID                               1 
+_Sample.Name                             "PAP(85-120)" 
+_Sample.Type                             solution 
+_Sample.Sub_type                         . 
+_Sample.Details                          . 
+_Sample.Aggregate_sample_number          1 
+_Sample.Solvent_system                   "90% H2O/10% D2O" 
+_Sample.Preparation_date                 . 
+_Sample.Preparation_expiration_date      . 
+_Sample.Polycrystallization_protocol     . 
+_Sample.Single_crystal_protocol          . 
+_Sample.Crystal_grow_apparatus           . 
+_Sample.Crystal_grow_atmosphere          . 
+_Sample.Crystal_grow_details             . 
+_Sample.Crystal_grow_method              . 
+_Sample.Crystal_grow_method_cit_ID       . 
+_Sample.Crystal_grow_pH                  . 
+_Sample.Crystal_grow_pH_range            . 
+_Sample.Crystal_grow_pressure            . 
+_Sample.Crystal_grow_pressure_esd        . 
+_Sample.Crystal_grow_seeding             . 
+_Sample.Crystal_grow_seeding_cit_ID      . 
+_Sample.Crystal_grow_temp                . 
+_Sample.Crystal_grow_temp_details        . 
+_Sample.Crystal_grow_temp_esd            . 
+_Sample.Crystal_grow_time                . 
+_Sample.Oriented_sample_prep_protocol    . 
+_Sample.Lyophilization_cryo_protectant   . 
+_Sample.Storage_protocol                 . 
+# 
+_Sample_component.ID                        1 
+_Sample_component.Mol_common_name           "PAP(85-120)" 
+_Sample_component.Isotopic_labeling         "natural abundance" 
+_Sample_component.Assembly_ID               . 
+_Sample_component.Assembly_label            . 
+_Sample_component.Entity_ID                 1 
+_Sample_component.Entity_label              "$entity_1" 
+_Sample_component.Product_ID                . 
+_Sample_component.Type                      . 
+_Sample_component.Concentration_val         0.8 
+_Sample_component.Concentration_val_min     . 
+_Sample_component.Concentration_val_max     . 
+_Sample_component.Concentration_val_units   mM 
+_Sample_component.Concentration_val_err     . 
+_Sample_component.Vendor                    . 
+_Sample_component.Vendor_product_name       . 
+_Sample_component.Vendor_product_code       . 
+_Sample_component.Entry_ID                  0932 
+_Sample_component.Sample_ID                 1 
+# 
+data_sample_conditions_1
+# 
+_Sample_condition_list.Sf_category    sample_conditions 
+_Sample_condition_list.Sf_framecode   sample_conditions_1 
+_Sample_condition_list.Entry_ID       0932 
+_Sample_condition_list.ID             1 
+_Sample_condition_list.Name           "normal conditions" 
+_Sample_condition_list.Details        . 
+# 
+loop_
+_Sample_condition_variable.Type 
+_Sample_condition_variable.Val 
+_Sample_condition_variable.Val_err 
+_Sample_condition_variable.Val_units 
+_Sample_condition_variable.Entry_ID 
+_Sample_condition_variable.Sample_condition_list_ID 
+pressure    1   . atm 0932 1 
+temperature 298 . K   0932 1 
+# 
+data_software_1
+# 
+_Software.Sf_category    software 
+_Software.Sf_framecode   software_1 
+_Software.Entry_ID       0932 
+_Software.ID             1 
+_Software.Type           . 
+_Software.Name           "CcpNmr Analysis" 
+_Software.Version        2.4 
+_Software.DOI            . 
+_Software.Details        "The CCPN NMR assignment and data analysis application" 
+# 
+_Task.Task              "chemical shift assignment" 
+_Task.Software_module   . 
+_Task.Entry_ID          0932 
+_Task.Software_ID       1 
+# 
+data_software_2
+# 
+_Software.Sf_category    software 
+_Software.Sf_framecode   software_2 
+_Software.Entry_ID       0932 
+_Software.ID             2 
+_Software.Type           . 
+_Software.Name           DANGLE 
+_Software.Version        1.1 
+_Software.DOI            . 
+_Software.Details        . 
+# 
+_Task.Task              "data analysis" 
+_Task.Software_module   . 
+_Task.Entry_ID          0932 
+_Task.Software_ID       2 
+# 
+data_software_3
+# 
+_Software.Sf_category    software 
+_Software.Sf_framecode   software_3 
+_Software.Entry_ID       0932 
+_Software.ID             3 
+_Software.Type           . 
+_Software.Name           PyRPF 
+_Software.Version        0.4 
+_Software.DOI            . 
+_Software.Details        . 
+# 
+_Task.Task              "data analysis" 
+_Task.Software_module   . 
+_Task.Entry_ID          0932 
+_Task.Software_ID       3 
+# 
+data_software_4
+# 
+_Software.Sf_category    software 
+_Software.Sf_framecode   software_4 
+_Software.Entry_ID       0932 
+_Software.ID             4 
+_Software.Type           . 
+_Software.Name           TOPSPIN 
+_Software.Version        3.6 
+_Software.DOI            . 
+_Software.Details        . 
+# 
+_Task.Task              processing 
+_Task.Software_module   . 
+_Task.Entry_ID          0932 
+_Task.Software_ID       4 
+# 
+data_NMR_spectrometer_1
+# 
+_NMR_spectrometer.Sf_category      NMR_spectrometer 
+_NMR_spectrometer.Sf_framecode     NMR_spectrometer_1 
+_NMR_spectrometer.Entry_ID         0932 
+_NMR_spectrometer.ID               1 
+_NMR_spectrometer.Name             "Bruker Avance 700 MHz" 
+_NMR_spectrometer.Details          . 
+_NMR_spectrometer.Manufacturer     Bruker 
+_NMR_spectrometer.Model            "AVANCE III" 
+_NMR_spectrometer.Serial_number    . 
+_NMR_spectrometer.Field_strength   700 
+# 
+data_experiment_list_1
+# 
+_Experiment_list.Sf_category    experiment_list 
+_Experiment_list.Sf_framecode   experiment_list_1 
+_Experiment_list.Entry_ID       0932 
+_Experiment_list.ID             1 
+_Experiment_list.Details        . 
+# 
+loop_
+_Experiment.ID 
+_Experiment.Name 
+_Experiment.Raw_data_flag 
+_Experiment.NUS_flag 
+_Experiment.Interleaved_flag 
+_Experiment.NMR_spec_expt_ID 
+_Experiment.NMR_spec_expt_label 
+_Experiment.MS_expt_ID 
+_Experiment.MS_expt_label 
+_Experiment.SAXS_expt_ID 
+_Experiment.SAXS_expt_label 
+_Experiment.FRET_expt_ID 
+_Experiment.FRET_expt_label 
+_Experiment.EMR_expt_ID 
+_Experiment.EMR_expt_label 
+_Experiment.Sample_ID 
+_Experiment.Sample_label 
+_Experiment.Sample_state 
+_Experiment.Sample_volume 
+_Experiment.Sample_volume_units 
+_Experiment.Sample_condition_list_ID 
+_Experiment.Sample_condition_list_label 
+_Experiment.Sample_spinning_rate 
+_Experiment.Sample_angle 
+_Experiment.NMR_tube_type 
+_Experiment.NMR_spectrometer_ID 
+_Experiment.NMR_spectrometer_label 
+_Experiment.NMR_spectrometer_probe_ID 
+_Experiment.NMR_spectrometer_probe_label 
+_Experiment.NMR_spectral_processing_ID 
+_Experiment.NMR_spectral_processing_label 
+_Experiment.Mass_spectrometer_ID 
+_Experiment.Mass_spectrometer_label 
+_Experiment.Xray_instrument_ID 
+_Experiment.Xray_instrument_label 
+_Experiment.Fluorescence_instrument_ID 
+_Experiment.Fluorescence_instrument_label 
+_Experiment.EMR_instrument_ID 
+_Experiment.EMR_instrument_label 
+_Experiment.Chromatographic_system_ID 
+_Experiment.Chromatographic_system_label 
+_Experiment.Chromatographic_column_ID 
+_Experiment.Chromatographic_column_label 
+_Experiment.Entry_ID 
+_Experiment.Experiment_list_ID 
+_Experiment.Details 
+1 "2D 1H-1H TOCSY"       no no no . . . . . . . . . . 1 "$sample_1" isotropic . . 1 "$sample_conditions_1" . . . 1 "$NMR_spectrometer_1" . . . . . . . . . . . . . . . . 0932 1 . 
+2 "2D 1H-13C HSQC"       no no no . . . . . . . . . . 1 "$sample_1" isotropic . . 1 "$sample_conditions_1" . . . 1 "$NMR_spectrometer_1" . . . . . . . . . . . . . . . . 0932 1 . 
+3 "2D 1H-1H NOESY"       no no no . . . . . . . . . . 1 "$sample_1" isotropic . . 1 "$sample_conditions_1" . . . 1 "$NMR_spectrometer_1" . . . . . . . . . . . . . . . . 0932 1 . 
+4 "2D 1H-15N HSQC"       no no no . . . . . . . . . . 1 "$sample_1" isotropic . . 1 "$sample_conditions_1" . . . 1 "$NMR_spectrometer_1" . . . . . . . . . . . . . . . . 0932 1 . 
+5 "2D 1H-13C HMBC"       no no no . . . . . . . . . . 1 "$sample_1" isotropic . . 1 "$sample_conditions_1" . . . 1 "$NMR_spectrometer_1" . . . . . . . . . . . . . . . . 0932 1 . 
+6 "2D 1H-13C HSQC-TOCSY" no no no . . . . . . . . . . 1 "$sample_1" isotropic . . 1 "$sample_conditions_1" . . . 1 "$NMR_spectrometer_1" . . . . . . . . . . . . . . . . 0932 1 . 
+# 
+data_chem_shift_reference_1
+# 
+_Chem_shift_reference.Sf_category    chem_shift_reference 
+_Chem_shift_reference.Sf_framecode   chem_shift_reference_1 
+_Chem_shift_reference.Entry_ID       0932 
+_Chem_shift_reference.ID             1 
+_Chem_shift_reference.Name           pap36 
+_Chem_shift_reference.Details        . 
+# 
+loop_
+_Chem_shift_ref.Atom_type 
+_Chem_shift_ref.Atom_isotope_number 
+_Chem_shift_ref.Mol_common_name 
+_Chem_shift_ref.Atom_group 
+_Chem_shift_ref.Concentration_val 
+_Chem_shift_ref.Concentration_units 
+_Chem_shift_ref.Solvent 
+_Chem_shift_ref.Rank 
+_Chem_shift_ref.Chem_shift_units 
+_Chem_shift_ref.Chem_shift_val 
+_Chem_shift_ref.Ref_method 
+_Chem_shift_ref.Ref_type 
+_Chem_shift_ref.Indirect_shift_ratio 
+_Chem_shift_ref.External_ref_loc 
+_Chem_shift_ref.External_ref_sample_geometry 
+_Chem_shift_ref.External_ref_axis 
+_Chem_shift_ref.Ref_correction_type 
+_Chem_shift_ref.Correction_val 
+_Chem_shift_ref.Entry_ID 
+_Chem_shift_ref.Chem_shift_reference_ID 
+C 13 DSS "methyl protons" . . . . ppm 0.00 na       indirect 0.251449530 . . . . . 0932 1 
+H 1  DSS "methyl protons" . . . . ppm 0.00 internal direct   1.000000000 . . . . . 0932 1 
+N 15 DSS "methyl protons" . . . . ppm 0.00 na       indirect 0.101329118 . . . . . 0932 1 
+# 
+data_assigned_chemical_shifts_1
+# 
+_Assigned_chem_shift_list.Sf_category                   assigned_chemical_shifts 
+_Assigned_chem_shift_list.Sf_framecode                  assigned_chemical_shifts_1 
+_Assigned_chem_shift_list.Entry_ID                      0932 
+_Assigned_chem_shift_list.ID                            1 
+_Assigned_chem_shift_list.Name                          "assigned chem shift list" 
+_Assigned_chem_shift_list.Data_file_name                D_1292123359_cs-upload_P1.str.V1 
+_Assigned_chem_shift_list.Sample_condition_list_ID      1 
+_Assigned_chem_shift_list.Sample_condition_list_label   "$sample_conditions_1" 
+_Assigned_chem_shift_list.Chem_shift_reference_ID       1 
+_Assigned_chem_shift_list.Chem_shift_reference_label    "$chem_shift_reference_1" 
+_Assigned_chem_shift_list.Chem_shift_1H_err             . 
+_Assigned_chem_shift_list.Chem_shift_13C_err            . 
+_Assigned_chem_shift_list.Chem_shift_15N_err            . 
+_Assigned_chem_shift_list.Chem_shift_31P_err            . 
+_Assigned_chem_shift_list.Chem_shift_2H_err             . 
+_Assigned_chem_shift_list.Chem_shift_19F_err            . 
+_Assigned_chem_shift_list.Error_derivation_method       . 
+_Assigned_chem_shift_list.Details                       . 
+_Assigned_chem_shift_list.Text_data_format              . 
+_Assigned_chem_shift_list.Text_data                     . 
+# 
+loop_
+_Chem_shift_experiment.Experiment_ID 
+_Chem_shift_experiment.Experiment_name 
+_Chem_shift_experiment.Sample_ID 
+_Chem_shift_experiment.Sample_label 
+_Chem_shift_experiment.Sample_state 
+_Chem_shift_experiment.Entry_ID 
+_Chem_shift_experiment.Assigned_chem_shift_list_ID 
+1 "2D 1H-1H TOCSY"       . . . 0932 1 
+2 "2D 1H-13C HSQC"       . . . 0932 1 
+3 "2D 1H-1H NOESY"       . . . 0932 1 
+4 "2D 1H-15N HSQC"       . . . 0932 1 
+5 "2D 1H-13C HMBC"       . . . 0932 1 
+6 "2D 1H-13C HSQC-TOCSY" . . . 0932 1 
+# 
+_Chem_shift_software.Software_ID                   1 
+_Chem_shift_software.Software_label                "$software_1" 
+_Chem_shift_software.Method_ID                     . 
+_Chem_shift_software.Method_label                  . 
+_Chem_shift_software.Entry_ID                      0932 
+_Chem_shift_software.Assigned_chem_shift_list_ID   1 
+# 
+loop_
+_Atom_chem_shift.ID 
+_Atom_chem_shift.Entity_assembly_ID 
+_Atom_chem_shift.Entity_ID 
+_Atom_chem_shift.Comp_index_ID 
+_Atom_chem_shift.Seq_ID 
+_Atom_chem_shift.Comp_ID 
+_Atom_chem_shift.Atom_ID 
+_Atom_chem_shift.Atom_type 
+_Atom_chem_shift.Atom_isotope_number 
+_Atom_chem_shift.Val 
+_Atom_chem_shift.Val_err 
+_Atom_chem_shift.Assign_fig_of_merit 
+_Atom_chem_shift.Ambiguity_code 
+_Atom_chem_shift.Ambiguity_set_ID 
+_Atom_chem_shift.Occupancy 
+_Atom_chem_shift.Resonance_ID 
+_Atom_chem_shift.Auth_asym_ID 
+_Atom_chem_shift.Auth_seq_ID 
+_Atom_chem_shift.Auth_comp_ID 
+_Atom_chem_shift.Auth_atom_ID 
+_Atom_chem_shift.Original_PDB_strand_ID 
+_Atom_chem_shift.Original_PDB_residue_no 
+_Atom_chem_shift.Original_PDB_residue_name 
+_Atom_chem_shift.Original_PDB_atom_name 
+_Atom_chem_shift.Details 
+_Atom_chem_shift.Entry_ID 
+_Atom_chem_shift.Assigned_chem_shift_list_ID 
+1   1 1 1  1  ILE HA   H 1  3.794   0.005 . 1 . . 296 A 85  ILE HA   A 85  ILE HA   . 0932 1 
+2   1 1 1  1  ILE HB   H 1  1.871   0.001 . 1 . . 322 A 85  ILE HB   A 85  ILE HB   . 0932 1 
+3   1 1 1  1  ILE HG13 H 1  1.125   0.0   . 1 . . 348 A 85  ILE HG13 A 85  ILE HG12 . 0932 1 
+4   1 1 1  1  ILE HG21 H 1  0.901   0.002 . 1 . . 347 A 85  ILE HG21 A 85  ILE HG21 . 0932 1 
+5   1 1 1  1  ILE HG22 H 1  0.901   0.002 . 1 . . 347 A 85  ILE HG22 A 85  ILE HG22 . 0932 1 
+6   1 1 1  1  ILE HG23 H 1  0.901   0.002 . 1 . . 347 A 85  ILE HG23 A 85  ILE HG23 . 0932 1 
+7   1 1 1  1  ILE HD11 H 1  0.837   .     . 1 . . 346 A 85  ILE HD11 A 85  ILE HD11 . 0932 1 
+8   1 1 1  1  ILE HD12 H 1  0.837   .     . 1 . . 346 A 85  ILE HD12 A 85  ILE HD12 . 0932 1 
+9   1 1 1  1  ILE HD13 H 1  0.837   .     . 1 . . 346 A 85  ILE HD13 A 85  ILE HD13 . 0932 1 
+10  1 1 1  1  ILE C    C 13 172.069 0.009 . 1 . . 301 A 85  ILE C    A 85  ILE C    . 0932 1 
+11  1 1 1  1  ILE CA   C 13 60.344  0.029 . 1 . . 214 A 85  ILE CA   A 85  ILE CA   . 0932 1 
+12  1 1 1  1  ILE CB   C 13 39.143  0.021 . 1 . . 297 A 85  ILE CB   A 85  ILE CB   . 0932 1 
+13  1 1 1  1  ILE CG1  C 13 26.688  0.014 . 1 . . 298 A 85  ILE CG1  A 85  ILE CG1  . 0932 1 
+14  1 1 1  1  ILE CG2  C 13 16.724  0.015 . 1 . . 299 A 85  ILE CG2  A 85  ILE CG2  . 0932 1 
+15  1 1 1  1  ILE CD1  C 13 13.182  .     . 1 . . 234 A 85  ILE CD1  A 85  ILE CD1  . 0932 1 
+16  1 1 2  2  ARG H    H 1  8.567   0.003 . 1 . . 31  A 86  ARG H    A 86  ARG H    . 0932 1 
+17  1 1 2  2  ARG HA   H 1  4.312   0.005 . 1 . . 81  A 86  ARG HA   A 86  ARG HA   . 0932 1 
+18  1 1 2  2  ARG HB2  H 1  1.680   0.0   . 2 . . 87  A 86  ARG HB2  A 86  ARG HB2  . 0932 1 
+19  1 1 2  2  ARG HB3  H 1  1.729   .     . 2 . . 88  A 86  ARG HB3  A 86  ARG HB3  . 0932 1 
+20  1 1 2  2  ARG HG2  H 1  1.581   .     . 2 . . 85  A 86  ARG HG2  A 86  ARG HG2  . 0932 1 
+21  1 1 2  2  ARG HG3  H 1  1.533   .     . 2 . . 86  A 86  ARG HG3  A 86  ARG HG3  . 0932 1 
+22  1 1 2  2  ARG HD2  H 1  3.106   .     . 1 . . 84  A 86  ARG HD2  A 86  ARG HD2  . 0932 1 
+23  1 1 2  2  ARG HE   H 1  7.103   .     . 1 . . 304 A 86  ARG HE   A 86  ARG HE   . 0932 1 
+24  1 1 2  2  ARG C    C 13 175.658 0.017 . 1 . . 294 A 86  ARG C    A 86  ARG C    . 0932 1 
+25  1 1 2  2  ARG CA   C 13 56.097  .     . 1 . . 221 A 86  ARG CA   A 86  ARG CA   . 0932 1 
+26  1 1 2  2  ARG N    N 15 125.734 .     . 1 . . 32  A 86  ARG N    A 86  ARG N    . 0932 1 
+27  1 1 3  3  LYS H    H 1  8.410   0.004 . 1 . . 1   A 87  LYS H    A 87  LYS H    . 0932 1 
+28  1 1 3  3  LYS HA   H 1  4.150   0.003 . 1 . . 82  A 87  LYS HA   A 87  LYS HA   . 0932 1 
+29  1 1 3  3  LYS HB2  H 1  1.601   0.002 . 1 . . 83  A 87  LYS HB2  A 87  LYS HB2  . 0932 1 
+30  1 1 3  3  LYS HG2  H 1  1.321   0.005 . 2 . . 89  A 87  LYS HG2  A 87  LYS HG2  . 0932 1 
+31  1 1 3  3  LYS HG3  H 1  1.238   0.001 . 2 . . 90  A 87  LYS HG3  A 87  LYS HG3  . 0932 1 
+32  1 1 3  3  LYS HE2  H 1  2.874   0.001 . 1 . . 201 A 87  LYS HE2  A 87  LYS HE2  . 0932 1 
+33  1 1 3  3  LYS C    C 13 175.929 0.023 . 1 . . 316 A 87  LYS C    A 87  LYS C    . 0932 1 
+34  1 1 3  3  LYS CA   C 13 56.371  .     . 1 . . 217 A 87  LYS CA   A 87  LYS CA   . 0932 1 
+35  1 1 3  3  LYS CB   C 13 33.266  .     . 1 . . 352 A 87  LYS CB   A 87  LYS CB   . 0932 1 
+36  1 1 3  3  LYS CG   C 13 24.865  0.008 . 1 . . 353 A 87  LYS CG   A 87  LYS CG   . 0932 1 
+37  1 1 3  3  LYS CE   C 13 42.110  .     . 1 . . 231 A 87  LYS CE   A 87  LYS CE   . 0932 1 
+38  1 1 3  3  LYS N    N 15 124.435 .     . 1 . . 2   A 87  LYS N    A 87  LYS N    . 0932 1 
+39  1 1 4  4  ARG H    H 1  8.274   0.004 . 1 . . 305 A 88  ARG H    A 88  ARG H    . 0932 1 
+40  1 1 4  4  ARG HA   H 1  4.310   0.0   . 1 . . 344 A 88  ARG HA   A 88  ARG HA   . 0932 1 
+41  1 1 4  4  ARG HB2  H 1  1.671   0.004 . 1 . . 152 A 88  ARG HB2  A 88  ARG HB2  . 0932 1 
+42  1 1 4  4  ARG HG2  H 1  1.496   0.001 . 2 . . 154 A 88  ARG HG2  A 88  ARG HG2  . 0932 1 
+43  1 1 4  4  ARG HG3  H 1  1.430   0.0   . 2 . . 155 A 88  ARG HG3  A 88  ARG HG3  . 0932 1 
+44  1 1 4  4  ARG HD2  H 1  3.068   0.001 . 1 . . 306 A 88  ARG HD2  A 88  ARG HD2  . 0932 1 
+45  1 1 4  4  ARG HE   H 1  7.086   0.001 . 1 . . 307 A 88  ARG HE   A 88  ARG HE   . 0932 1 
+46  1 1 4  4  ARG C    C 13 175.541 .     . 1 . . 369 A 88  ARG C    A 88  ARG C    . 0932 1 
+47  1 1 4  4  ARG CA   C 13 55.334  .     . 1 . . 361 A 88  ARG CA   A 88  ARG CA   . 0932 1 
+48  1 1 4  4  ARG N    N 15 125.564 .     . 1 . . 403 A 88  ARG N    A 88  ARG N    . 0932 1 
+49  1 1 5  5  TYR H    H 1  8.238   0.002 . 1 . . 13  A 89  TYR H    A 89  TYR H    . 0932 1 
+50  1 1 5  5  TYR HA   H 1  4.490   0.002 . 1 . . 146 A 89  TYR HA   A 89  TYR HA   . 0932 1 
+51  1 1 5  5  TYR HB2  H 1  2.829   0.004 . 2 . . 147 A 89  TYR HB2  A 89  TYR HB2  . 0932 1 
+52  1 1 5  5  TYR HB3  H 1  2.907   0.004 . 2 . . 148 A 89  TYR HB3  A 89  TYR HB3  . 0932 1 
+53  1 1 5  5  TYR C    C 13 175.314 0.03  . 1 . . 366 A 89  TYR C    A 89  TYR C    . 0932 1 
+54  1 1 5  5  TYR CA   C 13 57.666  .     . 1 . . 254 A 89  TYR CA   A 89  TYR CA   . 0932 1 
+55  1 1 5  5  TYR CB   C 13 39.201  0.001 . 1 . . 264 A 89  TYR CB   A 89  TYR CB   . 0932 1 
+56  1 1 5  5  TYR N    N 15 122.393 .     . 1 . . 14  A 89  TYR N    A 89  TYR N    . 0932 1 
+57  1 1 6  6  ARG H    H 1  8.107   0.002 . 1 . . 53  A 90  ARG H    A 90  ARG H    . 0932 1 
+58  1 1 6  6  ARG HA   H 1  4.148   0.004 . 1 . . 163 A 90  ARG HA   A 90  ARG HA   . 0932 1 
+59  1 1 6  6  ARG HB2  H 1  1.614   .     . 2 . . 198 A 90  ARG HB2  A 90  ARG HB2  . 0932 1 
+60  1 1 6  6  ARG HB3  H 1  1.564   0.002 . 2 . . 199 A 90  ARG HB3  A 90  ARG HB3  . 0932 1 
+61  1 1 6  6  ARG HG2  H 1  1.439   .     . 2 . . 165 A 90  ARG HG2  A 90  ARG HG2  . 0932 1 
+62  1 1 6  6  ARG HG3  H 1  1.381   .     . 2 . . 166 A 90  ARG HG3  A 90  ARG HG3  . 0932 1 
+63  1 1 6  6  ARG HD2  H 1  3.049   .     . 1 . . 164 A 90  ARG HD2  A 90  ARG HD2  . 0932 1 
+64  1 1 6  6  ARG HE   H 1  7.034   0.017 . 1 . . 309 A 90  ARG HE   A 90  ARG HE   . 0932 1 
+65  1 1 6  6  ARG C    C 13 176.225 .     . 1 . . 372 A 90  ARG C    A 90  ARG C    . 0932 1 
+66  1 1 6  6  ARG CA   C 13 55.738  .     . 1 . . 216 A 90  ARG CA   A 90  ARG CA   . 0932 1 
+67  1 1 6  6  ARG N    N 15 123.666 .     . 1 . . 54  A 90  ARG N    A 90  ARG N    . 0932 1 
+68  1 1 7  7  LYS H    H 1  8.125   0.001 . 1 . . 270 A 91  LYS H    A 91  LYS H    . 0932 1 
+69  1 1 7  7  LYS HA   H 1  4.103   0.002 . 1 . . 156 A 91  LYS HA   A 91  LYS HA   . 0932 1 
+70  1 1 7  7  LYS HB2  H 1  1.566   0.002 . 1 . . 200 A 91  LYS HB2  A 91  LYS HB2  . 0932 1 
+71  1 1 7  7  LYS HG2  H 1  1.250   0.0   . 2 . . 159 A 91  LYS HG2  A 91  LYS HG2  . 0932 1 
+72  1 1 7  7  LYS HG3  H 1  1.171   .     . 2 . . 160 A 91  LYS HG3  A 91  LYS HG3  . 0932 1 
+73  1 1 7  7  LYS HE2  H 1  2.870   0.001 . 1 . . 157 A 91  LYS HE2  A 91  LYS HE2  . 0932 1 
+74  1 1 7  7  LYS HZ1  H 1  7.434   0.012 . 1 . . 302 A 91  LYS HZ1  A 91  LYS HZ1  . 0932 1 
+75  1 1 7  7  LYS HZ2  H 1  7.434   0.012 . 1 . . 302 A 91  LYS HZ2  A 91  LYS HZ2  . 0932 1 
+76  1 1 7  7  LYS HZ3  H 1  7.434   0.012 . 1 . . 302 A 91  LYS HZ3  A 91  LYS HZ3  . 0932 1 
+77  1 1 7  7  LYS C    C 13 175.732 0.031 . 1 . . 340 A 91  LYS C    A 91  LYS C    . 0932 1 
+78  1 1 7  7  LYS CA   C 13 56.383  .     . 1 . . 218 A 91  LYS CA   A 91  LYS CA   . 0932 1 
+79  1 1 7  7  LYS N    N 15 123.053 .     . 1 . . 66  A 91  LYS N    A 91  LYS N    . 0932 1 
+80  1 1 8  8  PHE H    H 1  8.192   0.003 . 1 . . 61  A 92  PHE H    A 92  PHE H    . 0932 1 
+81  1 1 8  8  PHE HA   H 1  4.544   0.001 . 1 . . 181 A 92  PHE HA   A 92  PHE HA   . 0932 1 
+82  1 1 8  8  PHE HB2  H 1  3.032   0.001 . 2 . . 182 A 92  PHE HB2  A 92  PHE HB2  . 0932 1 
+83  1 1 8  8  PHE HB3  H 1  2.900   0.003 . 2 . . 183 A 92  PHE HB3  A 92  PHE HB3  . 0932 1 
+84  1 1 8  8  PHE C    C 13 175.133 0.044 . 1 . . 314 A 92  PHE C    A 92  PHE C    . 0932 1 
+85  1 1 8  8  PHE CA   C 13 57.228  .     . 1 . . 311 A 92  PHE CA   A 92  PHE CA   . 0932 1 
+86  1 1 8  8  PHE CB   C 13 39.668  0.0   . 1 . . 230 A 92  PHE CB   A 92  PHE CB   . 0932 1 
+87  1 1 8  8  PHE CG   C 13 138.826 0.006 . 1 . . 313 A 92  PHE CG   A 92  PHE CG   . 0932 1 
+88  1 1 8  8  PHE CD1  C 13 131.779 0.019 . 1 . . 312 A 92  PHE CD1  A 92  PHE CD1  . 0932 1 
+89  1 1 8  8  PHE CD2  C 13 131.779 0.019 . 1 . . 312 A 92  PHE CD2  A 92  PHE CD2  . 0932 1 
+90  1 1 8  8  PHE N    N 15 115.010 .     . 1 . . 62  A 92  PHE N    A 92  PHE N    . 0932 1 
+91  1 1 9  9  LEU H    H 1  8.130   0.003 . 1 . . 65  A 93  LEU H    A 93  LEU H    . 0932 1 
+92  1 1 9  9  LEU HA   H 1  4.232   0.003 . 1 . . 171 A 93  LEU HA   A 93  LEU HA   . 0932 1 
+93  1 1 9  9  LEU HB2  H 1  1.458   0.003 . 1 . . 158 A 93  LEU HB2  A 93  LEU HB2  . 0932 1 
+94  1 1 9  9  LEU HD11 H 1  0.754   0.002 . 2 . . 161 A 93  LEU HD11 A 93  LEU HD11 . 0932 1 
+95  1 1 9  9  LEU HD12 H 1  0.754   0.002 . 2 . . 161 A 93  LEU HD12 A 93  LEU HD12 . 0932 1 
+96  1 1 9  9  LEU HD13 H 1  0.754   0.002 . 2 . . 161 A 93  LEU HD13 A 93  LEU HD13 . 0932 1 
+97  1 1 9  9  LEU HD21 H 1  0.805   0.003 . 2 . . 162 A 93  LEU HD21 A 93  LEU HD21 . 0932 1 
+98  1 1 9  9  LEU HD22 H 1  0.805   0.003 . 2 . . 162 A 93  LEU HD22 A 93  LEU HD22 . 0932 1 
+99  1 1 9  9  LEU HD23 H 1  0.805   0.003 . 2 . . 162 A 93  LEU HD23 A 93  LEU HD23 . 0932 1 
+100 1 1 9  9  LEU C    C 13 176.499 0.009 . 1 . . 315 A 93  LEU C    A 93  LEU C    . 0932 1 
+101 1 1 9  9  LEU CA   C 13 55.806  .     . 1 . . 377 A 93  LEU CA   A 93  LEU CA   . 0932 1 
+102 1 1 9  9  LEU CB   C 13 42.534  0.036 . 1 . . 248 A 93  LEU CB   A 93  LEU CB   . 0932 1 
+103 1 1 9  9  LEU CD1  C 13 23.627  .     . 2 . . 327 A 93  LEU CD1  A 93  LEU CD1  . 0932 1 
+104 1 1 9  9  LEU CD2  C 13 24.757  .     . 2 . . 326 A 93  LEU CD2  A 93  LEU CD2  . 0932 1 
+105 1 1 9  9  LEU N    N 15 124.234 .     . 1 . . 30  A 93  LEU N    A 93  LEU N    . 0932 1 
+106 1 1 10 10 ASN H    H 1  8.285   0.001 . 1 . . 3   A 94  ASN H    A 94  ASN H    . 0932 1 
+107 1 1 10 10 ASN HA   H 1  4.548   0.0   . 1 . . 112 A 94  ASN HA   A 94  ASN HA   . 0932 1 
+108 1 1 10 10 ASN HB2  H 1  2.754   0.002 . 2 . . 113 A 94  ASN HB2  A 94  ASN HB2  . 0932 1 
+109 1 1 10 10 ASN HB3  H 1  2.652   0.002 . 2 . . 114 A 94  ASN HB3  A 94  ASN HB3  . 0932 1 
+110 1 1 10 10 ASN C    C 13 175.204 .     . 1 . . 373 A 94  ASN C    A 94  ASN C    . 0932 1 
+111 1 1 10 10 ASN CA   C 13 53.308  0.017 . 1 . . 381 A 94  ASN CA   A 94  ASN CA   . 0932 1 
+112 1 1 10 10 ASN CB   C 13 38.839  0.013 . 1 . . 382 A 94  ASN CB   A 94  ASN CB   . 0932 1 
+113 1 1 10 10 ASN N    N 15 119.712 .     . 1 . . 4   A 94  ASN N    A 94  ASN N    . 0932 1 
+114 1 1 11 11 GLU H    H 1  8.255   0.001 . 1 . . 69  A 95  GLU H    A 95  GLU H    . 0932 1 
+115 1 1 11 11 GLU HA   H 1  4.271   0.002 . 1 . . 128 A 95  GLU HA   A 95  GLU HA   . 0932 1 
+116 1 1 11 11 GLU HB2  H 1  1.975   0.004 . 2 . . 130 A 95  GLU HB2  A 95  GLU HB2  . 0932 1 
+117 1 1 11 11 GLU HB3  H 1  1.838   0.006 . 2 . . 131 A 95  GLU HB3  A 95  GLU HB3  . 0932 1 
+118 1 1 11 11 GLU HG2  H 1  2.305   0.003 . 1 . . 129 A 95  GLU HG2  A 95  GLU HG2  . 0932 1 
+119 1 1 11 11 GLU C    C 13 175.948 .     . 1 . . 368 A 95  GLU C    A 95  GLU C    . 0932 1 
+120 1 1 11 11 GLU CA   C 13 55.494  .     . 1 . . 224 A 95  GLU CA   A 95  GLU CA   . 0932 1 
+121 1 1 11 11 GLU CB   C 13 29.082  0.008 . 1 . . 358 A 95  GLU CB   A 95  GLU CB   . 0932 1 
+122 1 1 11 11 GLU CG   C 13 33.161  .     . 1 . . 357 A 95  GLU CG   A 95  GLU CG   . 0932 1 
+123 1 1 11 11 GLU N    N 15 121.014 .     . 1 . . 70  A 95  GLU N    A 95  GLU N    . 0932 1 
+124 1 1 12 12 SER H    H 1  8.218   0.002 . 1 . . 37  A 96  SER H    A 96  SER H    . 0932 1 
+125 1 1 12 12 SER HA   H 1  4.296   0.004 . 1 . . 102 A 96  SER HA   A 96  SER HA   . 0932 1 
+126 1 1 12 12 SER HB2  H 1  3.730   0.005 . 1 . . 101 A 96  SER HB2  A 96  SER HB2  . 0932 1 
+127 1 1 12 12 SER C    C 13 174.246 0.027 . 1 . . 334 A 96  SER C    A 96  SER C    . 0932 1 
+128 1 1 12 12 SER CA   C 13 58.621  .     . 1 . . 252 A 96  SER CA   A 96  SER CA   . 0932 1 
+129 1 1 12 12 SER CB   C 13 63.634  .     . 1 . . 206 A 96  SER CB   A 96  SER CB   . 0932 1 
+130 1 1 12 12 SER N    N 15 116.650 .     . 1 . . 38  A 96  SER N    A 96  SER N    . 0932 1 
+131 1 1 13 13 TYR H    H 1  7.969   0.004 . 1 . . 5   A 97  TYR H    A 97  TYR H    . 0932 1 
+132 1 1 13 13 TYR HA   H 1  4.461   0.004 . 1 . . 138 A 97  TYR HA   A 97  TYR HA   . 0932 1 
+133 1 1 13 13 TYR HB2  H 1  2.867   0.002 . 2 . . 139 A 97  TYR HB2  A 97  TYR HB2  . 0932 1 
+134 1 1 13 13 TYR HB3  H 1  2.946   0.002 . 2 . . 140 A 97  TYR HB3  A 97  TYR HB3  . 0932 1 
+135 1 1 13 13 TYR C    C 13 175.655 0.075 . 1 . . 380 A 97  TYR C    A 97  TYR C    . 0932 1 
+136 1 1 13 13 TYR CA   C 13 57.885  .     . 1 . . 255 A 97  TYR CA   A 97  TYR CA   . 0932 1 
+137 1 1 13 13 TYR CB   C 13 38.513  0.002 . 1 . . 253 A 97  TYR CB   A 97  TYR CB   . 0932 1 
+138 1 1 13 13 TYR N    N 15 121.878 .     . 1 . . 6   A 97  TYR N    A 97  TYR N    . 0932 1 
+139 1 1 14 14 LYS H    H 1  7.982   0.003 . 1 . . 25  A 98  LYS H    A 98  LYS H    . 0932 1 
+140 1 1 14 14 LYS HA   H 1  4.087   0.001 . 1 . . 145 A 98  LYS HA   A 98  LYS HA   . 0932 1 
+141 1 1 14 14 LYS HB2  H 1  1.627   0.003 . 1 . . 144 A 98  LYS HB2  A 98  LYS HB2  . 0932 1 
+142 1 1 14 14 LYS HG2  H 1  1.181   0.002 . 1 . . 179 A 98  LYS HG2  A 98  LYS HG2  . 0932 1 
+143 1 1 14 14 LYS HD2  H 1  1.548   0.002 . 1 . . 143 A 98  LYS HD2  A 98  LYS HD2  . 0932 1 
+144 1 1 14 14 LYS C    C 13 175.856 0.073 . 1 . . 338 A 98  LYS C    A 98  LYS C    . 0932 1 
+145 1 1 14 14 LYS CA   C 13 56.424  .     . 1 . . 401 A 98  LYS CA   A 98  LYS CA   . 0932 1 
+146 1 1 14 14 LYS CB   C 13 32.907  0.001 . 1 . . 250 A 98  LYS CB   A 98  LYS CB   . 0932 1 
+147 1 1 14 14 LYS N    N 15 122.294 .     . 1 . . 26  A 98  LYS N    A 98  LYS N    . 0932 1 
+148 1 1 15 15 HIS H    H 1  8.325   0.004 . 1 . . 11  A 99  HIS H    A 99  HIS H    . 0932 1 
+149 1 1 15 15 HIS HA   H 1  4.558   0.003 . 1 . . 123 A 99  HIS HA   A 99  HIS HA   . 0932 1 
+150 1 1 15 15 HIS HB2  H 1  3.174   0.006 . 2 . . 124 A 99  HIS HB2  A 99  HIS HB2  . 0932 1 
+151 1 1 15 15 HIS HB3  H 1  3.079   0.005 . 2 . . 125 A 99  HIS HB3  A 99  HIS HB3  . 0932 1 
+152 1 1 15 15 HIS HD2  H 1  7.190   0.006 . 1 . . 291 A 99  HIS HD2  A 99  HIS HD2  . 0932 1 
+153 1 1 15 15 HIS HE1  H 1  8.509   0.007 . 1 . . 71  A 99  HIS HE1  A 99  HIS HE1  . 0932 1 
+154 1 1 15 15 HIS C    C 13 174.201 0.036 . 1 . . 371 A 99  HIS C    A 99  HIS C    . 0932 1 
+155 1 1 15 15 HIS CA   C 13 55.267  .     . 1 . . 399 A 99  HIS CA   A 99  HIS CA   . 0932 1 
+156 1 1 15 15 HIS CB   C 13 28.824  0.002 . 1 . . 228 A 99  HIS CB   A 99  HIS CB   . 0932 1 
+157 1 1 15 15 HIS CG   C 13 131.071 0.024 . 1 . . 292 A 99  HIS CG   A 99  HIS CG   . 0932 1 
+158 1 1 15 15 HIS CD2  C 13 120.061 0.022 . 1 . . 290 A 99  HIS CD2  A 99  HIS CD2  . 0932 1 
+159 1 1 15 15 HIS CE1  C 13 136.378 0.037 . 1 . . 293 A 99  HIS CE1  A 99  HIS CE1  . 0932 1 
+160 1 1 15 15 HIS N    N 15 120.796 .     . 1 . . 12  A 99  HIS N    A 99  HIS N    . 0932 1 
+161 1 1 16 16 GLU H    H 1  8.278   0.002 . 1 . . 23  A 100 GLU H    A 100 GLU H    . 0932 1 
+162 1 1 16 16 GLU HA   H 1  4.271   0.002 . 1 . . 289 A 100 GLU HA   A 100 GLU HA   . 0932 1 
+163 1 1 16 16 GLU HB2  H 1  1.996   0.004 . 2 . . 136 A 100 GLU HB2  A 100 GLU HB2  . 0932 1 
+164 1 1 16 16 GLU HB3  H 1  1.866   0.001 . 2 . . 137 A 100 GLU HB3  A 100 GLU HB3  . 0932 1 
+165 1 1 16 16 GLU HG2  H 1  2.330   0.001 . 1 . . 135 A 100 GLU HG2  A 100 GLU HG2  . 0932 1 
+166 1 1 16 16 GLU C    C 13 175.673 .     . 1 . . 376 A 100 GLU C    A 100 GLU C    . 0932 1 
+167 1 1 16 16 GLU CA   C 13 55.952  .     . 1 . . 222 A 100 GLU CA   A 100 GLU CA   . 0932 1 
+168 1 1 16 16 GLU CB   C 13 29.121  0.003 . 1 . . 266 A 100 GLU CB   A 100 GLU CB   . 0932 1 
+169 1 1 16 16 GLU CG   C 13 33.064  .     . 1 . . 265 A 100 GLU CG   A 100 GLU CG   . 0932 1 
+170 1 1 16 16 GLU N    N 15 121.765 .     . 1 . . 24  A 100 GLU N    A 100 GLU N    . 0932 1 
+171 1 1 17 17 GLN H    H 1  8.384   0.003 . 1 . . 35  A 101 GLN H    A 101 GLN H    . 0932 1 
+172 1 1 17 17 GLN HA   H 1  4.213   0.003 . 1 . . 91  A 101 GLN HA   A 101 GLN HA   . 0932 1 
+173 1 1 17 17 GLN HB2  H 1  1.876   0.003 . 1 . . 93  A 101 GLN HB2  A 101 GLN HB2  . 0932 1 
+174 1 1 17 17 GLN HG2  H 1  2.185   0.003 . 1 . . 92  A 101 GLN HG2  A 101 GLN HG2  . 0932 1 
+175 1 1 17 17 GLN C    C 13 175.176 .     . 1 . . 365 A 101 GLN C    A 101 GLN C    . 0932 1 
+176 1 1 17 17 GLN CA   C 13 55.917  0.017 . 1 . . 400 A 101 GLN CA   A 101 GLN CA   . 0932 1 
+177 1 1 17 17 GLN CB   C 13 29.496  .     . 1 . . 278 A 101 GLN CB   A 101 GLN CB   . 0932 1 
+178 1 1 17 17 GLN CG   C 13 33.716  .     . 1 . . 256 A 101 GLN CG   A 101 GLN CG   . 0932 1 
+179 1 1 17 17 GLN CD   C 13 180.354 .     . 1 . . 331 A 101 GLN CD   A 101 GLN CD   . 0932 1 
+180 1 1 17 17 GLN N    N 15 122.172 .     . 1 . . 36  A 101 GLN N    A 101 GLN N    . 0932 1 
+181 1 1 18 18 VAL H    H 1  8.021   0.004 . 1 . . 257 A 102 VAL H    A 102 VAL H    . 0932 1 
+182 1 1 18 18 VAL HA   H 1  3.989   0.006 . 1 . . 258 A 102 VAL HA   A 102 VAL HA   . 0932 1 
+183 1 1 18 18 VAL HB   H 1  1.890   0.002 . 1 . . 267 A 102 VAL HB   A 102 VAL HB   . 0932 1 
+184 1 1 18 18 VAL HG11 H 1  0.791   0.007 . 2 . . 259 A 102 VAL HG11 A 102 VAL HG11 . 0932 1 
+185 1 1 18 18 VAL HG12 H 1  0.791   0.007 . 2 . . 259 A 102 VAL HG12 A 102 VAL HG12 . 0932 1 
+186 1 1 18 18 VAL HG13 H 1  0.791   0.007 . 2 . . 259 A 102 VAL HG13 A 102 VAL HG13 . 0932 1 
+187 1 1 18 18 VAL HG21 H 1  0.766   0.002 . 2 . . 351 A 102 VAL HG21 A 102 VAL HG21 . 0932 1 
+188 1 1 18 18 VAL HG22 H 1  0.766   0.002 . 2 . . 351 A 102 VAL HG22 A 102 VAL HG22 . 0932 1 
+189 1 1 18 18 VAL HG23 H 1  0.766   0.002 . 2 . . 351 A 102 VAL HG23 A 102 VAL HG23 . 0932 1 
+190 1 1 18 18 VAL C    C 13 175.860 .     . 1 . . 319 A 102 VAL C    A 102 VAL C    . 0932 1 
+191 1 1 18 18 VAL CA   C 13 62.217  0.01  . 1 . . 208 A 102 VAL CA   A 102 VAL CA   . 0932 1 
+192 1 1 18 18 VAL CB   C 13 32.962  .     . 1 . . 276 A 102 VAL CB   A 102 VAL CB   . 0932 1 
+193 1 1 18 18 VAL CG1  C 13 20.474  .     . 2 . . 239 A 102 VAL CG1  A 102 VAL CG1  . 0932 1 
+194 1 1 18 18 VAL CG2  C 13 21.007  .     . 2 . . 242 A 102 VAL CG2  A 102 VAL CG2  . 0932 1 
+195 1 1 18 18 VAL N    N 15 124.278 .     . 1 . . 402 A 102 VAL N    A 102 VAL N    . 0932 1 
+196 1 1 19 19 TYR H    H 1  8.247   0.001 . 1 . . 55  A 103 TYR H    A 103 TYR H    . 0932 1 
+197 1 1 19 19 TYR HA   H 1  4.541   0.003 . 1 . . 175 A 103 TYR HA   A 103 TYR HA   . 0932 1 
+198 1 1 19 19 TYR HB2  H 1  2.894   0.002 . 2 . . 261 A 103 TYR HB2  A 103 TYR HB2  . 0932 1 
+199 1 1 19 19 TYR HB3  H 1  2.823   0.003 . 2 . . 262 A 103 TYR HB3  A 103 TYR HB3  . 0932 1 
+200 1 1 19 19 TYR C    C 13 177.036 .     . 1 . . 379 A 103 TYR C    A 103 TYR C    . 0932 1 
+201 1 1 19 19 TYR CA   C 13 57.596  .     . 1 . . 260 A 103 TYR CA   A 103 TYR CA   . 0932 1 
+202 1 1 19 19 TYR CB   C 13 38.936  0.003 . 1 . . 263 A 103 TYR CB   A 103 TYR CB   . 0932 1 
+203 1 1 19 19 TYR N    N 15 124.662 .     . 1 . . 56  A 103 TYR N    A 103 TYR N    . 0932 1 
+204 1 1 20 20 ILE H    H 1  8.004   0.002 . 1 . . 67  A 104 ILE H    A 104 ILE H    . 0932 1 
+205 1 1 20 20 ILE HA   H 1  4.002   0.008 . 1 . . 172 A 104 ILE HA   A 104 ILE HA   . 0932 1 
+206 1 1 20 20 ILE HB   H 1  1.689   0.001 . 1 . . 173 A 104 ILE HB   A 104 ILE HB   . 0932 1 
+207 1 1 20 20 ILE HG12 H 1  1.044   0.005 . 2 . . 196 A 104 ILE HG12 A 104 ILE HG12 . 0932 1 
+208 1 1 20 20 ILE HG13 H 1  1.346   0.004 . 2 . . 197 A 104 ILE HG13 A 104 ILE HG13 . 0932 1 
+209 1 1 20 20 ILE HG21 H 1  0.772   0.004 . 1 . . 174 A 104 ILE HG21 A 104 ILE HG21 . 0932 1 
+210 1 1 20 20 ILE HG22 H 1  0.772   0.004 . 1 . . 174 A 104 ILE HG22 A 104 ILE HG22 . 0932 1 
+211 1 1 20 20 ILE HG23 H 1  0.772   0.004 . 1 . . 174 A 104 ILE HG23 A 104 ILE HG23 . 0932 1 
+212 1 1 20 20 ILE HD11 H 1  0.736   0.0   . 1 . . 323 A 104 ILE HD11 A 104 ILE HD11 . 0932 1 
+213 1 1 20 20 ILE HD12 H 1  0.736   0.0   . 1 . . 323 A 104 ILE HD12 A 104 ILE HD12 . 0932 1 
+214 1 1 20 20 ILE HD13 H 1  0.736   0.0   . 1 . . 323 A 104 ILE HD13 A 104 ILE HD13 . 0932 1 
+215 1 1 20 20 ILE C    C 13 175.543 0.011 . 1 . . 320 A 104 ILE C    A 104 ILE C    . 0932 1 
+216 1 1 20 20 ILE CA   C 13 60.673  0.009 . 1 . . 213 A 104 ILE CA   A 104 ILE CA   . 0932 1 
+217 1 1 20 20 ILE CB   C 13 38.860  .     . 1 . . 245 A 104 ILE CB   A 104 ILE CB   . 0932 1 
+218 1 1 20 20 ILE CG1  C 13 27.147  0.013 . 1 . . 244 A 104 ILE CG1  A 104 ILE CG1  . 0932 1 
+219 1 1 20 20 ILE CG2  C 13 17.339  .     . 1 . . 235 A 104 ILE CG2  A 104 ILE CG2  . 0932 1 
+220 1 1 20 20 ILE CD1  C 13 12.622  .     . 1 . . 233 A 104 ILE CD1  A 104 ILE CD1  . 0932 1 
+221 1 1 20 20 ILE N    N 15 124.441 .     . 1 . . 68  A 104 ILE N    A 104 ILE N    . 0932 1 
+222 1 1 21 21 ARG H    H 1  8.272   0.002 . 1 . . 77  A 105 ARG H    A 105 ARG H    . 0932 1 
+223 1 1 21 21 ARG HA   H 1  4.228   0.004 . 1 . . 149 A 105 ARG HA   A 105 ARG HA   . 0932 1 
+224 1 1 21 21 ARG HB2  H 1  1.772   0.002 . 1 . . 151 A 105 ARG HB2  A 105 ARG HB2  . 0932 1 
+225 1 1 21 21 ARG HG2  H 1  1.593   0.001 . 2 . . 153 A 105 ARG HG2  A 105 ARG HG2  . 0932 1 
+226 1 1 21 21 ARG HG3  H 1  1.560   .     . 2 . . 310 A 105 ARG HG3  A 105 ARG HG3  . 0932 1 
+227 1 1 21 21 ARG HD2  H 1  3.122   0.0   . 1 . . 150 A 105 ARG HD2  A 105 ARG HD2  . 0932 1 
+228 1 1 21 21 ARG HE   H 1  7.128   0.002 . 1 . . 308 A 105 ARG HE   A 105 ARG HE   . 0932 1 
+229 1 1 21 21 ARG C    C 13 175.591 .     . 1 . . 343 A 105 ARG C    A 105 ARG C    . 0932 1 
+230 1 1 21 21 ARG CA   C 13 55.933  .     . 1 . . 223 A 105 ARG CA   A 105 ARG CA   . 0932 1 
+231 1 1 21 21 ARG N    N 15 122.717 .     . 1 . . 78  A 105 ARG N    A 105 ARG N    . 0932 1 
+232 1 1 22 22 SER H    H 1  8.295   0.001 . 1 . . 43  A 106 SER H    A 106 SER H    . 0932 1 
+233 1 1 22 22 SER HA   H 1  4.403   0.003 . 1 . . 103 A 106 SER HA   A 106 SER HA   . 0932 1 
+234 1 1 22 22 SER HB2  H 1  3.768   0.006 . 2 . . 104 A 106 SER HB2  A 106 SER HB2  . 0932 1 
+235 1 1 22 22 SER HB3  H 1  3.839   0.006 . 2 . . 105 A 106 SER HB3  A 106 SER HB3  . 0932 1 
+236 1 1 22 22 SER C    C 13 174.723 0.009 . 1 . . 332 A 106 SER C    A 106 SER C    . 0932 1 
+237 1 1 22 22 SER CA   C 13 58.460  .     . 1 . . 211 A 106 SER CA   A 106 SER CA   . 0932 1 
+238 1 1 22 22 SER CB   C 13 63.754  .     . 1 . . 271 A 106 SER CB   A 106 SER CB   . 0932 1 
+239 1 1 22 22 SER N    N 15 117.657 .     . 1 . . 44  A 106 SER N    A 106 SER N    . 0932 1 
+240 1 1 23 23 THR H    H 1  8.069   0.002 . 1 . . 75  A 107 THR H    A 107 THR H    . 0932 1 
+241 1 1 23 23 THR HA   H 1  4.194   0.001 . 1 . . 191 A 107 THR HA   A 107 THR HA   . 0932 1 
+242 1 1 23 23 THR HB   H 1  4.134   0.001 . 1 . . 190 A 107 THR HB   A 107 THR HB   . 0932 1 
+243 1 1 23 23 THR HG21 H 1  1.126   0.003 . 1 . . 97  A 107 THR HG21 A 107 THR HG21 . 0932 1 
+244 1 1 23 23 THR HG22 H 1  1.126   0.003 . 1 . . 97  A 107 THR HG22 A 107 THR HG22 . 0932 1 
+245 1 1 23 23 THR HG23 H 1  1.126   0.003 . 1 . . 97  A 107 THR HG23 A 107 THR HG23 . 0932 1 
+246 1 1 23 23 THR C    C 13 175.412 .     . 1 . . 342 A 107 THR C    A 107 THR C    . 0932 1 
+247 1 1 23 23 THR CA   C 13 62.604  0.001 . 1 . . 203 A 107 THR CA   A 107 THR CA   . 0932 1 
+248 1 1 23 23 THR CB   C 13 69.632  .     . 1 . . 283 A 107 THR CB   A 107 THR CB   . 0932 1 
+249 1 1 23 23 THR N    N 15 114.949 .     . 1 . . 76  A 107 THR N    A 107 THR N    . 0932 1 
+250 1 1 24 24 ASP H    H 1  8.300   0.002 . 1 . . 57  A 108 ASP H    A 108 ASP H    . 0932 1 
+251 1 1 24 24 ASP HA   H 1  4.639   0.003 . 1 . . 193 A 108 ASP HA   A 108 ASP HA   . 0932 1 
+252 1 1 24 24 ASP HB2  H 1  2.807   0.001 . 2 . . 194 A 108 ASP HB2  A 108 ASP HB2  . 0932 1 
+253 1 1 24 24 ASP HB3  H 1  2.695   0.006 . 2 . . 195 A 108 ASP HB3  A 108 ASP HB3  . 0932 1 
+254 1 1 24 24 ASP C    C 13 175.452 0.057 . 1 . . 364 A 108 ASP C    A 108 ASP C    . 0932 1 
+255 1 1 24 24 ASP CA   C 13 53.525  .     . 1 . . 363 A 108 ASP CA   A 108 ASP CA   . 0932 1 
+256 1 1 24 24 ASP N    N 15 121.461 .     . 1 . . 58  A 108 ASP N    A 108 ASP N    . 0932 1 
+257 1 1 25 25 VAL H    H 1  7.939   0.003 . 1 . . 9   A 109 VAL H    A 109 VAL H    . 0932 1 
+258 1 1 25 25 VAL HA   H 1  3.986   0.006 . 1 . . 115 A 109 VAL HA   A 109 VAL HA   . 0932 1 
+259 1 1 25 25 VAL HB   H 1  2.014   0.003 . 1 . . 116 A 109 VAL HB   A 109 VAL HB   . 0932 1 
+260 1 1 25 25 VAL HG11 H 1  0.841   0.003 . 2 . . 117 A 109 VAL HG11 A 109 VAL HG11 . 0932 1 
+261 1 1 25 25 VAL HG12 H 1  0.841   0.003 . 2 . . 117 A 109 VAL HG12 A 109 VAL HG12 . 0932 1 
+262 1 1 25 25 VAL HG13 H 1  0.841   0.003 . 2 . . 117 A 109 VAL HG13 A 109 VAL HG13 . 0932 1 
+263 1 1 25 25 VAL HG21 H 1  0.837   0.0   . 2 . . 349 A 109 VAL HG21 A 109 VAL HG21 . 0932 1 
+264 1 1 25 25 VAL HG22 H 1  0.837   0.0   . 2 . . 349 A 109 VAL HG22 A 109 VAL HG22 . 0932 1 
+265 1 1 25 25 VAL HG23 H 1  0.837   0.0   . 2 . . 349 A 109 VAL HG23 A 109 VAL HG23 . 0932 1 
+266 1 1 25 25 VAL C    C 13 175.451 .     . 1 . . 318 A 109 VAL C    A 109 VAL C    . 0932 1 
+267 1 1 25 25 VAL CA   C 13 62.686  0.016 . 1 . . 207 A 109 VAL CA   A 109 VAL CA   . 0932 1 
+268 1 1 25 25 VAL CB   C 13 32.680  .     . 1 . . 275 A 109 VAL CB   A 109 VAL CB   . 0932 1 
+269 1 1 25 25 VAL CG1  C 13 20.369  .     . 2 . . 240 A 109 VAL CG1  A 109 VAL CG1  . 0932 1 
+270 1 1 25 25 VAL CG2  C 13 21.040  .     . 2 . . 241 A 109 VAL CG2  A 109 VAL CG2  . 0932 1 
+271 1 1 25 25 VAL N    N 15 120.004 .     . 1 . . 10  A 109 VAL N    A 109 VAL N    . 0932 1 
+272 1 1 26 26 ASP H    H 1  8.334   0.002 . 1 . . 59  A 110 ASP H    A 110 ASP H    . 0932 1 
+273 1 1 26 26 ASP HA   H 1  4.604   0.002 . 1 . . 141 A 110 ASP HA   A 110 ASP HA   . 0932 1 
+274 1 1 26 26 ASP HB2  H 1  2.846   0.003 . 1 . . 142 A 110 ASP HB2  A 110 ASP HB2  . 0932 1 
+275 1 1 26 26 ASP C    C 13 175.379 .     . 1 . . 367 A 110 ASP C    A 110 ASP C    . 0932 1 
+276 1 1 26 26 ASP CA   C 13 53.352  .     . 1 . . 398 A 110 ASP CA   A 110 ASP CA   . 0932 1 
+277 1 1 26 26 ASP CB   C 13 38.551  .     . 1 . . 397 A 110 ASP CB   A 110 ASP CB   . 0932 1 
+278 1 1 26 26 ASP N    N 15 122.020 .     . 1 . . 60  A 110 ASP N    A 110 ASP N    . 0932 1 
+279 1 1 27 27 ARG H    H 1  8.204   0.002 . 1 . . 7   A 111 ARG H    A 111 ARG H    . 0932 1 
+280 1 1 27 27 ARG HA   H 1  4.253   0.001 . 1 . . 189 A 111 ARG HA   A 111 ARG HA   . 0932 1 
+281 1 1 27 27 ARG HB2  H 1  1.710   0.005 . 2 . . 186 A 111 ARG HB2  A 111 ARG HB2  . 0932 1 
+282 1 1 27 27 ARG HB3  H 1  1.823   0.005 . 2 . . 187 A 111 ARG HB3  A 111 ARG HB3  . 0932 1 
+283 1 1 27 27 ARG HG2  H 1  1.577   .     . 2 . . 184 A 111 ARG HG2  A 111 ARG HG2  . 0932 1 
+284 1 1 27 27 ARG HG3  H 1  1.541   .     . 2 . . 185 A 111 ARG HG3  A 111 ARG HG3  . 0932 1 
+285 1 1 27 27 ARG HD2  H 1  3.119   .     . 1 . . 188 A 111 ARG HD2  A 111 ARG HD2  . 0932 1 
+286 1 1 27 27 ARG HE   H 1  7.118   .     . 1 . . 303 A 111 ARG HE   A 111 ARG HE   . 0932 1 
+287 1 1 27 27 ARG C    C 13 176.599 .     . 1 . . 370 A 111 ARG C    A 111 ARG C    . 0932 1 
+288 1 1 27 27 ARG CA   C 13 56.722  .     . 1 . . 215 A 111 ARG CA   A 111 ARG CA   . 0932 1 
+289 1 1 27 27 ARG CB   C 13 30.548  0.002 . 1 . . 272 A 111 ARG CB   A 111 ARG CB   . 0932 1 
+290 1 1 27 27 ARG N    N 15 121.836 .     . 1 . . 8   A 111 ARG N    A 111 ARG N    . 0932 1 
+291 1 1 28 28 THR H    H 1  8.070   0.004 . 1 . . 279 A 112 THR H    A 112 THR H    . 0932 1 
+292 1 1 28 28 THR HA   H 1  4.273   0.0   . 1 . . 280 A 112 THR HA   A 112 THR HA   . 0932 1 
+293 1 1 28 28 THR HB   H 1  4.210   0.0   . 1 . . 281 A 112 THR HB   A 112 THR HB   . 0932 1 
+294 1 1 28 28 THR C    C 13 174.671 .     . 1 . . 396 A 112 THR C    A 112 THR C    . 0932 1 
+295 1 1 28 28 THR CA   C 13 61.890  .     . 1 . . 282 A 112 THR CA   A 112 THR CA   . 0932 1 
+296 1 1 28 28 THR CB   C 13 69.629  .     . 1 . . 209 A 112 THR CB   A 112 THR CB   . 0932 1 
+297 1 1 29 29 LEU H    H 1  8.086   0.004 . 1 . . 284 A 113 LEU H    A 113 LEU H    . 0932 1 
+298 1 1 29 29 LEU HA   H 1  4.261   0.007 . 1 . . 285 A 113 LEU HA   A 113 LEU HA   . 0932 1 
+299 1 1 29 29 LEU HB2  H 1  1.566   .     . 1 . . 286 A 113 LEU HB2  A 113 LEU HB2  . 0932 1 
+300 1 1 29 29 LEU HD11 H 1  0.790   0.0   . 2 . . 287 A 113 LEU HD11 A 113 LEU HD11 . 0932 1 
+301 1 1 29 29 LEU HD12 H 1  0.790   0.0   . 2 . . 287 A 113 LEU HD12 A 113 LEU HD12 . 0932 1 
+302 1 1 29 29 LEU HD13 H 1  0.790   0.0   . 2 . . 287 A 113 LEU HD13 A 113 LEU HD13 . 0932 1 
+303 1 1 29 29 LEU HD21 H 1  0.846   0.001 . 2 . . 288 A 113 LEU HD21 A 113 LEU HD21 . 0932 1 
+304 1 1 29 29 LEU HD22 H 1  0.846   0.001 . 2 . . 288 A 113 LEU HD22 A 113 LEU HD22 . 0932 1 
+305 1 1 29 29 LEU HD23 H 1  0.846   0.001 . 2 . . 288 A 113 LEU HD23 A 113 LEU HD23 . 0932 1 
+306 1 1 29 29 LEU C    C 13 177.436 0.051 . 1 . . 337 A 113 LEU C    A 113 LEU C    . 0932 1 
+307 1 1 29 29 LEU CA   C 13 54.742  .     . 1 . . 226 A 113 LEU CA   A 113 LEU CA   . 0932 1 
+308 1 1 29 29 LEU CD1  C 13 23.351  .     . 2 . . 329 A 113 LEU CD1  A 113 LEU CD1  . 0932 1 
+309 1 1 29 29 LEU CD2  C 13 24.814  .     . 2 . . 328 A 113 LEU CD2  A 113 LEU CD2  . 0932 1 
+310 1 1 30 30 MET H    H 1  8.182   0.004 . 1 . . 17  A 114 MET H    A 114 MET H    . 0932 1 
+311 1 1 30 30 MET HA   H 1  4.392   0.002 . 1 . . 118 A 114 MET HA   A 114 MET HA   . 0932 1 
+312 1 1 30 30 MET HB2  H 1  1.944   0.001 . 2 . . 121 A 114 MET HB2  A 114 MET HB2  . 0932 1 
+313 1 1 30 30 MET HB3  H 1  2.031   0.006 . 2 . . 122 A 114 MET HB3  A 114 MET HB3  . 0932 1 
+314 1 1 30 30 MET HG2  H 1  2.462   0.002 . 2 . . 119 A 114 MET HG2  A 114 MET HG2  . 0932 1 
+315 1 1 30 30 MET HG3  H 1  2.541   0.003 . 2 . . 120 A 114 MET HG3  A 114 MET HG3  . 0932 1 
+316 1 1 30 30 MET HE1  H 1  2.014   .     . 1 . . 354 A 114 MET HE1  A 114 MET HE1  . 0932 1 
+317 1 1 30 30 MET HE2  H 1  2.014   .     . 1 . . 354 A 114 MET HE2  A 114 MET HE2  . 0932 1 
+318 1 1 30 30 MET HE3  H 1  2.014   .     . 1 . . 354 A 114 MET HE3  A 114 MET HE3  . 0932 1 
+319 1 1 30 30 MET C    C 13 176.461 .     . 1 . . 339 A 114 MET C    A 114 MET C    . 0932 1 
+320 1 1 30 30 MET CA   C 13 55.767  0.053 . 1 . . 219 A 114 MET CA   A 114 MET CA   . 0932 1 
+321 1 1 30 30 MET CB   C 13 32.760  0.0   . 1 . . 273 A 114 MET CB   A 114 MET CB   . 0932 1 
+322 1 1 30 30 MET CG   C 13 32.035  .     . 1 . . 321 A 114 MET CG   A 114 MET CG   . 0932 1 
+323 1 1 30 30 MET CE   C 13 16.957  .     . 1 . . 355 A 114 MET CE   A 114 MET CE   . 0932 1 
+324 1 1 30 30 MET N    N 15 120.638 .     . 1 . . 18  A 114 MET N    A 114 MET N    . 0932 1 
+325 1 1 31 31 SER H    H 1  8.110   0.002 . 1 . . 51  A 115 SER H    A 115 SER H    . 0932 1 
+326 1 1 31 31 SER HA   H 1  4.323   0.004 . 1 . . 98  A 115 SER HA   A 115 SER HA   . 0932 1 
+327 1 1 31 31 SER HB2  H 1  3.821   0.001 . 2 . . 99  A 115 SER HB2  A 115 SER HB2  . 0932 1 
+328 1 1 31 31 SER HB3  H 1  3.786   0.012 . 2 . . 100 A 115 SER HB3  A 115 SER HB3  . 0932 1 
+329 1 1 31 31 SER C    C 13 174.205 0.037 . 1 . . 333 A 115 SER C    A 115 SER C    . 0932 1 
+330 1 1 31 31 SER CA   C 13 58.581  .     . 1 . . 212 A 115 SER CA   A 115 SER CA   . 0932 1 
+331 1 1 31 31 SER CB   C 13 63.762  0.0   . 1 . . 204 A 115 SER CB   A 115 SER CB   . 0932 1 
+332 1 1 31 31 SER N    N 15 116.376 .     . 1 . . 52  A 115 SER N    A 115 SER N    . 0932 1 
+333 1 1 32 32 ALA H    H 1  8.160   0.004 . 1 . . 41  A 116 ALA H    A 116 ALA H    . 0932 1 
+334 1 1 32 32 ALA HA   H 1  4.274   0.004 . 1 . . 178 A 116 ALA HA   A 116 ALA HA   . 0932 1 
+335 1 1 32 32 ALA HB1  H 1  1.334   0.005 . 1 . . 177 A 116 ALA HB1  A 116 ALA HB1  . 0932 1 
+336 1 1 32 32 ALA HB2  H 1  1.334   0.005 . 1 . . 177 A 116 ALA HB2  A 116 ALA HB2  . 0932 1 
+337 1 1 32 32 ALA HB3  H 1  1.334   0.005 . 1 . . 177 A 116 ALA HB3  A 116 ALA HB3  . 0932 1 
+338 1 1 32 32 ALA C    C 13 177.700 0.01  . 1 . . 317 A 116 ALA C    A 116 ALA C    . 0932 1 
+339 1 1 32 32 ALA CA   C 13 52.678  0.013 . 1 . . 227 A 116 ALA CA   A 116 ALA CA   . 0932 1 
+340 1 1 32 32 ALA CB   C 13 19.207  .     . 1 . . 238 A 116 ALA CB   A 116 ALA CB   . 0932 1 
+341 1 1 32 32 ALA N    N 15 125.310 .     . 1 . . 42  A 116 ALA N    A 116 ALA N    . 0932 1 
+342 1 1 33 33 MET H    H 1  8.155   0.002 . 1 . . 63  A 117 MET H    A 117 MET H    . 0932 1 
+343 1 1 33 33 MET HA   H 1  4.439   0.005 . 1 . . 106 A 117 MET HA   A 117 MET HA   . 0932 1 
+344 1 1 33 33 MET HB2  H 1  1.953   0.003 . 2 . . 109 A 117 MET HB2  A 117 MET HB2  . 0932 1 
+345 1 1 33 33 MET HB3  H 1  2.048   0.009 . 2 . . 110 A 117 MET HB3  A 117 MET HB3  . 0932 1 
+346 1 1 33 33 MET HG2  H 1  2.469   0.002 . 2 . . 107 A 117 MET HG2  A 117 MET HG2  . 0932 1 
+347 1 1 33 33 MET HG3  H 1  2.551   0.004 . 2 . . 108 A 117 MET HG3  A 117 MET HG3  . 0932 1 
+348 1 1 33 33 MET HE1  H 1  2.019   .     . 1 . . 356 A 117 MET HE1  A 117 MET HE1  . 0932 1 
+349 1 1 33 33 MET HE2  H 1  2.019   .     . 1 . . 356 A 117 MET HE2  A 117 MET HE2  . 0932 1 
+350 1 1 33 33 MET HE3  H 1  2.019   .     . 1 . . 356 A 117 MET HE3  A 117 MET HE3  . 0932 1 
+351 1 1 33 33 MET C    C 13 176.351 0.022 . 1 . . 336 A 117 MET C    A 117 MET C    . 0932 1 
+352 1 1 33 33 MET CA   C 13 55.627  0.008 . 1 . . 220 A 117 MET CA   A 117 MET CA   . 0932 1 
+353 1 1 33 33 MET CB   C 13 32.784  .     . 1 . . 274 A 117 MET CB   A 117 MET CB   . 0932 1 
+354 1 1 33 33 MET CG   C 13 32.073  0.002 . 1 . . 229 A 117 MET CG   A 117 MET CG   . 0932 1 
+355 1 1 33 33 MET CE   C 13 16.961  .     . 1 . . 237 A 117 MET CE   A 117 MET CE   . 0932 1 
+356 1 1 33 33 MET N    N 15 118.741 .     . 1 . . 64  A 117 MET N    A 117 MET N    . 0932 1 
+357 1 1 34 34 THR H    H 1  7.956   0.004 . 1 . . 49  A 118 THR H    A 118 THR H    . 0932 1 
+358 1 1 34 34 THR HA   H 1  4.255   0.003 . 1 . . 95  A 118 THR HA   A 118 THR HA   . 0932 1 
+359 1 1 34 34 THR HB   H 1  4.136   0.003 . 1 . . 96  A 118 THR HB   A 118 THR HB   . 0932 1 
+360 1 1 34 34 THR HG21 H 1  1.117   0.001 . 1 . . 94  A 118 THR HG21 A 118 THR HG21 . 0932 1 
+361 1 1 34 34 THR HG22 H 1  1.117   0.001 . 1 . . 94  A 118 THR HG22 A 118 THR HG22 . 0932 1 
+362 1 1 34 34 THR HG23 H 1  1.117   0.001 . 1 . . 94  A 118 THR HG23 A 118 THR HG23 . 0932 1 
+363 1 1 34 34 THR C    C 13 173.851 0.013 . 1 . . 335 A 118 THR C    A 118 THR C    . 0932 1 
+364 1 1 34 34 THR CA   C 13 61.898  .     . 1 . . 202 A 118 THR CA   A 118 THR CA   . 0932 1 
+365 1 1 34 34 THR CB   C 13 69.771  .     . 1 . . 210 A 118 THR CB   A 118 THR CB   . 0932 1 
+366 1 1 34 34 THR CG2  C 13 21.479  .     . 1 . . 277 A 118 THR CG2  A 118 THR CG2  . 0932 1 
+367 1 1 34 34 THR N    N 15 114.356 .     . 1 . . 50  A 118 THR N    A 118 THR N    . 0932 1 
+368 1 1 35 35 ASN H    H 1  8.326   0.004 . 1 . . 79  A 119 ASN H    A 119 ASN H    . 0932 1 
+369 1 1 35 35 ASN HA   H 1  4.668   0.004 . 1 . . 111 A 119 ASN HA   A 119 ASN HA   . 0932 1 
+370 1 1 35 35 ASN HB2  H 1  2.668   0.002 . 2 . . 126 A 119 ASN HB2  A 119 ASN HB2  . 0932 1 
+371 1 1 35 35 ASN HB3  H 1  2.758   0.003 . 2 . . 127 A 119 ASN HB3  A 119 ASN HB3  . 0932 1 
+372 1 1 35 35 ASN C    C 13 174.506 0.021 . 1 . . 324 A 119 ASN C    A 119 ASN C    . 0932 1 
+373 1 1 35 35 ASN CA   C 13 53.136  0.016 . 1 . . 384 A 119 ASN CA   A 119 ASN CA   . 0932 1 
+374 1 1 35 35 ASN CB   C 13 38.857  0.005 . 1 . . 383 A 119 ASN CB   A 119 ASN CB   . 0932 1 
+375 1 1 35 35 ASN CG   C 13 177.167 .     . 1 . . 325 A 119 ASN CG   A 119 ASN CG   . 0932 1 
+376 1 1 35 35 ASN N    N 15 119.392 .     . 1 . . 80  A 119 ASN N    A 119 ASN N    . 0932 1 
+377 1 1 36 36 LEU H    H 1  8.027   0.004 . 1 . . 33  A 120 LEU H    A 120 LEU H    . 0932 1 
+378 1 1 36 36 LEU HA   H 1  4.249   0.007 . 1 . . 132 A 120 LEU HA   A 120 LEU HA   . 0932 1 
+379 1 1 36 36 LEU HB2  H 1  1.552   0.002 . 1 . . 268 A 120 LEU HB2  A 120 LEU HB2  . 0932 1 
+380 1 1 36 36 LEU HD11 H 1  0.839   0.003 . 1 . . 269 A 120 LEU HD11 A 120 LEU HD11 . 0932 1 
+381 1 1 36 36 LEU HD12 H 1  0.839   0.003 . 1 . . 269 A 120 LEU HD12 A 120 LEU HD12 . 0932 1 
+382 1 1 36 36 LEU HD13 H 1  0.839   0.003 . 1 . . 269 A 120 LEU HD13 A 120 LEU HD13 . 0932 1 
+383 1 1 36 36 LEU C    C 13 176.309 .     . 1 . . 378 A 120 LEU C    A 120 LEU C    . 0932 1 
+384 1 1 36 36 LEU CA   C 13 55.004  .     . 1 . . 225 A 120 LEU CA   A 120 LEU CA   . 0932 1 
+385 1 1 36 36 LEU CB   C 13 42.286  0.028 . 1 . . 247 A 120 LEU CB   A 120 LEU CB   . 0932 1 
+386 1 1 36 36 LEU CD1  C 13 25.034  .     . 1 . . 330 A 120 LEU CD1  A 120 LEU CD1  . 0932 1 
+387 1 1 36 36 LEU N    N 15 121.568 .     . 1 . . 34  A 120 LEU N    A 120 LEU N    . 0932 1 
+# 
+data_constraint_statistics
+# 
+_Constraint_stat_list.Sf_category                       constraint_statistics 
+_Constraint_stat_list.Sf_framecode                      constraint_statistics 
+_Constraint_stat_list.Entry_ID                          0932 
+_Constraint_stat_list.ID                                1 
+_Constraint_stat_list.Data_file_name                    D_8000212194_mr_P1.xplor-nih.V1 
+_Constraint_stat_list.NOE_dist_averaging_method         r-6 
+_Constraint_stat_list.NOE_tot_num                       165 
+_Constraint_stat_list.NOE_intraresidue_tot_num          73 
+_Constraint_stat_list.NOE_sequential_tot_num            54 
+_Constraint_stat_list.NOE_medium_range_tot_num          84 
+_Constraint_stat_list.NOE_long_range_tot_num            128 
+_Constraint_stat_list.NOE_unique_tot_num                90 
+_Constraint_stat_list.NOE_intraresidue_unique_tot_num   49 
+_Constraint_stat_list.NOE_sequential_unique_tot_num     21 
+_Constraint_stat_list.NOE_medium_range_unique_tot_num   9 
+_Constraint_stat_list.NOE_long_range_unique_tot_num     11 
+_Constraint_stat_list.NOE_unamb_intramol_tot_num        90 
+_Constraint_stat_list.NOE_unamb_intermol_tot_num        0 
+_Constraint_stat_list.NOE_ambig_intramol_tot_num        249 
+_Constraint_stat_list.NOE_ambig_intermol_tot_num        0 
+_Constraint_stat_list.NOE_interentity_tot_num           0 
+_Constraint_stat_list.NOE_other_tot_num                 0 
+# 
+_Constraint_file.ID                        1 
+_Constraint_file.Constraint_filename       D_1292123359_mr-upload_P1.xplor-nih.V1 
+_Constraint_file.Software_ID               1 
+_Constraint_file.Software_label            . 
+_Constraint_file.Software_name             "X-PLOR NIH/CNS" 
+_Constraint_file.Block_ID                  1 
+_Constraint_file.Constraint_type           distance 
+_Constraint_file.Constraint_subtype        NOE 
+_Constraint_file.Constraint_subsubtype     ambi 
+_Constraint_file.Constraint_number         165 
+_Constraint_file.Entry_ID                  0932 
+_Constraint_file.Constraint_stat_list_ID   1 
+# 
+data_XPLOR-NIH/CNS_distance_restraints_1
+# 
+_Gen_dist_constraint_list.Sf_category          general_distance_constraints 
+_Gen_dist_constraint_list.Sf_framecode         XPLOR-NIH/CNS_distance_restraints_1 
+_Gen_dist_constraint_list.Entry_ID             0932 
+_Gen_dist_constraint_list.ID                   1 
+_Gen_dist_constraint_list.Data_file_name       D_1292123359_mr-upload_P1.xplor-nih.V1 
+_Gen_dist_constraint_list.Constraint_type      NOE 
+_Gen_dist_constraint_list.Constraint_file_ID   1 
+_Gen_dist_constraint_list.Potential_type       square-well-parabolic 
+_Gen_dist_constraint_list.Block_ID             1 
+# 
+loop_
+_Gen_dist_constraint.Index_ID 
+_Gen_dist_constraint.ID 
+_Gen_dist_constraint.Combination_ID 
+_Gen_dist_constraint.Member_ID 
+_Gen_dist_constraint.Member_logic_code 
+_Gen_dist_constraint.Entity_assembly_ID_1 
+_Gen_dist_constraint.Entity_ID_1 
+_Gen_dist_constraint.Comp_index_ID_1 
+_Gen_dist_constraint.Comp_ID_1 
+_Gen_dist_constraint.Atom_ID_1 
+_Gen_dist_constraint.Entity_assembly_ID_2 
+_Gen_dist_constraint.Entity_ID_2 
+_Gen_dist_constraint.Comp_index_ID_2 
+_Gen_dist_constraint.Comp_ID_2 
+_Gen_dist_constraint.Atom_ID_2 
+_Gen_dist_constraint.Distance_val 
+_Gen_dist_constraint.Target_val 
+_Gen_dist_constraint.Target_val_uncertainty 
+_Gen_dist_constraint.Lower_linear_limit 
+_Gen_dist_constraint.Upper_linear_limit 
+_Gen_dist_constraint.Distance_lower_bound_val 
+_Gen_dist_constraint.Distance_upper_bound_val 
+_Gen_dist_constraint.Weight 
+_Gen_dist_constraint.Auth_asym_ID_1 
+_Gen_dist_constraint.Auth_seq_ID_1 
+_Gen_dist_constraint.Auth_comp_ID_1 
+_Gen_dist_constraint.Auth_atom_ID_1 
+_Gen_dist_constraint.Auth_atom_name_1 
+_Gen_dist_constraint.Auth_asym_ID_2 
+_Gen_dist_constraint.Auth_seq_ID_2 
+_Gen_dist_constraint.Auth_comp_ID_2 
+_Gen_dist_constraint.Auth_atom_ID_2 
+_Gen_dist_constraint.Auth_atom_name_2 
+_Gen_dist_constraint.Entry_ID 
+_Gen_dist_constraint.Gen_dist_constraint_list_ID 
+1   1   1 . .  1 1 6  ARG H    1 1 5  TYR HA   . 2.55 . . . 1.8 3.3 1.0 A 90  ARG H    HN   A 89  TYR HA   HA   0932 1 
+2   1   2 . .  1 1 7  LYS H    1 1 5  TYR HA   . 2.55 . . . 1.8 3.3 1.0 A 91  LYS H    HN   A 89  TYR HA   HA   0932 1 
+3   2   . . .  1 1 5  TYR H    1 1 5  TYR HA   . 2.25 . . . 1.8 2.7 1.0 A 89  TYR H    HN   A 89  TYR HA   HA   0932 1 
+4   3   . . .  1 1 25 VAL H    1 1 26 ASP HA   . 2.55 . . . 1.8 6.0 1.0 A 109 VAL H    HN   A 110 ASP HA   HA   0932 1 
+5   4   . . .  1 1 34 THR H    1 1 32 ALA HA   . 2.55 . . . 1.8 5.0 1.0 A 118 THR H    HN   A 116 ALA HA   HA   0932 1 
+6   5   1 . .  1 1 7  LYS HA   1 1 11 GLU H    . 2.55 . . . 1.8 3.3 1.0 A 91  LYS HA   HA   A 95  GLU H    HN   0932 1 
+7   5   2 . .  1 1 6  ARG HA   1 1 8  PHE H    . 2.55 . . . 1.8 3.3 1.0 A 90  ARG HA   HA   A 92  PHE H    HN   0932 1 
+8   5   3 . .  1 1 7  LYS HA   1 1 8  PHE H    . 2.55 . . . 1.8 3.3 1.0 A 91  LYS HA   HA   A 92  PHE H    HN   0932 1 
+9   6   . . .  1 1 2  ARG H    1 1 1  ILE HA   . 3.4  . . . 1.8 5.0 1.0 A 86  ARG H    HN   A 85  ILE HA   HA   0932 1 
+10  7   1 . .  1 1 19 TYR H    1 1 5  TYR HB2  . 2.55 . . . 1.8 5.0 1.0 A 103 TYR H    HN   A 89  TYR HB2  HB2  0932 1 
+11  7   2 . OR 1 1 19 TYR H    1 1 13 TYR HB2  . 2.55 . . . 1.8 5.0 1.0 A 103 TYR H    HN   A 97  TYR HB2  HB*  0932 1 
+12  7   2 . OR 1 1 19 TYR H    1 1 13 TYR HB3  . 2.55 . . . 1.8 5.0 1.0 A 103 TYR H    HN   A 97  TYR HB3  HB*  0932 1 
+13  8   . . OR 1 1 5  TYR H    1 1 5  TYR HB2  . 2.55 . . . 1.8 3.3 1.0 A 89  TYR H    HN   A 89  TYR HB2  HB*  0932 1 
+14  8   . . OR 1 1 5  TYR H    1 1 5  TYR HB3  . 2.55 . . . 1.8 3.3 1.0 A 89  TYR H    HN   A 89  TYR HB3  HB*  0932 1 
+15  9   . . OR 1 1 33 MET H    1 1 33 MET HB2  . 2.55 . . . 1.8 3.3 1.0 A 117 MET H    HN   A 117 MET HB2  HB*  0932 1 
+16  9   . . OR 1 1 33 MET H    1 1 33 MET HB3  . 2.55 . . . 1.8 3.3 1.0 A 117 MET H    HN   A 117 MET HB3  HB*  0932 1 
+17  10  1 . OR 1 1 30 MET H    1 1 29 LEU HB2  . 2.55 . . . 1.8 3.3 1.0 A 114 MET H    HN   A 113 LEU HB2  HB*  0932 1 
+18  10  1 . OR 1 1 30 MET H    1 1 29 LEU HB3  . 2.55 . . . 1.8 3.3 1.0 A 114 MET H    HN   A 113 LEU HB3  HB*  0932 1 
+19  10  2 . .  1 1 23 THR H    1 1 21 ARG HG2  . 2.55 . . . 1.8 3.3 1.0 A 107 THR H    HN   A 105 ARG HG2  HG2  0932 1 
+20  11  1 . OR 1 1 28 THR H    1 1 27 ARG HG2  . 2.55 . . . 1.8 3.3 1.0 A 112 THR H    HN   A 111 ARG HG2  HG*  0932 1 
+21  11  1 . OR 1 1 28 THR H    1 1 27 ARG HG3  . 2.55 . . . 1.8 3.3 1.0 A 112 THR H    HN   A 111 ARG HG3  HG*  0932 1 
+22  11  2 . OR 1 1 28 THR H    1 1 29 LEU HB2  . 2.55 . . . 1.8 3.3 1.0 A 112 THR H    HN   A 113 LEU HB2  HB*  0932 1 
+23  11  2 . OR 1 1 28 THR H    1 1 29 LEU HB3  . 2.55 . . . 1.8 3.3 1.0 A 112 THR H    HN   A 113 LEU HB3  HB*  0932 1 
+24  11  3 . .  1 1 14 LYS H    1 1 21 ARG HG2  . 2.55 . . . 1.8 3.3 1.0 A 98  LYS H    HN   A 105 ARG HG2  HG2  0932 1 
+25  12  1 . OR 1 1 34 THR H    1 1 36 LEU HB2  . 2.55 . . . 1.8 3.3 1.0 A 118 THR H    HN   A 120 LEU HB2  HB*  0932 1 
+26  12  1 . OR 1 1 34 THR H    1 1 36 LEU HB3  . 2.55 . . . 1.8 3.3 1.0 A 118 THR H    HN   A 120 LEU HB3  HB*  0932 1 
+27  12  2 . .  1 1 13 TYR H    1 1 21 ARG HG2  . 2.55 . . . 1.8 3.3 1.0 A 97  TYR H    HN   A 105 ARG HG2  HG2  0932 1 
+28  13  1 . OR 1 1 31 SER H    1 1 3  LYS HG2  . 2.55 . . . 1.8 5.0 1.0 A 115 SER H    HN   A 87  LYS HG2  HG*  0932 1 
+29  13  1 . OR 1 1 31 SER H    1 1 3  LYS HG3  . 2.55 . . . 1.8 5.0 1.0 A 115 SER H    HN   A 87  LYS HG3  HG*  0932 1 
+30  13  2 . OR 1 1 32 ALA H    1 1 3  LYS HG2  . 2.55 . . . 1.8 5.0 1.0 A 116 ALA H    HN   A 87  LYS HG2  HG*  0932 1 
+31  13  2 . OR 1 1 32 ALA H    1 1 3  LYS HG3  . 2.55 . . . 1.8 5.0 1.0 A 116 ALA H    HN   A 87  LYS HG3  HG*  0932 1 
+32  14  . . .  1 1 3  LYS H    1 1 2  ARG HA   . 2.55 . . . 1.8 3.3 1.0 A 87  LYS H    HN   A 86  ARG HA   HA   0932 1 
+33  15  . . .  1 1 17 GLN H    1 1 16 GLU HA   . 2.55 . . . 1.8 3.3 1.0 A 101 GLN H    HN   A 100 GLU HA   HA   0932 1 
+34  16  . . .  1 1 32 ALA H    1 1 4  ARG HA   . 2.25 . . . 1.8 5.0 1.0 A 116 ALA H    HN   A 88  ARG HA   HA   0932 1 
+35  17  1 . .  1 1 24 ASP H    1 1 11 GLU HA   . 3.4  . . . 1.8 5.0 1.0 A 108 ASP H    HN   A 95  GLU HA   HA   0932 1 
+36  17  2 . .  1 1 24 ASP H    1 1 21 ARG HA   . 3.4  . . . 1.8 5.0 1.0 A 108 ASP H    HN   A 105 ARG HA   HA   0932 1 
+37  17  3 . .  1 1 26 ASP H    1 1 27 ARG HA   . 3.4  . . . 1.8 5.0 1.0 A 110 ASP H    HN   A 111 ARG HA   HA   0932 1 
+38  17  4 . .  1 1 15 HIS H    1 1 11 GLU HA   . 3.4  . . . 1.8 5.0 1.0 A 99  HIS H    HN   A 95  GLU HA   HA   0932 1 
+39  18  1 . .  1 1 28 THR H    1 1 27 ARG HA   . 2.55 . . . 1.8 3.3 1.0 A 112 THR H    HN   A 111 ARG HA   HA   0932 1 
+40  18  2 . .  1 1 14 LYS H    1 1 11 GLU HA   . 2.55 . . . 1.8 3.3 1.0 A 98  LYS H    HN   A 95  GLU HA   HA   0932 1 
+41  19  . . .  1 1 21 ARG H    1 1 21 ARG HA   . 2.25 . . . 1.8 2.7 1.0 A 105 ARG H    HN   A 105 ARG HA   HA   0932 1 
+42  20  . . .  1 1 18 VAL H    1 1 17 GLN HA   . 2.25 . . . 1.8 3.3 1.0 A 102 VAL H    HN   A 101 GLN HA   HA   0932 1 
+43  21  1 . .  1 1 6  ARG H    1 1 6  ARG HA   . 2.55 . . . 1.8 3.3 1.0 A 90  ARG H    HN   A 90  ARG HA   HA   0932 1 
+44  21  2 . .  1 1 7  LYS H    1 1 7  LYS HA   . 2.55 . . . 1.8 3.3 1.0 A 91  LYS H    HN   A 91  LYS HA   HA   0932 1 
+45  21  3 . .  1 1 23 THR H    1 1 23 THR HB   . 2.55 . . . 1.8 3.3 1.0 A 107 THR H    HN   A 107 THR HB   HB   0932 1 
+46  22  . . .  1 1 15 HIS H    1 1 14 LYS HA   . 2.55 . . . 1.8 3.3 1.0 A 99  HIS H    HN   A 98  LYS HA   HA   0932 1 
+47  23  . . .  1 1 12 SER H    1 1 11 GLU HA   . 2.25 . . . 1.8 5.0 1.0 A 96  SER H    HN   A 95  GLU HA   HA   0932 1 
+48  24  . . .  1 1 23 THR H    1 1 23 THR HB   . 2.25 . . . 1.8 2.7 1.0 A 107 THR H    HN   A 107 THR HB   HB   0932 1 
+49  25  . . .  1 1 13 TYR H    1 1 13 TYR HA   . 2.25 . . . 1.8 2.7 1.0 A 97  TYR H    HN   A 97  TYR HA   HA   0932 1 
+50  26  . . .  1 1 25 VAL H    1 1 22 SER HA   . 2.25 . . . 1.8 5.0 1.0 A 109 VAL H    HN   A 106 SER HA   HA   0932 1 
+51  27  . . .  1 1 19 TYR H    1 1 19 TYR HA   . 2.25 . . . 1.8 2.7 1.0 A 103 TYR H    HN   A 103 TYR HA   HA   0932 1 
+52  28  . . .  1 1 27 ARG H    1 1 26 ASP HA   . 2.25 . . . 1.8 3.3 1.0 A 111 ARG H    HN   A 110 ASP HA   HA   0932 1 
+53  29  . . .  1 1 5  TYR H    1 1 5  TYR HA   . 2.25 . . . 1.8 2.7 1.0 A 89  TYR H    HN   A 89  TYR HA   HA   0932 1 
+54  30  . . .  1 1 9  LEU H    1 1 9  LEU HA   . 2.25 . . . 1.8 2.7 1.0 A 93  LEU H    HN   A 93  LEU HA   HA   0932 1 
+55  31  . . .  1 1 23 THR H    1 1 23 THR HB   . 2.25 . . . 1.8 2.7 1.0 A 107 THR H    HN   A 107 THR HB   HB   0932 1 
+56  32  . . OR 1 1 22 SER H    1 1 22 SER HB2  . 3.9  . . . 1.8 6.0 1.0 A 106 SER H    HN   A 106 SER HB2  HB*  0932 1 
+57  32  . . OR 1 1 22 SER H    1 1 22 SER HB3  . 3.9  . . . 1.8 6.0 1.0 A 106 SER H    HN   A 106 SER HB3  HB*  0932 1 
+58  33  . . OR 1 1 12 SER H    1 1 12 SER HB2  . 3.4  . . . 1.8 5.0 1.0 A 96  SER H    HN   A 96  SER HB2  HB*  0932 1 
+59  33  . . OR 1 1 12 SER H    1 1 12 SER HB3  . 3.4  . . . 1.8 5.0 1.0 A 96  SER H    HN   A 96  SER HB3  HB*  0932 1 
+60  34  . . .  1 1 13 TYR H    1 1 14 LYS HA   . 3.4  . . . 1.8 5.0 1.0 A 97  TYR H    HN   A 98  LYS HA   HA   0932 1 
+61  35  1 . .  1 1 20 ILE H    1 1 20 ILE HA   . 3.4  . . . 1.8 5.0 1.0 A 104 ILE H    HN   A 104 ILE HA   HA   0932 1 
+62  35  2 . .  1 1 18 VAL H    1 1 18 VAL HA   . 3.4  . . . 1.8 5.0 1.0 A 102 VAL H    HN   A 102 VAL HA   HA   0932 1 
+63  36  . . .  1 1 35 ASN H    1 1 35 ASN HA   . 2.55 . . . 1.8 3.3 1.0 A 119 ASN H    HN   A 119 ASN HA   HA   0932 1 
+64  37  1 . .  1 1 31 SER H    1 1 22 SER HA   . 3.4  . . . 1.8 5.0 1.0 A 115 SER H    HN   A 106 SER HA   HA   0932 1 
+65  37  2 . .  1 1 31 SER H    1 1 30 MET HA   . 3.4  . . . 1.8 5.0 1.0 A 115 SER H    HN   A 114 MET HA   HA   0932 1 
+66  37  3 . .  1 1 32 ALA H    1 1 22 SER HA   . 3.4  . . . 1.8 5.0 1.0 A 116 ALA H    HN   A 106 SER HA   HA   0932 1 
+67  37  4 . .  1 1 32 ALA H    1 1 30 MET HA   . 3.4  . . . 1.8 5.0 1.0 A 116 ALA H    HN   A 114 MET HA   HA   0932 1 
+68  37  5 . .  1 1 33 MET H    1 1 30 MET HA   . 3.4  . . . 1.8 5.0 1.0 A 117 MET H    HN   A 114 MET HA   HA   0932 1 
+69  38  1 . OR 1 1 23 THR H    1 1 22 SER HB2  . 3.4  . . . 1.8 5.0 1.0 A 107 THR H    HN   A 106 SER HB2  HB*  0932 1 
+70  38  1 . OR 1 1 23 THR H    1 1 22 SER HB3  . 3.4  . . . 1.8 5.0 1.0 A 107 THR H    HN   A 106 SER HB3  HB*  0932 1 
+71  38  2 . .  1 1 23 THR H    1 1 22 SER HB2  . 3.4  . . . 1.8 5.0 1.0 A 107 THR H    HN   A 106 SER HB2  HB2  0932 1 
+72  38  3 . OR 1 1 30 MET H    1 1 22 SER HB2  . 3.4  . . . 1.8 5.0 1.0 A 114 MET H    HN   A 106 SER HB2  HB*  0932 1 
+73  38  3 . OR 1 1 30 MET H    1 1 22 SER HB3  . 3.4  . . . 1.8 5.0 1.0 A 114 MET H    HN   A 106 SER HB3  HB*  0932 1 
+74  38  4 . .  1 1 30 MET H    1 1 22 SER HB2  . 3.4  . . . 1.8 5.0 1.0 A 114 MET H    HN   A 106 SER HB2  HB2  0932 1 
+75  39  . . OR 1 1 13 TYR H    1 1 13 TYR HB2  . 2.55 . . . 1.8 3.3 1.0 A 97  TYR H    HN   A 97  TYR HB2  HB*  0932 1 
+76  39  . . OR 1 1 13 TYR H    1 1 13 TYR HB3  . 2.55 . . . 1.8 3.3 1.0 A 97  TYR H    HN   A 97  TYR HB3  HB*  0932 1 
+77  40  . . OR 1 1 14 LYS H    1 1 14 LYS HG2  . 3.4  . . . 1.8 5.0 1.0 A 98  LYS H    HN   A 98  LYS HG2  HG*  0932 1 
+78  40  . . OR 1 1 14 LYS H    1 1 14 LYS HG3  . 3.4  . . . 1.8 5.0 1.0 A 98  LYS H    HN   A 98  LYS HG3  HG*  0932 1 
+79  41  . . OR 1 1 11 GLU H    1 1 11 GLU HG2  . 3.9  . . . 1.8 6.0 1.0 A 95  GLU H    HN   A 95  GLU HG2  HG*  0932 1 
+80  41  . . OR 1 1 11 GLU H    1 1 11 GLU HG3  . 3.9  . . . 1.8 6.0 1.0 A 95  GLU H    HN   A 95  GLU HG3  HG*  0932 1 
+81  42  1 . .  1 1 18 VAL H    1 1 16 GLU HB2  . 2.55 . . . 1.8 3.3 1.0 A 102 VAL H    HN   A 100 GLU HB2  HB2  0932 1 
+82  42  2 . OR 1 1 18 VAL H    1 1 17 GLN HB2  . 2.55 . . . 1.8 3.3 1.0 A 102 VAL H    HN   A 101 GLN HB2  HB*  0932 1 
+83  42  2 . OR 1 1 18 VAL H    1 1 17 GLN HB3  . 2.55 . . . 1.8 3.3 1.0 A 102 VAL H    HN   A 101 GLN HB3  HB*  0932 1 
+84  42  3 . OR 1 1 20 ILE H    1 1 17 GLN HB2  . 2.55 . . . 1.8 3.3 1.0 A 104 ILE H    HN   A 101 GLN HB2  HB*  0932 1 
+85  42  3 . OR 1 1 20 ILE H    1 1 17 GLN HB3  . 2.55 . . . 1.8 3.3 1.0 A 104 ILE H    HN   A 101 GLN HB3  HB*  0932 1 
+86  43  . . OR 1 1 11 GLU H    1 1 11 GLU HB2  . 3.4  . . . 1.8 5.0 1.0 A 95  GLU H    HN   A 95  GLU HB2  HB*  0932 1 
+87  43  . . OR 1 1 11 GLU H    1 1 11 GLU HB3  . 3.4  . . . 1.8 5.0 1.0 A 95  GLU H    HN   A 95  GLU HB3  HB*  0932 1 
+88  44  1 . OR 1 1 4  ARG H    1 1 33 MET HB2  . 4.15 . . . 1.8 6.5 1.0 A 88  ARG H    HN   A 117 MET HB2  HB*  0932 1 
+89  44  1 . OR 1 1 4  ARG H    1 1 33 MET HB3  . 4.15 . . . 1.8 6.5 1.0 A 88  ARG H    HN   A 117 MET HB3  HB*  0932 1 
+90  44  2 . OR 1 1 27 ARG H    1 1 30 MET HB2  . 4.15 . . . 1.8 6.5 1.0 A 111 ARG H    HN   A 114 MET HB2  HB*  0932 1 
+91  44  2 . OR 1 1 27 ARG H    1 1 30 MET HB3  . 4.15 . . . 1.8 6.5 1.0 A 111 ARG H    HN   A 114 MET HB3  HB*  0932 1 
+92  44  3 . .  1 1 27 ARG H    1 1 30 MET HE1  . 4.15 . . . 1.8 6.5 1.0 A 111 ARG H    HN   A 114 MET HE1  HE1  0932 1 
+93  44  4 . .  1 1 27 ARG H    1 1 30 MET HE3  . 4.15 . . . 1.8 6.5 1.0 A 111 ARG H    HN   A 114 MET HE3  HE3  0932 1 
+94  44  5 . OR 1 1 27 ARG H    1 1 33 MET HB2  . 4.15 . . . 1.8 6.5 1.0 A 111 ARG H    HN   A 117 MET HB2  HB*  0932 1 
+95  44  5 . OR 1 1 27 ARG H    1 1 33 MET HB3  . 4.15 . . . 1.8 6.5 1.0 A 111 ARG H    HN   A 117 MET HB3  HB*  0932 1 
+96  44  6 . OR 1 1 4  ARG H    1 1 30 MET HB2  . 4.15 . . . 1.8 6.5 1.0 A 88  ARG H    HN   A 114 MET HB2  HB*  0932 1 
+97  44  6 . OR 1 1 4  ARG H    1 1 30 MET HB3  . 4.15 . . . 1.8 6.5 1.0 A 88  ARG H    HN   A 114 MET HB3  HB*  0932 1 
+98  45  . . .  1 1 17 GLN H    1 1 16 GLU HB2  . 2.55 . . . 1.8 3.3 1.0 A 101 GLN H    HN   A 100 GLU HB2  HB2  0932 1 
+99  46  . . OR 1 1 3  LYS H    1 1 2  ARG HG2  . 3.9  . . . 1.8 6.0 1.0 A 87  LYS H    HN   A 86  ARG HG2  HG*  0932 1 
+100 46  . . OR 1 1 3  LYS H    1 1 2  ARG HG3  . 3.9  . . . 1.8 6.0 1.0 A 87  LYS H    HN   A 86  ARG HG3  HG*  0932 1 
+101 47  . . OR 1 1 33 MET H    1 1 33 MET HE1  . 4.15 . . . 1.8 6.5 1.0 A 117 MET H    HN   A 117 MET HE1  HE*  0932 1 
+102 47  . . OR 1 1 33 MET H    1 1 33 MET HE2  . 4.15 . . . 1.8 6.5 1.0 A 117 MET H    HN   A 117 MET HE2  HE*  0932 1 
+103 47  . . OR 1 1 33 MET H    1 1 33 MET HE3  . 4.15 . . . 1.8 6.5 1.0 A 117 MET H    HN   A 117 MET HE3  HE*  0932 1 
+104 48  1 . OR 1 1 30 MET H    1 1 30 MET HB2  . 3.65 . . . 1.8 5.5 1.0 A 114 MET H    HN   A 114 MET HB2  HB*  0932 1 
+105 48  1 . OR 1 1 30 MET H    1 1 30 MET HB3  . 3.65 . . . 1.8 5.5 1.0 A 114 MET H    HN   A 114 MET HB3  HB*  0932 1 
+106 48  2 . .  1 1 30 MET H    1 1 30 MET HE1  . 3.65 . . . 1.8 5.5 1.0 A 114 MET H    HN   A 114 MET HE1  HE1  0932 1 
+107 49  . . .  1 1 5  TYR H    1 1 2  ARG HB2  . 3.4  . . . 1.8 5.0 1.0 A 89  TYR H    HN   A 86  ARG HB2  HB2  0932 1 
+108 50  1 . .  1 1 19 TYR H    1 1 11 GLU HB2  . 2.55 . . . 1.8 3.3 1.0 A 103 TYR H    HN   A 95  GLU HB2  HB2  0932 1 
+109 50  2 . .  1 1 12 SER H    1 1 11 GLU HB2  . 2.55 . . . 1.8 3.3 1.0 A 96  SER H    HN   A 95  GLU HB2  HB2  0932 1 
+110 51  . . .  1 1 11 GLU H    1 1 11 GLU HB2  . 2.55 . . . 1.8 3.3 1.0 A 95  GLU H    HN   A 95  GLU HB2  HB2  0932 1 
+111 52  1 . OR 1 1 31 SER H    1 1 4  ARG HB2  . 3.4  . . . 1.8 5.0 1.0 A 115 SER H    HN   A 88  ARG HB2  HB*  0932 1 
+112 52  1 . OR 1 1 31 SER H    1 1 4  ARG HB3  . 3.4  . . . 1.8 5.0 1.0 A 115 SER H    HN   A 88  ARG HB3  HB*  0932 1 
+113 52  2 . OR 1 1 31 SER H    1 1 27 ARG HB2  . 3.4  . . . 1.8 5.0 1.0 A 115 SER H    HN   A 111 ARG HB2  HB*  0932 1 
+114 52  2 . OR 1 1 31 SER H    1 1 27 ARG HB3  . 3.4  . . . 1.8 5.0 1.0 A 115 SER H    HN   A 111 ARG HB3  HB*  0932 1 
+115 52  3 . OR 1 1 32 ALA H    1 1 4  ARG HB2  . 3.4  . . . 1.8 5.0 1.0 A 116 ALA H    HN   A 88  ARG HB2  HB*  0932 1 
+116 52  3 . OR 1 1 32 ALA H    1 1 4  ARG HB3  . 3.4  . . . 1.8 5.0 1.0 A 116 ALA H    HN   A 88  ARG HB3  HB*  0932 1 
+117 52  4 . OR 1 1 33 MET H    1 1 4  ARG HB2  . 3.4  . . . 1.8 5.0 1.0 A 117 MET H    HN   A 88  ARG HB2  HB*  0932 1 
+118 52  4 . OR 1 1 33 MET H    1 1 4  ARG HB3  . 3.4  . . . 1.8 5.0 1.0 A 117 MET H    HN   A 88  ARG HB3  HB*  0932 1 
+119 53  . . OR 1 1 4  ARG H    1 1 2  ARG HB2  . 2.55 . . . 1.8 3.3 1.0 A 88  ARG H    HN   A 86  ARG HB2  HB*  0932 1 
+120 53  . . OR 1 1 4  ARG H    1 1 2  ARG HB3  . 2.55 . . . 1.8 3.3 1.0 A 88  ARG H    HN   A 86  ARG HB3  HB*  0932 1 
+121 54  . . .  1 1 4  ARG H    1 1 2  ARG HG2  . 2.55 . . . 1.8 5.0 1.0 A 88  ARG H    HN   A 86  ARG HG2  HG2  0932 1 
+122 55  1 . OR 1 1 5  TYR H    1 1 20 ILE HD11 . 3.65 . . . 1.8 5.5 1.0 A 89  TYR H    HN   A 104 ILE HD11 HD*  0932 1 
+123 55  1 . OR 1 1 5  TYR H    1 1 20 ILE HD12 . 3.65 . . . 1.8 5.5 1.0 A 89  TYR H    HN   A 104 ILE HD12 HD*  0932 1 
+124 55  1 . OR 1 1 5  TYR H    1 1 20 ILE HD13 . 3.65 . . . 1.8 5.5 1.0 A 89  TYR H    HN   A 104 ILE HD13 HD*  0932 1 
+125 55  2 . .  1 1 8  PHE H    1 1 9  LEU HD11 . 3.65 . . . 1.8 5.5 1.0 A 92  PHE H    HN   A 93  LEU HD11 HD11 0932 1 
+126 55  3 . .  1 1 8  PHE H    1 1 9  LEU HD12 . 3.65 . . . 1.8 5.5 1.0 A 92  PHE H    HN   A 93  LEU HD12 HD12 0932 1 
+127 55  4 . .  1 1 8  PHE H    1 1 9  LEU HD13 . 3.65 . . . 1.8 5.5 1.0 A 92  PHE H    HN   A 93  LEU HD13 HD13 0932 1 
+128 56  1 . OR 1 1 25 VAL H    1 1 25 VAL HG11 . 4.15 . . . 1.8 6.5 1.0 A 109 VAL H    HN   A 109 VAL HG11 HG*  0932 1 
+129 56  1 . OR 1 1 25 VAL H    1 1 25 VAL HG12 . 4.15 . . . 1.8 6.5 1.0 A 109 VAL H    HN   A 109 VAL HG12 HG*  0932 1 
+130 56  1 . OR 1 1 25 VAL H    1 1 25 VAL HG13 . 4.15 . . . 1.8 6.5 1.0 A 109 VAL H    HN   A 109 VAL HG13 HG*  0932 1 
+131 56  1 . OR 1 1 25 VAL H    1 1 25 VAL HG21 . 4.15 . . . 1.8 6.5 1.0 A 109 VAL H    HN   A 109 VAL HG21 HG*  0932 1 
+132 56  1 . OR 1 1 25 VAL H    1 1 25 VAL HG22 . 4.15 . . . 1.8 6.5 1.0 A 109 VAL H    HN   A 109 VAL HG22 HG*  0932 1 
+133 56  1 . OR 1 1 25 VAL H    1 1 25 VAL HG23 . 4.15 . . . 1.8 6.5 1.0 A 109 VAL H    HN   A 109 VAL HG23 HG*  0932 1 
+134 56  2 . .  1 1 25 VAL H    1 1 25 VAL HG22 . 4.15 . . . 1.8 6.5 1.0 A 109 VAL H    HN   A 109 VAL HG22 HG22 0932 1 
+135 57  . . .  1 1 20 ILE H    1 1 20 ILE HB   . 3.4  . . . 1.8 5.0 1.0 A 104 ILE H    HN   A 104 ILE HB   HB   0932 1 
+136 58  . . .  1 1 20 ILE H    1 1 20 ILE HG12 . 3.9  . . . 1.8 6.0 1.0 A 104 ILE H    HN   A 104 ILE HG12 HG12 0932 1 
+137 59  . . .  1 1 5  TYR H    1 1 4  ARG HG2  . 3.9  . . . 1.8 6.0 1.0 A 89  TYR H    HN   A 88  ARG HG2  HG2  0932 1 
+138 60  1 . .  1 1 22 SER H    1 1 4  ARG HG2  . 3.9  . . . 1.8 6.0 1.0 A 106 SER H    HN   A 88  ARG HG2  HG2  0932 1 
+139 60  2 . OR 1 1 35 ASN H    1 1 6  ARG HG2  . 3.9  . . . 1.8 6.0 1.0 A 119 ASN H    HN   A 90  ARG HG2  HG*  0932 1 
+140 60  2 . OR 1 1 35 ASN H    1 1 6  ARG HG3  . 3.9  . . . 1.8 6.0 1.0 A 119 ASN H    HN   A 90  ARG HG3  HG*  0932 1 
+141 60  3 . OR 1 1 10 ASN H    1 1 6  ARG HG2  . 3.9  . . . 1.8 6.0 1.0 A 94  ASN H    HN   A 90  ARG HG2  HG*  0932 1 
+142 60  3 . OR 1 1 10 ASN H    1 1 6  ARG HG3  . 3.9  . . . 1.8 6.0 1.0 A 94  ASN H    HN   A 90  ARG HG3  HG*  0932 1 
+143 61  1 . OR 1 1 6  ARG H    1 1 9  LEU HB2  . 2.55 . . . 1.8 5.0 1.0 A 90  ARG H    HN   A 93  LEU HB2  HB*  0932 1 
+144 61  1 . OR 1 1 6  ARG H    1 1 9  LEU HB3  . 2.55 . . . 1.8 5.0 1.0 A 90  ARG H    HN   A 93  LEU HB3  HB*  0932 1 
+145 61  2 . OR 1 1 7  LYS H    1 1 9  LEU HB2  . 2.55 . . . 1.8 5.0 1.0 A 91  LYS H    HN   A 93  LEU HB2  HB*  0932 1 
+146 61  2 . OR 1 1 7  LYS H    1 1 9  LEU HB3  . 2.55 . . . 1.8 5.0 1.0 A 91  LYS H    HN   A 93  LEU HB3  HB*  0932 1 
+147 62  1 . OR 1 1 31 SER H    1 1 4  ARG HB2  . 3.4  . . . 1.8 5.0 1.0 A 115 SER H    HN   A 88  ARG HB2  HB*  0932 1 
+148 62  1 . OR 1 1 31 SER H    1 1 4  ARG HB3  . 3.4  . . . 1.8 5.0 1.0 A 115 SER H    HN   A 88  ARG HB3  HB*  0932 1 
+149 62  2 . OR 1 1 6  ARG H    1 1 4  ARG HB2  . 3.4  . . . 1.8 5.0 1.0 A 90  ARG H    HN   A 88  ARG HB2  HB*  0932 1 
+150 62  2 . OR 1 1 6  ARG H    1 1 4  ARG HB3  . 3.4  . . . 1.8 5.0 1.0 A 90  ARG H    HN   A 88  ARG HB3  HB*  0932 1 
+151 62  3 . OR 1 1 7  LYS H    1 1 2  ARG HB2  . 3.4  . . . 1.8 5.0 1.0 A 91  LYS H    HN   A 86  ARG HB2  HB*  0932 1 
+152 62  3 . OR 1 1 7  LYS H    1 1 2  ARG HB3  . 3.4  . . . 1.8 5.0 1.0 A 91  LYS H    HN   A 86  ARG HB3  HB*  0932 1 
+153 62  4 . OR 1 1 7  LYS H    1 1 4  ARG HB2  . 3.4  . . . 1.8 5.0 1.0 A 91  LYS H    HN   A 88  ARG HB2  HB*  0932 1 
+154 62  4 . OR 1 1 7  LYS H    1 1 4  ARG HB3  . 3.4  . . . 1.8 5.0 1.0 A 91  LYS H    HN   A 88  ARG HB3  HB*  0932 1 
+155 62  5 . OR 1 1 32 ALA H    1 1 4  ARG HB2  . 3.4  . . . 1.8 5.0 1.0 A 116 ALA H    HN   A 88  ARG HB2  HB*  0932 1 
+156 62  5 . OR 1 1 32 ALA H    1 1 4  ARG HB3  . 3.4  . . . 1.8 5.0 1.0 A 116 ALA H    HN   A 88  ARG HB3  HB*  0932 1 
+157 62  6 . OR 1 1 33 MET H    1 1 4  ARG HB2  . 3.4  . . . 1.8 5.0 1.0 A 117 MET H    HN   A 88  ARG HB2  HB*  0932 1 
+158 62  6 . OR 1 1 33 MET H    1 1 4  ARG HB3  . 3.4  . . . 1.8 5.0 1.0 A 117 MET H    HN   A 88  ARG HB3  HB*  0932 1 
+159 62  7 . OR 1 1 6  ARG H    1 1 2  ARG HB2  . 3.4  . . . 1.8 5.0 1.0 A 90  ARG H    HN   A 86  ARG HB2  HB*  0932 1 
+160 62  7 . OR 1 1 6  ARG H    1 1 2  ARG HB3  . 3.4  . . . 1.8 5.0 1.0 A 90  ARG H    HN   A 86  ARG HB3  HB*  0932 1 
+161 63  1 . OR 1 1 13 TYR H    1 1 14 LYS HD2  . 3.4  . . . 1.8 5.0 1.0 A 97  TYR H    HN   A 98  LYS HD2  HD*  0932 1 
+162 63  1 . OR 1 1 13 TYR H    1 1 14 LYS HD3  . 3.4  . . . 1.8 5.0 1.0 A 97  TYR H    HN   A 98  LYS HD3  HD*  0932 1 
+163 63  2 . OR 1 1 13 TYR H    1 1 21 ARG HG2  . 3.4  . . . 1.8 5.0 1.0 A 97  TYR H    HN   A 105 ARG HG2  HG*  0932 1 
+164 63  2 . OR 1 1 13 TYR H    1 1 21 ARG HG3  . 3.4  . . . 1.8 5.0 1.0 A 97  TYR H    HN   A 105 ARG HG3  HG*  0932 1 
+165 64  1 . OR 1 1 24 ASP H    1 1 5  TYR HB2  . 3.9  . . . 1.8 6.0 1.0 A 108 ASP H    HN   A 89  TYR HB2  HB*  0932 1 
+166 64  1 . OR 1 1 24 ASP H    1 1 5  TYR HB3  . 3.9  . . . 1.8 6.0 1.0 A 108 ASP H    HN   A 89  TYR HB3  HB*  0932 1 
+167 64  2 . OR 1 1 15 HIS H    1 1 19 TYR HB2  . 3.9  . . . 1.8 6.0 1.0 A 99  HIS H    HN   A 103 TYR HB2  HB*  0932 1 
+168 64  2 . OR 1 1 15 HIS H    1 1 19 TYR HB3  . 3.9  . . . 1.8 6.0 1.0 A 99  HIS H    HN   A 103 TYR HB3  HB*  0932 1 
+169 64  3 . .  1 1 15 HIS H    1 1 19 TYR HB2  . 3.9  . . . 1.8 6.0 1.0 A 99  HIS H    HN   A 103 TYR HB2  HB2  0932 1 
+170 64  4 . OR 1 1 24 ASP H    1 1 19 TYR HB2  . 3.9  . . . 1.8 6.0 1.0 A 108 ASP H    HN   A 103 TYR HB2  HB*  0932 1 
+171 64  4 . OR 1 1 24 ASP H    1 1 19 TYR HB3  . 3.9  . . . 1.8 6.0 1.0 A 108 ASP H    HN   A 103 TYR HB3  HB*  0932 1 
+172 64  5 . .  1 1 24 ASP H    1 1 19 TYR HB2  . 3.9  . . . 1.8 6.0 1.0 A 108 ASP H    HN   A 103 TYR HB2  HB2  0932 1 
+173 64  6 . OR 1 1 26 ASP H    1 1 19 TYR HB2  . 3.9  . . . 1.8 6.0 1.0 A 110 ASP H    HN   A 103 TYR HB2  HB*  0932 1 
+174 64  6 . OR 1 1 26 ASP H    1 1 19 TYR HB3  . 3.9  . . . 1.8 6.0 1.0 A 110 ASP H    HN   A 103 TYR HB3  HB*  0932 1 
+175 65  1 . OR 1 1 5  TYR H    1 1 10 ASN HB2  . 3.4  . . . 1.8 5.0 1.0 A 89  TYR H    HN   A 94  ASN HB2  HB*  0932 1 
+176 65  1 . OR 1 1 5  TYR H    1 1 10 ASN HB3  . 3.4  . . . 1.8 5.0 1.0 A 89  TYR H    HN   A 94  ASN HB3  HB*  0932 1 
+177 65  2 . OR 1 1 8  PHE H    1 1 10 ASN HB2  . 3.4  . . . 1.8 5.0 1.0 A 92  PHE H    HN   A 94  ASN HB2  HB*  0932 1 
+178 65  2 . OR 1 1 8  PHE H    1 1 10 ASN HB3  . 3.4  . . . 1.8 5.0 1.0 A 92  PHE H    HN   A 94  ASN HB3  HB*  0932 1 
+179 65  3 . OR 1 1 11 GLU H    1 1 10 ASN HB2  . 3.4  . . . 1.8 5.0 1.0 A 95  GLU H    HN   A 94  ASN HB2  HB*  0932 1 
+180 65  3 . OR 1 1 11 GLU H    1 1 10 ASN HB3  . 3.4  . . . 1.8 5.0 1.0 A 95  GLU H    HN   A 94  ASN HB3  HB*  0932 1 
+181 65  4 . .  1 1 11 GLU H    1 1 24 ASP HB2  . 3.4  . . . 1.8 5.0 1.0 A 95  GLU H    HN   A 108 ASP HB2  HB2  0932 1 
+182 65  5 . OR 1 1 16 GLU H    1 1 10 ASN HB2  . 3.4  . . . 1.8 5.0 1.0 A 100 GLU H    HN   A 94  ASN HB2  HB*  0932 1 
+183 65  5 . OR 1 1 16 GLU H    1 1 10 ASN HB3  . 3.4  . . . 1.8 5.0 1.0 A 100 GLU H    HN   A 94  ASN HB3  HB*  0932 1 
+184 66  1 . .  1 1 12 SER H    1 1 24 ASP HB2  . 3.4  . . . 1.8 5.0 1.0 A 96  SER H    HN   A 108 ASP HB2  HB2  0932 1 
+185 66  2 . .  1 1 27 ARG H    1 1 24 ASP HB2  . 3.4  . . . 1.8 5.0 1.0 A 111 ARG H    HN   A 108 ASP HB2  HB2  0932 1 
+186 66  3 . OR 1 1 27 ARG H    1 1 35 ASN HB2  . 3.4  . . . 1.8 5.0 1.0 A 111 ARG H    HN   A 119 ASN HB2  HB*  0932 1 
+187 66  3 . OR 1 1 27 ARG H    1 1 35 ASN HB3  . 3.4  . . . 1.8 5.0 1.0 A 111 ARG H    HN   A 119 ASN HB3  HB*  0932 1 
+188 66  4 . OR 1 1 12 SER H    1 1 10 ASN HB2  . 3.4  . . . 1.8 5.0 1.0 A 96  SER H    HN   A 94  ASN HB2  HB*  0932 1 
+189 66  4 . OR 1 1 12 SER H    1 1 10 ASN HB3  . 3.4  . . . 1.8 5.0 1.0 A 96  SER H    HN   A 94  ASN HB3  HB*  0932 1 
+190 67  1 . OR 1 1 24 ASP H    1 1 10 ASN HB2  . 3.9  . . . 1.8 6.0 1.0 A 108 ASP H    HN   A 94  ASN HB2  HB*  0932 1 
+191 67  1 . OR 1 1 24 ASP H    1 1 10 ASN HB3  . 3.9  . . . 1.8 6.0 1.0 A 108 ASP H    HN   A 94  ASN HB3  HB*  0932 1 
+192 67  2 . OR 1 1 24 ASP H    1 1 35 ASN HB2  . 3.9  . . . 1.8 6.0 1.0 A 108 ASP H    HN   A 119 ASN HB2  HB*  0932 1 
+193 67  2 . OR 1 1 24 ASP H    1 1 35 ASN HB3  . 3.9  . . . 1.8 6.0 1.0 A 108 ASP H    HN   A 119 ASN HB3  HB*  0932 1 
+194 67  3 . OR 1 1 26 ASP H    1 1 10 ASN HB2  . 3.9  . . . 1.8 6.0 1.0 A 110 ASP H    HN   A 94  ASN HB2  HB*  0932 1 
+195 67  3 . OR 1 1 26 ASP H    1 1 10 ASN HB3  . 3.9  . . . 1.8 6.0 1.0 A 110 ASP H    HN   A 94  ASN HB3  HB*  0932 1 
+196 67  4 . OR 1 1 26 ASP H    1 1 35 ASN HB2  . 3.9  . . . 1.8 6.0 1.0 A 110 ASP H    HN   A 119 ASN HB2  HB*  0932 1 
+197 67  4 . OR 1 1 26 ASP H    1 1 35 ASN HB3  . 3.9  . . . 1.8 6.0 1.0 A 110 ASP H    HN   A 119 ASN HB3  HB*  0932 1 
+198 67  5 . OR 1 1 15 HIS H    1 1 10 ASN HB2  . 3.9  . . . 1.8 6.0 1.0 A 99  HIS H    HN   A 94  ASN HB2  HB*  0932 1 
+199 67  5 . OR 1 1 15 HIS H    1 1 10 ASN HB3  . 3.9  . . . 1.8 6.0 1.0 A 99  HIS H    HN   A 94  ASN HB3  HB*  0932 1 
+200 68  1 . OR 1 1 19 TYR H    1 1 10 ASN HB2  . 3.9  . . . 1.8 6.0 1.0 A 103 TYR H    HN   A 94  ASN HB2  HB*  0932 1 
+201 68  1 . OR 1 1 19 TYR H    1 1 10 ASN HB3  . 3.9  . . . 1.8 6.0 1.0 A 103 TYR H    HN   A 94  ASN HB3  HB*  0932 1 
+202 68  2 . OR 1 1 27 ARG H    1 1 35 ASN HB2  . 3.9  . . . 1.8 6.0 1.0 A 111 ARG H    HN   A 119 ASN HB2  HB*  0932 1 
+203 68  2 . OR 1 1 27 ARG H    1 1 35 ASN HB3  . 3.9  . . . 1.8 6.0 1.0 A 111 ARG H    HN   A 119 ASN HB3  HB*  0932 1 
+204 68  3 . OR 1 1 4  ARG H    1 1 10 ASN HB2  . 3.9  . . . 1.8 6.0 1.0 A 88  ARG H    HN   A 94  ASN HB2  HB*  0932 1 
+205 68  3 . OR 1 1 4  ARG H    1 1 10 ASN HB3  . 3.9  . . . 1.8 6.0 1.0 A 88  ARG H    HN   A 94  ASN HB3  HB*  0932 1 
+206 68  4 . OR 1 1 12 SER H    1 1 10 ASN HB2  . 3.9  . . . 1.8 6.0 1.0 A 96  SER H    HN   A 94  ASN HB2  HB*  0932 1 
+207 68  4 . OR 1 1 12 SER H    1 1 10 ASN HB3  . 3.9  . . . 1.8 6.0 1.0 A 96  SER H    HN   A 94  ASN HB3  HB*  0932 1 
+208 69  1 . OR 1 1 24 ASP H    1 1 35 ASN HB2  . 3.9  . . . 1.8 6.0 1.0 A 108 ASP H    HN   A 119 ASN HB2  HB*  0932 1 
+209 69  1 . OR 1 1 24 ASP H    1 1 35 ASN HB3  . 3.9  . . . 1.8 6.0 1.0 A 108 ASP H    HN   A 119 ASN HB3  HB*  0932 1 
+210 69  2 . OR 1 1 26 ASP H    1 1 35 ASN HB2  . 3.9  . . . 1.8 6.0 1.0 A 110 ASP H    HN   A 119 ASN HB2  HB*  0932 1 
+211 69  2 . OR 1 1 26 ASP H    1 1 35 ASN HB3  . 3.9  . . . 1.8 6.0 1.0 A 110 ASP H    HN   A 119 ASN HB3  HB*  0932 1 
+212 70  . . .  1 1 11 GLU H    1 1 10 ASN HB2  . 2.55 . . . 1.8 5.0 1.0 A 95  GLU H    HN   A 94  ASN HB2  HB2  0932 1 
+213 71  1 . OR 1 1 23 THR H    1 1 5  TYR HB2  . 3.9  . . . 1.8 6.0 1.0 A 107 THR H    HN   A 89  TYR HB2  HB*  0932 1 
+214 71  1 . OR 1 1 23 THR H    1 1 5  TYR HB3  . 3.9  . . . 1.8 6.0 1.0 A 107 THR H    HN   A 89  TYR HB3  HB*  0932 1 
+215 71  2 . OR 1 1 23 THR H    1 1 19 TYR HB2  . 3.9  . . . 1.8 6.0 1.0 A 107 THR H    HN   A 103 TYR HB2  HB*  0932 1 
+216 71  2 . OR 1 1 23 THR H    1 1 19 TYR HB3  . 3.9  . . . 1.8 6.0 1.0 A 107 THR H    HN   A 103 TYR HB3  HB*  0932 1 
+217 71  3 . .  1 1 23 THR H    1 1 19 TYR HB2  . 3.9  . . . 1.8 6.0 1.0 A 107 THR H    HN   A 103 TYR HB2  HB2  0932 1 
+218 72  1 . .  1 1 23 THR H    1 1 5  TYR HB2  . 3.9  . . . 1.8 6.0 1.0 A 107 THR H    HN   A 89  TYR HB2  HB2  0932 1 
+219 72  2 . OR 1 1 30 MET H    1 1 3  LYS HE2  . 3.9  . . . 1.8 6.0 1.0 A 114 MET H    HN   A 87  LYS HE2  HE*  0932 1 
+220 72  2 . OR 1 1 30 MET H    1 1 3  LYS HE3  . 3.9  . . . 1.8 6.0 1.0 A 114 MET H    HN   A 87  LYS HE3  HE*  0932 1 
+221 73  1 . .  1 1 23 THR H    1 1 5  TYR HB2  . 3.9  . . . 1.8 6.0 1.0 A 107 THR H    HN   A 89  TYR HB2  HB2  0932 1 
+222 73  2 . OR 1 1 23 THR H    1 1 13 TYR HB2  . 3.9  . . . 1.8 6.0 1.0 A 107 THR H    HN   A 97  TYR HB2  HB*  0932 1 
+223 73  2 . OR 1 1 23 THR H    1 1 13 TYR HB3  . 3.9  . . . 1.8 6.0 1.0 A 107 THR H    HN   A 97  TYR HB3  HB*  0932 1 
+224 73  3 . .  1 1 23 THR H    1 1 13 TYR HB2  . 3.9  . . . 1.8 6.0 1.0 A 107 THR H    HN   A 97  TYR HB2  HB2  0932 1 
+225 73  4 . .  1 1 6  ARG H    1 1 5  TYR HB2  . 3.9  . . . 1.8 6.0 1.0 A 90  ARG H    HN   A 89  TYR HB2  HB2  0932 1 
+226 73  5 . .  1 1 7  LYS H    1 1 5  TYR HB2  . 3.9  . . . 1.8 6.0 1.0 A 91  LYS H    HN   A 89  TYR HB2  HB2  0932 1 
+227 74  1 . .  1 1 25 VAL H    1 1 23 THR HB   . 3.4  . . . 1.8 5.0 1.0 A 109 VAL H    HN   A 107 THR HB   HB   0932 1 
+228 74  2 . .  1 1 34 THR H    1 1 23 THR HB   . 3.4  . . . 1.8 5.0 1.0 A 118 THR H    HN   A 107 THR HB   HB   0932 1 
+229 74  3 . .  1 1 13 TYR H    1 1 23 THR HB   . 3.4  . . . 1.8 5.0 1.0 A 97  TYR H    HN   A 107 THR HB   HB   0932 1 
+230 75  . . OR 1 1 31 SER H    1 1 31 SER HB2  . 3.9  . . . 1.8 6.0 1.0 A 115 SER H    HN   A 115 SER HB2  HB*  0932 1 
+231 75  . . OR 1 1 31 SER H    1 1 31 SER HB3  . 3.9  . . . 1.8 6.0 1.0 A 115 SER H    HN   A 115 SER HB3  HB*  0932 1 
+232 76  . . .  1 1 3  LYS H    1 1 3  LYS HA   . 3.9  . . . 1.8 6.0 1.0 A 87  LYS H    HN   A 87  LYS HA   HA   0932 1 
+233 77  1 . OR 1 1 9  LEU H    1 1 16 GLU HB2  . 4.15 . . . 1.8 6.5 1.0 A 93  LEU H    HN   A 100 GLU HB2  HB*  0932 1 
+234 77  1 . OR 1 1 9  LEU H    1 1 16 GLU HB3  . 4.15 . . . 1.8 6.5 1.0 A 93  LEU H    HN   A 100 GLU HB3  HB*  0932 1 
+235 77  2 . OR 1 1 9  LEU H    1 1 33 MET HE1  . 4.15 . . . 1.8 6.5 1.0 A 93  LEU H    HN   A 117 MET HE1  HE*  0932 1 
+236 77  2 . OR 1 1 9  LEU H    1 1 33 MET HE2  . 4.15 . . . 1.8 6.5 1.0 A 93  LEU H    HN   A 117 MET HE2  HE*  0932 1 
+237 77  2 . OR 1 1 9  LEU H    1 1 33 MET HE3  . 4.15 . . . 1.8 6.5 1.0 A 93  LEU H    HN   A 117 MET HE3  HE*  0932 1 
+238 78  1 . OR 1 1 23 THR H    1 1 16 GLU HB2  . 4.15 . . . 1.8 6.5 1.0 A 107 THR H    HN   A 100 GLU HB2  HB*  0932 1 
+239 78  1 . OR 1 1 23 THR H    1 1 16 GLU HB3  . 4.15 . . . 1.8 6.5 1.0 A 107 THR H    HN   A 100 GLU HB3  HB*  0932 1 
+240 78  2 . .  1 1 23 THR H    1 1 25 VAL HB   . 4.15 . . . 1.8 6.5 1.0 A 107 THR H    HN   A 109 VAL HB   HB   0932 1 
+241 78  3 . OR 1 1 23 THR H    1 1 33 MET HE1  . 4.15 . . . 1.8 6.5 1.0 A 107 THR H    HN   A 117 MET HE1  HE*  0932 1 
+242 78  3 . OR 1 1 23 THR H    1 1 33 MET HE2  . 4.15 . . . 1.8 6.5 1.0 A 107 THR H    HN   A 117 MET HE2  HE*  0932 1 
+243 78  3 . OR 1 1 23 THR H    1 1 33 MET HE3  . 4.15 . . . 1.8 6.5 1.0 A 107 THR H    HN   A 117 MET HE3  HE*  0932 1 
+244 78  4 . OR 1 1 30 MET H    1 1 33 MET HE1  . 4.15 . . . 1.8 6.5 1.0 A 114 MET H    HN   A 117 MET HE1  HE*  0932 1 
+245 78  4 . OR 1 1 30 MET H    1 1 33 MET HE2  . 4.15 . . . 1.8 6.5 1.0 A 114 MET H    HN   A 117 MET HE2  HE*  0932 1 
+246 78  4 . OR 1 1 30 MET H    1 1 33 MET HE3  . 4.15 . . . 1.8 6.5 1.0 A 114 MET H    HN   A 117 MET HE3  HE*  0932 1 
+247 78  5 . OR 1 1 6  ARG H    1 1 33 MET HE1  . 4.15 . . . 1.8 6.5 1.0 A 90  ARG H    HN   A 117 MET HE1  HE*  0932 1 
+248 78  5 . OR 1 1 6  ARG H    1 1 33 MET HE2  . 4.15 . . . 1.8 6.5 1.0 A 90  ARG H    HN   A 117 MET HE2  HE*  0932 1 
+249 78  5 . OR 1 1 6  ARG H    1 1 33 MET HE3  . 4.15 . . . 1.8 6.5 1.0 A 90  ARG H    HN   A 117 MET HE3  HE*  0932 1 
+250 78  6 . OR 1 1 7  LYS H    1 1 16 GLU HB2  . 4.15 . . . 1.8 6.5 1.0 A 91  LYS H    HN   A 100 GLU HB2  HB*  0932 1 
+251 78  6 . OR 1 1 7  LYS H    1 1 16 GLU HB3  . 4.15 . . . 1.8 6.5 1.0 A 91  LYS H    HN   A 100 GLU HB3  HB*  0932 1 
+252 79  1 . OR 1 1 9  LEU H    1 1 16 GLU HB2  . 4.15 . . . 1.8 6.5 1.0 A 93  LEU H    HN   A 100 GLU HB2  HB*  0932 1 
+253 79  1 . OR 1 1 9  LEU H    1 1 16 GLU HB3  . 4.15 . . . 1.8 6.5 1.0 A 93  LEU H    HN   A 100 GLU HB3  HB*  0932 1 
+254 79  2 . OR 1 1 9  LEU H    1 1 33 MET HE1  . 4.15 . . . 1.8 6.5 1.0 A 93  LEU H    HN   A 117 MET HE1  HE*  0932 1 
+255 79  2 . OR 1 1 9  LEU H    1 1 33 MET HE2  . 4.15 . . . 1.8 6.5 1.0 A 93  LEU H    HN   A 117 MET HE2  HE*  0932 1 
+256 79  2 . OR 1 1 9  LEU H    1 1 33 MET HE3  . 4.15 . . . 1.8 6.5 1.0 A 93  LEU H    HN   A 117 MET HE3  HE*  0932 1 
+257 80  . . .  1 1 6  ARG H    1 1 11 GLU HB2  . 3.9  . . . 1.8 6.0 1.0 A 90  ARG H    HN   A 95  GLU HB2  HB2  0932 1 
+258 81  1 . OR 1 1 24 ASP H    1 1 11 GLU HB2  . 3.9  . . . 1.8 6.0 1.0 A 108 ASP H    HN   A 95  GLU HB2  HB*  0932 1 
+259 81  1 . OR 1 1 24 ASP H    1 1 11 GLU HB3  . 3.9  . . . 1.8 6.0 1.0 A 108 ASP H    HN   A 95  GLU HB3  HB*  0932 1 
+260 81  2 . OR 1 1 26 ASP H    1 1 11 GLU HB2  . 3.9  . . . 1.8 6.0 1.0 A 110 ASP H    HN   A 95  GLU HB2  HB*  0932 1 
+261 81  2 . OR 1 1 26 ASP H    1 1 11 GLU HB3  . 3.9  . . . 1.8 6.0 1.0 A 110 ASP H    HN   A 95  GLU HB3  HB*  0932 1 
+262 81  3 . OR 1 1 15 HIS H    1 1 11 GLU HB2  . 3.9  . . . 1.8 6.0 1.0 A 99  HIS H    HN   A 95  GLU HB2  HB*  0932 1 
+263 81  3 . OR 1 1 15 HIS H    1 1 11 GLU HB3  . 3.9  . . . 1.8 6.0 1.0 A 99  HIS H    HN   A 95  GLU HB3  HB*  0932 1 
+264 82  1 . .  1 1 31 SER H    1 1 30 MET HG2  . 3.9  . . . 1.8 6.0 1.0 A 115 SER H    HN   A 114 MET HG2  HG2  0932 1 
+265 82  2 . .  1 1 32 ALA H    1 1 30 MET HG2  . 3.9  . . . 1.8 6.0 1.0 A 116 ALA H    HN   A 114 MET HG2  HG2  0932 1 
+266 82  3 . .  1 1 33 MET H    1 1 30 MET HG2  . 3.9  . . . 1.8 6.0 1.0 A 117 MET H    HN   A 114 MET HG2  HG2  0932 1 
+267 83  1 . OR 1 1 31 SER H    1 1 30 MET HG2  . 3.9  . . . 1.8 6.0 1.0 A 115 SER H    HN   A 114 MET HG2  HG*  0932 1 
+268 83  1 . OR 1 1 31 SER H    1 1 30 MET HG3  . 3.9  . . . 1.8 6.0 1.0 A 115 SER H    HN   A 114 MET HG3  HG*  0932 1 
+269 83  2 . OR 1 1 32 ALA H    1 1 30 MET HG2  . 3.9  . . . 1.8 6.0 1.0 A 116 ALA H    HN   A 114 MET HG2  HG*  0932 1 
+270 83  2 . OR 1 1 32 ALA H    1 1 30 MET HG3  . 3.9  . . . 1.8 6.0 1.0 A 116 ALA H    HN   A 114 MET HG3  HG*  0932 1 
+271 83  3 . OR 1 1 33 MET H    1 1 30 MET HG2  . 3.9  . . . 1.8 6.0 1.0 A 117 MET H    HN   A 114 MET HG2  HG*  0932 1 
+272 83  3 . OR 1 1 33 MET H    1 1 30 MET HG3  . 3.9  . . . 1.8 6.0 1.0 A 117 MET H    HN   A 114 MET HG3  HG*  0932 1 
+273 84  1 . OR 1 1 14 LYS H    1 1 17 GLN HG2  . 3.9  . . . 1.8 6.0 1.0 A 98  LYS H    HN   A 101 GLN HG2  HG*  0932 1 
+274 84  1 . OR 1 1 14 LYS H    1 1 17 GLN HG3  . 3.9  . . . 1.8 6.0 1.0 A 98  LYS H    HN   A 101 GLN HG3  HG*  0932 1 
+275 84  2 . OR 1 1 18 VAL H    1 1 17 GLN HG2  . 3.9  . . . 1.8 6.0 1.0 A 102 VAL H    HN   A 101 GLN HG2  HG*  0932 1 
+276 84  2 . OR 1 1 18 VAL H    1 1 17 GLN HG3  . 3.9  . . . 1.8 6.0 1.0 A 102 VAL H    HN   A 101 GLN HG3  HG*  0932 1 
+277 85  . . .  1 1 10 ASN HB2  1 1 10 ASN H    . 3.4  . . . 1.8 5.0 1.0 A 94  ASN HB2  HB2  A 94  ASN H    HN   0932 1 
+278 86  1 . OR 1 1 24 ASP HB2  1 1 5  TYR H    . 3.4  . . . 1.8 5.0 1.0 A 108 ASP HB2  HB*  A 89  TYR H    HN   0932 1 
+279 86  1 . OR 1 1 24 ASP HB3  1 1 5  TYR H    . 3.4  . . . 1.8 5.0 1.0 A 108 ASP HB3  HB*  A 89  TYR H    HN   0932 1 
+280 86  2 . OR 1 1 10 ASN HB2  1 1 11 GLU H    . 3.4  . . . 1.8 5.0 1.0 A 94  ASN HB2  HB*  A 95  GLU H    HN   0932 1 
+281 86  2 . OR 1 1 10 ASN HB3  1 1 11 GLU H    . 3.4  . . . 1.8 5.0 1.0 A 94  ASN HB3  HB*  A 95  GLU H    HN   0932 1 
+282 86  3 . OR 1 1 10 ASN HB2  1 1 21 ARG H    . 3.4  . . . 1.8 5.0 1.0 A 94  ASN HB2  HB*  A 105 ARG H    HN   0932 1 
+283 86  3 . OR 1 1 10 ASN HB3  1 1 21 ARG H    . 3.4  . . . 1.8 5.0 1.0 A 94  ASN HB3  HB*  A 105 ARG H    HN   0932 1 
+284 86  4 . OR 1 1 24 ASP HB2  1 1 11 GLU H    . 3.4  . . . 1.8 5.0 1.0 A 108 ASP HB2  HB*  A 95  GLU H    HN   0932 1 
+285 86  4 . OR 1 1 24 ASP HB3  1 1 11 GLU H    . 3.4  . . . 1.8 5.0 1.0 A 108 ASP HB3  HB*  A 95  GLU H    HN   0932 1 
+286 86  5 . OR 1 1 24 ASP HB2  1 1 21 ARG H    . 3.4  . . . 1.8 5.0 1.0 A 108 ASP HB2  HB*  A 105 ARG H    HN   0932 1 
+287 86  5 . OR 1 1 24 ASP HB3  1 1 21 ARG H    . 3.4  . . . 1.8 5.0 1.0 A 108 ASP HB3  HB*  A 105 ARG H    HN   0932 1 
+288 86  6 . .  1 1 24 ASP HB2  1 1 11 GLU H    . 3.4  . . . 1.8 5.0 1.0 A 108 ASP HB2  HB2  A 95  GLU H    HN   0932 1 
+289 86  7 . .  1 1 24 ASP HB2  1 1 21 ARG H    . 3.4  . . . 1.8 5.0 1.0 A 108 ASP HB2  HB2  A 105 ARG H    HN   0932 1 
+290 86  8 . OR 1 1 10 ASN HB2  1 1 5  TYR H    . 3.4  . . . 1.8 5.0 1.0 A 94  ASN HB2  HB*  A 89  TYR H    HN   0932 1 
+291 86  8 . OR 1 1 10 ASN HB3  1 1 5  TYR H    . 3.4  . . . 1.8 5.0 1.0 A 94  ASN HB3  HB*  A 89  TYR H    HN   0932 1 
+292 86  9 . OR 1 1 10 ASN HB2  1 1 8  PHE H    . 3.4  . . . 1.8 5.0 1.0 A 94  ASN HB2  HB*  A 92  PHE H    HN   0932 1 
+293 86  9 . OR 1 1 10 ASN HB3  1 1 8  PHE H    . 3.4  . . . 1.8 5.0 1.0 A 94  ASN HB3  HB*  A 92  PHE H    HN   0932 1 
+294 87  . . .  1 1 5  TYR HB2  1 1 19 TYR H    . 2.55 . . . 1.8 5.0 1.0 A 89  TYR HB2  HB2  A 103 TYR H    HN   0932 1 
+295 88  . . .  1 1 19 TYR HB2  1 1 19 TYR H    . 2.55 . . . 1.8 5.0 1.0 A 103 TYR HB2  HB2  A 103 TYR H    HN   0932 1 
+296 89  1 . OR 1 1 26 ASP HB2  1 1 25 VAL H    . 3.4  . . . 1.8 5.0 1.0 A 110 ASP HB2  HB*  A 109 VAL H    HN   0932 1 
+297 89  1 . OR 1 1 26 ASP HB3  1 1 25 VAL H    . 3.4  . . . 1.8 5.0 1.0 A 110 ASP HB3  HB*  A 109 VAL H    HN   0932 1 
+298 89  2 . OR 1 1 26 ASP HB2  1 1 34 THR H    . 3.4  . . . 1.8 5.0 1.0 A 110 ASP HB2  HB*  A 118 THR H    HN   0932 1 
+299 89  2 . OR 1 1 26 ASP HB3  1 1 34 THR H    . 3.4  . . . 1.8 5.0 1.0 A 110 ASP HB3  HB*  A 118 THR H    HN   0932 1 
+300 89  3 . OR 1 1 5  TYR HB2  1 1 25 VAL H    . 3.4  . . . 1.8 5.0 1.0 A 89  TYR HB2  HB*  A 109 VAL H    HN   0932 1 
+301 89  3 . OR 1 1 5  TYR HB3  1 1 25 VAL H    . 3.4  . . . 1.8 5.0 1.0 A 89  TYR HB3  HB*  A 109 VAL H    HN   0932 1 
+302 90  . . .  1 1 1  ILE HA   1 1 2  ARG H    . 3.4  . . . 1.8 5.0 1.0 A 85  ILE HA   HA   A 86  ARG H    HN   0932 1 
+303 91  . . .  1 1 17 GLN HA   1 1 17 GLN H    . 3.4  . . . 1.8 5.0 1.0 A 101 GLN HA   HA   A 101 GLN H    HN   0932 1 
+304 92  . . .  1 1 25 VAL HA   1 1 26 ASP H    . 2.55 . . . 1.8 3.3 1.0 A 109 VAL HA   HA   A 110 ASP H    HN   0932 1 
+305 93  . . .  1 1 21 ARG HA   1 1 21 ARG H    . 2.55 . . . 1.8 3.3 1.0 A 105 ARG HA   HA   A 105 ARG H    HN   0932 1 
+306 94  . . .  1 1 18 VAL HA   1 1 19 TYR H    . 2.25 . . . 1.8 3.3 1.0 A 102 VAL HA   HA   A 103 TYR H    HN   0932 1 
+307 95  . . .  1 1 3  LYS HA   1 1 32 ALA H    . 2.55 . . . 1.8 5.0 1.0 A 87  LYS HA   HA   A 116 ALA H    HN   0932 1 
+308 96  . . .  1 1 6  ARG HA   1 1 6  ARG H    . 2.55 . . . 1.8 3.3 1.0 A 90  ARG HA   HA   A 90  ARG H    HN   0932 1 
+309 97  . . .  1 1 23 THR HB   1 1 20 ILE H    . 2.55 . . . 1.8 6.0 1.0 A 107 THR HB   HB   A 104 ILE H    HN   0932 1 
+310 98  1 . .  1 1 27 ARG HA   1 1 25 VAL H    . 3.9  . . . 1.8 6.0 1.0 A 111 ARG HA   HA   A 109 VAL H    HN   0932 1 
+311 98  2 . .  1 1 28 THR HA   1 1 25 VAL H    . 3.9  . . . 1.8 6.0 1.0 A 112 THR HA   HA   A 109 VAL H    HN   0932 1 
+312 98  3 . .  1 1 28 THR HB   1 1 25 VAL H    . 3.9  . . . 1.8 6.0 1.0 A 112 THR HB   HB   A 109 VAL H    HN   0932 1 
+313 98  4 . .  1 1 34 THR HA   1 1 25 VAL H    . 3.9  . . . 1.8 6.0 1.0 A 118 THR HA   HA   A 109 VAL H    HN   0932 1 
+314 98  5 . .  1 1 11 GLU HA   1 1 25 VAL H    . 3.9  . . . 1.8 6.0 1.0 A 95  GLU HA   HA   A 109 VAL H    HN   0932 1 
+315 99  . . OR 1 1 23 THR HG21 1 1 23 THR HA   . 2.8  . . . 1.8 3.8 1.0 A 107 THR HG21 HG2* A 107 THR HA   HA   0932 1 
+316 99  . . OR 1 1 23 THR HG22 1 1 23 THR HA   . 2.8  . . . 1.8 3.8 1.0 A 107 THR HG22 HG2* A 107 THR HA   HA   0932 1 
+317 99  . . OR 1 1 23 THR HG23 1 1 23 THR HA   . 2.8  . . . 1.8 3.8 1.0 A 107 THR HG23 HG2* A 107 THR HA   HA   0932 1 
+318 100 1 . OR 1 1 23 THR HG21 1 1 23 THR HB   . 3.65 . . . 1.8 5.5 1.0 A 107 THR HG21 HG2* A 107 THR HB   HB   0932 1 
+319 100 1 . OR 1 1 23 THR HG22 1 1 23 THR HB   . 3.65 . . . 1.8 5.5 1.0 A 107 THR HG22 HG2* A 107 THR HB   HB   0932 1 
+320 100 1 . OR 1 1 23 THR HG23 1 1 23 THR HB   . 3.65 . . . 1.8 5.5 1.0 A 107 THR HG23 HG2* A 107 THR HB   HB   0932 1 
+321 100 2 . OR 1 1 34 THR HG21 1 1 34 THR HB   . 3.65 . . . 1.8 5.5 1.0 A 118 THR HG21 HG2* A 118 THR HB   HB   0932 1 
+322 100 2 . OR 1 1 34 THR HG22 1 1 34 THR HB   . 3.65 . . . 1.8 5.5 1.0 A 118 THR HG22 HG2* A 118 THR HB   HB   0932 1 
+323 100 2 . OR 1 1 34 THR HG23 1 1 34 THR HB   . 3.65 . . . 1.8 5.5 1.0 A 118 THR HG23 HG2* A 118 THR HB   HB   0932 1 
+324 101 . . OR 1 1 26 ASP HB2  1 1 27 ARG HG2  . 2.25 . . . 1.8 5.0 1.0 A 110 ASP HB2  HB*  A 111 ARG HG2  HG*  0932 1 
+325 101 . . OR 1 1 26 ASP HB2  1 1 27 ARG HG3  . 2.25 . . . 1.8 5.0 1.0 A 110 ASP HB2  HB*  A 111 ARG HG3  HG*  0932 1 
+326 101 . . OR 1 1 26 ASP HB3  1 1 27 ARG HG2  . 2.25 . . . 1.8 5.0 1.0 A 110 ASP HB3  HB*  A 111 ARG HG2  HG*  0932 1 
+327 101 . . OR 1 1 26 ASP HB3  1 1 27 ARG HG3  . 2.25 . . . 1.8 5.0 1.0 A 110 ASP HB3  HB*  A 111 ARG HG3  HG*  0932 1 
+328 102 1 . OR 1 1 11 GLU HB2  1 1 25 VAL HG22 . 2.5  . . . 1.8 5.5 1.0 A 95  GLU HB2  HB*  A 109 VAL HG22 HG22 0932 1 
+329 102 1 . OR 1 1 11 GLU HB3  1 1 25 VAL HG22 . 2.5  . . . 1.8 5.5 1.0 A 95  GLU HB3  HB*  A 109 VAL HG22 HG22 0932 1 
+330 102 2 . OR 1 1 16 GLU HB2  1 1 20 ILE HG21 . 2.5  . . . 1.8 5.5 1.0 A 100 GLU HB2  HB*  A 104 ILE HG21 HG2* 0932 1 
+331 102 2 . OR 1 1 16 GLU HB2  1 1 20 ILE HG22 . 2.5  . . . 1.8 5.5 1.0 A 100 GLU HB2  HB*  A 104 ILE HG22 HG2* 0932 1 
+332 102 2 . OR 1 1 16 GLU HB2  1 1 20 ILE HG23 . 2.5  . . . 1.8 5.5 1.0 A 100 GLU HB2  HB*  A 104 ILE HG23 HG2* 0932 1 
+333 102 2 . OR 1 1 16 GLU HB3  1 1 20 ILE HG21 . 2.5  . . . 1.8 5.5 1.0 A 100 GLU HB3  HB*  A 104 ILE HG21 HG2* 0932 1 
+334 102 2 . OR 1 1 16 GLU HB3  1 1 20 ILE HG22 . 2.5  . . . 1.8 5.5 1.0 A 100 GLU HB3  HB*  A 104 ILE HG22 HG2* 0932 1 
+335 102 2 . OR 1 1 16 GLU HB3  1 1 20 ILE HG23 . 2.5  . . . 1.8 5.5 1.0 A 100 GLU HB3  HB*  A 104 ILE HG23 HG2* 0932 1 
+336 103 . . OR 1 1 6  ARG HG2  1 1 9  LEU HD11 . 2.8  . . . 1.8 3.8 1.0 A 90  ARG HG2  HG2  A 93  LEU HD11 HD*  0932 1 
+337 103 . . OR 1 1 6  ARG HG2  1 1 9  LEU HD12 . 2.8  . . . 1.8 3.8 1.0 A 90  ARG HG2  HG2  A 93  LEU HD12 HD*  0932 1 
+338 103 . . OR 1 1 6  ARG HG2  1 1 9  LEU HD13 . 2.8  . . . 1.8 3.8 1.0 A 90  ARG HG2  HG2  A 93  LEU HD13 HD*  0932 1 
+339 103 . . OR 1 1 6  ARG HG2  1 1 9  LEU HD21 . 2.8  . . . 1.8 3.8 1.0 A 90  ARG HG2  HG2  A 93  LEU HD21 HD*  0932 1 
+340 103 . . OR 1 1 6  ARG HG2  1 1 9  LEU HD22 . 2.8  . . . 1.8 3.8 1.0 A 90  ARG HG2  HG2  A 93  LEU HD22 HD*  0932 1 
+341 103 . . OR 1 1 6  ARG HG2  1 1 9  LEU HD23 . 2.8  . . . 1.8 3.8 1.0 A 90  ARG HG2  HG2  A 93  LEU HD23 HD*  0932 1 
+342 104 1 . .  1 1 16 GLU HB2  1 1 18 VAL HG21 . 2.5  . . . 1.8 3.8 1.0 A 100 GLU HB2  HB2  A 102 VAL HG21 HG21 0932 1 
+343 104 2 . .  1 1 16 GLU HB2  1 1 18 VAL HG23 . 2.5  . . . 1.8 3.8 1.0 A 100 GLU HB2  HB2  A 102 VAL HG23 HG23 0932 1 
+344 105 . . OR 1 1 20 ILE HB   1 1 20 ILE HD11 . 2.5  . . . 1.8 3.3 1.0 A 104 ILE HB   HB   A 104 ILE HD11 HD*  0932 1 
+345 105 . . OR 1 1 20 ILE HB   1 1 20 ILE HD12 . 2.5  . . . 1.8 3.3 1.0 A 104 ILE HB   HB   A 104 ILE HD12 HD*  0932 1 
+346 105 . . OR 1 1 20 ILE HB   1 1 20 ILE HD13 . 2.5  . . . 1.8 3.3 1.0 A 104 ILE HB   HB   A 104 ILE HD13 HD*  0932 1 
+347 106 . . OR 1 1 32 ALA HA   1 1 3  LYS HG2  . 3.4  . . . 1.8 5.0 1.0 A 116 ALA HA   HA   A 87  LYS HG2  HG*  0932 1 
+348 106 . . OR 1 1 32 ALA HA   1 1 3  LYS HG3  . 3.4  . . . 1.8 5.0 1.0 A 116 ALA HA   HA   A 87  LYS HG3  HG*  0932 1 
+349 107 . . OR 1 1 34 THR HB   1 1 34 THR HG21 . 2.8  . . . 1.8 3.8 1.0 A 118 THR HB   HB   A 118 THR HG21 HG2* 0932 1 
+350 107 . . OR 1 1 34 THR HB   1 1 34 THR HG22 . 2.8  . . . 1.8 3.8 1.0 A 118 THR HB   HB   A 118 THR HG22 HG2* 0932 1 
+351 107 . . OR 1 1 34 THR HB   1 1 34 THR HG23 . 2.8  . . . 1.8 3.8 1.0 A 118 THR HB   HB   A 118 THR HG23 HG2* 0932 1 
+352 108 . . OR 1 1 7  LYS HG2  1 1 7  LYS H    . 3.4  . . . 1.8 5.0 1.0 A 91  LYS HG2  HG*  A 91  LYS H    HN   0932 1 
+353 108 . . OR 1 1 7  LYS HG3  1 1 7  LYS H    . 3.4  . . . 1.8 5.0 1.0 A 91  LYS HG3  HG*  A 91  LYS H    HN   0932 1 
+354 109 . . OR 1 1 6  ARG HG2  1 1 6  ARG H    . 2.55 . . . 1.8 5.0 1.0 A 90  ARG HG2  HG*  A 90  ARG H    HN   0932 1 
+355 109 . . OR 1 1 6  ARG HG3  1 1 6  ARG H    . 2.55 . . . 1.8 5.0 1.0 A 90  ARG HG3  HG*  A 90  ARG H    HN   0932 1 
+356 110 1 . .  1 1 21 ARG HG2  1 1 23 THR H    . 2.55 . . . 1.8 5.0 1.0 A 105 ARG HG2  HG2  A 107 THR H    HN   0932 1 
+357 110 2 . OR 1 1 29 LEU HB2  1 1 31 SER H    . 2.55 . . . 1.8 5.0 1.0 A 113 LEU HB2  HB*  A 115 SER H    HN   0932 1 
+358 110 2 . OR 1 1 29 LEU HB3  1 1 31 SER H    . 2.55 . . . 1.8 5.0 1.0 A 113 LEU HB3  HB*  A 115 SER H    HN   0932 1 
+359 111 . . .  1 1 21 ARG HG2  1 1 14 LYS H    . 2.55 . . . 1.8 5.0 1.0 A 105 ARG HG2  HG2  A 98  LYS H    HN   0932 1 
+360 112 1 . .  1 1 30 MET HG2  1 1 30 MET HB2  . 3.65 . . . 1.8 5.5 1.0 A 114 MET HG2  HG2  A 114 MET HB2  HB2  0932 1 
+361 112 2 . OR 1 1 33 MET HG2  1 1 33 MET HE1  . 3.65 . . . 1.8 5.5 1.0 A 117 MET HG2  HG*  A 117 MET HE1  HE*  0932 1 
+362 112 2 . OR 1 1 33 MET HG2  1 1 33 MET HE2  . 3.65 . . . 1.8 5.5 1.0 A 117 MET HG2  HG*  A 117 MET HE2  HE*  0932 1 
+363 112 2 . OR 1 1 33 MET HG2  1 1 33 MET HE3  . 3.65 . . . 1.8 5.5 1.0 A 117 MET HG2  HG*  A 117 MET HE3  HE*  0932 1 
+364 112 2 . OR 1 1 33 MET HG3  1 1 33 MET HE1  . 3.65 . . . 1.8 5.5 1.0 A 117 MET HG3  HG*  A 117 MET HE1  HE*  0932 1 
+365 112 2 . OR 1 1 33 MET HG3  1 1 33 MET HE2  . 3.65 . . . 1.8 5.5 1.0 A 117 MET HG3  HG*  A 117 MET HE2  HE*  0932 1 
+366 112 2 . OR 1 1 33 MET HG3  1 1 33 MET HE3  . 3.65 . . . 1.8 5.5 1.0 A 117 MET HG3  HG*  A 117 MET HE3  HE*  0932 1 
+367 113 . . .  1 1 33 MET HG2  1 1 25 VAL HB   . 3.4  . . . 1.8 6.0 1.0 A 117 MET HG2  HG2  A 109 VAL HB   HB   0932 1 
+368 114 1 . OR 1 1 30 MET HG2  1 1 30 MET HB2  . 3.65 . . . 1.8 5.5 1.0 A 114 MET HG2  HG2  A 114 MET HB2  HB*  0932 1 
+369 114 1 . OR 1 1 30 MET HG2  1 1 30 MET HB3  . 3.65 . . . 1.8 5.5 1.0 A 114 MET HG2  HG2  A 114 MET HB3  HB*  0932 1 
+370 114 2 . .  1 1 30 MET HG2  1 1 30 MET HE1  . 3.65 . . . 1.8 5.5 1.0 A 114 MET HG2  HG2  A 114 MET HE1  HE1  0932 1 
+371 115 . . OR 1 1 2  ARG HG2  1 1 1  ILE HG13 . 2.55 . . . 1.8 3.3 1.0 A 86  ARG HG2  HG*  A 85  ILE HG13 HG12 0932 1 
+372 115 . . OR 1 1 2  ARG HG3  1 1 1  ILE HG13 . 2.55 . . . 1.8 3.3 1.0 A 86  ARG HG3  HG*  A 85  ILE HG13 HG12 0932 1 
+373 116 . . .  1 1 20 ILE HA   1 1 20 ILE H    . 3.4  . . . 1.8 5.0 1.0 A 104 ILE HA   HA   A 104 ILE H    HN   0932 1 
+374 117 . . .  1 1 35 ASN HB2  1 1 35 ASN HA   . 3.9  . . . 1.8 6.0 1.0 A 119 ASN HB2  HB2  A 119 ASN HA   HA   0932 1 
+375 118 . . OR 1 1 35 ASN HB2  1 1 26 ASP HA   . 3.4  . . . 1.8 5.0 1.0 A 119 ASN HB2  HB*  A 110 ASP HA   HA   0932 1 
+376 118 . . OR 1 1 35 ASN HB3  1 1 26 ASP HA   . 3.4  . . . 1.8 5.0 1.0 A 119 ASN HB3  HB*  A 110 ASP HA   HA   0932 1 
+377 119 . . .  1 1 10 ASN HB2  1 1 5  TYR HA   . 3.4  . . . 1.8 6.0 1.0 A 94  ASN HB2  HB2  A 89  TYR HA   HA   0932 1 
+378 120 1 . OR 1 1 24 ASP HB2  1 1 5  TYR HA   . 3.4  . . . 1.8 5.0 1.0 A 108 ASP HB2  HB*  A 89  TYR HA   HA   0932 1 
+379 120 1 . OR 1 1 24 ASP HB3  1 1 5  TYR HA   . 3.4  . . . 1.8 5.0 1.0 A 108 ASP HB3  HB*  A 89  TYR HA   HA   0932 1 
+380 120 2 . .  1 1 24 ASP HB2  1 1 5  TYR HA   . 3.4  . . . 1.8 5.0 1.0 A 108 ASP HB2  HB2  A 89  TYR HA   HA   0932 1 
+381 120 3 . OR 1 1 10 ASN HB2  1 1 5  TYR HA   . 3.4  . . . 1.8 5.0 1.0 A 94  ASN HB2  HB*  A 89  TYR HA   HA   0932 1 
+382 120 3 . OR 1 1 10 ASN HB3  1 1 5  TYR HA   . 3.4  . . . 1.8 5.0 1.0 A 94  ASN HB3  HB*  A 89  TYR HA   HA   0932 1 
+383 121 . . OR 1 1 8  PHE HB2  1 1 8  PHE HA   . 3.4  . . . 1.8 5.0 1.0 A 92  PHE HB2  HB*  A 92  PHE HA   HA   0932 1 
+384 121 . . OR 1 1 8  PHE HB3  1 1 8  PHE HA   . 3.4  . . . 1.8 5.0 1.0 A 92  PHE HB3  HB*  A 92  PHE HA   HA   0932 1 
+385 122 1 . OR 1 1 6  ARG HD2  1 1 5  TYR HA   . 3.4  . . . 1.8 5.0 1.0 A 90  ARG HD2  HD*  A 89  TYR HA   HA   0932 1 
+386 122 1 . OR 1 1 6  ARG HD3  1 1 5  TYR HA   . 3.4  . . . 1.8 5.0 1.0 A 90  ARG HD3  HD*  A 89  TYR HA   HA   0932 1 
+387 122 2 . OR 1 1 6  ARG HD2  1 1 10 ASN HA   . 3.4  . . . 1.8 5.0 1.0 A 90  ARG HD2  HD*  A 94  ASN HA   HA   0932 1 
+388 122 2 . OR 1 1 6  ARG HD3  1 1 10 ASN HA   . 3.4  . . . 1.8 5.0 1.0 A 90  ARG HD3  HD*  A 94  ASN HA   HA   0932 1 
+389 122 3 . OR 1 1 8  PHE HB2  1 1 5  TYR HA   . 3.4  . . . 1.8 5.0 1.0 A 92  PHE HB2  HB*  A 89  TYR HA   HA   0932 1 
+390 122 3 . OR 1 1 8  PHE HB3  1 1 5  TYR HA   . 3.4  . . . 1.8 5.0 1.0 A 92  PHE HB3  HB*  A 89  TYR HA   HA   0932 1 
+391 122 4 . OR 1 1 8  PHE HB2  1 1 10 ASN HA   . 3.4  . . . 1.8 5.0 1.0 A 92  PHE HB2  HB*  A 94  ASN HA   HA   0932 1 
+392 122 4 . OR 1 1 8  PHE HB3  1 1 10 ASN HA   . 3.4  . . . 1.8 5.0 1.0 A 92  PHE HB3  HB*  A 94  ASN HA   HA   0932 1 
+393 123 1 . OR 1 1 22 SER HB2  1 1 4  ARG HA   . 2.55 . . . 1.8 6.0 1.0 A 106 SER HB2  HB*  A 88  ARG HA   HA   0932 1 
+394 123 1 . OR 1 1 22 SER HB3  1 1 4  ARG HA   . 2.55 . . . 1.8 6.0 1.0 A 106 SER HB3  HB*  A 88  ARG HA   HA   0932 1 
+395 123 2 . OR 1 1 12 SER HB2  1 1 16 GLU HA   . 2.55 . . . 1.8 6.0 1.0 A 96  SER HB2  HB*  A 100 GLU HA   HA   0932 1 
+396 123 2 . OR 1 1 12 SER HB3  1 1 16 GLU HA   . 2.55 . . . 1.8 6.0 1.0 A 96  SER HB3  HB*  A 100 GLU HA   HA   0932 1 
+397 123 3 . OR 1 1 22 SER HB2  1 1 28 THR HA   . 2.55 . . . 1.8 6.0 1.0 A 106 SER HB2  HB*  A 112 THR HA   HA   0932 1 
+398 123 3 . OR 1 1 22 SER HB3  1 1 28 THR HA   . 2.55 . . . 1.8 6.0 1.0 A 106 SER HB3  HB*  A 112 THR HA   HA   0932 1 
+399 123 4 . OR 1 1 22 SER HB2  1 1 28 THR HB   . 2.55 . . . 1.8 6.0 1.0 A 106 SER HB2  HB*  A 112 THR HB   HB   0932 1 
+400 123 4 . OR 1 1 22 SER HB3  1 1 28 THR HB   . 2.55 . . . 1.8 6.0 1.0 A 106 SER HB3  HB*  A 112 THR HB   HB   0932 1 
+401 123 5 . OR 1 1 22 SER HB2  1 1 31 SER HA   . 2.55 . . . 1.8 6.0 1.0 A 106 SER HB2  HB*  A 115 SER HA   HA   0932 1 
+402 123 5 . OR 1 1 22 SER HB3  1 1 31 SER HA   . 2.55 . . . 1.8 6.0 1.0 A 106 SER HB3  HB*  A 115 SER HA   HA   0932 1 
+403 123 6 . OR 1 1 12 SER HB2  1 1 9  LEU HA   . 2.55 . . . 1.8 6.0 1.0 A 96  SER HB2  HB*  A 93  LEU HA   HA   0932 1 
+404 123 6 . OR 1 1 12 SER HB3  1 1 9  LEU HA   . 2.55 . . . 1.8 6.0 1.0 A 96  SER HB3  HB*  A 93  LEU HA   HA   0932 1 
+405 124 . . OR 1 1 35 ASN HB2  1 1 35 ASN H    . 3.4  . . . 1.8 5.0 1.0 A 119 ASN HB2  HB*  A 119 ASN H    HN   0932 1 
+406 124 . . OR 1 1 35 ASN HB3  1 1 35 ASN H    . 3.4  . . . 1.8 5.0 1.0 A 119 ASN HB3  HB*  A 119 ASN H    HN   0932 1 
+407 125 . . OR 1 1 20 ILE HA   1 1 20 ILE HG21 . 3.65 . . . 1.8 5.5 1.0 A 104 ILE HA   HA   A 104 ILE HG21 HG2* 0932 1 
+408 125 . . OR 1 1 20 ILE HA   1 1 20 ILE HG22 . 3.65 . . . 1.8 5.5 1.0 A 104 ILE HA   HA   A 104 ILE HG22 HG2* 0932 1 
+409 125 . . OR 1 1 20 ILE HA   1 1 20 ILE HG23 . 3.65 . . . 1.8 5.5 1.0 A 104 ILE HA   HA   A 104 ILE HG23 HG2* 0932 1 
+410 126 1 . OR 1 1 20 ILE HA   1 1 11 GLU HB2  . 3.4  . . . 1.8 5.0 1.0 A 104 ILE HA   HA   A 95  GLU HB2  HB*  0932 1 
+411 126 1 . OR 1 1 20 ILE HA   1 1 11 GLU HB3  . 3.4  . . . 1.8 5.0 1.0 A 104 ILE HA   HA   A 95  GLU HB3  HB*  0932 1 
+412 126 2 . OR 1 1 20 ILE HA   1 1 16 GLU HB2  . 3.4  . . . 1.8 5.0 1.0 A 104 ILE HA   HA   A 100 GLU HB2  HB*  0932 1 
+413 126 2 . OR 1 1 20 ILE HA   1 1 16 GLU HB3  . 3.4  . . . 1.8 5.0 1.0 A 104 ILE HA   HA   A 100 GLU HB3  HB*  0932 1 
+414 126 3 . OR 1 1 25 VAL HA   1 1 11 GLU HB2  . 3.4  . . . 1.8 5.0 1.0 A 109 VAL HA   HA   A 95  GLU HB2  HB*  0932 1 
+415 126 3 . OR 1 1 25 VAL HA   1 1 11 GLU HB3  . 3.4  . . . 1.8 5.0 1.0 A 109 VAL HA   HA   A 95  GLU HB3  HB*  0932 1 
+416 126 4 . OR 1 1 25 VAL HA   1 1 16 GLU HB2  . 3.4  . . . 1.8 5.0 1.0 A 109 VAL HA   HA   A 100 GLU HB2  HB*  0932 1 
+417 126 4 . OR 1 1 25 VAL HA   1 1 16 GLU HB3  . 3.4  . . . 1.8 5.0 1.0 A 109 VAL HA   HA   A 100 GLU HB3  HB*  0932 1 
+418 126 5 . OR 1 1 18 VAL HA   1 1 11 GLU HB2  . 3.4  . . . 1.8 5.0 1.0 A 102 VAL HA   HA   A 95  GLU HB2  HB*  0932 1 
+419 126 5 . OR 1 1 18 VAL HA   1 1 11 GLU HB3  . 3.4  . . . 1.8 5.0 1.0 A 102 VAL HA   HA   A 95  GLU HB3  HB*  0932 1 
+420 126 6 . OR 1 1 18 VAL HA   1 1 16 GLU HB2  . 3.4  . . . 1.8 5.0 1.0 A 102 VAL HA   HA   A 100 GLU HB2  HB*  0932 1 
+421 126 6 . OR 1 1 18 VAL HA   1 1 16 GLU HB3  . 3.4  . . . 1.8 5.0 1.0 A 102 VAL HA   HA   A 100 GLU HB3  HB*  0932 1 
+422 127 . . .  1 1 18 VAL HA   1 1 18 VAL HB   . 3.4  . . . 1.8 5.0 1.0 A 102 VAL HA   HA   A 102 VAL HB   HB   0932 1 
+423 128 . . OR 1 1 33 MET HA   1 1 33 MET HB2  . 3.9  . . . 1.8 6.0 1.0 A 117 MET HA   HA   A 117 MET HB2  HB*  0932 1 
+424 128 . . OR 1 1 33 MET HA   1 1 33 MET HB3  . 3.9  . . . 1.8 6.0 1.0 A 117 MET HA   HA   A 117 MET HB3  HB*  0932 1 
+425 129 1 . .  1 1 28 THR HA   1 1 27 ARG HB2  . 3.4  . . . 1.8 5.0 1.0 A 112 THR HA   HA   A 111 ARG HB2  HB2  0932 1 
+426 129 2 . .  1 1 28 THR HB   1 1 27 ARG HB2  . 3.4  . . . 1.8 5.0 1.0 A 112 THR HB   HB   A 111 ARG HB2  HB2  0932 1 
+427 129 3 . .  1 1 36 LEU HA   1 1 27 ARG HB2  . 3.4  . . . 1.8 5.0 1.0 A 120 LEU HA   HA   A 111 ARG HB2  HB2  0932 1 
+428 130 . . OR 1 1 7  LYS HA   1 1 7  LYS HB2  . 3.4  . . . 1.8 5.0 1.0 A 91  LYS HA   HA   A 91  LYS HB2  HB*  0932 1 
+429 130 . . OR 1 1 7  LYS HA   1 1 7  LYS HB3  . 3.4  . . . 1.8 5.0 1.0 A 91  LYS HA   HA   A 91  LYS HB3  HB*  0932 1 
+430 131 . . OR 1 1 3  LYS HA   1 1 3  LYS HB2  . 2.25 . . . 1.8 2.7 1.0 A 87  LYS HA   HA   A 87  LYS HB2  HB*  0932 1 
+431 131 . . OR 1 1 3  LYS HA   1 1 3  LYS HB3  . 2.25 . . . 1.8 2.7 1.0 A 87  LYS HA   HA   A 87  LYS HB3  HB*  0932 1 
+432 132 1 . .  1 1 2  ARG HA   1 1 2  ARG HG2  . 3.4  . . . 1.8 5.0 1.0 A 86  ARG HA   HA   A 86  ARG HG2  HG2  0932 1 
+433 132 2 . OR 1 1 29 LEU HA   1 1 29 LEU HB2  . 3.4  . . . 1.8 5.0 1.0 A 113 LEU HA   HA   A 113 LEU HB2  HB*  0932 1 
+434 132 2 . OR 1 1 29 LEU HA   1 1 29 LEU HB3  . 3.4  . . . 1.8 5.0 1.0 A 113 LEU HA   HA   A 113 LEU HB3  HB*  0932 1 
+435 133 1 . OR 1 1 21 ARG HD2  1 1 36 LEU HB2  . 3.4  . . . 1.8 5.0 1.0 A 105 ARG HD2  HD*  A 120 LEU HB2  HB*  0932 1 
+436 133 1 . OR 1 1 21 ARG HD2  1 1 36 LEU HB3  . 3.4  . . . 1.8 5.0 1.0 A 105 ARG HD2  HD*  A 120 LEU HB3  HB*  0932 1 
+437 133 1 . OR 1 1 21 ARG HD3  1 1 36 LEU HB2  . 3.4  . . . 1.8 5.0 1.0 A 105 ARG HD3  HD*  A 120 LEU HB2  HB*  0932 1 
+438 133 1 . OR 1 1 21 ARG HD3  1 1 36 LEU HB3  . 3.4  . . . 1.8 5.0 1.0 A 105 ARG HD3  HD*  A 120 LEU HB3  HB*  0932 1 
+439 133 2 . OR 1 1 27 ARG HD2  1 1 29 LEU HB2  . 3.4  . . . 1.8 5.0 1.0 A 111 ARG HD2  HD*  A 113 LEU HB2  HB*  0932 1 
+440 133 2 . OR 1 1 27 ARG HD2  1 1 29 LEU HB3  . 3.4  . . . 1.8 5.0 1.0 A 111 ARG HD2  HD*  A 113 LEU HB3  HB*  0932 1 
+441 133 2 . OR 1 1 27 ARG HD3  1 1 29 LEU HB2  . 3.4  . . . 1.8 5.0 1.0 A 111 ARG HD3  HD*  A 113 LEU HB2  HB*  0932 1 
+442 133 2 . OR 1 1 27 ARG HD3  1 1 29 LEU HB3  . 3.4  . . . 1.8 5.0 1.0 A 111 ARG HD3  HD*  A 113 LEU HB3  HB*  0932 1 
+443 133 3 . OR 1 1 27 ARG HD2  1 1 36 LEU HB2  . 3.4  . . . 1.8 5.0 1.0 A 111 ARG HD2  HD*  A 120 LEU HB2  HB*  0932 1 
+444 133 3 . OR 1 1 27 ARG HD2  1 1 36 LEU HB3  . 3.4  . . . 1.8 5.0 1.0 A 111 ARG HD2  HD*  A 120 LEU HB3  HB*  0932 1 
+445 133 3 . OR 1 1 27 ARG HD3  1 1 36 LEU HB2  . 3.4  . . . 1.8 5.0 1.0 A 111 ARG HD3  HD*  A 120 LEU HB2  HB*  0932 1 
+446 133 3 . OR 1 1 27 ARG HD3  1 1 36 LEU HB3  . 3.4  . . . 1.8 5.0 1.0 A 111 ARG HD3  HD*  A 120 LEU HB3  HB*  0932 1 
+447 134 1 . OR 1 1 23 THR HA   1 1 34 THR HG21 . 3.65 . . . 1.8 6.5 1.0 A 107 THR HA   HA   A 118 THR HG21 HG2* 0932 1 
+448 134 1 . OR 1 1 23 THR HA   1 1 34 THR HG22 . 3.65 . . . 1.8 6.5 1.0 A 107 THR HA   HA   A 118 THR HG22 HG2* 0932 1 
+449 134 1 . OR 1 1 23 THR HA   1 1 34 THR HG23 . 3.65 . . . 1.8 6.5 1.0 A 107 THR HA   HA   A 118 THR HG23 HG2* 0932 1 
+450 134 2 . OR 1 1 23 THR HB   1 1 34 THR HG21 . 3.65 . . . 1.8 6.5 1.0 A 107 THR HB   HB   A 118 THR HG21 HG2* 0932 1 
+451 134 2 . OR 1 1 23 THR HB   1 1 34 THR HG22 . 3.65 . . . 1.8 6.5 1.0 A 107 THR HB   HB   A 118 THR HG22 HG2* 0932 1 
+452 134 2 . OR 1 1 23 THR HB   1 1 34 THR HG23 . 3.65 . . . 1.8 6.5 1.0 A 107 THR HB   HB   A 118 THR HG23 HG2* 0932 1 
+453 135 . . OR 1 1 21 ARG HE   1 1 21 ARG HD2  . 3.4  . . . 1.8 5.0 1.0 A 105 ARG HE   HE   A 105 ARG HD2  HD*  0932 1 
+454 135 . . OR 1 1 21 ARG HE   1 1 21 ARG HD3  . 3.4  . . . 1.8 5.0 1.0 A 105 ARG HE   HE   A 105 ARG HD3  HD*  0932 1 
+455 136 1 . OR 1 1 2  ARG HE   1 1 6  ARG HD2  . 3.9  . . . 1.8 6.0 1.0 A 86  ARG HE   HE   A 90  ARG HD2  HD*  0932 1 
+456 136 1 . OR 1 1 2  ARG HE   1 1 6  ARG HD3  . 3.9  . . . 1.8 6.0 1.0 A 86  ARG HE   HE   A 90  ARG HD3  HD*  0932 1 
+457 136 2 . OR 1 1 2  ARG HE   1 1 8  PHE HB2  . 3.9  . . . 1.8 6.0 1.0 A 86  ARG HE   HE   A 92  PHE HB2  HB*  0932 1 
+458 136 2 . OR 1 1 2  ARG HE   1 1 8  PHE HB3  . 3.9  . . . 1.8 6.0 1.0 A 86  ARG HE   HE   A 92  PHE HB3  HB*  0932 1 
+459 136 3 . OR 1 1 15 HIS HD2  1 1 8  PHE HB2  . 3.9  . . . 1.8 6.0 1.0 A 99  HIS HD2  HD2  A 92  PHE HB2  HB*  0932 1 
+460 136 3 . OR 1 1 15 HIS HD2  1 1 8  PHE HB3  . 3.9  . . . 1.8 6.0 1.0 A 99  HIS HD2  HD2  A 92  PHE HB3  HB*  0932 1 
+461 137 1 . OR 1 1 21 ARG HE   1 1 13 TYR HB2  . 2.55 . . . 1.8 3.3 1.0 A 105 ARG HE   HE   A 97  TYR HB2  HB*  0932 1 
+462 137 1 . OR 1 1 21 ARG HE   1 1 13 TYR HB3  . 2.55 . . . 1.8 3.3 1.0 A 105 ARG HE   HE   A 97  TYR HB3  HB*  0932 1 
+463 137 2 . .  1 1 21 ARG HE   1 1 13 TYR HB2  . 2.55 . . . 1.8 3.3 1.0 A 105 ARG HE   HE   A 97  TYR HB2  HB2  0932 1 
+464 137 3 . .  1 1 2  ARG HE   1 1 5  TYR HB2  . 2.55 . . . 1.8 3.3 1.0 A 86  ARG HE   HE   A 89  TYR HB2  HB2  0932 1 
+465 138 . . OR 1 1 21 ARG HG2  1 1 21 ARG H    . 3.4  . . . 1.8 5.0 1.0 A 105 ARG HG2  HG*  A 105 ARG H    HN   0932 1 
+466 138 . . OR 1 1 21 ARG HG3  1 1 21 ARG H    . 3.4  . . . 1.8 5.0 1.0 A 105 ARG HG3  HG*  A 105 ARG H    HN   0932 1 
+467 139 1 . .  1 1 16 GLU HB2  1 1 20 ILE H    . 3.9  . . . 1.8 6.0 1.0 A 100 GLU HB2  HB2  A 104 ILE H    HN   0932 1 
+468 139 2 . .  1 1 27 ARG HB2  1 1 36 LEU H    . 3.9  . . . 1.8 6.0 1.0 A 111 ARG HB2  HB2  A 120 LEU H    HN   0932 1 
+469 139 3 . .  1 1 11 GLU HB2  1 1 14 LYS H    . 3.9  . . . 1.8 6.0 1.0 A 95  GLU HB2  HB2  A 98  LYS H    HN   0932 1 
+470 139 4 . .  1 1 11 GLU HB2  1 1 18 VAL H    . 3.9  . . . 1.8 6.0 1.0 A 95  GLU HB2  HB2  A 102 VAL H    HN   0932 1 
+471 139 5 . .  1 1 11 GLU HB2  1 1 20 ILE H    . 3.9  . . . 1.8 6.0 1.0 A 95  GLU HB2  HB2  A 104 ILE H    HN   0932 1 
+472 139 6 . .  1 1 16 GLU HB2  1 1 14 LYS H    . 3.9  . . . 1.8 6.0 1.0 A 100 GLU HB2  HB2  A 98  LYS H    HN   0932 1 
+473 139 7 . .  1 1 16 GLU HB2  1 1 18 VAL H    . 3.9  . . . 1.8 6.0 1.0 A 100 GLU HB2  HB2  A 102 VAL H    HN   0932 1 
+474 140 . . OR 1 1 33 MET HB2  1 1 33 MET H    . 3.4  . . . 1.8 5.0 1.0 A 117 MET HB2  HB*  A 117 MET H    HN   0932 1 
+475 140 . . OR 1 1 33 MET HB3  1 1 33 MET H    . 3.4  . . . 1.8 5.0 1.0 A 117 MET HB3  HB*  A 117 MET H    HN   0932 1 
+476 141 1 . .  1 1 2  ARG HB2  1 1 5  TYR H    . 3.9  . . . 1.8 6.0 1.0 A 86  ARG HB2  HB2  A 89  TYR H    HN   0932 1 
+477 141 2 . .  1 1 2  ARG HB2  1 1 8  PHE H    . 3.9  . . . 1.8 6.0 1.0 A 86  ARG HB2  HB2  A 92  PHE H    HN   0932 1 
+478 142 1 . .  1 1 11 GLU HB2  1 1 12 SER H    . 2.55 . . . 1.8 3.3 1.0 A 95  GLU HB2  HB2  A 96  SER H    HN   0932 1 
+479 142 2 . .  1 1 11 GLU HB2  1 1 19 TYR H    . 2.55 . . . 1.8 3.3 1.0 A 95  GLU HB2  HB2  A 103 TYR H    HN   0932 1 
+480 143 1 . OR 1 1 7  LYS HB2  1 1 8  PHE H    . 3.4  . . . 1.8 5.0 1.0 A 91  LYS HB2  HB*  A 92  PHE H    HN   0932 1 
+481 143 1 . OR 1 1 7  LYS HB3  1 1 8  PHE H    . 3.4  . . . 1.8 5.0 1.0 A 91  LYS HB3  HB*  A 92  PHE H    HN   0932 1 
+482 143 2 . OR 1 1 7  LYS HB2  1 1 11 GLU H    . 3.4  . . . 1.8 5.0 1.0 A 91  LYS HB2  HB*  A 95  GLU H    HN   0932 1 
+483 143 2 . OR 1 1 7  LYS HB3  1 1 11 GLU H    . 3.4  . . . 1.8 5.0 1.0 A 91  LYS HB3  HB*  A 95  GLU H    HN   0932 1 
+484 143 3 . OR 1 1 2  ARG HG2  1 1 5  TYR H    . 3.4  . . . 1.8 5.0 1.0 A 86  ARG HG2  HG*  A 89  TYR H    HN   0932 1 
+485 143 3 . OR 1 1 2  ARG HG3  1 1 5  TYR H    . 3.4  . . . 1.8 5.0 1.0 A 86  ARG HG3  HG*  A 89  TYR H    HN   0932 1 
+486 143 4 . OR 1 1 3  LYS HB2  1 1 5  TYR H    . 3.4  . . . 1.8 5.0 1.0 A 87  LYS HB2  HB*  A 89  TYR H    HN   0932 1 
+487 143 4 . OR 1 1 3  LYS HB3  1 1 5  TYR H    . 3.4  . . . 1.8 5.0 1.0 A 87  LYS HB3  HB*  A 89  TYR H    HN   0932 1 
+488 144 1 . .  1 1 4  ARG HG2  1 1 30 MET H    . 3.4  . . . 1.8 5.0 1.0 A 88  ARG HG2  HG2  A 114 MET H    HN   0932 1 
+489 144 2 . .  1 1 4  ARG HG2  1 1 32 ALA H    . 3.4  . . . 1.8 5.0 1.0 A 88  ARG HG2  HG2  A 116 ALA H    HN   0932 1 
+490 145 . . OR 1 1 4  ARG HG2  1 1 32 ALA H    . 2.55 . . . 1.8 3.3 1.0 A 88  ARG HG2  HG*  A 116 ALA H    HN   0932 1 
+491 145 . . OR 1 1 4  ARG HG3  1 1 32 ALA H    . 2.55 . . . 1.8 3.3 1.0 A 88  ARG HG3  HG*  A 116 ALA H    HN   0932 1 
+492 146 1 . OR 1 1 4  ARG HG2  1 1 4  ARG H    . 2.25 . . . 1.8 2.7 1.0 A 88  ARG HG2  HG*  A 88  ARG H    HN   0932 1 
+493 146 1 . OR 1 1 4  ARG HG3  1 1 4  ARG H    . 2.25 . . . 1.8 2.7 1.0 A 88  ARG HG3  HG*  A 88  ARG H    HN   0932 1 
+494 146 2 . .  1 1 27 ARG HG2  1 1 27 ARG H    . 2.25 . . . 1.8 2.7 1.0 A 111 ARG HG2  HG2  A 111 ARG H    HN   0932 1 
+495 147 . . .  1 1 4  ARG HG2  1 1 31 SER H    . 2.25 . . . 1.8 6.0 1.0 A 88  ARG HG2  HG2  A 115 SER H    HN   0932 1 
+496 148 1 . .  1 1 21 ARG HG2  1 1 13 TYR H    . 2.25 . . . 1.8 2.7 1.0 A 105 ARG HG2  HG2  A 97  TYR H    HN   0932 1 
+497 148 2 . OR 1 1 36 LEU HB2  1 1 34 THR H    . 2.25 . . . 1.8 2.7 1.0 A 120 LEU HB2  HB*  A 118 THR H    HN   0932 1 
+498 148 2 . OR 1 1 36 LEU HB3  1 1 34 THR H    . 2.25 . . . 1.8 2.7 1.0 A 120 LEU HB3  HB*  A 118 THR H    HN   0932 1 
+499 149 1 . .  1 1 21 ARG HG2  1 1 13 TYR H    . 2.25 . . . 1.8 2.7 1.0 A 105 ARG HG2  HG2  A 97  TYR H    HN   0932 1 
+500 149 2 . OR 1 1 36 LEU HB2  1 1 34 THR H    . 2.25 . . . 1.8 2.7 1.0 A 120 LEU HB2  HB*  A 118 THR H    HN   0932 1 
+501 149 2 . OR 1 1 36 LEU HB3  1 1 34 THR H    . 2.25 . . . 1.8 2.7 1.0 A 120 LEU HB3  HB*  A 118 THR H    HN   0932 1 
+502 150 . . OR 1 1 21 ARG HG2  1 1 13 TYR H    . 2.55 . . . 1.8 3.3 1.0 A 105 ARG HG2  HG*  A 97  TYR H    HN   0932 1 
+503 150 . . OR 1 1 21 ARG HG3  1 1 13 TYR H    . 2.55 . . . 1.8 3.3 1.0 A 105 ARG HG3  HG*  A 97  TYR H    HN   0932 1 
+504 151 . . OR 1 1 21 ARG HG2  1 1 13 TYR H    . 2.55 . . . 1.8 3.3 1.0 A 105 ARG HG2  HG*  A 97  TYR H    HN   0932 1 
+505 151 . . OR 1 1 21 ARG HG3  1 1 13 TYR H    . 2.55 . . . 1.8 3.3 1.0 A 105 ARG HG3  HG*  A 97  TYR H    HN   0932 1 
+506 152 1 . OR 1 1 14 LYS HB2  1 1 13 TYR H    . 3.4  . . . 1.8 5.0 1.0 A 98  LYS HB2  HB*  A 97  TYR H    HN   0932 1 
+507 152 1 . OR 1 1 14 LYS HB3  1 1 13 TYR H    . 3.4  . . . 1.8 5.0 1.0 A 98  LYS HB3  HB*  A 97  TYR H    HN   0932 1 
+508 152 2 . OR 1 1 14 LYS HD2  1 1 13 TYR H    . 3.4  . . . 1.8 5.0 1.0 A 98  LYS HD2  HD*  A 97  TYR H    HN   0932 1 
+509 152 2 . OR 1 1 14 LYS HD3  1 1 13 TYR H    . 3.4  . . . 1.8 5.0 1.0 A 98  LYS HD3  HD*  A 97  TYR H    HN   0932 1 
+510 153 . . .  1 1 16 GLU HB2  1 1 18 VAL H    . 2.55 . . . 1.8 3.3 1.0 A 100 GLU HB2  HB2  A 102 VAL H    HN   0932 1 
+511 154 1 . OR 1 1 6  ARG HG2  1 1 5  TYR H    . 3.4  . . . 1.8 5.0 1.0 A 90  ARG HG2  HG*  A 89  TYR H    HN   0932 1 
+512 154 1 . OR 1 1 6  ARG HG3  1 1 5  TYR H    . 3.4  . . . 1.8 5.0 1.0 A 90  ARG HG3  HG*  A 89  TYR H    HN   0932 1 
+513 154 2 . OR 1 1 6  ARG HG2  1 1 8  PHE H    . 3.4  . . . 1.8 5.0 1.0 A 90  ARG HG2  HG*  A 92  PHE H    HN   0932 1 
+514 154 2 . OR 1 1 6  ARG HG3  1 1 8  PHE H    . 3.4  . . . 1.8 5.0 1.0 A 90  ARG HG3  HG*  A 92  PHE H    HN   0932 1 
+515 155 1 . OR 1 1 6  ARG HG2  1 1 5  TYR H    . 3.4  . . . 1.8 5.0 1.0 A 90  ARG HG2  HG*  A 89  TYR H    HN   0932 1 
+516 155 1 . OR 1 1 6  ARG HG3  1 1 5  TYR H    . 3.4  . . . 1.8 5.0 1.0 A 90  ARG HG3  HG*  A 89  TYR H    HN   0932 1 
+517 155 2 . OR 1 1 6  ARG HG2  1 1 8  PHE H    . 3.4  . . . 1.8 5.0 1.0 A 90  ARG HG2  HG*  A 92  PHE H    HN   0932 1 
+518 155 2 . OR 1 1 6  ARG HG3  1 1 8  PHE H    . 3.4  . . . 1.8 5.0 1.0 A 90  ARG HG3  HG*  A 92  PHE H    HN   0932 1 
+519 156 1 . OR 1 1 23 THR HG21 1 1 9  LEU H    . 3.65 . . . 1.8 5.5 1.0 A 107 THR HG21 HG2* A 93  LEU H    HN   0932 1 
+520 156 1 . OR 1 1 23 THR HG22 1 1 9  LEU H    . 3.65 . . . 1.8 5.5 1.0 A 107 THR HG22 HG2* A 93  LEU H    HN   0932 1 
+521 156 1 . OR 1 1 23 THR HG23 1 1 9  LEU H    . 3.65 . . . 1.8 5.5 1.0 A 107 THR HG23 HG2* A 93  LEU H    HN   0932 1 
+522 156 2 . OR 1 1 23 THR HG21 1 1 28 THR H    . 3.65 . . . 1.8 5.5 1.0 A 107 THR HG21 HG2* A 112 THR H    HN   0932 1 
+523 156 2 . OR 1 1 23 THR HG22 1 1 28 THR H    . 3.65 . . . 1.8 5.5 1.0 A 107 THR HG22 HG2* A 112 THR H    HN   0932 1 
+524 156 2 . OR 1 1 23 THR HG23 1 1 28 THR H    . 3.65 . . . 1.8 5.5 1.0 A 107 THR HG23 HG2* A 112 THR H    HN   0932 1 
+525 156 3 . OR 1 1 23 THR HG21 1 1 29 LEU H    . 3.65 . . . 1.8 5.5 1.0 A 107 THR HG21 HG2* A 113 LEU H    HN   0932 1 
+526 156 3 . OR 1 1 23 THR HG22 1 1 29 LEU H    . 3.65 . . . 1.8 5.5 1.0 A 107 THR HG22 HG2* A 113 LEU H    HN   0932 1 
+527 156 3 . OR 1 1 23 THR HG23 1 1 29 LEU H    . 3.65 . . . 1.8 5.5 1.0 A 107 THR HG23 HG2* A 113 LEU H    HN   0932 1 
+528 156 4 . OR 1 1 34 THR HG21 1 1 9  LEU H    . 3.65 . . . 1.8 5.5 1.0 A 118 THR HG21 HG2* A 93  LEU H    HN   0932 1 
+529 156 4 . OR 1 1 34 THR HG22 1 1 9  LEU H    . 3.65 . . . 1.8 5.5 1.0 A 118 THR HG22 HG2* A 93  LEU H    HN   0932 1 
+530 156 4 . OR 1 1 34 THR HG23 1 1 9  LEU H    . 3.65 . . . 1.8 5.5 1.0 A 118 THR HG23 HG2* A 93  LEU H    HN   0932 1 
+531 156 5 . OR 1 1 34 THR HG21 1 1 28 THR H    . 3.65 . . . 1.8 5.5 1.0 A 118 THR HG21 HG2* A 112 THR H    HN   0932 1 
+532 156 5 . OR 1 1 34 THR HG22 1 1 28 THR H    . 3.65 . . . 1.8 5.5 1.0 A 118 THR HG22 HG2* A 112 THR H    HN   0932 1 
+533 156 5 . OR 1 1 34 THR HG23 1 1 28 THR H    . 3.65 . . . 1.8 5.5 1.0 A 118 THR HG23 HG2* A 112 THR H    HN   0932 1 
+534 156 6 . OR 1 1 34 THR HG21 1 1 29 LEU H    . 3.65 . . . 1.8 5.5 1.0 A 118 THR HG21 HG2* A 113 LEU H    HN   0932 1 
+535 156 6 . OR 1 1 34 THR HG22 1 1 29 LEU H    . 3.65 . . . 1.8 5.5 1.0 A 118 THR HG22 HG2* A 113 LEU H    HN   0932 1 
+536 156 6 . OR 1 1 34 THR HG23 1 1 29 LEU H    . 3.65 . . . 1.8 5.5 1.0 A 118 THR HG23 HG2* A 113 LEU H    HN   0932 1 
+537 157 . . OR 1 1 9  LEU HD11 1 1 9  LEU HB2  . 3.65 . . . 1.8 5.5 1.0 A 93  LEU HD11 HD11 A 93  LEU HB2  HB*  0932 1 
+538 157 . . OR 1 1 9  LEU HD11 1 1 9  LEU HB3  . 3.65 . . . 1.8 5.5 1.0 A 93  LEU HD11 HD11 A 93  LEU HB3  HB*  0932 1 
+539 158 1 . OR 1 1 20 ILE HD11 1 1 20 ILE HG12 . 2.8  . . . 1.8 3.8 1.0 A 104 ILE HD11 HD*  A 104 ILE HG12 HG12 0932 1 
+540 158 1 . OR 1 1 20 ILE HD12 1 1 20 ILE HG12 . 2.8  . . . 1.8 3.8 1.0 A 104 ILE HD12 HD*  A 104 ILE HG12 HG12 0932 1 
+541 158 1 . OR 1 1 20 ILE HD13 1 1 20 ILE HG12 . 2.8  . . . 1.8 3.8 1.0 A 104 ILE HD13 HD*  A 104 ILE HG12 HG12 0932 1 
+542 158 2 . OR 1 1 20 ILE HD11 1 1 20 ILE HG12 . 2.8  . . . 1.8 3.8 1.0 A 104 ILE HD11 HD*  A 104 ILE HG12 HG12 0932 1 
+543 158 2 . OR 1 1 20 ILE HD12 1 1 20 ILE HG12 . 2.8  . . . 1.8 3.8 1.0 A 104 ILE HD12 HD*  A 104 ILE HG12 HG12 0932 1 
+544 158 2 . OR 1 1 20 ILE HD13 1 1 20 ILE HG12 . 2.8  . . . 1.8 3.8 1.0 A 104 ILE HD13 HD*  A 104 ILE HG12 HG12 0932 1 
+545 159 1 . .  1 1 27 ARG HA   1 1 23 THR HB   . 3.9  . . . 1.8 6.0 1.0 A 111 ARG HA   HA   A 107 THR HB   HB   0932 1 
+546 159 2 . .  1 1 29 LEU HA   1 1 23 THR HB   . 3.9  . . . 1.8 6.0 1.0 A 113 LEU HA   HA   A 107 THR HB   HB   0932 1 
+547 159 3 . .  1 1 34 THR HA   1 1 23 THR HB   . 3.9  . . . 1.8 6.0 1.0 A 118 THR HA   HA   A 107 THR HB   HB   0932 1 
+548 159 4 . .  1 1 36 LEU HA   1 1 23 THR HB   . 3.9  . . . 1.8 6.0 1.0 A 120 LEU HA   HA   A 107 THR HB   HB   0932 1 
+549 159 5 . .  1 1 9  LEU HA   1 1 23 THR HB   . 3.9  . . . 1.8 6.0 1.0 A 93  LEU HA   HA   A 107 THR HB   HB   0932 1 
+550 159 6 . .  1 1 11 GLU HA   1 1 23 THR HB   . 3.9  . . . 1.8 6.0 1.0 A 95  GLU HA   HA   A 107 THR HB   HB   0932 1 
+551 159 7 . .  1 1 17 GLN HA   1 1 23 THR HB   . 3.9  . . . 1.8 6.0 1.0 A 101 GLN HA   HA   A 107 THR HB   HB   0932 1 
+552 160 1 . .  1 1 27 ARG H    1 1 25 VAL H    . 2.55 . . . 1.8 5.0 1.0 A 111 ARG H    HN   A 109 VAL H    HN   0932 1 
+553 160 2 . .  1 1 12 SER H    1 1 13 TYR H    . 2.55 . . . 1.8 5.0 1.0 A 96  SER H    HN   A 97  TYR H    HN   0932 1 
+554 161 1 . .  1 1 31 SER H    1 1 34 THR H    . 3.4  . . . 1.8 5.0 1.0 A 115 SER H    HN   A 118 THR H    HN   0932 1 
+555 161 2 . .  1 1 32 ALA H    1 1 34 THR H    . 3.4  . . . 1.8 5.0 1.0 A 116 ALA H    HN   A 118 THR H    HN   0932 1 
+556 161 3 . .  1 1 33 MET H    1 1 34 THR H    . 3.4  . . . 1.8 5.0 1.0 A 117 MET H    HN   A 118 THR H    HN   0932 1 
+557 162 . . .  1 1 10 ASN H    1 1 9  LEU H    . 2.55 . . . 1.8 3.3 1.0 A 94  ASN H    HN   A 93  LEU H    HN   0932 1 
+558 163 . . .  1 1 10 ASN H    1 1 9  LEU H    . 2.25 . . . 1.8 2.7 1.0 A 94  ASN H    HN   A 93  LEU H    HN   0932 1 
+559 164 1 . .  1 1 27 ARG H    1 1 28 THR H    . 3.9  . . . 1.8 6.0 1.0 A 111 ARG H    HN   A 112 THR H    HN   0932 1 
+560 164 2 . .  1 1 12 SER H    1 1 9  LEU H    . 3.9  . . . 1.8 6.0 1.0 A 96  SER H    HN   A 93  LEU H    HN   0932 1 
+561 165 . . .  1 1 19 TYR H    1 1 20 ILE H    . 2.55 . . . 1.8 5.0 1.0 A 103 TYR H    HN   A 104 ILE H    HN   0932 1 
+# 
+data_matched_pdb_model_data_block_added_by_onedep_system
+# 
+loop_
+_atom_site.id 
+_atom_site.label_asym_id 
+_atom_site.label_seq_id 
+_atom_site.label_comp_id 
+_atom_site.label_atom_id 
+_atom_site.label_alt_id 
+_atom_site.auth_asym_id 
+_atom_site.auth_seq_id 
+_atom_site.auth_comp_id 
+_atom_site.pdbx_PDB_ins_code 
+_atom_site.auth_atom_id 
+_atom_site.pdbx_auth_asym_id 
+_atom_site.pdbx_auth_seq_id 
+_atom_site.pdbx_auth_comp_id 
+_atom_site.pdbx_auth_atom_name 
+_atom_site.details 
+1   A 1  ILE N    ? A 85  ILE ? N    A 85  ILE N    ?       
+2   A 1  ILE CA   ? A 85  ILE ? CA   A 85  ILE CA   matched 
+3   A 1  ILE C    ? A 85  ILE ? C    A 85  ILE C    matched 
+4   A 1  ILE O    ? A 85  ILE ? O    A 85  ILE O    ?       
+5   A 1  ILE CB   ? A 85  ILE ? CB   A 85  ILE CB   matched 
+6   A 1  ILE CG1  ? A 85  ILE ? CG1  A 85  ILE CG1  matched 
+7   A 1  ILE CG2  ? A 85  ILE ? CG2  A 85  ILE CG2  matched 
+8   A 1  ILE CD1  ? A 85  ILE ? CD1  A 85  ILE CD1  matched 
+9   A 1  ILE H1   ? A 85  ILE ? H1   A 85  ILE HT1  ?       
+10  A 1  ILE H2   ? A 85  ILE ? H2   A 85  ILE HT2  ?       
+11  A 1  ILE HA   ? A 85  ILE ? HA   A 85  ILE HA   matched 
+12  A 1  ILE HB   ? A 85  ILE ? HB   A 85  ILE HB   matched 
+13  A 1  ILE HG12 ? A 85  ILE ? HG12 A 85  ILE HG11 ?       
+14  A 1  ILE HG13 ? A 85  ILE ? HG13 A 85  ILE HG12 matched 
+15  A 1  ILE HG21 ? A 85  ILE ? HG21 A 85  ILE HG21 matched 
+16  A 1  ILE HG22 ? A 85  ILE ? HG22 A 85  ILE HG22 matched 
+17  A 1  ILE HG23 ? A 85  ILE ? HG23 A 85  ILE HG23 matched 
+18  A 1  ILE HD11 ? A 85  ILE ? HD11 A 85  ILE HD11 matched 
+19  A 1  ILE HD12 ? A 85  ILE ? HD12 A 85  ILE HD12 matched 
+20  A 1  ILE HD13 ? A 85  ILE ? HD13 A 85  ILE HD13 matched 
+21  A 2  ARG N    ? A 86  ARG ? N    A 86  ARG N    matched 
+22  A 2  ARG CA   ? A 86  ARG ? CA   A 86  ARG CA   matched 
+23  A 2  ARG C    ? A 86  ARG ? C    A 86  ARG C    matched 
+24  A 2  ARG O    ? A 86  ARG ? O    A 86  ARG O    ?       
+25  A 2  ARG CB   ? A 86  ARG ? CB   A 86  ARG CB   ?       
+26  A 2  ARG CG   ? A 86  ARG ? CG   A 86  ARG CG   ?       
+27  A 2  ARG CD   ? A 86  ARG ? CD   A 86  ARG CD   ?       
+28  A 2  ARG NE   ? A 86  ARG ? NE   A 86  ARG NE   ?       
+29  A 2  ARG CZ   ? A 86  ARG ? CZ   A 86  ARG CZ   ?       
+30  A 2  ARG NH1  ? A 86  ARG ? NH1  A 86  ARG NH1  ?       
+31  A 2  ARG NH2  ? A 86  ARG ? NH2  A 86  ARG NH2  ?       
+32  A 2  ARG H    ? A 86  ARG ? H    A 86  ARG HN   matched 
+33  A 2  ARG HA   ? A 86  ARG ? HA   A 86  ARG HA   matched 
+34  A 2  ARG HB2  ? A 86  ARG ? HB2  A 86  ARG HB1  matched 
+35  A 2  ARG HB3  ? A 86  ARG ? HB3  A 86  ARG HB2  matched 
+36  A 2  ARG HG2  ? A 86  ARG ? HG2  A 86  ARG HG1  matched 
+37  A 2  ARG HG3  ? A 86  ARG ? HG3  A 86  ARG HG2  matched 
+38  A 2  ARG HD2  ? A 86  ARG ? HD2  A 86  ARG HD1  matched 
+39  A 2  ARG HD3  ? A 86  ARG ? HD3  A 86  ARG HD2  ?       
+40  A 2  ARG HE   ? A 86  ARG ? HE   A 86  ARG HE   matched 
+41  A 2  ARG HH11 ? A 86  ARG ? HH11 A 86  ARG HH11 ?       
+42  A 2  ARG HH12 ? A 86  ARG ? HH12 A 86  ARG HH12 ?       
+43  A 2  ARG HH21 ? A 86  ARG ? HH21 A 86  ARG HH21 ?       
+44  A 2  ARG HH22 ? A 86  ARG ? HH22 A 86  ARG HH22 ?       
+45  A 3  LYS N    ? A 87  LYS ? N    A 87  LYS N    matched 
+46  A 3  LYS CA   ? A 87  LYS ? CA   A 87  LYS CA   matched 
+47  A 3  LYS C    ? A 87  LYS ? C    A 87  LYS C    matched 
+48  A 3  LYS O    ? A 87  LYS ? O    A 87  LYS O    ?       
+49  A 3  LYS CB   ? A 87  LYS ? CB   A 87  LYS CB   matched 
+50  A 3  LYS CG   ? A 87  LYS ? CG   A 87  LYS CG   matched 
+51  A 3  LYS CD   ? A 87  LYS ? CD   A 87  LYS CD   ?       
+52  A 3  LYS CE   ? A 87  LYS ? CE   A 87  LYS CE   matched 
+53  A 3  LYS NZ   ? A 87  LYS ? NZ   A 87  LYS NZ   ?       
+54  A 3  LYS H    ? A 87  LYS ? H    A 87  LYS HN   matched 
+55  A 3  LYS HA   ? A 87  LYS ? HA   A 87  LYS HA   matched 
+56  A 3  LYS HB2  ? A 87  LYS ? HB2  A 87  LYS HB1  matched 
+57  A 3  LYS HB3  ? A 87  LYS ? HB3  A 87  LYS HB2  matched 
+58  A 3  LYS HG2  ? A 87  LYS ? HG2  A 87  LYS HG1  matched 
+59  A 3  LYS HG3  ? A 87  LYS ? HG3  A 87  LYS HG2  matched 
+60  A 3  LYS HD2  ? A 87  LYS ? HD2  A 87  LYS HD1  ?       
+61  A 3  LYS HD3  ? A 87  LYS ? HD3  A 87  LYS HD2  ?       
+62  A 3  LYS HE2  ? A 87  LYS ? HE2  A 87  LYS HE1  matched 
+63  A 3  LYS HE3  ? A 87  LYS ? HE3  A 87  LYS HE2  matched 
+64  A 3  LYS HZ1  ? A 87  LYS ? HZ1  A 87  LYS HZ1  ?       
+65  A 3  LYS HZ2  ? A 87  LYS ? HZ2  A 87  LYS HZ2  ?       
+66  A 3  LYS HZ3  ? A 87  LYS ? HZ3  A 87  LYS HZ3  ?       
+67  A 4  ARG N    ? A 88  ARG ? N    A 88  ARG N    matched 
+68  A 4  ARG CA   ? A 88  ARG ? CA   A 88  ARG CA   matched 
+69  A 4  ARG C    ? A 88  ARG ? C    A 88  ARG C    matched 
+70  A 4  ARG O    ? A 88  ARG ? O    A 88  ARG O    ?       
+71  A 4  ARG CB   ? A 88  ARG ? CB   A 88  ARG CB   ?       
+72  A 4  ARG CG   ? A 88  ARG ? CG   A 88  ARG CG   ?       
+73  A 4  ARG CD   ? A 88  ARG ? CD   A 88  ARG CD   ?       
+74  A 4  ARG NE   ? A 88  ARG ? NE   A 88  ARG NE   ?       
+75  A 4  ARG CZ   ? A 88  ARG ? CZ   A 88  ARG CZ   ?       
+76  A 4  ARG NH1  ? A 88  ARG ? NH1  A 88  ARG NH1  ?       
+77  A 4  ARG NH2  ? A 88  ARG ? NH2  A 88  ARG NH2  ?       
+78  A 4  ARG H    ? A 88  ARG ? H    A 88  ARG HN   matched 
+79  A 4  ARG HA   ? A 88  ARG ? HA   A 88  ARG HA   matched 
+80  A 4  ARG HB2  ? A 88  ARG ? HB2  A 88  ARG HB1  matched 
+81  A 4  ARG HB3  ? A 88  ARG ? HB3  A 88  ARG HB2  matched 
+82  A 4  ARG HG2  ? A 88  ARG ? HG2  A 88  ARG HG1  matched 
+83  A 4  ARG HG3  ? A 88  ARG ? HG3  A 88  ARG HG2  matched 
+84  A 4  ARG HD2  ? A 88  ARG ? HD2  A 88  ARG HD1  matched 
+85  A 4  ARG HD3  ? A 88  ARG ? HD3  A 88  ARG HD2  ?       
+86  A 4  ARG HE   ? A 88  ARG ? HE   A 88  ARG HE   matched 
+87  A 4  ARG HH11 ? A 88  ARG ? HH11 A 88  ARG HH11 ?       
+88  A 4  ARG HH12 ? A 88  ARG ? HH12 A 88  ARG HH12 ?       
+89  A 4  ARG HH21 ? A 88  ARG ? HH21 A 88  ARG HH21 ?       
+90  A 4  ARG HH22 ? A 88  ARG ? HH22 A 88  ARG HH22 ?       
+91  A 5  TYR N    ? A 89  TYR ? N    A 89  TYR N    matched 
+92  A 5  TYR CA   ? A 89  TYR ? CA   A 89  TYR CA   matched 
+93  A 5  TYR C    ? A 89  TYR ? C    A 89  TYR C    matched 
+94  A 5  TYR O    ? A 89  TYR ? O    A 89  TYR O    ?       
+95  A 5  TYR CB   ? A 89  TYR ? CB   A 89  TYR CB   matched 
+96  A 5  TYR CG   ? A 89  TYR ? CG   A 89  TYR CG   ?       
+97  A 5  TYR CD1  ? A 89  TYR ? CD1  A 89  TYR CD1  ?       
+98  A 5  TYR CD2  ? A 89  TYR ? CD2  A 89  TYR CD2  ?       
+99  A 5  TYR CE1  ? A 89  TYR ? CE1  A 89  TYR CE1  ?       
+100 A 5  TYR CE2  ? A 89  TYR ? CE2  A 89  TYR CE2  ?       
+101 A 5  TYR CZ   ? A 89  TYR ? CZ   A 89  TYR CZ   ?       
+102 A 5  TYR OH   ? A 89  TYR ? OH   A 89  TYR OH   ?       
+103 A 5  TYR H    ? A 89  TYR ? H    A 89  TYR HN   matched 
+104 A 5  TYR HA   ? A 89  TYR ? HA   A 89  TYR HA   matched 
+105 A 5  TYR HB2  ? A 89  TYR ? HB2  A 89  TYR HB1  matched 
+106 A 5  TYR HB3  ? A 89  TYR ? HB3  A 89  TYR HB2  matched 
+107 A 5  TYR HD1  ? A 89  TYR ? HD1  A 89  TYR HD1  ?       
+108 A 5  TYR HD2  ? A 89  TYR ? HD2  A 89  TYR HD2  ?       
+109 A 5  TYR HE1  ? A 89  TYR ? HE1  A 89  TYR HE1  ?       
+110 A 5  TYR HE2  ? A 89  TYR ? HE2  A 89  TYR HE2  ?       
+111 A 5  TYR HH   ? A 89  TYR ? HH   A 89  TYR HH   ?       
+112 A 6  ARG N    ? A 90  ARG ? N    A 90  ARG N    matched 
+113 A 6  ARG CA   ? A 90  ARG ? CA   A 90  ARG CA   matched 
+114 A 6  ARG C    ? A 90  ARG ? C    A 90  ARG C    matched 
+115 A 6  ARG O    ? A 90  ARG ? O    A 90  ARG O    ?       
+116 A 6  ARG CB   ? A 90  ARG ? CB   A 90  ARG CB   ?       
+117 A 6  ARG CG   ? A 90  ARG ? CG   A 90  ARG CG   ?       
+118 A 6  ARG CD   ? A 90  ARG ? CD   A 90  ARG CD   ?       
+119 A 6  ARG NE   ? A 90  ARG ? NE   A 90  ARG NE   ?       
+120 A 6  ARG CZ   ? A 90  ARG ? CZ   A 90  ARG CZ   ?       
+121 A 6  ARG NH1  ? A 90  ARG ? NH1  A 90  ARG NH1  ?       
+122 A 6  ARG NH2  ? A 90  ARG ? NH2  A 90  ARG NH2  ?       
+123 A 6  ARG H    ? A 90  ARG ? H    A 90  ARG HN   matched 
+124 A 6  ARG HA   ? A 90  ARG ? HA   A 90  ARG HA   matched 
+125 A 6  ARG HB2  ? A 90  ARG ? HB2  A 90  ARG HB1  matched 
+126 A 6  ARG HB3  ? A 90  ARG ? HB3  A 90  ARG HB2  matched 
+127 A 6  ARG HG2  ? A 90  ARG ? HG2  A 90  ARG HG1  matched 
+128 A 6  ARG HG3  ? A 90  ARG ? HG3  A 90  ARG HG2  matched 
+129 A 6  ARG HD2  ? A 90  ARG ? HD2  A 90  ARG HD1  matched 
+130 A 6  ARG HD3  ? A 90  ARG ? HD3  A 90  ARG HD2  matched 
+131 A 6  ARG HE   ? A 90  ARG ? HE   A 90  ARG HE   matched 
+132 A 6  ARG HH11 ? A 90  ARG ? HH11 A 90  ARG HH11 ?       
+133 A 6  ARG HH12 ? A 90  ARG ? HH12 A 90  ARG HH12 ?       
+134 A 6  ARG HH21 ? A 90  ARG ? HH21 A 90  ARG HH21 ?       
+135 A 6  ARG HH22 ? A 90  ARG ? HH22 A 90  ARG HH22 ?       
+136 A 7  LYS N    ? A 91  LYS ? N    A 91  LYS N    matched 
+137 A 7  LYS CA   ? A 91  LYS ? CA   A 91  LYS CA   matched 
+138 A 7  LYS C    ? A 91  LYS ? C    A 91  LYS C    matched 
+139 A 7  LYS O    ? A 91  LYS ? O    A 91  LYS O    ?       
+140 A 7  LYS CB   ? A 91  LYS ? CB   A 91  LYS CB   ?       
+141 A 7  LYS CG   ? A 91  LYS ? CG   A 91  LYS CG   ?       
+142 A 7  LYS CD   ? A 91  LYS ? CD   A 91  LYS CD   ?       
+143 A 7  LYS CE   ? A 91  LYS ? CE   A 91  LYS CE   ?       
+144 A 7  LYS NZ   ? A 91  LYS ? NZ   A 91  LYS NZ   ?       
+145 A 7  LYS H    ? A 91  LYS ? H    A 91  LYS HN   matched 
+146 A 7  LYS HA   ? A 91  LYS ? HA   A 91  LYS HA   matched 
+147 A 7  LYS HB2  ? A 91  LYS ? HB2  A 91  LYS HB1  matched 
+148 A 7  LYS HB3  ? A 91  LYS ? HB3  A 91  LYS HB2  matched 
+149 A 7  LYS HG2  ? A 91  LYS ? HG2  A 91  LYS HG1  matched 
+150 A 7  LYS HG3  ? A 91  LYS ? HG3  A 91  LYS HG2  matched 
+151 A 7  LYS HD2  ? A 91  LYS ? HD2  A 91  LYS HD1  ?       
+152 A 7  LYS HD3  ? A 91  LYS ? HD3  A 91  LYS HD2  ?       
+153 A 7  LYS HE2  ? A 91  LYS ? HE2  A 91  LYS HE1  matched 
+154 A 7  LYS HE3  ? A 91  LYS ? HE3  A 91  LYS HE2  ?       
+155 A 7  LYS HZ1  ? A 91  LYS ? HZ1  A 91  LYS HZ1  matched 
+156 A 7  LYS HZ2  ? A 91  LYS ? HZ2  A 91  LYS HZ2  matched 
+157 A 7  LYS HZ3  ? A 91  LYS ? HZ3  A 91  LYS HZ3  matched 
+158 A 8  PHE N    ? A 92  PHE ? N    A 92  PHE N    matched 
+159 A 8  PHE CA   ? A 92  PHE ? CA   A 92  PHE CA   matched 
+160 A 8  PHE C    ? A 92  PHE ? C    A 92  PHE C    matched 
+161 A 8  PHE O    ? A 92  PHE ? O    A 92  PHE O    ?       
+162 A 8  PHE CB   ? A 92  PHE ? CB   A 92  PHE CB   matched 
+163 A 8  PHE CG   ? A 92  PHE ? CG   A 92  PHE CG   matched 
+164 A 8  PHE CD1  ? A 92  PHE ? CD1  A 92  PHE CD1  matched 
+165 A 8  PHE CD2  ? A 92  PHE ? CD2  A 92  PHE CD2  matched 
+166 A 8  PHE CE1  ? A 92  PHE ? CE1  A 92  PHE CE1  ?       
+167 A 8  PHE CE2  ? A 92  PHE ? CE2  A 92  PHE CE2  ?       
+168 A 8  PHE CZ   ? A 92  PHE ? CZ   A 92  PHE CZ   ?       
+169 A 8  PHE H    ? A 92  PHE ? H    A 92  PHE HN   matched 
+170 A 8  PHE HA   ? A 92  PHE ? HA   A 92  PHE HA   matched 
+171 A 8  PHE HB2  ? A 92  PHE ? HB2  A 92  PHE HB1  matched 
+172 A 8  PHE HB3  ? A 92  PHE ? HB3  A 92  PHE HB2  matched 
+173 A 8  PHE HD1  ? A 92  PHE ? HD1  A 92  PHE HD1  ?       
+174 A 8  PHE HD2  ? A 92  PHE ? HD2  A 92  PHE HD2  ?       
+175 A 8  PHE HE1  ? A 92  PHE ? HE1  A 92  PHE HE1  ?       
+176 A 8  PHE HE2  ? A 92  PHE ? HE2  A 92  PHE HE2  ?       
+177 A 8  PHE HZ   ? A 92  PHE ? HZ   A 92  PHE HZ   ?       
+178 A 9  LEU N    ? A 93  LEU ? N    A 93  LEU N    matched 
+179 A 9  LEU CA   ? A 93  LEU ? CA   A 93  LEU CA   matched 
+180 A 9  LEU C    ? A 93  LEU ? C    A 93  LEU C    matched 
+181 A 9  LEU O    ? A 93  LEU ? O    A 93  LEU O    ?       
+182 A 9  LEU CB   ? A 93  LEU ? CB   A 93  LEU CB   matched 
+183 A 9  LEU CG   ? A 93  LEU ? CG   A 93  LEU CG   ?       
+184 A 9  LEU CD1  ? A 93  LEU ? CD1  A 93  LEU CD1  matched 
+185 A 9  LEU CD2  ? A 93  LEU ? CD2  A 93  LEU CD2  matched 
+186 A 9  LEU H    ? A 93  LEU ? H    A 93  LEU HN   matched 
+187 A 9  LEU HA   ? A 93  LEU ? HA   A 93  LEU HA   matched 
+188 A 9  LEU HB2  ? A 93  LEU ? HB2  A 93  LEU HB1  matched 
+189 A 9  LEU HB3  ? A 93  LEU ? HB3  A 93  LEU HB2  matched 
+190 A 9  LEU HG   ? A 93  LEU ? HG   A 93  LEU HG   ?       
+191 A 9  LEU HD11 ? A 93  LEU ? HD11 A 93  LEU HD11 matched 
+192 A 9  LEU HD12 ? A 93  LEU ? HD12 A 93  LEU HD12 matched 
+193 A 9  LEU HD13 ? A 93  LEU ? HD13 A 93  LEU HD13 matched 
+194 A 9  LEU HD21 ? A 93  LEU ? HD21 A 93  LEU HD21 matched 
+195 A 9  LEU HD22 ? A 93  LEU ? HD22 A 93  LEU HD22 matched 
+196 A 9  LEU HD23 ? A 93  LEU ? HD23 A 93  LEU HD23 matched 
+197 A 10 ASN N    ? A 94  ASN ? N    A 94  ASN N    matched 
+198 A 10 ASN CA   ? A 94  ASN ? CA   A 94  ASN CA   matched 
+199 A 10 ASN C    ? A 94  ASN ? C    A 94  ASN C    matched 
+200 A 10 ASN O    ? A 94  ASN ? O    A 94  ASN O    ?       
+201 A 10 ASN CB   ? A 94  ASN ? CB   A 94  ASN CB   matched 
+202 A 10 ASN CG   ? A 94  ASN ? CG   A 94  ASN CG   ?       
+203 A 10 ASN OD1  ? A 94  ASN ? OD1  A 94  ASN OD1  ?       
+204 A 10 ASN ND2  ? A 94  ASN ? ND2  A 94  ASN ND2  ?       
+205 A 10 ASN H    ? A 94  ASN ? H    A 94  ASN HN   matched 
+206 A 10 ASN HA   ? A 94  ASN ? HA   A 94  ASN HA   matched 
+207 A 10 ASN HB2  ? A 94  ASN ? HB2  A 94  ASN HB1  matched 
+208 A 10 ASN HB3  ? A 94  ASN ? HB3  A 94  ASN HB2  matched 
+209 A 10 ASN HD21 ? A 94  ASN ? HD21 A 94  ASN HD21 ?       
+210 A 10 ASN HD22 ? A 94  ASN ? HD22 A 94  ASN HD22 ?       
+211 A 11 GLU N    ? A 95  GLU ? N    A 95  GLU N    matched 
+212 A 11 GLU CA   ? A 95  GLU ? CA   A 95  GLU CA   matched 
+213 A 11 GLU C    ? A 95  GLU ? C    A 95  GLU C    matched 
+214 A 11 GLU O    ? A 95  GLU ? O    A 95  GLU O    ?       
+215 A 11 GLU CB   ? A 95  GLU ? CB   A 95  GLU CB   matched 
+216 A 11 GLU CG   ? A 95  GLU ? CG   A 95  GLU CG   matched 
+217 A 11 GLU CD   ? A 95  GLU ? CD   A 95  GLU CD   ?       
+218 A 11 GLU OE1  ? A 95  GLU ? OE1  A 95  GLU OE1  ?       
+219 A 11 GLU OE2  ? A 95  GLU ? OE2  A 95  GLU OE2  ?       
+220 A 11 GLU H    ? A 95  GLU ? H    A 95  GLU HN   matched 
+221 A 11 GLU HA   ? A 95  GLU ? HA   A 95  GLU HA   matched 
+222 A 11 GLU HB2  ? A 95  GLU ? HB2  A 95  GLU HB1  matched 
+223 A 11 GLU HB3  ? A 95  GLU ? HB3  A 95  GLU HB2  matched 
+224 A 11 GLU HG2  ? A 95  GLU ? HG2  A 95  GLU HG1  matched 
+225 A 11 GLU HG3  ? A 95  GLU ? HG3  A 95  GLU HG2  matched 
+226 A 12 SER N    ? A 96  SER ? N    A 96  SER N    matched 
+227 A 12 SER CA   ? A 96  SER ? CA   A 96  SER CA   matched 
+228 A 12 SER C    ? A 96  SER ? C    A 96  SER C    matched 
+229 A 12 SER O    ? A 96  SER ? O    A 96  SER O    ?       
+230 A 12 SER CB   ? A 96  SER ? CB   A 96  SER CB   matched 
+231 A 12 SER OG   ? A 96  SER ? OG   A 96  SER OG   ?       
+232 A 12 SER H    ? A 96  SER ? H    A 96  SER HN   matched 
+233 A 12 SER HA   ? A 96  SER ? HA   A 96  SER HA   matched 
+234 A 12 SER HB2  ? A 96  SER ? HB2  A 96  SER HB1  matched 
+235 A 12 SER HB3  ? A 96  SER ? HB3  A 96  SER HB2  matched 
+236 A 12 SER HG   ? A 96  SER ? HG   A 96  SER HG   ?       
+237 A 13 TYR N    ? A 97  TYR ? N    A 97  TYR N    matched 
+238 A 13 TYR CA   ? A 97  TYR ? CA   A 97  TYR CA   matched 
+239 A 13 TYR C    ? A 97  TYR ? C    A 97  TYR C    matched 
+240 A 13 TYR O    ? A 97  TYR ? O    A 97  TYR O    ?       
+241 A 13 TYR CB   ? A 97  TYR ? CB   A 97  TYR CB   matched 
+242 A 13 TYR CG   ? A 97  TYR ? CG   A 97  TYR CG   ?       
+243 A 13 TYR CD1  ? A 97  TYR ? CD1  A 97  TYR CD1  ?       
+244 A 13 TYR CD2  ? A 97  TYR ? CD2  A 97  TYR CD2  ?       
+245 A 13 TYR CE1  ? A 97  TYR ? CE1  A 97  TYR CE1  ?       
+246 A 13 TYR CE2  ? A 97  TYR ? CE2  A 97  TYR CE2  ?       
+247 A 13 TYR CZ   ? A 97  TYR ? CZ   A 97  TYR CZ   ?       
+248 A 13 TYR OH   ? A 97  TYR ? OH   A 97  TYR OH   ?       
+249 A 13 TYR H    ? A 97  TYR ? H    A 97  TYR HN   matched 
+250 A 13 TYR HA   ? A 97  TYR ? HA   A 97  TYR HA   matched 
+251 A 13 TYR HB2  ? A 97  TYR ? HB2  A 97  TYR HB1  matched 
+252 A 13 TYR HB3  ? A 97  TYR ? HB3  A 97  TYR HB2  matched 
+253 A 13 TYR HD1  ? A 97  TYR ? HD1  A 97  TYR HD1  ?       
+254 A 13 TYR HD2  ? A 97  TYR ? HD2  A 97  TYR HD2  ?       
+255 A 13 TYR HE1  ? A 97  TYR ? HE1  A 97  TYR HE1  ?       
+256 A 13 TYR HE2  ? A 97  TYR ? HE2  A 97  TYR HE2  ?       
+257 A 13 TYR HH   ? A 97  TYR ? HH   A 97  TYR HH   ?       
+258 A 14 LYS N    ? A 98  LYS ? N    A 98  LYS N    matched 
+259 A 14 LYS CA   ? A 98  LYS ? CA   A 98  LYS CA   matched 
+260 A 14 LYS C    ? A 98  LYS ? C    A 98  LYS C    matched 
+261 A 14 LYS O    ? A 98  LYS ? O    A 98  LYS O    ?       
+262 A 14 LYS CB   ? A 98  LYS ? CB   A 98  LYS CB   matched 
+263 A 14 LYS CG   ? A 98  LYS ? CG   A 98  LYS CG   ?       
+264 A 14 LYS CD   ? A 98  LYS ? CD   A 98  LYS CD   ?       
+265 A 14 LYS CE   ? A 98  LYS ? CE   A 98  LYS CE   ?       
+266 A 14 LYS NZ   ? A 98  LYS ? NZ   A 98  LYS NZ   ?       
+267 A 14 LYS H    ? A 98  LYS ? H    A 98  LYS HN   matched 
+268 A 14 LYS HA   ? A 98  LYS ? HA   A 98  LYS HA   matched 
+269 A 14 LYS HB2  ? A 98  LYS ? HB2  A 98  LYS HB1  matched 
+270 A 14 LYS HB3  ? A 98  LYS ? HB3  A 98  LYS HB2  matched 
+271 A 14 LYS HG2  ? A 98  LYS ? HG2  A 98  LYS HG1  matched 
+272 A 14 LYS HG3  ? A 98  LYS ? HG3  A 98  LYS HG2  matched 
+273 A 14 LYS HD2  ? A 98  LYS ? HD2  A 98  LYS HD1  matched 
+274 A 14 LYS HD3  ? A 98  LYS ? HD3  A 98  LYS HD2  matched 
+275 A 14 LYS HE2  ? A 98  LYS ? HE2  A 98  LYS HE1  ?       
+276 A 14 LYS HE3  ? A 98  LYS ? HE3  A 98  LYS HE2  ?       
+277 A 14 LYS HZ1  ? A 98  LYS ? HZ1  A 98  LYS HZ1  ?       
+278 A 14 LYS HZ2  ? A 98  LYS ? HZ2  A 98  LYS HZ2  ?       
+279 A 14 LYS HZ3  ? A 98  LYS ? HZ3  A 98  LYS HZ3  ?       
+280 A 15 HIS N    ? A 99  HIS ? N    A 99  HIS N    matched 
+281 A 15 HIS CA   ? A 99  HIS ? CA   A 99  HIS CA   matched 
+282 A 15 HIS C    ? A 99  HIS ? C    A 99  HIS C    matched 
+283 A 15 HIS O    ? A 99  HIS ? O    A 99  HIS O    ?       
+284 A 15 HIS CB   ? A 99  HIS ? CB   A 99  HIS CB   matched 
+285 A 15 HIS CG   ? A 99  HIS ? CG   A 99  HIS CG   matched 
+286 A 15 HIS ND1  ? A 99  HIS ? ND1  A 99  HIS ND1  ?       
+287 A 15 HIS CD2  ? A 99  HIS ? CD2  A 99  HIS CD2  matched 
+288 A 15 HIS CE1  ? A 99  HIS ? CE1  A 99  HIS CE1  matched 
+289 A 15 HIS NE2  ? A 99  HIS ? NE2  A 99  HIS NE2  ?       
+290 A 15 HIS H    ? A 99  HIS ? H    A 99  HIS HN   matched 
+291 A 15 HIS HA   ? A 99  HIS ? HA   A 99  HIS HA   matched 
+292 A 15 HIS HB2  ? A 99  HIS ? HB2  A 99  HIS HB1  matched 
+293 A 15 HIS HB3  ? A 99  HIS ? HB3  A 99  HIS HB2  matched 
+294 A 15 HIS HD2  ? A 99  HIS ? HD2  A 99  HIS HD2  matched 
+295 A 15 HIS HE1  ? A 99  HIS ? HE1  A 99  HIS HE1  matched 
+296 A 15 HIS HE2  ? A 99  HIS ? HE2  A 99  HIS HE2  ?       
+297 A 16 GLU N    ? A 100 GLU ? N    A 100 GLU N    matched 
+298 A 16 GLU CA   ? A 100 GLU ? CA   A 100 GLU CA   matched 
+299 A 16 GLU C    ? A 100 GLU ? C    A 100 GLU C    matched 
+300 A 16 GLU O    ? A 100 GLU ? O    A 100 GLU O    ?       
+301 A 16 GLU CB   ? A 100 GLU ? CB   A 100 GLU CB   matched 
+302 A 16 GLU CG   ? A 100 GLU ? CG   A 100 GLU CG   matched 
+303 A 16 GLU CD   ? A 100 GLU ? CD   A 100 GLU CD   ?       
+304 A 16 GLU OE1  ? A 100 GLU ? OE1  A 100 GLU OE1  ?       
+305 A 16 GLU OE2  ? A 100 GLU ? OE2  A 100 GLU OE2  ?       
+306 A 16 GLU H    ? A 100 GLU ? H    A 100 GLU HN   matched 
+307 A 16 GLU HA   ? A 100 GLU ? HA   A 100 GLU HA   matched 
+308 A 16 GLU HB2  ? A 100 GLU ? HB2  A 100 GLU HB1  matched 
+309 A 16 GLU HB3  ? A 100 GLU ? HB3  A 100 GLU HB2  matched 
+310 A 16 GLU HG2  ? A 100 GLU ? HG2  A 100 GLU HG1  matched 
+311 A 16 GLU HG3  ? A 100 GLU ? HG3  A 100 GLU HG2  ?       
+312 A 17 GLN N    ? A 101 GLN ? N    A 101 GLN N    matched 
+313 A 17 GLN CA   ? A 101 GLN ? CA   A 101 GLN CA   matched 
+314 A 17 GLN C    ? A 101 GLN ? C    A 101 GLN C    matched 
+315 A 17 GLN O    ? A 101 GLN ? O    A 101 GLN O    ?       
+316 A 17 GLN CB   ? A 101 GLN ? CB   A 101 GLN CB   matched 
+317 A 17 GLN CG   ? A 101 GLN ? CG   A 101 GLN CG   matched 
+318 A 17 GLN CD   ? A 101 GLN ? CD   A 101 GLN CD   matched 
+319 A 17 GLN OE1  ? A 101 GLN ? OE1  A 101 GLN OE1  ?       
+320 A 17 GLN NE2  ? A 101 GLN ? NE2  A 101 GLN NE2  ?       
+321 A 17 GLN H    ? A 101 GLN ? H    A 101 GLN HN   matched 
+322 A 17 GLN HA   ? A 101 GLN ? HA   A 101 GLN HA   matched 
+323 A 17 GLN HB2  ? A 101 GLN ? HB2  A 101 GLN HB1  matched 
+324 A 17 GLN HB3  ? A 101 GLN ? HB3  A 101 GLN HB2  matched 
+325 A 17 GLN HG2  ? A 101 GLN ? HG2  A 101 GLN HG1  matched 
+326 A 17 GLN HG3  ? A 101 GLN ? HG3  A 101 GLN HG2  matched 
+327 A 17 GLN HE21 ? A 101 GLN ? HE21 A 101 GLN HE21 ?       
+328 A 17 GLN HE22 ? A 101 GLN ? HE22 A 101 GLN HE22 ?       
+329 A 18 VAL N    ? A 102 VAL ? N    A 102 VAL N    matched 
+330 A 18 VAL CA   ? A 102 VAL ? CA   A 102 VAL CA   matched 
+331 A 18 VAL C    ? A 102 VAL ? C    A 102 VAL C    matched 
+332 A 18 VAL O    ? A 102 VAL ? O    A 102 VAL O    ?       
+333 A 18 VAL CB   ? A 102 VAL ? CB   A 102 VAL CB   matched 
+334 A 18 VAL CG1  ? A 102 VAL ? CG1  A 102 VAL CG1  matched 
+335 A 18 VAL CG2  ? A 102 VAL ? CG2  A 102 VAL CG2  matched 
+336 A 18 VAL H    ? A 102 VAL ? H    A 102 VAL HN   matched 
+337 A 18 VAL HA   ? A 102 VAL ? HA   A 102 VAL HA   matched 
+338 A 18 VAL HB   ? A 102 VAL ? HB   A 102 VAL HB   matched 
+339 A 18 VAL HG11 ? A 102 VAL ? HG11 A 102 VAL HG11 matched 
+340 A 18 VAL HG12 ? A 102 VAL ? HG12 A 102 VAL HG12 matched 
+341 A 18 VAL HG13 ? A 102 VAL ? HG13 A 102 VAL HG13 matched 
+342 A 18 VAL HG21 ? A 102 VAL ? HG21 A 102 VAL HG21 matched 
+343 A 18 VAL HG22 ? A 102 VAL ? HG22 A 102 VAL HG22 matched 
+344 A 18 VAL HG23 ? A 102 VAL ? HG23 A 102 VAL HG23 matched 
+345 A 19 TYR N    ? A 103 TYR ? N    A 103 TYR N    matched 
+346 A 19 TYR CA   ? A 103 TYR ? CA   A 103 TYR CA   matched 
+347 A 19 TYR C    ? A 103 TYR ? C    A 103 TYR C    matched 
+348 A 19 TYR O    ? A 103 TYR ? O    A 103 TYR O    ?       
+349 A 19 TYR CB   ? A 103 TYR ? CB   A 103 TYR CB   matched 
+350 A 19 TYR CG   ? A 103 TYR ? CG   A 103 TYR CG   ?       
+351 A 19 TYR CD1  ? A 103 TYR ? CD1  A 103 TYR CD1  ?       
+352 A 19 TYR CD2  ? A 103 TYR ? CD2  A 103 TYR CD2  ?       
+353 A 19 TYR CE1  ? A 103 TYR ? CE1  A 103 TYR CE1  ?       
+354 A 19 TYR CE2  ? A 103 TYR ? CE2  A 103 TYR CE2  ?       
+355 A 19 TYR CZ   ? A 103 TYR ? CZ   A 103 TYR CZ   ?       
+356 A 19 TYR OH   ? A 103 TYR ? OH   A 103 TYR OH   ?       
+357 A 19 TYR H    ? A 103 TYR ? H    A 103 TYR HN   matched 
+358 A 19 TYR HA   ? A 103 TYR ? HA   A 103 TYR HA   matched 
+359 A 19 TYR HB2  ? A 103 TYR ? HB2  A 103 TYR HB1  matched 
+360 A 19 TYR HB3  ? A 103 TYR ? HB3  A 103 TYR HB2  matched 
+361 A 19 TYR HD1  ? A 103 TYR ? HD1  A 103 TYR HD1  ?       
+362 A 19 TYR HD2  ? A 103 TYR ? HD2  A 103 TYR HD2  ?       
+363 A 19 TYR HE1  ? A 103 TYR ? HE1  A 103 TYR HE1  ?       
+364 A 19 TYR HE2  ? A 103 TYR ? HE2  A 103 TYR HE2  ?       
+365 A 19 TYR HH   ? A 103 TYR ? HH   A 103 TYR HH   ?       
+366 A 20 ILE N    ? A 104 ILE ? N    A 104 ILE N    matched 
+367 A 20 ILE CA   ? A 104 ILE ? CA   A 104 ILE CA   matched 
+368 A 20 ILE C    ? A 104 ILE ? C    A 104 ILE C    matched 
+369 A 20 ILE O    ? A 104 ILE ? O    A 104 ILE O    ?       
+370 A 20 ILE CB   ? A 104 ILE ? CB   A 104 ILE CB   matched 
+371 A 20 ILE CG1  ? A 104 ILE ? CG1  A 104 ILE CG1  matched 
+372 A 20 ILE CG2  ? A 104 ILE ? CG2  A 104 ILE CG2  matched 
+373 A 20 ILE CD1  ? A 104 ILE ? CD1  A 104 ILE CD1  matched 
+374 A 20 ILE H    ? A 104 ILE ? H    A 104 ILE HN   matched 
+375 A 20 ILE HA   ? A 104 ILE ? HA   A 104 ILE HA   matched 
+376 A 20 ILE HB   ? A 104 ILE ? HB   A 104 ILE HB   matched 
+377 A 20 ILE HG12 ? A 104 ILE ? HG12 A 104 ILE HG11 matched 
+378 A 20 ILE HG13 ? A 104 ILE ? HG13 A 104 ILE HG12 matched 
+379 A 20 ILE HG21 ? A 104 ILE ? HG21 A 104 ILE HG21 matched 
+380 A 20 ILE HG22 ? A 104 ILE ? HG22 A 104 ILE HG22 matched 
+381 A 20 ILE HG23 ? A 104 ILE ? HG23 A 104 ILE HG23 matched 
+382 A 20 ILE HD11 ? A 104 ILE ? HD11 A 104 ILE HD11 matched 
+383 A 20 ILE HD12 ? A 104 ILE ? HD12 A 104 ILE HD12 matched 
+384 A 20 ILE HD13 ? A 104 ILE ? HD13 A 104 ILE HD13 matched 
+385 A 21 ARG N    ? A 105 ARG ? N    A 105 ARG N    matched 
+386 A 21 ARG CA   ? A 105 ARG ? CA   A 105 ARG CA   matched 
+387 A 21 ARG C    ? A 105 ARG ? C    A 105 ARG C    matched 
+388 A 21 ARG O    ? A 105 ARG ? O    A 105 ARG O    ?       
+389 A 21 ARG CB   ? A 105 ARG ? CB   A 105 ARG CB   ?       
+390 A 21 ARG CG   ? A 105 ARG ? CG   A 105 ARG CG   ?       
+391 A 21 ARG CD   ? A 105 ARG ? CD   A 105 ARG CD   ?       
+392 A 21 ARG NE   ? A 105 ARG ? NE   A 105 ARG NE   ?       
+393 A 21 ARG CZ   ? A 105 ARG ? CZ   A 105 ARG CZ   ?       
+394 A 21 ARG NH1  ? A 105 ARG ? NH1  A 105 ARG NH1  ?       
+395 A 21 ARG NH2  ? A 105 ARG ? NH2  A 105 ARG NH2  ?       
+396 A 21 ARG H    ? A 105 ARG ? H    A 105 ARG HN   matched 
+397 A 21 ARG HA   ? A 105 ARG ? HA   A 105 ARG HA   matched 
+398 A 21 ARG HB2  ? A 105 ARG ? HB2  A 105 ARG HB1  matched 
+399 A 21 ARG HB3  ? A 105 ARG ? HB3  A 105 ARG HB2  ?       
+400 A 21 ARG HG2  ? A 105 ARG ? HG2  A 105 ARG HG1  matched 
+401 A 21 ARG HG3  ? A 105 ARG ? HG3  A 105 ARG HG2  matched 
+402 A 21 ARG HD2  ? A 105 ARG ? HD2  A 105 ARG HD1  matched 
+403 A 21 ARG HD3  ? A 105 ARG ? HD3  A 105 ARG HD2  matched 
+404 A 21 ARG HE   ? A 105 ARG ? HE   A 105 ARG HE   matched 
+405 A 21 ARG HH11 ? A 105 ARG ? HH11 A 105 ARG HH11 ?       
+406 A 21 ARG HH12 ? A 105 ARG ? HH12 A 105 ARG HH12 ?       
+407 A 21 ARG HH21 ? A 105 ARG ? HH21 A 105 ARG HH21 ?       
+408 A 21 ARG HH22 ? A 105 ARG ? HH22 A 105 ARG HH22 ?       
+409 A 22 SER N    ? A 106 SER ? N    A 106 SER N    matched 
+410 A 22 SER CA   ? A 106 SER ? CA   A 106 SER CA   matched 
+411 A 22 SER C    ? A 106 SER ? C    A 106 SER C    matched 
+412 A 22 SER O    ? A 106 SER ? O    A 106 SER O    ?       
+413 A 22 SER CB   ? A 106 SER ? CB   A 106 SER CB   matched 
+414 A 22 SER OG   ? A 106 SER ? OG   A 106 SER OG   ?       
+415 A 22 SER H    ? A 106 SER ? H    A 106 SER HN   matched 
+416 A 22 SER HA   ? A 106 SER ? HA   A 106 SER HA   matched 
+417 A 22 SER HB2  ? A 106 SER ? HB2  A 106 SER HB1  matched 
+418 A 22 SER HB3  ? A 106 SER ? HB3  A 106 SER HB2  matched 
+419 A 22 SER HG   ? A 106 SER ? HG   A 106 SER HG   ?       
+420 A 23 THR N    ? A 107 THR ? N    A 107 THR N    matched 
+421 A 23 THR CA   ? A 107 THR ? CA   A 107 THR CA   matched 
+422 A 23 THR C    ? A 107 THR ? C    A 107 THR C    matched 
+423 A 23 THR O    ? A 107 THR ? O    A 107 THR O    ?       
+424 A 23 THR CB   ? A 107 THR ? CB   A 107 THR CB   matched 
+425 A 23 THR OG1  ? A 107 THR ? OG1  A 107 THR OG1  ?       
+426 A 23 THR CG2  ? A 107 THR ? CG2  A 107 THR CG2  ?       
+427 A 23 THR H    ? A 107 THR ? H    A 107 THR HN   matched 
+428 A 23 THR HA   ? A 107 THR ? HA   A 107 THR HA   matched 
+429 A 23 THR HB   ? A 107 THR ? HB   A 107 THR HB   matched 
+430 A 23 THR HG1  ? A 107 THR ? HG1  A 107 THR HG1  ?       
+431 A 23 THR HG21 ? A 107 THR ? HG21 A 107 THR HG21 matched 
+432 A 23 THR HG22 ? A 107 THR ? HG22 A 107 THR HG22 matched 
+433 A 23 THR HG23 ? A 107 THR ? HG23 A 107 THR HG23 matched 
+434 A 24 ASP N    ? A 108 ASP ? N    A 108 ASP N    matched 
+435 A 24 ASP CA   ? A 108 ASP ? CA   A 108 ASP CA   matched 
+436 A 24 ASP C    ? A 108 ASP ? C    A 108 ASP C    matched 
+437 A 24 ASP O    ? A 108 ASP ? O    A 108 ASP O    ?       
+438 A 24 ASP CB   ? A 108 ASP ? CB   A 108 ASP CB   ?       
+439 A 24 ASP CG   ? A 108 ASP ? CG   A 108 ASP CG   ?       
+440 A 24 ASP OD1  ? A 108 ASP ? OD1  A 108 ASP OD1  ?       
+441 A 24 ASP OD2  ? A 108 ASP ? OD2  A 108 ASP OD2  ?       
+442 A 24 ASP H    ? A 108 ASP ? H    A 108 ASP HN   matched 
+443 A 24 ASP HA   ? A 108 ASP ? HA   A 108 ASP HA   matched 
+444 A 24 ASP HB2  ? A 108 ASP ? HB2  A 108 ASP HB1  matched 
+445 A 24 ASP HB3  ? A 108 ASP ? HB3  A 108 ASP HB2  matched 
+446 A 25 VAL N    ? A 109 VAL ? N    A 109 VAL N    matched 
+447 A 25 VAL CA   ? A 109 VAL ? CA   A 109 VAL CA   matched 
+448 A 25 VAL C    ? A 109 VAL ? C    A 109 VAL C    matched 
+449 A 25 VAL O    ? A 109 VAL ? O    A 109 VAL O    ?       
+450 A 25 VAL CB   ? A 109 VAL ? CB   A 109 VAL CB   matched 
+451 A 25 VAL CG1  ? A 109 VAL ? CG1  A 109 VAL CG1  matched 
+452 A 25 VAL CG2  ? A 109 VAL ? CG2  A 109 VAL CG2  matched 
+453 A 25 VAL H    ? A 109 VAL ? H    A 109 VAL HN   matched 
+454 A 25 VAL HA   ? A 109 VAL ? HA   A 109 VAL HA   matched 
+455 A 25 VAL HB   ? A 109 VAL ? HB   A 109 VAL HB   matched 
+456 A 25 VAL HG11 ? A 109 VAL ? HG11 A 109 VAL HG11 matched 
+457 A 25 VAL HG12 ? A 109 VAL ? HG12 A 109 VAL HG12 matched 
+458 A 25 VAL HG13 ? A 109 VAL ? HG13 A 109 VAL HG13 matched 
+459 A 25 VAL HG21 ? A 109 VAL ? HG21 A 109 VAL HG21 matched 
+460 A 25 VAL HG22 ? A 109 VAL ? HG22 A 109 VAL HG22 matched 
+461 A 25 VAL HG23 ? A 109 VAL ? HG23 A 109 VAL HG23 matched 
+462 A 26 ASP N    ? A 110 ASP ? N    A 110 ASP N    matched 
+463 A 26 ASP CA   ? A 110 ASP ? CA   A 110 ASP CA   matched 
+464 A 26 ASP C    ? A 110 ASP ? C    A 110 ASP C    matched 
+465 A 26 ASP O    ? A 110 ASP ? O    A 110 ASP O    ?       
+466 A 26 ASP CB   ? A 110 ASP ? CB   A 110 ASP CB   matched 
+467 A 26 ASP CG   ? A 110 ASP ? CG   A 110 ASP CG   ?       
+468 A 26 ASP OD1  ? A 110 ASP ? OD1  A 110 ASP OD1  ?       
+469 A 26 ASP OD2  ? A 110 ASP ? OD2  A 110 ASP OD2  ?       
+470 A 26 ASP H    ? A 110 ASP ? H    A 110 ASP HN   matched 
+471 A 26 ASP HA   ? A 110 ASP ? HA   A 110 ASP HA   matched 
+472 A 26 ASP HB2  ? A 110 ASP ? HB2  A 110 ASP HB1  matched 
+473 A 26 ASP HB3  ? A 110 ASP ? HB3  A 110 ASP HB2  matched 
+474 A 27 ARG N    ? A 111 ARG ? N    A 111 ARG N    matched 
+475 A 27 ARG CA   ? A 111 ARG ? CA   A 111 ARG CA   matched 
+476 A 27 ARG C    ? A 111 ARG ? C    A 111 ARG C    matched 
+477 A 27 ARG O    ? A 111 ARG ? O    A 111 ARG O    ?       
+478 A 27 ARG CB   ? A 111 ARG ? CB   A 111 ARG CB   matched 
+479 A 27 ARG CG   ? A 111 ARG ? CG   A 111 ARG CG   ?       
+480 A 27 ARG CD   ? A 111 ARG ? CD   A 111 ARG CD   ?       
+481 A 27 ARG NE   ? A 111 ARG ? NE   A 111 ARG NE   ?       
+482 A 27 ARG CZ   ? A 111 ARG ? CZ   A 111 ARG CZ   ?       
+483 A 27 ARG NH1  ? A 111 ARG ? NH1  A 111 ARG NH1  ?       
+484 A 27 ARG NH2  ? A 111 ARG ? NH2  A 111 ARG NH2  ?       
+485 A 27 ARG H    ? A 111 ARG ? H    A 111 ARG HN   matched 
+486 A 27 ARG HA   ? A 111 ARG ? HA   A 111 ARG HA   matched 
+487 A 27 ARG HB2  ? A 111 ARG ? HB2  A 111 ARG HB1  matched 
+488 A 27 ARG HB3  ? A 111 ARG ? HB3  A 111 ARG HB2  matched 
+489 A 27 ARG HG2  ? A 111 ARG ? HG2  A 111 ARG HG1  matched 
+490 A 27 ARG HG3  ? A 111 ARG ? HG3  A 111 ARG HG2  matched 
+491 A 27 ARG HD2  ? A 111 ARG ? HD2  A 111 ARG HD1  matched 
+492 A 27 ARG HD3  ? A 111 ARG ? HD3  A 111 ARG HD2  matched 
+493 A 27 ARG HE   ? A 111 ARG ? HE   A 111 ARG HE   matched 
+494 A 27 ARG HH11 ? A 111 ARG ? HH11 A 111 ARG HH11 ?       
+495 A 27 ARG HH12 ? A 111 ARG ? HH12 A 111 ARG HH12 ?       
+496 A 27 ARG HH21 ? A 111 ARG ? HH21 A 111 ARG HH21 ?       
+497 A 27 ARG HH22 ? A 111 ARG ? HH22 A 111 ARG HH22 ?       
+498 A 28 THR N    ? A 112 THR ? N    A 112 THR N    ?       
+499 A 28 THR CA   ? A 112 THR ? CA   A 112 THR CA   matched 
+500 A 28 THR C    ? A 112 THR ? C    A 112 THR C    matched 
+501 A 28 THR O    ? A 112 THR ? O    A 112 THR O    ?       
+502 A 28 THR CB   ? A 112 THR ? CB   A 112 THR CB   matched 
+503 A 28 THR OG1  ? A 112 THR ? OG1  A 112 THR OG1  ?       
+504 A 28 THR CG2  ? A 112 THR ? CG2  A 112 THR CG2  ?       
+505 A 28 THR H    ? A 112 THR ? H    A 112 THR HN   matched 
+506 A 28 THR HA   ? A 112 THR ? HA   A 112 THR HA   matched 
+507 A 28 THR HB   ? A 112 THR ? HB   A 112 THR HB   matched 
+508 A 28 THR HG1  ? A 112 THR ? HG1  A 112 THR HG1  ?       
+509 A 28 THR HG21 ? A 112 THR ? HG21 A 112 THR HG21 ?       
+510 A 28 THR HG22 ? A 112 THR ? HG22 A 112 THR HG22 ?       
+511 A 28 THR HG23 ? A 112 THR ? HG23 A 112 THR HG23 ?       
+512 A 29 LEU N    ? A 113 LEU ? N    A 113 LEU N    ?       
+513 A 29 LEU CA   ? A 113 LEU ? CA   A 113 LEU CA   matched 
+514 A 29 LEU C    ? A 113 LEU ? C    A 113 LEU C    matched 
+515 A 29 LEU O    ? A 113 LEU ? O    A 113 LEU O    ?       
+516 A 29 LEU CB   ? A 113 LEU ? CB   A 113 LEU CB   ?       
+517 A 29 LEU CG   ? A 113 LEU ? CG   A 113 LEU CG   ?       
+518 A 29 LEU CD1  ? A 113 LEU ? CD1  A 113 LEU CD1  matched 
+519 A 29 LEU CD2  ? A 113 LEU ? CD2  A 113 LEU CD2  matched 
+520 A 29 LEU H    ? A 113 LEU ? H    A 113 LEU HN   matched 
+521 A 29 LEU HA   ? A 113 LEU ? HA   A 113 LEU HA   matched 
+522 A 29 LEU HB2  ? A 113 LEU ? HB2  A 113 LEU HB1  matched 
+523 A 29 LEU HB3  ? A 113 LEU ? HB3  A 113 LEU HB2  matched 
+524 A 29 LEU HG   ? A 113 LEU ? HG   A 113 LEU HG   ?       
+525 A 29 LEU HD11 ? A 113 LEU ? HD11 A 113 LEU HD11 matched 
+526 A 29 LEU HD12 ? A 113 LEU ? HD12 A 113 LEU HD12 matched 
+527 A 29 LEU HD13 ? A 113 LEU ? HD13 A 113 LEU HD13 matched 
+528 A 29 LEU HD21 ? A 113 LEU ? HD21 A 113 LEU HD21 matched 
+529 A 29 LEU HD22 ? A 113 LEU ? HD22 A 113 LEU HD22 matched 
+530 A 29 LEU HD23 ? A 113 LEU ? HD23 A 113 LEU HD23 matched 
+531 A 30 MET N    ? A 114 MET ? N    A 114 MET N    matched 
+532 A 30 MET CA   ? A 114 MET ? CA   A 114 MET CA   matched 
+533 A 30 MET C    ? A 114 MET ? C    A 114 MET C    matched 
+534 A 30 MET O    ? A 114 MET ? O    A 114 MET O    ?       
+535 A 30 MET CB   ? A 114 MET ? CB   A 114 MET CB   matched 
+536 A 30 MET CG   ? A 114 MET ? CG   A 114 MET CG   matched 
+537 A 30 MET SD   ? A 114 MET ? SD   A 114 MET SD   ?       
+538 A 30 MET CE   ? A 114 MET ? CE   A 114 MET CE   matched 
+539 A 30 MET H    ? A 114 MET ? H    A 114 MET HN   matched 
+540 A 30 MET HA   ? A 114 MET ? HA   A 114 MET HA   matched 
+541 A 30 MET HB2  ? A 114 MET ? HB2  A 114 MET HB1  matched 
+542 A 30 MET HB3  ? A 114 MET ? HB3  A 114 MET HB2  matched 
+543 A 30 MET HG2  ? A 114 MET ? HG2  A 114 MET HG1  matched 
+544 A 30 MET HG3  ? A 114 MET ? HG3  A 114 MET HG2  matched 
+545 A 30 MET HE1  ? A 114 MET ? HE1  A 114 MET HE1  matched 
+546 A 30 MET HE2  ? A 114 MET ? HE2  A 114 MET HE2  matched 
+547 A 30 MET HE3  ? A 114 MET ? HE3  A 114 MET HE3  matched 
+548 A 31 SER N    ? A 115 SER ? N    A 115 SER N    matched 
+549 A 31 SER CA   ? A 115 SER ? CA   A 115 SER CA   matched 
+550 A 31 SER C    ? A 115 SER ? C    A 115 SER C    matched 
+551 A 31 SER O    ? A 115 SER ? O    A 115 SER O    ?       
+552 A 31 SER CB   ? A 115 SER ? CB   A 115 SER CB   matched 
+553 A 31 SER OG   ? A 115 SER ? OG   A 115 SER OG   ?       
+554 A 31 SER H    ? A 115 SER ? H    A 115 SER HN   matched 
+555 A 31 SER HA   ? A 115 SER ? HA   A 115 SER HA   matched 
+556 A 31 SER HB2  ? A 115 SER ? HB2  A 115 SER HB1  matched 
+557 A 31 SER HB3  ? A 115 SER ? HB3  A 115 SER HB2  matched 
+558 A 31 SER HG   ? A 115 SER ? HG   A 115 SER HG   ?       
+559 A 32 ALA N    ? A 116 ALA ? N    A 116 ALA N    matched 
+560 A 32 ALA CA   ? A 116 ALA ? CA   A 116 ALA CA   matched 
+561 A 32 ALA C    ? A 116 ALA ? C    A 116 ALA C    matched 
+562 A 32 ALA O    ? A 116 ALA ? O    A 116 ALA O    ?       
+563 A 32 ALA CB   ? A 116 ALA ? CB   A 116 ALA CB   matched 
+564 A 32 ALA H    ? A 116 ALA ? H    A 116 ALA HN   matched 
+565 A 32 ALA HA   ? A 116 ALA ? HA   A 116 ALA HA   matched 
+566 A 32 ALA HB1  ? A 116 ALA ? HB1  A 116 ALA HB1  matched 
+567 A 32 ALA HB2  ? A 116 ALA ? HB2  A 116 ALA HB2  matched 
+568 A 32 ALA HB3  ? A 116 ALA ? HB3  A 116 ALA HB3  matched 
+569 A 33 MET N    ? A 117 MET ? N    A 117 MET N    matched 
+570 A 33 MET CA   ? A 117 MET ? CA   A 117 MET CA   matched 
+571 A 33 MET C    ? A 117 MET ? C    A 117 MET C    matched 
+572 A 33 MET O    ? A 117 MET ? O    A 117 MET O    ?       
+573 A 33 MET CB   ? A 117 MET ? CB   A 117 MET CB   matched 
+574 A 33 MET CG   ? A 117 MET ? CG   A 117 MET CG   matched 
+575 A 33 MET SD   ? A 117 MET ? SD   A 117 MET SD   ?       
+576 A 33 MET CE   ? A 117 MET ? CE   A 117 MET CE   matched 
+577 A 33 MET H    ? A 117 MET ? H    A 117 MET HN   matched 
+578 A 33 MET HA   ? A 117 MET ? HA   A 117 MET HA   matched 
+579 A 33 MET HB2  ? A 117 MET ? HB2  A 117 MET HB1  matched 
+580 A 33 MET HB3  ? A 117 MET ? HB3  A 117 MET HB2  matched 
+581 A 33 MET HG2  ? A 117 MET ? HG2  A 117 MET HG1  matched 
+582 A 33 MET HG3  ? A 117 MET ? HG3  A 117 MET HG2  matched 
+583 A 33 MET HE1  ? A 117 MET ? HE1  A 117 MET HE1  matched 
+584 A 33 MET HE2  ? A 117 MET ? HE2  A 117 MET HE2  matched 
+585 A 33 MET HE3  ? A 117 MET ? HE3  A 117 MET HE3  matched 
+586 A 34 THR N    ? A 118 THR ? N    A 118 THR N    matched 
+587 A 34 THR CA   ? A 118 THR ? CA   A 118 THR CA   matched 
+588 A 34 THR C    ? A 118 THR ? C    A 118 THR C    matched 
+589 A 34 THR O    ? A 118 THR ? O    A 118 THR O    ?       
+590 A 34 THR CB   ? A 118 THR ? CB   A 118 THR CB   matched 
+591 A 34 THR OG1  ? A 118 THR ? OG1  A 118 THR OG1  ?       
+592 A 34 THR CG2  ? A 118 THR ? CG2  A 118 THR CG2  matched 
+593 A 34 THR H    ? A 118 THR ? H    A 118 THR HN   matched 
+594 A 34 THR HA   ? A 118 THR ? HA   A 118 THR HA   matched 
+595 A 34 THR HB   ? A 118 THR ? HB   A 118 THR HB   matched 
+596 A 34 THR HG1  ? A 118 THR ? HG1  A 118 THR HG1  ?       
+597 A 34 THR HG21 ? A 118 THR ? HG21 A 118 THR HG21 matched 
+598 A 34 THR HG22 ? A 118 THR ? HG22 A 118 THR HG22 matched 
+599 A 34 THR HG23 ? A 118 THR ? HG23 A 118 THR HG23 matched 
+600 A 35 ASN N    ? A 119 ASN ? N    A 119 ASN N    matched 
+601 A 35 ASN CA   ? A 119 ASN ? CA   A 119 ASN CA   matched 
+602 A 35 ASN C    ? A 119 ASN ? C    A 119 ASN C    matched 
+603 A 35 ASN O    ? A 119 ASN ? O    A 119 ASN O    ?       
+604 A 35 ASN CB   ? A 119 ASN ? CB   A 119 ASN CB   matched 
+605 A 35 ASN CG   ? A 119 ASN ? CG   A 119 ASN CG   matched 
+606 A 35 ASN OD1  ? A 119 ASN ? OD1  A 119 ASN OD1  ?       
+607 A 35 ASN ND2  ? A 119 ASN ? ND2  A 119 ASN ND2  ?       
+608 A 35 ASN H    ? A 119 ASN ? H    A 119 ASN HN   matched 
+609 A 35 ASN HA   ? A 119 ASN ? HA   A 119 ASN HA   matched 
+610 A 35 ASN HB2  ? A 119 ASN ? HB2  A 119 ASN HB1  matched 
+611 A 35 ASN HB3  ? A 119 ASN ? HB3  A 119 ASN HB2  matched 
+612 A 35 ASN HD21 ? A 119 ASN ? HD21 A 119 ASN HD21 ?       
+613 A 35 ASN HD22 ? A 119 ASN ? HD22 A 119 ASN HD22 ?       
+614 A 36 LEU N    ? A 120 LEU ? N    A 120 LEU N    matched 
+615 A 36 LEU CA   ? A 120 LEU ? CA   A 120 LEU CA   matched 
+616 A 36 LEU C    ? A 120 LEU ? C    A 120 LEU C    matched 
+617 A 36 LEU O    ? A 120 LEU ? O    A 120 LEU OT1  ?       
+618 A 36 LEU CB   ? A 120 LEU ? CB   A 120 LEU CB   matched 
+619 A 36 LEU CG   ? A 120 LEU ? CG   A 120 LEU CG   ?       
+620 A 36 LEU CD1  ? A 120 LEU ? CD1  A 120 LEU CD1  matched 
+621 A 36 LEU CD2  ? A 120 LEU ? CD2  A 120 LEU CD2  ?       
+622 A 36 LEU OXT  ? A 120 LEU ? OXT  A 120 LEU OT2  ?       
+623 A 36 LEU H    ? A 120 LEU ? H    A 120 LEU HN   matched 
+624 A 36 LEU HA   ? A 120 LEU ? HA   A 120 LEU HA   matched 
+625 A 36 LEU HB2  ? A 120 LEU ? HB2  A 120 LEU HB1  matched 
+626 A 36 LEU HB3  ? A 120 LEU ? HB3  A 120 LEU HB2  matched 
+627 A 36 LEU HG   ? A 120 LEU ? HG   A 120 LEU HG   ?       
+628 A 36 LEU HD11 ? A 120 LEU ? HD11 A 120 LEU HD11 matched 
+629 A 36 LEU HD12 ? A 120 LEU ? HD12 A 120 LEU HD12 matched 
+630 A 36 LEU HD13 ? A 120 LEU ? HD13 A 120 LEU HD13 matched 
+631 A 36 LEU HD21 ? A 120 LEU ? HD21 A 120 LEU HD21 ?       
+632 A 36 LEU HD22 ? A 120 LEU ? HD22 A 120 LEU HD22 ?       
+633 A 36 LEU HD23 ? A 120 LEU ? HD23 A 120 LEU HD23 ?       
+# 

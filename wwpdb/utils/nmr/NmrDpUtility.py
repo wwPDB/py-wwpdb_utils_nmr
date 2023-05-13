@@ -6935,6 +6935,13 @@ class NmrDpUtility:
 
             is_valid, message = self.__nefT.validate_file(srcPath, 'A')  # 'A' for NMR unified data
 
+            if not is_valid:
+                _srcPath = srcPath + '.cif2str'
+
+                if self.__c2S.convert(srcPath, _srcPath):
+                    is_valid, message = self.__nefT.validate_file(_srcPath, 'A')  # 'A' for NMR unified data
+                    self.__srcPath = srcPath = _srcPath
+
             self.__original_error_message.append(message)
 
             _file_type = message['file_type']  # nef/nmr-star/unknown

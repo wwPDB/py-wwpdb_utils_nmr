@@ -1241,7 +1241,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
 
-            if self.__cur_subtype == 'dist' and _compId.startswith('MTS') and cifCompId != _compId\
+            if self.__cur_subtype == 'dist' and _compId is not None and _compId.startswith('MTS') and cifCompId != _compId\
                and _atomId[0] in ('O', 'N') and coordAtomSite is not None:
 
                 if cifCompId == 'CYS' and 'SG' in coordAtomSite['atom_id']:

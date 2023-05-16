@@ -1136,10 +1136,12 @@ class CyanaMRParserListener(ParseTreeListener):
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                    "Found inter-residue scalar coupling constant; "
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
-                    return
+
+                    if abs(seq_id_1 - seq_id_2) > 2 or {atom_id_1, atom_id_2} != {'H', 'N'}:
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-residue scalar coupling constant; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                        return
 
                 elif abs(seq_id_1 - seq_id_2) == 1:
 
@@ -1147,7 +1149,8 @@ class CyanaMRParserListener(ParseTreeListener):
                             ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
                              or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
                              or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
-                             or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
+                             or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))
+                             or {atom_id_1, atom_id_2} == {'H', 'N'}):
                         pass
 
                     else:
@@ -1169,7 +1172,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 for atom1, atom4 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
                     if isLongRangeRestraint([atom1, atom4], self.__polySeq if self.__gapInAuthSeq else None):
-                        continue
+                        if {atom1['atom_id'], atom4['atom_id']} != {'H', 'N'}:
+                            continue
                     self.__ccU.updateChemCompDict(atom1['comp_id'])
                     atom2_can = self.__ccU.getBondedAtoms(atom1['comp_id'], atom1['atom_id'])
                     atom3_can = self.__ccU.getBondedAtoms(atom1['comp_id'], atom4['atom_id'])
@@ -1636,10 +1640,12 @@ class CyanaMRParserListener(ParseTreeListener):
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                    "Found inter-residue scalar coupling constant; "
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
-                    return
+
+                    if abs(seq_id_1 - seq_id_2) > 2 or {atom_id_1, atom_id_2} != {'H', 'N'}:
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-residue scalar coupling constant; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                        return
 
                 elif abs(seq_id_1 - seq_id_2) == 1:
 
@@ -1647,7 +1653,8 @@ class CyanaMRParserListener(ParseTreeListener):
                             ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
                              or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
                              or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
-                             or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
+                             or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))
+                             or {atom_id_1, atom_id_2} == {'H', 'N'}):
                         pass
 
                     else:
@@ -1669,7 +1676,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 for atom1, atom4 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
                     if isLongRangeRestraint([atom1, atom4], self.__polySeq if self.__gapInAuthSeq else None):
-                        continue
+                        if {atom1['atom_id'], atom4['atom_id']} != {'H', 'N'}:
+                            continue
                     self.__ccU.updateChemCompDict(atom1['comp_id'])
                     atom2_can = self.__ccU.getBondedAtoms(atom1['comp_id'], atom1['atom_id'])
                     atom3_can = self.__ccU.getBondedAtoms(atom1['comp_id'], atom4['atom_id'])
@@ -3857,19 +3865,23 @@ class CyanaMRParserListener(ParseTreeListener):
 
             if len(self.atomSelectionSet) < 2:
                 return
-
+            """
             if not self.areUniqueCoordAtoms('an RDC'):
                 return
+            """
+            try:
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
 
-            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-            comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
-            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
-
-            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-            comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
-            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+            except IndexError:
+                self.areUniqueCoordAtoms('an RDC')
+                return
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -3926,11 +3938,14 @@ class CyanaMRParserListener(ParseTreeListener):
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
+            combinationId = '.'
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]),
                                   orientationId=orientation)
                 sf['id'] += 1
+                if len(self.atomSelectionSet[0]) > 1 or len(self.atomSelectionSet[1]) > 1:
+                    combinationId = 0
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -3938,13 +3953,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
+                if isinstance(combinationId, int):
+                    combinationId += 1
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None, None,
+                                 combinationId, None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
@@ -7067,10 +7084,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                "Found inter-residue scalar coupling constant; "
-                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
-                return
+
+                if abs(seq_id_1 - seq_id_2) > 2 or {atom_id_1, atom_id_2} != {'H', 'N'}:
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue scalar coupling constant; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
 
             elif abs(seq_id_1 - seq_id_2) == 1:
 
@@ -7078,7 +7097,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
                          or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
-                         or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
+                         or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))
+                         or {atom_id_1, atom_id_2} == {'H', 'N'}):
                     pass
 
                 else:
@@ -7100,7 +7120,8 @@ class CyanaMRParserListener(ParseTreeListener):
             for atom1, atom4 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
                 if isLongRangeRestraint([atom1, atom4], self.__polySeq if self.__gapInAuthSeq else None):
-                    continue
+                    if {atom1['atom_id'], atom4['atom_id']} != {'H', 'N'}:
+                        continue
                 self.__ccU.updateChemCompDict(atom1['comp_id'])
                 atom2_can = self.__ccU.getBondedAtoms(atom1['comp_id'], atom1['atom_id'])
                 atom3_can = self.__ccU.getBondedAtoms(atom1['comp_id'], atom4['atom_id'])

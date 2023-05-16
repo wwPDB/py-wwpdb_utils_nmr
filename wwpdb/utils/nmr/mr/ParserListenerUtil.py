@@ -25,6 +25,7 @@ try:
                                            LARGE_ASYM_ID,
                                            LEN_LARGE_ASYM_ID,
                                            MAX_MAG_IDENT_ASYM_ID)
+    from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
 except ImportError:
     from nmr.AlignUtil import (monDict3,
                                emptyValue,
@@ -34,7 +35,7 @@ except ImportError:
                                LARGE_ASYM_ID,
                                LEN_LARGE_ASYM_ID,
                                MAX_MAG_IDENT_ASYM_ID)
-
+    from nmr.io.CifReader import SYMBOLS_ELEMENT
 
 MAX_ERROR_REPORT = 1
 MAX_ERR_LINENUM_REPORT = 20
@@ -2277,6 +2278,10 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'HN' + n
             if atomId.endswith('2') and ('HN' + n + 'A') in refAtomIdList:
                 return 'HN' + n + 'A'
+
+    if atomId.endswith('+1') or atomId.endswith('+2') or atomId.endswith('+3'):
+        if atomId[:-2] in SYMBOLS_ELEMENT:
+            return atomId[:-2]
 
     return atomId
 
@@ -5137,7 +5142,7 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             row[16], row[17], row[18], row[19] =\
                 star_atom5['chain_id'], star_atom5['entity_id'], star_atom5['seq_id'], star_atom5['comp_id']
 
-        # row[key_size + 1] = combinationId
+        row[key_size + 1] = combinationId
         row[key_size + 2] = code
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size + 3] = dstFunc['target_value']
@@ -5202,7 +5207,7 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             row[key_size + 33] = ins_code4 if atom4 is not None else ins_code5
 
     elif mrSubtype == 'rdc':
-        # row[key_size + 1] = combinationId
+        row[key_size + 1] = combinationId
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size + 2] = dstFunc['target_value']
             float_row_idx.append(key_size + 2)

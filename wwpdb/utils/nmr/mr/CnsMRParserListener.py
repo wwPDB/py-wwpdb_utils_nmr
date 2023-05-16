@@ -2117,21 +2117,27 @@ class CnsMRParserListener(ParseTreeListener):
 
             if not self.__hasPolySeq:
                 return
-
+            """
             if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
                 if len(self.__g) > 0:
                     self.__f.extend(self.__g)
                 return
+            """
+            try:
+                chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
 
-            chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
-            seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
-            comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
-            atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
-
-            chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
-            seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
-            comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
-            atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
+                chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
+            except IndexError:
+                if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
+                    if len(self.__g) > 0:
+                        self.__f.extend(self.__g)
+                return
 
             chain_id_set = None
             if self.__exptlMethod == 'SOLID-STATE NMR':
@@ -2242,10 +2248,13 @@ class CnsMRParserListener(ParseTreeListener):
                                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
+            combinationId = '.'
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   rdcCode=getRdcCode([self.atomSelectionSet[4][0], self.atomSelectionSet[5][0]]))
                 sf['id'] += 1
+                if len(self.atomSelectionSet[4]) > 1 or len(self.atomSelectionSet[5]) > 1:
+                    combinationId = 0
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
@@ -2263,14 +2272,15 @@ class CnsMRParserListener(ParseTreeListener):
                                         f"({atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']}, "
                                         f"{atom2['chain_id']}:{atom2['seq_id']}:{atom2['comp_id']}:{atom2['atom_id']}). "
                                         "However, it might be an artificial RDC constraint on solid-state NMR applied to symmetric samples such as fibrils.")
-
+                if isinstance(combinationId, int):
+                    combinationId += 1
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (SANI) id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None, None,
+                                 combinationId, None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
@@ -2560,10 +2570,12 @@ class CnsMRParserListener(ParseTreeListener):
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                    "Found inter-residue J-coupling vector; "
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
-                    return
+
+                    if abs(seq_id_1 - seq_id_2) > 2 or {atom_id_1, atom_id_2} != {'H', 'N'}:
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-residue J-coupling vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                        return
 
                 elif abs(seq_id_1 - seq_id_2) == 1:
 
@@ -2571,7 +2583,8 @@ class CnsMRParserListener(ParseTreeListener):
                             ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in jcoupBbPairCode)
                              or (seq_id_1 > seq_id_2 and atom_id_1 in jcoupBbPairCode and atom_id_2 == 'C')
                              or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
-                             or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
+                             or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))
+                             or {atom_id_1, atom_id_2} == {'H', 'N'}):
                         pass
 
                     else:
@@ -2587,7 +2600,7 @@ class CnsMRParserListener(ParseTreeListener):
                     return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(self.classification)
                 sf['id'] += 1
 
             if len(self.atomSelectionSet) == 4:
@@ -2596,7 +2609,8 @@ class CnsMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
                     if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
-                        continue
+                        if {atom1['atom_id'], atom4['atom_id']} != {'H', 'N'}:
+                            continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
@@ -2615,7 +2629,8 @@ class CnsMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
                     if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
-                        continue
+                        if {atom1['atom_id'], atom4['atom_id']} != {'H', 'N'}:
+                            continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
@@ -2633,7 +2648,8 @@ class CnsMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[6],
                                                                     self.atomSelectionSet[7]):
                     if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
-                        continue
+                        if {atom1['atom_id'], atom4['atom_id']} != {'H', 'N'}:
+                            continue
                     if self.__debug:
                         if dstFunc2 is None:
                             print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
@@ -2766,7 +2782,7 @@ class CnsMRParserListener(ParseTreeListener):
                     return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(self.classification)
                 sf['id'] += 1
 
             for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
@@ -2925,7 +2941,7 @@ class CnsMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(self.classification)
                 sf['id'] += 1
 
             if lenAtomSelectionSet == 1:
@@ -8061,6 +8077,11 @@ class CnsMRParserListener(ParseTreeListener):
                             sf.tags[idx][1] = rdcCode
                         else:
                             sf.add_tag('Details', rdcCode)
+            elif constraintType is not None:
+                old_key = (self.__cur_subtype, None, None, None, None)
+                if old_key in self.sfDict:
+                    replaced = True
+                    self.sfDict[key] = [self.sfDict[old_key].pop(-1)]
             if not replaced:
                 self.__addSf(constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)
 

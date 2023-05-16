@@ -303,16 +303,22 @@ class NmrVrptUtility:
 
         # distance restraints for each restraint key (list_id, restraint_id)
         self.__distRestDict = None
+        # distance restraints for each restraint key (list_id, restraint_id, combination_id, member_id)
+        self.__distRestDictWithCombKey = None
         # distance restraint keys for each sequence key (auth_asym_id, auth_seq_id, auth_comp_id)
         self.__distRestSeqDict = None
 
         # dihedral angle restraints for each restraint key (list_id, restraint_id)
         self.__dihedRestDict = None
+        # dihedral angle restraints for each restraint key (list_id, restraint_id, combination_id)
+        self.__dihedRestDictWithCombKey = None
         # dihedral angle restraint keys for each sequence key (auth_asym_id, auth_seq_id, auth_comp_id)
         self.__dihedRestSeqDict = None
 
         # RDC restraints for each restraint key (list_id, restraint_id)
         self.__rdcRestDict = None
+        # RDC restraints for each restraint key (list_id, restraint_id)
+        self.__rdcRestDictWithCombKey = None
         # RDC restraint keys for each sequence key (auth_asym_id, auth_seq_id, auth_comp_id)
         self.__rdcRestSeqDict = None
 
@@ -1295,26 +1301,26 @@ class NmrVrptUtility:
                             target_value_clock -= 360.0
 
                         if has_valid_lower_linear_limit or has_valid_upper_linear_limit:  # decide target value from upper/lower_limit and upper/lower_linear_limit (AMBER)
-                            target_value_vote = {'aclock': 0, 'clock': 0}
+                            target_value_vote_aclock = target_value_vote_clock = 0
 
                             if has_valid_lower_linear_limit:
                                 if angle_diff(lower_bound, target_value_aclock) < angle_diff(lower_linear_limit, target_value_aclock):
-                                    target_value_vote['aclock'] += 1
+                                    target_value_vote_aclock += 1
                                 elif angle_diff(lower_bound, target_value_clock) < angle_diff(lower_linear_limit, target_value_clock):
-                                    target_value_vote['clock'] += 1
+                                    target_value_vote_clock += 1
                             if has_valid_upper_linear_limit:
                                 if angle_diff(upper_bound, target_value_aclock) < angle_diff(upper_linear_limit, target_value_aclock):
-                                    target_value_vote['aclock'] += 1
+                                    target_value_vote_aclock += 1
                                 elif angle_diff(upper_bound, target_value_clock) < angle_diff(upper_linear_limit, target_value_clock):
-                                    target_value_vote['clock'] += 1
+                                    target_value_vote_clock += 1
 
-                            if target_value_vote['aclock'] + target_value_vote['clock'] == 0 or target_value_vote['aclock'] * target_value_vote['clock'] != 0:
+                            if target_value_vote_aclock + target_value_vote_clock == 0 or target_value_vote_aclock * target_value_vote_clock != 0:
                                 self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
                                                  f"{os.path.basename(self.__nmrDataPath)}.\n")
                                 skipped = True
                                 continue
 
-                            target_value = target_value_aclock if target_value_vote['aclock'] > target_value_vote['clock'] else target_value_clock
+                            target_value = target_value_aclock if target_value_vote_aclock > target_value_vote_clock else target_value_clock
 
                         else:  # estimate target value by comparing lower_limit and upper_limit value, CYANA)
                             target_value = target_value_aclock if lower_bound <= upper_bound else target_value_clock
@@ -1561,6 +1567,8 @@ class NmrVrptUtility:
         if self.__coordinates is None:
             return False
 
+        self.__distRestDictWithCombKey = {}
+
         self.__distRestViolDict = {}
         self.__distRestViolCombKeyDict = {}
         self.__distRestUnmapped = []
@@ -1659,7 +1667,7 @@ class NmrVrptUtility:
 
                     if NMR_VTF_DIST_VIOL_CUTOFF < error < DIST_ERROR_MAX:
                         viol_per_model[model_id] = round(error, 2)
-                        comb_key_per_model[model_id] = comb_key
+                        comb_key_per_model[model_id] = (comb_key['combination_id'], comb_key['member_id'])
                     else:
                         viol_per_model[model_id] = None
                         comb_key_per_model[model_id] = None
@@ -1671,6 +1679,8 @@ class NmrVrptUtility:
                 has_combination_id = any(r for r in restraints if r['combination_id'] is not None)
                 has_member_id = any(r for r in restraints if r['member_id'] is not None)
 
+                self.__distRestDictWithCombKey[rest_key] = {}
+
                 min_error_per_model = {model_id: DIST_ERROR_MAX for model_id in range(1, self.__total_models + 1)}
                 min_comb_key_per_model = {model_id: {'combination_id': None, 'member_id': None}
                                           for model_id in range(1, self.__total_models + 1)}
@@ -1680,6 +1690,8 @@ class NmrVrptUtility:
 
                     fill_smaller_error_for_each_model(error_per_model, min_error_per_model,
                                                       None, None, min_comb_key_per_model)
+
+                    self.__distRestDictWithCombKey[rest_key][(None, None)] = restraints
 
                 elif not has_combination_id and has_member_id:
                     member_ids = set(r['member_id'] for r in restraints)
@@ -1692,6 +1704,8 @@ class NmrVrptUtility:
                         fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,
                                                           None, member_id, min_comb_key_per_model)
 
+                        self.__distRestDictWithCombKey[rest_key][(None, member_id)] = _restraints
+
                 elif has_combination_id and not has_member_id:
                     combination_ids = set(r['combination_id'] for r in restraints)
 
@@ -1703,11 +1717,14 @@ class NmrVrptUtility:
                         fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,
                                                           combination_id, None, min_comb_key_per_model)
 
+                        self.__distRestDictWithCombKey[rest_key][(combination_id, None)] = _restraints
+
                 else:
                     combination_ids = set(r['combination_id'] for r in restraints)
                     member_ids = set(r['member_id'] for r in restraints)
 
                     for combination_id in combination_ids:
+
                         for member_id in member_ids:
                             _restraints = [r for r in restraints
                                            if r['combination_id'] == combination_id
@@ -1718,6 +1735,8 @@ class NmrVrptUtility:
                             fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,
                                                               combination_id, member_id,
                                                               min_comb_key_per_model)
+
+                            self.__distRestDictWithCombKey[rest_key][(combination_id, member_id)] = _restraints
 
                 self.__distRestViolDict[rest_key], self.__distRestViolCombKeyDict[rest_key] =\
                     get_viol_per_model(min_error_per_model, min_comb_key_per_model)
@@ -1747,6 +1766,8 @@ class NmrVrptUtility:
 
         if self.__coordinates is None:
             return False
+
+        self.__dihedRestDictWithCombKey = {}
 
         self.__dihedRestViolDict = {}
         self.__dihedRestViolCombKeyDict = {}
@@ -1845,7 +1866,7 @@ class NmrVrptUtility:
 
                     if NMR_VTF_DIHED_VIOL_CUTOFF < error < ANGLE_ERROR_MAX:
                         viol_per_model[model_id] = round(error, 2)
-                        comb_key_per_model[model_id] = comb_key
+                        comb_key_per_model[model_id] = (comb_key['combination_id'],)
                     else:
                         viol_per_model[model_id] = None
                         comb_key_per_model[model_id] = None
@@ -1855,6 +1876,8 @@ class NmrVrptUtility:
             for rest_key, restraints in self.__dihedRestDict.items():
 
                 has_combination_id = any(r for r in restraints if r['combination_id'] is not None)
+
+                self.__dihedRestDictWithCombKey[rest_key] = {}
 
                 min_error_per_model = {model_id: ANGLE_ERROR_MAX for model_id in range(1, self.__total_models + 1)}
                 min_comb_key_per_model = {model_id: {'combination_id': None}
@@ -1866,6 +1889,8 @@ class NmrVrptUtility:
                     fill_smaller_error_for_each_model(error_per_model, min_error_per_model,
                                                       None, min_comb_key_per_model)
 
+                    self.__dihedRestDictWithCombKey[rest_key][(None,)] = restraints
+
                 else:
                     combination_ids = set(r['combination_id'] for r in restraints)
 
@@ -1876,6 +1901,8 @@ class NmrVrptUtility:
 
                         fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,
                                                           combination_id, min_comb_key_per_model)
+
+                        self.__dihedRestDictWithCombKey[rest_key][(combination_id,)] = _restraints
 
                 self.__dihedRestViolDict[rest_key], self.__dihedRestViolCombKeyDict[rest_key] =\
                     get_viol_per_model(min_error_per_model, min_comb_key_per_model)
@@ -1902,9 +1929,11 @@ class NmrVrptUtility:
         if self.__coordinates is None:
             return False
 
-        return True  # TODO, pylint: disable='fixme'
+        return True  # TODO
 
-        self.__rdcRestViolDict = {}  # pylint: disable='unreachable'
+        self.__rdcRestDictWithCombKey = {}  # pylint: disable='unreachable'
+
+        self.__rdcRestViolDict = {}
         self.__rdcRestViolCombKeyDict = {}
         self.__rdcRestUnmapped = []
 
@@ -1945,7 +1974,7 @@ class NmrVrptUtility:
                             atom_present = False
 
                         if atom_present:
-                            # """ TODO: rdc() should return calculated RDC value for a given vector using the RDC alignment tensor of rest_key[0], pylint: disable='fixme'
+                            # """ TODO: rdc() should return calculated RDC value for a given vector using the RDC alignment tensor of rest_key[0]
                             # r = rdc(rest_key[0], pos_1, pos_2)
                             # rdc_list.append(r)
                             # """
@@ -2001,7 +2030,7 @@ class NmrVrptUtility:
 
                     if NMR_VTF_RDC_VIOL_CUTOFF < error < RDC_ERROR_MAX:
                         viol_per_model[model_id] = round(error, 2)
-                        comb_key_per_model[model_id] = comb_key
+                        comb_key_per_model[model_id] = (comb_key['combination_id'],)
                     else:
                         viol_per_model[model_id] = None
                         comb_key_per_model[model_id] = None
@@ -2011,6 +2040,8 @@ class NmrVrptUtility:
             for rest_key, restraints in self.__rdcRestDict.items():
 
                 has_combination_id = any(r for r in restraints if r['combination_id'] is not None)
+
+                self.__rdcRestDictWithCombKey[rest_key] = {}
 
                 min_error_per_model = {model_id: RDC_ERROR_MAX for model_id in range(1, self.__total_models + 1)}
                 min_comb_key_per_model = {model_id: {'combination_id': None}
@@ -2022,6 +2053,8 @@ class NmrVrptUtility:
                     fill_smaller_error_for_each_model(error_per_model, min_error_per_model,
                                                       None, min_comb_key_per_model)
 
+                    self.__rdcRestDictWithCombKey[rest_key][(None,)] = restraints
+
                 else:
                     combination_ids = set(r['combination_id'] for r in restraints)
 
@@ -2032,6 +2065,8 @@ class NmrVrptUtility:
 
                         fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,
                                                           combination_id, min_comb_key_per_model)
+
+                        self.__rdcRestDictWithCombKey[rest_key][(combination_id,)] = _restraints
 
                 self.__rdcRestViolDict[rest_key], self.__rdcRestViolCombKeyDict[rest_key] =\
                     get_viol_per_model(min_error_per_model, min_comb_key_per_model)
@@ -2130,15 +2165,7 @@ class NmrVrptUtility:
                             distance_violations_in_models[m][t][s][b] = []
 
             for rest_key, restraints in self.__distRestDict.items():
-                comb_key = self.__distRestViolCombKeyDict[rest_key][self.__representative_model_id]
-                if comb_key is not None:
-                    combination_id = comb_key['combination_id']
-                    member_id = comb_key['member_id']
-
-                    r = next(r for r in restraints
-                             if r['combination_id'] == combination_id and r['member_id'] == member_id)
-                else:
-                    r = restraints[0]
+                r = restraints[0]
 
                 t = r['distance_type']
                 s = r['distance_sub_type']
@@ -2169,19 +2196,21 @@ class NmrVrptUtility:
                 for m in range(1, self.__total_models + 1):
                     err = viol_per_model[m]
 
-                    if err is not None and err > 0.0:
-                        comb_key = self.__distRestViolCombKeyDict[rest_key][m]
-                        combination_id = comb_key['combination_id']
-                        member_id = comb_key['member_id']
+                    if err is None or err == 0.0:
+                        continue
 
-                        r = next(r for r in self.__distRestDict[rest_key]
-                                 if r['combination_id'] == combination_id and r['member_id'] == member_id)
-                        t = r['distance_type']
-                        s = r['distance_sub_type']
-                        b = r['bond_flag']
+                    comb_key = self.__distRestViolCombKeyDict[rest_key][m]
 
-                        distance_violations_in_models[m][t][s][b].append(err)
-                        distance_violations_in_models[m][any_type][s][b].append(err)
+                    if comb_key is None:
+                        continue
+
+                    r = self.__distRestDictWithCombKey[rest_key][comb_key][0]
+                    t = r['distance_type']
+                    s = r['distance_sub_type']
+                    b = r['bond_flag']
+
+                    distance_violations_in_models[m][t][s][b].append(err)
+                    distance_violations_in_models[m][any_type][s][b].append(err)
 
             self.__results['distance_violations_in_models'] = distance_violations_in_models
 
@@ -2212,17 +2241,18 @@ class NmrVrptUtility:
                 if len(vm) > 1:
                     e = np.array([err for err in viol_per_model.values() if err is not None and err > 0.0])
 
-                    comb_keys = set()
+                    comb_keys = []
                     for _m in set(vm):
                         comb_key = self.__distRestViolCombKeyDict[rest_key][_m]
-                        combination_id = comb_key['combination_id']
-                        member_id = comb_key['member_id']
-                        comb_keys.add((combination_id, member_id))
 
-                    for r in self.__distRestDict[rest_key]:
-                        comb_key = (r['combination_id'], r['member_id'])
+                        if comb_key is None:
+                            continue
 
-                        if comb_key in comb_keys:
+                        if comb_key not in comb_keys:
+                            comb_keys.append(comb_key)
+
+                    for comb_key in comb_keys:
+                        for r in self.__distRestDictWithCombKey[rest_key][comb_key]:
                             most_violated_distance.append([rest_key,
                                                            r['atom_key_1'],
                                                            r['atom_key_2'],
@@ -2245,21 +2275,23 @@ class NmrVrptUtility:
                 for m in range(1, self.__total_models + 1):
                     err = viol_per_model[m]
 
-                    if err is not None and err > 0.0:
-                        comb_key = self.__distRestViolCombKeyDict[rest_key][m]
-                        combination_id = comb_key['combination_id']
-                        member_id = comb_key['member_id']
+                    if err is None or err == 0.0:
+                        continue
 
-                        for r in self.__distRestDict[rest_key]:
-                            if r['combination_id'] == combination_id and r['member_id'] == member_id:
-                                all_distance_violations.append([rest_key,
-                                                                r['atom_key_1'],
-                                                                r['atom_key_2'],
-                                                                m,
-                                                                r['distance_type'],
-                                                                r['distance_sub_type'],
-                                                                r['bond_flag'],
-                                                                err])
+                    comb_key = self.__distRestViolCombKeyDict[rest_key][m]
+
+                    if comb_key is None:
+                        continue
+
+                    for r in self.__distRestDictWithCombKey[rest_key][comb_key]:
+                        all_distance_violations.append([rest_key,
+                                                        r['atom_key_1'],
+                                                        r['atom_key_2'],
+                                                        m,
+                                                        r['distance_type'],
+                                                        r['distance_sub_type'],
+                                                        r['bond_flag'],
+                                                        err])
 
             self.__results['all_distance_violations'] =\
                 sorted(all_distance_violations, reverse=True, key=itemgetter(7, 0))
@@ -2273,51 +2305,48 @@ class NmrVrptUtility:
                         dist_violation_seq[_seq_key] = []
 
                     for rest_key in rest_keys:
-                        comb_key = self.__distRestViolCombKeyDict[rest_key][m]
-                        if comb_key is None:
-                            continue
-                        combination_id = comb_key['combination_id']
-                        member_id = comb_key['member_id']
-
-                        atom_ids_1 = atom_ids_2 = []
-                        distance_type = None
-
-                        for r in self.__distRestDict[rest_key]:
-                            if r['combination_id'] == combination_id and r['member_id'] == member_id:
-                                atom_ids_1.append(r['atom_key_1'][3])
-                                seq_key_1 = (r['atom_key_1'][0], r['atom_key_1'][1], r['atom_key_1'][2])
-                                atom_ids_2.append(r['atom_key_2'][3])
-                                seq_key_2 = (r['atom_key_2'][0], r['atom_key_2'][1], r['atom_key_2'][2])
-
-                                if distance_type is None:
-                                    distance_type = r['distance_type']
-                                    distance_sub_type = r['distance_sub_type']
-                                    bond_flag = r['bond_flag']
-
-                        atom_ids_1 = list(set(atom_ids_1))
-                        atom_ids_2 = list(set(atom_ids_2))
-
-                        if seq_key_1 == seq_key_2:
-                            atom_ids = atom_ids_1 + atom_ids_2
-                        elif seq_key_1 == seq_key:
-                            atom_ids = atom_ids_1
-                        elif seq_key_2 == seq_key:
-                            atom_ids = atom_ids_2
-                        else:
-                            if self.__verbose:
-                                self.__lfh.write(f"Nothing matches with sequence, {seq_key_1}, {seq_key_2}, {atom_ids_1}, {atom_ids_2}, {seq_key}\n")
-                            continue
-
                         err = self.__distRestViolDict[rest_key][m]
 
-                        if err is not None and err > 0.0:
-                            dist_violation_seq[_seq_key].append([rest_key[0],
-                                                                 rest_key[1],
-                                                                 atom_ids,
-                                                                 distance_type,
-                                                                 distance_sub_type,
-                                                                 bond_flag,
-                                                                 err])
+                        if err is None or err == 0.0:
+                            continue
+
+                        comb_key = self.__distRestViolCombKeyDict[rest_key][m]
+
+                        if comb_key is None:
+                            continue
+
+                        atom_ids = set()
+                        distance_type = None
+
+                        for r in self.__distRestDictWithCombKey[rest_key][comb_key]:
+                            seq_key_1 = (r['atom_key_1'][0], r['atom_key_1'][1], r['atom_key_1'][2])
+                            seq_key_2 = (r['atom_key_2'][0], r['atom_key_2'][1], r['atom_key_2'][2])
+
+                            if seq_key not in (seq_key_1, seq_key_2):
+                                if self.__verbose and comb_key[0] is None and comb_key[1] is None:
+                                    self.__lfh.write(f"Nothing matches with sequence, {seq_key_1}, {seq_key_2}, {seq_key}\n")
+                                continue
+
+                            if seq_key_1 == seq_key_2:
+                                atom_ids.add(r['atom_key_1'][3])
+                                atom_ids.add(r['atom_key_2'][3])
+                            elif seq_key_1 == seq_key:
+                                atom_ids.add(r['atom_key_1'][3])
+                            else:
+                                atom_ids.add(r['atom_key_2'][3])
+
+                            if distance_type is None:
+                                distance_type = r['distance_type']
+                                distance_sub_type = r['distance_sub_type']
+                                bond_flag = r['bond_flag']
+
+                        dist_violation_seq[_seq_key].append([rest_key[0],
+                                                             rest_key[1],
+                                                             sorted(list(atom_ids)),
+                                                             distance_type,
+                                                             distance_sub_type,
+                                                             bond_flag,
+                                                             err])
 
             self.__results['dist_violation_seq'] = dist_violation_seq
 
@@ -2380,14 +2409,7 @@ class NmrVrptUtility:
                     angle_violations_in_models[m][t] = []
 
             for rest_key, restraints in self.__dihedRestDict.items():
-                comb_key = self.__dihedRestViolCombKeyDict[rest_key][self.__representative_model_id]
-                if comb_key is not None:
-                    combination_id = comb_key['combination_id']
-
-                    r = next(r for r in restraints
-                             if r['combination_id'] == combination_id)
-                else:
-                    r = restraints[0]
+                r = restraints[0]
 
                 t = r['angle_type']
 
@@ -2416,16 +2438,20 @@ class NmrVrptUtility:
                 for m in range(1, self.__total_models + 1):
                     err = viol_per_model[m]
 
-                    if err is not None and err > 0.0:
-                        comb_key = self.__dihedRestViolCombKeyDict[rest_key][m]
-                        combination_id = comb_key['combination_id']
+                    if err is None or err == 0.0:
+                        continue
 
-                        r = next(r for r in self.__dihedRestDict[rest_key]
-                                 if r['combination_id'] == combination_id)
-                        t = r['angle_type']
+                    comb_key = self.__dihedRestViolCombKeyDict[rest_key][m]
 
-                        angle_violations_in_models[m][t].append(err)
-                        angle_violations_in_models[m][any_type].append(err)
+                    if comb_key is None:
+                        continue
+
+                    r = self.__dihedRestDictWithCombKey[rest_key][comb_key][0]
+
+                    t = r['angle_type']
+
+                    angle_violations_in_models[m][t].append(err)
+                    angle_violations_in_models[m][any_type].append(err)
 
             self.__results['angle_violations_in_models'] = angle_violations_in_models
 
@@ -2456,16 +2482,18 @@ class NmrVrptUtility:
                 if len(vm) > 1:
                     e = np.array([err for err in viol_per_model.values() if err is not None and err > 0.0])
 
-                    comb_keys = set()
+                    comb_keys = []
                     for _m in set(vm):
                         comb_key = self.__dihedRestViolCombKeyDict[rest_key][_m]
-                        combination_id = comb_key['combination_id']
-                        comb_keys.add(combination_id)
 
-                    for r in self.__dihedRestDict[rest_key]:
-                        comb_key = r['combination_id']
+                        if comb_key is None:
+                            continue
 
-                        if comb_key in comb_keys:
+                        if comb_key not in comb_keys:
+                            comb_keys.append(comb_key)
+
+                    for comb_key in comb_keys:
+                        for r in self.__dihedRestDictWithCombKey[rest_key][comb_key]:
                             most_violated_angle.append([rest_key,
                                                         r['atom_key_1'],
                                                         r['atom_key_2'],
@@ -2488,20 +2516,23 @@ class NmrVrptUtility:
                 for m in range(1, self.__total_models + 1):
                     err = viol_per_model[m]
 
-                    if err is not None and err > 0.0:
-                        comb_key = self.__dihedRestViolCombKeyDict[rest_key][m]
-                        combination_id = comb_key['combination_id']
+                    if err is None or err == 0.0:
+                        continue
 
-                        for r in self.__dihedRestDict[rest_key]:
-                            if r['combination_id'] == combination_id:
-                                all_angle_violations.append([rest_key,
-                                                            r['atom_key_1'],
-                                                            r['atom_key_2'],
-                                                            r['atom_key_3'],
-                                                            r['atom_key_4'],
-                                                            m,
-                                                            r['angle_type'],
-                                                            err])
+                    comb_key = self.__dihedRestViolCombKeyDict[rest_key][m]
+
+                    if comb_key is None:
+                        continue
+
+                    for r in self.__dihedRestDictWithCombKey[rest_key][comb_key]:
+                        all_angle_violations.append([rest_key,
+                                                    r['atom_key_1'],
+                                                    r['atom_key_2'],
+                                                    r['atom_key_3'],
+                                                    r['atom_key_4'],
+                                                    m,
+                                                    r['angle_type'],
+                                                    err])
 
             self.__results['all_angle_violations'] =\
                 sorted(all_angle_violations, reverse=True, key=itemgetter(7, 0))
@@ -2515,40 +2546,49 @@ class NmrVrptUtility:
                         angle_violation_seq[_seq_key] = []
 
                     for rest_key in rest_keys:
-                        comb_key = self.__dihedRestViolCombKeyDict[rest_key][m]
-                        if comb_key is None:
-                            continue
-                        combination_id = comb_key['combination_id']
-
-                        atom_ids = []
-                        angle_type = None
-
-                        for r in self.__dihedRestDict[rest_key]:
-                            if r['combination_id'] == combination_id:
-                                seq_key_1 = (r['atom_key_1'][0], r['atom_key_1'][1], r['atom_key_1'][2])
-                                if seq_key_1 == seq_key:
-                                    atom_ids.append(r['atom_key_1'][3])
-                                seq_key_2 = (r['atom_key_2'][0], r['atom_key_2'][1], r['atom_key_2'][2])
-                                if seq_key_2 == seq_key:
-                                    atom_ids.append(r['atom_key_2'][3])
-                                seq_key_3 = (r['atom_key_3'][0], r['atom_key_3'][1], r['atom_key_3'][2])
-                                if seq_key_3 == seq_key:
-                                    atom_ids.append(r['atom_key_3'][3])
-                                seq_key_4 = (r['atom_key_4'][0], r['atom_key_4'][1], r['atom_key_4'][2])
-                                if seq_key_4 == seq_key:
-                                    atom_ids.append(r['atom_key_4'][3])
-
-                                if angle_type is None:
-                                    angle_type = r['angle_type']
-
                         err = self.__dihedRestViolDict[rest_key][m]
 
-                        if err is not None and err > 0.0:
-                            angle_violation_seq[_seq_key].append([rest_key[0],
-                                                                  rest_key[1],
-                                                                  atom_ids,
-                                                                  angle_type,
-                                                                  err])
+                        if err is None or err == 0.0:
+                            continue
+
+                        comb_key = self.__dihedRestViolCombKeyDict[rest_key][m]
+
+                        if comb_key is None:
+                            continue
+
+                        atom_ids_1 = []
+                        atom_ids_2 = []
+                        atom_ids_3 = []
+                        atom_ids_4 = []
+                        angle_type = None
+
+                        for r in self.__dihedRestDictWithCombKey[rest_key][comb_key]:
+                            seq_key_1 = (r['atom_key_1'][0], r['atom_key_1'][1], r['atom_key_1'][2])
+                            if seq_key_1 == seq_key:
+                                atom_ids_1.append(r['atom_key_1'][3])
+                            seq_key_2 = (r['atom_key_2'][0], r['atom_key_2'][1], r['atom_key_2'][2])
+                            if seq_key_2 == seq_key:
+                                atom_ids_2.append(r['atom_key_2'][3])
+                            seq_key_3 = (r['atom_key_3'][0], r['atom_key_3'][1], r['atom_key_3'][2])
+                            if seq_key_3 == seq_key:
+                                atom_ids_3.append(r['atom_key_3'][3])
+                            seq_key_4 = (r['atom_key_4'][0], r['atom_key_4'][1], r['atom_key_4'][2])
+                            if seq_key_4 == seq_key:
+                                atom_ids_4.append(r['atom_key_4'][3])
+
+                            if angle_type is None:
+                                angle_type = r['angle_type']
+
+                        atom_ids = list(set(atom_ids_1))
+                        atom_ids.extend(list(set(atom_ids_2)))
+                        atom_ids.extend(list(set(atom_ids_3)))
+                        atom_ids.extend(list(set(atom_ids_4)))
+
+                        angle_violation_seq[_seq_key].append([rest_key[0],
+                                                              rest_key[1],
+                                                              atom_ids,
+                                                              angle_type,
+                                                              err])
 
             self.__results['angle_violation_seq'] = angle_violation_seq
 
@@ -2608,14 +2648,7 @@ class NmrVrptUtility:
                     rdc_violations_in_models[m][t] = []
 
             for rest_key, restraints in self.__rdcRestDict.items():
-                comb_key = self.__rdcRestViolCombKeyDict[rest_key][self.__representative_model_id]
-                if comb_key is not None:
-                    combination_id = comb_key['combination_id']
-
-                    r = next(r for r in restraints
-                             if r['combination_id'] == combination_id)
-                else:
-                    r = restraints[0]
+                r = restraints[0]
 
                 t = r['rdc_type']
 
@@ -2644,16 +2677,20 @@ class NmrVrptUtility:
                 for m in range(1, self.__total_models + 1):
                     err = viol_per_model[m]
 
-                    if err is not None and err > 0.0:
-                        comb_key = self.__rdcRestViolCombKeyDict[rest_key][m]
-                        combination_id = comb_key['combination_id']
+                    if err is None or err == 0.0:
+                        continue
 
-                        r = next(r for r in self.__rdcRestDict[rest_key]
-                                 if r['combination_id'] == combination_id)
-                        t = r['rdc_type']
+                    comb_key = self.__rdcRestViolCombKeyDict[rest_key][m]
 
-                        rdc_violations_in_models[m][t].append(err)
-                        rdc_violations_in_models[m][any_type].append(err)
+                    if comb_key is None:
+                        continue
+
+                    r = self.__rdcRestDictWithCombKey[rest_key][comb_key][0]
+
+                    t = r['rdc_type']
+
+                    rdc_violations_in_models[m][t].append(err)
+                    rdc_violations_in_models[m][any_type].append(err)
 
             self.__results['rdc_violations_in_models'] = rdc_violations_in_models
 
@@ -2684,16 +2721,18 @@ class NmrVrptUtility:
                 if len(vm) > 1:
                     e = np.array([err for err in viol_per_model.values() if err is not None and err > 0.0])
 
-                    comb_keys = set()
+                    comb_keys = []
                     for _m in set(vm):
                         comb_key = self.__rdcRestViolCombKeyDict[rest_key][_m]
-                        combination_id = comb_key['combination_id']
-                        comb_keys.add(combination_id)
 
-                    for r in self.__rdcRestDict[rest_key]:
-                        comb_key = r['combination_id']
+                        if comb_key is None:
+                            continue
 
-                        if comb_key in comb_keys:
+                        if comb_key not in comb_keys:
+                            comb_keys.append(comb_key)
+
+                    for comb_key in comb_keys:
+                        for r in self.__rdcRestDictWithCombKey[rest_key][comb_key]:
                             most_violated_rdc.append([rest_key,
                                                       r['atom_key_1'],
                                                       r['atom_key_2'],
@@ -2714,18 +2753,21 @@ class NmrVrptUtility:
                 for m in range(1, self.__total_models + 1):
                     err = viol_per_model[m]
 
-                    if err is not None and err > 0.0:
-                        comb_key = self.__rdcRestViolCombKeyDict[rest_key][m]
-                        combination_id = comb_key['combination_id']
+                    if err is None or err == 0.0:
+                        continue
 
-                        for r in self.__rdcRestDict[rest_key]:
-                            if r['combination_id'] == combination_id:
-                                all_rdc_violations.append([rest_key,
-                                                          r['atom_key_1'],
-                                                          r['atom_key_2'],
-                                                          m,
-                                                          r['rdc_type'],
-                                                          err])
+                    comb_key = self.__rdcRestViolCombKeyDict[rest_key][m]
+
+                    if comb_key is None:
+                        continue
+
+                    for r in self.__rdcRestDictWithCombKey[rest_key][comb_key]:
+                        all_rdc_violations.append([rest_key,
+                                                  r['atom_key_1'],
+                                                  r['atom_key_2'],
+                                                  m,
+                                                  r['rdc_type'],
+                                                  err])
 
             self.__results['all_rdc_violations'] =\
                 sorted(all_rdc_violations, reverse=True, key=itemgetter(5, 0))
@@ -2739,34 +2781,39 @@ class NmrVrptUtility:
                         rdc_violation_seq[_seq_key] = []
 
                     for rest_key in rest_keys:
-                        comb_key = self.__rdcRestViolCombKeyDict[rest_key][m]
-                        if comb_key is None:
-                            continue
-                        combination_id = comb_key['combination_id']
-
-                        atom_ids = []
-                        rdc_type = None
-
-                        for r in self.__rdcRestDict[rest_key]:
-                            if r['combination_id'] == combination_id:
-                                seq_key_1 = (r['atom_key_1'][0], r['atom_key_1'][1], r['atom_key_1'][2])
-                                if seq_key_1 == seq_key:
-                                    atom_ids.append(r['atom_key_1'][3])
-                                seq_key_2 = (r['atom_key_2'][0], r['atom_key_2'][1], r['atom_key_2'][2])
-                                if seq_key_2 == seq_key:
-                                    atom_ids.append(r['atom_key_2'][3])
-
-                                if rdc_type is None:
-                                    rdc_type = r['rdc_type']
-
                         err = self.__rdcRestViolDict[rest_key][m]
 
-                        if err is not None and err > 0.0:
-                            rdc_violation_seq[_seq_key].append([rest_key[0],
-                                                                rest_key[1],
-                                                                atom_ids,
-                                                                rdc_type,
-                                                                err])
+                        if err is None or err == 0.0:
+                            continue
+
+                        comb_key = self.__rdcRestViolCombKeyDict[rest_key][m]
+
+                        if comb_key is None:
+                            continue
+
+                        atom_ids_1 = []
+                        atom_ids_2 = []
+                        rdc_type = None
+
+                        for r in self.__rdcRestDictWithCombKey[rest_key][comb_key]:
+                            seq_key_1 = (r['atom_key_1'][0], r['atom_key_1'][1], r['atom_key_1'][2])
+                            if seq_key_1 == seq_key:
+                                atom_ids_1.append(r['atom_key_1'][3])
+                            seq_key_2 = (r['atom_key_2'][0], r['atom_key_2'][1], r['atom_key_2'][2])
+                            if seq_key_2 == seq_key:
+                                atom_ids_2.append(r['atom_key_2'][3])
+
+                            if rdc_type is None:
+                                rdc_type = r['rdc_type']
+
+                        atom_ids = list(set(atom_ids_1))
+                        atom_ids.extend(list(set(atom_ids_2)))
+
+                        rdc_violation_seq[_seq_key].append([rest_key[0],
+                                                            rest_key[1],
+                                                            atom_ids,
+                                                            rdc_type,
+                                                            err])
 
             self.__results['rdc_violation_seq'] = rdc_violation_seq
 

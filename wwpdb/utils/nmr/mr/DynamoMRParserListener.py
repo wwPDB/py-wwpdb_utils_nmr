@@ -2401,19 +2401,23 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if len(self.atomSelectionSet) < 2:
                 return
-
+            """
             if not self.areUniqueCoordAtoms('an RDC'):
                 return
+            """
+            try:
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
 
-            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-            comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
-            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
-
-            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-            comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
-            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+            except IndexError:
+                self.areUniqueCoordAtoms('an RDC')
+                return
 
             if self.__has_seq_align_err and seq_id_1 - seq_id_2 != diffSeqId:
                 return
@@ -2473,11 +2477,14 @@ class DynamoMRParserListener(ParseTreeListener):
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
+            combinationId = '.'
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]),
                                   softwareName='DYNAMO/PALES')
                 sf['id'] += 1
+                if len(self.atomSelectionSet[0]) > 1 or len(self.atomSelectionSet[1]) > 1:
+                    combinationId = 0
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -2485,13 +2492,15 @@ class DynamoMRParserListener(ParseTreeListener):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
+                if isinstance(combinationId, int):
+                    combinationId += 1
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None, None,
+                                 combinationId, None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
@@ -2574,19 +2583,23 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if len(self.atomSelectionSet) < 2:
                 return
-
+            """
             if not self.areUniqueCoordAtoms('an RDC'):
                 return
+            """
+            try:
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
 
-            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-            comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
-            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
-
-            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-            comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
-            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+            except IndexError:
+                self.areUniqueCoordAtoms('an RDC')
+                return
 
             if self.__has_seq_align_err and seq_id_1 - seq_id_2 != diffSeqId:
                 return
@@ -2646,11 +2659,14 @@ class DynamoMRParserListener(ParseTreeListener):
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
+            combinationId = '.'
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]),
                                   softwareName='DYNAMO/PALES')
                 sf['id'] += 1
+                if len(self.atomSelectionSet[0]) > 1 or len(self.atomSelectionSet[1]) > 1:
+                    combinationId = 0
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -2658,6 +2674,8 @@ class DynamoMRParserListener(ParseTreeListener):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
+                if isinstance(combinationId, int):
+                    combinationId += 1
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -2747,19 +2765,23 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if len(self.atomSelectionSet) < 2:
                 return
-
+            """
             if not self.areUniqueCoordAtoms('an RDC'):
                 return
+            """
+            try:
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
 
-            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-            comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
-            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
-
-            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-            comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
-            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+            except IndexError:
+                self.areUniqueCoordAtoms('an RDC')
+                return
 
             if self.__has_seq_align_err and seq_id_1 - seq_id_2 != diffSeqId:
                 return
@@ -2819,11 +2841,14 @@ class DynamoMRParserListener(ParseTreeListener):
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
+            combinationId = '.'
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]),
                                   softwareName='DYNAMO/PALES')
                 sf['id'] += 1
+                if len(self.atomSelectionSet[0]) > 1 or len(self.atomSelectionSet[1]) > 1:
+                    combinationId = 0
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -2831,13 +2856,15 @@ class DynamoMRParserListener(ParseTreeListener):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
+                if isinstance(combinationId, int):
+                    combinationId += 1
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None, None,
+                                 combinationId, None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
@@ -2929,19 +2956,23 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if len(self.atomSelectionSet) < 2:
                 return
-
+            """
             if not self.areUniqueCoordAtoms('an RDC'):
                 return
+            """
+            try:
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
 
-            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-            comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
-            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
-
-            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-            comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
-            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+            except IndexError:
+                self.areUniqueCoordAtoms('an RDC')
+                return
 
             if self.__has_seq_align_err and seq_id_1 - seq_id_2 != diffSeqId:
                 return
@@ -3001,11 +3032,14 @@ class DynamoMRParserListener(ParseTreeListener):
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
+            combinationId = '.'
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]),
                                   softwareName='PALES')
                 sf['id'] += 1
+                if len(self.atomSelectionSet[0]) > 1 or len(self.atomSelectionSet[1]) > 1:
+                    combinationId = 0
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -3013,13 +3047,15 @@ class DynamoMRParserListener(ParseTreeListener):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
+                if isinstance(combinationId, int):
+                    combinationId += 1
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None, None,
+                                 combinationId, None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)

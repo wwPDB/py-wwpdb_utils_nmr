@@ -206,7 +206,8 @@ try:
                                                              PARAMAGNETIC_ELEMENTS,
                                                              FERROMAGNETIC_ELEMENTS,
                                                              NON_METAL_ELEMENTS,
-                                                             MAX_DIM_NUM_OF_SPECTRA)
+                                                             MAX_DIM_NUM_OF_SPECTRA,
+                                                             MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK)
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
     from wwpdb.utils.nmr.AlignUtil import (LOW_SEQ_COVERAGE,
                                            MIN_SEQ_COVERAGE_W_CONFLICT,
@@ -300,7 +301,8 @@ except ImportError:
                                                  PARAMAGNETIC_ELEMENTS,
                                                  FERROMAGNETIC_ELEMENTS,
                                                  NON_METAL_ELEMENTS,
-                                                 MAX_DIM_NUM_OF_SPECTRA)
+                                                 MAX_DIM_NUM_OF_SPECTRA,
+                                                 MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK)
     from nmr.NmrDpReport import NmrDpReport
     from nmr.AlignUtil import (LOW_SEQ_COVERAGE,
                                MIN_SEQ_COVERAGE_W_CONFLICT,
@@ -31673,7 +31675,7 @@ class NmrDpUtility:
 
                     self.__calculateStatsOfAssignedChemShift(file_list_id, sf_framecode, lp_data, cs_ann, ent)
 
-                elif content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
+                elif content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint') and len(lp_data) < MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
 
                     conflict_id_set = self.__nefT.get_conflict_id_set(sf_data, lp_category, self.consist_key_items[file_type][content_subtype])[0]
 

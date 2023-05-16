@@ -359,6 +359,7 @@ class XplorMRParserListener(ParseTreeListener):
     __cur_subtype_altered = False
     __with_axis = False
     __with_para = False
+    __in_block = False
     __cur_auth_atom_id = ''
 
     # vector statement
@@ -846,6 +847,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: XplorMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.distStatements += 1
@@ -874,6 +877,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: XplorMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict and self.__cur_subtype == 'dist':
 
             if self.__cur_subtype not in self.__lastSfDict:
@@ -939,6 +944,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#dihedral_angle_restraint.
     def enterDihedral_angle_restraint(self, ctx: XplorMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.dihedStatements += 1
         self.__cur_subtype = 'dihed'
 
@@ -949,11 +956,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#dihedral_angle_restraint.
     def exitDihedral_angle_restraint(self, ctx: XplorMRParser.Dihedral_angle_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: XplorMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.rdcStatements += 1
@@ -972,6 +983,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#rdc_restraint.
     def exitRdc_restraint(self, ctx: XplorMRParser.Rdc_restraintContext):
+        self.__in_block = False
+
         if self.__createSfDict:
             if ctx.VeAngle() or ctx.Anisotropy():
                 self.__cur_subtype = 'dihed'
@@ -983,6 +996,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#planar_restraint.
     def enterPlanar_restraint(self, ctx: XplorMRParser.Planar_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.planeStatements += 1
         self.__cur_subtype = 'plane'
 
@@ -992,11 +1007,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#planar_restraint.
     def exitPlanar_restraint(self, ctx: XplorMRParser.Planar_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#harmonic_restraint.
     def enterHarmonic_restraint(self, ctx: XplorMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.geoStatements += 1
         self.__cur_subtype = 'geo'
 
@@ -1009,11 +1028,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#harmonic_restraint.
     def exitHarmonic_restraint(self, ctx: XplorMRParser.Harmonic_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#antidistance_restraint.
     def enterAntidistance_restraint(self, ctx: XplorMRParser.Antidistance_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.adistStatements += 1
@@ -1024,11 +1047,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#antidistance_restraint.
     def exitAntidistance_restraint(self, ctx: XplorMRParser.Antidistance_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#coupling_restraint.
     def enterCoupling_restraint(self, ctx: XplorMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.jcoupStatements += 1
@@ -1039,11 +1066,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#coupling_restraint.
     def exitCoupling_restraint(self, ctx: XplorMRParser.Coupling_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#carbon_shift_restraint.
     def enterCarbon_shift_restraint(self, ctx: XplorMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.hvycsStatements += 1
@@ -1054,11 +1085,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#carbon_shift_restraint.
     def exitCarbon_shift_restraint(self, ctx: XplorMRParser.Carbon_shift_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#proton_shift_restraint.
     def enterProton_shift_restraint(self, ctx: XplorMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.procsStatements += 1
@@ -1069,11 +1104,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#proton_shift_restraint.
     def exitProton_shift_restraint(self, ctx: XplorMRParser.Proton_shift_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
     def enterDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.ramaStatements += 1
@@ -1086,11 +1125,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#dihedral_angle_db_restraint.
     def exitDihedral_angle_db_restraint(self, ctx: XplorMRParser.Dihedral_angle_db_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#radius_of_gyration_restraint.
     def enterRadius_of_gyration_restraint(self, ctx: XplorMRParser.Radius_of_gyration_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.radiStatements += 1
         self.__cur_subtype = 'radi'
 
@@ -1099,11 +1142,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#radius_of_gyration_restraint.
     def exitRadius_of_gyration_restraint(self, ctx: XplorMRParser.Radius_of_gyration_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#diffusion_anisotropy_restraint.
     def enterDiffusion_anisotropy_restraint(self, ctx: XplorMRParser.Diffusion_anisotropy_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.diffStatements += 1
@@ -1115,11 +1162,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#diffusion_anisotropy_restraint.
     def exitDiffusion_anisotropy_restraint(self, ctx: XplorMRParser.Diffusion_anisotropy_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#orientation_db_restraint.
     def enterOrientation_db_restraint(self, ctx: XplorMRParser.Orientation_db_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.nbaseStatements += 1
@@ -1130,11 +1181,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#orientation_db_restraint.
     def exitOrientation_db_restraint(self, ctx: XplorMRParser.Orientation_db_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#csa_restraint.
     def enterCsa_restraint(self, ctx: XplorMRParser.Csa_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.csaStatements += 1  # either CSA or pseudo CSA
@@ -1145,11 +1200,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#csa_restraint.
     def exitCsa_restraint(self, ctx: XplorMRParser.Csa_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#pcsa_restraint.
     def enterPcsa_restraint(self, ctx: XplorMRParser.Pcsa_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.csaStatements += 1  # either CSA or pseudo CSA
@@ -1160,6 +1219,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#pcsa_restraint.
     def exitPcsa_restraint(self, ctx: XplorMRParser.Pcsa_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
@@ -1185,6 +1246,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#pre_restraint.
     def enterPre_restraint(self, ctx: XplorMRParser.Pre_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.preStatements += 1
@@ -1195,11 +1258,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#pre_restraint.
     def exitPre_restraint(self, ctx: XplorMRParser.Pre_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#pcs_restraint.
     def enterPcs_restraint(self, ctx: XplorMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.pcsStatements += 1
@@ -1210,11 +1277,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#pcs_restraint.
     def exitPcs_restraint(self, ctx: XplorMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#prdc_restraint.
     def enterPrdc_restraint(self, ctx: XplorMRParser.Prdc_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.prdcStatements += 1
@@ -1226,10 +1297,12 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#prdc_restraint.
     def exitPrdc_restraint(self, ctx: XplorMRParser.Prdc_restraintContext):  # pylint: disable=unused-argument
-        pass
+        self.__in_block = False
 
     # Enter a parse tree produced by XplorMRParser#porientation_restraint.
     def enterPorientation_restraint(self, ctx: XplorMRParser.Porientation_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.pangStatements += 1
@@ -1240,11 +1313,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#porientation_restraint.
     def exitPorientation_restraint(self, ctx: XplorMRParser.Porientation_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#pccr_restraint.
     def enterPccr_restraint(self, ctx: XplorMRParser.Pccr_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.pccrStatements += 1
@@ -1257,11 +1334,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#pccr_restraint.
     def exitPccr_restraint(self, ctx: XplorMRParser.Pccr_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#hbond_restraint.
     def enterHbond_restraint(self, ctx: XplorMRParser.Hbond_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.classification = '.'
 
         self.hbondStatements += 1
@@ -1272,11 +1353,15 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#hbond_restraint.
     def exitHbond_restraint(self, ctx: XplorMRParser.Hbond_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
     # Enter a parse tree produced by XplorMRParser#hbond_db_restraint.
     def enterHbond_db_restraint(self, ctx: XplorMRParser.Hbond_db_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.hbondStatements += 1
         self.__cur_subtype = 'hbond'
 
@@ -1285,6 +1370,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#hbond_db_restraint.
     def exitHbond_db_restraint(self, ctx: XplorMRParser.Hbond_db_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
@@ -1549,7 +1636,7 @@ class XplorMRParserListener(ParseTreeListener):
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
-            if len(self.atomSelectionSet) == 2 and len(self.numberSelection) == 2:
+            if len(self.atomSelectionSet) == 2 and len(self.numberSelection) == 2 and not self.__in_block:
 
                 if self.paramagCenter is not None:
 
@@ -2348,21 +2435,27 @@ class XplorMRParserListener(ParseTreeListener):
 
             if not self.__hasPolySeq:
                 return
-
+            """
             if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
                 if len(self.__g) > 0:
                     self.__f.extend(self.__g)
                 return
+            """
+            try:
+                chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
 
-            chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
-            seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
-            comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
-            atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
-
-            chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
-            seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
-            comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
-            atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
+                chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
+            except IndexError:
+                if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
+                    if len(self.__g) > 0:
+                        self.__f.extend(self.__g)
+                return
 
             chain_id_set = None
             if self.__exptlMethod == 'SOLID-STATE NMR':
@@ -2473,10 +2566,13 @@ class XplorMRParserListener(ParseTreeListener):
                                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
+            combinationId = '.'
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   rdcCode=getRdcCode([self.atomSelectionSet[4][0], self.atomSelectionSet[5][0]]))
                 sf['id'] += 1
+                if len(self.atomSelectionSet[4]) > 1 or len(self.atomSelectionSet[5]) > 1:
+                    combinationId = 0
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
@@ -2494,14 +2590,15 @@ class XplorMRParserListener(ParseTreeListener):
                                         f"({atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']}, "
                                         f"{atom2['chain_id']}:{atom2['seq_id']}:{atom2['comp_id']}:{atom2['atom_id']}). "
                                         "However, it might be an artificial RDC constraint on solid-state NMR applied to symmetric samples such as fibrils.")
-
+                if isinstance(combinationId, int):
+                    combinationId += 1
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (SANI) id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None, None,
+                                 combinationId, None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
@@ -2798,22 +2895,29 @@ class XplorMRParserListener(ParseTreeListener):
 
             if not self.__hasPolySeq:
                 return
-
+            """
             if not self.areUniqueCoordAtoms('an RDC (XDIP)', XPLOR_ORIGIN_AXIS_COLS,
                                             allow_ambig=True, allow_ambig_warn_title='Anomalous RDC vector'):
                 if len(self.__g) > 0:
                     self.__f.extend(self.__g)
                 return
+            """
+            try:
+                chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
 
-            chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
-            seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
-            comp_id_1 = self.atomSelectionSet[4][0]['comp_id']
-            atom_id_1 = self.atomSelectionSet[4][0]['atom_id']
-
-            chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
-            seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
-            comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
-            atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
+                chain_id_2 = self.atomSelectionSet[5][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
+            except IndexError:
+                if not self.areUniqueCoordAtoms('an RDC (XDIP)', XPLOR_ORIGIN_AXIS_COLS,
+                                                allow_ambig=True, allow_ambig_warn_title='Anomalous RDC vector'):
+                    if len(self.__g) > 0:
+                        self.__f.extend(self.__g)
+                return
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -2866,10 +2970,13 @@ class XplorMRParserListener(ParseTreeListener):
                                     f"Found {spin_system} dipolar coupling vector in the 'XDIPolar' statement, which usually accepts 1H-1H dipolar coupling; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
+            combinationId = '.'
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   rdcCode=getRdcCode([self.atomSelectionSet[4][0], self.atomSelectionSet[5][0]]))
                 sf['id'] += 1
+                if len(self.atomSelectionSet[4]) > 1 or len(self.atomSelectionSet[5]) > 1:
+                    combinationId = 0
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
@@ -2877,13 +2984,15 @@ class XplorMRParserListener(ParseTreeListener):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
+                if isinstance(combinationId, int):
+                    combinationId += 1
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XDIP) id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None, None,
+                                 combinationId, None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
@@ -3336,21 +3445,27 @@ class XplorMRParserListener(ParseTreeListener):
 
             if not self.__hasPolySeq:
                 return
-
+            """
             if not self.areUniqueCoordAtoms('an RDC (TENSO)'):
                 if len(self.__g) > 0:
                     self.__f.extend(self.__g)
                 return
+            """
+            try:
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
 
-            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-            comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
-            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
-
-            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-            comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
-            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+            except IndexError:
+                if not self.areUniqueCoordAtoms('an RDC (TENSO)'):
+                    if len(self.__g) > 0:
+                        self.__f.extend(self.__g)
+                return
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -3407,10 +3522,13 @@ class XplorMRParserListener(ParseTreeListener):
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
+            combinationId = '.'
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]))
                 sf['id'] += 1
+                if len(self.atomSelectionSet[0]) > 1 or len(self.atomSelectionSet[1]) > 1:
+                    combinationId = 0
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -3418,13 +3536,15 @@ class XplorMRParserListener(ParseTreeListener):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
+                if isinstance(combinationId, int):
+                    combinationId += 1
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (TENSO) id={self.rdcRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None, None,
+                                 combinationId, None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
@@ -3909,7 +4029,7 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit = None
             upper_limit = None
 
-            if len(self.atomSelectionSet) == 4 and self.__hasPolySeq:
+            if len(self.atomSelectionSet) == 4 and self.__hasPolySeq and not self.__in_block:
 
                 try:
                     atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
@@ -4009,10 +4129,12 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                    "Found inter-residue J-coupling vector; "
-                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
-                    return
+
+                    if abs(seq_id_1 - seq_id_2) > 2 or {atom_id_1, atom_id_2} != {'H', 'N'}:
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        "Found inter-residue J-coupling vector; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                        return
 
                 elif abs(seq_id_1 - seq_id_2) == 1:
 
@@ -4020,7 +4142,8 @@ class XplorMRParserListener(ParseTreeListener):
                             ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in jcoupBbPairCode)
                              or (seq_id_1 > seq_id_2 and atom_id_1 in jcoupBbPairCode and atom_id_2 == 'C')
                              or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
-                             or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
+                             or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))
+                             or {atom_id_1, atom_id_2} == {'H', 'N'}):
                         pass
 
                     else:
@@ -4036,7 +4159,7 @@ class XplorMRParserListener(ParseTreeListener):
                     return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(self.classification)
                 sf['id'] += 1
 
             if len(self.atomSelectionSet) == 4:
@@ -4045,7 +4168,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
                     if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
-                        continue
+                        if {atom1['atom_id'], atom4['atom_id']} != {'H', 'N'}:
+                            continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
@@ -4064,7 +4188,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
                     if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
-                        continue
+                        if {atom1['atom_id'], atom4['atom_id']} != {'H', 'N'}:
+                            continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
                               f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
@@ -4082,7 +4207,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[6],
                                                                     self.atomSelectionSet[7]):
                     if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
-                        continue
+                        if {atom1['atom_id'], atom4['atom_id']} != {'H', 'N'}:
+                            continue
                     if self.__debug:
                         if dstFunc2 is None:
                             print(f"subtype={self.__cur_subtype} (COUP) id={self.jcoupRestraints} "
@@ -4215,7 +4341,7 @@ class XplorMRParserListener(ParseTreeListener):
                     return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(self.classification)
                 sf['id'] += 1
 
             for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
@@ -4372,7 +4498,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(self.classification)
                 sf['id'] += 1
 
             if lenAtomSelectionSet == 1:
@@ -5763,7 +5889,7 @@ class XplorMRParserListener(ParseTreeListener):
                             return
 
             if self.__createSfDict:
-                sf = self.__getSf()
+                sf = self.__getSf(self.classification)
                 sf['id'] += 1
 
             for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[4],
@@ -6348,41 +6474,42 @@ class XplorMRParserListener(ParseTreeListener):
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 return
 
-            try:
-                # check whether if carbon shift restraints or not
-                atom_id_5 = self.atomSelectionSet[4][0]['atom_id']
-            except IndexError:
-                self.pcsRestraints -= 1
-                self.hvycsRestraints += 1
-                if self.__cur_subtype_altered:
-                    self.pcsStatements -= 1
-                    if self.hvycsStatements == 0:
-                        self.hvycsStatements += 1
-                self.__cur_subtype = 'hvycs'
-                self.exitCarbon_shift_assign(ctx)
-                return
+            if not self.__in_block:
+                try:
+                    # check whether if carbon shift restraints or not
+                    atom_id_5 = self.atomSelectionSet[4][0]['atom_id']
+                except IndexError:
+                    self.pcsRestraints -= 1
+                    self.hvycsRestraints += 1
+                    if self.__cur_subtype_altered:
+                        self.pcsStatements -= 1
+                        if self.hvycsStatements == 0:
+                            self.hvycsStatements += 1
+                    self.__cur_subtype = 'hvycs'
+                    self.exitCarbon_shift_assign(ctx)
+                    return
 
-            try:
-                # check whether if carbon shift restraints or not
-                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
-                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
-                atom_id_3 = self.atomSelectionSet[2][0]['atom_id']
-                atom_id_4 = self.atomSelectionSet[3][0]['atom_id']
-            except IndexError:
-                atom_id_1, atom_id_2, atom_id_3, atom_id_4 = 'OO', 'Z', 'X', 'Y'
+                try:
+                    # check whether if carbon shift restraints or not
+                    atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+                    atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                    atom_id_3 = self.atomSelectionSet[2][0]['atom_id']
+                    atom_id_4 = self.atomSelectionSet[3][0]['atom_id']
+                except IndexError:
+                    atom_id_1, atom_id_2, atom_id_3, atom_id_4 = 'OO', 'Z', 'X', 'Y'
 
-            atom_ids = [atom_id_1, atom_id_2, atom_id_3, atom_id_4, atom_id_5]
+                atom_ids = [atom_id_1, atom_id_2, atom_id_3, atom_id_4, atom_id_5]
 
-            if atom_ids == ['C', 'N', 'CA', 'C', 'N']:
-                self.pcsRestraints -= 1
-                self.hvycsRestraints += 1
-                if self.__cur_subtype_altered:
-                    self.pcsStatements -= 1
-                    if self.hvycsStatements == 0:
-                        self.hvycsStatements += 1
-                self.__cur_subtype = 'hvycs'
-                self.exitCarbon_shift_assign(ctx)
-                return
+                if atom_ids == ['C', 'N', 'CA', 'C', 'N']:
+                    self.pcsRestraints -= 1
+                    self.hvycsRestraints += 1
+                    if self.__cur_subtype_altered:
+                        self.pcsStatements -= 1
+                        if self.hvycsStatements == 0:
+                            self.hvycsStatements += 1
+                    self.__cur_subtype = 'hvycs'
+                    self.exitCarbon_shift_assign(ctx)
+                    return
 
             self.__cur_subtype = 'pcs'  # to get consistent number of statement
 
@@ -6725,9 +6852,12 @@ class XplorMRParserListener(ParseTreeListener):
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
 
+            combinationId = '.'
             if self.__createSfDict:
                 sf = self.__getSf(alignCenter=atom_id_0)
                 sf['id'] += 1
+                if len(self.atomSelectionSet[4]) > 1 or len(self.atomSelectionSet[5]) > 1:
+                    combinationId = 0
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
@@ -6735,13 +6865,15 @@ class XplorMRParserListener(ParseTreeListener):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
+                if isinstance(combinationId, int):
+                    combinationId += 1
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XRDC) id={self.prdcRestraints} "
                           f"paramag_center={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None, None,
+                                 combinationId, None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
@@ -7364,7 +7496,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__lfh.write(f"+XplorMRParserListener.exitHbond_assign() ++ Error  - {str(e)}")
 
         if self.__createSfDict:
-            sf = self.__getSf()
+            sf = self.__getSf(self.classification)
             sf['id'] += 1
 
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
@@ -7498,7 +7630,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__lfh.write(f"+XplorMRParserListener.exitHbond_db_assign() ++ Error  - {str(e)}")
 
         if self.__createSfDict:
-            sf = self.__getSf()
+            sf = self.__getSf(self.classification)
             sf['id'] += 1
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[self.donor_columnSel],
@@ -7519,6 +7651,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#ncs_restraint.
     def enterNcs_restraint(self, ctx: XplorMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = True
+
         self.geoStatements += 1
         self.__cur_subtype = 'geo'
 
@@ -7528,6 +7662,8 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#ncs_restraint.
     def exitNcs_restraint(self, ctx: XplorMRParser.Ncs_restraintContext):  # pylint: disable=unused-argument
+        self.__in_block = False
+
         if self.__createSfDict:
             self.__trimSfWoLp()
 
@@ -12120,6 +12256,11 @@ class XplorMRParserListener(ParseTreeListener):
                             sf.tags[idx][1] = rdcCode
                         else:
                             sf.add_tag('Details', rdcCode)
+            elif constraintType is not None:
+                old_key = (self.__cur_subtype, None, None, None, None)
+                if old_key in self.sfDict:
+                    replaced = True
+                    self.sfDict[key] = [self.sfDict[old_key].pop(-1)]
             if not replaced:
                 self.__addSf(constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode,
                              alignCenter=alignCenter)

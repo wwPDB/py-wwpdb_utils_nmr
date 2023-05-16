@@ -564,6 +564,10 @@ def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
         for ps in polySeqRst:
             seqIds = [seqId for seqId in ps['seq_id']
                       if not any(item for item in remapList if item['chain_id'] == ps['chain_id'] and item['seq_id'] == seqId)]
+
+            if len(seqIds) == 0:
+                continue
+
             minSeqId = min(seqIds)
             maxSeqId = max(seqIds)
 

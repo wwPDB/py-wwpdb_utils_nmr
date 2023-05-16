@@ -67,6 +67,8 @@ REORDER = False
 
 LEN_MAJOR_ASYM_ID = 26
 
+SYMBOLS_ELEMENT = {k.upper(): v for k, v in NAMES_ELEMENT.items()}
+
 
 def M(axis, theta):
     """ Return the rotation matrix associated with counterclockwise rotation about the given axis by theta radians.
@@ -101,7 +103,7 @@ def get_coordinates(p):
     for a in p:
         V.append(to_np_array(a))
 
-    atoms = [NAMES_ELEMENT[a['element']] for a in p]
+    atoms = [SYMBOLS_ELEMENT[a['element']] for a in p]
 
     V = np.asarray(V)
     atoms = np.asarray(atoms)

@@ -183,6 +183,10 @@ NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S', 'SE')
 MAX_DIM_NUM_OF_SPECTRA = 16
 
 
+# maximum number of rows to perform explicit redundancy check
+MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK = 100000
+
+
 # data items in _Entity_deleted_atom category of NMR-STAR
 ENTITY_DELETED_ATOM_ITEMS = ['ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID',
                              'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID']
@@ -2494,7 +2498,7 @@ class NEFTranslator:
 
                 tag_data = get_lp_tag(loop, tags)
 
-                if test_on_index and len(idx_tag_ids) > 0:
+                if test_on_index and len(idx_tag_ids) > 0 and len(tag_data) <= MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
 
                     for idx, idx_tag_id in enumerate(idx_tag_ids):
 

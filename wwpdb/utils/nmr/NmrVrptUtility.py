@@ -303,21 +303,21 @@ class NmrVrptUtility:
 
         # distance restraints for each restraint key (list_id, restraint_id)
         self.__distRestDict = None
-        # distance restraints for each restraint key (list_id, restraint_id, combination_id, member_id)
+        # distance restraints for each restraint key (list_id, restraint_id, tuple(combination_id, member_id))
         self.__distRestDictWithCombKey = None
         # distance restraint keys for each sequence key (auth_asym_id, auth_seq_id, auth_comp_id)
         self.__distRestSeqDict = None
 
         # dihedral angle restraints for each restraint key (list_id, restraint_id)
         self.__dihedRestDict = None
-        # dihedral angle restraints for each restraint key (list_id, restraint_id, combination_id)
+        # dihedral angle restraints for each restraint key (list_id, restraint_id, tuple(combination_id))
         self.__dihedRestDictWithCombKey = None
         # dihedral angle restraint keys for each sequence key (auth_asym_id, auth_seq_id, auth_comp_id)
         self.__dihedRestSeqDict = None
 
         # RDC restraints for each restraint key (list_id, restraint_id)
         self.__rdcRestDict = None
-        # RDC restraints for each restraint key (list_id, restraint_id)
+        # RDC restraints for each restraint key (list_id, restraint_id, tuple(combination_id))
         self.__rdcRestDictWithCombKey = None
         # RDC restraint keys for each sequence key (auth_asym_id, auth_seq_id, auth_comp_id)
         self.__rdcRestSeqDict = None

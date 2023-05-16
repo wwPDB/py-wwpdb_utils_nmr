@@ -1929,7 +1929,7 @@ class NmrVrptUtility:
         if self.__coordinates is None:
             return False
 
-        return True  # TODO
+        return True  # TODO  pylint: disable=fixme
 
         self.__rdcRestDictWithCombKey = {}  # pylint: disable='unreachable'
 

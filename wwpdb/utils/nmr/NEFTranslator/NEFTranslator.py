@@ -128,6 +128,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            ALLOWED_AMBIGUITY_CODES)
 
+
 __package_name__ = 'wwpdb.utils.nmr'
 __version__ = '3.4.0'
 
@@ -136,25 +137,25 @@ __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
+
 if __pynmrstar_v3_3_1__:
     logger = logging.getLogger('pynmrstar')
     logger.setLevel(logging.ERROR)
 else:
     logging.getLogger().setLevel(logging.ERROR)  # set level for pynmrstar
 
-# supported version
+
+# supported NEF dictionary version
 NEF_VERSION = '1.1'
 
-
+# supported NMR-STAR dictionary version
 NMR_STAR_VERSION = '3.2.6.0'
 
 # format name
 NEF_FORMAT_NAME = 'nmr_exchange_format'
 
-
 # NEF boolean values
 NEF_BOOLEAN_VALUES = ('true', 'false')
-
 
 # NMR-STAR boolean values
 STAR_BOOLEAN_VALUES = ('yes', 'no')
@@ -166,14 +167,11 @@ PARAMAGNETIC_ELEMENTS = ('LI', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN
                          'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM',
                          'YB', 'LU', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC')
 
-
 # ferromagnetic elements
 FERROMAGNETIC_ELEMENTS = ('CR', 'FE', 'CO', 'NI')
 
-
 # lanthanoid elements
 LANTHANOID_ELEMENTS = ('LA', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM', 'YB', 'LU')
-
 
 # non-metal elements
 NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S', 'SE')
@@ -181,7 +179,6 @@ NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S', 'SE')
 
 # limit number of dimensions
 MAX_DIM_NUM_OF_SPECTRA = 16
-
 
 # maximum number of rows to perform explicit redundancy check
 MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK = 100000
@@ -191,9 +188,9 @@ MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK = 100000
 ENTITY_DELETED_ATOM_ITEMS = ['ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID',
                              'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID']
 
+
 # integer pattern
 intPattern = re.compile(r'^([+-]?[1-9]\d*|0)$')
-
 
 # bad pattern
 badPattern = re.compile(r'.*[\!\$\&\(\)\=\~\^\\\|\`\@\{\}\[\]\;\:\<\>\,\/].*')
@@ -2417,7 +2414,7 @@ class NEFTranslator:
                                     elif d['name'] == 'isotope_number' or d['name'] == 'Atom_isotope_number':
                                         for row in loop:
                                             ref = row[from_col]
-                                            if ref[0] in pseProBeginCode:
+                                            if ref[0] in pseProBeginCode or ref[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                                 row.append(1)
                                             else:
                                                 row.append(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[ref[0]][0])

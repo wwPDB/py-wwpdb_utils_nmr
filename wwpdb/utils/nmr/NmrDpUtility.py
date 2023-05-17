@@ -16030,7 +16030,8 @@ class NmrDpUtility:
                                                                      f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id} {comp_id}\n")
                                                     sys.exit(1)
 
-                                                if (min(set(s2['seq_id']) - set(s1['seq_id'])) > 0 and seq_id > 0) or not self.__nonblk_bad_nterm:
+                                                if not self.__remediation_mode\
+                                                   and ((min(set(s2['seq_id']) - set(s1['seq_id'])) > 0 and seq_id > 0) or not self.__nonblk_bad_nterm):
 
                                                     err = f"Invalid seq_id {str(seq_id)!r} (chain_id {chain_id}) in a loop {lp_category2}."
 
@@ -24050,6 +24051,63 @@ class NmrDpUtility:
                         else:
                             resolved = False
 
+                    if not resolved and seq_id is not None:
+
+                        def test_seq_id_offset(lp, index, row, _row, _idx, chain_id, seq_id, offset):
+                            found_ = resolved_ = False
+
+                            auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id + offset)
+                            if auth_asym_id is not None and auth_seq_id is not None:
+                                found_ = resolved_ = True
+
+                                item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
+
+                                if item is not None and ps is not None and any(_ps for _ps in ps if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
+                                    entity_assembly_id = item['entity_assembly_id']
+                                    entity_id = item['entity_id']
+
+                                    _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
+
+                                    seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                    if v[0] == entity_assembly_id and v[1] == seq_id + offset and v[2] == entity_id), None)
+                                    if seq_key is not None:
+                                        _seq_key = (seq_key[0], seq_key[1])
+                                        _row[16], _row[17], _row[18], _row[19] =\
+                                            seq_key[0], seq_key[1] - offset, comp_id, atom_id
+                                        if has_ins_code and seq_key in auth_to_ins_code:
+                                            _row[27] = auth_to_ins_code[seq_key]
+
+                                    if has_auth_seq:
+                                        _row[20], _row[21], _row[22], _row[23] =\
+                                            row[auth_asym_id_col], row[auth_seq_id_col],\
+                                            row[auth_comp_id_col], row[auth_atom_id_col]
+                                    else:
+                                        _row[20], _row[21], _row[22], _row[23] =\
+                                            _row[16], _row[17], _row[18], _row[19]
+
+                                    index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, _idx)
+
+                                else:
+                                    resolved_ = False
+
+                            return found_, resolved_, index, _row
+
+                        found = False
+                        for offset in range(1, 1000):
+                            found, resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, offset)
+
+                            if found:
+                                if resolved:
+                                    index, _row = _index, __row
+                                break
+
+                            found, resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, -offset)
+
+                            if found:
+                                if resolved:
+                                    index, _row = _index, __row
+                                break
+
                     if not resolved:
                         entity_id = None
                         if self.__combined_mode and entity_id_col != -1:
@@ -27963,6 +28021,7 @@ class NmrDpUtility:
                         sf_item['constraint_subtype'] = 'hydrogen bond'
 
             elif content_subtype == 'dihed_restraint':
+                self.__updateTorsionAngleConstIdInMrStr(sf_item)
 
                 auth_to_entity_type = self.__caC['auth_to_entity_type']
 
@@ -28441,6 +28500,137 @@ class NmrDpUtility:
 
                 if index_id in member_id_dict:
                     row[member_id_col] = member_id_dict[index_id]
+
+        try:
+
+            del sf_item['saveframe'][loop]
+
+            sf_item['saveframe'].add_loop(lp)
+            sf_item['loop'] = lp
+
+            return True
+
+        except ValueError:
+            return False
+
+    def __updateTorsionAngleConstIdInMrStr(self, sf_item):  # pylint: disable=no-self-use
+        """ Update _Torsion_angle_constraint.ID in NMR-STAR restraint file.
+        """
+
+        loop = sf_item['loop']
+
+        lp = pynmrstar.Loop.from_scratch(loop.category)
+
+        for tag in loop.tags:
+            lp.add_tag(loop.category + '.' + tag)
+
+        id_col = loop.tags.index('ID')
+        if 'Index_ID' not in loop.tags:
+            tag = loop.category + '.Index_ID'
+            loop.add_tag(tag)
+            lp.add_tag(tag)
+            for idx, row in enumerate(loop, start=1):
+                row.append(str(idx))
+            for idx, row in enumerate(lp, start=1):
+                row.append(str(idx))
+        if 'Combination_ID' not in loop.tags:
+            tag = loop.category + '.Combination_ID'
+            loop.add_tag(tag)
+            lp.add_tag(tag)
+            for row in loop:
+                row.append('.')
+            for row in lp:
+                row.append('.')
+        index_id_col = loop.tags.index('Index_ID')
+        combination_id_col = loop.tags.index('Combination_ID')
+
+        chain_id_1_col = loop.tags.index('Auth_asym_ID_1')
+        seq_id_1_col = loop.tags.index('Auth_seq_ID_1')
+        atom_id_1_col = loop.tags.index('Auth_atom_ID_1')
+
+        chain_id_2_col = loop.tags.index('Auth_asym_ID_2')
+        seq_id_2_col = loop.tags.index('Auth_seq_ID_2')
+        atom_id_2_col = loop.tags.index('Auth_atom_ID_2')
+
+        chain_id_3_col = loop.tags.index('Auth_asym_ID_3')
+        seq_id_3_col = loop.tags.index('Auth_seq_ID_3')
+        atom_id_3_col = loop.tags.index('Auth_atom_ID_3')
+
+        chain_id_4_col = loop.tags.index('Auth_asym_ID_4')
+        seq_id_4_col = loop.tags.index('Auth_seq_ID_4')
+        atom_id_4_col = loop.tags.index('Auth_atom_ID_4')
+
+        sf_item['id'] = 0
+        sf_item['index_id'] = 0
+
+        len_loop = len(loop)
+
+        proc_row = [False] * len_loop
+
+        for idx, row in enumerate(loop):
+
+            if proc_row[idx]:
+                continue
+
+            _row = row
+
+            sf_item['id'] += 1
+            sf_item['index_id'] += 1
+
+            combinational = False
+
+            combination_id = row[combination_id_col]
+
+            if combination_id not in emptyValue:
+                sf_item['id'] -= 1
+                combinational = True
+
+            _row[id_col] = sf_item['id']
+            _row[index_id_col] = sf_item['index_id']
+
+            key = _row[chain_id_1_col] + str(_row[seq_id_1_col]) + _row[atom_id_1_col]\
+                + _row[chain_id_2_col] + str(_row[seq_id_2_col]) + _row[atom_id_2_col]\
+                + _row[chain_id_3_col] + str(_row[seq_id_3_col]) + _row[atom_id_3_col]\
+                + _row[chain_id_4_col] + str(_row[seq_id_4_col]) + _row[atom_id_4_col]
+
+            if not combinational and idx + 1 < len_loop:
+
+                combination_id = 1
+
+                for idx2 in range(idx + 1, len_loop):
+
+                    if proc_row[idx2]:
+                        continue
+
+                    _row_ = loop.data[idx2]
+
+                    _key = _row_[chain_id_1_col] + str(_row_[seq_id_1_col]) + _row_[atom_id_1_col]\
+                        + _row_[chain_id_2_col] + str(_row_[seq_id_2_col]) + _row_[atom_id_2_col]\
+                        + _row_[chain_id_3_col] + str(_row_[seq_id_3_col]) + _row_[atom_id_3_col]\
+                        + _row_[chain_id_4_col] + str(_row_[seq_id_4_col]) + _row_[atom_id_4_col]
+
+                    if key == _key:
+
+                        if combination_id == 1:
+                            _row[combination_id_col] = combination_id
+                            lp.add_data(_row)
+
+                        sf_item['index_id'] += 1
+                        combination_id += 1
+
+                        _row_[id_col] = sf_item['id']
+                        _row_[index_id_col] = sf_item['index_id']
+                        _row_[combination_id_col] = combination_id
+
+                        lp.add_data(_row_)
+
+                        proc_row[idx2] = True
+
+                if combination_id == 1:
+                    lp.add_data(_row)
+
+            else:
+                lp.add_data(_row)
 
         try:
 
@@ -47930,6 +48120,7 @@ class NmrDpUtility:
         Protein_other_angle_tot_num = 0
         if content_subtype in self.__mr_sf_dict_holder:
             for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                self.__updateTorsionAngleConstIdInMrStr(sf_item)
 
                 lp = sf_item['loop']
 

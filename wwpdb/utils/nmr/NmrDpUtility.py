@@ -16508,18 +16508,17 @@ class NmrDpUtility:
 
         for polymer_sequence_in_cs_loop in polymer_sequence_in_loop[content_subtype]:
             for ps_in_cs_loop in polymer_sequence_in_cs_loop['polymer_sequence']:
-                chain_id2 = ps_in_cs_loop['chain_id']
+                _chain_id = ps_in_cs_loop['chain_id']
 
                 for ps in polymer_sequence:
                     chain_id = ps['chain_id']
 
-                    if chain_id == chain_id2\
-                       or 'identical_chain_id' in ps and chain_id2 in ps['identical_chain_id']:
-                        pass
+                    if chain_id == _chain_id\
+                       or 'identical_chain_id' in ps and _chain_id in ps['identical_chain_id']:
 
-                    for seq_id2, comp_id2 in zip(ps_in_cs_loop['seq_id'], ps_in_cs_loop['comp_id']):
-                        if seq_id2 not in ps['seq_id']:
-                            ext_seq_key_set.add((chain_id, seq_id2, comp_id2))
+                        for _seq_id, _comp_id in zip(ps_in_cs_loop['seq_id'], ps_in_cs_loop['comp_id']):
+                            if _seq_id not in ps['seq_id']:
+                                ext_seq_key_set.add((chain_id, _seq_id, _comp_id))
 
         if len(ext_seq_key_set) > 0:
             for ext_seq_key in ext_seq_key_set:

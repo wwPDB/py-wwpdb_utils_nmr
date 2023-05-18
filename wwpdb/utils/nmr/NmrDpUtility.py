@@ -23131,6 +23131,7 @@ class NmrDpUtility:
         polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
         ps = None
+        ps_common = input_source_dic['polymer_sequence']
 
         seq_align = chain_assign = None
         br_seq_align = br_chain_assign = None
@@ -24124,7 +24125,7 @@ class NmrDpUtility:
                         else:
                             resolved = False
 
-                    if not resolved and seq_id is None and has_auth_seq:
+                    if not resolved and has_auth_seq:
                         try:
                             seq_id = int(row[auth_seq_id_col])
                         except (ValueError, TypeError):
@@ -24142,7 +24143,8 @@ class NmrDpUtility:
 
                                 item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
 
-                                if item is not None and ps is not None and any(_ps for _ps in ps if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
+                                if item is not None and ps is not None and any(_ps for _ps in ps_common
+                                                                               if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
                                     entity_assembly_id = item['entity_assembly_id']
                                     entity_id = item['entity_id']
 

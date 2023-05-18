@@ -16383,6 +16383,12 @@ class NmrDpUtility:
 
             # pass if poly_seq exists
             if has_poly_seq or (not has_poly_seq_in_loop):
+
+                if not has_poly_seq or not has_poly_seq_in_loop:
+                    continue
+
+                self.__mergePolymerSequenceInCsLoop(fileListId)
+
                 continue
 
             if self.__extractPolymerSequenceInEntityAssembly(fileListId):
@@ -16474,6 +16480,70 @@ class NmrDpUtility:
                     continue
 
                 input_source.setItemValue('polymer_sequence', asm)
+
+        return True
+
+    def __mergePolymerSequenceInCsLoop(self, file_list_id):
+        """ Merge polymer sequence in CS loops.
+        """
+
+        input_source = self.report.input_sources[file_list_id]
+        input_source_dic = input_source.get()
+
+        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+        has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+
+        if not has_poly_seq or not has_poly_seq_in_loop:
+            return False
+
+        polymer_sequence = input_source_dic['polymer_sequence']
+        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+
+        content_subtype = 'chem_shift'
+
+        if content_subtype not in polymer_sequence_in_loop:
+            return False
+
+        ext_seq_key_set = set()
+
+        for polymer_sequence_in_cs_loop in polymer_sequence_in_loop[content_subtype]:
+            for ps_in_cs_loop in polymer_sequence_in_cs_loop['polymer_sequence']:
+                chain_id2 = ps_in_cs_loop['chain_id']
+
+                for ps in polymer_sequence:
+                    chain_id = ps['chain_id']
+
+                    if chain_id == chain_id2\
+                       or 'identical_chain_id' in ps and chain_id2 in ps['identical_chain_id']:
+                        pass
+
+                    for seq_id2, comp_id2 in zip(ps_in_cs_loop['seq_id'], ps_in_cs_loop['comp_id']):
+                        if seq_id2 not in ps['seq_id']:
+                            ext_seq_key_set.add((chain_id, seq_id2, comp_id2))
+
+        if len(ext_seq_key_set) > 0:
+            for ext_seq_key in ext_seq_key_set:
+                ps = next(ps for ps in polymer_sequence if ps['chain_id'] == ext_seq_key[0])
+
+                seq_id = ext_seq_key[1]
+                comp_id = ext_seq_key[2]
+
+                if seq_id in ps['seq_id']:
+                    continue
+
+                if seq_id < ps['seq_id'][0]:
+                    pos = 0
+                elif seq_id > ps['seq_id'][-1]:
+                    pos = len(ps['seq_id'])
+                else:
+                    for idx, _seq_id in enumerate(ps['seq_id']):
+                        if seq_id < _seq_id:
+                            continue
+                        pos = idx
+                        break
+
+                ps['seq_id'].insert(pos, seq_id)
+                ps['comp_id'].insert(pos, comp_id)
 
         return True
 
@@ -24045,16 +24115,26 @@ class NmrDpUtility:
 
                                     index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
+                                else:
+                                    resolved = False
+
                             except (ValueError, TypeError):
                                 resolved = False
 
                         else:
                             resolved = False
 
+                    if not resolved and seq_id is None and has_auth_seq:
+                        try:
+                            seq_id = int(row[auth_seq_id_col])
+                        except (ValueError, TypeError):
+                            seq_id = None
+
                     if not resolved and seq_id is not None:
 
                         def test_seq_id_offset(lp, index, row, _row, _idx, chain_id, seq_id, offset):
                             _found = _resolved = False
+                            _index = index
 
                             auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id + offset)
                             if auth_asym_id is not None and auth_seq_id is not None:
@@ -27368,7 +27448,6 @@ class NmrDpUtility:
                                             idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
 
                                     if warn.startswith('[Atom not found]'):
-
                                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                                             self.report.error.appendDescription('atom_not_found',
                                                                                 {'file_name': original_file_name,
@@ -27638,7 +27717,6 @@ class NmrDpUtility:
                                             idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
 
                                     if warn.startswith('[Atom not found]'):
-
                                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                                             self.report.error.appendDescription('atom_not_found',
                                                                                 {'file_name': original_file_name,
@@ -42195,6 +42273,8 @@ class NmrDpUtility:
                                 if chain_id not in self.__chain_id_map_for_remediation:
                                     self.__chain_id_map_for_remediation[chain_id] = _chain_id
                                 self.__seq_id_map_for_remediation[seq_key] = (_chain_id, _seq_id)
+
+        self.__mergePolymerSequenceInCsLoop(0)
 
         self.__remediateCsLoop()
 

@@ -24054,11 +24054,11 @@ class NmrDpUtility:
                     if not resolved and seq_id is not None:
 
                         def test_seq_id_offset(lp, index, row, _row, _idx, chain_id, seq_id, offset):
-                            found_ = resolved_ = False
+                            _found = _resolved = False
 
                             auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id + offset)
                             if auth_asym_id is not None and auth_seq_id is not None:
-                                found_ = resolved_ = True
+                                _found = _resolved = True
 
                                 item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
 
@@ -24085,12 +24085,12 @@ class NmrDpUtility:
                                         _row[20], _row[21], _row[22], _row[23] =\
                                             _row[16], _row[17], _row[18], _row[19]
 
-                                    index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, _idx)
+                                    _index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, _idx)
 
                                 else:
-                                    resolved_ = False
+                                    _resolved = False
 
-                            return found_, resolved_, index, _row
+                            return _found, _resolved, _index, _row
 
                         found = False
                         for offset in range(1, 1000):
@@ -39097,6 +39097,39 @@ class NmrDpUtility:
                             result['conflict'] = 0
                             s1 = __s1
 
+                    if conflict > 0 and 'gap_in_auth_seq' in _s2 and _s2['gap_in_auth_seq']:
+                        __s1 = copy.deepcopy(_s1)
+                        for p in range(len(_s2['auth_seq_id']) - 1):
+                            s_p = _s2['auth_seq_id'][p]
+                            s_q = _s2['auth_seq_id'][p + 1]
+                            if s_p is None or s_q is None or s_p + 1 == s_q:
+                                continue
+                            for s_o in range(s_p + 1, s_q):
+                                if s_o in __s1['seq_id']:
+                                    idx = __s1['seq_id'].index(s_o)
+                                    if __s1['comp_id'][idx] in emptyValue:
+                                        __s1['seq_id'].pop(idx)
+                                        __s1['comp_id'].pop(idx)
+
+                        if len(_s1['seq_id']) != len(__s1['seq_id']):
+                            __s1, __s2 = beautifyPolySeq(__s1, _s2)
+                            _s1 = __s1
+                            _s2 = __s2
+
+                            self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
+                            self.__pA.addTestSequence(_s2['comp_id'], chain_id)
+                            self.__pA.doAlign()
+
+                            myAlign = self.__pA.getAlignment(chain_id)
+
+                            length = len(myAlign)
+
+                            _matched, unmapped, _conflict, _, _ = getScoreOfSeqAlign(myAlign)
+
+                            if _conflict == 0:
+                                result['conflict'] = 0
+                                s1 = __s1
+
                     if result['unmapped'] > 0 or result['conflict'] > 0:
 
                         aligned = [True] * length
@@ -39488,6 +39521,39 @@ class NmrDpUtility:
                         if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
                             result['conflict'] = 0
                             s2 = __s2
+
+                    if conflict > 0 and 'gap_in_auth_seq' in _s1 and _s1['gap_in_auth_seq']:
+                        __s2 = copy.deepcopy(_s2)
+                        for p in range(len(_s1['auth_seq_id']) - 1):
+                            s_p = _s1['auth_seq_id'][p]
+                            s_q = _s1['auth_seq_id'][p + 1]
+                            if s_p is None or s_q is None or s_p + 1 == s_q:
+                                continue
+                            for s_o in range(s_p + 1, s_q):
+                                if s_o in __s2['seq_id']:
+                                    idx = __s2['seq_id'].index(s_o)
+                                    if __s2['comp_id'][idx] in emptyValue:
+                                        __s2['seq_id'].pop(idx)
+                                        __s2['comp_id'].pop(idx)
+
+                        if len(_s2['seq_id']) != len(__s2['seq_id']):
+                            __s1, __s2 = beautifyPolySeq(_s1, __s2)
+                            _s1 = __s1
+                            _s2 = __s2
+
+                            self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
+                            self.__pA.addTestSequence(_s2['comp_id'], chain_id)
+                            self.__pA.doAlign()
+
+                            myAlign = self.__pA.getAlignment(chain_id)
+
+                            length = len(myAlign)
+
+                            _matched, unmapped, _conflict, _, _ = getScoreOfSeqAlign(myAlign)
+
+                            if _conflict == 0:
+                                result['conflict'] = 0
+                                s2 = __s2
 
                     ref_code = getOneLetterCodeSequence(s1['comp_id'])
                     test_code = getOneLetterCodeSequence(s2['comp_id'])

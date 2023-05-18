@@ -28666,10 +28666,13 @@ class NmrDpUtility:
             _row[id_col] = sf_item['id']
             _row[index_id_col] = sf_item['index_id']
 
-            key = _row[chain_id_1_col] + str(_row[seq_id_1_col]) + _row[atom_id_1_col]\
-                + _row[chain_id_2_col] + str(_row[seq_id_2_col]) + _row[atom_id_2_col]\
-                + _row[chain_id_3_col] + str(_row[seq_id_3_col]) + _row[atom_id_3_col]\
-                + _row[chain_id_4_col] + str(_row[seq_id_4_col]) + _row[atom_id_4_col]
+            try:
+                key = _row[chain_id_1_col] + str(_row[seq_id_1_col]) + _row[atom_id_1_col]\
+                    + _row[chain_id_2_col] + str(_row[seq_id_2_col]) + _row[atom_id_2_col]\
+                    + _row[chain_id_3_col] + str(_row[seq_id_3_col]) + _row[atom_id_3_col]\
+                    + _row[chain_id_4_col] + str(_row[seq_id_4_col]) + _row[atom_id_4_col]
+            except TypeError:
+                return False
 
             if combination_id in emptyValue and idx + 1 < len_loop:
                 combination_id = 1
@@ -28681,10 +28684,13 @@ class NmrDpUtility:
 
                     _row_ = loop.data[idx2]
 
-                    _key = _row_[chain_id_1_col] + str(_row_[seq_id_1_col]) + _row_[atom_id_1_col]\
-                        + _row_[chain_id_2_col] + str(_row_[seq_id_2_col]) + _row_[atom_id_2_col]\
-                        + _row_[chain_id_3_col] + str(_row_[seq_id_3_col]) + _row_[atom_id_3_col]\
-                        + _row_[chain_id_4_col] + str(_row_[seq_id_4_col]) + _row_[atom_id_4_col]
+                    try:
+                        _key = _row_[chain_id_1_col] + str(_row_[seq_id_1_col]) + _row_[atom_id_1_col]\
+                            + _row_[chain_id_2_col] + str(_row_[seq_id_2_col]) + _row_[atom_id_2_col]\
+                            + _row_[chain_id_3_col] + str(_row_[seq_id_3_col]) + _row_[atom_id_3_col]\
+                            + _row_[chain_id_4_col] + str(_row_[seq_id_4_col]) + _row_[atom_id_4_col]
+                    except TypeError:
+                        return False
 
                     if key == _key:
                         modified = True

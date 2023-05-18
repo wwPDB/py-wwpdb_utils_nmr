@@ -3834,6 +3834,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                          atom1, atom2, atom3, atom4)
                             sf['loop'].add_data(row)
 
+                    self.atomSelectionSet.clear()
+
         except ValueError:
             self.dihedRestraints -= 1
         finally:
@@ -4013,6 +4015,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                          self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
                                          atom1, atom2, atom3, atom4)
                             sf['loop'].add_data(row)
+
+                    self.atomSelectionSet.clear()
 
         except ValueError:
             self.dihedRestraints -= 1

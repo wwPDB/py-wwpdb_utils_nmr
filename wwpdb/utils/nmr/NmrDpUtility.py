@@ -28560,6 +28560,8 @@ class NmrDpUtility:
         seq_id_4_col = loop.tags.index('Auth_seq_ID_4')
         atom_id_4_col = loop.tags.index('Auth_atom_ID_4')
 
+        modified = False
+
         sf_item['id'] = 0
         sf_item['index_id'] = 0
 
@@ -28577,13 +28579,10 @@ class NmrDpUtility:
             sf_item['id'] += 1
             sf_item['index_id'] += 1
 
-            combinational = False
-
             combination_id = row[combination_id_col]
 
-            if combination_id not in emptyValue:
+            if combination_id not in emptyValue and str(combination_id) != '1':
                 sf_item['id'] -= 1
-                combinational = True
 
             _row[id_col] = sf_item['id']
             _row[index_id_col] = sf_item['index_id']
@@ -28593,8 +28592,7 @@ class NmrDpUtility:
                 + _row[chain_id_3_col] + str(_row[seq_id_3_col]) + _row[atom_id_3_col]\
                 + _row[chain_id_4_col] + str(_row[seq_id_4_col]) + _row[atom_id_4_col]
 
-            if not combinational and idx + 1 < len_loop:
-
+            if combination_id in emptyValue and idx + 1 < len_loop:
                 combination_id = 1
 
                 for idx2 in range(idx + 1, len_loop):
@@ -28610,6 +28608,7 @@ class NmrDpUtility:
                         + _row_[chain_id_4_col] + str(_row_[seq_id_4_col]) + _row_[atom_id_4_col]
 
                     if key == _key:
+                        modified = True
 
                         if combination_id == 1:
                             _row[combination_id_col] = combination_id
@@ -28631,6 +28630,9 @@ class NmrDpUtility:
 
             else:
                 lp.add_data(_row)
+
+        if not modified:
+            return True
 
         try:
 

@@ -1126,12 +1126,14 @@ class NmrDpUtility:
 
         # whether to enable rescue routine
         self.__rescue_mode = True
-        # whether to enable remediation routine
+        # whether to enable remediation routines
         self.__remediation_mode = False
         # whether NMR combined deposition or not (NMR conventional deposition)
         self.__combined_mode = True
         # whether to use datablock name of public release
         self.__release_mode = False
+        # whether to allow o raise internal error
+        self.__internal_mode = False
         # whether to combine spectral peak list in any format into single NMR-STAR file (must be trued off after Phase 2, DAOTHER-7407)
         self.__merge_any_pk_as_is = False
 
@@ -6308,6 +6310,12 @@ class NmrDpUtility:
                 self.__remediation_mode = self.__inputParamDict['remediation'] in trueValue
 
         if op == 'nmr-cs-mr-merge':
+
+            if has_key_value(self.__inputParamDict, 'internal'):
+                if isinstance(self.__inputParamDict['internal'], bool):
+                    self.__internal_mode = self.__inputParamDict['internal']
+                else:
+                    self.__internal_mode = self.__inputParamDict['internal'] in trueValue
 
             self.__remediation_mode = True
             self.__has_star_chem_shift = True
@@ -49178,7 +49186,7 @@ class NmrDpUtility:
 
                 ext_mr_sf_holder.append(sf)
 
-                if not os.path.exists(sel_res_file) and 'original_file_name' not in input_source_dic:
+                if not os.path.exists(sel_res_file) and self.__internal_mode:
 
                     err = f"Uninterpreted NMR restraints are stored in {sf_framecode} saveframe as raw text format. "\
                         "@todo: It needs to be reviewed."
@@ -49307,6 +49315,7 @@ class NmrDpUtility:
 
         if (not self.__combined_mode and not self.__remediation_mode)\
            or self.__dstPath is None\
+           or self.__release_mode\
            or self.report.getInputSourceIdOfCoord() < 0:
             return True
 

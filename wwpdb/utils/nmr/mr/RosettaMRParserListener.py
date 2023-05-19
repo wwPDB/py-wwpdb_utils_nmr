@@ -974,19 +974,24 @@ class RosettaMRParserListener(ParseTreeListener):
 
         fixedSeqId = None
 
+        if self.__reasons is not None:
+            if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
+            if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+            elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+            if 'seq_id_remap' not in self.__reasons:
+                if fixedSeqId is not None:
+                    seqId = _seqId = fixedSeqId
+
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId)
             if self.__reasons is not None:
-                if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
-                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
-                if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
-                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
-                elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
-                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
-                elif 'seq_id_remap' in self.__reasons:
+                if 'seq_id_remap' in self.__reasons:
                     _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
-                if fixedSeqId is not None:
-                    seqId = _seqId = fixedSeqId
+                    if fixedSeqId is not None:
+                        seqId = _seqId = fixedSeqId
             if fixedChainId is not None and chainId != fixedChainId:
                 continue
             if seqId in ps['auth_seq_id']:
@@ -1043,16 +1048,10 @@ class RosettaMRParserListener(ParseTreeListener):
             for np in self.__nonPolySeq:
                 chainId, seqId = self.getRealChainSeqId(np, _seqId, False)
                 if self.__reasons is not None:
-                    if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
-                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
-                    if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
-                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
-                    elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
-                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
-                    elif 'seq_id_remap' in self.__reasons:
+                    if 'seq_id_remap' in self.__reasons:
                         _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
-                    if fixedSeqId is not None:
-                        seqId = _seqId = fixedSeqId
+                        if fixedSeqId is not None:
+                            seqId = _seqId = fixedSeqId
                 if fixedChainId is not None and chainId != fixedChainId:
                     continue
                 if seqId in np['auth_seq_id']:

@@ -2527,25 +2527,27 @@ class CyanaMRParserListener(ParseTreeListener):
         fixedChainId = None
         fixedSeqId = None
 
+        if self.__reasons is not None:
+            if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
+            if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+            elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+            if 'seq_id_remap' not in self.__reasons:
+                if fixedSeqId is not None:
+                    seqId = _seqId = fixedSeqId
+
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, None)
             if self.__reasons is not None:
-                if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
-                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
+                if 'seq_id_remap' not in self.__reasons:
                     if fixedChainId != chainId:
                         continue
-                if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
-                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
-                    if fixedChainId != chainId:
-                        continue
-                elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
-                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
-                    if fixedChainId != chainId:
-                        continue
-                elif 'seq_id_remap' in self.__reasons:
+                else:
                     _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
-                if fixedSeqId is not None:
-                    seqId = _seqId = fixedSeqId
+                    if fixedSeqId is not None:
+                        seqId = _seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
@@ -2590,22 +2592,13 @@ class CyanaMRParserListener(ParseTreeListener):
             for np in self.__nonPolySeq:
                 chainId, seqId = self.getRealChainSeqId(np, _seqId, None, False)
                 if self.__reasons is not None:
-                    if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
-                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
+                    if 'seq_id_remap' not in self.__reasons:
                         if fixedChainId != chainId:
                             continue
-                    if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
-                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
-                        if fixedChainId != chainId:
-                            continue
-                    elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
-                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
-                        if fixedChainId != chainId:
-                            continue
-                    elif 'seq_id_remap' in self.__reasons:
+                    else:
                         _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
-                    if fixedSeqId is not None:
-                        seqId = _seqId = fixedSeqId
+                        if fixedSeqId is not None:
+                            seqId = _seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
@@ -2706,27 +2699,29 @@ class CyanaMRParserListener(ParseTreeListener):
 
         fixedSeqId = None
 
+        if self.__reasons is not None:
+            if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
+            if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+            elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+            if 'seq_id_remap' not in self.__reasons:
+                if fixedSeqId is not None:
+                    seqId = _seqId = fixedSeqId
+
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, None)
             if chainId != fixedChainId:
                 continue
             if self.__reasons is not None:
-                if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
-                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
+                if 'seq_id_remap' not in self.__reasons:
                     if fixedChainId != chainId:
                         continue
-                if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
-                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
-                    if fixedChainId != chainId:
-                        continue
-                elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
-                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
-                    if fixedChainId != chainId:
-                        continue
-                elif 'seq_id_remap' in self.__reasons:
+                else:
                     _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
-                if fixedSeqId is not None:
-                    seqId = _seqId = fixedSeqId
+                    if fixedSeqId is not None:
+                        seqId = _seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
@@ -2773,22 +2768,13 @@ class CyanaMRParserListener(ParseTreeListener):
                 if chainId != fixedChainId:
                     continue
                 if self.__reasons is not None:
-                    if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
-                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
+                    if 'seq_id_remap' not in self.__reasons:
                         if fixedChainId != chainId:
                             continue
-                    if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
-                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
-                        if fixedChainId != chainId:
-                            continue
-                    elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
-                        fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
-                        if fixedChainId != chainId:
-                            continue
-                    elif 'seq_id_remap' in self.__reasons:
+                    else:
                         _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
-                    if fixedSeqId is not None:
-                        seqId = _seqId = fixedSeqId
+                        if fixedSeqId is not None:
+                            seqId = _seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]

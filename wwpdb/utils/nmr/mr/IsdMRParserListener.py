@@ -748,8 +748,8 @@ class IsdMRParserListener(ParseTreeListener):
         if self.__reasons is not None:
             if 'non_poly_remap' in self.__reasons and compId in self.__reasons['non_poly_remap']\
                and seqId in self.__reasons['non_poly_remap'][compId]:
-                preferNonPoly = True
                 fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, seqId, compId)
+                preferNonPoly = True
             if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
                 preferNonPoly = True

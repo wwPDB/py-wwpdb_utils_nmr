@@ -49079,6 +49079,18 @@ class NmrDpUtility:
                         sf.add_tag('Block_ID', _block_id)
                         row[5] = _block_id
                     constraint_type = sf_item['constraint_type']
+                    if constraint_type == 'planarity':
+                        try:
+                            for item in sf_item['loop']['data']:
+                                auth_comp_id = item[4]
+                                peptide, nucleotide, _ = self.__csStat.getTypeOfCompId(auth_comp_id)
+                                if peptide:
+                                    constraint_type = 'protein peptide planarity'
+                                    break
+                                if nucleotide:
+                                    constraint_type = 'nucleic acid base planarity'
+                        except (KeyError, IndexError):
+                            pass
                     constraint_subtype = get_first_sf_tag(sf, 'Constraint_type') if content_subtype != 'other_restraint' else get_first_sf_tag(sf, 'Definition')
                     if len(constraint_subtype) == 0:
                         constraint_subtype = None

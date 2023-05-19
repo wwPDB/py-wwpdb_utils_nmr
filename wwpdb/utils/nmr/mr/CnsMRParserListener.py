@@ -360,7 +360,7 @@ class CnsMRParserListener(ParseTreeListener):
     # CS
     csExpect = None
 
-    # planality
+    # planarity
     planeWeight = 300.0
 
     # NCS
@@ -838,7 +838,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.__cur_subtype = 'plane'
 
         if self.__createSfDict:
-            self.__addSf('planality restraint, CNS PLANE/GROUP statement')
+            self.__addSf('planarity restraint, CNS PLANE/GROUP statement')
 
     # Exit a parse tree produced by CnsMRParser#plane_restraint.
     def exitPlane_restraint(self, ctx: CnsMRParser.Plane_restraintContext):  # pylint: disable=unused-argument
@@ -1948,7 +1948,7 @@ class CnsMRParserListener(ParseTreeListener):
             return
 
         if self.__createSfDict:
-            sf = self.__getSf('planality restraint, CNS PLANE/GROUP statement')
+            sf = self.__getSf('planarity restraint, CNS PLANE/GROUP statement')
             sf['id'] += 1
             if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
@@ -4791,7 +4791,7 @@ class CnsMRParserListener(ParseTreeListener):
                                         f"The {clauseName} has no effect for a factor {__factor}. "
                                         "Please update the sequence in the Macromolecules page.")
                 else:
-                    hint = f" Please verify that the planality restraints match with the residue {_factor['comp_id'][0]!r}"\
+                    hint = f" Please verify that the planarity restraints match with the residue {_factor['comp_id'][0]!r}"\
                         if 'comp_id' in _factor and len(_factor['comp_id']) == 1 else ''
                     self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                     f"The {clauseName} has no effect for a factor {__factor}.{hint}")

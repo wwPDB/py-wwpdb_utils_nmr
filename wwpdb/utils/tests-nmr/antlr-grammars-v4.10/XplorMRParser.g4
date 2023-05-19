@@ -65,7 +65,7 @@ xplor_nih_mr:
 	noe_assign |			// allowing bare assign clauses for Distance restraints
 	dihedral_assign |		// allowing bare assign clauses for Dihedral angle restraints
 	sani_assign |			// allowing bare assign clauses for RDC restraints
-	planar_statement |		// allowing bare group clauses for Planality restraints
+	planar_statement |		// allowing bare group clauses for Planarity restraints
 	harmonic_assign |		// allowing individual assign clauses for Harmonic coordinate restraints
 	hbond_assign |			// allowing bare assign clauses for Hydrogen bond geometry restraints
 	hbond_db_assign |		// allowing bare assign clauses for Hydrogen bond database restraints
@@ -301,7 +301,7 @@ anis_statement:
 anis_assign:
 	Assign selection selection selection selection number number?;
 
-/* XPLOR-NIH: Planality restraints - Syntax
+/* XPLOR-NIH: Planarity restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/plan_syntax.html
 */
 planar_statement:

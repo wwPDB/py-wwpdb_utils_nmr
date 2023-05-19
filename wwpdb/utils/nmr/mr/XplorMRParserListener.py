@@ -431,7 +431,7 @@ class XplorMRParserListener(ParseTreeListener):
     # CS
     csExpect = None
 
-    # planality
+    # planarity
     planeWeight = 300.0
 
     # NCS
@@ -619,7 +619,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.distRestraints = 0      # XPLOR-NIH: Distance restraints
         self.dihedRestraints = 0     # XPLOR-NIH: Dihedral angle restraints
         self.rdcRestraints = 0       # XPLOR-NIH: Residual dipolar coupling restraints
-        self.planeRestraints = 0     # XPLOR-NIH: Planality restraints
+        self.planeRestraints = 0     # XPLOR-NIH: Planarity restraints
         self.adistRestraints = 0     # XPLOR-NIH: Antidiatance restraints
         self.jcoupRestraints = 0     # XPLOR-NIH: Scalar J-coupling restraints
         self.hvycsRestraints = 0     # XPLOR-NIH: Carbon chemical shift restraints
@@ -641,7 +641,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.distStatements = 0      # XPLOR-NIH: Distance statements
         self.dihedStatements = 0     # XPLOR-NIH: Dihedral angle statements
         self.rdcStatements = 0       # XPLOR-NIH: Residual dipolar coupling statements
-        self.planeStatements = 0     # XPLOR-NIH: Planality statements
+        self.planeStatements = 0     # XPLOR-NIH: Planarity statements
         self.adistStatements = 0     # XPLOR-NIH: Antidiatance statements
         self.jcoupStatements = 0     # XPLOR-NIH: Scalar J-coupling statements
         self.hvycsStatements = 0     # XPLOR-NIH: Carbon chemical shift statements
@@ -1003,7 +1003,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         if self.__createSfDict:
             software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
-            self.__addSf(f'planality restraint, {software_name} PLANAR/GROUP statement')
+            self.__addSf(f'planarity restraint, {software_name} PLANAR/GROUP statement')
 
     # Exit a parse tree produced by XplorMRParser#planar_restraint.
     def exitPlanar_restraint(self, ctx: XplorMRParser.Planar_restraintContext):  # pylint: disable=unused-argument
@@ -3779,7 +3779,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         if self.__createSfDict:
             software_name = 'XPLOR-NIH/CNS' if self.__remediate else 'XPLOR-NIH'
-            sf = self.__getSf(f'planality restraint, {software_name} PLANAR/GROUP statement')
+            sf = self.__getSf(f'planarity restraint, {software_name} PLANAR/GROUP statement')
             sf['id'] += 1
             if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
@@ -8686,7 +8686,7 @@ class XplorMRParserListener(ParseTreeListener):
                                         f"The {clauseName} has no effect for a factor {__factor}. "
                                         "Please update the sequence in the Macromolecules page.")
                 else:
-                    hint = f" Please verify that the planality restraints match with the residue {_factor['comp_id'][0]!r}"\
+                    hint = f" Please verify that the planarity restraints match with the residue {_factor['comp_id'][0]!r}"\
                         if 'comp_id' in _factor and len(_factor['comp_id']) == 1 else ''
                     self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                     f"The {clauseName} has no effect for a factor {__factor}.{hint}")
@@ -12033,7 +12033,7 @@ class XplorMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'rdc':
             return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints] "
         if self.__cur_subtype == 'plane':
-            return f"[Check the {self.planeRestraints}th row of planality restraints] "
+            return f"[Check the {self.planeRestraints}th row of planarity restraints] "
         if self.__cur_subtype == 'adist':
             return f"[Check the {self.adistRestraints}th row of antidistance restraints] "
         if self.__cur_subtype == 'jcoup':

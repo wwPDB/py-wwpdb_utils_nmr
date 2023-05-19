@@ -3302,16 +3302,22 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
             for entity in entities:
                 entityId = int(entity['id'])
-                entityType = entity['type'] if 'type' in entity else 'polymer'
-                entitySrcMethod = entity['src_method'] if 'src_method' in entity else '.'
-                entityDesc = entity['pdbx_description'] if 'pdbx_description' in entity else '.'
-                entityFW = float(entity['formula_weight']) if 'formula_weight' in entity else '.'
-                entityCopies = int(entity['pdbx_number_of_molecules']) if 'pdbx_number_of_molecules' in entity else '.'
-                entityEC = entity['pdbx_ec'] if 'pdbx_ec' in entity else '.'
-                entityParent = int(entity['pdbx_parent_entity_id']) if 'pdbx_parent_entity_id' in entity else '.'
-                entityMutation = entity['pdbx_mutation'] if 'pdbx_mutation' in entity else '.'
-                entityFragment = entity['pdbx_fragment'] if 'pdbx_fragment' in entity else '.'
-                entityDetails = entity['details'] if 'details' in entity else '.'
+                entityType = entity.get('type', 'polymer')
+                entitySrcMethod = entity.get('src_method', '.')
+                entityDesc = entity.get('pdbx_description', '.')
+                entityFW = entity.get('formula_weight', '.')
+                if entityFW not in emptyValue:
+                    entityFW = float(entityFW)
+                entityCopies = entity.get('pdbx_number_of_molecules', '.')
+                if entityCopies not in emptyValue:
+                    entityCopies = int(entityCopies)
+                entityEC = entity.get('pdbx_ec', '.')
+                entityParent = entity.get('pdbx_parent_entity_id', '.')
+                if entityParent not in emptyValue:
+                    entityParent = int(entityParent)
+                entityMutation = entity.get('pdbx_mutation', '.')
+                entityFragment = entity.get('pdbx_fragment', '.')
+                entityDetails = entity.get('details', '.')
 
                 filterItemByEntityId = [{'name': 'entity_id', 'type': 'int', 'value': entityId}]
 

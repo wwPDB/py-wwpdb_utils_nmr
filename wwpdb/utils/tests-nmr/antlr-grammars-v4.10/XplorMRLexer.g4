@@ -169,7 +169,7 @@ Anisotropy:		'ANIS' 'O'? 'T'? 'R'? 'O'? 'P'? 'Y'?;	// Anisotropy { anis_statemen
 // RDC anisotropy types
 //Rdc_anis_types:	'RELAX' | 'MISC';
 
-/* XPLOR-NIH: Planality restraints - Syntax
+/* XPLOR-NIH: Planarity restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/plan_syntax.html
 */
 //Restraints:		'REST' 'R'? 'A'? 'I'? 'N'? 'T'? 'S'?;	// Planar

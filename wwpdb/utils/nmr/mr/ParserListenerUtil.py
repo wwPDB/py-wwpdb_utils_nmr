@@ -78,7 +78,7 @@ DIST_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 101.0}
 DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}
 
 
-ANGLE_RESTRAINT_RANGE = {'min_inclusive': -330.0, 'max_inclusive': 330.0}
+ANGLE_RESTRAINT_RANGE = {'min_inclusive': -341.0, 'max_inclusive': 341.0}
 ANGLE_RESTRAINT_ERROR = {'min_exclusive': -360.0, 'max_exclusive': 360.0}
 
 
@@ -3916,6 +3916,56 @@ def isLongRangeRestraint(atoms, polySeq=None):
                 return True
 
     return False
+
+
+def getAltProtonIdInBondConstraint(atoms, csStat):
+    """ Return alternative atom_id in swappable proton group, which involves in bond constraint (i.e. amino group in Watson-Crick pair).
+    """
+
+    if len(atoms) < 2:
+        return None, None
+
+    if any(a is None for a in atoms):
+        return None, None
+
+    for a in atoms:
+        if 'chain_id' not in a or a['chain_id'] in emptyValue:
+            return None, None
+        if 'comp_id' not in a or a['comp_id'] in emptyValue:
+            return None, None
+        if 'atom_id' not in a or a['atom_id'] in emptyValue:
+            return None, None
+
+    chainIds = [a['chain_id'] for a in atoms]
+
+    if len(collections.Counter(chainIds).most_common()) == 1:
+        return None, None
+
+    compId1 = atoms[0]['comp_id']
+    compId2 = atoms[1]['comp_id']
+
+    atomId1 = atoms[0]['atom_id']
+    atomId2 = atoms[1]['atom_id']
+
+    if atomId1[0] in protonBeginCode and atomId2[0] not in protonBeginCode:
+
+        ambigCode1 = csStat.getMaxAmbigCodeWoSetId(compId1, atomId1)
+
+        if ambigCode1 not in (2, 3):
+            return None, None
+
+        return csStat.getGeminalAtom(compId1, atomId1), None
+
+    if atomId2[0] in protonBeginCode and atomId1[0] not in protonBeginCode:
+
+        ambigCode2 = csStat.getMaxAmbigCodeWoSetId(compId2, atomId2)
+
+        if ambigCode2 not in (2, 3):
+            return None, None
+
+        return None, csStat.getGeminalAtom(compId2, atomId2)
+
+    return None, None
 
 
 def isAsymmetricRangeRestraint(atoms, chainIdSet, symmetric):

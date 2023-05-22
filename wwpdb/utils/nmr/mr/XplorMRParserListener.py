@@ -30,6 +30,7 @@ try:
                                                        isLongRangeRestraint,
                                                        isAsymmetricRangeRestraint,
                                                        isAmbigAtomSelection,
+                                                       getAltProtonIdInBondConstraint,
                                                        getTypeOfDihedralRestraint,
                                                        getRdcCode,
                                                        isCyclicPolymer,
@@ -122,6 +123,7 @@ except ImportError:
                                            isLongRangeRestraint,
                                            isAsymmetricRangeRestraint,
                                            isAmbigAtomSelection,
+                                           getAltProtonIdInBondConstraint,
                                            getTypeOfDihedralRestraint,
                                            getRdcCode,
                                            isCyclicPolymer,
@@ -1840,6 +1842,13 @@ class XplorMRParserListener(ParseTreeListener):
                                                       self.atomSelectionSet[i + 1]):
                     if isIdenticalRestraint([atom1, atom2]):
                         continue
+                    if memberLogicCode == '.':
+                        altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
+                        if altAtomId1 is not None or altAtomId2 is not None:
+                            atom1, atom2 =\
+                                self.selectRealisticBondConstraint(atom1, atom2,
+                                                                   altAtomId1, altAtomId2,
+                                                                   dstFunc)
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -11089,6 +11098,140 @@ class XplorMRParserListener(ParseTreeListener):
 
         finally:
             self.numberFSelection.clear()
+
+    def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
+        """ Return realistic bond constraint taking into account the current coordinates.
+        """
+        if not self.__hasCoord:
+            return atom1, atom2
+
+        try:
+
+            _p1 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom1['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom1['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom1['atom_id']},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': ('A')}
+                                                 ])
+
+            if len(_p1) != 1:
+                return atom1, atom2
+
+            p1 = toNpArray(_p1[0])
+
+            _p2 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom2['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom2['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom2['atom_id']},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': ('A')}
+                                                 ])
+
+            if len(_p2) != 1:
+                return atom1, atom2
+
+            p2 = toNpArray(_p2[0])
+
+            d_org = numpy.linalg.norm(p1 - p2)
+
+            lower_bound = dst_func.get('lower_limit')
+            if lower_bound is not None:
+                lower_bound = float(lower_bound)
+            upper_bound = dst_func.get('upper_limit')
+            if upper_bound is not None:
+                upper_bound = float(upper_bound)
+
+            def get_violation(avr_d):
+                error = 0.0
+
+                if lower_bound is not None and upper_bound is not None:
+                    if lower_bound <= avr_d <= upper_bound:
+                        error = 0.0
+                    elif avr_d > upper_bound:
+                        error = abs(avr_d - upper_bound)
+                    else:
+                        error = abs(avr_d - lower_bound)
+
+                elif upper_bound is not None:
+                    if avr_d <= upper_bound:
+                        error = 0.0
+                    elif avr_d > upper_bound:
+                        error = abs(avr_d - upper_bound)
+
+                elif lower_bound is not None:
+                    if lower_bound <= avr_d:
+                        error = 0.0
+                    else:
+                        error = abs(avr_d - lower_bound)
+
+                return error
+
+            if alt_atom_id1 is not None:
+
+                _p1 =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    CARTN_DATA_ITEMS,
+                                                    [{'name': self.__authAsymId, 'type': 'str', 'value': atom1['chain_id']},
+                                                     {'name': self.__authSeqId, 'type': 'int', 'value': atom1['seq_id']},
+                                                     {'name': self.__authAtomId, 'type': 'str', 'value': alt_atom_id1},
+                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
+                                                     ])
+
+                if len(_p1) != 1:
+                    return atom1, atom2
+
+                p1_alt = toNpArray(_p1[0])
+
+                d_alt = numpy.linalg.norm(p1_alt - p2)
+
+                if get_violation(d_org) > get_violation(d_alt):
+                    if 'auth_atom_id' not in atom1:
+                        atom1['auth_atom_id'] = atom1['atom_id']
+                    atom1['atom_id'] = alt_atom_id1
+
+            elif alt_atom_id2 is not None:
+
+                _p2 =\
+                    self.__cR.getDictListWithFilter('atom_site',
+                                                    CARTN_DATA_ITEMS,
+                                                    [{'name': self.__authAsymId, 'type': 'str', 'value': atom2['chain_id']},
+                                                     {'name': self.__authSeqId, 'type': 'int', 'value': atom2['seq_id']},
+                                                     {'name': self.__authAtomId, 'type': 'str', 'value': alt_atom_id2},
+                                                     {'name': self.__modelNumName, 'type': 'int',
+                                                      'value': self.__representativeModelId},
+                                                     {'name': 'label_alt_id', 'type': 'enum',
+                                                      'enum': ('A')}
+                                                     ])
+
+                if len(_p2) != 1:
+                    return atom1, atom2
+
+                p2_alt = toNpArray(_p2[0])
+
+                d_alt = numpy.linalg.norm(p1 - p2_alt)
+
+                if get_violation(d_org) > get_violation(d_alt):
+                    if 'auth_atom_id' not in atom2:
+                        atom2['auth_atom_id'] = atom2['atom_id']
+                    atom2['atom_id'] = alt_atom_id2
+
+        except Exception as e:
+            if self.__verbose:
+                self.__lfh.write(f"+XplorMRParserListener.selectRealisticBondConstraint() ++ Error  - {str(e)}")
+
+        return atom1, atom2
 
     # Enter a parse tree produced by XplorMRParser#number.
     def enterNumber(self, ctx: XplorMRParser.NumberContext):  # pylint: disable=unused-argument

@@ -128,6 +128,7 @@ DIST_AMBIG_LOW = 1.0
 DIST_AMBIG_BND = 4.0
 DIST_AMBIG_MED = 6.0
 DIST_AMBIG_UP = 12.0
+DIST_AMBIG_UNCERT = 0.1
 
 # @see: https://x3dna.org/highlights/torsion-angles-of-nucleic-acid-structures for nucleic acids
 KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i

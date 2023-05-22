@@ -46,6 +46,8 @@ try:
                                                        ANGLE_RESTRAINT_ERROR,
                                                        DIST_AMBIG_LOW,
                                                        DIST_AMBIG_UP,
+                                                       DIST_AMBIG_MED,
+                                                       DIST_AMBIG_UNCERT,
                                                        CARTN_DATA_ITEMS)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -101,6 +103,8 @@ except ImportError:
                                            ANGLE_RESTRAINT_ERROR,
                                            DIST_AMBIG_LOW,
                                            DIST_AMBIG_UP,
+                                           DIST_AMBIG_MED,
+                                           DIST_AMBIG_UNCERT,
                                            CARTN_DATA_ITEMS)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -786,6 +790,14 @@ class BiosymMRParserListener(ParseTreeListener):
 
         validRange = True
         dstFunc = {'weight': weight}
+
+        if target_value is not None and upper_limit is not None and lower_limit is not None\
+           and abs(target_value - lower_limit) <= DIST_AMBIG_UNCERT\
+           and (target_value - upper_limit) <= DIST_AMBIG_UNCERT:
+            if target_value >= DIST_AMBIG_MED:
+                lower_limit = None
+            elif target_value <= DIST_AMBIG_LOW:
+                upper_limit = None
 
         if target_value is not None:
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX or (target_value == 0.0 and self.__allowZeroUpperLimit):

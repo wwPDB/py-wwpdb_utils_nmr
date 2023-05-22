@@ -71,6 +71,8 @@ try:
                                                        PROBABILITY_RANGE,
                                                        DIST_AMBIG_LOW,
                                                        DIST_AMBIG_UP,
+                                                       DIST_AMBIG_MED,
+                                                       DIST_AMBIG_UNCERT,
                                                        XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
                                                        XPLOR_NITROXIDE_NAMES,
                                                        XPLOR_ORIGIN_AXIS_COLS,
@@ -164,6 +166,8 @@ except ImportError:
                                            PROBABILITY_RANGE,
                                            DIST_AMBIG_LOW,
                                            DIST_AMBIG_UP,
+                                           DIST_AMBIG_MED,
+                                           DIST_AMBIG_UNCERT,
                                            XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
                                            XPLOR_NITROXIDE_NAMES,
                                            XPLOR_ORIGIN_AXIS_COLS,
@@ -1890,6 +1894,14 @@ class XplorMRParserListener(ParseTreeListener):
 
         validRange = True
         dstFunc = {'weight': weight, 'potential': self.noePotential, 'average': self.noeAverage}
+
+        if target_value is not None and upper_limit is not None and lower_limit is not None\
+           and abs(target_value - lower_limit) <= DIST_AMBIG_UNCERT\
+           and (target_value - upper_limit) <= DIST_AMBIG_UNCERT:
+            if target_value >= DIST_AMBIG_MED:
+                lower_limit = lower_linear_limit = None
+            elif target_value <= DIST_AMBIG_LOW:
+                upper_limit = upper_linear_limit = None
 
         if target_value is not None:
             if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX or (target_value == 0.0 and self.__allowZeroUpperLimit):

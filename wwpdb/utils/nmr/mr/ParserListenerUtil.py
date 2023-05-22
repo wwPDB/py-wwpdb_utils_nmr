@@ -3515,10 +3515,10 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                         else:
 
-                            for authAsymId in authAsymIds:
+                            for _authAsymId in authAsymIds:
                                 labelAsymIds = []
                                 for item in mappings:
-                                    if item['auth_asym_id'] == authAsymId:
+                                    if item['auth_asym_id'] == _authAsymId:
                                         seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
                                         authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
                                         authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
@@ -3529,7 +3529,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                             labelAsymIds.append(item['label_asym_id'])
 
                                 for item in mappings:
-                                    if item['auth_asym_id'] == authAsymId:
+                                    if item['auth_asym_id'] == _authAsymId:
                                         altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                         if altKey not in authToStarSeq:
                                             authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
@@ -3554,7 +3554,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                        'nstd_chirality': nstdChirality,
                                                        'target_identifier': targetIdentifier,
                                                        'num_of_monomers': len(mappings),
-                                                       'auth_asym_id': authAsymId,
+                                                       'auth_asym_id': _authAsymId,
                                                        'label_asym_id': ','.join(labelAsymIds),
                                                        'comp_id_set': compIds})
                                 entityAssemblyId += 1
@@ -3627,10 +3627,10 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                         else:
 
-                            for authAsymId in authAsymIds:
+                            for _authAsymId in authAsymIds:
                                 labelAsymIds = []
                                 for item in mappings:
-                                    if item['auth_asym_id'] == authAsymId:
+                                    if item['auth_asym_id'] == _authAsymId:
                                         seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
                                         authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
                                         if has_ins_code and item['ins_code'] not in emptyValue:
@@ -3640,7 +3640,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                             labelAsymIds.append(item['label_asym_id'])
 
                                 for item in mappings:
-                                    if item['auth_asym_id'] == authAsymId:
+                                    if item['auth_asym_id'] == _authAsymId:
                                         altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                         if altKey not in authToStarSeq:
                                             authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
@@ -3656,7 +3656,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                        'entity_role': entityRole,
                                                        'entity_poly_type': entityPolyType,
                                                        'num_of_monomers': len(mappings),
-                                                       'auth_asym_id': authAsymId,
+                                                       'auth_asym_id': _authAsymId,
                                                        'label_asym_id': ','.join(labelAsymIds)})
                                 entityAssemblyId += 1
 

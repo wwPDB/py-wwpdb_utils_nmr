@@ -263,6 +263,8 @@ class CnsMRParserListener(ParseTreeListener):
     __exptlMethod = ''
     # whether solid-state NMR is applied to symmetric samples such as fibrils
     __symmetric = 'no'
+    # auth_asym_id of fibril like polymer (exptl methods should contain SOLID-STATE NMR, ELECTRON MICROSCOPY)
+    __fibril_chain_ids = []
 
     # data item name for model ID in 'atom_site' category
     __modelNumName = None
@@ -453,9 +455,6 @@ class CnsMRParserListener(ParseTreeListener):
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            exptl = cR.getDictList('exptl')
-            if len(exptl) > 0 and 'method' in exptl[0]:
-                self.__exptlMethod = exptl[0]['method']
             ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
@@ -471,6 +470,25 @@ class CnsMRParserListener(ParseTreeListener):
             self.__authToLabelSeq = ret['auth_to_label_seq']
             self.__authToStarSeq = ret['auth_to_star_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
+
+            exptl = cR.getDictList('exptl')
+            if len(exptl) > 0:
+                for item in exptl:
+                    if 'method' in item:
+                        if 'NMR' in item['method']:
+                            self.__exptlMethod = item['method']
+                            break
+                if self.__exptlMethod == 'SOLID-STATE NMR' and len(self.__polySeq) >= 8:
+                    fibril_chain_ids = []
+                    for item in exptl:
+                        if 'method' in item:
+                            if item['method'] == 'ELECTRON MICROSCOPY':
+                                for ps in self.__polySeq:
+                                    if 'identical_chain_id' in ps:
+                                        fibril_chain_ids.append(ps['auth_chain_id'])
+                                        fibril_chain_ids.extend(ps['identical_chain_id'])
+                    if len(fibril_chain_ids) > 0:
+                        self.__fibril_chain_ids = list(set(fibril_chain_ids))
 
         self.__offsetHolder = {}
 
@@ -1394,6 +1412,11 @@ class CnsMRParserListener(ParseTreeListener):
                                 self.selectRealisticBondConstraint(atom1, atom2,
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
+                    if len(self.__fibril_chain_ids) > 0\
+                       and atom1['chain_id'] in self.__fibril_chain_ids\
+                       and atom2['chain_id'] in self.__fibril_chain_ids\
+                       and not self.isRealisticFibrilRestraint(atom1, atom2, dstFunc):
+                        continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
@@ -7425,6 +7448,91 @@ class CnsMRParserListener(ParseTreeListener):
                 self.__lfh.write(f"+CnsMRParserListener.selectRealisticBondConstraint() ++ Error  - {str(e)}")
 
         return atom1, atom2
+
+    def isRealisticFibrilRestraint(self, atom1, atom2, dst_func):
+        """ Return whether a given restraint is realistic taking into account the current coordinates.
+        """
+        if not self.__hasCoord:
+            return True
+
+        try:
+
+            _p1 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom1['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom1['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom1['atom_id']},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': ('A')}
+                                                 ])
+
+            if len(_p1) != 1:
+                return True
+
+            p1 = toNpArray(_p1[0])
+
+            _p2 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom2['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom2['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom2['atom_id']},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': ('A')}
+                                                 ])
+
+            if len(_p2) != 1:
+                return True
+
+            p2 = toNpArray(_p2[0])
+
+            d_org = numpy.linalg.norm(p1 - p2)
+
+            lower_bound = dst_func.get('lower_limit')
+            if lower_bound is not None:
+                lower_bound = float(lower_bound)
+            upper_bound = dst_func.get('upper_limit')
+            if upper_bound is not None:
+                upper_bound = float(upper_bound)
+
+            def get_violation(avr_d):
+                error = 0.0
+
+                if lower_bound is not None and upper_bound is not None:
+                    if lower_bound <= avr_d <= upper_bound:
+                        error = 0.0
+                    elif avr_d > upper_bound:
+                        error = abs(avr_d - upper_bound)
+                    else:
+                        error = abs(avr_d - lower_bound)
+
+                elif upper_bound is not None:
+                    if avr_d <= upper_bound:
+                        error = 0.0
+                    elif avr_d > upper_bound:
+                        error = abs(avr_d - upper_bound)
+
+                elif lower_bound is not None:
+                    if lower_bound <= avr_d:
+                        error = 0.0
+                    else:
+                        error = abs(avr_d - lower_bound)
+
+                return error
+
+            if get_violation(d_org) >= DIST_AMBIG_UP:
+                return False
+
+        except Exception as e:
+            if self.__verbose:
+                self.__lfh.write(f"+CnsMRParserListener.isRealisticFibrilRestraint() ++ Error  - {str(e)}")
+
+        return True
 
     # Enter a parse tree produced by CnsMRParser#number.
     def enterNumber(self, ctx: CnsMRParser.NumberContext):  # pylint: disable=unused-argument

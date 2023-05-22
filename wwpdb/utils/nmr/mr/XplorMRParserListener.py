@@ -1846,7 +1846,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                       self.atomSelectionSet[i + 1]):
                     if isIdenticalRestraint([atom1, atom2]):
                         continue
-                    if memberLogicCode == '.':
+                    if self.__createSfDict and memberLogicCode == '.':
                         altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
                         if altAtomId1 is not None or altAtomId2 is not None:
                             atom1, atom2 =\

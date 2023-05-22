@@ -708,7 +708,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
-                if memberLogicCode == '.':
+                if self.__createSfDict and memberLogicCode == '.':
                     altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
                     if altAtomId1 is not None or altAtomId2 is not None:
                         atom1, atom2 =\
@@ -871,7 +871,7 @@ class DynamoMRParserListener(ParseTreeListener):
                                                   self.atomSelectionSet[1]):
                 if isIdenticalRestraint([atom1, atom2]):
                     continue
-                if memberLogicCode == '.':
+                if self.__createSfDict and memberLogicCode == '.':
                     altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
                     if altAtomId1 is not None or altAtomId2 is not None:
                         atom1, atom2 =\
@@ -1035,7 +1035,7 @@ class DynamoMRParserListener(ParseTreeListener):
                                                   self.atomSelectionSet[1]):
                 if isIdenticalRestraint([atom1, atom2]):
                     continue
-                if memberLogicCode == '.':
+                if self.__createSfDict and memberLogicCode == '.':
                     altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
                     if altAtomId1 is not None or altAtomId2 is not None:
                         atom1, atom2 =\

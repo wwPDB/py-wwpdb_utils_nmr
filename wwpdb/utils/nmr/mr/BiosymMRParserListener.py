@@ -597,7 +597,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                                   self.atomSelectionSet[1]):
                 if isIdenticalRestraint([atom1, atom2]):
                     continue
-                if memberLogicCode == '.':
+                if self.__createSfDict and memberLogicCode == '.':
                     altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
                     if altAtomId1 is not None or altAtomId2 is not None:
                         atom1, atom2 =\
@@ -727,6 +727,13 @@ class BiosymMRParserListener(ParseTreeListener):
                                                   self.atomSelectionSet[1]):
                 if isIdenticalRestraint([atom1, atom2]):
                     continue
+                if self.__createSfDict and memberLogicCode == '.':
+                    altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
+                    if altAtomId1 is not None or altAtomId2 is not None:
+                        atom1, atom2 =\
+                            self.selectRealisticBondConstraint(atom1, atom2,
+                                                               altAtomId1, altAtomId2,
+                                                               dstFunc)
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")

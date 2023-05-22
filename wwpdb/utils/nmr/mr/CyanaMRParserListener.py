@@ -720,6 +720,7 @@ class CyanaMRParserListener(ParseTreeListener):
             target_value = None
             lower_limit = None
             upper_limit = None
+            target_value_uncertainty = None
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 if self.__cur_subtype == 'dist':
@@ -807,10 +808,18 @@ class CyanaMRParserListener(ParseTreeListener):
                             weight = abs(value2)
 
                     else:
-                        target_value = value
-                        if delta > 0.0:
-                            lower_limit = value - delta
-                            upper_limit = value + delta
+                        if self.__applyPdbStatCap:
+                            target_value = value
+                            if delta > 0.0:
+                                lower_limit = value - delta
+                                upper_limit = value + delta
+                        else:
+                            if value > 1.8:
+                                upper_limit = value
+                            else:
+                                lower_limit = value
+                            if value2 > 0.0:
+                                target_value_uncertainty = value2
 
                 elif 'upl' in (self.__file_ext, self.__cur_dist_type):
                     upper_limit = value
@@ -1000,6 +1009,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
                 dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
+                                                     target_value_uncertainty,
                                                      self.__omitDistLimitOutlier)
 
                 if dstFunc is None:
@@ -1231,6 +1241,7 @@ class CyanaMRParserListener(ParseTreeListener):
             target_value = None
             lower_limit = None
             upper_limit = None
+            target_value_uncertainty = None
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 if self.__cur_subtype == 'dist':
@@ -1318,10 +1329,15 @@ class CyanaMRParserListener(ParseTreeListener):
                             weight = abs(value2)
 
                     else:
-                        target_value = value
-                        if delta > 0.0:
-                            lower_limit = value - delta
-                            upper_limit = value + delta
+                        if self.__applyPdbStatCap:
+                            target_value = value
+                            if delta > 0.0:
+                                lower_limit = value - delta
+                                upper_limit = value + delta
+                        else:
+                            upper_limit = value
+                            if value2 > 0.0:
+                                target_value_uncertainty = value2
 
                 elif 'upl' in (self.__file_ext, self.__cur_dist_type):
                     upper_limit = value
@@ -1511,6 +1527,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
                 dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
+                                                     target_value_uncertainty,
                                                      self.__omitDistLimitOutlier)
 
                 if dstFunc is None:
@@ -1733,15 +1750,18 @@ class CyanaMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier):
+    def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit, target_value_uncertainty, omit_dist_limit_outlier):
         """ Validate distance value range.
         """
 
         validRange = True
         dstFunc = {'weight': weight}
 
+        if target_value_uncertainty is not None:
+            dstFunc['target_value_uncertainty'] = f"{target_value_uncertainty}"
+
         if target_value is not None:
-            if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX or (target_value == 0.0 and self.__allowZeroUpperLimit):
+            if DIST_ERROR_MIN < target_value < DIST_ERROR_MAX or (target_value == 0.0 and target_value_uncertainty is not None and self.__allowZeroUpperLimit):
                 dstFunc['target_value'] = f"{target_value:.3f}" if target_value > 0.0 else "0.0"
             else:
                 if target_value <= DIST_ERROR_MIN and omit_dist_limit_outlier:
@@ -1773,7 +1793,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                     f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
-            if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX or (upper_limit == 0.0 and self.__allowZeroUpperLimit):
+            if DIST_ERROR_MIN < upper_limit <= DIST_ERROR_MAX or (upper_limit == 0.0 and target_value_uncertainty is not None and self.__allowZeroUpperLimit):
                 dstFunc['upper_limit'] = f"{upper_limit:.3f}" if upper_limit > 0.0 else "0.0"
             else:
                 if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
@@ -4544,7 +4564,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                 self.__allowZeroUpperLimit = True
                         self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
-                    dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
+                    dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit,
+                                                         None,
+                                                         omit_dist_limit_outlier)
 
                     if dstFunc is None and abs(value) > DIST_ERROR_MAX * 10.0:
                         self.reasonsForReParsing['noepk_fixres'] = True
@@ -4782,10 +4804,15 @@ class CyanaMRParserListener(ParseTreeListener):
                                 weight = abs(value2)
 
                         else:
-                            target_value = value
-                            if delta > 0.0:
-                                lower_limit = value - delta
-                                upper_limit = value + delta
+                            if self.__applyPdbStatCap:
+                                target_value = value
+                                if delta > 0.0:
+                                    lower_limit = value - delta
+                                    upper_limit = value + delta
+                            else:
+                                upper_limit = value
+                                if value2 > 0.0:
+                                    target_value_uncertainty = value2
 
                     elif 'upl' in (self.__file_ext, self.__cur_dist_type):
                         upper_limit = value
@@ -4868,7 +4895,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                 self.__allowZeroUpperLimit = True
                         self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
-                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
+                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
+                                                         target_value_uncertainty,
+                                                         omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
                         self.reasonsForReParsing['noepk_fixresw'] = True
@@ -5111,7 +5140,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                 self.__allowZeroUpperLimit = True
                         self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
-                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
+                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
+                                                         None,
+                                                         omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
                         self.reasonsForReParsing['noepk_fixresw2'] = True
@@ -5368,7 +5399,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                 self.__allowZeroUpperLimit = True
                         self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
-                    dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
+                    dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit,
+                                                         None,
+                                                         omit_dist_limit_outlier)
 
                     if dstFunc is None and abs(value) > DIST_ERROR_MAX * 10.0:
                         self.reasonsForReParsing['noepk_fixatm'] = True
@@ -5606,10 +5639,15 @@ class CyanaMRParserListener(ParseTreeListener):
                                 weight = abs(value2)
 
                         else:
-                            target_value = value
-                            if delta > 0.0:
-                                lower_limit = value - delta
-                                upper_limit = value + delta
+                            if self.__applyPdbStatCap:
+                                target_value = value
+                                if delta > 0.0:
+                                    lower_limit = value - delta
+                                    upper_limit = value + delta
+                            else:
+                                upper_limit = value
+                                if value2 > 0.0:
+                                    target_value_uncertainty = value2
 
                     elif 'upl' in (self.__file_ext, self.__cur_dist_type):
                         upper_limit = value
@@ -5692,7 +5730,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                 self.__allowZeroUpperLimit = True
                         self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
-                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
+                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
+                                                         target_value_uncertainty,
+                                                         omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
                         self.reasonsForReParsing['noepk_fixatmw'] = True
@@ -5935,7 +5975,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                 self.__allowZeroUpperLimit = True
                         self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
-                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier)
+                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
+                                                         None,
+                                                         omit_dist_limit_outlier)
 
                     if dstFunc is None and (abs(value) > DIST_ERROR_MAX * 10.0 or abs(value2) > DIST_ERROR_MAX * 10.0):
                         self.reasonsForReParsing['noepk_fixatmw2'] = True
@@ -6136,6 +6178,7 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
             dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
+                                                 None,
                                                  self.__omitDistLimitOutlier)
 
             if dstFunc is None:
@@ -6438,10 +6481,15 @@ class CyanaMRParserListener(ParseTreeListener):
                         weight = abs(value2)
 
                 else:
-                    target_value = value
-                    if delta > 0.0:
-                        lower_limit = value - delta
-                        upper_limit = value + delta
+                    if self.__applyPdbStatCap:
+                        target_value = value
+                        if delta > 0.0:
+                            lower_limit = value - delta
+                            upper_limit = value + delta
+                    else:
+                        upper_limit = value
+                        if value2 > 0.0:
+                            target_value_uncertainty = value2
 
             elif 'upl' in (self.__file_ext, self.__cur_dist_type):
                 upper_limit = value
@@ -6638,6 +6686,7 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
             dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
+                                                 target_value_uncertainty,
                                                  self.__omitDistLimitOutlier)
 
             if dstFunc is None:

@@ -1721,13 +1721,6 @@ PTNR2_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt
                               ]
 
 
-def toNpArray(atom):
-    """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
-    """
-
-    return numpy.asarray([atom['x'], atom['y'], atom['z']], dtype=float)
-
-
 def toRegEx(string):
     """ Return regular expression for a given string including XPLOR-NIH wildcard format.
     """
@@ -4587,6 +4580,11 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
         @return: the bond length
     """
 
+    def to_np_array(a):
+        """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
+        """
+        return numpy.asarray([a['x'], a['y'], a['z']], dtype=float)
+
     try:
 
         dataItems = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
@@ -4625,7 +4623,7 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
         if a_1 is None or a_2 is None:
             continue
 
-        bond.append({'model_id': model_id, 'distance': float(f"{numpy.linalg.norm(toNpArray(a_1) - toNpArray(a_2)):.3f}")})
+        bond.append({'model_id': model_id, 'distance': float(f"{numpy.linalg.norm(to_np_array(a_1) - to_np_array(a_2)):.3f}")})
 
     if len(bond) > 0:
         return bond

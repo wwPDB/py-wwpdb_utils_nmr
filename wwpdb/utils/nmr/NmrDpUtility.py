@@ -230,9 +230,10 @@ try:
                                            getPrettyJson)
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.io.CifReader import (CifReader, LEN_MAJOR_ASYM_ID)
+    from wwpdb.utils.nmr.io.CifReader import CifReader, LEN_MAJOR_ASYM_ID
     from wwpdb.utils.nmr.rci.RCI import RCI
     from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
+    from wwpdb.utils.nmr.NmrVrptUtility import to_np_array, distance, to_unit_vector, dihedral_angle
 #    from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName,
@@ -325,9 +326,10 @@ except ImportError:
                                getPrettyJson)
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.io.CifReader import (CifReader, LEN_MAJOR_ASYM_ID)
+    from nmr.io.CifReader import CifReader, LEN_MAJOR_ASYM_ID
     from nmr.rci.RCI import RCI
     from nmr.CifToNmrStar import CifToNmrStar
+    from nmr.NmrVrptUtility import to_np_array, distance, to_unit_vector, dihedral_angle
 #    from nmr.NmrStarToCif import NmrStarToCif
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName,
@@ -948,48 +950,6 @@ def predict_rotamer_state_of_isoleucine(cd1_chem_shift):
     pgm = (14.8 - cd1_chem_shift) / 5.5
 
     return (1.0 - pgm) * (4.0 / 85.0), (1.0 - pgm) * (81.0 / 85.0), pgm
-
-
-def to_np_array(a):
-    """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
-    """
-
-    return numpy.asarray([a['x'], a['y'], a['z']], dtype=float)
-
-
-def to_unit_vector(a):
-    """ Return unit vector of a given vector.
-    """
-
-    return a / numpy.linalg.norm(a)
-
-
-def dihedral_angle(p0, p1, p2, p3):
-    """ Return dihedral angle from a series of four points.
-    """
-
-    b0 = -1.0 * (p1 - p0)
-    b1 = p2 - p1
-    b2 = p3 - p2
-
-    # normalize b1 so that it does not influence magnitude of vector
-    # rejections that come next
-    b1 = to_unit_vector(b1)
-
-    # vector rejections
-    # v = projection of b0 onto plane perpendicular to b1
-    #   = b0 minus component that aligns with b1
-    # w = projection of b2 onto plane perpendicular to b1
-    #   = b2 minus component that aligns with b1
-    v = b0 - numpy.dot(b0, b1) * b1
-    w = b2 - numpy.dot(b2, b1) * b1
-
-    # angle between v and w in a plane is the torsion angle
-    # v and w may not be normalized but that's fine since tan is y/x
-    x = numpy.dot(v, w)
-    y = numpy.dot(numpy.cross(b1, v), w)
-
-    return numpy.degrees(numpy.arctan2(y, x))
 
 
 def concat_nmr_restraint_names(content_subtype):
@@ -26572,7 +26532,7 @@ class NmrDpUtility:
             if a_1 is None or a_2 is None:
                 continue
 
-            bond.append({'model_id': model_id, 'distance': float(f"{numpy.linalg.norm(to_np_array(a_1) - to_np_array(a_2)):.3f}")})
+            bond.append({'model_id': model_id, 'distance': float(f"{distance(to_np_array(a_1), to_np_array(a_2)):.3f}")})
 
         if len(bond) > 0:
             return bond
@@ -34550,19 +34510,19 @@ class NmrDpUtility:
                 if bond is None:
                     continue
 
-                distance = next((b['distance'] for b in bond if b['model_id'] == self.__representative_model_id), None)
+                dist = next((b['distance'] for b in bond if b['model_id'] == self.__representative_model_id), None)
 
-                if distance is None:
-                    distance = bond[0]['distance']
+                if dist is None:
+                    dist = bond[0]['distance']
 
-                data_type = self.__getTypeOfCovalentBond(file_type, lp_data, idx, distance,
+                data_type = self.__getTypeOfCovalentBond(file_type, lp_data, idx, dist,
                                                          chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                 if 'hydrogen_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
                     warn = "Hydrogen bond constraint "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
-                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({distance}Å)."
+                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({dist}Å)."
 
                     self.report.warning.appendDescription('unusual_data',
                                                           {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -34576,7 +34536,7 @@ class NmrDpUtility:
 
                     warn = "Disulfide bond constraint "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
-                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({distance}Å)."
+                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({dist}Å)."
 
                     self.report.warning.appendDescription('unusual_data',
                                                           {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -34590,7 +34550,7 @@ class NmrDpUtility:
 
                     warn = "Diselenide bond constraint "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
-                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({distance}Å)."
+                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({dist}Å)."
 
                     self.report.warning.appendDescription('unusual_data',
                                                           {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -34604,7 +34564,7 @@ class NmrDpUtility:
 
                     warn = "Other bond constraint "\
                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}) "\
-                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({distance}Å)."
+                        f"is too {'close each other' if 'close' in data_type else 'far apart'} ({dist}Å)."
 
                     self.report.warning.appendDescription('unusual_data',
                                                           {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -43033,12 +42993,12 @@ class NmrDpUtility:
                 if bond is None:
                     return False
 
-                distance = next((b['distance'] for b in bond if b['model_id'] == self.__representative_model_id), None)
+                dist = next((b['distance'] for b in bond if b['model_id'] == self.__representative_model_id), None)
 
-                if distance is None:
+                if dist is None:
                     return False
 
-                return 1.2 < distance < 1.4
+                return 1.2 < dist < 1.4
 
             return 1.2 < close_contact[0]['dist'] < 1.4
 
@@ -44444,7 +44404,7 @@ class NmrDpUtility:
             neighbor = [n for n in _neighbor
                         if n['seq_id'] != cif_seq_id
                         and n['type_symbol'] not in protonBeginCode
-                        and numpy.linalg.norm(to_np_array(n) - o) < cutoff
+                        and distance(to_np_array(n), o) < cutoff
                         and n['atom_id'] in self.__csStat.getAromaticAtoms(n['comp_id'])]
 
             if len(neighbor) == 0:
@@ -44483,7 +44443,7 @@ class NmrDpUtility:
                                       'cif_seq_id': n['seq_id'],
                                       'comp_id': n['comp_id'],
                                       'atom_id': n['atom_id'],
-                                      'distance': numpy.linalg.norm(to_np_array(n) - o)})
+                                      'distance': distance(to_np_array(n), o)})
 
             if len(atom_list) == 0:
                 return None
@@ -44627,8 +44587,8 @@ class NmrDpUtility:
 
             len_model_ids = 0
 
-            distance = 0.0
-            ring_distance = 0.0
+            dist = 0.0
+            ring_dist = 0.0
             ring_angle = 0.0
 
             for model_id in model_ids:
@@ -44644,7 +44604,7 @@ class NmrDpUtility:
                         _a = to_np_array(a)
 
                         if a['atom_id'] == na_atom_id:
-                            distance += numpy.linalg.norm(_a - o)
+                            dist += distance(_a, o)
 
                         rc = numpy.add(rc, _a)
 
@@ -44654,7 +44614,7 @@ class NmrDpUtility:
 
                     rc = rc / total
 
-                    ring_distance += numpy.linalg.norm(rc - o)
+                    ring_dist += distance(rc, o)
 
                     na_ = next(to_np_array(na_) for na_ in _na if na_['atom_id'] == ring_atoms[0])
                     na__ = next(to_np_array(na__) for na__ in _na if na__['atom_id'] == ring_atoms[1])
@@ -44667,8 +44627,8 @@ class NmrDpUtility:
                     len_model_ids += 1
 
             na['ring_atoms'] = ring_atoms
-            na['distance'] = float(f"{distance / len_model_ids:.1f}")
-            na['ring_distance'] = float(f"{ring_distance / len_model_ids:.1f}")
+            na['distance'] = float(f"{dist / len_model_ids:.1f}")
+            na['ring_distance'] = float(f"{ring_dist / len_model_ids:.1f}")
             na['ring_angle'] = float(f"{numpy.degrees(ring_angle / len_model_ids):.1f}")
 
             self.__coord_near_ring[seq_key] = na
@@ -44785,7 +44745,7 @@ class NmrDpUtility:
 
             neighbor = [n for n in _neighbor
                         if n['seq_id'] != cif_seq_id
-                        and numpy.linalg.norm(to_np_array(n) - o) < cutoff
+                        and distance(to_np_array(n), o) < cutoff
                         and (n['type_symbol'] in PARAMAGNETIC_ELEMENTS
                              or n['type_symbol'] in FERROMAGNETIC_ELEMENTS)]
 
@@ -44797,7 +44757,7 @@ class NmrDpUtility:
 
             for n in neighbor:
                 atom_list.append({'chain_id': n['chain_id'], 'seq_id': n['seq_id'], 'comp_id': n['comp_id'], 'atom_id': n['atom_id'],
-                                  'distance': numpy.linalg.norm(to_np_array(n) - o)})
+                                  'distance': distance(to_np_array(n), o)})
 
             if len(atom_list) == 0:
                 return None
@@ -44832,12 +44792,12 @@ class NmrDpUtility:
                 self.__coord_near_para_ferro[seq_key] = None
                 return None
 
-            distance = 0.0
+            dist = 0.0
 
             for __p in _p:
-                distance += numpy.linalg.norm(to_np_array(__p) - o)
+                dist += distance(to_np_array(__p), o)
 
-            p['distance'] = float(f"{distance / len(_p):.1f}")
+            p['distance'] = float(f"{dist / len(_p):.1f}")
 
             self.__coord_near_para_ferro[seq_key] = p
             return p

@@ -10,15 +10,13 @@ import sys
 import re
 import itertools
 import collections
-import numpy
 
 from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.IsdMRParser import IsdMRParser
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (toNpArray,
-                                                       coordAssemblyChecker,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
@@ -68,11 +66,11 @@ try:
                                            retrieveRemappedNonPoly,
                                            splitPolySeqRstForBranched,
                                            retrieveOriginalSeqIdFromMRMap)
+    from wwpdb.utils.nmr.NmrVrptUtility import to_np_array, distance, dist_error
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.IsdMRParser import IsdMRParser
-    from nmr.mr.ParserListenerUtil import (toNpArray,
-                                           coordAssemblyChecker,
+    from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
                                            translateToStdResName,
                                            translateToStdAtomName,
@@ -122,6 +120,7 @@ except ImportError:
                                retrieveRemappedNonPoly,
                                splitPolySeqRstForBranched,
                                retrieveOriginalSeqIdFromMRMap)
+    from nmr.NmrVrptUtility import to_np_array, distance, dist_error
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -1361,7 +1360,7 @@ class IsdMRParserListener(ParseTreeListener):
             if len(_p1) != 1:
                 return atom1, atom2
 
-            p1 = toNpArray(_p1[0])
+            p1 = to_np_array(_p1[0])
 
             _p2 =\
                 self.__cR.getDictListWithFilter('atom_site',
@@ -1378,9 +1377,9 @@ class IsdMRParserListener(ParseTreeListener):
             if len(_p2) != 1:
                 return atom1, atom2
 
-            p2 = toNpArray(_p2[0])
+            p2 = to_np_array(_p2[0])
 
-            d_org = numpy.linalg.norm(p1 - p2)
+            d_org = distance(p1, p2)
 
             lower_bound = dst_func.get('lower_limit')
             if lower_bound is not None:
@@ -1388,31 +1387,6 @@ class IsdMRParserListener(ParseTreeListener):
             upper_bound = dst_func.get('upper_limit')
             if upper_bound is not None:
                 upper_bound = float(upper_bound)
-
-            def get_violation(avr_d):
-                error = 0.0
-
-                if lower_bound is not None and upper_bound is not None:
-                    if lower_bound <= avr_d <= upper_bound:
-                        error = 0.0
-                    elif avr_d > upper_bound:
-                        error = abs(avr_d - upper_bound)
-                    else:
-                        error = abs(avr_d - lower_bound)
-
-                elif upper_bound is not None:
-                    if avr_d <= upper_bound:
-                        error = 0.0
-                    elif avr_d > upper_bound:
-                        error = abs(avr_d - upper_bound)
-
-                elif lower_bound is not None:
-                    if lower_bound <= avr_d:
-                        error = 0.0
-                    else:
-                        error = abs(avr_d - lower_bound)
-
-                return error
 
             if alt_atom_id1 is not None:
 
@@ -1431,11 +1405,11 @@ class IsdMRParserListener(ParseTreeListener):
                 if len(_p1) != 1:
                     return atom1, atom2
 
-                p1_alt = toNpArray(_p1[0])
+                p1_alt = to_np_array(_p1[0])
 
-                d_alt = numpy.linalg.norm(p1_alt - p2)
+                d_alt = distance(p1_alt, p2)
 
-                if get_violation(d_org) > get_violation(d_alt):
+                if dist_error(lower_bound, upper_bound, d_org) > dist_error(lower_bound, upper_bound, d_alt):
                     if 'auth_atom_id' not in atom1:
                         atom1['auth_atom_id'] = atom1['atom_id']
                     atom1['atom_id'] = alt_atom_id1
@@ -1457,11 +1431,11 @@ class IsdMRParserListener(ParseTreeListener):
                 if len(_p2) != 1:
                     return atom1, atom2
 
-                p2_alt = toNpArray(_p2[0])
+                p2_alt = to_np_array(_p2[0])
 
-                d_alt = numpy.linalg.norm(p1 - p2_alt)
+                d_alt = distance(p1, p2_alt)
 
-                if get_violation(d_org) > get_violation(d_alt):
+                if dist_error(lower_bound, upper_bound, d_org) > dist_error(lower_bound, upper_bound, d_alt):
                     if 'auth_atom_id' not in atom2:
                         atom2['auth_atom_id'] = atom2['atom_id']
                     atom2['atom_id'] = alt_atom_id2

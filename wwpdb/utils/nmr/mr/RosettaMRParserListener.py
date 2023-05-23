@@ -17,8 +17,7 @@ from antlr4 import ParseTreeListener
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (toNpArray,
-                                                       coordAssemblyChecker,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
                                                        isIdenticalRestraint,
                                                        isLongRangeRestraint,
@@ -79,12 +78,12 @@ try:
                                            retrieveRemappedNonPoly,
                                            splitPolySeqRstForBranched,
                                            retrieveOriginalSeqIdFromMRMap)
-    from wwpdb.utils.nmr.NmrVrptUtility import dihedral_angle, angle_diff, angle_error
+    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
+                                                angle_target_values, dihedral_angle, angle_error)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.RosettaMRParser import RosettaMRParser
-    from nmr.mr.ParserListenerUtil import (toNpArray,
-                                           coordAssemblyChecker,
+    from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
                                            isIdenticalRestraint,
                                            isLongRangeRestraint,
@@ -145,7 +144,8 @@ except ImportError:
                                retrieveRemappedNonPoly,
                                splitPolySeqRstForBranched,
                                retrieveOriginalSeqIdFromMRMap)
-    from nmr.NmrVrptUtility import dihedral_angle, angle_diff, angle_error
+    from nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
+                                    angle_target_values, dihedral_angle, angle_error)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -1482,7 +1482,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if len(_p1) != 1:
                 return atom1, atom2
 
-            p1 = toNpArray(_p1[0])
+            p1 = to_np_array(_p1[0])
 
             _p2 =\
                 self.__cR.getDictListWithFilter('atom_site',
@@ -1499,9 +1499,9 @@ class RosettaMRParserListener(ParseTreeListener):
             if len(_p2) != 1:
                 return atom1, atom2
 
-            p2 = toNpArray(_p2[0])
+            p2 = to_np_array(_p2[0])
 
-            d_org = numpy.linalg.norm(p1 - p2)
+            d_org = distance(p1, p2)
 
             lower_bound = dst_func.get('lower_limit')
             if lower_bound is not None:
@@ -1509,31 +1509,6 @@ class RosettaMRParserListener(ParseTreeListener):
             upper_bound = dst_func.get('upper_limit')
             if upper_bound is not None:
                 upper_bound = float(upper_bound)
-
-            def get_violation(avr_d):
-                error = 0.0
-
-                if lower_bound is not None and upper_bound is not None:
-                    if lower_bound <= avr_d <= upper_bound:
-                        error = 0.0
-                    elif avr_d > upper_bound:
-                        error = abs(avr_d - upper_bound)
-                    else:
-                        error = abs(avr_d - lower_bound)
-
-                elif upper_bound is not None:
-                    if avr_d <= upper_bound:
-                        error = 0.0
-                    elif avr_d > upper_bound:
-                        error = abs(avr_d - upper_bound)
-
-                elif lower_bound is not None:
-                    if lower_bound <= avr_d:
-                        error = 0.0
-                    else:
-                        error = abs(avr_d - lower_bound)
-
-                return error
 
             if alt_atom_id1 is not None:
 
@@ -1552,11 +1527,11 @@ class RosettaMRParserListener(ParseTreeListener):
                 if len(_p1) != 1:
                     return atom1, atom2
 
-                p1_alt = toNpArray(_p1[0])
+                p1_alt = to_np_array(_p1[0])
 
-                d_alt = numpy.linalg.norm(p1_alt - p2)
+                d_alt = distance(p1_alt, p2)
 
-                if get_violation(d_org) > get_violation(d_alt):
+                if dist_error(lower_bound, upper_bound, d_org) > dist_error(lower_bound, upper_bound, d_alt):
                     if 'auth_atom_id' not in atom1:
                         atom1['auth_atom_id'] = atom1['atom_id']
                     atom1['atom_id'] = alt_atom_id1
@@ -1578,11 +1553,11 @@ class RosettaMRParserListener(ParseTreeListener):
                 if len(_p2) != 1:
                     return atom1, atom2
 
-                p2_alt = toNpArray(_p2[0])
+                p2_alt = to_np_array(_p2[0])
 
-                d_alt = numpy.linalg.norm(p1 - p2_alt)
+                d_alt = distance(p1, p2_alt)
 
-                if get_violation(d_org) > get_violation(d_alt):
+                if dist_error(lower_bound, upper_bound, d_org) > dist_error(lower_bound, upper_bound, d_alt):
                     if 'auth_atom_id' not in atom2:
                         atom2['auth_atom_id'] = atom2['atom_id']
                     atom2['atom_id'] = alt_atom_id2
@@ -1616,7 +1591,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if len(_p1) != 1:
                 return dst_func
 
-            p1 = toNpArray(_p1[0])
+            p1 = to_np_array(_p1[0])
 
             _p2 =\
                 self.__cR.getDictListWithFilter('atom_site',
@@ -1633,7 +1608,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if len(_p2) != 1:
                 return dst_func
 
-            p2 = toNpArray(_p2[0])
+            p2 = to_np_array(_p2[0])
 
             _p3 =\
                 self.__cR.getDictListWithFilter('atom_site',
@@ -1650,14 +1625,14 @@ class RosettaMRParserListener(ParseTreeListener):
             if len(_p3) != 1:
                 return dst_func
 
-            p3 = toNpArray(_p3[0])
+            p3 = to_np_array(_p3[0])
 
             _p4 =\
                 self.__cR.getDictListWithFilter('atom_site',
                                                 CARTN_DATA_ITEMS,
                                                 [{'name': self.__authAsymId, 'type': 'str', 'value': atom4['chain_id']},
                                                  {'name': self.__authSeqId, 'type': 'int', 'value': atom4['seq_id']},
-                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom4['atom_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': 'CD1'},
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
@@ -1667,7 +1642,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if len(_p4) != 1:
                 return dst_func
 
-            p4 = toNpArray(_p4[0])
+            p4 = to_np_array(_p4[0])
 
             chi2 = dihedral_angle(p1, p2, p3, p4)
 
@@ -1686,7 +1661,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if len(_p4) != 1:
                 return dst_func
 
-            alt_p4 = toNpArray(_p4[0])
+            alt_p4 = to_np_array(_p4[0])
 
             alt_chi2 = dihedral_angle(p1, p2, p3, alt_p4)
 
@@ -1711,74 +1686,49 @@ class RosettaMRParserListener(ParseTreeListener):
             if upper_linear_limit is not None:
                 upper_linear_limit = float(upper_linear_limit)
 
-            if lower_bound is None and upper_bound is None and lower_linear_limit is None and upper_linear_limit is None:
-                if target_value is None:
-                    return dst_func
-                if target_value_uncertainty is not None:
-                    lower_bound = target_value - target_value_uncertainty
-                    upper_bound = target_value + target_value_uncertainty
-                else:
-                    lower_bound = upper_bound = target_value
+            target_value, lower_bound, upper_bound =\
+                angle_target_values(target_value, target_value_uncertainty,
+                                    lower_bound, upper_bound,
+                                    lower_linear_limit, upper_linear_limit)
 
-            if lower_bound is None and lower_linear_limit is not None:
-                lower_bound = lower_linear_limit
-            if upper_bound is None and upper_linear_limit is not None:
-                upper_bound = upper_linear_limit
-
-            if target_value is None:  # target values are not always filled (e.g. AMBER/CYANA dihedral angle restraints)
-                has_valid_lower_linear_limit = lower_bound is not None and lower_linear_limit is not None and lower_bound != lower_linear_limit
-                has_valid_upper_linear_limit = upper_bound is not None and upper_linear_limit is not None and upper_bound != upper_linear_limit
-
-                target_value_aclock = (lower_bound + upper_bound) / 2.0
-                target_value_clock = target_value_aclock + 180.0
-                if target_value_clock >= 360.0:
-                    target_value_clock -= 360.0
-
-                if has_valid_lower_linear_limit or has_valid_upper_linear_limit:  # decide target value from upper/lower_limit and upper/lower_linear_limit (AMBER)
-                    target_value_vote_aclock = target_value_vote_clock = 0
-
-                    if has_valid_lower_linear_limit:
-                        if angle_diff(lower_bound, target_value_aclock) < angle_diff(lower_linear_limit, target_value_aclock):
-                            target_value_vote_aclock += 1
-                        elif angle_diff(lower_bound, target_value_clock) < angle_diff(lower_linear_limit, target_value_clock):
-                            target_value_vote_clock += 1
-                    if has_valid_upper_linear_limit:
-                        if angle_diff(upper_bound, target_value_aclock) < angle_diff(upper_linear_limit, target_value_aclock):
-                            target_value_vote_aclock += 1
-                        elif angle_diff(upper_bound, target_value_clock) < angle_diff(upper_linear_limit, target_value_clock):
-                            target_value_vote_clock += 1
-
-                    if target_value_vote_aclock + target_value_vote_clock == 0 or target_value_vote_aclock * target_value_vote_clock != 0:
-                        return dst_func
-
-                    target_value = target_value_aclock if target_value_vote_aclock > target_value_vote_clock else target_value_clock
-
-                else:  # estimate target value by comparing lower_limit and upper_limit value, CYANA)
-                    target_value = target_value_aclock if lower_bound <= upper_bound else target_value_clock
+            if target_value is None:
+                return dst_func
 
             if angle_error(lower_bound, upper_bound, target_value, chi2) > angle_error(lower_bound, upper_bound, target_value, alt_chi2):
                 target_value = dst_func.get('target_value')
                 if target_value is not None:
                     target_value = float(target_value) + 180.0
-                    dst_func['target_value'] = str(target_value)
-
                 lower_limit = dst_func.get('lower_limit')
                 if lower_limit is not None:
                     lower_limit = float(lower_limit) + 180.0
-                    dst_func['lower_limit'] = str(lower_limit)
-
                 upper_limit = dst_func.get('upper_limit')
                 if upper_limit is not None:
                     upper_limit = float(upper_limit) + 180.0
-                    dst_func['upper_limit'] = str(upper_limit)
 
                 if lower_linear_limit is not None:
-                    lower_linear_limit = float(lower_linear_limit) + 180.0
-                    dst_func['lower_linear_limit'] = str(lower_linear_limit)
-
+                    lower_linear_limit += 180.0
                 if upper_linear_limit is not None:
-                    upper_linear_limit = float(upper_linear_limit) + 180.0
-                    dst_func['upper_linear_limit'] = str(upper_linear_limit)
+                    upper_linear_limit += 180.0
+
+                _array = numpy.array([target_value, lower_limit, upper_limit, lower_linear_limit, upper_linear_limit],
+                                     dtype=float)
+
+                shift = 0.0
+                if self.__correctCircularShift:
+                    if numpy.nanmin(_array) >= THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                        shift = -(numpy.nanmax(_array) // 360) * 360
+                    elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
+                        shift = -(numpy.nanmin(_array) // 360) * 360
+                if target_value is not None:
+                    dst_func['target_value'] = str(target_value + shift)
+                if lower_limit is not None:
+                    dst_func['lower_limit'] = str(lower_limit + shift)
+                if upper_limit is not None:
+                    dst_func['upper_limit'] = str(upper_limit + shift)
+                if lower_linear_limit is not None:
+                    dst_func['lower_linear_limit'] = str(lower_linear_limit + shift)
+                if upper_linear_limit is not None:
+                    dst_func['upper_linear_limit'] = str(upper_linear_limit + shift)
 
         except Exception as e:
             if self.__verbose:
@@ -4057,11 +4007,11 @@ class RosettaMRParserListener(ParseTreeListener):
                                                      ])
 
                 if len(_head) == 1 and len(_tail) == 1:
-                    distance = numpy.linalg.norm(toNpArray(_head[0]) - toNpArray(_tail[0]))
-                    if distance > 2.5:
+                    dist = distance(to_np_array(_head[0]), to_np_array(_tail[0]))
+                    if dist > 2.5:
                         self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                         f"The distance of the disulfide bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
-                                        f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({distance:.3f}Å).")
+                                        f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({dist:.3f}Å).")
 
             except Exception as e:
                 if self.__verbose:

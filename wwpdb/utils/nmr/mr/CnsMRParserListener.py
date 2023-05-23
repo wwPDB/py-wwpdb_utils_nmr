@@ -1419,7 +1419,7 @@ class CnsMRParserListener(ParseTreeListener):
                     if len(self.__fibril_chain_ids) > 0\
                        and atom1['chain_id'] in self.__fibril_chain_ids\
                        and atom2['chain_id'] in self.__fibril_chain_ids\
-                       and not self.isRealisticFibrilRestraint(atom1, atom2, dstFunc):
+                       and not self.isRealisticDistanceRestraint(atom1, atom2, dstFunc):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
@@ -7655,8 +7655,8 @@ class CnsMRParserListener(ParseTreeListener):
 
         return dst_func
 
-    def isRealisticFibrilRestraint(self, atom1, atom2, dst_func):
-        """ Return whether a given restraint is realistic taking into account the current coordinates.
+    def isRealisticDistanceRestraint(self, atom1, atom2, dst_func):
+        """ Return whether a given distance restraint is realistic in the assembly.
         """
         if not self.__hasCoord:
             return True
@@ -7736,7 +7736,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+CnsMRParserListener.isRealisticFibrilRestraint() ++ Error  - {str(e)}")
+                self.__lfh.write(f"+CnsMRParserListener.isRealisticDistanceRestraint() ++ Error  - {str(e)}")
 
         return True
 

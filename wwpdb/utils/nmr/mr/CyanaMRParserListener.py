@@ -6415,6 +6415,7 @@ class CyanaMRParserListener(ParseTreeListener):
             target_value = None
             lower_limit = None
             upper_limit = None
+            target_value_uncertainty = None
 
             value = self.numberSelection[0]
             weight = 1.0

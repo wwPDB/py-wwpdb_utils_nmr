@@ -24165,6 +24165,8 @@ class NmrDpUtility:
                                             seq_key[0], seq_key[1] - offset, comp_id, atom_id
                                         if has_ins_code and seq_key in auth_to_ins_code:
                                             _row[27] = auth_to_ins_code[seq_key]
+                                    else:
+                                        _seq_key = (auth_asym_id, auth_seq_id + offset)
 
                                     if has_auth_seq:
                                         _row[20], _row[21], _row[22], _row[23] =\
@@ -39190,7 +39192,7 @@ class NmrDpUtility:
                             result['conflict'] = 0
                             s1 = __s1
 
-                    if conflict > 0 and 'gap_in_auth_seq' in _s2 and _s2['gap_in_auth_seq']:
+                    if conflict > 0 and 'gap_in_auth_seq' in _s2 and _s2['gap_in_auth_seq'] and 'auth_seq_id' in _s2:
                         __s1 = copy.deepcopy(_s1)
                         for p in range(len(_s2['auth_seq_id']) - 1):
                             s_p = _s2['auth_seq_id'][p]
@@ -39615,7 +39617,7 @@ class NmrDpUtility:
                             result['conflict'] = 0
                             s2 = __s2
 
-                    if conflict > 0 and 'gap_in_auth_seq' in _s1 and _s1['gap_in_auth_seq']:
+                    if conflict > 0 and 'gap_in_auth_seq' in _s1 and _s1['gap_in_auth_seq'] and 'auth_seq_id' in _s1:
                         __s2 = copy.deepcopy(_s2)
                         for p in range(len(_s1['auth_seq_id']) - 1):
                             s_p = _s1['auth_seq_id'][p]

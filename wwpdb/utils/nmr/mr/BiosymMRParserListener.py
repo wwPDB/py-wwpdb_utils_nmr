@@ -28,6 +28,7 @@ try:
                                                        isAmbigAtomSelection,
                                                        isCyclicPolymer,
                                                        getAltProtonIdInBondConstraint,
+                                                       isLikePheOrTyr,
                                                        getRestraintName,
                                                        contentSubtypeOf,
                                                        incListIdCounter,
@@ -71,6 +72,7 @@ try:
                                            retrieveRemappedNonPoly,
                                            splitPolySeqRstForBranched,
                                            retrieveOriginalSeqIdFromMRMap)
+    from wwpdb.utils.nmr.NmrVrptUtility import dihedral_angle, angle_diff, angle_error
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.BiosymMRParser import BiosymMRParser
@@ -85,6 +87,7 @@ except ImportError:
                                            isAmbigAtomSelection,
                                            isCyclicPolymer,
                                            getAltProtonIdInBondConstraint,
+                                           isLikePheOrTyr,
                                            getRestraintName,
                                            contentSubtypeOf,
                                            incListIdCounter,
@@ -128,6 +131,7 @@ except ImportError:
                                retrieveRemappedNonPoly,
                                splitPolySeqRstForBranched,
                                retrieveOriginalSeqIdFromMRMap)
+    from nmr.NmrVrptUtility import dihedral_angle, angle_diff, angle_error
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -1700,6 +1704,199 @@ class BiosymMRParserListener(ParseTreeListener):
 
         return atom1, atom2
 
+    def selectRealisticChi2AngleConstraint(self, atom1, atom2, atom3, atom4, dst_func):
+        """ Return realistic chi2 angle constraint taking into account the current coordinates.
+        """
+        if not self.__hasCoord:
+            return dst_func
+
+        try:
+
+            _p1 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom1['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom1['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom1['atom_id']},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': ('A')}
+                                                 ])
+
+            if len(_p1) != 1:
+                return dst_func
+
+            p1 = toNpArray(_p1[0])
+
+            _p2 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom2['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom2['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom2['atom_id']},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': ('A')}
+                                                 ])
+
+            if len(_p2) != 1:
+                return dst_func
+
+            p2 = toNpArray(_p2[0])
+
+            _p3 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom3['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom3['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom3['atom_id']},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': ('A')}
+                                                 ])
+
+            if len(_p3) != 1:
+                return dst_func
+
+            p3 = toNpArray(_p3[0])
+
+            _p4 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom4['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom4['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom4['atom_id']},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': ('A')}
+                                                 ])
+
+            if len(_p4) != 1:
+                return dst_func
+
+            p4 = toNpArray(_p4[0])
+
+            chi2 = dihedral_angle(p1, p2, p3, p4)
+
+            _p4 =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': atom4['chain_id']},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': atom4['seq_id']},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': 'CD2'},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': ('A')}
+                                                 ])
+
+            if len(_p4) != 1:
+                return dst_func
+
+            alt_p4 = toNpArray(_p4[0])
+
+            alt_chi2 = dihedral_angle(p1, p2, p3, alt_p4)
+
+            target_value = dst_func.get('target_value')
+            if target_value is not None:
+                target_value = float(target_value)
+            target_value_uncertainty = dst_func.get('target_value_uncertainty')
+            if target_value_uncertainty is not None:
+                target_value_uncertainty = float(target_value_uncertainty)
+
+            lower_bound = dst_func.get('lower_limit')
+            if lower_bound is not None:
+                lower_bound = float(lower_bound)
+            upper_bound = dst_func.get('upper_limit')
+            if upper_bound is not None:
+                upper_bound = float(upper_bound)
+
+            lower_linear_limit = dst_func.get('lower_linear_limit')
+            if lower_linear_limit is not None:
+                lower_linear_limit = float(lower_linear_limit)
+            upper_linear_limit = dst_func.get('upper_linear_limit')
+            if upper_linear_limit is not None:
+                upper_linear_limit = float(upper_linear_limit)
+
+            if lower_bound is None and upper_bound is None and lower_linear_limit is None and upper_linear_limit is None:
+                if target_value is None:
+                    return dst_func
+                if target_value_uncertainty is not None:
+                    lower_bound = target_value - target_value_uncertainty
+                    upper_bound = target_value + target_value_uncertainty
+                else:
+                    lower_bound = upper_bound = target_value
+
+            if lower_bound is None and lower_linear_limit is not None:
+                lower_bound = lower_linear_limit
+            if upper_bound is None and upper_linear_limit is not None:
+                upper_bound = upper_linear_limit
+
+            if target_value is None:  # target values are not always filled (e.g. AMBER/CYANA dihedral angle restraints)
+                has_valid_lower_linear_limit = lower_bound is not None and lower_linear_limit is not None and lower_bound != lower_linear_limit
+                has_valid_upper_linear_limit = upper_bound is not None and upper_linear_limit is not None and upper_bound != upper_linear_limit
+
+                target_value_aclock = (lower_bound + upper_bound) / 2.0
+                target_value_clock = target_value_aclock + 180.0
+                if target_value_clock >= 360.0:
+                    target_value_clock -= 360.0
+
+                if has_valid_lower_linear_limit or has_valid_upper_linear_limit:  # decide target value from upper/lower_limit and upper/lower_linear_limit (AMBER)
+                    target_value_vote_aclock = target_value_vote_clock = 0
+
+                    if has_valid_lower_linear_limit:
+                        if angle_diff(lower_bound, target_value_aclock) < angle_diff(lower_linear_limit, target_value_aclock):
+                            target_value_vote_aclock += 1
+                        elif angle_diff(lower_bound, target_value_clock) < angle_diff(lower_linear_limit, target_value_clock):
+                            target_value_vote_clock += 1
+                    if has_valid_upper_linear_limit:
+                        if angle_diff(upper_bound, target_value_aclock) < angle_diff(upper_linear_limit, target_value_aclock):
+                            target_value_vote_aclock += 1
+                        elif angle_diff(upper_bound, target_value_clock) < angle_diff(upper_linear_limit, target_value_clock):
+                            target_value_vote_clock += 1
+
+                    if target_value_vote_aclock + target_value_vote_clock == 0 or target_value_vote_aclock * target_value_vote_clock != 0:
+                        return dst_func
+
+                    target_value = target_value_aclock if target_value_vote_aclock > target_value_vote_clock else target_value_clock
+
+                else:  # estimate target value by comparing lower_limit and upper_limit value, CYANA)
+                    target_value = target_value_aclock if lower_bound <= upper_bound else target_value_clock
+
+            if angle_error(lower_bound, upper_bound, target_value, chi2) > angle_error(lower_bound, upper_bound, target_value, alt_chi2):
+                target_value = dst_func.get('target_value')
+                if target_value is not None:
+                    target_value = float(target_value) + 180.0
+                    dst_func['target_value'] = str(target_value)
+
+                lower_limit = dst_func.get('lower_limit')
+                if lower_limit is not None:
+                    lower_limit = float(lower_limit) + 180.0
+                    dst_func['lower_limit'] = str(lower_limit)
+
+                upper_limit = dst_func.get('upper_limit')
+                if upper_limit is not None:
+                    upper_limit = float(upper_limit) + 180.0
+                    dst_func['upper_limit'] = str(upper_limit)
+
+                if lower_linear_limit is not None:
+                    lower_linear_limit = float(lower_linear_limit) + 180.0
+                    dst_func['lower_linear_limit'] = str(lower_linear_limit)
+
+                if upper_linear_limit is not None:
+                    upper_linear_limit = float(upper_linear_limit) + 180.0
+                    dst_func['upper_linear_limit'] = str(upper_linear_limit)
+
+        except Exception as e:
+            if self.__verbose:
+                self.__lfh.write(f"+BiosymMRParserListener.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
+
+        return dst_func
+
     def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)
         coordAtomSite = None
@@ -1841,6 +2038,9 @@ class BiosymMRParserListener(ParseTreeListener):
                         sf['id'] += 1
                         first_item = False
                     sf['index_id'] += 1
+                    if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
+                        dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
+                                                                          dstFunc)
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.' if dstFunc2 is None else 1, None, angleName,
                                  sf['list_id'], self.__entryId, dstFunc,
@@ -1849,6 +2049,9 @@ class BiosymMRParserListener(ParseTreeListener):
                     sf['loop'].add_data(row)
                     if dstFunc2 is not None:
                         sf['index_id'] += 1
+                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
+                            dstFunc2 = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
+                                                                               dstFunc2)
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      2, None, angleName,
                                      sf['list_id'], self.__entryId, dstFunc2,
@@ -1857,6 +2060,9 @@ class BiosymMRParserListener(ParseTreeListener):
                         sf['loop'].add_data(row)
                     if dstFunc3 is not None:
                         sf['index_id'] += 1
+                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
+                            dstFunc3 = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
+                                                                               dstFunc3)
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      3, None, angleName,
                                      sf['list_id'], self.__entryId, dstFunc3,
@@ -1865,6 +2071,9 @@ class BiosymMRParserListener(ParseTreeListener):
                         sf['loop'].add_data(row)
                     if dstFunc4 is not None:
                         sf['index_id'] += 1
+                        if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
+                            dstFunc4 = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
+                                                                               dstFunc4)
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      4, None, angleName,
                                      sf['list_id'], self.__entryId, dstFunc4,
@@ -1963,6 +2172,9 @@ class BiosymMRParserListener(ParseTreeListener):
                                                        [atom1, atom2, atom3, atom4])
                 if angleName is None:
                     continue
+                if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
+                    dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
+                                                                      dstFunc)
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")

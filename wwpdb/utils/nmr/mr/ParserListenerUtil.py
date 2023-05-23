@@ -4430,6 +4430,23 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
     return '.' if lenCommonSeqId == 1 else None
 
 
+def isLikePheOrTyr(compId, ccU):
+    """ Return whether a given comp_id is amino acid with flippable symmetrical ring like phenylalanine or tryrosine.
+    """
+
+    if compId in ('PHE', 'TYR'):
+        return True
+
+    if ccU.updateChemCompDict(compId):
+        _refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
+        if 'CD1' not in _refAtomIdList or 'CD2' not in _refAtomIdList:
+            return False
+        _compId = ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
+        return _compId in ('PHE', 'TYR')
+
+    return False
+
+
 def getRdcCode(atoms):
     """ Return type of residual dipolar coupling restraint.
     """

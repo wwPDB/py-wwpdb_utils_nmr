@@ -2399,7 +2399,7 @@ def splitPolySeqRstForNonPoly(ccU, nonPolyModel, polySeqRst, seqAlign, chainAssi
         if not ccU.updateChemCompDict(ref_comp_id):
             continue
 
-        parent_comp_id = ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
+        parent_comp_id = ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
 
         if parent_comp_id not in emptyValue:
             alt_ref_comp_id_dict[parent_comp_id] = ref_comp_id

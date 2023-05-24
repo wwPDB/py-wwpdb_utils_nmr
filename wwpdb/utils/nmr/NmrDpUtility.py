@@ -23135,9 +23135,10 @@ class NmrDpUtility:
                     missing_ch3 = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
                     valid = self.__sail_flag
                     for offset in range(1, 10):
+                        row_src = src_lp.data[src_idx]
                         if src_idx + offset < len(src_lp.data):
                             row = src_lp.data[src_idx + offset]
-                            if row[seq_id_col] == str(_row[3]) and row[comp_id_col] == _row[5]\
+                            if row[seq_id_col] == str(row_src[3]) and row[comp_id_col] == row_src[5]\
                                and row[atom_id_col] in missing_ch3:
                                 valid = True
                                 missing_ch3.remove(row[atom_id_col])
@@ -23145,7 +23146,7 @@ class NmrDpUtility:
                                     break
                         if src_idx - offset >= 0:
                             row = src_lp.data[src_idx - offset]
-                            if row[seq_id_col] == str(_row[3]) and row[comp_id_col] == _row[5]\
+                            if row[seq_id_col] == str(row_src[3]) and row[comp_id_col] == row_src[5]\
                                and row[atom_id_col] in missing_ch3:
                                 valid = True
                                 missing_ch3.remove(row[atom_id_col])
@@ -23252,9 +23253,10 @@ class NmrDpUtility:
                     missing_ch3 = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
                     valid = self.__sail_flag
                     for offset in range(1, 10):
+                        row_src = src_lp.data[src_idx]
                         if src_idx + offset < len(src_lp.data):
                             row = src_lp.data[src_idx + offset]
-                            if row[seq_id_col] == str(_row[3]) and row[comp_id_col] == _row[5]\
+                            if row[seq_id_col] == str(row_src[3]) and row[comp_id_col] == row_src[5]\
                                and row[6] in missing_ch3:
                                 valid = True
                                 missing_ch3.remove(row[6])
@@ -23262,7 +23264,7 @@ class NmrDpUtility:
                                     break
                         if src_idx - offset >= 0:
                             row = src_lp.data[src_idx - offset]
-                            if row[seq_id_col] == str(_row[3]) and row[comp_id_col] == _row[5]\
+                            if row[seq_id_col] == str(row_src[3]) and row[comp_id_col] == row_src[5]\
                                and row[6] in missing_ch3:
                                 valid = True
                                 missing_ch3.remove(row[6])
@@ -28572,6 +28574,14 @@ class NmrDpUtility:
         seq_id_4_col = loop.tags.index('Auth_seq_ID_4')
         atom_id_4_col = loop.tags.index('Auth_atom_ID_4')
 
+        target_val_col = loop.tags.index('Angle_target_val') if 'Angle_target_val' in loop.tags else -1
+        target_val_err_col = loop.tags.index('Angle_target_val_err') if 'Angle_target_val_err' in loop.tags else -1
+        lower_linear_limit_col = loop.tags.index('Angle_lower_linear_limit') if 'Angle_lower_linear_limit' in loop.tags else -1
+        upper_linear_limit_col = loop.tags.index('Angle_upper_linear_limit') if 'Angle_upper_linear_limit' in loop.tags else -1
+        lower_limit_col = loop.tags.index('Angle_lower_bound_val') if 'Angle_lower_bound_val' in loop.tags else -1
+        upper_limit_col = loop.tags.index('Angle_upper_bound_val') if 'Angle_upper_bound_val' in loop.tags else -1
+        weight_col = loop.tags.index('Weight') if 'Weight' in loop.tags else -1
+
         modified = False
 
         sf_item['id'] = 0
@@ -28604,6 +28614,13 @@ class NmrDpUtility:
                     + _row[chain_id_2_col] + str(_row[seq_id_2_col]) + _row[atom_id_2_col]\
                     + _row[chain_id_3_col] + str(_row[seq_id_3_col]) + _row[atom_id_3_col]\
                     + _row[chain_id_4_col] + str(_row[seq_id_4_col]) + _row[atom_id_4_col]
+                values = (str(_row[target_val_col]) if target_val_col != -1 else '')\
+                    + (str(_row[target_val_err_col]) if target_val_err_col != -1 else '')\
+                    + (str(_row[lower_linear_limit_col]) if lower_linear_limit_col != -1 else '')\
+                    + (str(_row[upper_linear_limit_col]) if upper_linear_limit_col != -1 else '')\
+                    + (str(_row[lower_limit_col]) if lower_limit_col != -1 else '')\
+                    + (str(_row[upper_limit_col]) if upper_limit_col != -1 else '')\
+                    + (str(_row[weight_col]) if weight_col != -1 else '')
             except TypeError:
                 return False
 
@@ -28622,11 +28639,22 @@ class NmrDpUtility:
                             + _row_[chain_id_2_col] + str(_row_[seq_id_2_col]) + _row_[atom_id_2_col]\
                             + _row_[chain_id_3_col] + str(_row_[seq_id_3_col]) + _row_[atom_id_3_col]\
                             + _row_[chain_id_4_col] + str(_row_[seq_id_4_col]) + _row_[atom_id_4_col]
+                        _values = (str(_row_[target_val_col]) if target_val_col != -1 else '')\
+                            + (str(_row_[target_val_err_col]) if target_val_err_col != -1 else '')\
+                            + (str(_row_[lower_linear_limit_col]) if lower_linear_limit_col != -1 else '')\
+                            + (str(_row_[upper_linear_limit_col]) if upper_linear_limit_col != -1 else '')\
+                            + (str(_row_[lower_limit_col]) if lower_limit_col != -1 else '')\
+                            + (str(_row_[upper_limit_col]) if upper_limit_col != -1 else '')\
+                            + (str(_row_[weight_col]) if weight_col != -1 else '')
                     except TypeError:
                         return False
 
                     if key == _key:
                         modified = True
+
+                        if values == _values:
+                            proc_row[idx2] = True
+                            continue
 
                         if combination_id == 1:
                             _row[combination_id_col] = combination_id

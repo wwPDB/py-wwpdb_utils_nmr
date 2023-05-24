@@ -629,7 +629,7 @@ class NmrVrptUtility:
                 except ValueError:
                     pass
 
-            if len(ensemble) == 0:
+            if len(ensemble) == 0 or self.__total_models == 0:
 
                 ensemble = self.__cR.getDictList('rcsb_nmr_ensemble')
 
@@ -660,6 +660,18 @@ class NmrVrptUtility:
 
                         if self.__verbose:
                             self.__lfh.write(f"+NmrVrptUtility.__parseCoordinate() ++ Error  - {str(e)}\n")
+
+            if len(ensemble) > 0 and 'representative_conformer' in ensemble[0]:
+
+                try:
+
+                    rep_model_id = int(ensemble[0]['representative_conformer'])
+
+                    if 1 <= rep_model_id <= self.__total_models:
+                        self.__representative_model_id = rep_model_id
+
+                except ValueError:
+                    pass
 
             return True
 

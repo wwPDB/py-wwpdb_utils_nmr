@@ -37356,7 +37356,7 @@ class NmrDpUtility:
                 except ValueError:
                     pass
 
-            if len(ensemble) == 0 or not self.__trust_pdbx_nmr_ens:
+            if len(ensemble) == 0 or self.__total_models == 0:
 
                 ensemble = self.__cR.getDictList('rcsb_nmr_ensemble')
 
@@ -37388,8 +37388,17 @@ class NmrDpUtility:
                         self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - " + str(e))
                         self.report.setError()
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__parseCoordinate() ++ Error  - {str(e)}\n")
+            if self.__trust_pdbx_nmr_ens and len(ensemble) > 0 and 'representative_conformer' in ensemble[0]:
+
+                try:
+
+                    rep_model_id = int(ensemble[0].get('representative_conformer'))
+
+                    if 1 <= rep_model_id <= self.__total_models:
+                        self.__representative_model_id = rep_model_id
+
+                except ValueError:
+                    pass
 
             if self.__total_models < 2:
 

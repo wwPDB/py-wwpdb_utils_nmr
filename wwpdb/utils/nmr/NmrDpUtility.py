@@ -37392,7 +37392,7 @@ class NmrDpUtility:
 
                 try:
 
-                    rep_model_id = int(ensemble[0].get('representative_conformer'))
+                    rep_model_id = int(ensemble[0]['representative_conformer'])
 
                     if 1 <= rep_model_id <= self.__total_models:
                         self.__representative_model_id = rep_model_id
@@ -47827,7 +47827,7 @@ class NmrDpUtility:
 
         master_entry = self.__c2S.normalize_str(master_entry)
 
-        if self.__remediation_mode:
+        if self.__remediation_mode and self.__internal_mode:
 
             cs_file_path_list = 'chem_shift_file_path_list'
 

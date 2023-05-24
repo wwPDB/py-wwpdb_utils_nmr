@@ -615,12 +615,12 @@ class GromacsMRParserListener(ParseTreeListener):
 
             d_org = distance(p1, p2)
 
-            lower_bound = dst_func.get('lower_limit')
-            if lower_bound is not None:
-                lower_bound = float(lower_bound)
-            upper_bound = dst_func.get('upper_limit')
-            if upper_bound is not None:
-                upper_bound = float(upper_bound)
+            lower_limit = dst_func.get('lower_limit')
+            if lower_limit is not None:
+                lower_limit = float(lower_limit)
+            upper_limit = dst_func.get('upper_limit')
+            if upper_limit is not None:
+                upper_limit = float(upper_limit)
 
             if alt_atom_id1 is not None:
 
@@ -643,7 +643,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
                 d_alt = distance(p1_alt, p2)
 
-                if dist_error(lower_bound, upper_bound, d_org) > dist_error(lower_bound, upper_bound, d_alt):
+                if dist_error(lower_limit, upper_limit, d_org) > dist_error(lower_limit, upper_limit, d_alt):
                     if 'auth_atom_id' not in atom1:
                         atom1['auth_atom_id'] = atom1['atom_id']
                     atom1['atom_id'] = alt_atom_id1
@@ -669,7 +669,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
                 d_alt = distance(p1, p2_alt)
 
-                if dist_error(lower_bound, upper_bound, d_org) > dist_error(lower_bound, upper_bound, d_alt):
+                if dist_error(lower_limit, upper_limit, d_org) > dist_error(lower_limit, upper_limit, d_alt):
                     if 'auth_atom_id' not in atom2:
                         atom2['auth_atom_id'] = atom2['atom_id']
                     atom2['atom_id'] = alt_atom_id2
@@ -784,12 +784,12 @@ class GromacsMRParserListener(ParseTreeListener):
             if target_value_uncertainty is not None:
                 target_value_uncertainty = float(target_value_uncertainty)
 
-            lower_bound = dst_func.get('lower_limit')
-            if lower_bound is not None:
-                lower_bound = float(lower_bound)
-            upper_bound = dst_func.get('upper_limit')
-            if upper_bound is not None:
-                upper_bound = float(upper_bound)
+            lower_limit = dst_func.get('lower_limit')
+            if lower_limit is not None:
+                lower_limit = float(lower_limit)
+            upper_limit = dst_func.get('upper_limit')
+            if upper_limit is not None:
+                upper_limit = float(upper_limit)
 
             lower_linear_limit = dst_func.get('lower_linear_limit')
             if lower_linear_limit is not None:
@@ -800,7 +800,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
             target_value, lower_bound, upper_bound =\
                 angle_target_values(target_value, target_value_uncertainty,
-                                    lower_bound, upper_bound,
+                                    lower_limit, upper_limit,
                                     lower_linear_limit, upper_linear_limit)
 
             if target_value is None:

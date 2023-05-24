@@ -185,9 +185,7 @@ import shutil
 import time
 import hashlib
 import pynmrstar
-import gzip
 import chardet
-import pickle
 import numpy
 
 from packaging import version
@@ -233,7 +231,10 @@ try:
     from wwpdb.utils.nmr.io.CifReader import CifReader, LEN_MAJOR_ASYM_ID
     from wwpdb.utils.nmr.rci.RCI import RCI
     from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
-    from wwpdb.utils.nmr.NmrVrptUtility import to_np_array, distance, to_unit_vector, dihedral_angle
+    from wwpdb.utils.nmr.NmrVrptUtility import (uncompress_gzip_file, compress_as_gzip_file,
+                                                load_from_pickle, write_as_pickle,
+                                                to_np_array, distance,
+                                                to_unit_vector, dihedral_angle)
 #    from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName,
@@ -329,7 +330,10 @@ except ImportError:
     from nmr.io.CifReader import CifReader, LEN_MAJOR_ASYM_ID
     from nmr.rci.RCI import RCI
     from nmr.CifToNmrStar import CifToNmrStar
-    from nmr.NmrVrptUtility import to_np_array, distance, to_unit_vector, dihedral_angle
+    from nmr.NmrVrptUtility import (uncompress_gzip_file, compress_as_gzip_file,
+                                    load_from_pickle, write_as_pickle,
+                                    to_np_array, distance,
+                                    to_unit_vector, dihedral_angle)
 #    from nmr.NmrStarToCif import NmrStarToCif
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName,
@@ -534,24 +538,6 @@ def detect_encoding(line):
         return result['encoding']
     except Exception:
         return 'binary'
-
-
-def uncompress_gzip_file(inPath, outPath):
-    """ Uncompress a given gzip file.
-    """
-
-    with gzip.open(inPath, mode='rt') as ifh, open(outPath, 'w') as ofh:
-        for line in ifh:
-            ofh.write(line)
-
-
-def compress_as_gzip_file(inPath, outPath):
-    """ Compress a given file as a gzip file.
-    """
-
-    with open(inPath, mode='r') as ifh, gzip.open(outPath, 'wt') as ofh:
-        for line in ifh:
-            ofh.write(line)
 
 
 def get_type_of_star_file(fPath):
@@ -1045,29 +1031,6 @@ def get_number_of_dimensions_of_peak_list(file_format, line):
                 return 2
 
     return None
-
-
-def load_from_pickle(file_name, default=None):
-    """ Load object from pickle file.
-    """
-
-    if os.path.exists(file_name):
-
-        with open(file_name, 'rb') as ifh:
-            obj = pickle.load(ifh)
-            return obj if obj is not None else default
-
-    return default
-
-
-def write_as_pickle(obj, file_name):
-    """ Write a given object as pickle file.
-    """
-
-    if obj is not None:
-
-        with open(file_name, 'wb') as ofh:
-            pickle.dump(obj, ofh)
 
 
 class NmrDpUtility:

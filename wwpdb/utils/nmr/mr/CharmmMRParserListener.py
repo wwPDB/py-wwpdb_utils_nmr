@@ -2885,6 +2885,11 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                if self.__ccU.updateChemCompDict(compId):
+                                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                                    if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
+                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                            self.reasonsForReParsing['label_seq_scheme'] = True
                                                 """
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -2897,6 +2902,11 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
+                                                if self.__ccU.updateChemCompDict(compId):
+                                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                                    if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
+                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                            self.reasonsForReParsing['label_seq_scheme'] = True
                                                 """
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -2946,6 +2956,11 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                if self.__ccU.updateChemCompDict(compId):
+                                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                                    if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
+                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                            self.reasonsForReParsing['label_seq_scheme'] = True
                                                 """
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -2958,6 +2973,11 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
+                                                if self.__ccU.updateChemCompDict(compId):
+                                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                                    if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
+                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                            self.reasonsForReParsing['label_seq_scheme'] = True
                                                 """
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'

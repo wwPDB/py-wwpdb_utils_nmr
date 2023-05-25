@@ -208,6 +208,11 @@ class CnsMRReader:
 if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2mlb/test.mr',
+                 '../../tests-nmr/mock-data-remediation/2mlb/2mlb.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2ltq/2ltq-corrected-div_src.mr',
                  '../../tests-nmr/mock-data-remediation/2ltq/2ltq.cif')
 

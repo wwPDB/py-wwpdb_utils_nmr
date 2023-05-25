@@ -1924,7 +1924,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         if target_value is not None and upper_limit is not None and lower_limit is not None\
            and abs(target_value - lower_limit) <= DIST_AMBIG_UNCERT\
-           and (target_value - upper_limit) <= DIST_AMBIG_UNCERT:
+           and abs(target_value - upper_limit) <= DIST_AMBIG_UNCERT:
             if target_value >= DIST_AMBIG_MED:
                 lower_limit = lower_linear_limit = None
             elif target_value <= DIST_AMBIG_LOW:

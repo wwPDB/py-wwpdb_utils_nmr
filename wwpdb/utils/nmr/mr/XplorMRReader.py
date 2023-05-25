@@ -220,7 +220,7 @@ if __name__ == "__main__":
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-daother-8580/newupload_2/D_1000274286_mr_P3.xplor-nih.V1',
                  '../../tests-nmr/mock-data-daother-8580/newupload_2/D_1000274286_model_P1.cif.V1')
-    sys.exit()
+
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mjb/2mjb-corrected.mr',

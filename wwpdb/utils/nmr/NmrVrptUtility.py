@@ -1152,7 +1152,6 @@ class NmrVrptUtility:
                     comp_id_2 = r['comp_id_2']
                     atom_id_1 = r['atom_id_1']
                     atom_id_2 = r['atom_id_2']
-                    member_id = r.get('member_id')
                     ins_code_1 = r.get('ins_code_1', '?')
                     ins_code_2 = r.get('ins_code_2', '?')
                     target_value = r.get('target_value')
@@ -1226,13 +1225,13 @@ class NmrVrptUtility:
                                                           'atom_key_2': (auth_asym_id_2, auth_seq_id_2, comp_id_2,
                                                                          atom_id_2, ins_code_2),
                                                           'combination_id': r['combination_id'],
-                                                          'member_id': member_id,
+                                                          'member_id': r['member_id'],
                                                           'distance_type': distance_type,
                                                           'distance_sub_type': distance_sub_type,
                                                           'bond_flag': bond_flag,
                                                           'lower_bound': lower_bound,
                                                           'upper_bound': upper_bound,
-                                                          'target_value': r['target_value']})
+                                                          'target_value': target_value})
 
                     seq_key_1 = (auth_asym_id_1, auth_seq_id_1, comp_id_1)
                     seq_key_2 = (auth_asym_id_2, auth_seq_id_2, comp_id_2)

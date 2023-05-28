@@ -15,12 +15,12 @@ import pickle
 
 try:
     from wwpdb.utils.config.ConfigInfo import getSiteId
-    from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+    from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCc
     from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            protonBeginCode)
-    cICommon = ConfigInfoAppCommon(getSiteId())
-    CC_CVS_PATH = cICommon.get_site_cc_cvs_path()
+    cICc = ConfigInfoAppCc(getSiteId())
+    CC_CVS_PATH = cICc.get_site_cc_cvs_path()
 except ImportError:
     from nmr.io.ChemCompIo import ChemCompReader
     from nmr.AlignUtil import (monDict3,

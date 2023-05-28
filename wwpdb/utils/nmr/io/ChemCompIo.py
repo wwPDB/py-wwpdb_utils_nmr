@@ -119,7 +119,8 @@ class ChemCompReader:
         """ Set chemical component definition data file path of the input chemical component.
         """
         self.__ccU = compId.upper()
-        self.__filePath = os.path.join(self.__topCachePath, self.__ccU[0:1], self.__ccU, self.__ccU + '.cif')
+        hashd = self.__getCcdHash(self.__ccU)
+        self.__filePath = os.path.join(self.__topCachePath, hashd, self.__ccU, self.__ccU + '.cif')
         if not os.access(self.__filePath, os.R_OK):
             if self.__verbose:
                 self.__lfh.write(f"+ERROR- PdbxChemCompReader.getCompId() Missing file {self.__filePath}\n")
@@ -316,3 +317,15 @@ class ChemCompReader:
             return str(tval)
 
         return tval
+
+    def __getCcdHash(self, idCode):
+        """Returns the hash code for a CCD id.  Currently first letter"""
+        if not idCode:
+            return None
+
+        if len(idCode) > 3:
+            hash_key = idCode.upper()[-2:]
+        else:
+            hash_key = idCode.upper()[0]
+
+        return hash_key

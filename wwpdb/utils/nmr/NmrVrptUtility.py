@@ -1096,9 +1096,6 @@ class NmrVrptUtility:
                 list_id = int(sf_tag[0]['ID'])
 
                 data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
-                              {'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'},
-                              {'name': 'Member_logic_code', 'type': 'enum', 'alt_name': 'member_logic_code',
-                               'enum': ('OR', 'AND')},
                               {'name': 'Entity_assembly_ID_1', 'type': 'str', 'alt_name': 'entity_asm_id_1'},
                               {'name': 'Auth_asym_ID_1', 'type': 'str', 'alt_name': 'auth_asym_id_1'},
                               {'name': 'Auth_seq_ID_1', 'type': 'int', 'alt_name': 'auth_seq_id_1'},
@@ -1115,12 +1112,19 @@ class NmrVrptUtility:
 
                 tags = self.__rR.getItemTags(lp_category)
 
+                has_combination_id = 'Combination_ID' in tags
+                # has_member_logic_code = 'Member_logic_code' in tags
                 has_member_id = 'Member_ID' in tags
                 has_pdb_ins_code_1 = 'PDB_ins_code_1' in tags
                 has_pdb_ins_code_2 = 'PDB_ins_code_2' in tags
                 has_target_val = 'Target_val' in tags
                 has_target_val_uncertainty = 'Target_val_uncertainty' in tags
 
+                if has_combination_id:
+                    data_items.append({'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'})
+                # if has_member_logic_code:
+                #     data_items.append({'name': 'Member_logic_code', 'type': 'enum', 'alt_name': 'member_logic_code',
+                #                        'enum': ('OR', 'AND')})
                 if has_member_id:
                     data_items.append({'name': 'Member_ID', 'type': 'int', 'alt_name': 'member_id'})
                 if has_pdb_ins_code_1:
@@ -1224,8 +1228,8 @@ class NmrVrptUtility:
                                                                          atom_id_1, ins_code_1),
                                                           'atom_key_2': (auth_asym_id_2, auth_seq_id_2, comp_id_2,
                                                                          atom_id_2, ins_code_2),
-                                                          'combination_id': r['combination_id'],
-                                                          'member_id': r['member_id'],
+                                                          'combination_id': r.get('combination_id'),
+                                                          'member_id': r.get('member_id'),
                                                           'distance_type': distance_type,
                                                           'distance_sub_type': distance_sub_type,
                                                           'bond_flag': bond_flag,
@@ -1305,8 +1309,6 @@ class NmrVrptUtility:
                 list_id = int(sf_tag[0]['ID'])
 
                 data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
-                              {'name': 'Torsion_angle_name', 'type': 'str', 'alt_name': 'angle_type', 'default': 'UNNAMED'},
-                              {'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'},
                               {'name': 'Auth_asym_ID_1', 'type': 'str', 'alt_name': 'auth_asym_id_1'},
                               {'name': 'Auth_seq_ID_1', 'type': 'int', 'alt_name': 'auth_seq_id_1'},
                               {'name': 'Comp_ID_1', 'type': 'str', 'alt_name': 'comp_id_1'},
@@ -1330,6 +1332,8 @@ class NmrVrptUtility:
 
                 tags = self.__rR.getItemTags(lp_category)
 
+                has_target_angle_name = 'Torsion_angle_name' in tags
+                has_combination_id = 'Combination_ID' in tags
                 has_pdb_ins_code_1 = 'PDB_ins_code_1' in tags
                 has_pdb_ins_code_2 = 'PDB_ins_code_2' in tags
                 has_pdb_ins_code_3 = 'PDB_ins_code_3' in tags
@@ -1338,6 +1342,10 @@ class NmrVrptUtility:
                 has_upper_linear_limit = 'Angle_upper_linear_limit' in tags
                 has_target_val_err = 'Angle_target_val_err' in tags
 
+                if has_target_angle_name:
+                    data_items.append({'name': 'Torsion_angle_name', 'type': 'str', 'alt_name': 'angle_type', 'default': 'UNNAMED'})
+                if has_combination_id:
+                    data_items.append({'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'})
                 if has_pdb_ins_code_1:
                     data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1', 'default': '?'})
                 if has_pdb_ins_code_2:
@@ -1365,6 +1373,7 @@ class NmrVrptUtility:
                     if rest_key not in self.__dihedRestDict:
                         self.__dihedRestDict[rest_key] = []
 
+                    angle_type = r.get('angle_type', 'UNNAMED')
                     auth_asym_id_1 = r['auth_asym_id_1']
                     auth_asym_id_2 = r['auth_asym_id_2']
                     auth_asym_id_3 = r['auth_asym_id_3']
@@ -1412,8 +1421,8 @@ class NmrVrptUtility:
                                                                           atom_id_3, ins_code_3),
                                                            'atom_key_4': (auth_asym_id_4, auth_seq_id_4, comp_id_4,
                                                                           atom_id_4, ins_code_4),
-                                                           'combination_id': r['combination_id'],
-                                                           'angle_type': r['angle_type'],
+                                                           'combination_id': r.get('combination_id'),
+                                                           'angle_type': angle_type,
                                                            'lower_bound': lower_bound,
                                                            'upper_bound': upper_bound,
                                                            'target_value': target_value})
@@ -1488,7 +1497,6 @@ class NmrVrptUtility:
                     rdc_type = 'UNNAMED'
 
                 data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
-                              {'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'},
                               {'name': 'Auth_asym_ID_1', 'type': 'str', 'alt_name': 'auth_asym_id_1'},
                               {'name': 'Auth_seq_ID_1', 'type': 'int', 'alt_name': 'auth_seq_id_1'},
                               {'name': 'Comp_ID_1', 'type': 'str', 'alt_name': 'comp_id_1'},
@@ -1498,11 +1506,11 @@ class NmrVrptUtility:
                               {'name': 'Comp_ID_2', 'type': 'str', 'alt_name': 'comp_id_2'},
                               {'name': 'Atom_ID_2', 'type': 'str', 'alt_name': 'atom_id_2'},
                               {'name': 'Target_value', 'type': 'float', 'alt_name': 'target_value'},
-                              {'name': 'Target_value_uncertainty', 'type': 'abs-float', 'alt_name': 'target_value_uncertainty'}
                               ]
 
                 tags = self.__rR.getItemTags(lp_category)
 
+                has_combination_id = 'Combination_ID' in tags
                 has_pdb_ins_code_1 = 'PDB_ins_code_1' in tags
                 has_pdb_ins_code_2 = 'PDB_ins_code_2' in tags
                 has_val = 'RDC_val' in tags
@@ -1511,7 +1519,10 @@ class NmrVrptUtility:
                 has_upper_bound = 'RDC_upper_bound' in tags
                 has_lower_linear_limit = 'RDC_lower_linear_limit' in tags
                 has_upper_linear_limit = 'RDC_upper_linear_limit' in tags
+                has_target_val_uncertainty = 'Target_value_uncertainty' in tags
 
+                if has_combination_id:
+                    data_items.append({'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'})
                 if has_pdb_ins_code_1:
                     data_items.append({'name': 'PDB_ins_code_1', 'type': 'str', 'alt_name': 'ins_code_1', 'default': '?'})
                 if has_pdb_ins_code_2:
@@ -1528,6 +1539,8 @@ class NmrVrptUtility:
                     data_items.append({'name': 'RDC_lower_linear_limit', 'type': 'float', 'alt_name': 'lower_linear_limit'})
                 if has_upper_linear_limit:
                     data_items.append({'name': 'RDC_upper_linear_limit', 'type': 'float', 'alt_name': 'upper_linear_limit'})
+                if has_target_val_uncertainty:
+                    data_items.append({'name': 'Target_value_uncertainty', 'type': 'abs-float', 'alt_name': 'target_value_uncertainty'})
 
                 filter_items = [{'name': 'RDC_constraint_list_ID', 'type': 'int', 'value': list_id}]
 
@@ -1553,7 +1566,7 @@ class NmrVrptUtility:
                     ins_code_2 = r.get('ins_code_2', '?')
 
                     target_value = r['target_value']
-                    target_value_uncertainty = r['target_value_uncertainty']
+                    target_value_uncertainty = r.get('target_value_uncertainty')
                     value = r.get('value')
                     value_uncertainty = r.get('value_uncertainty')
                     lower_bound = r.get('lower_limit')
@@ -1594,7 +1607,7 @@ class NmrVrptUtility:
                                                                         atom_id_1, ins_code_1),
                                                          'atom_key_2': (auth_asym_id_2, auth_seq_id_2, comp_id_2,
                                                                         atom_id_2, ins_code_2),
-                                                         'combination_id': r['combination_id'],
+                                                         'combination_id': r.get('combination_id'),
                                                          'rdc_type': rdc_type,
                                                          'lower_bound': lower_bound,
                                                          'upper_bound': upper_bound,

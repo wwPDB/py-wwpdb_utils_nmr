@@ -299,6 +299,36 @@ def angle_error(lower_bound, upper_bound, target_value, angle):
     return min(angle_diff(upper_bound, angle), angle_diff(lower_bound, angle))
 
 
+def rdc_error(lower_bound, upper_bound, dist):
+    """ Return RDC outlier for given lower_bound and upper_bound.
+        @author: Masashi Yokochi
+        @note: identical to dist_error()
+    """
+    error = 0.0
+
+    if lower_bound is not None and upper_bound is not None:
+        if lower_bound <= dist <= upper_bound:
+            pass
+        elif dist > upper_bound:
+            error = abs(dist - upper_bound)
+        else:
+            error = abs(dist - lower_bound)
+
+    elif upper_bound is not None:
+        if dist <= upper_bound:
+            pass
+        elif dist > upper_bound:
+            error = abs(dist - upper_bound)
+
+    elif lower_bound is not None:
+        if lower_bound <= dist:
+            pass
+        else:
+            error = abs(dist - lower_bound)
+
+    return error
+
+
 def get_violated_model_ids(viol_per_model):
     return [m for m, err in viol_per_model.items() if err is not None and err > 0.0]
 
@@ -1332,7 +1362,7 @@ class NmrVrptUtility:
 
                 tags = self.__rR.getItemTags(lp_category)
 
-                has_target_angle_name = 'Torsion_angle_name' in tags
+                has_torsion_angle_name = 'Torsion_angle_name' in tags
                 has_combination_id = 'Combination_ID' in tags
                 has_pdb_ins_code_1 = 'PDB_ins_code_1' in tags
                 has_pdb_ins_code_2 = 'PDB_ins_code_2' in tags
@@ -1342,7 +1372,7 @@ class NmrVrptUtility:
                 has_upper_linear_limit = 'Angle_upper_linear_limit' in tags
                 has_target_val_err = 'Angle_target_val_err' in tags
 
-                if has_target_angle_name:
+                if has_torsion_angle_name:
                     data_items.append({'name': 'Torsion_angle_name', 'type': 'str', 'alt_name': 'angle_type', 'default': 'UNNAMED'})
                 if has_combination_id:
                     data_items.append({'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'})
@@ -1905,7 +1935,7 @@ class NmrVrptUtility:
                             atom_present = False
 
                         if atom_present:
-                            a = dihedral_angle(pos_1, pos_2, pos_3, pos_4)
+                            a = dihedral_angle(pos_1, pos_2, pos_3, pos_4) + 180.0
                             angle_list.append(a)
                         else:
                             self.__dihedRestUnmapped.append(rest_key)
@@ -1913,7 +1943,7 @@ class NmrVrptUtility:
                     error = None
 
                     if len(angle_list) > 0:
-                        avr_a = np.mean(np.array(angle_list))
+                        avr_a = np.mean(np.array(angle_list)) - 180.0
 
                         error = angle_error(lower_bound, upper_bound, target_value, avr_a)
 
@@ -2061,25 +2091,7 @@ class NmrVrptUtility:
                     if len(rdc_list) > 0:
                         avr_r = np.mean(np.array(rdc_list))
 
-                        if lower_bound is not None and upper_bound is not None:
-                            if lower_bound <= avr_r <= upper_bound:
-                                error = 0.0
-                            elif avr_r > upper_bound:
-                                error = abs(avr_r - upper_bound)
-                            else:
-                                error = abs(avr_r - lower_bound)
-
-                        elif upper_bound is not None:
-                            if avr_r <= upper_bound:
-                                error = 0.0
-                            elif avr_r > upper_bound:
-                                error = abs(avr_r - upper_bound)
-
-                        elif lower_bound is not None:
-                            if lower_bound <= avr_r:
-                                error = 0.0
-                            else:
-                                error = abs(avr_r - lower_bound)
+                        error = rdc_error(lower_bound, upper_bound, avr_r)
 
                     error_per_model[model_id] = error
 

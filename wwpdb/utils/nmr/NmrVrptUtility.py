@@ -162,6 +162,46 @@ def dist_inv_6_summed(r_list: [float]) -> float:
     return sum(r ** (-6.0) for r in r_list) ** (-1.0 / 6.0)
 
 
+def dist_target_values(target_value, target_value_uncertainty,
+                       lower_limit, upper_limit,
+                       lower_linear_limit, upper_linear_limit):
+    """ Return estimated distance target value, lower_bound, upper_bound.
+        @author: Masashi Yokochi
+    """
+
+    lower_bound, upper_bound = lower_limit, upper_limit
+
+    if lower_bound is None and upper_bound is None and lower_linear_limit is None and upper_linear_limit is None:
+        if target_value is None:
+            return None, lower_bound, upper_bound
+        if target_value is not None:
+            if target_value_uncertainty is not None:
+                lower_bound = target_value - target_value_uncertainty
+                upper_bound = target_value + target_value_uncertainty
+            else:
+                lower_bound = upper_bound = target_value
+
+    if lower_bound is None and lower_linear_limit is not None:
+        lower_bound = lower_linear_limit
+    if upper_bound is None and upper_linear_limit is not None:
+        upper_bound = upper_linear_limit
+
+    if lower_bound is not None:
+        lower_bound = max(lower_bound, 0.0)
+    if upper_bound is not None:
+        upper_bound = max(upper_bound, 0.0)
+
+    if target_value is None:
+        if lower_bound is not None and upper_bound is not None:
+            target_value = (lower_bound + upper_bound) / 2.0
+        elif lower_bound is not None:
+            target_value = lower_bound
+        elif upper_bound is not None:
+            target_value = upper_bound
+
+    return target_value, lower_bound, upper_bound
+
+
 def dist_error(lower_bound, upper_bound, dist):
     """ Return distance outlier for given lower_bound and upper_bound.
         @author: Masashi Yokochi
@@ -204,27 +244,29 @@ def angle_target_values(target_value, target_value_uncertainty,
                        (i.e. XPLOR-NIH/CNS exponent parameter (ed) equals 1)
     """
 
-    if lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+    lower_bound, upper_bound = lower_limit, upper_limit
+
+    if lower_bound is None and upper_bound is None and lower_linear_limit is None and upper_linear_limit is None:
 
         if target_value is None:
-            return None, lower_limit, upper_limit
+            return None, lower_bound, upper_bound
 
         if target_value_uncertainty is not None:
-            lower_limit = target_value - target_value_uncertainty
-            upper_limit = target_value + target_value_uncertainty
+            lower_bound = target_value - target_value_uncertainty
+            upper_bound = target_value + target_value_uncertainty
         else:
-            lower_limit = upper_limit = target_value
+            lower_bound = upper_bound = target_value
 
-    if lower_limit is None and lower_linear_limit is not None:
-        lower_limit = lower_linear_limit
-    if upper_limit is None and upper_linear_limit is not None:
-        upper_limit = upper_linear_limit
+    if lower_bound is None and lower_linear_limit is not None:
+        lower_bound = lower_linear_limit
+    if upper_bound is None and upper_linear_limit is not None:
+        upper_bound = upper_linear_limit
 
     if target_value is None:  # target values are not always filled (e.g. AMBER/CYANA dihedral angle restraints)
-        has_valid_lower_linear_limit = lower_limit is not None and lower_linear_limit is not None and lower_limit != lower_linear_limit
-        has_valid_upper_linear_limit = upper_limit is not None and upper_linear_limit is not None and upper_limit != upper_linear_limit
+        has_valid_lower_linear_limit = lower_bound is not None and lower_linear_limit is not None and lower_bound != lower_linear_limit
+        has_valid_upper_linear_limit = upper_bound is not None and upper_linear_limit is not None and upper_bound != upper_linear_limit
 
-        target_value_aclock = (lower_limit + upper_limit) / 2.0
+        target_value_aclock = (lower_bound + upper_bound) / 2.0
         target_value_clock = target_value_aclock + 180.0
         if target_value_clock >= 360.0:
             target_value_clock -= 360.0
@@ -233,25 +275,25 @@ def angle_target_values(target_value, target_value_uncertainty,
             target_value_vote_aclock = target_value_vote_clock = 0
 
             if has_valid_lower_linear_limit:
-                if angle_diff(lower_limit, target_value_aclock) < angle_diff(lower_linear_limit, target_value_aclock):
+                if angle_diff(lower_bound, target_value_aclock) < angle_diff(lower_linear_limit, target_value_aclock):
                     target_value_vote_aclock += 1
-                elif angle_diff(lower_limit, target_value_clock) < angle_diff(lower_linear_limit, target_value_clock):
+                elif angle_diff(lower_bound, target_value_clock) < angle_diff(lower_linear_limit, target_value_clock):
                     target_value_vote_clock += 1
             if has_valid_upper_linear_limit:
-                if angle_diff(upper_limit, target_value_aclock) < angle_diff(upper_linear_limit, target_value_aclock):
+                if angle_diff(upper_bound, target_value_aclock) < angle_diff(upper_linear_limit, target_value_aclock):
                     target_value_vote_aclock += 1
-                elif angle_diff(upper_limit, target_value_clock) < angle_diff(upper_linear_limit, target_value_clock):
+                elif angle_diff(upper_bound, target_value_clock) < angle_diff(upper_linear_limit, target_value_clock):
                     target_value_vote_clock += 1
 
             if target_value_vote_aclock + target_value_vote_clock == 0 or target_value_vote_aclock * target_value_vote_clock != 0:
-                return None, lower_limit, upper_limit
+                return None, lower_bound, upper_bound
 
             target_value = target_value_aclock if target_value_vote_aclock > target_value_vote_clock else target_value_clock
 
         else:  # estimate target value by comparing lower_limit and upper_limit value, CYANA)
-            target_value = target_value_aclock if lower_limit <= upper_limit else target_value_clock
+            target_value = target_value_aclock if lower_bound <= upper_bound else target_value_clock
 
-    return target_value, lower_limit, upper_limit
+    return target_value, lower_bound, upper_bound
 
 
 def angle_diff(x, y):
@@ -299,32 +341,74 @@ def angle_error(lower_bound, upper_bound, target_value, angle):
     return min(angle_diff(upper_bound, angle), angle_diff(lower_bound, angle))
 
 
-def rdc_error(lower_bound, upper_bound, dist):
+def rdc_target_values(target_value, target_value_uncertainty, value, value_uncertainty,
+                      lower_limit, upper_limit,
+                      lower_linear_limit, upper_linear_limit):
+    """ Return estimated RDC target value, lower_bound, upper_bound.
+        @author: Masashi Yokochi
+    """
+
+    lower_bound, upper_bound = lower_limit, upper_limit
+
+    if lower_bound is None and upper_bound is None and lower_linear_limit is None and upper_linear_limit is None:
+        if target_value is None and value is None:
+            return None, lower_bound, upper_bound
+        if target_value is not None:
+            if target_value_uncertainty is not None:
+                lower_bound = target_value - target_value_uncertainty
+                upper_bound = target_value + target_value_uncertainty
+            else:
+                lower_bound = upper_bound = target_value
+        else:
+            target_value = value
+            target_value_uncertainty = value_uncertainty
+            if target_value_uncertainty is not None:
+                lower_bound = target_value - target_value_uncertainty
+                upper_bound = target_value + target_value_uncertainty
+            else:
+                lower_bound = upper_bound = target_value
+
+    if lower_bound is None and lower_linear_limit is not None:
+        lower_bound = lower_linear_limit
+    if upper_bound is None and upper_linear_limit is not None:
+        upper_bound = upper_linear_limit
+
+    if target_value is None:
+        if lower_bound is not None and upper_bound is not None:
+            target_value = (lower_bound + upper_bound) / 2.0
+        elif lower_bound is not None:
+            target_value = lower_bound
+        elif upper_bound is not None:
+            target_value = upper_bound
+
+    return target_value, lower_bound, upper_bound
+
+
+def rdc_error(lower_bound, upper_bound, rdc):
     """ Return RDC outlier for given lower_bound and upper_bound.
         @author: Masashi Yokochi
-        @note: identical to dist_error()
     """
     error = 0.0
 
     if lower_bound is not None and upper_bound is not None:
-        if lower_bound <= dist <= upper_bound:
+        if lower_bound <= rdc <= upper_bound:
             pass
-        elif dist > upper_bound:
-            error = abs(dist - upper_bound)
+        elif rdc > upper_bound:
+            error = abs(rdc - upper_bound)
         else:
-            error = abs(dist - lower_bound)
+            error = abs(rdc - lower_bound)
 
     elif upper_bound is not None:
-        if dist <= upper_bound:
+        if rdc <= upper_bound:
             pass
-        elif dist > upper_bound:
-            error = abs(dist - upper_bound)
+        elif rdc > upper_bound:
+            error = abs(rdc - upper_bound)
 
     elif lower_bound is not None:
-        if lower_bound <= dist:
+        if lower_bound <= rdc:
             pass
         else:
-            error = abs(dist - lower_bound)
+            error = abs(rdc - lower_bound)
 
     return error
 
@@ -1149,6 +1233,8 @@ class NmrVrptUtility:
                 has_pdb_ins_code_2 = 'PDB_ins_code_2' in tags
                 has_target_val = 'Target_val' in tags
                 has_target_val_uncertainty = 'Target_val_uncertainty' in tags
+                has_lower_linear_limit = 'Lower_linear_limit' in tags
+                has_upper_linear_limit = 'Upper_linear_limit' in tags
 
                 if has_combination_id:
                     data_items.append({'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'})
@@ -1165,6 +1251,10 @@ class NmrVrptUtility:
                     data_items.append({'name': 'Target_val', 'type': 'float', 'alt_name': 'target_value'})
                 if has_target_val_uncertainty:
                     data_items.append({'name': 'Target_val_uncertainty', 'type': 'abs-float', 'alt_name': 'target_value_uncertainty'})
+                if has_lower_linear_limit:
+                    data_items.append({'name': 'Lower_linear_limit', 'type': 'float', 'alt_name': 'lower_linear_limit'})
+                if has_upper_linear_limit:
+                    data_items.append({'name': 'Upper_linear_limit', 'type': 'float', 'alt_name': 'upper_linear_limit'})
 
                 filter_items = [{'name': 'Gen_dist_constraint_list_ID', 'type': 'int', 'value': list_id}]
 
@@ -1190,6 +1280,10 @@ class NmrVrptUtility:
                     ins_code_2 = r.get('ins_code_2', '?')
                     target_value = r.get('target_value')
                     target_value_uncertainty = r.get('target_value_uncertainty')
+                    lower_limit = r['lower_limit']
+                    upper_limit = r['upper_limit']
+                    lower_linear_limit = r.get('lower_linear_limit')
+                    upper_linear_limit = r.get('upper_linear_limit')
 
                     offset = abs(auth_seq_id_1 - auth_seq_id_2)
 
@@ -1214,20 +1308,15 @@ class NmrVrptUtility:
                     else:
                         distance_sub_type = 'sidechain-sidechain'
 
-                    lower_bound = r['lower_limit']
-                    upper_bound = r['upper_limit']
+                    target_value, lower_bound, upper_bound =\
+                        dist_target_values(target_value, target_value_uncertainty,
+                                           lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
-                    if lower_bound is None and upper_bound is None:
-                        if target_value is None:
-                            self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
-                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
-                            skipped = True
-                            continue
-                        if target_value_uncertainty is not None:
-                            lower_bound = max(target_value - target_value_uncertainty, 0.0)
-                            upper_bound = target_value + target_value_uncertainty
-                        else:
-                            lower_bound = upper_bound = target_value
+                    if target_value is None:
+                        self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
+                                         f"{os.path.basename(self.__nmrDataPath)}.\n")
+                        skipped = True
+                        continue
 
                     atom_sels = [[{'chain_id': auth_asym_id_1,
                                    'seq_id': auth_seq_id_1,
@@ -1434,8 +1523,7 @@ class NmrVrptUtility:
 
                     target_value, lower_bound, upper_bound =\
                         angle_target_values(target_value, target_value_uncertainty,
-                                            lower_limit, upper_limit,
-                                            lower_linear_limit, upper_linear_limit)
+                                            lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
                         self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
@@ -1599,39 +1687,20 @@ class NmrVrptUtility:
                     target_value_uncertainty = r.get('target_value_uncertainty')
                     value = r.get('value')
                     value_uncertainty = r.get('value_uncertainty')
-                    lower_bound = r.get('lower_limit')
-                    upper_bound = r.get('upper_limit')
+                    lower_limit = r.get('lower_limit')
+                    upper_limit = r.get('upper_limit')
                     lower_linear_limit = r.get('lower_linear_limit')
                     upper_linear_limit = r.get('upper_linear_limit')
 
-                    if lower_bound is None and upper_bound is None and lower_linear_limit is None and upper_linear_limit is None:
-                        if target_value is None and value is None:
-                            self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
-                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
-                            skipped = True
-                            continue
-                        if target_value is not None:
-                            if target_value_uncertainty is not None:
-                                lower_bound = target_value - target_value_uncertainty
-                                upper_bound = target_value + target_value_uncertainty
-                            else:
-                                lower_bound = upper_bound = target_value
-                        else:
-                            target_value = value
-                            target_value_uncertainty = value_uncertainty
-                            if target_value_uncertainty is not None:
-                                lower_bound = target_value - target_value_uncertainty
-                                upper_bound = target_value + target_value_uncertainty
-                            else:
-                                lower_bound = upper_bound = target_value
+                    target_value, lower_bound, upper_bound =\
+                        rdc_target_values(target_value, target_value_uncertainty, value, value_uncertainty,
+                                          lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
-                    if lower_bound is None and lower_linear_limit is not None:
-                        lower_bound = lower_linear_limit
-                    if upper_bound is None and upper_linear_limit is not None:
-                        upper_bound = upper_linear_limit
-
-                    if target_value is None:  # target values are not always filled (e.g. AMBER dihedral restraints)
-                        target_value = (lower_bound + upper_bound) / 2.0
+                    if target_value is None:
+                        self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
+                                         f"{os.path.basename(self.__nmrDataPath)}.\n")
+                        skipped = True
+                        continue
 
                     self.__rdcRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, comp_id_1,
                                                                         atom_id_1, ins_code_1),

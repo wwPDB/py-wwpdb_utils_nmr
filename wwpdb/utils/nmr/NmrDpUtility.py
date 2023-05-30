@@ -47934,1024 +47934,1026 @@ class NmrDpUtility:
 
         # statistics
 
-        content_subtype = 'dist_restraint'
+        if self.__mr_sf_dict_holder is not None:
 
-        if content_subtype in self.__mr_sf_dict_holder:
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                if 'NOE_dist_averaging_method' in sf_item:
-                    cst_sf.add_tag('NOE_dist_averaging_method', sf_item['NOE_dist_averaging_method'])
-                    break
+            content_subtype = 'dist_restraint'
 
-            NOE_tot_num = 0
+            if content_subtype in self.__mr_sf_dict_holder:
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                    if 'NOE_dist_averaging_method' in sf_item:
+                        cst_sf.add_tag('NOE_dist_averaging_method', sf_item['NOE_dist_averaging_method'])
+                        break
 
-            NOE_intraresidue_tot_num = 0
-            NOE_sequential_tot_num = 0
-            NOE_medium_range_tot_num = 0
-            NOE_long_range_tot_num = 0
-            NOE_unique_tot_num = 0
-            NOE_intraresidue_unique_tot_num = 0
-            NOE_sequential_unique_tot_num = 0
-            NOE_medium_range_unique_tot_num = 0
-            NOE_long_range_unique_tot_num = 0
-            NOE_unamb_intramol_tot_num = 0
-            NOE_unamb_intermol_tot_num = 0
-            NOE_ambig_intramol_tot_num = 0
-            NOE_ambig_intermol_tot_num = 0
-            NOE_interentity_tot_num = 0
-            NOE_other_tot_num = 0
+                NOE_tot_num = 0
 
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                NOE_intraresidue_tot_num = 0
+                NOE_sequential_tot_num = 0
+                NOE_medium_range_tot_num = 0
+                NOE_long_range_tot_num = 0
+                NOE_unique_tot_num = 0
+                NOE_intraresidue_unique_tot_num = 0
+                NOE_sequential_unique_tot_num = 0
+                NOE_medium_range_unique_tot_num = 0
+                NOE_long_range_unique_tot_num = 0
+                NOE_unamb_intramol_tot_num = 0
+                NOE_unamb_intermol_tot_num = 0
+                NOE_ambig_intramol_tot_num = 0
+                NOE_ambig_intermol_tot_num = 0
+                NOE_interentity_tot_num = 0
+                NOE_other_tot_num = 0
 
-                sf = sf_item['saveframe']
-                sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
-
-                # MR parser for XPLOR-NIH/CNS/CHARMM already fills _Gen_dist_constraint.ID with genuine IDs
-                if not sf_framecode.startswith('XPLOR') and not sf_framecode.startswith('CNS') and not sf_framecode.startswith('CHARMM'):
-                    self.__updateGenDistConstIdInMrStr(sf_item)
-
-                potential_type = get_first_sf_tag(sf, 'Potential_type')
-                if 'lower' in potential_type:
-                    continue
-                constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                if 'NOE' in constraint_type:
-                    NOE_tot_num += sf_item['id']
-
-                    lp = sf_item['loop']
-
-                    item_names = self.item_names_in_ds_loop[file_type]
-                    id_col = lp.tags.index('ID')
-                    chain_id_1_col = lp.tags.index(item_names['chain_id_1'])
-                    chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
-                    seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
-                    seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
-                    comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
-                    comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
-                    atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
-                    atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
-                    try:
-                        member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
-                    except ValueError:
-                        member_logic_code_col = -1
-                    try:
-                        combination_id_col = lp.tags.index(item_names['combination_id'])
-                    except ValueError:
-                        combination_id_col = -1
-                    try:
-                        upper_limit_col = lp.tags.index(item_names['upper_limit'])
-                    except ValueError:
-                        upper_limit_col = -1
-
-                    prev_id = -1
-                    _atom1 = _atom2 = None
-
-                    for row in lp:
-                        _id = int(row[id_col])
-                        member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
-                        try:
-                            chain_id_1 = int(row[chain_id_1_col])
-                            chain_id_2 = int(row[chain_id_2_col])
-                            seq_id_1 = int(row[seq_id_1_col])
-                            seq_id_2 = int(row[seq_id_2_col])
-                        except (ValueError, TypeError):
-                            continue
-                        comp_id_1 = row[comp_id_1_col]
-                        comp_id_2 = row[comp_id_2_col]
-                        atom_id_1 = row[atom_id_1_col]
-                        atom_id_2 = row[atom_id_2_col]
-                        if atom_id_1 is None or atom_id_2 is None:
-                            continue
-                        if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
-                            atom1 = {'chain_id': chain_id_1,
-                                     'seq_id': seq_id_1,
-                                     'comp_id': comp_id_1,
-                                     'atom_id': atom_id_1}
-                            atom2 = {'chain_id': chain_id_2,
-                                     'seq_id': seq_id_2,
-                                     'comp_id': comp_id_2,
-                                     'atom_id': atom_id_2}
-                            if not isAmbigAtomSelection([_atom1, atom1], self.__csStat) and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
-                                prev_id, _atom1, _atom2 = _id, atom1, atom2
-                                continue
-                            _atom1, _atom2 = atom1, atom2
-
-                        prev_id = _id
-
-                        combination_id = row[combination_id_col] if combination_id_col != -1 else None
-                        upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
-
-                        offset = abs(seq_id_1 - seq_id_2)
-                        ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
-                        uniq = combination_id in emptyValue and not ambig
-
-                        if uniq:
-                            NOE_unique_tot_num += 1
-
-                        if chain_id_1 == chain_id_2:
-                            if uniq:
-                                NOE_unamb_intramol_tot_num += 1
-                            else:
-                                NOE_ambig_intramol_tot_num += 1
-                            if offset == 0:
-                                NOE_intraresidue_tot_num += 1
-                                if uniq:
-                                    NOE_intraresidue_unique_tot_num += 1
-                            elif offset == 1:
-                                NOE_sequential_tot_num += 1
-                                if uniq:
-                                    NOE_sequential_unique_tot_num += 1
-                            elif offset < 5:
-                                NOE_medium_range_tot_num += 1
-                                if uniq:
-                                    NOE_medium_range_unique_tot_num += 1
-                            else:
-                                NOE_long_range_tot_num += 1
-                                if uniq:
-                                    NOE_long_range_unique_tot_num += 1
-                        else:
-                            NOE_interentity_tot_num += 1
-                            if uniq:
-                                NOE_unamb_intermol_tot_num += 1
-                            else:
-                                NOE_ambig_intermol_tot_num += 1
-
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                sf = sf_item['saveframe']
-                potential_type = get_first_sf_tag(sf, 'Potential_type')
-                if 'lower' in potential_type:
-                    continue
-                constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                if constraint_type in ('paramagnetic relaxation',
-                                       'photo cidnp',
-                                       'chemical shift perturbation',
-                                       'mutation',
-                                       'symmetry'):
-                    NOE_other_tot_num += sf_item['id']
-
-            if NOE_tot_num > 0:
-                cst_sf.add_tag('NOE_tot_num', NOE_tot_num)
-                cst_sf.add_tag('NOE_intraresidue_tot_num', NOE_intraresidue_tot_num)
-                cst_sf.add_tag('NOE_sequential_tot_num', NOE_sequential_tot_num)
-                cst_sf.add_tag('NOE_medium_range_tot_num', NOE_medium_range_tot_num)
-                cst_sf.add_tag('NOE_long_range_tot_num', NOE_long_range_tot_num)
-                cst_sf.add_tag('NOE_unique_tot_num', NOE_unique_tot_num)
-                cst_sf.add_tag('NOE_intraresidue_unique_tot_num', NOE_intraresidue_unique_tot_num)
-                cst_sf.add_tag('NOE_sequential_unique_tot_num', NOE_sequential_unique_tot_num)
-                cst_sf.add_tag('NOE_medium_range_unique_tot_num', NOE_medium_range_unique_tot_num)
-                cst_sf.add_tag('NOE_long_range_unique_tot_num', NOE_long_range_unique_tot_num)
-                cst_sf.add_tag('NOE_unamb_intramol_tot_num', NOE_unamb_intramol_tot_num)
-                cst_sf.add_tag('NOE_unamb_intermol_tot_num', NOE_unamb_intermol_tot_num)
-                cst_sf.add_tag('NOE_ambig_intramol_tot_num', NOE_ambig_intramol_tot_num)
-                cst_sf.add_tag('NOE_ambig_intermol_tot_num', NOE_ambig_intermol_tot_num)
-                cst_sf.add_tag('NOE_interentity_tot_num', NOE_interentity_tot_num)
-                cst_sf.add_tag('NOE_other_tot_num', NOE_other_tot_num)
-
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                if 'ROE_dist_averaging_method' in sf_item:
-                    cst_sf.add_tag('ROE_dist_averaging_method', sf_item['ROE_dist_averaging_method'])
-                    break
-
-            ROE_tot_num = 0
-
-            ROE_intraresidue_tot_num = 0
-            ROE_sequential_tot_num = 0
-            ROE_medium_range_tot_num = 0
-            ROE_long_range_tot_num = 0
-            ROE_unambig_intramol_tot_num = 0
-            ROE_unambig_intermol_tot_num = 0
-            ROE_ambig_intramol_tot_num = 0
-            ROE_ambig_intermol_tot_num = 0
-            ROE_other_tot_num = 0
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                sf = sf_item['saveframe']
-                potential_type = get_first_sf_tag(sf, 'Potential_type')
-                if 'lower' in potential_type:
-                    continue
-                constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                if 'ROE' in constraint_type:
-                    ROE_tot_num += sf_item['id']
-
-                    lp = sf_item['loop']
-
-                    item_names = self.item_names_in_ds_loop[file_type]
-                    id_col = lp.tags.index('ID')
-                    chain_id_1_col = lp.tags.index(item_names['chain_id_1'])
-                    chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
-                    seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
-                    seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
-                    comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
-                    comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
-                    atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
-                    atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
-                    try:
-                        member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
-                    except ValueError:
-                        member_logic_code_col = -1
-                    try:
-                        combination_id_col = lp.tags.index(item_names['combination_id'])
-                    except ValueError:
-                        combination_id_col = -1
-                    try:
-                        upper_limit_col = lp.tags.index(item_names['upper_limit'])
-                    except ValueError:
-                        upper_limit_col = -1
-
-                    prev_id = -1
-                    _atom1 = _atom2 = None
-
-                    for row in lp:
-                        _id = int(row[id_col])
-                        member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
-                        try:
-                            chain_id_1 = int(row[chain_id_1_col])
-                            chain_id_2 = int(row[chain_id_2_col])
-                            seq_id_1 = int(row[seq_id_1_col])
-                            seq_id_2 = int(row[seq_id_2_col])
-                        except (ValueError, TypeError):
-                            continue
-                        comp_id_1 = row[comp_id_1_col]
-                        comp_id_2 = row[comp_id_2_col]
-                        atom_id_1 = row[atom_id_1_col]
-                        atom_id_2 = row[atom_id_2_col]
-                        if atom_id_1 is None or atom_id_2 is None:
-                            continue
-                        if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
-                            atom1 = {'chain_id': chain_id_1,
-                                     'seq_id': seq_id_1,
-                                     'comp_id': comp_id_1,
-                                     'atom_id': atom_id_1}
-                            atom2 = {'chain_id': chain_id_2,
-                                     'seq_id': seq_id_2,
-                                     'comp_id': comp_id_2,
-                                     'atom_id': atom_id_2}
-                            if not isAmbigAtomSelection([_atom1, atom1], self.__csStat) and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
-                                prev_id, _atom1, _atom2 = _id, atom1, atom2
-                                continue
-                            _atom1, _atom2 = atom1, atom2
-
-                        prev_id = _id
-
-                        combination_id = row[combination_id_col] if combination_id_col != -1 else None
-                        upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
-
-                        offset = abs(seq_id_1 - seq_id_2)
-                        ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
-                        uniq = combination_id in emptyValue and not ambig
-
-                        if chain_id_1 == chain_id_2:
-                            if uniq:
-                                ROE_unambig_intramol_tot_num += 1
-                            else:
-                                ROE_ambig_intramol_tot_num += 1
-                            if offset == 0:
-                                ROE_intraresidue_tot_num += 1
-                            elif offset == 1:
-                                ROE_sequential_tot_num += 1
-                            elif offset < 5:
-                                ROE_medium_range_tot_num += 1
-                            else:
-                                ROE_long_range_tot_num += 1
-                        else:
-                            ROE_other_tot_num += 1
-                            if uniq:
-                                ROE_unambig_intermol_tot_num += 1
-                            else:
-                                ROE_ambig_intermol_tot_num += 1
-
-            if ROE_tot_num > 0:
-                cst_sf.add_tag('ROE_tot_num', ROE_tot_num)
-                cst_sf.add_tag('ROE_intraresidue_tot_num', ROE_intraresidue_tot_num)
-                cst_sf.add_tag('ROE_sequential_tot_num', ROE_sequential_tot_num)
-                cst_sf.add_tag('ROE_medium_range_tot_num', ROE_medium_range_tot_num)
-                cst_sf.add_tag('ROE_long_range_tot_num', ROE_long_range_tot_num)
-                cst_sf.add_tag('ROE_unambig_intramol_tot_num', ROE_unambig_intramol_tot_num)
-                cst_sf.add_tag('ROE_unambig_intermol_tot_num', ROE_unambig_intermol_tot_num)
-                cst_sf.add_tag('ROE_ambig_intramol_tot_num', ROE_ambig_intramol_tot_num)
-                cst_sf.add_tag('ROE_ambig_intermol_tot_num', ROE_ambig_intermol_tot_num)
-                cst_sf.add_tag('ROE_other_tot_num', ROE_other_tot_num)
-
-        content_subtype = 'dihed_restraint'
-
-        auth_to_entity_type = self.__caC['auth_to_entity_type']
-
-        Dihedral_angle_tot_num = 0
-        if content_subtype in self.__mr_sf_dict_holder:
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                Dihedral_angle_tot_num += sf_item['id']
-
-        if Dihedral_angle_tot_num > 0:
-            cst_sf.add_tag('Dihedral_angle_tot_num', Dihedral_angle_tot_num)
-
-        Protein_dihedral_angle_tot_num = 0
-
-        Protein_phi_angle_tot_num = 0
-        Protein_psi_angle_tot_num = 0
-        Protein_chi_one_angle_tot_num = 0
-        Protein_other_angle_tot_num = 0
-        if content_subtype in self.__mr_sf_dict_holder:
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                self.__updateTorsionAngleConstIdInMrStr(sf_item)
-
-                lp = sf_item['loop']
-
-                id_col = lp.tags.index('ID')
-                auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
-                auth_seq_id_col = lp.tags.index('Auth_seq_ID_2')
-                auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
-                angle_name_col = lp.tags.index('Torsion_angle_name')
-
-                _protein_angles = 0
-                _other_angles = 0
-
-                _protein_bb_angles = 0
-                _protein_oth_angles = 0
-
-                prev_id = -1
-                for row in lp:
-                    _id = int(row[id_col])
-                    if _id == prev_id:
-                        continue
-                    prev_id = _id
-                    auth_asym_id = row[auth_asym_id_col]
-                    try:
-                        auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
-                    except (ValueError, TypeError):
-                        continue
-                    auth_comp_id = row[auth_comp_id_col]
-                    angle_name = row[angle_name_col]
-                    if angle_name is None:
-                        continue
-
-                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
-
-                    if seq_key in auth_to_entity_type:
-                        entity_type = auth_to_entity_type[seq_key]
-
-                        if 'peptide' in entity_type:
-                            Protein_dihedral_angle_tot_num += 1
-                            _protein_angles += 1
-                            if angle_name == 'PHI':
-                                Protein_phi_angle_tot_num += 1
-                                _protein_bb_angles += 1
-                            elif angle_name == 'PSI':
-                                Protein_psi_angle_tot_num += 1
-                                _protein_bb_angles += 1
-                            elif angle_name == 'CHI1':
-                                Protein_chi_one_angle_tot_num += 1
-                                _protein_oth_angles += 1
-                            else:
-                                Protein_other_angle_tot_num += 1
-                                _protein_oth_angles += 1
-                        else:
-                            _other_angles += 1
-
-                if _protein_angles > 0 and _other_angles == 0:
-                    sf_item['constraint_type'] = 'protein dihedral angle'
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
 
                     sf = sf_item['saveframe']
+                    sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
-                    if 'jcoup_restraint' not in self.__mr_sf_dict_holder:
-                        set_sf_tag(sf, 'Constraint_type', 'backbone chemical shifts')
+                    # MR parser for XPLOR-NIH/CNS/CHARMM already fills _Gen_dist_constraint.ID with genuine IDs
+                    if not sf_framecode.startswith('XPLOR') and not sf_framecode.startswith('CNS') and not sf_framecode.startswith('CHARMM'):
+                        self.__updateGenDistConstIdInMrStr(sf_item)
 
-                    else:
+                    potential_type = get_first_sf_tag(sf, 'Potential_type')
+                    if 'lower' in potential_type:
+                        continue
+                    constraint_type = get_first_sf_tag(sf, 'Constraint_type')
+                    if 'NOE' in constraint_type:
+                        NOE_tot_num += sf_item['id']
 
-                        _protein_jcoups = 0
-                        _protein_bb_jcoups = 0
-                        _protein_oth_jcoups = 0
+                        lp = sf_item['loop']
 
-                        for _sf_item in self.__mr_sf_dict_holder['jcoup_restraint']:
+                        item_names = self.item_names_in_ds_loop[file_type]
+                        id_col = lp.tags.index('ID')
+                        chain_id_1_col = lp.tags.index(item_names['chain_id_1'])
+                        chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
+                        seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
+                        seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
+                        comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
+                        comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
+                        atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
+                        atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
+                        try:
+                            member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
+                        except ValueError:
+                            member_logic_code_col = -1
+                        try:
+                            combination_id_col = lp.tags.index(item_names['combination_id'])
+                        except ValueError:
+                            combination_id_col = -1
+                        try:
+                            upper_limit_col = lp.tags.index(item_names['upper_limit'])
+                        except ValueError:
+                            upper_limit_col = -1
 
-                            _lp = _sf_item['loop']
+                        prev_id = -1
+                        _atom1 = _atom2 = None
 
-                            auth_asym_id_col = _lp.tags.index('Auth_asym_ID_2')
-                            auth_seq_id_col = _lp.tags.index('Auth_seq_ID_2')
-                            auth_comp_id_col = _lp.tags.index('Auth_comp_ID_2')
-                            atom_id_1_col = _lp.tags.index('Atom_ID_1')
-                            atom_id_4_col = _lp.tags.index('Atom_ID_4')
-
-                            for _row in _lp:
-                                auth_asym_id = _row[auth_asym_id_col]
-                                try:
-                                    auth_seq_id = int(_row[auth_seq_id_col])
-                                except (ValueError, TypeError):
+                        for row in lp:
+                            _id = int(row[id_col])
+                            member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
+                            try:
+                                chain_id_1 = int(row[chain_id_1_col])
+                                chain_id_2 = int(row[chain_id_2_col])
+                                seq_id_1 = int(row[seq_id_1_col])
+                                seq_id_2 = int(row[seq_id_2_col])
+                            except (ValueError, TypeError):
+                                continue
+                            comp_id_1 = row[comp_id_1_col]
+                            comp_id_2 = row[comp_id_2_col]
+                            atom_id_1 = row[atom_id_1_col]
+                            atom_id_2 = row[atom_id_2_col]
+                            if atom_id_1 is None or atom_id_2 is None:
+                                continue
+                            if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
+                                atom1 = {'chain_id': chain_id_1,
+                                         'seq_id': seq_id_1,
+                                         'comp_id': comp_id_1,
+                                         'atom_id': atom_id_1}
+                                atom2 = {'chain_id': chain_id_2,
+                                         'seq_id': seq_id_2,
+                                         'comp_id': comp_id_2,
+                                         'atom_id': atom_id_2}
+                                if not isAmbigAtomSelection([_atom1, atom1], self.__csStat) and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                    prev_id, _atom1, _atom2 = _id, atom1, atom2
                                     continue
-                                auth_comp_id = _row[auth_comp_id_col]
-                                atom_id_1 = _row[atom_id_1_col]
-                                atom_id_4 = _row[atom_id_4_col]
+                                _atom1, _atom2 = atom1, atom2
 
-                                seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+                            prev_id = _id
 
-                                if seq_key in auth_to_entity_type:
-                                    entity_type = auth_to_entity_type[seq_key]
+                            combination_id = row[combination_id_col] if combination_id_col != -1 else None
+                            upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
 
-                                    if 'peptide' in entity_type:
-                                        _protein_jcoups += 1
-                                        if 'H' in (atom_id_1, atom_id_4):
-                                            _protein_bb_jcoups += 1
-                                        else:
-                                            _protein_oth_jcoups += 1
+                            offset = abs(seq_id_1 - seq_id_2)
+                            ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
+                            uniq = combination_id in emptyValue and not ambig
 
-                        if (_protein_bb_angles > 0 and _protein_oth_angles == 0 and _protein_bb_jcoups > 0 and _protein_oth_jcoups == 0)\
-                           or (_protein_bb_angles > 0 and _protein_oth_angles > 0 and _protein_bb_jcoups > 0 and _protein_oth_jcoups > 0)\
-                           or (_protein_bb_angles == 0 and _protein_oth_angles > 0 and _protein_bb_jcoups == 0 and _protein_oth_jcoups > 0):
-                            set_sf_tag(sf, 'Constraint_type', 'J-couplings')
+                            if uniq:
+                                NOE_unique_tot_num += 1
 
-                        elif _protein_jcoups == 0:
+                            if chain_id_1 == chain_id_2:
+                                if uniq:
+                                    NOE_unamb_intramol_tot_num += 1
+                                else:
+                                    NOE_ambig_intramol_tot_num += 1
+                                if offset == 0:
+                                    NOE_intraresidue_tot_num += 1
+                                    if uniq:
+                                        NOE_intraresidue_unique_tot_num += 1
+                                elif offset == 1:
+                                    NOE_sequential_tot_num += 1
+                                    if uniq:
+                                        NOE_sequential_unique_tot_num += 1
+                                elif offset < 5:
+                                    NOE_medium_range_tot_num += 1
+                                    if uniq:
+                                        NOE_medium_range_unique_tot_num += 1
+                                else:
+                                    NOE_long_range_tot_num += 1
+                                    if uniq:
+                                        NOE_long_range_unique_tot_num += 1
+                            else:
+                                NOE_interentity_tot_num += 1
+                                if uniq:
+                                    NOE_unamb_intermol_tot_num += 1
+                                else:
+                                    NOE_ambig_intermol_tot_num += 1
+
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                    sf = sf_item['saveframe']
+                    potential_type = get_first_sf_tag(sf, 'Potential_type')
+                    if 'lower' in potential_type:
+                        continue
+                    constraint_type = get_first_sf_tag(sf, 'Constraint_type')
+                    if constraint_type in ('paramagnetic relaxation',
+                                           'photo cidnp',
+                                           'chemical shift perturbation',
+                                           'mutation',
+                                           'symmetry'):
+                        NOE_other_tot_num += sf_item['id']
+
+                if NOE_tot_num > 0:
+                    cst_sf.add_tag('NOE_tot_num', NOE_tot_num)
+                    cst_sf.add_tag('NOE_intraresidue_tot_num', NOE_intraresidue_tot_num)
+                    cst_sf.add_tag('NOE_sequential_tot_num', NOE_sequential_tot_num)
+                    cst_sf.add_tag('NOE_medium_range_tot_num', NOE_medium_range_tot_num)
+                    cst_sf.add_tag('NOE_long_range_tot_num', NOE_long_range_tot_num)
+                    cst_sf.add_tag('NOE_unique_tot_num', NOE_unique_tot_num)
+                    cst_sf.add_tag('NOE_intraresidue_unique_tot_num', NOE_intraresidue_unique_tot_num)
+                    cst_sf.add_tag('NOE_sequential_unique_tot_num', NOE_sequential_unique_tot_num)
+                    cst_sf.add_tag('NOE_medium_range_unique_tot_num', NOE_medium_range_unique_tot_num)
+                    cst_sf.add_tag('NOE_long_range_unique_tot_num', NOE_long_range_unique_tot_num)
+                    cst_sf.add_tag('NOE_unamb_intramol_tot_num', NOE_unamb_intramol_tot_num)
+                    cst_sf.add_tag('NOE_unamb_intermol_tot_num', NOE_unamb_intermol_tot_num)
+                    cst_sf.add_tag('NOE_ambig_intramol_tot_num', NOE_ambig_intramol_tot_num)
+                    cst_sf.add_tag('NOE_ambig_intermol_tot_num', NOE_ambig_intermol_tot_num)
+                    cst_sf.add_tag('NOE_interentity_tot_num', NOE_interentity_tot_num)
+                    cst_sf.add_tag('NOE_other_tot_num', NOE_other_tot_num)
+
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                    if 'ROE_dist_averaging_method' in sf_item:
+                        cst_sf.add_tag('ROE_dist_averaging_method', sf_item['ROE_dist_averaging_method'])
+                        break
+
+                ROE_tot_num = 0
+
+                ROE_intraresidue_tot_num = 0
+                ROE_sequential_tot_num = 0
+                ROE_medium_range_tot_num = 0
+                ROE_long_range_tot_num = 0
+                ROE_unambig_intramol_tot_num = 0
+                ROE_unambig_intermol_tot_num = 0
+                ROE_ambig_intramol_tot_num = 0
+                ROE_ambig_intermol_tot_num = 0
+                ROE_other_tot_num = 0
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                    sf = sf_item['saveframe']
+                    potential_type = get_first_sf_tag(sf, 'Potential_type')
+                    if 'lower' in potential_type:
+                        continue
+                    constraint_type = get_first_sf_tag(sf, 'Constraint_type')
+                    if 'ROE' in constraint_type:
+                        ROE_tot_num += sf_item['id']
+
+                        lp = sf_item['loop']
+
+                        item_names = self.item_names_in_ds_loop[file_type]
+                        id_col = lp.tags.index('ID')
+                        chain_id_1_col = lp.tags.index(item_names['chain_id_1'])
+                        chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
+                        seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
+                        seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
+                        comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
+                        comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
+                        atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
+                        atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
+                        try:
+                            member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
+                        except ValueError:
+                            member_logic_code_col = -1
+                        try:
+                            combination_id_col = lp.tags.index(item_names['combination_id'])
+                        except ValueError:
+                            combination_id_col = -1
+                        try:
+                            upper_limit_col = lp.tags.index(item_names['upper_limit'])
+                        except ValueError:
+                            upper_limit_col = -1
+
+                        prev_id = -1
+                        _atom1 = _atom2 = None
+
+                        for row in lp:
+                            _id = int(row[id_col])
+                            member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
+                            try:
+                                chain_id_1 = int(row[chain_id_1_col])
+                                chain_id_2 = int(row[chain_id_2_col])
+                                seq_id_1 = int(row[seq_id_1_col])
+                                seq_id_2 = int(row[seq_id_2_col])
+                            except (ValueError, TypeError):
+                                continue
+                            comp_id_1 = row[comp_id_1_col]
+                            comp_id_2 = row[comp_id_2_col]
+                            atom_id_1 = row[atom_id_1_col]
+                            atom_id_2 = row[atom_id_2_col]
+                            if atom_id_1 is None or atom_id_2 is None:
+                                continue
+                            if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
+                                atom1 = {'chain_id': chain_id_1,
+                                         'seq_id': seq_id_1,
+                                         'comp_id': comp_id_1,
+                                         'atom_id': atom_id_1}
+                                atom2 = {'chain_id': chain_id_2,
+                                         'seq_id': seq_id_2,
+                                         'comp_id': comp_id_2,
+                                         'atom_id': atom_id_2}
+                                if not isAmbigAtomSelection([_atom1, atom1], self.__csStat) and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                    prev_id, _atom1, _atom2 = _id, atom1, atom2
+                                    continue
+                                _atom1, _atom2 = atom1, atom2
+
+                            prev_id = _id
+
+                            combination_id = row[combination_id_col] if combination_id_col != -1 else None
+                            upper_limit = float(row[upper_limit_col]) if upper_limit_col != -1 and row[upper_limit_col] not in emptyValue else None
+
+                            offset = abs(seq_id_1 - seq_id_2)
+                            ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
+                            uniq = combination_id in emptyValue and not ambig
+
+                            if chain_id_1 == chain_id_2:
+                                if uniq:
+                                    ROE_unambig_intramol_tot_num += 1
+                                else:
+                                    ROE_ambig_intramol_tot_num += 1
+                                if offset == 0:
+                                    ROE_intraresidue_tot_num += 1
+                                elif offset == 1:
+                                    ROE_sequential_tot_num += 1
+                                elif offset < 5:
+                                    ROE_medium_range_tot_num += 1
+                                else:
+                                    ROE_long_range_tot_num += 1
+                            else:
+                                ROE_other_tot_num += 1
+                                if uniq:
+                                    ROE_unambig_intermol_tot_num += 1
+                                else:
+                                    ROE_ambig_intermol_tot_num += 1
+
+                if ROE_tot_num > 0:
+                    cst_sf.add_tag('ROE_tot_num', ROE_tot_num)
+                    cst_sf.add_tag('ROE_intraresidue_tot_num', ROE_intraresidue_tot_num)
+                    cst_sf.add_tag('ROE_sequential_tot_num', ROE_sequential_tot_num)
+                    cst_sf.add_tag('ROE_medium_range_tot_num', ROE_medium_range_tot_num)
+                    cst_sf.add_tag('ROE_long_range_tot_num', ROE_long_range_tot_num)
+                    cst_sf.add_tag('ROE_unambig_intramol_tot_num', ROE_unambig_intramol_tot_num)
+                    cst_sf.add_tag('ROE_unambig_intermol_tot_num', ROE_unambig_intermol_tot_num)
+                    cst_sf.add_tag('ROE_ambig_intramol_tot_num', ROE_ambig_intramol_tot_num)
+                    cst_sf.add_tag('ROE_ambig_intermol_tot_num', ROE_ambig_intermol_tot_num)
+                    cst_sf.add_tag('ROE_other_tot_num', ROE_other_tot_num)
+
+            content_subtype = 'dihed_restraint'
+
+            auth_to_entity_type = self.__caC['auth_to_entity_type']
+
+            Dihedral_angle_tot_num = 0
+            if content_subtype in self.__mr_sf_dict_holder:
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                    Dihedral_angle_tot_num += sf_item['id']
+
+            if Dihedral_angle_tot_num > 0:
+                cst_sf.add_tag('Dihedral_angle_tot_num', Dihedral_angle_tot_num)
+
+            Protein_dihedral_angle_tot_num = 0
+
+            Protein_phi_angle_tot_num = 0
+            Protein_psi_angle_tot_num = 0
+            Protein_chi_one_angle_tot_num = 0
+            Protein_other_angle_tot_num = 0
+            if content_subtype in self.__mr_sf_dict_holder:
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                    self.__updateTorsionAngleConstIdInMrStr(sf_item)
+
+                    lp = sf_item['loop']
+
+                    id_col = lp.tags.index('ID')
+                    auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
+                    auth_seq_id_col = lp.tags.index('Auth_seq_ID_2')
+                    auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
+                    angle_name_col = lp.tags.index('Torsion_angle_name')
+
+                    _protein_angles = 0
+                    _other_angles = 0
+
+                    _protein_bb_angles = 0
+                    _protein_oth_angles = 0
+
+                    prev_id = -1
+                    for row in lp:
+                        _id = int(row[id_col])
+                        if _id == prev_id:
+                            continue
+                        prev_id = _id
+                        auth_asym_id = row[auth_asym_id_col]
+                        try:
+                            auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                        except (ValueError, TypeError):
+                            continue
+                        auth_comp_id = row[auth_comp_id_col]
+                        angle_name = row[angle_name_col]
+                        if angle_name is None:
+                            continue
+
+                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+
+                        if seq_key in auth_to_entity_type:
+                            entity_type = auth_to_entity_type[seq_key]
+
+                            if 'peptide' in entity_type:
+                                Protein_dihedral_angle_tot_num += 1
+                                _protein_angles += 1
+                                if angle_name == 'PHI':
+                                    Protein_phi_angle_tot_num += 1
+                                    _protein_bb_angles += 1
+                                elif angle_name == 'PSI':
+                                    Protein_psi_angle_tot_num += 1
+                                    _protein_bb_angles += 1
+                                elif angle_name == 'CHI1':
+                                    Protein_chi_one_angle_tot_num += 1
+                                    _protein_oth_angles += 1
+                                else:
+                                    Protein_other_angle_tot_num += 1
+                                    _protein_oth_angles += 1
+                            else:
+                                _other_angles += 1
+
+                    if _protein_angles > 0 and _other_angles == 0:
+                        sf_item['constraint_type'] = 'protein dihedral angle'
+
+                        sf = sf_item['saveframe']
+
+                        if 'jcoup_restraint' not in self.__mr_sf_dict_holder:
                             set_sf_tag(sf, 'Constraint_type', 'backbone chemical shifts')
 
                         else:
+
+                            _protein_jcoups = 0
+                            _protein_bb_jcoups = 0
+                            _protein_oth_jcoups = 0
+
+                            for _sf_item in self.__mr_sf_dict_holder['jcoup_restraint']:
+
+                                _lp = _sf_item['loop']
+
+                                auth_asym_id_col = _lp.tags.index('Auth_asym_ID_2')
+                                auth_seq_id_col = _lp.tags.index('Auth_seq_ID_2')
+                                auth_comp_id_col = _lp.tags.index('Auth_comp_ID_2')
+                                atom_id_1_col = _lp.tags.index('Atom_ID_1')
+                                atom_id_4_col = _lp.tags.index('Atom_ID_4')
+
+                                for _row in _lp:
+                                    auth_asym_id = _row[auth_asym_id_col]
+                                    try:
+                                        auth_seq_id = int(_row[auth_seq_id_col])
+                                    except (ValueError, TypeError):
+                                        continue
+                                    auth_comp_id = _row[auth_comp_id_col]
+                                    atom_id_1 = _row[atom_id_1_col]
+                                    atom_id_4 = _row[atom_id_4_col]
+
+                                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+
+                                    if seq_key in auth_to_entity_type:
+                                        entity_type = auth_to_entity_type[seq_key]
+
+                                        if 'peptide' in entity_type:
+                                            _protein_jcoups += 1
+                                            if 'H' in (atom_id_1, atom_id_4):
+                                                _protein_bb_jcoups += 1
+                                            else:
+                                                _protein_oth_jcoups += 1
+
+                            if (_protein_bb_angles > 0 and _protein_oth_angles == 0 and _protein_bb_jcoups > 0 and _protein_oth_jcoups == 0)\
+                               or (_protein_bb_angles > 0 and _protein_oth_angles > 0 and _protein_bb_jcoups > 0 and _protein_oth_jcoups > 0)\
+                               or (_protein_bb_angles == 0 and _protein_oth_angles > 0 and _protein_bb_jcoups == 0 and _protein_oth_jcoups > 0):
+                                set_sf_tag(sf, 'Constraint_type', 'J-couplings')
+
+                            elif _protein_jcoups == 0:
+                                set_sf_tag(sf, 'Constraint_type', 'backbone chemical shifts')
+
+                            else:
+                                set_sf_tag(sf, 'Constraint_type', 'unknown')
+
+            if Protein_dihedral_angle_tot_num > 0:
+                cst_sf.add_tag('Protein_dihedral_angle_tot_num', Protein_dihedral_angle_tot_num)
+                cst_sf.add_tag('Protein_phi_angle_tot_num', Protein_phi_angle_tot_num)
+                cst_sf.add_tag('Protein_psi_angle_tot_num', Protein_psi_angle_tot_num)
+                cst_sf.add_tag('Protein_chi_one_angle_tot_num', Protein_chi_one_angle_tot_num)
+                cst_sf.add_tag('Protein_other_angle_tot_num', Protein_other_angle_tot_num)
+
+            NA_dihedral_angle_tot_num = 0
+
+            NA_alpha_angle_tot_num = 0
+            NA_beta_angle_tot_num = 0
+            NA_gamma_angle_tot_num = 0
+            NA_delta_angle_tot_num = 0
+            NA_epsilon_angle_tot_num = 0
+            NA_chi_angle_tot_num = 0
+            NA_other_angle_tot_num = 0
+            NA_amb_dihedral_angle_tot_num = 0
+            if content_subtype in self.__mr_sf_dict_holder:
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+
+                    lp = sf_item['loop']
+
+                    id_col = lp.tags.index('ID')
+                    auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
+                    auth_seq_id_col = lp.tags.index('Auth_seq_ID_2')
+                    auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
+                    angle_name_col = lp.tags.index('Torsion_angle_name')
+
+                    _na_angles = 0
+                    _other_angles = 0
+
+                    prev_id = -1
+                    for row in lp:
+                        _id = int(row[id_col])
+                        if _id == prev_id:
+                            continue
+                        prev_id = _id
+                        auth_asym_id = row[auth_asym_id_col]
+                        try:
+                            auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                        except (ValueError, TypeError):
+                            continue
+                        auth_comp_id = row[auth_comp_id_col]
+                        angle_name = row[angle_name_col]
+                        if angle_name is None:
+                            continue
+
+                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+
+                        if seq_key in auth_to_entity_type:
+                            entity_type = auth_to_entity_type[seq_key]
+
+                            if 'nucleotide' in entity_type:
+                                NA_dihedral_angle_tot_num += 1
+                                _na_angles += 1
+                                if angle_name == 'ALPHA':
+                                    NA_alpha_angle_tot_num += 1
+                                elif angle_name == 'BETA':
+                                    NA_beta_angle_tot_num += 1
+                                elif angle_name == 'GAMMA':
+                                    NA_gamma_angle_tot_num += 1
+                                elif angle_name == 'DELTA':
+                                    NA_delta_angle_tot_num += 1
+                                elif angle_name == 'EPSILON':
+                                    NA_epsilon_angle_tot_num += 1
+                                elif angle_name == 'CHI':
+                                    NA_chi_angle_tot_num += 1
+                                elif angle_name == 'PPA':
+                                    NA_amb_dihedral_angle_tot_num += 1
+                                else:
+                                    NA_other_angle_tot_num += 1
+                            else:
+                                _other_angles += 1
+
+                    if _na_angles > 0 and _other_angles == 0:
+                        sf_item['constraint_type'] = 'nucleic acid dihedral angle'
+
+                        sf = sf_item['saveframe']
+
+                        if 'jcoup_restraint' not in self.__mr_sf_dict_holder:
                             set_sf_tag(sf, 'Constraint_type', 'unknown')
 
-        if Protein_dihedral_angle_tot_num > 0:
-            cst_sf.add_tag('Protein_dihedral_angle_tot_num', Protein_dihedral_angle_tot_num)
-            cst_sf.add_tag('Protein_phi_angle_tot_num', Protein_phi_angle_tot_num)
-            cst_sf.add_tag('Protein_psi_angle_tot_num', Protein_psi_angle_tot_num)
-            cst_sf.add_tag('Protein_chi_one_angle_tot_num', Protein_chi_one_angle_tot_num)
-            cst_sf.add_tag('Protein_other_angle_tot_num', Protein_other_angle_tot_num)
+                        else:
 
-        NA_dihedral_angle_tot_num = 0
+                            _na_jcoups = 0
 
-        NA_alpha_angle_tot_num = 0
-        NA_beta_angle_tot_num = 0
-        NA_gamma_angle_tot_num = 0
-        NA_delta_angle_tot_num = 0
-        NA_epsilon_angle_tot_num = 0
-        NA_chi_angle_tot_num = 0
-        NA_other_angle_tot_num = 0
-        NA_amb_dihedral_angle_tot_num = 0
-        if content_subtype in self.__mr_sf_dict_holder:
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                            for _sf_item in self.__mr_sf_dict_holder['jcoup_restraint']:
 
-                lp = sf_item['loop']
+                                _lp = _sf_item['loop']
 
-                id_col = lp.tags.index('ID')
-                auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
-                auth_seq_id_col = lp.tags.index('Auth_seq_ID_2')
-                auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
-                angle_name_col = lp.tags.index('Torsion_angle_name')
+                                auth_asym_id_col = _lp.tags.index('Auth_asym_ID_2')
+                                auth_seq_id_col = _lp.tags.index('Auth_seq_ID_2')
+                                auth_comp_id_col = _lp.tags.index('Auth_comp_ID_2')
 
-                _na_angles = 0
-                _other_angles = 0
+                                for _row in _lp:
+                                    auth_asym_id = _row[auth_asym_id_col]
+                                    try:
+                                        auth_seq_id = int(_row[auth_seq_id_col])
+                                    except (ValueError, TypeError):
+                                        continue
+                                    auth_comp_id = _row[auth_comp_id_col]
 
-                prev_id = -1
-                for row in lp:
-                    _id = int(row[id_col])
-                    if _id == prev_id:
-                        continue
-                    prev_id = _id
-                    auth_asym_id = row[auth_asym_id_col]
-                    try:
-                        auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
-                    except (ValueError, TypeError):
-                        continue
-                    auth_comp_id = row[auth_comp_id_col]
-                    angle_name = row[angle_name_col]
-                    if angle_name is None:
-                        continue
+                                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
-                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+                                    if seq_key in auth_to_entity_type:
+                                        entity_type = auth_to_entity_type[seq_key]
 
-                    if seq_key in auth_to_entity_type:
-                        entity_type = auth_to_entity_type[seq_key]
+                                        if 'nucleotide' in entity_type:
+                                            _na_jcoups += 1
 
-                        if 'nucleotide' in entity_type:
-                            NA_dihedral_angle_tot_num += 1
-                            _na_angles += 1
-                            if angle_name == 'ALPHA':
-                                NA_alpha_angle_tot_num += 1
-                            elif angle_name == 'BETA':
-                                NA_beta_angle_tot_num += 1
-                            elif angle_name == 'GAMMA':
-                                NA_gamma_angle_tot_num += 1
-                            elif angle_name == 'DELTA':
-                                NA_delta_angle_tot_num += 1
-                            elif angle_name == 'EPSILON':
-                                NA_epsilon_angle_tot_num += 1
-                            elif angle_name == 'CHI':
-                                NA_chi_angle_tot_num += 1
-                            elif angle_name == 'PPA':
-                                NA_amb_dihedral_angle_tot_num += 1
+                            set_sf_tag(sf, 'Constraint_type', 'J-couplings' if _na_jcoups > 0 else 'unknown')
+
+            if NA_dihedral_angle_tot_num > 0:
+                cst_sf.add_tag('NA_dihedral_angle_tot_num', NA_dihedral_angle_tot_num)
+                cst_sf.add_tag('NA_alpha_angle_tot_num', NA_alpha_angle_tot_num)
+                cst_sf.add_tag('NA_beta_angle_tot_num', NA_beta_angle_tot_num)
+                cst_sf.add_tag('NA_gamma_angle_tot_num', NA_gamma_angle_tot_num)
+                cst_sf.add_tag('NA_delta_angle_tot_num', NA_delta_angle_tot_num)
+                cst_sf.add_tag('NA_epsilon_angle_tot_num', NA_epsilon_angle_tot_num)
+                cst_sf.add_tag('NA_chi_angle_tot_num', NA_chi_angle_tot_num)
+                cst_sf.add_tag('NA_other_angle_tot_num', NA_other_angle_tot_num)
+                cst_sf.add_tag('NA_amb_dihedral_angle_tot_num', NA_amb_dihedral_angle_tot_num)
+
+            if content_subtype in self.__mr_sf_dict_holder:
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+
+                    lp = sf_item['loop']
+
+                    id_col = lp.tags.index('ID')
+                    auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
+                    auth_seq_id_col = lp.tags.index('Auth_seq_ID_2')
+                    auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
+                    angle_name_col = lp.tags.index('Torsion_angle_name')
+
+                    _br_angles = 0
+                    _other_angles = 0
+
+                    prev_id = -1
+                    for row in lp:
+                        _id = int(row[id_col])
+                        if _id == prev_id:
+                            continue
+                        prev_id = _id
+                        auth_asym_id = row[auth_asym_id_col]
+                        try:
+                            auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
+                        except (ValueError, TypeError):
+                            continue
+                        auth_comp_id = row[auth_comp_id_col]
+                        angle_name = row[angle_name_col]
+                        if angle_name is None:
+                            continue
+
+                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+
+                        if seq_key in auth_to_entity_type:
+                            entity_type = auth_to_entity_type[seq_key]
+
+                            if 'saccharide' in entity_type:
+                                _br_angles += 1
                             else:
-                                NA_other_angle_tot_num += 1
+                                _other_angles += 1
+
+                    if _br_angles > 0 and _other_angles == 0:
+                        sf_item['constraint_type'] = 'saccaride dihedral angle'
+
+                        sf = sf_item['saveframe']
+
+                        if 'jcoup_restraint' not in self.__mr_sf_dict_holder:
+                            set_sf_tag(sf, 'Constraint_type', 'unknown')
+
                         else:
-                            _other_angles += 1
 
-                if _na_angles > 0 and _other_angles == 0:
-                    sf_item['constraint_type'] = 'nucleic acid dihedral angle'
+                            _br_jcoups = 0
 
-                    sf = sf_item['saveframe']
+                            for _sf_item in self.__mr_sf_dict_holder['jcoup_restraint']:
 
-                    if 'jcoup_restraint' not in self.__mr_sf_dict_holder:
-                        set_sf_tag(sf, 'Constraint_type', 'unknown')
+                                _lp = _sf_item['loop']
 
-                    else:
+                                auth_asym_id_col = _lp.tags.index('Auth_asym_ID_2')
+                                auth_seq_id_col = _lp.tags.index('Auth_seq_ID_2')
+                                auth_comp_id_col = _lp.tags.index('Auth_comp_ID_2')
 
-                        _na_jcoups = 0
+                                for _row in _lp:
+                                    auth_asym_id = _row[auth_asym_id_col]
+                                    try:
+                                        auth_seq_id = int(_row[auth_seq_id_col])
+                                    except (ValueError, TypeError):
+                                        continue
+                                    auth_comp_id = _row[auth_comp_id_col]
 
-                        for _sf_item in self.__mr_sf_dict_holder['jcoup_restraint']:
+                                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
-                            _lp = _sf_item['loop']
+                                    if seq_key in auth_to_entity_type:
+                                        entity_type = auth_to_entity_type[seq_key]
 
-                            auth_asym_id_col = _lp.tags.index('Auth_asym_ID_2')
-                            auth_seq_id_col = _lp.tags.index('Auth_seq_ID_2')
-                            auth_comp_id_col = _lp.tags.index('Auth_comp_ID_2')
+                                        if 'saccharide' in entity_type:
+                                            _br_jcoups += 1
 
-                            for _row in _lp:
-                                auth_asym_id = _row[auth_asym_id_col]
-                                try:
-                                    auth_seq_id = int(_row[auth_seq_id_col])
-                                except (ValueError, TypeError):
-                                    continue
-                                auth_comp_id = _row[auth_comp_id_col]
+                            set_sf_tag(sf, 'Constraint_type', 'J-couplings' if _br_jcoups > 0 else 'unknown')
 
-                                seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+            content_subtype = 'rdc_restraint'
 
-                                if seq_key in auth_to_entity_type:
-                                    entity_type = auth_to_entity_type[seq_key]
+            RDC_tot_num = 0
 
-                                    if 'nucleotide' in entity_type:
-                                        _na_jcoups += 1
+            RDC_HH_tot_num = 0
+            RDC_HNC_tot_num = 0
+            RDC_NH_tot_num = 0
+            RDC_CC_tot_num = 0
+            RDC_CN_i_1_tot_num = 0
+            RDC_CAHA_tot_num = 0
+            RDC_HNHA_tot_num = 0
+            RDC_HNHA_i_1_tot_num = 0
+            RDC_CAC_tot_num = 0
+            RDC_CAN_tot_num = 0
+            RDC_other_tot_num = 0
 
-                        set_sf_tag(sf, 'Constraint_type', 'J-couplings' if _na_jcoups > 0 else 'unknown')
+            RDC_intraresidue_tot_num = 0
+            RDC_sequential_tot_num = 0
+            RDC_medium_range_tot_num = 0
+            RDC_long_range_tot_num = 0
 
-        if NA_dihedral_angle_tot_num > 0:
-            cst_sf.add_tag('NA_dihedral_angle_tot_num', NA_dihedral_angle_tot_num)
-            cst_sf.add_tag('NA_alpha_angle_tot_num', NA_alpha_angle_tot_num)
-            cst_sf.add_tag('NA_beta_angle_tot_num', NA_beta_angle_tot_num)
-            cst_sf.add_tag('NA_gamma_angle_tot_num', NA_gamma_angle_tot_num)
-            cst_sf.add_tag('NA_delta_angle_tot_num', NA_delta_angle_tot_num)
-            cst_sf.add_tag('NA_epsilon_angle_tot_num', NA_epsilon_angle_tot_num)
-            cst_sf.add_tag('NA_chi_angle_tot_num', NA_chi_angle_tot_num)
-            cst_sf.add_tag('NA_other_angle_tot_num', NA_other_angle_tot_num)
-            cst_sf.add_tag('NA_amb_dihedral_angle_tot_num', NA_amb_dihedral_angle_tot_num)
+            RDC_unambig_intramol_tot_num = 0
+            RDC_unambig_intermol_tot_num = 0
+            RDC_ambig_intramol_tot_num = 0
+            RDC_ambig_intermol_tot_num = 0
+            RDC_intermol_tot_num = 0
 
-        if content_subtype in self.__mr_sf_dict_holder:
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+            if content_subtype in self.__mr_sf_dict_holder:
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
 
-                lp = sf_item['loop']
+                    RDC_tot_num += sf_item['id']
 
-                id_col = lp.tags.index('ID')
-                auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
-                auth_seq_id_col = lp.tags.index('Auth_seq_ID_2')
-                auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
-                angle_name_col = lp.tags.index('Torsion_angle_name')
+                    lp = sf_item['loop']
 
-                _br_angles = 0
-                _other_angles = 0
-
-                prev_id = -1
-                for row in lp:
-                    _id = int(row[id_col])
-                    if _id == prev_id:
-                        continue
-                    prev_id = _id
-                    auth_asym_id = row[auth_asym_id_col]
+                    item_names = self.item_names_in_rdc_loop[file_type]
+                    id_col = lp.tags.index('ID')
+                    chain_id_1_col = lp.tags.index(item_names['chain_id_1'])
+                    chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
+                    seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
+                    seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
+                    comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
+                    atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
+                    atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
                     try:
-                        auth_seq_id = int(row[auth_seq_id_col]) if row[auth_seq_id_col] not in emptyValue else None
-                    except (ValueError, TypeError):
-                        continue
-                    auth_comp_id = row[auth_comp_id_col]
-                    angle_name = row[angle_name_col]
-                    if angle_name is None:
-                        continue
+                        combination_id_col = lp.tags.index(item_names['combination_id'])
+                    except ValueError:
+                        combination_id_col = -1
 
-                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+                    prev_id = -1
+                    for row in lp:
+                        _id = int(row[id_col])
+                        if _id == prev_id:
+                            continue
+                        prev_id = _id
+                        try:
+                            chain_id_1 = int(row[chain_id_1_col])
+                            chain_id_2 = int(row[chain_id_2_col])
+                            seq_id_1 = int(row[seq_id_1_col])
+                            seq_id_2 = int(row[seq_id_2_col])
+                        except (ValueError, TypeError):
+                            continue
+                        comp_id_1 = row[comp_id_1_col]
+                        atom_id_1 = row[atom_id_1_col]
+                        atom_id_2 = row[atom_id_2_col]
+                        if atom_id_1 is None or atom_id_2 is None:
+                            continue
+                        combination_id = row[combination_id_col] if combination_id_col != -1 else None
 
-                    if seq_key in auth_to_entity_type:
-                        entity_type = auth_to_entity_type[seq_key]
+                        vector = {atom_id_1, atom_id_2}
+                        offset = abs(seq_id_1 - seq_id_2)
 
-                        if 'saccharide' in entity_type:
-                            _br_angles += 1
-                        else:
-                            _other_angles += 1
-
-                if _br_angles > 0 and _other_angles == 0:
-                    sf_item['constraint_type'] = 'saccaride dihedral angle'
-
-                    sf = sf_item['saveframe']
-
-                    if 'jcoup_restraint' not in self.__mr_sf_dict_holder:
-                        set_sf_tag(sf, 'Constraint_type', 'unknown')
-
-                    else:
-
-                        _br_jcoups = 0
-
-                        for _sf_item in self.__mr_sf_dict_holder['jcoup_restraint']:
-
-                            _lp = _sf_item['loop']
-
-                            auth_asym_id_col = _lp.tags.index('Auth_asym_ID_2')
-                            auth_seq_id_col = _lp.tags.index('Auth_seq_ID_2')
-                            auth_comp_id_col = _lp.tags.index('Auth_comp_ID_2')
-
-                            for _row in _lp:
-                                auth_asym_id = _row[auth_asym_id_col]
-                                try:
-                                    auth_seq_id = int(_row[auth_seq_id_col])
-                                except (ValueError, TypeError):
-                                    continue
-                                auth_comp_id = _row[auth_comp_id_col]
-
-                                seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
-
-                                if seq_key in auth_to_entity_type:
-                                    entity_type = auth_to_entity_type[seq_key]
-
-                                    if 'saccharide' in entity_type:
-                                        _br_jcoups += 1
-
-                        set_sf_tag(sf, 'Constraint_type', 'J-couplings' if _br_jcoups > 0 else 'unknown')
-
-        content_subtype = 'rdc_restraint'
-
-        RDC_tot_num = 0
-
-        RDC_HH_tot_num = 0
-        RDC_HNC_tot_num = 0
-        RDC_NH_tot_num = 0
-        RDC_CC_tot_num = 0
-        RDC_CN_i_1_tot_num = 0
-        RDC_CAHA_tot_num = 0
-        RDC_HNHA_tot_num = 0
-        RDC_HNHA_i_1_tot_num = 0
-        RDC_CAC_tot_num = 0
-        RDC_CAN_tot_num = 0
-        RDC_other_tot_num = 0
-
-        RDC_intraresidue_tot_num = 0
-        RDC_sequential_tot_num = 0
-        RDC_medium_range_tot_num = 0
-        RDC_long_range_tot_num = 0
-
-        RDC_unambig_intramol_tot_num = 0
-        RDC_unambig_intermol_tot_num = 0
-        RDC_ambig_intramol_tot_num = 0
-        RDC_ambig_intermol_tot_num = 0
-        RDC_intermol_tot_num = 0
-
-        if content_subtype in self.__mr_sf_dict_holder:
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-
-                RDC_tot_num += sf_item['id']
-
-                lp = sf_item['loop']
-
-                item_names = self.item_names_in_rdc_loop[file_type]
-                id_col = lp.tags.index('ID')
-                chain_id_1_col = lp.tags.index(item_names['chain_id_1'])
-                chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
-                seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
-                seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
-                comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
-                atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
-                atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
-                try:
-                    combination_id_col = lp.tags.index(item_names['combination_id'])
-                except ValueError:
-                    combination_id_col = -1
-
-                prev_id = -1
-                for row in lp:
-                    _id = int(row[id_col])
-                    if _id == prev_id:
-                        continue
-                    prev_id = _id
-                    try:
-                        chain_id_1 = int(row[chain_id_1_col])
-                        chain_id_2 = int(row[chain_id_2_col])
-                        seq_id_1 = int(row[seq_id_1_col])
-                        seq_id_2 = int(row[seq_id_2_col])
-                    except (ValueError, TypeError):
-                        continue
-                    comp_id_1 = row[comp_id_1_col]
-                    atom_id_1 = row[atom_id_1_col]
-                    atom_id_2 = row[atom_id_2_col]
-                    if atom_id_1 is None or atom_id_2 is None:
-                        continue
-                    combination_id = row[combination_id_col] if combination_id_col != -1 else None
-
-                    vector = {atom_id_1, atom_id_2}
-                    offset = abs(seq_id_1 - seq_id_2)
-
-                    if chain_id_1 == chain_id_2:
-                        if vector == {'H', 'C'} and offset == 1:
-                            RDC_HNC_tot_num += 1
-                        elif vector == {'H', 'N'} and offset == 0:
-                            RDC_NH_tot_num += 1
-                        elif vector == {'C', 'N'} and offset == 1:
-                            RDC_CN_i_1_tot_num += 1
-                        elif vector == {'CA', 'HA'} and offset == 0:
-                            RDC_CAHA_tot_num += 1
-                        elif vector == {'H', 'HA'} and offset == 0:
-                            RDC_HNHA_tot_num += 1
-                        elif vector == {'H', 'HA'} and offset == 1:
-                            RDC_HNHA_i_1_tot_num += 1
-                        elif vector == {'CA', 'C'} and offset == 0:
-                            RDC_CAC_tot_num += 1
-                        elif vector == {'CA', 'N'} and offset == 0:
-                            RDC_CAN_tot_num += 1
-                        elif atom_id_1[0] == atom_id_2[0]:
-                            if atom_id_1[0] in protonBeginCode:
-                                RDC_HH_tot_num += 1
-                            elif atom_id_1[0] == 'C':
-                                RDC_CC_tot_num += 1
+                        if chain_id_1 == chain_id_2:
+                            if vector == {'H', 'C'} and offset == 1:
+                                RDC_HNC_tot_num += 1
+                            elif vector == {'H', 'N'} and offset == 0:
+                                RDC_NH_tot_num += 1
+                            elif vector == {'C', 'N'} and offset == 1:
+                                RDC_CN_i_1_tot_num += 1
+                            elif vector == {'CA', 'HA'} and offset == 0:
+                                RDC_CAHA_tot_num += 1
+                            elif vector == {'H', 'HA'} and offset == 0:
+                                RDC_HNHA_tot_num += 1
+                            elif vector == {'H', 'HA'} and offset == 1:
+                                RDC_HNHA_i_1_tot_num += 1
+                            elif vector == {'CA', 'C'} and offset == 0:
+                                RDC_CAC_tot_num += 1
+                            elif vector == {'CA', 'N'} and offset == 0:
+                                RDC_CAN_tot_num += 1
+                            elif atom_id_1[0] == atom_id_2[0]:
+                                if atom_id_1[0] in protonBeginCode:
+                                    RDC_HH_tot_num += 1
+                                elif atom_id_1[0] == 'C':
+                                    RDC_CC_tot_num += 1
+                                else:
+                                    RDC_other_tot_num += 1
+                            elif offset == 0 and comp_id_1 == 'TRP' and vector == {'HE1', 'NE1'}:
+                                RDC_NH_tot_num += 1
+                            elif offset == 0 and comp_id_1 == 'ARG' and vector == {'HE', 'NE'}:
+                                RDC_NH_tot_num += 1
                             else:
                                 RDC_other_tot_num += 1
-                        elif offset == 0 and comp_id_1 == 'TRP' and vector == {'HE1', 'NE1'}:
-                            RDC_NH_tot_num += 1
-                        elif offset == 0 and comp_id_1 == 'ARG' and vector == {'HE', 'NE'}:
-                            RDC_NH_tot_num += 1
+
+                        if chain_id_1 == chain_id_2:
+                            if offset == 0:
+                                RDC_intraresidue_tot_num += 1
+                            elif offset == 1:
+                                RDC_sequential_tot_num += 1
+                            elif offset < 5:
+                                RDC_medium_range_tot_num += 1
+                            else:
+                                RDC_long_range_tot_num += 1
+                            if combination_id in emptyValue:
+                                RDC_unambig_intramol_tot_num += 1
+                            else:
+                                RDC_ambig_intramol_tot_num += 1
+
                         else:
-                            RDC_other_tot_num += 1
+                            RDC_intermol_tot_num += 1
+                            if combination_id in emptyValue:
+                                RDC_unambig_intermol_tot_num += 1
+                            else:
+                                RDC_ambig_intermol_tot_num += 1
 
-                    if chain_id_1 == chain_id_2:
-                        if offset == 0:
-                            RDC_intraresidue_tot_num += 1
-                        elif offset == 1:
-                            RDC_sequential_tot_num += 1
-                        elif offset < 5:
-                            RDC_medium_range_tot_num += 1
-                        else:
-                            RDC_long_range_tot_num += 1
-                        if combination_id in emptyValue:
-                            RDC_unambig_intramol_tot_num += 1
-                        else:
-                            RDC_ambig_intramol_tot_num += 1
+            if RDC_tot_num > 0:
+                cst_sf.add_tag('RDC_tot_num', RDC_tot_num)
+                cst_sf.add_tag('RDC_HH_tot_num', RDC_HH_tot_num)
+                cst_sf.add_tag('RDC_HNC_tot_num', RDC_HNC_tot_num)
+                cst_sf.add_tag('RDC_NH_tot_num', RDC_NH_tot_num)
+                cst_sf.add_tag('RDC_CC_tot_num', RDC_CC_tot_num)
+                cst_sf.add_tag('RDC_CN_i_1_tot_num', RDC_CN_i_1_tot_num)
+                cst_sf.add_tag('RDC_CAHA_tot_num', RDC_CAHA_tot_num)
+                cst_sf.add_tag('RDC_HNHA_tot_num', RDC_HNHA_tot_num)
+                cst_sf.add_tag('RDC_HNHA_i_1_tot_num', RDC_HNHA_i_1_tot_num)
+                cst_sf.add_tag('RDC_CAC_tot_num', RDC_CAC_tot_num)
+                cst_sf.add_tag('RDC_CAN_tot_num', RDC_CAN_tot_num)
+                cst_sf.add_tag('RDC_other_tot_num', RDC_other_tot_num)
+                cst_sf.add_tag('RDC_intraresidue_tot_num', RDC_intraresidue_tot_num)
+                cst_sf.add_tag('RDC_sequential_tot_num', RDC_sequential_tot_num)
+                cst_sf.add_tag('RDC_medium_range_tot_num', RDC_medium_range_tot_num)
+                cst_sf.add_tag('RDC_long_range_tot_num', RDC_long_range_tot_num)
+                cst_sf.add_tag('RDC_unambig_intramol_tot_num', RDC_unambig_intramol_tot_num)
+                cst_sf.add_tag('RDC_unambig_intermol_tot_num', RDC_unambig_intermol_tot_num)
+                cst_sf.add_tag('RDC_ambig_intramol_tot_num', RDC_ambig_intramol_tot_num)
+                cst_sf.add_tag('RDC_ambig_intermol_tot_num', RDC_ambig_intermol_tot_num)
+                cst_sf.add_tag('RDC_intermol_tot_num', RDC_intermol_tot_num)
 
-                    else:
-                        RDC_intermol_tot_num += 1
-                        if combination_id in emptyValue:
-                            RDC_unambig_intermol_tot_num += 1
-                        else:
-                            RDC_ambig_intermol_tot_num += 1
+            content_subtype = 'dist_restraint'
 
-        if RDC_tot_num > 0:
-            cst_sf.add_tag('RDC_tot_num', RDC_tot_num)
-            cst_sf.add_tag('RDC_HH_tot_num', RDC_HH_tot_num)
-            cst_sf.add_tag('RDC_HNC_tot_num', RDC_HNC_tot_num)
-            cst_sf.add_tag('RDC_NH_tot_num', RDC_NH_tot_num)
-            cst_sf.add_tag('RDC_CC_tot_num', RDC_CC_tot_num)
-            cst_sf.add_tag('RDC_CN_i_1_tot_num', RDC_CN_i_1_tot_num)
-            cst_sf.add_tag('RDC_CAHA_tot_num', RDC_CAHA_tot_num)
-            cst_sf.add_tag('RDC_HNHA_tot_num', RDC_HNHA_tot_num)
-            cst_sf.add_tag('RDC_HNHA_i_1_tot_num', RDC_HNHA_i_1_tot_num)
-            cst_sf.add_tag('RDC_CAC_tot_num', RDC_CAC_tot_num)
-            cst_sf.add_tag('RDC_CAN_tot_num', RDC_CAN_tot_num)
-            cst_sf.add_tag('RDC_other_tot_num', RDC_other_tot_num)
-            cst_sf.add_tag('RDC_intraresidue_tot_num', RDC_intraresidue_tot_num)
-            cst_sf.add_tag('RDC_sequential_tot_num', RDC_sequential_tot_num)
-            cst_sf.add_tag('RDC_medium_range_tot_num', RDC_medium_range_tot_num)
-            cst_sf.add_tag('RDC_long_range_tot_num', RDC_long_range_tot_num)
-            cst_sf.add_tag('RDC_unambig_intramol_tot_num', RDC_unambig_intramol_tot_num)
-            cst_sf.add_tag('RDC_unambig_intermol_tot_num', RDC_unambig_intermol_tot_num)
-            cst_sf.add_tag('RDC_ambig_intramol_tot_num', RDC_ambig_intramol_tot_num)
-            cst_sf.add_tag('RDC_ambig_intermol_tot_num', RDC_ambig_intermol_tot_num)
-            cst_sf.add_tag('RDC_intermol_tot_num', RDC_intermol_tot_num)
-
-        content_subtype = 'dist_restraint'
-
-        hbond_pairs = set()
-        if content_subtype in self.__mr_sf_dict_holder:
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                sf = sf_item['saveframe']
-                potential_type = get_first_sf_tag(sf, 'Potential_type')
-                if 'lower' in potential_type:
-                    continue
-                constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                if constraint_type != 'hydrogen bond':
-                    continue
-
-                lp = sf_item['loop']
-
-                item_names = self.item_names_in_ds_loop[file_type]
-                chain_id_1_col = lp.tags.index(item_names['chain_id_1'])
-                chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
-                seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
-                seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
-                comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
-                comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
-                atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
-                atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
-
-                for row in lp:
-                    try:
-                        chain_id_1 = int(row[chain_id_1_col])
-                        chain_id_2 = int(row[chain_id_2_col])
-                        seq_id_1 = int(row[seq_id_1_col])
-                        seq_id_2 = int(row[seq_id_2_col])
-                    except (ValueError, TypeError):
+            hbond_pairs = set()
+            if content_subtype in self.__mr_sf_dict_holder:
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                    sf = sf_item['saveframe']
+                    potential_type = get_first_sf_tag(sf, 'Potential_type')
+                    if 'lower' in potential_type:
                         continue
-                    comp_id_1 = row[comp_id_1_col]
-                    comp_id_2 = row[comp_id_2_col]
-                    atom_id_1 = row[atom_id_1_col]
-                    atom_id_2 = row[atom_id_2_col]
-                    if atom_id_1 is None or atom_id_2 is None:
+                    constraint_type = get_first_sf_tag(sf, 'Constraint_type')
+                    if constraint_type != 'hydrogen bond':
                         continue
-                    if atom_id_1[0] in protonBeginCode:
-                        if self.__ccU.updateChemCompDict(comp_id_1):
-                            bonded_atom_id_1 = self.__ccU.getBondedAtoms(comp_id_1, atom_id_1)
-                            if len(bonded_atom_id_1) == 0:
-                                continue
-                            if any(_row for _row in lp
-                                   if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_1
-                                       and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_1
-                                       and _row[atom_id_1_col] == bonded_atom_id_1[0])
-                                   or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_1
-                                       and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_1
-                                       and _row[atom_id_2_col] == bonded_atom_id_1[0])):
-                                continue
-                    if atom_id_2[0] in protonBeginCode:
-                        if self.__ccU.updateChemCompDict(comp_id_2):
-                            bonded_atom_id_2 = self.__ccU.getBondedAtoms(comp_id_2, atom_id_2)
-                            if len(bonded_atom_id_2) == 0:
-                                continue
-                            if any(_row for _row in lp
-                                   if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_2
-                                       and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_2
-                                       and _row[atom_id_1_col] == bonded_atom_id_2[0])
-                                   or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_2
-                                       and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_2
-                                       and _row[atom_id_2_col] == bonded_atom_id_2[0])):
-                                continue
-                    p1 = (chain_id_1, seq_id_1, atom_id_1)
-                    p2 = (chain_id_2, seq_id_2, atom_id_2)
-                    hbond_pair = sorted([p1, p2], key=itemgetter(0, 1, 2))
-                    hbond_pairs.add(str(hbond_pair))
 
-        H_bonds_constrained_tot_num = len(hbond_pairs)
-        if H_bonds_constrained_tot_num > 0:
-            cst_sf.add_tag('H_bonds_constrained_tot_num', H_bonds_constrained_tot_num)
+                    lp = sf_item['loop']
 
-        ssbond_pairs = set()
-        if content_subtype in self.__mr_sf_dict_holder:
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                sf = sf_item['saveframe']
-                potential_type = get_first_sf_tag(sf, 'Potential_type')
-                if 'lower' in potential_type:
-                    continue
-                constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                if constraint_type != 'disulfide bond':
-                    continue
+                    item_names = self.item_names_in_ds_loop[file_type]
+                    chain_id_1_col = lp.tags.index(item_names['chain_id_1'])
+                    chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
+                    seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
+                    seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
+                    comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
+                    comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
+                    atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
+                    atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
 
-                lp = sf_item['loop']
+                    for row in lp:
+                        try:
+                            chain_id_1 = int(row[chain_id_1_col])
+                            chain_id_2 = int(row[chain_id_2_col])
+                            seq_id_1 = int(row[seq_id_1_col])
+                            seq_id_2 = int(row[seq_id_2_col])
+                        except (ValueError, TypeError):
+                            continue
+                        comp_id_1 = row[comp_id_1_col]
+                        comp_id_2 = row[comp_id_2_col]
+                        atom_id_1 = row[atom_id_1_col]
+                        atom_id_2 = row[atom_id_2_col]
+                        if atom_id_1 is None or atom_id_2 is None:
+                            continue
+                        if atom_id_1[0] in protonBeginCode:
+                            if self.__ccU.updateChemCompDict(comp_id_1):
+                                bonded_atom_id_1 = self.__ccU.getBondedAtoms(comp_id_1, atom_id_1)
+                                if len(bonded_atom_id_1) == 0:
+                                    continue
+                                if any(_row for _row in lp
+                                       if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_1
+                                           and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_1
+                                           and _row[atom_id_1_col] == bonded_atom_id_1[0])
+                                       or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_1
+                                           and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_1
+                                           and _row[atom_id_2_col] == bonded_atom_id_1[0])):
+                                    continue
+                        if atom_id_2[0] in protonBeginCode:
+                            if self.__ccU.updateChemCompDict(comp_id_2):
+                                bonded_atom_id_2 = self.__ccU.getBondedAtoms(comp_id_2, atom_id_2)
+                                if len(bonded_atom_id_2) == 0:
+                                    continue
+                                if any(_row for _row in lp
+                                       if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_2
+                                           and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_2
+                                           and _row[atom_id_1_col] == bonded_atom_id_2[0])
+                                       or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_2
+                                           and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_2
+                                           and _row[atom_id_2_col] == bonded_atom_id_2[0])):
+                                    continue
+                        p1 = (chain_id_1, seq_id_1, atom_id_1)
+                        p2 = (chain_id_2, seq_id_2, atom_id_2)
+                        hbond_pair = sorted([p1, p2], key=itemgetter(0, 1, 2))
+                        hbond_pairs.add(str(hbond_pair))
 
-                item_names = self.item_names_in_ds_loop[file_type]
-                chain_id_1_col = lp.tags.index(item_names['chain_id_1'])
-                chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
-                seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
-                seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
-                comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
-                comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
-                atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
-                atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
+            H_bonds_constrained_tot_num = len(hbond_pairs)
+            if H_bonds_constrained_tot_num > 0:
+                cst_sf.add_tag('H_bonds_constrained_tot_num', H_bonds_constrained_tot_num)
 
-                for row in lp:
-                    try:
-                        chain_id_1 = int(row[chain_id_1_col])
-                        chain_id_2 = int(row[chain_id_2_col])
-                        seq_id_1 = int(row[seq_id_1_col])
-                        seq_id_2 = int(row[seq_id_2_col])
-                    except (ValueError, TypeError):
+            ssbond_pairs = set()
+            if content_subtype in self.__mr_sf_dict_holder:
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                    sf = sf_item['saveframe']
+                    potential_type = get_first_sf_tag(sf, 'Potential_type')
+                    if 'lower' in potential_type:
                         continue
-                    comp_id_1 = row[comp_id_1_col]
-                    comp_id_2 = row[comp_id_2_col]
-                    atom_id_1 = row[atom_id_1_col]
-                    atom_id_2 = row[atom_id_2_col]
-                    if atom_id_1 is None or atom_id_2 is None:
+                    constraint_type = get_first_sf_tag(sf, 'Constraint_type')
+                    if constraint_type != 'disulfide bond':
                         continue
-                    if atom_id_1[0] in protonBeginCode:
-                        if self.__ccU.updateChemCompDict(comp_id_1):
-                            bonded_atom_id_1 = self.__ccU.getBondedAtoms(comp_id_1, atom_id_1)
-                            if len(bonded_atom_id_1) == 0:
-                                continue
-                            if any(_row for _row in lp
-                                   if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_1
-                                       and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_1
-                                       and _row[atom_id_1_col] == bonded_atom_id_1[0])
-                                   or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_1
-                                       and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_1
-                                       and _row[atom_id_2_col] == bonded_atom_id_1[0])):
-                                continue
-                    if atom_id_2[0] in protonBeginCode:
-                        if self.__ccU.updateChemCompDict(comp_id_2):
-                            bonded_atom_id_2 = self.__ccU.getBondedAtoms(comp_id_2, atom_id_2)
-                            if len(bonded_atom_id_2) == 0:
-                                continue
-                            if any(_row for _row in lp
-                                   if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_2
-                                       and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_2
-                                       and _row[atom_id_1_col] == bonded_atom_id_2[0])
-                                   or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_2
-                                       and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_2
-                                       and _row[atom_id_2_col] == bonded_atom_id_2[0])):
-                                continue
-                    p1 = (chain_id_1, seq_id_1, atom_id_1)
-                    p2 = (chain_id_2, seq_id_2, atom_id_2)
-                    ssbond_pair = sorted([p1, p2], key=itemgetter(0, 1, 2))
-                    ssbond_pairs.add(str(ssbond_pair))
 
-        SS_bonds_constrained_tot_num = len(ssbond_pairs)
-        if SS_bonds_constrained_tot_num > 0:
-            cst_sf.add_tag('SS_bonds_constrained_tot_num', SS_bonds_constrained_tot_num)
+                    lp = sf_item['loop']
 
-        content_subtype = 'jcoup_restraint'
+                    item_names = self.item_names_in_ds_loop[file_type]
+                    chain_id_1_col = lp.tags.index(item_names['chain_id_1'])
+                    chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
+                    seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
+                    seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
+                    comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
+                    comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
+                    atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
+                    atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
 
-        Derived_coupling_const_tot_num = 0
-        if content_subtype in self.__mr_sf_dict_holder:
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                Derived_coupling_const_tot_num += sf_item['id']
+                    for row in lp:
+                        try:
+                            chain_id_1 = int(row[chain_id_1_col])
+                            chain_id_2 = int(row[chain_id_2_col])
+                            seq_id_1 = int(row[seq_id_1_col])
+                            seq_id_2 = int(row[seq_id_2_col])
+                        except (ValueError, TypeError):
+                            continue
+                        comp_id_1 = row[comp_id_1_col]
+                        comp_id_2 = row[comp_id_2_col]
+                        atom_id_1 = row[atom_id_1_col]
+                        atom_id_2 = row[atom_id_2_col]
+                        if atom_id_1 is None or atom_id_2 is None:
+                            continue
+                        if atom_id_1[0] in protonBeginCode:
+                            if self.__ccU.updateChemCompDict(comp_id_1):
+                                bonded_atom_id_1 = self.__ccU.getBondedAtoms(comp_id_1, atom_id_1)
+                                if len(bonded_atom_id_1) == 0:
+                                    continue
+                                if any(_row for _row in lp
+                                       if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_1
+                                           and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_1
+                                           and _row[atom_id_1_col] == bonded_atom_id_1[0])
+                                       or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_1
+                                           and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_1
+                                           and _row[atom_id_2_col] == bonded_atom_id_1[0])):
+                                    continue
+                        if atom_id_2[0] in protonBeginCode:
+                            if self.__ccU.updateChemCompDict(comp_id_2):
+                                bonded_atom_id_2 = self.__ccU.getBondedAtoms(comp_id_2, atom_id_2)
+                                if len(bonded_atom_id_2) == 0:
+                                    continue
+                                if any(_row for _row in lp
+                                       if (_row[chain_id_1_col] is not None and int(_row[chain_id_1_col]) == chain_id_2
+                                           and _row[seq_id_1_col] is not None and int(_row[seq_id_1_col]) == seq_id_2
+                                           and _row[atom_id_1_col] == bonded_atom_id_2[0])
+                                       or (_row[chain_id_2_col] is not None and int(_row[chain_id_2_col]) == chain_id_2
+                                           and _row[seq_id_2_col] is not None and int(_row[seq_id_2_col]) == seq_id_2
+                                           and _row[atom_id_2_col] == bonded_atom_id_2[0])):
+                                    continue
+                        p1 = (chain_id_1, seq_id_1, atom_id_1)
+                        p2 = (chain_id_2, seq_id_2, atom_id_2)
+                        ssbond_pair = sorted([p1, p2], key=itemgetter(0, 1, 2))
+                        ssbond_pairs.add(str(ssbond_pair))
 
-        if Derived_coupling_const_tot_num > 0:
-            cst_sf.add_tag('Derived_coupling_const_tot_num', Derived_coupling_const_tot_num)
+            SS_bonds_constrained_tot_num = len(ssbond_pairs)
+            if SS_bonds_constrained_tot_num > 0:
+                cst_sf.add_tag('SS_bonds_constrained_tot_num', SS_bonds_constrained_tot_num)
 
-        content_subtype = 'hvycs_restraint'
+            content_subtype = 'jcoup_restraint'
 
-        Derived_CACB_chem_shift_tot_num = 0
-        if content_subtype in self.__mr_sf_dict_holder:
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                Derived_CACB_chem_shift_tot_num += sf_item['id']
+            Derived_coupling_const_tot_num = 0
+            if content_subtype in self.__mr_sf_dict_holder:
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                    Derived_coupling_const_tot_num += sf_item['id']
 
-        if Derived_CACB_chem_shift_tot_num > 0:
-            cst_sf.add_tag('Derived_CACB_chem_shift_tot_num', Derived_CACB_chem_shift_tot_num)
+            if Derived_coupling_const_tot_num > 0:
+                cst_sf.add_tag('Derived_coupling_const_tot_num', Derived_coupling_const_tot_num)
 
-        content_subtype = 'procs_restraint'
+            content_subtype = 'hvycs_restraint'
 
-        Derived_1H_chem_shift_tot_num = 0
-        if content_subtype in self.__mr_sf_dict_holder:
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                Derived_1H_chem_shift_tot_num += sf_item['id']
+            Derived_CACB_chem_shift_tot_num = 0
+            if content_subtype in self.__mr_sf_dict_holder:
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                    Derived_CACB_chem_shift_tot_num += sf_item['id']
 
-        if Derived_1H_chem_shift_tot_num > 0:
-            cst_sf.add_tag('Derived_1H_chem_shift_tot_num', Derived_1H_chem_shift_tot_num)
+            if Derived_CACB_chem_shift_tot_num > 0:
+                cst_sf.add_tag('Derived_CACB_chem_shift_tot_num', Derived_CACB_chem_shift_tot_num)
 
-        content_subtype = 'dist_restraint'
+            content_subtype = 'procs_restraint'
 
-        Derived_photo_cidnps_tot_num = 0
-        if content_subtype in self.__mr_sf_dict_holder:
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                sf = sf_item['saveframe']
-                potential_type = get_first_sf_tag(sf, 'Potential_type')
-                if 'lower' in potential_type:
-                    continue
-                constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                if constraint_type != 'photo cidnp':
-                    continue
-                Derived_photo_cidnps_tot_num += sf_item['id']
+            Derived_1H_chem_shift_tot_num = 0
+            if content_subtype in self.__mr_sf_dict_holder:
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                    Derived_1H_chem_shift_tot_num += sf_item['id']
 
-        if Derived_photo_cidnps_tot_num > 0:
-            cst_sf.add_tag('Derived_photo_cidnps_tot_num', Derived_photo_cidnps_tot_num)
+            if Derived_1H_chem_shift_tot_num > 0:
+                cst_sf.add_tag('Derived_1H_chem_shift_tot_num', Derived_1H_chem_shift_tot_num)
 
-        Derived_paramag_relax_tot_num = 0
-        if content_subtype in self.__mr_sf_dict_holder:
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                sf = sf_item['saveframe']
-                potential_type = get_first_sf_tag(sf, 'Potential_type')
-                if 'lower' in potential_type:
-                    continue
-                constraint_type = get_first_sf_tag(sf, 'Constraint_type')
-                if constraint_type != 'paramagnetic relaxation':
-                    continue
-                Derived_paramag_relax_tot_num += sf_item['id']
+            content_subtype = 'dist_restraint'
 
-        if Derived_paramag_relax_tot_num > 0:
-            cst_sf.add_tag('Derived_paramag_relax_tot_num', Derived_paramag_relax_tot_num)
-
-        content_subtype = 'other_restraint'
-
-        if content_subtype in self.__mr_sf_dict_holder:
-            Protein_other_tot_num = 0
-            NA_other_tot_num = 0
-            for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                lp = sf_item['loop']
-                lp_tags = lp['tags']
-                lp_data = lp['data']
-
-                auth_asym_id_col = lp_tags.index('auth_asym_id') if 'auth_asym_id' in lp_tags else lp_tags.index('auth_asym_id_1')
-                auth_seq_id_col = lp_tags.index('auth_seq_id') if 'auth_seq_id' in lp_tags else lp_tags.index('auth_seq_id_1')
-                auth_comp_id_col = lp_tags.index('auth_comp_id') if 'auth_comp_id' in lp_tags else lp_tags.index('auth_comp_id_1')
-
-                for row in lp_data:
-                    auth_asym_id = row[auth_asym_id_col]
-                    try:
-                        auth_seq_id = int(row[auth_seq_id_col])
-                    except (ValueError, TypeError):
+            Derived_photo_cidnps_tot_num = 0
+            if content_subtype in self.__mr_sf_dict_holder:
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                    sf = sf_item['saveframe']
+                    potential_type = get_first_sf_tag(sf, 'Potential_type')
+                    if 'lower' in potential_type:
                         continue
-                    auth_comp_id = row[auth_comp_id_col]
+                    constraint_type = get_first_sf_tag(sf, 'Constraint_type')
+                    if constraint_type != 'photo cidnp':
+                        continue
+                    Derived_photo_cidnps_tot_num += sf_item['id']
 
-                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+            if Derived_photo_cidnps_tot_num > 0:
+                cst_sf.add_tag('Derived_photo_cidnps_tot_num', Derived_photo_cidnps_tot_num)
 
-                    if seq_key in auth_to_entity_type:
-                        entity_type = auth_to_entity_type[seq_key]
+            Derived_paramag_relax_tot_num = 0
+            if content_subtype in self.__mr_sf_dict_holder:
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                    sf = sf_item['saveframe']
+                    potential_type = get_first_sf_tag(sf, 'Potential_type')
+                    if 'lower' in potential_type:
+                        continue
+                    constraint_type = get_first_sf_tag(sf, 'Constraint_type')
+                    if constraint_type != 'paramagnetic relaxation':
+                        continue
+                    Derived_paramag_relax_tot_num += sf_item['id']
 
-                        if 'peptide' in entity_type:
-                            Protein_other_tot_num += 1
-                        elif 'nucleotide' in entity_type:
-                            NA_other_tot_num += 1
+            if Derived_paramag_relax_tot_num > 0:
+                cst_sf.add_tag('Derived_paramag_relax_tot_num', Derived_paramag_relax_tot_num)
 
-            if Protein_other_tot_num > 0:
-                cst_sf.add_tag('Protein_other_tot_num', Protein_other_tot_num)
-            if NA_other_tot_num > 0:
-                cst_sf.add_tag('NA_other_tot_num', NA_other_tot_num)
+            content_subtype = 'other_restraint'
+
+            if content_subtype in self.__mr_sf_dict_holder:
+                Protein_other_tot_num = 0
+                NA_other_tot_num = 0
+                for sf_item in self.__mr_sf_dict_holder[content_subtype]:
+                    lp = sf_item['loop']
+                    lp_tags = lp['tags']
+                    lp_data = lp['data']
+
+                    auth_asym_id_col = lp_tags.index('auth_asym_id') if 'auth_asym_id' in lp_tags else lp_tags.index('auth_asym_id_1')
+                    auth_seq_id_col = lp_tags.index('auth_seq_id') if 'auth_seq_id' in lp_tags else lp_tags.index('auth_seq_id_1')
+                    auth_comp_id_col = lp_tags.index('auth_comp_id') if 'auth_comp_id' in lp_tags else lp_tags.index('auth_comp_id_1')
+
+                    for row in lp_data:
+                        auth_asym_id = row[auth_asym_id_col]
+                        try:
+                            auth_seq_id = int(row[auth_seq_id_col])
+                        except (ValueError, TypeError):
+                            continue
+                        auth_comp_id = row[auth_comp_id_col]
+
+                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+
+                        if seq_key in auth_to_entity_type:
+                            entity_type = auth_to_entity_type[seq_key]
+
+                            if 'peptide' in entity_type:
+                                Protein_other_tot_num += 1
+                            elif 'nucleotide' in entity_type:
+                                NA_other_tot_num += 1
+
+                if Protein_other_tot_num > 0:
+                    cst_sf.add_tag('Protein_other_tot_num', Protein_other_tot_num)
+                if NA_other_tot_num > 0:
+                    cst_sf.add_tag('NA_other_tot_num', NA_other_tot_num)
 
         lp_category = '_Constraint_file'
         cf_loop = pynmrstar.Loop.from_scratch(lp_category)
@@ -49010,7 +49012,7 @@ class NmrDpUtility:
         block_id = 0
 
         for content_subtype in self.mr_content_subtypes:
-            if content_subtype in self.__mr_sf_dict_holder:
+            if self.__mr_sf_dict_holder is not None and content_subtype in self.__mr_sf_dict_holder:
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
                     row = [None] * len(tags)
 
@@ -49181,7 +49183,7 @@ class NmrDpUtility:
             master_entry.add_saveframe(cst_sf)
 
         for content_subtype in self.mr_content_subtypes:
-            if content_subtype in self.__mr_sf_dict_holder:
+            if self.__mr_sf_dict_holder is not None and content_subtype in self.__mr_sf_dict_holder:
                 if content_subtype != 'other_restraint':
                     lp_category = self.lp_categories[file_type][content_subtype]
                     for sf_item in self.__mr_sf_dict_holder[content_subtype]:

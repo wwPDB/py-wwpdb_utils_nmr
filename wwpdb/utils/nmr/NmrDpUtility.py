@@ -424,6 +424,8 @@ RDC_UNCERT_MAX = RDC_UNCERTAINTY_RANGE['max_inclusive']
 
 bmrb_nmr_star_file_name_pattern = re.compile(r'^bmr\d[0-9]{1,5}_3.str$')
 mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
+proc_mr_file_name_pattern = re.compile(r'^D_[0-9]{6,10}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
+                                       r'_P\d+\.(amber|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|sybyl|xplor-nih)\.V\d+$')
 pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}$')
 dep_id_pattern = re.compile(r'^D_[0-9]{6,10}$')
 
@@ -9074,7 +9076,7 @@ class NmrDpUtility:
            and '_Constraint_file' in self.__lp_category_list:
             _sf_data = self.__star_data[file_list_id].get_saveframes_by_category('constraint_statistics')[0]
             data_file_name = get_first_sf_tag(_sf_data, 'Data_file_name')
-            if mr_file_name_pattern.match(data_file_name):
+            if mr_file_name_pattern.match(data_file_name) or proc_mr_file_name_pattern.match(data_file_name):
                 entry_id = get_first_sf_tag(_sf_data, 'Entry_ID')
                 if pdb_id_pattern.match(entry_id) or dep_id_pattern.match(entry_id):
                     self.__remediation_mode = True
@@ -49275,6 +49277,14 @@ class NmrDpUtility:
 
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {str(e)}\n")
+
+        if self.__bmrb_only:
+            removed_sf_categories = ['conformer_statistics', 'conformer_family_coord_set', 'representative_conformer']
+
+            for sf_category in removed_sf_categories:
+                if sf_category in self.__sf_category_list:
+                    for sf in master_entry.get_saveframes_by_category(sf_category):
+                        del master_entry[sf]
 
         master_entry = self.__c2S.normalize_str(master_entry)
 

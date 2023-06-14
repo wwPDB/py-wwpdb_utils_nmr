@@ -2194,6 +2194,15 @@ class NmrDpReportError:
 
         return d
 
+    def hasChemicalShiftError(self):
+        """ Return whether errors for anomalous chemical shifts exist.
+        """
+
+        if self.__contents is None:
+            return False
+
+        return any(item for item in self.__contents if item == 'anomalous_data')
+
     def clean(self):
         """ Clean-up empty items and update stats.
         """
@@ -2447,6 +2456,16 @@ class NmrDpReportWarning:
             return None
 
         return d
+
+    def hasChemicalShiftWarning(self):
+        """ Return whether warnings for anomalous/unusual chemical shifts exist.
+        """
+
+        if self.__contents is None:
+            return False
+
+        return any(item in ('anomalous_data', 'anomalous_chemical_shift', 'unusual_data', 'unusual_chemical_shift')
+                   for item in self.__contents)
 
     def sortChemicalShiftValidation(self):
         """ Sort warning about anomalous/unusual chemical shift.

@@ -7,6 +7,7 @@
 # 20-Apr-2022  M. Yokochi - enable to fix broken data block order of CIF formatted NMR-STAR using NMR-STAR schema (DAOTHER-7407, NMR restraint remediation)
 # 28-Jul-2022  M. Yokochi - enable to fix format issue of CIF formatted NMR-STAR (You cannot have two loops with the same category in one saveframe. Category: '_Audit')
 # 27-Sep-2022  M. Yokochi - auto fill list ID and entry ID (NMR restraint remediation)
+# 13-Jun-2023  M. Yokochi - sort loops in a saveframe based on schema
 ##
 """ Wrapper class for CIF to NMR-STAR converter.
     @author: Masashi Yokochi
@@ -657,6 +658,17 @@ class CifToNmrStar:
 
             return category_order, saveframe_id
 
+        def lp_key(lp):
+            """ Helper function to sort the loops.
+            Returns (category order) """
+
+            try:
+                category_order = self.category_order.index(lp.category)
+            except (ValueError, KeyError):
+                category_order = float('infinity')
+
+            return category_order
+
         try:
             strData.frame_list.sort(key=sf_key)
         except Exception as e:
@@ -664,6 +676,8 @@ class CifToNmrStar:
 
         for sf in strData.frame_list:
             sf.sort_tags()
+            if len(sf.loops) > 1:
+                sf.loops.sort(key=lp_key)
             # Iterate through the loops
             for lp in sf:
                 lp.sort_tags()

@@ -5,6 +5,7 @@
 # Updates:
 # 27-Apr-2022  M. Yokochi - enable to use cached data for standard residues
 # 11-Nov-2022  M. Yokochi - add getProtonsInSameGroup() (NMR restraint remediation)
+# 13-Jun-2023  M. Yokochi - add getEffFormulaWeight()
 ##
 """ Wrapper class for retrieving chemical component dictionary.
     @author: Masashi Yokochi
@@ -12,6 +13,9 @@
 import os
 import sys
 import pickle
+
+from rmsd.calculate_rmsd import NAMES_ELEMENT, ELEMENT_WEIGHTS  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
+
 
 try:
     from wwpdb.utils.config.ConfigInfo import getSiteId
@@ -254,6 +258,30 @@ class ChemCompUtil:
         """ Return whether given two atoms are connected by a covalent bond.
         """
         return atomId2 in self.getBondedAtoms(compId, atomId1)
+
+    def getEffectiveFormulaWeight(self, compId):
+        """ Return effective formula weight of a given comp_id.
+        """
+
+        if not self.updateChemCompDict(compId):
+            return 0.0
+
+        if '_chem_comp.formula_weight' not in self.lastChemCompDict:
+            return 0.0
+
+        fw = float(self.lastChemCompDict['_chem_comp.formula_weight'])
+
+        leavingTypeSymbols = [a[self.ccaTypeSymbol] for a in self.lastAtomList if a[self.ccaLeavingAtomFlag] == 'Y']
+
+        try:
+
+            for symbol in leavingTypeSymbols:
+                fw -= ELEMENT_WEIGHTS[NAMES_ELEMENT[symbol.title()]]
+
+        except KeyError:
+            return 0.0
+
+        return fw
 
     def write_std_dict_as_pickle(self):
         """ Write dictionary for standard residues as pickle file.

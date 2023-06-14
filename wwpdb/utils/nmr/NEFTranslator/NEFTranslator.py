@@ -445,22 +445,22 @@ altRdcConstraintType = {'nef': {'RDC': 'measured',
                         }
 
 
-def get_lp_tag(lp_data, tags):
+def get_lp_tag(lp, tags):
     """ Return the selected loop tags by row as a list of lists.
     """
 
-    return lp_data.get_tag(tags) if __pynmrstar_v3__ else lp_data.get_data_by_tag(tags)
+    return lp.get_tag(tags) if __pynmrstar_v3__ else lp.get_data_by_tag(tags)
 
 
-def get_first_sf_tag(sf_data=None, tag=None):
+def get_first_sf_tag(sf=None, tag=None):
     """ Return the first value of a given saveframe tag.
         @return: The first tag value, empty string otherwise.
     """
 
-    if sf_data is None or tag is None:
+    if sf is None or tag is None:
         return ''
 
-    array = sf_data.get_tag(tag)
+    array = sf.get_tag(tag)
 
     if len(array) == 0:
         return ''
@@ -539,15 +539,15 @@ def get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category):
 
     sf_framecodes = []
 
-    for sf_data in star_data.get_saveframes_by_category(sf_category):
+    for sf in star_data.get_saveframes_by_category(sf_category):
 
         if __pynmrstar_v3_2__:
-            loop = sf_data.get_loop(lp_category)
+            loop = sf.get_loop(lp_category)
         else:
-            loop = sf_data.get_loop_by_category(lp_category)
+            loop = sf.get_loop_by_category(lp_category)
 
         if len(loop.data) == 0:
-            sf_framecodes.append(get_first_sf_tag(sf_data, 'sf_framecode'))
+            sf_framecodes.append(get_first_sf_tag(sf, 'sf_framecode'))
 
     return sf_framecodes
 
@@ -1508,8 +1508,8 @@ class NEFTranslator:
                 # seq_data = list(filter(is_data, seq_data))
                 seq_data = list(filter(is_good_data, seq_data))  # DAOTHER-7389, issue #3
             else:
-                for idx, i in enumerate(seq_data):
-                    if is_empty(i) and idx < len_loop_data:
+                for idx, row in enumerate(seq_data):
+                    if is_empty(row) and idx < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]

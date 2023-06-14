@@ -56,7 +56,7 @@ class AmberPTReader:
         self.__mrAtomNameMapping = mrAtomNameMapping
 
         if cR is not None and caC is None:
-            caC = coordAssemblyChecker(verbose, log, representativeModelId, cR, None, fullCheck=False)
+            caC = coordAssemblyChecker(verbose, log, representativeModelId, cR, None, None, fullCheck=False)
 
         self.__cR = cR
         self.__caC = caC

@@ -4174,12 +4174,15 @@ class CnsMRParserListener(ParseTreeListener):
 
         if self.depth == 1 and self.__top_union_expr:
 
-            while self.stackFactors:
-                _factor = self.__consumeFactor_expressions(self.stackFactors.pop(), cifCheck=True)
-                self.factor = self.__intersectionFactor_expressions(self.factor,
-                                                                    None if 'atom_selection' not in _factor
-                                                                    or isinstance(_factor['atom_selection'], str)
-                                                                    else _factor['atom_selection'])
+            if self.stackFactors:
+                while self.stackFactors:
+                    _factor = self.__consumeFactor_expressions(self.stackFactors.pop(), cifCheck=True)
+                    self.factor = self.__intersectionFactor_expressions(self.factor,
+                                                                        None if 'atom_selection' not in _factor
+                                                                        or isinstance(_factor['atom_selection'], str)
+                                                                        else _factor['atom_selection'])
+            else:
+                self.factor = self.__consumeFactor_expressions(self.factor, cifCheck=True)
 
             if 'atom_selection' in self.factor:
                 self.stackTerms.append(self.factor['atom_selection'])

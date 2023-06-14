@@ -121,7 +121,7 @@ class GromacsPTParserListener(ParseTreeListener):
         self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
         if cR is not None:
-            ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC, fullCheck=False)
+            ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC, None, fullCheck=False)
             self.__polySeqModel = ret['polymer_sequence']
             self.__nonPolyModel = ret['non_polymer']
             self.__branchedModel = ret['branched']

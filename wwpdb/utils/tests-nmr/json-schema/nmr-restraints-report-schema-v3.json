@@ -4147,6 +4147,10 @@
             "type": "string",
             "minLength": 1
           },
+          "description_alt": {
+            "type": "string",
+            "minLength": 1
+          },
           "sf_framecode": {
             "type": "string",
             "minLength": 1

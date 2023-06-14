@@ -1071,7 +1071,7 @@ class NmrVrptUtility:
 
             self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
                                               self.__representative_model_id,
-                                              self.__cR, None)
+                                              self.__cR, None, None)
 
             if self.__caC is not None and cache_path:
                 write_as_pickle(self.__caC, cache_path)
@@ -1079,7 +1079,7 @@ class NmrVrptUtility:
         else:
             self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
                                               self.__representative_model_id,
-                                              self.__cR, None, False)
+                                              self.__cR, None, None, False)
 
         return True
 

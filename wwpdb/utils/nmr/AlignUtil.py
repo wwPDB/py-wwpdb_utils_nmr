@@ -22,7 +22,7 @@ MIN_SEQ_COVERAGE_W_CONFLICT = 0.95
 
 
 # empty value
-emptyValue = (None, '', '.', '?', 'null')
+emptyValue = (None, '', '.', '?', 'null', 'None')
 
 
 # true value
@@ -399,6 +399,21 @@ def getOneLetterCode(compId):
     return 'X'
 
 
+def getCanOneLetterCode(compId):
+    """ Convert comp_ID to canonical 1-letter code.
+    """
+
+    compId = compId.upper()
+
+    if compId in monDict3:
+        return monDict3[compId]
+
+    if compId in emptyValue:
+        return '.'
+
+    return f'({compId})'
+
+
 def getOneLetterCodeSequence(compIdList):
     """ Convert array of comp_IDs to 1-letter code sequence.
     """
@@ -407,6 +422,18 @@ def getOneLetterCodeSequence(compIdList):
 
     for compId in compIdList:
         f.append(getOneLetterCode(compId))
+
+    return ''.join(f)
+
+
+def getCanOneLetterCodeSequence(compIdList):
+    """ Convert array of comp_IDs to canonical 1-letter code sequence.
+    """
+
+    f = []
+
+    for compId in compIdList:
+        f.append(getCanOneLetterCode(compId))
 
     return ''.join(f)
 

@@ -14,6 +14,31 @@ save_nef_nmr_meta_data
    _Entry.Related_coordinate_file_name  .
 
    loop_
+      _Data_set.Type
+      _Data_set.Count
+      _Data_set.Entry_ID
+
+     assigned_chemical_shifts   1   NEED_ACC_NO    
+     spectral_peak_list         3   NEED_ACC_NO    
+
+   stop_
+
+   loop_
+      _Datum.Type
+      _Datum.Count
+      _Datum.Entry_ID
+
+     '1H chemical shifts'                   580    NEED_ACC_NO    
+     '13C chemical shifts'                  351    NEED_ACC_NO    
+     '15N chemical shifts'                  85     NEED_ACC_NO    
+     'residual dipolar couplings'           104    NEED_ACC_NO    
+     'distance constraints'                 7172   NEED_ACC_NO    
+     'hydrogen bond distance constraints'   70     NEED_ACC_NO    
+     'torsion angle constraints'            108    NEED_ACC_NO    
+
+   stop_
+
+   loop_
       _Software_applied_methods.Software_name
       _Software_applied_methods.Script_name
       _Software_applied_methods.Script
@@ -21,19 +46,6 @@ save_nef_nmr_meta_data
 
      CcpNmr            exportProject   .   NEED_ACC_NO    
      wwpdb.utils.nmr   .               .   NEED_ACC_NO    
-
-   stop_
-
-   loop_
-      _Data_set.Type
-      _Data_set.Count
-      _Data_set.Entry_ID
-
-     assigned_chemical_shifts       1   NEED_ACC_NO    
-     spectral_peak_list             3   NEED_ACC_NO    
-     general_distance_constraints   2   NEED_ACC_NO    
-     torsion_angle_constraints      1   NEED_ACC_NO    
-     RDC_constraints                2   NEED_ACC_NO    
 
    stop_
 

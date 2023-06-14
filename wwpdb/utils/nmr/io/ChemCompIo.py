@@ -318,7 +318,7 @@ class ChemCompReader:
 
         return tval
 
-    def __getCcdHash(self, idCode):
+    def __getCcdHash(self, idCode):  # pylint: disable=no-self-use
         """Returns the hash code for a CCD id.  Currently first letter"""
         if not idCode:
             return None

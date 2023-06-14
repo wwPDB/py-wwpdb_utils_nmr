@@ -24,7 +24,10 @@ try:
                                            aminoProtonCode,
                                            LARGE_ASYM_ID,
                                            LEN_LARGE_ASYM_ID,
-                                           MAX_MAG_IDENT_ASYM_ID)
+                                           MAX_MAG_IDENT_ASYM_ID,
+                                           alignPolymerSequence,
+                                           assignPolymerSequence,
+                                           getScoreOfSeqAlign)
     from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
 except ImportError:
     from nmr.AlignUtil import (monDict3,
@@ -34,7 +37,10 @@ except ImportError:
                                aminoProtonCode,
                                LARGE_ASYM_ID,
                                LEN_LARGE_ASYM_ID,
-                               MAX_MAG_IDENT_ASYM_ID)
+                               MAX_MAG_IDENT_ASYM_ID,
+                               alignPolymerSequence,
+                               assignPolymerSequence,
+                               getScoreOfSeqAlign)
     from nmr.io.CifReader import SYMBOLS_ELEMENT
 
 MAX_ERROR_REPORT = 1
@@ -64,6 +70,12 @@ ALLOWED_AMBIGUITY_CODES = (1, 2, 3, 4, 5, 6, 9)
 ALLOWED_ISOTOPE_NUMBERS = []
 for isotopeNums in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.values():
     ALLOWED_ISOTOPE_NUMBERS.extend(isotopeNums)
+
+WELL_KNOWN_ISOTOPE_NUMBERS = copy.copy(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['H'])
+WELL_KNOWN_ISOTOPE_NUMBERS.extend(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['C'])
+WELL_KNOWN_ISOTOPE_NUMBERS.extend(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['N'])
+WELL_KNOWN_ISOTOPE_NUMBERS.extend(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P'])
+
 
 REPRESENTATIVE_MODEL_ID = 1
 
@@ -2899,7 +2911,7 @@ def translateToStdResName(compId, ccU=None):
 
 def coordAssemblyChecker(verbose=True, log=sys.stdout,
                          representativeModelId=REPRESENTATIVE_MODEL_ID,
-                         cR=None, prevResult=None,
+                         cR=None, prevResult=None, nmrPolySeq=None,
                          fullCheck=True):
     """ Check assembly of the coordinates for MR/PT parser listener.
     """
@@ -2988,6 +3000,117 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                     withRmsd=False)
                 except KeyError:
                     polySeq = []
+
+            nmrExtPolySeq = []
+
+            if nmrPolySeq is not None:
+
+                try:
+                    from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module,import-outside-toplevel
+                    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil  # pylint: disable=import-outside-toplevel
+                except ImportError:
+                    from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module,import-outside-toplevel
+                    from nmr.ChemCompUtil import ChemCompUtil  # pylint: disable=import-outside-toplevel
+
+                pA = PairwiseAlign()
+                ccU = ChemCompUtil()
+                seqAlign, _ = alignPolymerSequence(pA, polySeq, nmrPolySeq)
+                chainAssign, _ = assignPolymerSequence(pA, ccU, 'nmr-star', polySeq, nmrPolySeq, seqAlign)
+
+                for ca in chainAssign:
+                    ref_chain_id = ca['ref_chain_id']
+                    test_chain_id = ca['test_chain_id']
+
+                    sa = next(sa for sa in seqAlign
+                              if sa['ref_chain_id'] == ref_chain_id
+                              and sa['test_chain_id'] == test_chain_id)
+
+                    if sa['conflict'] > 0 or sa['unmapped'] == 0:
+                        continue
+
+                    s1 = next(s for s in nmrPolySeq if s['chain_id'] == test_chain_id)
+                    s2 = next(s for s in polySeq if s['auth_chain_id'] == ref_chain_id)
+
+                    pA.setReferenceSequence(s1['comp_id'], 'REF' + test_chain_id)
+                    pA.addTestSequence(s2['comp_id'], test_chain_id)
+                    pA.doAlign()
+
+                    myAlign = pA.getAlignment(test_chain_id)
+
+                    length = len(myAlign)
+
+                    _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+                    if conflict == 0 and unmapped > 0:
+
+                        nmr_seq_ids = []
+                        cif_auth_seq_ids = []
+                        cif_label_seq_ids = []
+
+                        for i in range(length):
+                            if str(myAlign[i][0]) != '.' and i < len(s1['seq_id']):
+                                nmr_seq_ids.append(s1['seq_id'][i])
+                            else:
+                                nmr_seq_ids.append(None)
+
+                        for i in range(length):
+                            if str(myAlign[i][1]) != '.' and i < len(s2['seq_id']):
+                                cif_auth_seq_ids.append(s2['auth_seq_id'][i])
+                                cif_label_seq_ids.append(s2['seq_id'][i])
+                            else:
+                                cif_auth_seq_ids.append(None)
+                                cif_label_seq_ids.append(None)
+
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            if myPr[0] == myPr[1]:
+                                continue
+
+                            nmr_comp_id = str(myPr[0])
+                            cif_comp_id = str(myPr[1])
+
+                            if cif_comp_id == '.' and nmr_comp_id != '.':
+                                nmr_seq_id = nmr_seq_ids[i] - offset_1 if nmr_seq_ids[i] is not None else None
+                                if nmr_seq_id is not None:
+                                    offset = None
+                                    for _offset in range(1, 20):
+                                        if i + _offset < length:
+                                            _myPr = myAlign[i + _offset]
+                                            if _myPr[0] == _myPr[1]:
+                                                offset = _offset
+                                                break
+                                        if i - _offset >= 0:
+                                            _myPr = myAlign[i - _offset]
+                                            if _myPr[0] == _myPr[1]:
+                                                offset = -_offset
+                                                break
+
+                                    if offset is not None:
+                                        cif_label_seq_id = cif_label_seq_ids[i + offset] - offset - offset_2
+                                        cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
+
+                                        if cif_label_seq_id < s2['seq_id'][0]:
+                                            pos = 0
+                                        elif cif_label_seq_id > s2['seq_id'][-1]:
+                                            pos = len(s2['seq_id'])
+                                        else:
+                                            for idx, _seq_id in enumerate(s2['seq_id']):
+                                                if cif_label_seq_id < _seq_id:
+                                                    continue
+                                                pos = idx
+                                                break
+
+                                        s2['seq_id'].insert(pos, cif_label_seq_id)
+                                        s2['auth_seq_id'].insert(pos, cif_auth_seq_id)
+                                        s2['comp_id'].insert(pos, nmr_comp_id)
+                                        s2['auth_comp_id'].insert(pos, nmr_comp_id)
+
+                                        nmrExtPolySeq.append({'auth_chain_id': s2['auth_chain_id'],
+                                                              'chain_id': s2['chain_id'],
+                                                              'seq_id': cif_label_seq_id,
+                                                              'auth_seq_id': cif_auth_seq_id,
+                                                              'comp_id': nmr_comp_id,
+                                                              'auth_comp_id': nmr_comp_id})
 
             if len(polySeq) > 1:
                 ps = copy.copy(polySeq[0])
@@ -3291,6 +3414,13 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         if labelSeqKey not in labelToAuthSeq:
                                             labelToAuthSeq[labelSeqKey] = authSeqKey
 
+            for extSeq in nmrExtPolySeq:
+                authSeqKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'])
+                labelSeqKey = (extSeq['chain_id'], extSeq['seq_id'])
+                coordUnobsRes[authSeqKey] = {'comp_id': extSeq['comp_id']}
+                authToLabelSeq[authSeqKey] = labelSeqKey
+                labelToAuthSeq[labelSeqKey] = authSeqKey
+
         if authToStarSeq is None or authToEntityType is None or entityAssembly is None:
             authToStarSeq = {}
             authToOrigSeq = {}
@@ -3411,6 +3541,10 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             if item['label_asym_id'] not in labelAsymIds:
                                 labelAsymIds.append(item['label_asym_id'])
                             compIds.add(item['comp_id'])
+                        for extSeq in nmrExtPolySeq:
+                            if extSeq['auth_chain_id'] not in authAsymIds:
+                                continue
+                            compIds.add(extSeq['comp_id'])
 
                         if len(authAsymIds) <= MAX_MAG_IDENT_ASYM_ID:
                             if len(labelAsymIds) == 1:
@@ -3421,6 +3555,19 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                     if has_ins_code and item['ins_code'] not in emptyValue:
                                         authToInsCode[seqKey] = item['ins_code']
                                     authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                ext_mappings = 0
+                                ext_fw = 0.0
+                                for extSeq in nmrExtPolySeq:
+                                    if extSeq['auth_chain_id'] not in authAsymIds:
+                                        continue
+                                    seqKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
+                                    authToStarSeq[seqKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                    authToOrigSeq[seqKey] = (extSeq['seq_id'], extSeq['auth_comp_id'])
+                                    authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                    ext_mappings += 1
+                                    if extSeq['chain_id'] not in monDict3:
+                                        nstdMonomer = 'yes'
+                                    ext_fw += ccU.getEffectiveFormulaWeight(extSeq['comp_id'])
 
                                 for item in mappings:
                                     altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
@@ -3429,10 +3576,17 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         if has_ins_code and item['ins_code'] not in emptyValue:
                                             authToInsCode[altKey] = item['ins_code']
                                         authToEntityType[altKey] = entityPolyType
+                                for extSeq in nmrExtPolySeq:
+                                    if extSeq['auth_chain_id'] not in authAsymIds:
+                                        continue
+                                    altKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
+                                    if altKey not in authToStarSeq:
+                                        authToStarSeq[altKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                        authToEntityType[altKey] = entityPolyType
 
                                 entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
                                                        'entity_type': entityType, 'entity_src_method': entitySrcMethod,
-                                                       'entity_desc': entityDesc, 'entity_fw': entityFW,
+                                                       'entity_desc': entityDesc, 'entity_fw': round(entityFW + ext_fw, 3),
                                                        'entity_copies': entityCopies, 'entity_ec': entityEC,
                                                        'entity_parent': entityParent,
                                                        'entity_mutation': entityMutation,
@@ -3446,7 +3600,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                        'nstd_linkage': nstdLinkage,
                                                        'nstd_chirality': nstdChirality,
                                                        'target_identifier': targetIdentifier,
-                                                       'num_of_monomers': len(mappings),
+                                                       'num_of_monomers': len(mappings) + ext_mappings,
                                                        'auth_asym_id': ','.join(authAsymIds),
                                                        'label_asym_id': ','.join(labelAsymIds),
                                                        'comp_id_set': compIds})
@@ -3469,6 +3623,10 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         if item['label_asym_id'] not in labelAsymIds:
                                             labelAsymIds.append(item['label_asym_id'])
                                         compIds.add(item['comp_id'])
+                                    for extSeq in nmrExtPolySeq:
+                                        if extSeq['chain_id'] != labelAsymId:
+                                            continue
+                                        compIds.add(extSeq['comp_id'])
 
                                     if len(authAsymIds) <= MAX_MAG_IDENT_ASYM_ID:
                                         if len(labelAsymIds) == 1:
@@ -3481,6 +3639,19 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                 if has_ins_code and item['ins_code'] not in emptyValue:
                                                     authToInsCode[seqKey] = item['ins_code']
                                                 authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                            ext_mappings = 0
+                                            ext_fw = 0.0
+                                            for extSeq in nmrExtPolySeq:
+                                                if extSeq['chain_id'] != labelAsymId:
+                                                    continue
+                                                seqKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
+                                                authToStarSeq[seqKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                                authToOrigSeq[seqKey] = (extSeq['seq_id'], extSeq['auth_comp_id'])
+                                                authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                                ext_mappings += 1
+                                                if extSeq['chain_id'] not in monDict3:
+                                                    nstdMonomer = 'yes'
+                                                ext_fw += ccU.getEffectiveFormulaWeight(extSeq['comp_id'])
 
                                             for item in mappings:
                                                 if item['label_asym_id'] != labelAsymId:
@@ -3491,10 +3662,17 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                     if has_ins_code and item['ins_code'] not in emptyValue:
                                                         authToInsCode[altKey] = item['ins_code']
                                                     authToEntityType[altKey] = entityPolyType
+                                            for extSeq in nmrExtPolySeq:
+                                                if extSeq['chain_id'] != labelAsymId:
+                                                    continue
+                                                altKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
+                                                if altKey not in authToStarSeq:
+                                                    authToStarSeq[altKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                                    authToEntityType[altKey] = entityPolyType
 
                                             entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
                                                                    'entity_type': entityType, 'entity_src_method': entitySrcMethod,
-                                                                   'entity_desc': entityDesc, 'entity_fw': entityFW,
+                                                                   'entity_desc': entityDesc, 'entity_fw': round(entityFW + ext_fw, 3),
                                                                    'entity_copies': entityCopies, 'entity_ec': entityEC,
                                                                    'entity_parent': entityParent,
                                                                    'entity_mutation': entityMutation,
@@ -3508,7 +3686,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                                    'nstd_linkage': nstdLinkage,
                                                                    'nstd_chirality': nstdChirality,
                                                                    'target_identifier': targetIdentifier,
-                                                                   'num_of_monomers': len(mappings),
+                                                                   'num_of_monomers': len(mappings) + ext_mappings,
                                                                    'auth_asym_id': ','.join(authAsymIds),
                                                                    'label_asym_id': ','.join(labelAsymIds),
                                                                    'comp_id_set': compIds})
@@ -3528,6 +3706,18 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
                                         if item['label_asym_id'] not in labelAsymIds:
                                             labelAsymIds.append(item['label_asym_id'])
+                                ext_mappings = 0
+                                ext_fw = 0.0
+                                for extSeq in nmrExtPolySeq:
+                                    if extSeq['auth_chain_id'] == _authAsymId:
+                                        seqKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
+                                        authToStarSeq[seqKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                        authToOrigSeq[seqKey] = (extSeq['seq_id'], extSeq['auth_comp_id'])
+                                        authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                        ext_mappings += 1
+                                        if extSeq['chain_id'] not in monDict3:
+                                            nstdMonomer = 'yes'
+                                        ext_fw += ccU.getEffectiveFormulaWeight(extSeq['comp_id'])
 
                                 for item in mappings:
                                     if item['auth_asym_id'] == _authAsymId:
@@ -3537,10 +3727,16 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                             if has_ins_code and item['ins_code'] not in emptyValue:
                                                 authToInsCode[altKey] = item['ins_code']
                                             authToEntityType[altKey] = entityPolyType
+                                for extSeq in nmrExtPolySeq:
+                                    if extSeq['auth_chain_id'] == _authAsymId:
+                                        altKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
+                                        if altKey not in authToStarSeq:
+                                            authToStarSeq[altKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                            authToEntityType[altKey] = entityPolyType
 
                                 entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
                                                        'entity_type': entityType, 'entity_src_method': entitySrcMethod,
-                                                       'entity_desc': entityDesc, 'entity_fw': entityFW,
+                                                       'entity_desc': entityDesc, 'entity_fw': round(entityFW + ext_fw, 3),
                                                        'entity_copies': 1, 'entity_ec': entityEC,
                                                        'entity_parent': entityParent,
                                                        'entity_mutation': entityMutation,
@@ -3554,7 +3750,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                        'nstd_linkage': nstdLinkage,
                                                        'nstd_chirality': nstdChirality,
                                                        'target_identifier': targetIdentifier,
-                                                       'num_of_monomers': len(mappings),
+                                                       'num_of_monomers': len(mappings) + ext_mappings,
                                                        'auth_asym_id': _authAsymId,
                                                        'label_asym_id': ','.join(labelAsymIds),
                                                        'comp_id_set': compIds})

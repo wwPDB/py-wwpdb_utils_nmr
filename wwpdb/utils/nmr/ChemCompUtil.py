@@ -5,7 +5,7 @@
 # Updates:
 # 27-Apr-2022  M. Yokochi - enable to use cached data for standard residues
 # 11-Nov-2022  M. Yokochi - add getProtonsInSameGroup() (NMR restraint remediation)
-# 13-Jun-2023  M. Yokochi - add getEffFormulaWeight()
+# 13-Jun-2023  M. Yokochi - add getEffectiveFormulaWeight()
 ##
 """ Wrapper class for retrieving chemical component dictionary.
     @author: Masashi Yokochi

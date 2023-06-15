@@ -26965,7 +26965,7 @@ class NmrDpUtility:
 
         hash_code_ext = ''
         if nmrPolySeq is not None:
-            hash_code_ext = f'_{hashlib.md5(nmrPolySeq.encode()).hexdigest()[:4]}'
+            hash_code_ext = f'_{hashlib.md5(str(nmrPolySeq).encode()).hexdigest()[:4]}'
 
         asm_chk_cache_path = None
 

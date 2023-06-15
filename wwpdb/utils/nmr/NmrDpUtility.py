@@ -26956,21 +26956,26 @@ class NmrDpUtility:
         """ Wrapper function for ParserListenerUtil.coordAssemblyChecker.
         """
 
-        asm_chk_cache_path = None
-
-        if self.__cifHashCode is not None:
-            asm_chk_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_asm_chk.pkl")
-            self.__caC = load_from_pickle(asm_chk_cache_path)
-
-            if self.__caC is not None:
-                return
-
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
 
         nmrPolySeq = input_source_dic['polymer_sequence'] if has_poly_seq and self.__bmrb_only and self.__internal_mode else None
+
+        hash_code_ext = ''
+        if nmrPolySeq is not None:
+            hash_code_ext = f'_{hashlib.md5(nmrPolySeq.encode()).hexdigest()[:4]}'
+
+        asm_chk_cache_path = None
+
+        if self.__cifHashCode is not None:
+
+            asm_chk_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}{hash_code_ext}_asm_chk.pkl")
+            self.__caC = load_from_pickle(asm_chk_cache_path)
+
+            if self.__caC is not None:
+                return
 
         self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
                                           self.__representative_model_id,
@@ -49404,161 +49409,9 @@ class NmrDpUtility:
                 for tag in tags:
                     lp.add_tag(tag)
 
-                datum_counter = {'1H chemical shifts': 0,
-                                 '2H chemical shifts': 0,
-                                 '3H chemical shifts': 0,
-                                 '13C chemical shifts': 0,
-                                 '15N chemical shifts': 0,
-                                 '31P chemical shifts': 0,
-                                 '111Cd chemical shifts': 0,
-                                 '113Cd chemical shifts': 0,
-                                 '19F chemical shifts': 0,
-                                 '6Li chemical shifts': 0,
-                                 '10B chemical shifts': 0,
-                                 '11B chemical shifts': 0,
-                                 '17O chemical shifts': 0,
-                                 '23Na chemical shifts': 0,
-                                 '29Si chemical shifts': 0,
-                                 '35Cl chemical shifts': 0,
-                                 '129Xe chemical shifts': 0,
-                                 '195Pt chemical shifts': 0,
-                                 'theoretical 1H chemical shifts': 0,
-                                 'theoretical 13C chemical shifts': 0,
-                                 'theoretical 15N chemical shifts': 0,
-                                 'chemical rates': 0,
-                                 'coupling constants': 0,
-                                 'theoretical coupling constants': 0,
-                                 'chemical shift isotope effects': 0,
-                                 'chemical shift perturbation values': 0,
-                                 'T1 relaxation values': 0,
-                                 'theoretical T1 relaxation values': 0,
-                                 'T1rho relaxation values': 0,
-                                 'T2 relaxation values': 0,
-                                 'theoretical T2 relaxation values': 0,
-                                 'dipole-dipole relaxation values': 0,
-                                 'dipole-dipole cross correlation relaxation values': 0,
-                                 'theoretical dipole-dipole cross-correlation values': 0,
-                                 'chemical shift anisotropy values': 0,
-                                 'chemical shift anisotropy tensor values': 0,
-                                 'quadrupolar couplings': 0,
-                                 'theoretical chemical shifts': 0,
-                                 'chemical shift tensors': 0,
-                                 'residual dipolar couplings': 0,
-                                 'dipolar coupling values': 0,
-                                 'dipolar coupling tensor values': 0,
-                                 'heteronuclear NOE values': 0,
-                                 'theoretical heteronuclear NOE values': 0,
-                                 'homonuclear NOE values': 0,
-                                 'order parameters': 0,
-                                 'spectral density values': 0,
-                                 'H exchange rates': 0,
-                                 'H exchange protection factors': 0,
-                                 'pKa values': 0,
-                                 'pH NMR parameter values': 0,
-                                 'binding constants': 0,
-                                 'D/H fractionation factors': 0,
-                                 'bond orientation values': 0,
-                                 'deduced secondary structure values': 0,
-                                 'deduced hydrogen bonds': 0,
-                                 'distance constraints': 0,
-                                 'ambiguous distance constraints': 0,
-                                 'hydrogen bond distance constraints': 0,
-                                 'torsion angle constraints': 0,
-                                 'chemical shift constraints': 0,
-                                 'symmetry constraints': 0
-                                 }
-
-                def get_loop_size(content_subtype):
-                    _sf_category = self.sf_categories[file_type][content_subtype]
-                    _lp_category = self.lp_categories[file_type][content_subtype]
-                    size = 0
-                    for _sf in master_entry.get_saveframes_by_category(_sf_category):
-                        try:
-                            if __pynmrstar_v3_2__:
-                                _lp = _sf.get_loop(_lp_category)
-                            else:
-                                _lp = _sf.get_loop_by_category(_lp_category)
-                        except KeyError:
-                            continue
-                        size += len(_lp)
-                    return size
-
-                for content_subtype in self.nmr_rep_content_subtypes:
-
-                    if content_subtype == 'chem_shift':
-                        _sf_category = self.sf_categories[file_type][content_subtype]
-                        _lp_category = self.lp_categories[file_type][content_subtype]
-                        for _sf in master_entry.get_saveframes_by_category(_sf_category):
-                            try:
-                                if __pynmrstar_v3_2__:
-                                    _lp = _sf.get_loop(_lp_category)
-                                else:
-                                    _lp = _sf.get_loop_by_category(_lp_category)
-                            except KeyError:
-                                continue
-                            _dat = get_lp_tag(_lp, ['Atom_isotope_number', 'Atom_type'])
-                            for _row in _dat:
-                                _type = f'{_row[0]}{_row[1].title()} chemical shifts'
-                                if _type in datum_counter:
-                                    datum_counter[_type] += 1
-                    elif content_subtype == 'dist_restraint':
-                        _sf_category = self.sf_categories[file_type][content_subtype]
-                        _lp_category = self.lp_categories[file_type][content_subtype]
-                        for _sf in master_entry.get_saveframes_by_category(_sf_category):
-                            _constraint_type = get_first_sf_tag(_sf, 'Constraint_type')
-                            try:
-                                if __pynmrstar_v3_2__:
-                                    _lp = _sf.get_loop(_lp_category)
-                                else:
-                                    _lp = _sf.get_loop_by_category(_lp_category)
-                            except KeyError:
-                                continue
-                            if _constraint_type == 'hydrogen bond':
-                                datum_counter['hydrogen bond distance constraints'] += len(_lp)
-                            elif _constraint_type == 'symmetry':
-                                datum_counter['symmetry constraints'] += len(_lp)
-                            else:
-                                if 'Combination_ID' in _lp.tags and 'Member_ID' in _lp.tags:
-                                    _dat = get_lp_tag(_lp, ['Combination_ID', 'Member_ID'])
-                                    for _row in _dat:
-                                        if _row[0] in emptyValue and _row[1] in emptyValue:
-                                            datum_counter['distance constraints'] += 1
-                                        else:
-                                            datum_counter['ambiguous distance constraints'] += 1
-                                else:
-                                    datum_counter['distance constraints'] += len(_lp)
-                    elif content_subtype == 'dihed_restraint':
-                        datum_counter['torsion angle constraints'] += get_loop_size(content_subtype)
-                    elif content_subtype in ('rdc_restraint' 'rdc_raw_data'):
-                        datum_counter['residual dipolar couplings'] += get_loop_size(content_subtype)
-                    elif content_subtype == 'noepk_restraint':
-                        datum_counter['homonuclear NOE values'] += get_loop_size(content_subtype)
-                    elif content_subtype == 'jcoup_restraint':
-                        datum_counter['coupling constants'] += get_loop_size(content_subtype)
-                    elif content_subtype == 'csa_restraint':
-                        datum_counter['chemical shift anisotropy values'] += get_loop_size(content_subtype)
-                    elif content_subtype == 'ddc_restraint':
-                        datum_counter['dipolar coupling values'] += get_loop_size(content_subtype)
-                    elif content_subtype in ('hvycs_restraint', 'procs_restraint'):
-                        datum_counter['chemical shift constraints'] += get_loop_size(content_subtype)
-                    elif content_subtype == 'csp_restraint':
-                        datum_counter['chemical shift perturbation values'] += get_loop_size(content_subtype)
-                    elif content_subtype == 'heteronucl_noe_data':
-                        datum_counter['heteronuclear NOE values'] += get_loop_size(content_subtype)
-                    elif content_subtype == 'heteronucl_t1_data':
-                        datum_counter['T1 relaxation values'] += get_loop_size(content_subtype)
-                    elif content_subtype == 'heteronucl_t2_data':
-                        datum_counter['T2 relaxation values'] += get_loop_size(content_subtype)
-                    elif content_subtype == 'heteronucl_t1r_data':
-                        datum_counter['T1rho relaxation values'] += get_loop_size(content_subtype)
-                    elif content_subtype == 'order_param_data':
-                        datum_counter['order parameters'] += get_loop_size(content_subtype)
-                    elif content_subtype == 'ccrd_dd_restraint':
-                        datum_counter['dipole-dipole cross correlation relaxation values'] += get_loop_size(content_subtype)
+                datum_counter = self.__getDatumCounter(master_entry)
 
                 for k, v in datum_counter.items():
-                    if v == 0:
-                        continue
                     row = [k, v, self.__entry_id]
                     lp.add_data(row)
 
@@ -49586,6 +49439,166 @@ class NmrDpUtility:
         self.__pk_sf_holder = None
 
         return True
+
+    def __getDatumCounter(self, master_entry):
+        """ Return Datum counter dictionary.
+        """
+
+        file_type = 'nmr-star'
+
+        datum_counter = {'1H chemical shifts': 0,
+                         '2H chemical shifts': 0,
+                         '3H chemical shifts': 0,
+                         '13C chemical shifts': 0,
+                         '15N chemical shifts': 0,
+                         '31P chemical shifts': 0,
+                         '111Cd chemical shifts': 0,
+                         '113Cd chemical shifts': 0,
+                         '19F chemical shifts': 0,
+                         '6Li chemical shifts': 0,
+                         '10B chemical shifts': 0,
+                         '11B chemical shifts': 0,
+                         '17O chemical shifts': 0,
+                         '23Na chemical shifts': 0,
+                         '29Si chemical shifts': 0,
+                         '35Cl chemical shifts': 0,
+                         '129Xe chemical shifts': 0,
+                         '195Pt chemical shifts': 0,
+                         'theoretical 1H chemical shifts': 0,
+                         'theoretical 13C chemical shifts': 0,
+                         'theoretical 15N chemical shifts': 0,
+                         'chemical rates': 0,
+                         'coupling constants': 0,
+                         'theoretical coupling constants': 0,
+                         'chemical shift isotope effects': 0,
+                         'chemical shift perturbation values': 0,
+                         'T1 relaxation values': 0,
+                         'theoretical T1 relaxation values': 0,
+                         'T1rho relaxation values': 0,
+                         'T2 relaxation values': 0,
+                         'theoretical T2 relaxation values': 0,
+                         'dipole-dipole relaxation values': 0,
+                         'dipole-dipole cross correlation relaxation values': 0,
+                         'theoretical dipole-dipole cross-correlation values': 0,
+                         'chemical shift anisotropy values': 0,
+                         'chemical shift anisotropy tensor values': 0,
+                         'quadrupolar couplings': 0,
+                         'theoretical chemical shifts': 0,
+                         'chemical shift tensors': 0,
+                         'residual dipolar couplings': 0,
+                         'dipolar coupling values': 0,
+                         'dipolar coupling tensor values': 0,
+                         'heteronuclear NOE values': 0,
+                         'theoretical heteronuclear NOE values': 0,
+                         'homonuclear NOE values': 0,
+                         'order parameters': 0,
+                         'spectral density values': 0,
+                         'H exchange rates': 0,
+                         'H exchange protection factors': 0,
+                         'pKa values': 0,
+                         'pH NMR parameter values': 0,
+                         'binding constants': 0,
+                         'D/H fractionation factors': 0,
+                         'bond orientation values': 0,
+                         'deduced secondary structure values': 0,
+                         'deduced hydrogen bonds': 0,
+                         'distance constraints': 0,
+                         'ambiguous distance constraints': 0,
+                         'hydrogen bond distance constraints': 0,
+                         'torsion angle constraints': 0,
+                         'chemical shift constraints': 0,
+                         'symmetry constraints': 0
+                         }
+
+        def get_loop_size(content_subtype):
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+            size = 0
+            for sf in master_entry.get_saveframes_by_category(sf_category):
+                try:
+                    if __pynmrstar_v3_2__:
+                        lp = sf.get_loop(lp_category)
+                    else:
+                        lp = sf.get_loop_by_category(lp_category)
+                except KeyError:
+                    continue
+                size += len(lp)
+            return size
+
+        for content_subtype in self.nmr_rep_content_subtypes:
+
+            if content_subtype == 'chem_shift':
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    try:
+                        if __pynmrstar_v3_2__:
+                            lp = sf.get_loop(lp_category)
+                        else:
+                            lp = sf.get_loop_by_category(lp_category)
+                    except KeyError:
+                        continue
+                    dat = get_lp_tag(lp, ['Atom_isotope_number', 'Atom_type'])
+                    for row in dat:
+                        t = f'{row[0]}{row[1].title()} chemical shifts'
+                        if t in datum_counter:
+                            datum_counter[t] += 1
+            elif content_subtype == 'dist_restraint':
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    constraint_type = get_first_sf_tag(sf, 'Constraint_type')
+                    try:
+                        if __pynmrstar_v3_2__:
+                            lp = sf.get_loop(lp_category)
+                        else:
+                            lp = sf.get_loop_by_category(lp_category)
+                    except KeyError:
+                        continue
+                    if constraint_type == 'hydrogen bond':
+                        datum_counter['hydrogen bond distance constraints'] += len(lp)
+                    elif constraint_type == 'symmetry':
+                        datum_counter['symmetry constraints'] += len(lp)
+                    else:
+                        if 'Combination_ID' in lp.tags and 'Member_ID' in lp.tags:
+                            dat = get_lp_tag(lp, ['Combination_ID', 'Member_ID'])
+                            for row in dat:
+                                if row[0] in emptyValue and row[1] in emptyValue:
+                                    datum_counter['distance constraints'] += 1
+                                else:
+                                    datum_counter['ambiguous distance constraints'] += 1
+                        else:
+                            datum_counter['distance constraints'] += len(lp)
+            elif content_subtype == 'dihed_restraint':
+                datum_counter['torsion angle constraints'] += get_loop_size(content_subtype)
+            elif content_subtype in ('rdc_restraint' 'rdc_raw_data'):
+                datum_counter['residual dipolar couplings'] += get_loop_size(content_subtype)
+            elif content_subtype == 'noepk_restraint':
+                datum_counter['homonuclear NOE values'] += get_loop_size(content_subtype)
+            elif content_subtype == 'jcoup_restraint':
+                datum_counter['coupling constants'] += get_loop_size(content_subtype)
+            elif content_subtype == 'csa_restraint':
+                datum_counter['chemical shift anisotropy values'] += get_loop_size(content_subtype)
+            elif content_subtype == 'ddc_restraint':
+                datum_counter['dipolar coupling values'] += get_loop_size(content_subtype)
+            elif content_subtype in ('hvycs_restraint', 'procs_restraint'):
+                datum_counter['chemical shift constraints'] += get_loop_size(content_subtype)
+            elif content_subtype == 'csp_restraint':
+                datum_counter['chemical shift perturbation values'] += get_loop_size(content_subtype)
+            elif content_subtype == 'heteronucl_noe_data':
+                datum_counter['heteronuclear NOE values'] += get_loop_size(content_subtype)
+            elif content_subtype == 'heteronucl_t1_data':
+                datum_counter['T1 relaxation values'] += get_loop_size(content_subtype)
+            elif content_subtype == 'heteronucl_t2_data':
+                datum_counter['T2 relaxation values'] += get_loop_size(content_subtype)
+            elif content_subtype == 'heteronucl_t1r_data':
+                datum_counter['T1rho relaxation values'] += get_loop_size(content_subtype)
+            elif content_subtype == 'order_param_data':
+                datum_counter['order parameters'] += get_loop_size(content_subtype)
+            elif content_subtype == 'ccrd_dd_restraint':
+                datum_counter['dipole-dipole cross correlation relaxation values'] += get_loop_size(content_subtype)
+
+        return {k: v for k, v in datum_counter.items() if v > 0}
 
     def __performBmrbOnlyAnnotation(self):
         """ Perform a series of BMRB annotation.
@@ -50927,161 +50940,9 @@ class NmrDpUtility:
             for tag in tags:
                 lp.add_tag(tag)
 
-            datum_counter = {'1H chemical shifts': 0,
-                             '2H chemical shifts': 0,
-                             '3H chemical shifts': 0,
-                             '13C chemical shifts': 0,
-                             '15N chemical shifts': 0,
-                             '31P chemical shifts': 0,
-                             '111Cd chemical shifts': 0,
-                             '113Cd chemical shifts': 0,
-                             '19F chemical shifts': 0,
-                             '6Li chemical shifts': 0,
-                             '10B chemical shifts': 0,
-                             '11B chemical shifts': 0,
-                             '17O chemical shifts': 0,
-                             '23Na chemical shifts': 0,
-                             '29Si chemical shifts': 0,
-                             '35Cl chemical shifts': 0,
-                             '129Xe chemical shifts': 0,
-                             '195Pt chemical shifts': 0,
-                             'theoretical 1H chemical shifts': 0,
-                             'theoretical 13C chemical shifts': 0,
-                             'theoretical 15N chemical shifts': 0,
-                             'chemical rates': 0,
-                             'coupling constants': 0,
-                             'theoretical coupling constants': 0,
-                             'chemical shift isotope effects': 0,
-                             'chemical shift perturbation values': 0,
-                             'T1 relaxation values': 0,
-                             'theoretical T1 relaxation values': 0,
-                             'T1rho relaxation values': 0,
-                             'T2 relaxation values': 0,
-                             'theoretical T2 relaxation values': 0,
-                             'dipole-dipole relaxation values': 0,
-                             'dipole-dipole cross correlation relaxation values': 0,
-                             'theoretical dipole-dipole cross-correlation values': 0,
-                             'chemical shift anisotropy values': 0,
-                             'chemical shift anisotropy tensor values': 0,
-                             'quadrupolar couplings': 0,
-                             'theoretical chemical shifts': 0,
-                             'chemical shift tensors': 0,
-                             'residual dipolar couplings': 0,
-                             'dipolar coupling values': 0,
-                             'dipolar coupling tensor values': 0,
-                             'heteronuclear NOE values': 0,
-                             'theoretical heteronuclear NOE values': 0,
-                             'homonuclear NOE values': 0,
-                             'order parameters': 0,
-                             'spectral density values': 0,
-                             'H exchange rates': 0,
-                             'H exchange protection factors': 0,
-                             'pKa values': 0,
-                             'pH NMR parameter values': 0,
-                             'binding constants': 0,
-                             'D/H fractionation factors': 0,
-                             'bond orientation values': 0,
-                             'deduced secondary structure values': 0,
-                             'deduced hydrogen bonds': 0,
-                             'distance constraints': 0,
-                             'ambiguous distance constraints': 0,
-                             'hydrogen bond distance constraints': 0,
-                             'torsion angle constraints': 0,
-                             'chemical shift constraints': 0,
-                             'symmetry constraints': 0
-                             }
-
-            def get_loop_size(content_subtype):
-                _sf_category = self.sf_categories[file_type][content_subtype]
-                _lp_category = self.lp_categories[file_type][content_subtype]
-                size = 0
-                for _sf in master_entry.get_saveframes_by_category(_sf_category):
-                    try:
-                        if __pynmrstar_v3_2__:
-                            _lp = _sf.get_loop(_lp_category)
-                        else:
-                            _lp = _sf.get_loop_by_category(_lp_category)
-                    except KeyError:
-                        continue
-                    size += len(_lp)
-                return size
-
-            for content_subtype in self.nmr_rep_content_subtypes:
-
-                if content_subtype == 'chem_shift':
-                    _sf_category = self.sf_categories[file_type][content_subtype]
-                    _lp_category = self.lp_categories[file_type][content_subtype]
-                    for _sf in master_entry.get_saveframes_by_category(_sf_category):
-                        try:
-                            if __pynmrstar_v3_2__:
-                                _lp = _sf.get_loop(_lp_category)
-                            else:
-                                _lp = _sf.get_loop_by_category(_lp_category)
-                        except KeyError:
-                            continue
-                        _dat = get_lp_tag(_lp, ['Atom_isotope_number', 'Atom_type'])
-                        for _row in _dat:
-                            _type = f'{_row[0]}{_row[1].title()} chemical shifts'
-                            if _type in datum_counter:
-                                datum_counter[_type] += 1
-                elif content_subtype == 'dist_restraint':
-                    _sf_category = self.sf_categories[file_type][content_subtype]
-                    _lp_category = self.lp_categories[file_type][content_subtype]
-                    for _sf in master_entry.get_saveframes_by_category(_sf_category):
-                        _constraint_type = get_first_sf_tag(_sf, 'Constraint_type')
-                        try:
-                            if __pynmrstar_v3_2__:
-                                _lp = _sf.get_loop(_lp_category)
-                            else:
-                                _lp = _sf.get_loop_by_category(_lp_category)
-                        except KeyError:
-                            continue
-                        if _constraint_type == 'hydrogen bond':
-                            datum_counter['hydrogen bond distance constraints'] += len(_lp)
-                        elif _constraint_type == 'symmetry':
-                            datum_counter['symmetry constraints'] += len(_lp)
-                        else:
-                            if 'Combination_ID' in _lp.tags and 'Member_ID' in _lp.tags:
-                                _dat = get_lp_tag(_lp, ['Combination_ID', 'Member_ID'])
-                                for _row in _dat:
-                                    if _row[0] in emptyValue and _row[1] in emptyValue:
-                                        datum_counter['distance constraints'] += 1
-                                    else:
-                                        datum_counter['ambiguous distance constraints'] += 1
-                            else:
-                                datum_counter['distance constraints'] += len(_lp)
-                elif content_subtype == 'dihed_restraint':
-                    datum_counter['torsion angle constraints'] += get_loop_size(content_subtype)
-                elif content_subtype in ('rdc_restraint' 'rdc_raw_data'):
-                    datum_counter['residual dipolar couplings'] += get_loop_size(content_subtype)
-                elif content_subtype == 'noepk_restraint':
-                    datum_counter['homonuclear NOE values'] += get_loop_size(content_subtype)
-                elif content_subtype == 'jcoup_restraint':
-                    datum_counter['coupling constants'] += get_loop_size(content_subtype)
-                elif content_subtype == 'csa_restraint':
-                    datum_counter['chemical shift anisotropy values'] += get_loop_size(content_subtype)
-                elif content_subtype == 'ddc_restraint':
-                    datum_counter['dipolar coupling values'] += get_loop_size(content_subtype)
-                elif content_subtype in ('hvycs_restraint', 'procs_restraint'):
-                    datum_counter['chemical shift constraints'] += get_loop_size(content_subtype)
-                elif content_subtype == 'csp_restraint':
-                    datum_counter['chemical shift perturbation values'] += get_loop_size(content_subtype)
-                elif content_subtype == 'heteronucl_noe_data':
-                    datum_counter['heteronuclear NOE values'] += get_loop_size(content_subtype)
-                elif content_subtype == 'heteronucl_t1_data':
-                    datum_counter['T1 relaxation values'] += get_loop_size(content_subtype)
-                elif content_subtype == 'heteronucl_t2_data':
-                    datum_counter['T2 relaxation values'] += get_loop_size(content_subtype)
-                elif content_subtype == 'heteronucl_t1r_data':
-                    datum_counter['T1rho relaxation values'] += get_loop_size(content_subtype)
-                elif content_subtype == 'order_param_data':
-                    datum_counter['order parameters'] += get_loop_size(content_subtype)
-                elif content_subtype == 'ccrd_dd_restraint':
-                    datum_counter['dipole-dipole cross correlation relaxation values'] += get_loop_size(content_subtype)
+            datum_counter = self.__getDatumCounter(master_entry)
 
             for k, v in datum_counter.items():
-                if v == 0:
-                    continue
                 row = [k, v, self.__entry_id]
                 lp.add_data(row)
 

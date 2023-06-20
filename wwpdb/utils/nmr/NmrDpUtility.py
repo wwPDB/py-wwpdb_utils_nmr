@@ -1128,8 +1128,10 @@ class NmrDpUtility:
         # whether stereo-array isotope labeling method has been applied for the study
         self.__sail_flag = False
 
-        # whether pdbx_database_status.rcvd_nmr_data is 'Y'
-        self.__rcvd_nmr_data = False
+        # whether pdbx_database_status.recvd_nmr_constraints is 'Y'
+        self.__recvd_nmr_constraints = False
+        # whether pdbx_database_status.recvd_nmr_data is 'Y'
+        self.__recvd_nmr_data = False
 
         # source, destination, and log file paths
         self.__srcPath = None
@@ -37565,10 +37567,17 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"+NmrDpUtility.__parseCoordinate() ++ Warning  - {warn}\n")
 
-            self.__rcvd_nmr_data = False
+            self.__recvd_nmr_constraints = False
+            if self.__cR.hasItem('pdbx_database_status', 'recvd_nmr_constraints'):
+                pdbx_database_status = self.__cR.getDictList('pdbx_database_status')
+                self.__recvd_nmr_constraints = pdbx_database_status[0]['recvd_nmr_constraints'] == 'Y'
+            if self.__recvd_nmr_constraints:
+                self.__remediation_mode = True
+
+            self.__recvd_nmr_data = False
             if self.__cR.hasItem('pdbx_database_status', 'recvd_nmr_data'):
                 pdbx_database_status = self.__cR.getDictList('pdbx_database_status')
-                self.__rcvd_nmr_data = pdbx_database_status[0]['recvd_nmr_data'] == 'Y'
+                self.__recvd_nmr_data = pdbx_database_status[0]['recvd_nmr_data'] == 'Y'
 
             return True
 
@@ -49618,7 +49627,7 @@ class NmrDpUtility:
         ann = BMRBjAnnTasks(self.__verbose, self.__lfh,
                             self.__inputParamDict, self.__outputParamDict,
                             self.__sf_category_list, self.__entry_id, self.__bmrb_id,
-                            self.__sail_flag, self.__rcvd_nmr_data, self.report,
+                            self.__sail_flag, self.__recvd_nmr_data, self.report,
                             ccU=self.__ccU, csStat=self.__csStat)
 
         return ann.perform(self.__star_data[0])

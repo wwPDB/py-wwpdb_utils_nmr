@@ -11784,7 +11784,7 @@ class NmrDpUtility:
 
                     if cor_src_path is not None:
 
-                        middle = (i != err_line_number - 1)
+                        middle = i != err_line_number - 1
                         is_done = False
 
                         k = 0 if xplor_missing_end else 1
@@ -12906,7 +12906,7 @@ class NmrDpUtility:
 
                     if cor_src_path is not None:
 
-                        middle = (i != err_line_number - 1)
+                        middle = i != err_line_number - 1
                         is_done = False
 
                         k = 0 if xplor_missing_end else 1
@@ -18230,10 +18230,10 @@ class NmrDpUtility:
 
             if file_type == 'nef':  # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
                 pairs = self.__nefT.get_nef_comp_atom_pair(sf, lp_category,
-                                                           allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')))[0]
+                                                           allow_empty=content_subtype in ('chem_shift', 'spectral_peak'))[0]
             else:  # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
                 pairs = self.__nefT.get_star_comp_atom_pair(sf, lp_category,
-                                                            allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')))[0]
+                                                            allow_empty=content_subtype in ('chem_shift', 'spectral_peak'))[0]
 
             for pair in pairs:
                 comp_id = pair['comp_id']
@@ -27416,7 +27416,7 @@ class NmrDpUtility:
 
                                 if not rescued:
                                     atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, seq_id, comp_id, atom_id,
-                                                                          allowAmbig=(content_subtype in ('dist_restraint', 'noepk_restraint')))
+                                                                          allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'))
 
                                 if warn is not None:
 
@@ -27685,7 +27685,7 @@ class NmrDpUtility:
                                     continue
 
                                 atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, seq_id, comp_id, atom_id,
-                                                                      allowAmbig=(content_subtype in ('dist_restraint', 'noepk_restraint')))
+                                                                      allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'))
 
                                 if warn is not None:
 

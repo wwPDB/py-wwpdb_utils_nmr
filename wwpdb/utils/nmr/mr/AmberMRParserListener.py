@@ -8382,7 +8382,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         not_valid = True
 
-        lp = getLoop(self.__cur_subtype, hasInsCode=(self.__authToInsCode is not None))
+        lp = getLoop(self.__cur_subtype, hasInsCode=self.__authToInsCode is not None)
         if not isinstance(lp, dict):
             sf.add_loop(lp)
             not_valid = False

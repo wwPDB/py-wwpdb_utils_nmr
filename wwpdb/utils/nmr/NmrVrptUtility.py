@@ -572,7 +572,7 @@ class NmrVrptUtility:
         self.__has_prev_results = False
 
         # list of known workflow operations
-        self.__workFlowOps = ('nmr-restraint-validation')
+        self.__workFlowOps = ('nmr-restraint-validation',)
 
         __checkTasks = [self.__parseCoordinate,
                         self.__parseNmrData,

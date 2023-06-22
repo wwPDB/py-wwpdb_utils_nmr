@@ -470,7 +470,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                None if self.__reasons is None or 'non_poly_remap' not in self.__reasons else self.__reasons['non_poly_remap'])
 
                 self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
-                                                          resolvedMultimer=(self.__reasons is not None))
+                                                          resolvedMultimer=self.__reasons is not None)
                 self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                 if len(message) > 0:
@@ -496,7 +496,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                     ps['chain_id'] = chain_mapping[ps['chain_id']]
 
                             self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
-                                                                      resolvedMultimer=(self.__reasons is not None))
+                                                                      resolvedMultimer=self.__reasons is not None)
                             self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
@@ -2077,7 +2077,7 @@ class CharmmMRParserListener(ParseTreeListener):
            or ('atom_selection' in _factor and (_factor['atom_selection'] is None or len(_factor['atom_selection']) == 0)):
             return {'atom_selection': []}
 
-        if not any(key for key in _factor if not(key == 'atom_selection' or key.startswith('auth'))):
+        if not any(key for key in _factor if not (key == 'atom_selection' or key.startswith('auth'))):
             return _factor
 
         if 'alt_chain_id' in _factor:
@@ -5131,7 +5131,7 @@ class CharmmMRParserListener(ParseTreeListener):
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType)
 
-        lp = getLoop(self.__cur_subtype, hasInsCode=(self.__authToInsCode is not None))
+        lp = getLoop(self.__cur_subtype, hasInsCode=self.__authToInsCode is not None)
         if not isinstance(lp, dict):
             sf.add_loop(lp)
 

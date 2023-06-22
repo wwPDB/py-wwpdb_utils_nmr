@@ -421,13 +421,13 @@ class CifReader:
             self.__setDataBlock(self.getDataBlock(blockId))
 
         if self.__dBlock is None:
-            return False
+            return []
 
         # get category object
         catObj = self.__dBlock.getObj(catName)
 
         if catObj is None:
-            return False
+            return []
 
         len_catName = len(catName) + 2
 

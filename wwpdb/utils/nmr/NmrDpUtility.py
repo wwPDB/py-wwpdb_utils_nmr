@@ -37571,6 +37571,10 @@ class NmrDpUtility:
             if self.__cR.hasItem('pdbx_database_status', 'recvd_nmr_constraints'):
                 pdbx_database_status = self.__cR.getDictList('pdbx_database_status')
                 self.__recvd_nmr_constraints = pdbx_database_status[0]['recvd_nmr_constraints'] == 'Y'
+                if not self.__recvd_nmr_constraints and self.__cR.hasItem('pdbx_database_status', 'date_nmr_constraints'):
+                    date_nmr_constraints = pdbx_database_status[0]['date_nmr_constraints']
+                    if date_nmr_constraints not in emptyValue:
+                        self.__recvd_nmr_constraints = True
             if self.__recvd_nmr_constraints:
                 self.__remediation_mode = True
 

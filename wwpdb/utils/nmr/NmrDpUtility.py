@@ -37584,9 +37584,8 @@ class NmrDpUtility:
                 pdbx_database_status = self.__cR.getDictList('pdbx_database_status')
                 self.__recvd_nmr_data = pdbx_database_status[0]['recvd_nmr_data'] == 'Y'
 
-            """ DAOTHER-8580: convert working model file if pdbx_poly_seq_scheme category is missing
-                @see: wwpdb.utils.wf.plugins.FormatUtils.pdb2pdbxDepositOp
-            """
+            # DAOTHER-8580: convert working model file if pdbx_poly_seq_scheme category is missing
+            # @see: wwpdb.utils.wf.plugins.FormatUtils.pdb2pdbxDepositOp
 
             if self.__remediation_mode and self.__recvd_nmr_data\
                and not self.__cR.hasCategory('pdbx_poly_seq_scheme') and not self.__cifPath.endswith('~'):

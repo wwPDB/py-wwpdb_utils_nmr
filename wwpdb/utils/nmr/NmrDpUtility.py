@@ -169,7 +169,7 @@
 # 24-Jan-2023  M. Yokochi - add support for heteronuclear relaxation data (NOE, T1, T2, T1rho, Order parameter) (NMR restraint remediation)
 # 23-Feb-2023  M. Yokochi - combine spectral peak lists in any format into single NMR-STAR until Phase 2 release (DAOTHER-7407)
 # 24-Mar-2023  M. Yokochi - add 'nmr-nef2cif-deposit' and 'nmr-str2cif-deposit' workflow operations (DAOTHER-7407)
-# 22-Jun-2023  M. Yokcchi - convert model file when pdbx_poly_seq category is missing for reuploading nmr_data after unlock (DAOTHER-8580)
+# 22-Jun-2023  M. Yokochi - convert model file when pdbx_poly_seq category is missing for reuploading nmr_data after unlock (DAOTHER-8580)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi

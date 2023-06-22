@@ -169,6 +169,7 @@
 # 24-Jan-2023  M. Yokochi - add support for heteronuclear relaxation data (NOE, T1, T2, T1rho, Order parameter) (NMR restraint remediation)
 # 23-Feb-2023  M. Yokochi - combine spectral peak lists in any format into single NMR-STAR until Phase 2 release (DAOTHER-7407)
 # 24-Mar-2023  M. Yokochi - add 'nmr-nef2cif-deposit' and 'nmr-str2cif-deposit' workflow operations (DAOTHER-7407)
+# 22-Jun-2023  M. Yokcchi - convert model file when pdbx_poly_seq category is missing for reuploading nmr_data after unlock (DAOTHER-8580)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -37582,6 +37583,49 @@ class NmrDpUtility:
             if self.__cR.hasItem('pdbx_database_status', 'recvd_nmr_data'):
                 pdbx_database_status = self.__cR.getDictList('pdbx_database_status')
                 self.__recvd_nmr_data = pdbx_database_status[0]['recvd_nmr_data'] == 'Y'
+
+            """ DAOTHER-8580: convert working model file if pdbx_poly_seq_scheme category is missing
+                @see: wwpdb.utils.wf.plugins.FormatUtils.pdb2pdbxDepositOp
+            """
+
+            if self.__remediation_mode and self.__recvd_nmr_data\
+               and not self.__cR.hasCategory('pdbx_poly_seq_scheme') and not self.__cifPath.endswith('~'):
+
+                try:
+                    from wwpdb.utils.config.ConfigInfo import ConfigInfo  # pylint: disable=import-outside-toplevel
+                    from wwpdb.utils.dp.RcsbDpUtility import RcsbDpUtility  # pylint: disable=import-outside-toplevel
+                except ImportError:
+                    return False
+
+                try:
+
+                    srcCifPath = self.__cifPath
+                    dstCifPath = self.__cifPath + '~'
+
+                    dirPath = os.path.join(self.__dirPath, 'cif2cif')
+                    if not os.path.isdir(dirPath):
+                        os.makedirs(dirPath)
+
+                    cI = ConfigInfo()
+                    siteId = cI.get('SITE_PREFIX')
+                    rdU = RcsbDpUtility(tmpPath=dirPath, siteId=siteId, verbose=self.__verbose, log=self.__lfh)
+                    rdU.imp(srcCifPath)
+                    rdU.op('annot-cif2cif-dep')
+                    rdU.exp(dstCifPath)
+                    rdU.cleanup()
+                    os.rmdir(dirPath)
+
+                    self.__inputParamDict['coordinate_file_path'] = dstCifPath
+                    self.__cifPath = None
+
+                    return self.__parseCoordinate()
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - " + str(e))
+                    self.report.setError()
+
+                    return False
 
             return True
 

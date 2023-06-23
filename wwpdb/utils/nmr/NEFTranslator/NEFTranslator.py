@@ -4707,7 +4707,7 @@ class NEFTranslator:
                          if not_methyl or (not not_methyl and a[self.__ccU.ccaAtomId] in methyl_atoms)]
 
             else:
-
+                methyl_atoms = []
                 if leave_unmatched:
                     details = f"Unknown non-standard residue {comp_id} found."
                 elif self.__verbose:

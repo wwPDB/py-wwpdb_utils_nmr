@@ -5178,7 +5178,9 @@ def getStarAtom(authToStarSeq, offsetHolder, atom, aux_atom=None):
 
     chainId = atom['chain_id']
     seqId = atom['seq_id']
-    compId = atom.get('comp_id')
+    if 'comp_id' not in atom:
+        atom['comp_id'] = starAtom['comp_id'] = None
+    compId = atom['comp_id']
     seqKey = (chainId, seqId, compId)
     if 'atom_id' not in atom:
         starAtom['atom_id'] = None

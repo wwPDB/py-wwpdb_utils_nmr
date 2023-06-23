@@ -9465,6 +9465,10 @@ class NmrDpUtility:
 
         has_spectral_peak = lp_counts['spectral_peak'] + lp_counts['spectral_peak_alt'] > 0
 
+        if not has_spectral_peak and self.__remediation_mode:
+            if 'spectral_peak_list' in self.__sf_category_list:
+                has_spectral_peak = True
+
         if not has_spectral_peak and self.__combined_mode:
 
             warn = "The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, "\

@@ -53,7 +53,7 @@ cyana_mr:
 	EOF;
 
 comment:
-	COMMENT Any_name* RETURN_CM;
+	COMMENT Any_name* (RETURN_CM | EOF);
 
 /* CYANA 3.0 Reference Manual - Distance restraint file
  See also http://www.cyana.org/wiki/index.php/Distance_restraint_file

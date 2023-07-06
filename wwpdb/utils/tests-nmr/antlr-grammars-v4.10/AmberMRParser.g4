@@ -33,7 +33,7 @@ amber_mr:
 	EOF;
 
 comment:
-	COMMENT Any_name* RETURN_CM;
+	COMMENT Any_name* (RETURN_CM | EOF);
 
 nmr_restraint:
 	RST restraint_statement END?;

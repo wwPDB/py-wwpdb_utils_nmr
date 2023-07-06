@@ -40,7 +40,7 @@ charmm_mr:
 	EOF;
 
 comment:
-	COMMENT Any_name* RETURN_CM;
+	COMMENT Any_name* (RETURN_CM | EOF);
 
 distance_restraint:
 	Noe noe_statement* End;

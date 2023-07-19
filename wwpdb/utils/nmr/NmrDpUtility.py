@@ -28457,7 +28457,7 @@ class NmrDpUtility:
 
                     if member_id in emptyValue or member_logic_code == 'OR':
 
-                        if (not isAmbigAtomSelection([atom1, _atom1], self.__csStat) and not isAmbigAtomSelection([atom2, _atom2], self.__csStat))\
+                        if (values == _values and not isAmbigAtomSelection([atom1, _atom1], self.__csStat) and not isAmbigAtomSelection([atom2, _atom2], self.__csStat))\
                            or (values == _values and atom1['ref_chain_id'] != atom2['ref_chain_id']
                                and ((not isAmbigAtomSelection([atom1, _atom1], self.__csStat)
                                      and atom1['ref_chain_id'] != _atom2['ref_chain_id'] and atom2['comp_id'] == _atom2['comp_id'])

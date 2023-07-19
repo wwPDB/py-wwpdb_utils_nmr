@@ -3,6 +3,8 @@
 # Date: 19-Apr-2023
 #
 # Updates:
+# 19-Jul-2023  M. Yokochi - add trustPdbxAuthAtomName() for OneDep validation package (DAOTHER-8705)
+# 19-Jul-2023  M. Yokochi - fix distance/dihedral angle/RDC averaging when lower/upper bounds are different in a restraint (DAOTER-8705)
 ##
 """ Wrapper class for NMR restraint validation.
     @author: Masashi Yokochi
@@ -469,6 +471,7 @@ class NmrVrptUtility:
         self.__lfh = log
 
         self.__debug = False
+        self.__trust_pdbx_auth_atom_name = False
         self.__use_cache = cR is not None and caC is not None
 
         # auxiliary input resource
@@ -608,6 +611,13 @@ class NmrVrptUtility:
         """
 
         self.__debug = debug
+
+    def trustPdbxAuthAtomName(self, trust_pdbx_auth_atom_name):
+        """ Whether to trust _atom_site.pdbx_auth_atom_name rather than _atom_site.auth_atom_id.
+            @note: Set True for OneDep validation package.
+        """
+
+        self.__trust_pdbx_auth_atom_name = trust_pdbx_auth_atom_name
 
     def useCache(self, use_cache):
         """ Use cache file(s) of the previous run.
@@ -1112,11 +1122,14 @@ class NmrVrptUtility:
             if self.__atomIdList is not None and self.__coordinates is not None:
                 return True
 
+        _auth_atom_id = 'pdbx_auth_atom_name'\
+            if self.__trust_pdbx_auth_atom_name and self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name')\
+            else 'auth_atom_id'
+
         data_items = [{'name': 'auth_asym_id', 'type': 'str'},
                       {'name': 'auth_seq_id', 'type': 'int'},
                       {'name': 'auth_comp_id', 'type': 'str'},
-                      {'name': 'auth_atom_id' if not self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name') else 'pdbx_auth_atom_name',
-                       'type': 'str', 'alt_name': 'auth_atom_id'},
+                      {'name': _auth_atom_id, 'type': 'str', 'alt_name': 'auth_atom_id'},
                       {'name': 'label_asym_id', 'type': 'str'},
                       {'name': 'label_seq_id', 'type': 'int'},
                       {'name': 'label_comp_id', 'type': 'str'},

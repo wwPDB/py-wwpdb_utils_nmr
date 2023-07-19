@@ -159,6 +159,9 @@ def dist_inv_6_summed(r_list: [float]) -> float:
         @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.r6sum
     """
 
+    if len(r_list) == 1:
+        return r_list[0]
+
     return sum(r ** (-6.0) for r in r_list) ** (-1.0 / 6.0)
 
 
@@ -1112,7 +1115,8 @@ class NmrVrptUtility:
         data_items = [{'name': 'auth_asym_id', 'type': 'str'},
                       {'name': 'auth_seq_id', 'type': 'int'},
                       {'name': 'auth_comp_id', 'type': 'str'},
-                      {'name': 'auth_atom_id', 'type': 'str'},
+                      {'name': 'auth_atom_id' if not self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name') else 'pdbx_auth_atom_name',
+                       'type': 'str', 'alt_name': 'auth_atom_id'},
                       {'name': 'label_asym_id', 'type': 'str'},
                       {'name': 'label_seq_id', 'type': 'int'},
                       {'name': 'label_comp_id', 'type': 'str'},
@@ -1772,13 +1776,18 @@ class NmrVrptUtility:
 
                 for model_id in self.__coordinates:
 
-                    dist_list = []
+                    dist_list_set = {}
 
                     for r in restraints:
                         atom_key_1 = r['atom_key_1']
                         atom_key_2 = r['atom_key_2']
                         lower_bound = r['lower_bound']
                         upper_bound = r['upper_bound']
+
+                        bound_key = (lower_bound, upper_bound)
+
+                        if bound_key not in dist_list_set:
+                            dist_list_set[bound_key] = []
 
                         atom_present = True
 
@@ -1801,20 +1810,26 @@ class NmrVrptUtility:
                             atom_present = False
 
                         if atom_present:
+
                             d = distance(pos_1, pos_2)
                             if d == 0.0:
                                 self.__lfh.write(f"+NmrVrptUtility.__calculateDistanceRestraintViolations() ++ Error  - distance restraint {rest_key} {r} does not make sense, "
                                                  f"{os.path.basename(self.__nmrDataPath)}.\n")
-                            dist_list.append(d)
+                            dist_list_set[bound_key].append(d)
                         else:
                             self.__distRestUnmapped.append(rest_key)
 
                     error = None
 
-                    if len(dist_list) > 0:
-                        avr_d = dist_inv_6_summed(dist_list)
+                    if len(dist_list_set) > 0:
+                        for bound_key, dist_list in dist_list_set.items():
+                            lower_bound, upper_bound = bound_key
+                            avr_d = dist_inv_6_summed(dist_list)
 
-                        error = dist_error(lower_bound, upper_bound, avr_d)
+                            _error = dist_error(lower_bound, upper_bound, avr_d)
+
+                            if error is None or error > _error:
+                                error = _error
 
                     error_per_model[model_id] = error
 
@@ -1954,7 +1969,7 @@ class NmrVrptUtility:
 
                 for model_id in self.__coordinates:
 
-                    angle_list = []
+                    angle_list_set = {}
 
                     for r in restraints:
                         atom_key_1 = r['atom_key_1']
@@ -1964,6 +1979,11 @@ class NmrVrptUtility:
                         lower_bound = r['lower_bound']
                         upper_bound = r['upper_bound']
                         target_value = r['target_value']
+
+                        bound_key = (lower_bound, upper_bound, target_value)
+
+                        if bound_key not in angle_list_set:
+                            angle_list_set[bound_key] = []
 
                         atom_present = True
 
@@ -2005,16 +2025,21 @@ class NmrVrptUtility:
 
                         if atom_present:
                             a = dihedral_angle(pos_1, pos_2, pos_3, pos_4) + 180.0
-                            angle_list.append(a)
+                            angle_list_set[bound_key].append(a)
                         else:
                             self.__dihedRestUnmapped.append(rest_key)
 
                     error = None
 
-                    if len(angle_list) > 0:
-                        avr_a = np.mean(np.array(angle_list)) - 180.0
+                    if len(angle_list_set) > 0:
+                        for bound_key, angle_list in angle_list_set.items():
+                            lower_bound, upper_bound, target_value = bound_key
+                            avr_a = np.mean(np.array(angle_list)) - 180.0
 
-                        error = angle_error(lower_bound, upper_bound, target_value, avr_a)
+                            _error = angle_error(lower_bound, upper_bound, target_value, avr_a)
+
+                            if error is None or error > _error:
+                                error = _error
 
                     error_per_model[model_id] = error
 
@@ -2118,13 +2143,18 @@ class NmrVrptUtility:
 
                 for model_id in self.__coordinates:
 
-                    rdc_list = []
+                    rdc_list_set = {}
 
                     for r in restraints:
                         atom_key_1 = r['atom_key_1']
                         atom_key_2 = r['atom_key_2']
                         lower_bound = r['lower_bound']
                         upper_bound = r['upper_bound']
+
+                        bound_key = (lower_bound, upper_bound)
+
+                        if bound_key not in rdc_list_set:
+                            rdc_list_set[bound_key] = []
 
                         atom_present = True
 
@@ -2149,7 +2179,7 @@ class NmrVrptUtility:
                         if atom_present:
                             # """ TODO: rdc() should return calculated RDC value for a given vector using the RDC alignment tensor of rest_key[0]
                             # r = rdc(rest_key[0], pos_1, pos_2)
-                            # rdc_list.append(r)
+                            # rdc_list_set[bound_key].append(r)
                             # """
                             pass
                         else:
@@ -2157,10 +2187,15 @@ class NmrVrptUtility:
 
                     error = None
 
-                    if len(rdc_list) > 0:
-                        avr_r = np.mean(np.array(rdc_list))
+                    if len(rdc_list_set) > 0:
+                        for bound_key, rdc_list in rdc_list_set.items():
+                            lower_bound, upper_bound = bound_key
+                            avr_r = np.mean(np.array(rdc_list))
 
-                        error = rdc_error(lower_bound, upper_bound, avr_r)
+                            _error = rdc_error(lower_bound, upper_bound, avr_r)
+
+                            if error is None or error > _error:
+                                error = _error
 
                     error_per_model[model_id] = error
 

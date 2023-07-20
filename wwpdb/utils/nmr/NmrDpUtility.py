@@ -1080,6 +1080,8 @@ class NmrDpUtility:
         self.__check_mandatory_tag = False
         # whether to detect consistency of author sequence (nmr-star specific)
         self.__check_auth_seq = False
+        # whether to skip missing_mandatory_content error for validation server (DAOTHER-8658)
+        self.__validation_server = False
         # whether to translate conventional pseudo atom nomenclature in combined NMR-STAR file
         self.__transl_pseudo_name = False
         # whether to enable tolerant sequence alignment for residue variants
@@ -6405,6 +6407,12 @@ class NmrDpUtility:
             else:
                 self.__check_auth_seq = self.__inputParamDict['check_auth_seq'] in trueValue
 
+        if has_key_value(self.__inputParamDict, 'validation_server'):
+            if isinstance(self.__inputParamDict['validation_server'], bool):
+                self.__validation_server = self.__inputParamDict['validation_server']
+            else:
+                self.__validation_server = self.__inputParamDict['validation_server'] in trueValue
+
         if has_key_value(self.__inputParamDict, 'transl_pseudo_name'):
             if isinstance(self.__inputParamDict['transl_pseudo_name'], bool):
                 self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name']
@@ -9440,7 +9448,7 @@ class NmrDpUtility:
                 if self.__verbose:
                     self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
 
-            else:
+            elif not self.__validation_server:
 
                 err = f"The saveframe with a category {sf_category!r} is missing, "\
                     f"Deposition of distance restraints is mandatory. Please re-upload the {file_type.upper()} file."
@@ -9509,7 +9517,7 @@ class NmrDpUtility:
                 if content_subtype in lp_counts:
                     mr_loops += lp_counts[content_subtype]
 
-            if mr_loops == 0:
+            if mr_loops == 0 and not self.__validation_server:
 
                 if 'other_data_types' not in self.__sf_category_list:
 

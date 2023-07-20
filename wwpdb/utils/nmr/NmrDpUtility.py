@@ -171,6 +171,7 @@
 # 24-Mar-2023  M. Yokochi - add 'nmr-nef2cif-deposit' and 'nmr-str2cif-deposit' workflow operations (DAOTHER-7407)
 # 22-Jun-2023  M. Yokochi - convert model file when pdbx_poly_seq category is missing for reuploading nmr_data after unlock (DAOTHER-8580)
 # 19-Jul-2023  M. Yokochi - fix not to merge restraint id (_Gen_dist_constraint.ID) if lower and upper bounds are different (DAOTHER-8705)
+# 20-Jul-2023  M. Yokochi - throw 'format_issue' error when polymer sequence extraction fails (DAOTHER-8644)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -15460,7 +15461,7 @@ class NmrDpUtility:
                             p = err.index(']') + 2
                             err = err[p:]
 
-                            self.report.error.appendDescription('invalid_data',
+                            self.report.error.appendDescription('format_issue',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                  'description': err})
                             self.report.setError()
@@ -15730,12 +15731,14 @@ class NmrDpUtility:
 
                 if err.startswith('[Invalid data]'):
 
-                    if 'Auth' not in err or self.__check_auth_seq:
+                    _err = err.split('#')[0]
+
+                    if 'Auth' not in _err or self.__check_auth_seq:
 
                         p = err.index(']') + 2
                         err = err[p:]
 
-                        self.report.error.appendDescription('invalid_data',
+                        self.report.error.appendDescription('format_issue',
                                                             {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                              'description': err})
                         self.report.setError()

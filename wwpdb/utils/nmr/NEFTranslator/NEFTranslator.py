@@ -6909,7 +6909,7 @@ class NEFTranslator:
                             tag_map[chain_tag] = nef_chain
                             tag_map[seq_tag] = _star_seq
 
-                        if star_chain in self.star2CifChainMapping:
+                        if self.star2CifChainMapping is not None and star_chain in self.star2CifChainMapping:
                             tag_map[chain_tag] = self.star2CifChainMapping[star_chain]
 
                         if chain_tag == chain_tag_1:
@@ -8230,7 +8230,7 @@ class NEFTranslator:
                             tag_map[chain_tag] = nef_chain
                             tag_map[seq_tag] = _star_seq
 
-                        if star_chain in self.star2CifChainMapping:
+                        if self.star2CifChainMapping is not None and star_chain in self.star2CifChainMapping:
                             tag_map[chain_tag] = self.star2CifChainMapping[star_chain]
 
                         s.append(seq_key)
@@ -8628,10 +8628,10 @@ class NEFTranslator:
 
             try:
                 tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[(_star_chain, _star_seq)]
-            except KeyError:
+            except (KeyError, TypeError):
                 try:
                     nef_chain = self.selfSeqMap[(_star_chain, 1)][0]
-                except KeyError:
+                except (KeyError, TypeError):
                     if _star_chain in emptyValue or _star_chain not in self.authChainId:
                         nef_chain = _star_chain
                     else:
@@ -8640,7 +8640,7 @@ class NEFTranslator:
                 tag_map[chain_tag] = nef_chain
                 tag_map[seq_tag] = _star_seq
 
-            if star_chain in self.star2CifChainMapping:
+            if self.star2CifChainMapping is not None and star_chain in self.star2CifChainMapping:
                 tag_map[chain_tag] = self.star2CifChainMapping[star_chain]
 
         out = [None] * len(nef_tags)
@@ -8887,7 +8887,7 @@ class NEFTranslator:
                                     nef_chain = indexToLetter(cid)
                             nef_seq = _star_seq
 
-                        if _star_chain in self.star2CifChainMapping:
+                        if self.star2CifChainMapping is not None and _star_chain in self.star2CifChainMapping:
                             nef_chain = self.star2CifChainMapping[_star_chain]
 
                         out[col] = nef_chain

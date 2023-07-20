@@ -23180,8 +23180,8 @@ class NmrDpUtility:
                         row_src = src_lp.data[src_idx]
                         if src_idx + offset < len(src_lp.data):
                             row = src_lp.data[src_idx + offset]
-                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == str(row_src[3])))\
-                               and row[comp_id_col] == _row[5]\
+                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                               and row[comp_id_col].upper() == comp_id\
                                and row[atom_id_col] in missing_ch3:
                                 valid = True
                                 missing_ch3.remove(row[atom_id_col])
@@ -23189,8 +23189,8 @@ class NmrDpUtility:
                                     break
                         if src_idx - offset >= 0:
                             row = src_lp.data[src_idx - offset]
-                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == str(row_src[3])))\
-                               and row[comp_id_col] == _row[5]\
+                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                               and row[comp_id_col].upper() == comp_id\
                                and row[atom_id_col] in missing_ch3:
                                 valid = True
                                 missing_ch3.remove(row[atom_id_col])
@@ -23300,8 +23300,8 @@ class NmrDpUtility:
                         row_src = src_lp.data[src_idx]
                         if src_idx + offset < len(src_lp.data):
                             row = src_lp.data[src_idx + offset]
-                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == str(row_src[3])))\
-                               and row[comp_id_col] == _row[5]\
+                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                               and row[comp_id_col].upper() == comp_id\
                                and row[6] in missing_ch3:
                                 valid = True
                                 missing_ch3.remove(row[6])
@@ -23309,8 +23309,8 @@ class NmrDpUtility:
                                     break
                         if src_idx - offset >= 0:
                             row = src_lp.data[src_idx - offset]
-                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == str(row_src[3])))\
-                               and row[comp_id_col] == _row[5]\
+                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                               and row[comp_id_col].upper() == comp_id\
                                and row[6] in missing_ch3:
                                 valid = True
                                 missing_ch3.remove(row[6])

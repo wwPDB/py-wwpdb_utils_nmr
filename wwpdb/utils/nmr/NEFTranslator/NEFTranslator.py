@@ -1331,7 +1331,7 @@ class NEFTranslator:
 
                 for row in seq_data:
                     chk_key = (row[2], int(row[0]))
-                    if chk_dict[chk_key] != row[1]:
+                    if chk_dict[chk_key] != row[1].upper():
                         raise KeyError(f"{lp_category[1:]} loop contains different {comp_id} ({row[1]} and {chk_dict[chk_key]}) "
                                        f"with the same {chain_id} {row[2]}, {seq_id} {row[0]}.")
 
@@ -1552,7 +1552,7 @@ class NEFTranslator:
 
                 for row in seq_data:
                     chk_key = (row[2], int(row[0]))
-                    if chk_dict[chk_key] != row[1]:
+                    if chk_dict[chk_key] != row[1].upper():
 
                         if seq_id != alt_seq_id and alt_seq_id in loop.tags:
 

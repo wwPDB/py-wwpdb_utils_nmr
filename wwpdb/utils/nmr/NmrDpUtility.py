@@ -24101,7 +24101,113 @@ class NmrDpUtility:
                                 resolved = False
 
                         else:
-                            resolved = False
+
+                            can_auth_asym_id = [_auth_asym_id for _auth_asym_id, _auth_seq_id, _comp_id in self.__caC['auth_to_star_seq']
+                                                if _auth_seq_id == seq_id and _comp_id == comp_id]
+
+                            if len(can_auth_asym_id) != 1:
+                                resolved = False
+
+                            else:
+                                auth_asym_id, auth_seq_id = can_auth_asym_id[0], seq_id
+
+                                seq_key = (auth_asym_id, auth_seq_id, comp_id)
+                                _seq_key = (seq_key[0], seq_key[1])
+                                if seq_key in auth_to_star_seq:
+                                    entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                    self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
+                                    _row[1], _row[2], _row[3], _row[4] =\
+                                        entity_assembly_id, entity_id, seq_id, seq_id
+
+                                    _row[16], _row[17], _row[18], _row[19] =\
+                                        auth_asym_id, auth_seq_id, comp_id, atom_id
+                                    if has_ins_code and seq_key in auth_to_ins_code:
+                                        _row[27] = auth_to_ins_code[seq_key]
+
+                                    if seq_key in auth_to_orig_seq:
+                                        if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
+                                            orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                            _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
+                                        if not has_orig_seq:
+                                            orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                            if orig_seq_id in emptyValue:
+                                                orig_seq_id = auth_seq_id
+                                            if orig_comp_id in emptyValue:
+                                                orig_comp_id = comp_id
+                                            _row[20], _row[21], _row[22], _row[23] =\
+                                                auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
+                                        elif any(d in emptyValue for d in orig_dat[idx]):
+                                            if seq_key in _auth_to_orig_seq:
+                                                _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
+                                            if _row[23] in emptyValue:
+                                                _row[23] = atom_id
+                                            ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                            if ambig_code > 0:
+                                                orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                                if orig_seq_id in emptyValue:
+                                                    orig_seq_id = auth_seq_id
+                                                if orig_comp_id in emptyValue:
+                                                    orig_comp_id = comp_id
+                                                _row[20], _row[21], _row[22] =\
+                                                    auth_asym_id, orig_seq_id, orig_comp_id
+                                                if atom_id[0] not in protonBeginCode:
+                                                    _row[23] = atom_id
+                                                else:
+                                                    len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
+                                                    if len_in_grp == 2:
+                                                        _row[23] = (atom_id[0:-1] + '1')\
+                                                            if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
+                                                    elif len_in_grp == 3:
+                                                        _row[23] = (atom_id[-1] + atom_id[0:-1])\
+                                                            if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
+                                                    elif _row[23] in emptyValue:
+                                                        _row[23] = atom_id
+
+                                    else:
+                                        seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                        if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                        if seq_key is not None:
+                                            _seq_key = (seq_key[0], seq_key[1])
+                                            _row[16], _row[17], _row[18], _row[19] =\
+                                                seq_key[0], seq_key[1], seq_key[2], atom_id
+                                            if has_ins_code and seq_key in auth_to_ins_code:
+                                                _row[27] = auth_to_ins_code[seq_key]
+
+                                        if has_auth_seq:
+                                            _row[20], _row[21], _row[22], _row[23] =\
+                                                row[auth_asym_id_col], row[auth_seq_id_col],\
+                                                row[auth_comp_id_col], row[auth_atom_id_col]
+
+                                    index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
+
+                                else:
+
+                                    item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
+
+                                    if item is not None and ps is not None and any(_ps for _ps in ps if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
+                                        entity_assembly_id = item['entity_assembly_id']
+                                        entity_id = item['entity_id']
+
+                                        _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
+
+                                        seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                        if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                        if seq_key is not None:
+                                            _seq_key = (seq_key[0], seq_key[1])
+                                            _row[16], _row[17], _row[18], _row[19] =\
+                                                seq_key[0], seq_key[1], seq_key[2], atom_id
+                                            if has_ins_code and seq_key in auth_to_ins_code:
+                                                _row[27] = auth_to_ins_code[seq_key]
+
+                                        if has_auth_seq:
+                                            _row[20], _row[21], _row[22], _row[23] =\
+                                                row[auth_asym_id_col], row[auth_seq_id_col],\
+                                                row[auth_comp_id_col], row[auth_atom_id_col]
+
+                                        index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
+
+                                    else:
+                                        resolved = False
 
                     if not resolved and has_auth_seq:
                         try:
@@ -34102,7 +34208,7 @@ class NmrDpUtility:
                 ent['constraints_on_contact_map'] = count_on_map
             if has_inter_chain_constraint:
                 ent['constraints_on_asym_contact_map'] = count_on_asym_map
-            ent['range'] = {'max_value': max_val, 'min_value': min_val}
+            ent['range'] = {'max_value': float(f'{max_val:.2f}'), 'min_value': float(f'{min_val:.2f}')}
             if len(weights) > 0:
                 _weights = {}
                 for k, v in weights.items():
@@ -36437,7 +36543,7 @@ class NmrDpUtility:
                 ent['number_of_redundant_constraints'] = redu_count
             if polymer_sequence is not None:
                 ent['constraints_per_residue'] = value_per_residue
-            ent['range'] = {'max_value': max_val_, 'min_value': min_val_}
+            ent['range'] = {'max_value': float(f'{max_val_:.2f}'), 'min_value': float(f'{min_val_:.2f}')}
             if len(weights) > 0:
                 _weights = {}
                 for k, v in weights.items():

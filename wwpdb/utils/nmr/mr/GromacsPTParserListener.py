@@ -227,10 +227,11 @@ class GromacsPTParserListener(ParseTreeListener):
                         retrievedAtomNumList.append(atomNum)
                 overrun = False
                 # the second condition indicates metal ions
-                if terminus[atomNum - 2]\
+                if (terminus[atomNum - 2] and not prevCompId.endswith('5'))\
                    or (prevCompId is not None and prevCompId.endswith('3') and compId.endswith('5')
                        and not any(t for t in canceledTermNum if t - 10 < atomNum < t + 10))\
-                   or (compId == atomName and compId.title() in NAMES_ELEMENT)\
+                   or (compId == atomName and compId.split('+')[0].title() in NAMES_ELEMENT)\
+                   or (compId == atomName and compId.split('-')[0].title() in NAMES_ELEMENT)\
                    or (len(prevAtomName) > 0 and prevAtomName[0] not in NON_METAL_ELEMENTS and prevSeqId != _seqId):
 
                     if len(self.__polySeqPrmTop) > 0 and len(seqIdList) > 1 and prevAtomName.endswith('T'):
@@ -541,7 +542,8 @@ class GromacsPTParserListener(ParseTreeListener):
                 ref_code = getOneLetterCodeSequence(self.__polySeqModel[0]['comp_id'])
                 test_code = getOneLetterCodeSequence(self.__polySeqPrmTop[0]['comp_id'])
 
-                if abs(len(ref_code) - len(test_code)) < 20 and ref_code > 40:
+                hint = ''
+                if abs(len(ref_code) - len(test_code)) < 20 and len(ref_code) > 40:
                     hint = f"For example, coordinates ({self.__polySeqModel[0]['auth_chain_id']}): {ref_code} vs topology: {test_code}. "
 
                 self.__f.append(f"[Sequence mismatch] Polymer sequence between the coordinate and {_a_mr_format_name} data does not match. {hint}"
@@ -555,6 +557,9 @@ class GromacsPTParserListener(ParseTreeListener):
             def update_atom_num(seq_align, orphan):
                 ref_chain_id = seq_align['ref_chain_id']
                 test_chain_id = seq_align['test_chain_id']
+
+                if ref_chain_id in assi_ref_chain_ids or test_chain_id in proc_test_chain_ids:
+                    return
 
                 ps_cif = next(ps for ps in self.__polySeqModel if ps['auth_chain_id'] == ref_chain_id)
 

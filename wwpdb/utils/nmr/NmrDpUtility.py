@@ -23577,9 +23577,9 @@ class NmrDpUtility:
                             orig_pdb_tags.append('Atom_ID')
                             dat = get_lp_tag(loop, orig_pdb_tags)
                             for row in dat:
-                                orig_atom_id = row[3].upper()
-                                if orig_atom_id in emptyValue:
+                                if row[3] in emptyValue:
                                     continue
+                                orig_atom_id = row[3].upper()
                                 comp_id = row[4]
                                 atom_id = row[5]
                                 if orig_atom_id == atom_id:

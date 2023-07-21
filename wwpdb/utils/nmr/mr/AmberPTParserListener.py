@@ -636,7 +636,7 @@ class AmberPTParserListener(ParseTreeListener):
 
                         if test_seq_id in seq_align['test_seq_id']:
                             idx = seq_align['test_seq_id'].index(test_seq_id)
-                            if idx < len(seq_align['ref_auth_seq_id']):
+                            if 'ref_auth_seq_id' in seq_align and idx < len(seq_align['ref_auth_seq_id']):
                                 ref_seq_id = seq_align['ref_auth_seq_id'][idx]
                             elif offset is not None:
                                 ref_seq_id = test_seq_id + offset

@@ -1835,7 +1835,12 @@ class NmrVrptUtility:
                     error = None
 
                     if len(dist_list_set) > 0:
+
                         for bound_key, dist_list in dist_list_set.items():
+
+                            if len(dist_list) == 0:
+                                continue
+
                             lower_bound, upper_bound = bound_key
                             avr_d = dist_inv_6_summed(dist_list)
 
@@ -2045,7 +2050,12 @@ class NmrVrptUtility:
                     error = None
 
                     if len(angle_list_set) > 0:
+
                         for bound_key, angle_list in angle_list_set.items():
+
+                            if len(angle_list) == 0:
+                                continue
+
                             lower_bound, upper_bound, target_value = bound_key
                             avr_a = np.mean(np.array(angle_list)) - 180.0
 
@@ -2201,7 +2211,12 @@ class NmrVrptUtility:
                     error = None
 
                     if len(rdc_list_set) > 0:
+
                         for bound_key, rdc_list in rdc_list_set.items():
+
+                            if len(rdc_list) == 0:
+                                continue
+
                             lower_bound, upper_bound = bound_key
                             avr_r = np.mean(np.array(rdc_list))
 

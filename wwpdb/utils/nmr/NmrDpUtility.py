@@ -9116,6 +9116,7 @@ class NmrDpUtility:
                 entry_id = get_first_sf_tag(_sf, 'Entry_ID')
                 if pdb_id_pattern.match(entry_id) or dep_id_pattern.match(entry_id):
                     self.__remediation_mode = True
+                    self.__nefT.set_remediation_mode(True)
 
         is_valid, messages, corrections = self.__nefT.resolve_sf_names_for_cif(self.__star_data[file_list_id])  # DAOTHER-7389, issue #4
         self.__sf_name_corr.append(corrections)
@@ -15109,16 +15110,18 @@ class NmrDpUtility:
 
                 if mr_file_name == '.':
 
-                    dir_path = os.path.dirname(self.__dstPath)
+                    if self.__dstPath is not None:
 
-                    rem_dir = os.path.join(dir_path, 'remediation')
+                        dir_path = os.path.dirname(self.__dstPath)
 
-                    if os.path.isdir(rem_dir):
+                        rem_dir = os.path.join(dir_path, 'remediation')
 
-                        try:
-                            os.rmdir(rem_dir)
-                        except OSError:
-                            pass
+                        if os.path.isdir(rem_dir):
+
+                            try:
+                                os.rmdir(rem_dir)
+                            except OSError:
+                                pass
 
                 else:
 
@@ -18270,6 +18273,9 @@ class NmrDpUtility:
                                 if self.__nonblk_bad_nterm and atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                     continue
 
+                                if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                                    continue
+
                                 err = f"Invalid atom_id {atom_id!r} (comp_id {comp_id}) in a loop {lp_category}."
 
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -18286,6 +18292,9 @@ class NmrDpUtility:
                         atom_ids = sorted(set(_atom_ids))
 
                     for atom_id in atom_ids:
+
+                        if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                            continue
 
                         if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
                             self.__fixAtomNomenclature(comp_id, {'HN': 'H'})
@@ -18339,6 +18348,9 @@ class NmrDpUtility:
                             elif self.__nonblk_bad_nterm and atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                 pass
 
+                            elif self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                                pass
+
                             else:
 
                                 err = f"Invalid atom_id {atom_id!r} (comp_id {comp_id}) in a loop {lp_category}."
@@ -18367,6 +18379,10 @@ class NmrDpUtility:
                                     atom_id = _atom_id[0]
 
                             if atom_id not in ref_atom_ids:
+
+                                if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                                    continue
+
                                 unk_atom_ids.append(atom_id)
 
                         if len(unk_atom_ids) > 0:
@@ -18394,6 +18410,9 @@ class NmrDpUtility:
                                 break
 
                         for atom_id in atom_ids:
+
+                            if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                                continue
 
                             if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
                                 self.__fixAtomNomenclature(comp_id, {'HN': 'H'})
@@ -18459,6 +18478,9 @@ class NmrDpUtility:
                                     if self.__nonblk_bad_nterm and _auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                         continue
 
+                                    if self.__remediation_mode and _auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                                        continue
+
                                     auth_atom_ids = self.__getAtomIdListInXplor(comp_id, _auth_atom_id)
 
                                     if len(auth_atom_ids) > 0:
@@ -18484,6 +18506,9 @@ class NmrDpUtility:
                                                                       translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids)):
 
                                     if self.__nonblk_bad_nterm and auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
+                                        continue
+
+                                    if self.__remediation_mode and auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
                                         continue
 
                                     warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {auth_comp_id})."
@@ -18516,6 +18541,9 @@ class NmrDpUtility:
                                         if self.__nonblk_bad_nterm and auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                             continue
 
+                                        if self.__remediation_mode and auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                                            continue
+
                                         warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id}, non-standard residue)."
 
                                         self.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
@@ -18533,6 +18561,9 @@ class NmrDpUtility:
                                 for auth_atom_id in auth_atom_ids:
 
                                     if self.__nonblk_bad_nterm and auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
+                                        continue
+
+                                    if self.__remediation_mode and auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
                                         continue
 
                                     warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id}, non-standard residue)."

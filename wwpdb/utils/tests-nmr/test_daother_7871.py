@@ -49,6 +49,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.addInput(name='check_mandatory_tag', value=False, type='param')
+        self.utility.addInput(name='remediation', value=True, type='param')
         self.utility.setLog(self.data_dir_path + cs_type + '-cs-str-consistency-log.json')
         self.utility.setVerbose(False)
 

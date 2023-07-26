@@ -18926,6 +18926,9 @@ class NmrDpUtility:
                     for atom_id in atom_ids:
                         if not atom_id.startswith(atom_type):
 
+                            if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                                continue
+
                             err = f"Invalid atom_id {atom_id!r} (atom_type {atom_type}) in a loop {lp_category}."
 
                             self.report.error.appendDescription('invalid_atom_nomenclature',

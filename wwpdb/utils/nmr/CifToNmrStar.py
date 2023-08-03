@@ -411,7 +411,7 @@ class CifToNmrStar:
 
             changed = False
 
-            with open(cifPath, 'r') as ifh,\
+            with open(cifPath, 'r') as ifh, \
                     open(_cifPath, 'w') as ofh:
                 for line in ifh:
                     if sf_anonymous_pattern.match(line) or save_pattern.match(line):

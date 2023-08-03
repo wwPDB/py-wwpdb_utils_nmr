@@ -504,8 +504,8 @@ def detect_bom(fPath, default='utf-8'):
         raw = ifh.read(4)
 
     for enc, boms in \
-            ('utf-8-sig', (codecs.BOM_UTF8,)),\
-            ('utf-16', (codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE)),\
+            ('utf-8-sig', (codecs.BOM_UTF8,)), \
+            ('utf-16', (codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE)), \
             ('utf-32', (codecs.BOM_UTF32_LE, codecs.BOM_UTF32_BE)):
         if any(raw.startswith(bom) for bom in boms):
             return enc
@@ -517,7 +517,7 @@ def convert_codec(inPath, outPath, in_codec='utf-8', out_codec='utf-8'):
     """ Convert codec of input file.
     """
 
-    with open(inPath, 'rb') as ifh,\
+    with open(inPath, 'rb') as ifh, \
             open(outPath, 'w+b') as ofh:
         contents = ifh.read()
         ofh.write(contents.decode(in_codec).encode(out_codec))
@@ -2592,7 +2592,7 @@ class NmrDpUtility:
                                                        'range': DIST_RESTRAINT_RANGE,
                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                  'coexist-with': None,  # ['upper_limit'],
-                                                                 'smaller-than':['lower_linear_limit'],
+                                                                 'smaller-than': ['lower_linear_limit'],
                                                                  'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                       {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
                                                        'range': DIST_RESTRAINT_RANGE,
@@ -7419,7 +7419,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
 
-            with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+            with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                     open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                 for line in ifh:
                     ofh.write(line)
@@ -7441,7 +7441,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
 
-            with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+            with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                     open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                 for line in ifh:
                     ofh.write(line)
@@ -7483,7 +7483,7 @@ class NmrDpUtility:
             j += 1
             i = 1
 
-            with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+            with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                     open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                 ofh.write('data_' + os.path.basename(srcPath) + '\n\n')
                 for line in ifh:
@@ -7508,7 +7508,7 @@ class NmrDpUtility:
 
             pass_datablock = False
 
-            with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+            with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                     open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                 for line in ifh:
                     if pass_datablock:
@@ -7550,7 +7550,7 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                     for line in ifh:
                         if i == line_num:
@@ -7594,7 +7594,7 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                     for line in ifh:
                         if i == line_num - 1:
@@ -7648,7 +7648,7 @@ class NmrDpUtility:
 
                             in_loop = False
 
-                            with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                            with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                                     open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                                 for line in ifh:
                                     if datablock_pattern.match(line):
@@ -7705,7 +7705,7 @@ class NmrDpUtility:
 
                     tag_name_pattern = re.compile(r'\s*' + tag_name + r'\s*')
 
-                    with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                    with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                             open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                         for line in ifh:
                             if tag_name_pattern.match(line) is None:
@@ -7749,7 +7749,7 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                     for line in ifh:
                         if i != line_num:
@@ -7842,7 +7842,7 @@ class NmrDpUtility:
 
                 sf_named_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                     for line in ifh:
                         if pass_sf_loop:
@@ -7948,7 +7948,7 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                     ofh.write('data_' + os.path.basename(srcPath) + '\n\n')
                     for line in ifh:
@@ -8096,7 +8096,7 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                     for line in ifh:
                         if i in target_category_begins:
@@ -8178,7 +8178,7 @@ class NmrDpUtility:
 
                 i = 1
 
-                with open(_srcPath, 'r', encoding='utf-8') as ifh,\
+                with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                     for line in ifh:
                         if i == line_num:
@@ -11416,7 +11416,7 @@ class NmrDpUtility:
 
                                 j = 0
 
-                                with open(src_path, 'r') as ifh,\
+                                with open(src_path, 'r') as ifh, \
                                         open(cor_src_path, 'w') as ofh:
                                     for line in ifh:
                                         if j == offset:
@@ -11452,8 +11452,8 @@ class NmrDpUtility:
 
         interval = []
 
-        with open(file_path, 'r') as ifh,\
-                open(div_src_file, 'w') as ofh,\
+        with open(file_path, 'r') as ifh, \
+                open(div_src_file, 'w') as ofh, \
                 open(div_try_file, 'w') as ofh2:
             for line in ifh:
                 i += 1
@@ -11555,7 +11555,7 @@ class NmrDpUtility:
 
                             k = 0
 
-                            with open(src_path, 'r') as ifh,\
+                            with open(src_path, 'r') as ifh, \
                                     open(cor_src_path, 'w') as ofh:
                                 for line in ifh:
                                     k += 1
@@ -11593,7 +11593,7 @@ class NmrDpUtility:
 
                 if cor_src_path is not None:
 
-                    with open(src_path, 'r') as ifh,\
+                    with open(src_path, 'r') as ifh, \
                             open(cor_src_path, 'w') as ofh:
                         for line in ifh:
                             if ' 00' in line:
@@ -11633,7 +11633,7 @@ class NmrDpUtility:
 
                         k = 0
 
-                        with open(src_path, 'r') as ifh,\
+                        with open(src_path, 'r') as ifh, \
                                 open(cor_src_path, 'w') as ofh:
                             for line in ifh:
                                 if k == offset:
@@ -11688,7 +11688,7 @@ class NmrDpUtility:
 
                                 k = 0
 
-                                with open(src_path, 'r') as ifh,\
+                                with open(src_path, 'r') as ifh, \
                                         open(cor_src_path, 'w') as ofh:
                                     for line in ifh:
                                         if k == offset:
@@ -11774,7 +11774,7 @@ class NmrDpUtility:
 
                             k = 0
 
-                            with open(src_path, 'r') as ifh,\
+                            with open(src_path, 'r') as ifh, \
                                     open(cor_src_path, 'w') as ofh:
                                 for line in ifh:
                                     if k == offset:
@@ -11804,7 +11804,7 @@ class NmrDpUtility:
 
                         k = 0 if xplor_missing_end else 1
 
-                        with open(src_path, 'r') as ifh,\
+                        with open(src_path, 'r') as ifh, \
                                 open(cor_src_path, 'w') as ofh:
                             for line in ifh:
                                 if middle:
@@ -11834,7 +11834,7 @@ class NmrDpUtility:
 
                     k = 1
 
-                    with open(src_path, 'r') as ifh,\
+                    with open(src_path, 'r') as ifh, \
                             open(cor_src_path, 'w') as ofh:
                         for line in ifh:
                             if k == err_line_number:
@@ -11857,7 +11857,7 @@ class NmrDpUtility:
 
                 if cor_src_path is not None:
 
-                    with open(src_path, 'r') as ifh,\
+                    with open(src_path, 'r') as ifh, \
                             open(cor_src_path, 'w') as ofh:
                         for line in ifh:
                             ofh.write(line)
@@ -11891,7 +11891,7 @@ class NmrDpUtility:
 
                         k = 0
 
-                        with open(src_path, 'r') as ifh,\
+                        with open(src_path, 'r') as ifh, \
                                 open(cor_src_path, 'w') as ofh:
                             for line in ifh:
                                 if k == offset:
@@ -12047,8 +12047,8 @@ class NmrDpUtility:
 
                                     l = 0  # noqa: E741
 
-                                    with open(div_dst_file, 'r') as ifh,\
-                                            open(_div_src_file, 'w') as ofh,\
+                                    with open(div_dst_file, 'r') as ifh, \
+                                            open(_div_src_file, 'w') as ofh, \
                                             open(_div_dst_file, 'w') as ofh2:
                                         for line in ifh:
                                             if l < k:
@@ -12258,7 +12258,7 @@ class NmrDpUtility:
 
                     k = 0
 
-                    with open(src_path, 'r') as ifh,\
+                    with open(src_path, 'r') as ifh, \
                             open(cor_src_path, 'w') as ofh:
                         for line in ifh:
                             if k == _offset:
@@ -12363,8 +12363,8 @@ class NmrDpUtility:
 
                         i = 0
 
-                        with open(file_path, 'r') as ifh,\
-                                open(div_src_file, 'w') as ofh,\
+                        with open(file_path, 'r') as ifh, \
+                                open(div_src_file, 'w') as ofh, \
                                 open(div_try_file, 'w') as ofh3:
                             for line in ifh:
                                 i += 1
@@ -12386,9 +12386,9 @@ class NmrDpUtility:
             is_valid = False
             ws_or_comment = True
 
-            with open(file_path, 'r') as ifh,\
-                    open(div_src_file, 'w') as ofh,\
-                    open(div_ext_file, 'w') as ofh2,\
+            with open(file_path, 'r') as ifh, \
+                    open(div_src_file, 'w') as ofh, \
+                    open(div_ext_file, 'w') as ofh2, \
                     open(div_try_file, 'w') as ofh3:
                 for line in ifh:
                     i += 1
@@ -12519,7 +12519,7 @@ class NmrDpUtility:
 
             if div_src:
                 os.remove(file_path)
-            with open(div_try_file, 'r') as ifh,\
+            with open(div_try_file, 'r') as ifh, \
                     open(div_ext_file, 'a') as ofh:
                 for line in ifh:
                     ofh.write(line)
@@ -12677,8 +12677,8 @@ class NmrDpUtility:
 
         ws_or_comment = True
 
-        with open(file_path, 'r') as ifh,\
-                open(div_src_file, 'w') as ofh,\
+        with open(file_path, 'r') as ifh, \
+                open(div_src_file, 'w') as ofh, \
                 open(div_try_file, 'w') as ofh2:
             for line in ifh:
                 i += 1
@@ -12746,7 +12746,7 @@ class NmrDpUtility:
 
                 if cor_src_path is not None:
 
-                    with open(src_path, 'r') as ifh,\
+                    with open(src_path, 'r') as ifh, \
                             open(cor_src_path, 'w') as ofh:
                         for line in ifh:
                             if ' 00' in line:
@@ -12786,7 +12786,7 @@ class NmrDpUtility:
 
                         k = 0
 
-                        with open(src_path, 'r') as ifh,\
+                        with open(src_path, 'r') as ifh, \
                                 open(cor_src_path, 'w') as ofh:
                             for line in ifh:
                                 if k == offset:
@@ -12841,7 +12841,7 @@ class NmrDpUtility:
 
                                 k = 0
 
-                                with open(src_path, 'r') as ifh,\
+                                with open(src_path, 'r') as ifh, \
                                         open(cor_src_path, 'w') as ofh:
                                     for line in ifh:
                                         if k == offset:
@@ -12896,7 +12896,7 @@ class NmrDpUtility:
 
                             k = 0
 
-                            with open(src_path, 'r') as ifh,\
+                            with open(src_path, 'r') as ifh, \
                                     open(cor_src_path, 'w') as ofh:
                                 for line in ifh:
                                     if k == offset:
@@ -12926,7 +12926,7 @@ class NmrDpUtility:
 
                         k = 0 if xplor_missing_end else 1
 
-                        with open(src_path, 'r') as ifh,\
+                        with open(src_path, 'r') as ifh, \
                                 open(cor_src_path, 'w') as ofh:
                             for line in ifh:
                                 if middle:
@@ -12956,7 +12956,7 @@ class NmrDpUtility:
 
                     k = 1
 
-                    with open(src_path, 'r') as ifh,\
+                    with open(src_path, 'r') as ifh, \
                             open(cor_src_path, 'w') as ofh:
                         for line in ifh:
                             if k == err_line_number:
@@ -12979,7 +12979,7 @@ class NmrDpUtility:
 
                 if cor_src_path is not None:
 
-                    with open(src_path, 'r') as ifh,\
+                    with open(src_path, 'r') as ifh, \
                             open(cor_src_path, 'w') as ofh:
                         for line in ifh:
                             ofh.write(line)
@@ -13013,7 +13013,7 @@ class NmrDpUtility:
 
                         k = 0
 
-                        with open(src_path, 'r') as ifh,\
+                        with open(src_path, 'r') as ifh, \
                                 open(cor_src_path, 'w') as ofh:
                             for line in ifh:
                                 if k == offset:
@@ -13685,9 +13685,9 @@ class NmrDpUtility:
 
                 i = 0
 
-                with open(src_file, 'r') as ifh,\
-                        open(dst_file, 'w') as ofh,\
-                        open(header_file, 'w') as hofh,\
+                with open(src_file, 'r') as ifh, \
+                        open(dst_file, 'w') as ofh, \
+                        open(header_file, 'w') as hofh, \
                         open(footer_file, 'w') as fofh:
                     for line in ifh:
                         i += 1
@@ -13779,8 +13779,8 @@ class NmrDpUtility:
 
                         i = 0
 
-                        with open(src_file, 'r') as ifh,\
-                                open(dst_file, 'w') as ofh,\
+                        with open(src_file, 'r') as ifh, \
+                                open(dst_file, 'w') as ofh, \
                                 open(mrPath, 'w') as ofh2:
                             for line in ifh:
                                 i += 1
@@ -13942,8 +13942,8 @@ class NmrDpUtility:
 
                         i = 0
 
-                        with open(src_file, 'r') as ifh,\
-                                open(dst_file, 'w') as ofh,\
+                        with open(src_file, 'r') as ifh, \
+                                open(dst_file, 'w') as ofh, \
                                 open(mrPath, 'w') as ofh2:
                             for line in ifh:
                                 i += 1
@@ -23820,12 +23820,12 @@ class NmrDpUtility:
                         continue
 
                     _row[16], _row[17], _row[18], _row[19] =\
-                        row[auth_asym_id_col], row[auth_seq_id_col],\
+                        row[auth_asym_id_col], row[auth_seq_id_col], \
                         row[auth_comp_id_col], row[auth_atom_id_col]
 
                 if has_orig_seq:
                     _row[20], _row[21], _row[22], _row[23] =\
-                        row[orig_asym_id_col], row[orig_seq_id_col],\
+                        row[orig_asym_id_col], row[orig_seq_id_col], \
                         row[orig_comp_id_col], row[orig_atom_id_col]
 
                 if details_col != -1:
@@ -23901,7 +23901,7 @@ class NmrDpUtility:
                                     _row[27] = auth_to_ins_code[seq_key]
 
                             _row[20], _row[21], _row[22], _row[23] =\
-                                row[auth_asym_id_col], row[auth_seq_id_col],\
+                                row[auth_asym_id_col], row[auth_seq_id_col], \
                                 row[auth_comp_id_col], row[auth_atom_id_col]
 
                         index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
@@ -23971,7 +23971,7 @@ class NmrDpUtility:
                                             _row[27] = auth_to_ins_code[seq_key]
 
                                     _row[20], _row[21], _row[22], _row[23] =\
-                                        row[auth_asym_id_col], row[auth_seq_id_col],\
+                                        row[auth_asym_id_col], row[auth_seq_id_col], \
                                         row[auth_comp_id_col], row[auth_atom_id_col]
 
                                 index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
@@ -24070,7 +24070,7 @@ class NmrDpUtility:
 
                                 if has_auth_seq:
                                     _row[20], _row[21], _row[22], _row[23] =\
-                                        row[auth_asym_id_col], row[auth_seq_id_col],\
+                                        row[auth_asym_id_col], row[auth_seq_id_col], \
                                         row[auth_comp_id_col], row[auth_atom_id_col]
 
                             index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
@@ -24096,7 +24096,7 @@ class NmrDpUtility:
 
                                 if has_auth_seq:
                                     _row[20], _row[21], _row[22], _row[23] =\
-                                        row[auth_asym_id_col], row[auth_seq_id_col],\
+                                        row[auth_asym_id_col], row[auth_seq_id_col], \
                                         row[auth_comp_id_col], row[auth_atom_id_col]
 
                                 index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
@@ -24131,7 +24131,7 @@ class NmrDpUtility:
                                             _row[27] = auth_to_ins_code[seq_key]
 
                                     _row[20], _row[21], _row[22], _row[23] =\
-                                        row[auth_asym_id_col], row[auth_seq_id_col],\
+                                        row[auth_asym_id_col], row[auth_seq_id_col], \
                                         row[auth_comp_id_col], row[auth_atom_id_col]
 
                                     index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
@@ -24217,7 +24217,7 @@ class NmrDpUtility:
 
                                         if has_auth_seq:
                                             _row[20], _row[21], _row[22], _row[23] =\
-                                                row[auth_asym_id_col], row[auth_seq_id_col],\
+                                                row[auth_asym_id_col], row[auth_seq_id_col], \
                                                 row[auth_comp_id_col], row[auth_atom_id_col]
 
                                     index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
@@ -24243,7 +24243,7 @@ class NmrDpUtility:
 
                                         if has_auth_seq:
                                             _row[20], _row[21], _row[22], _row[23] =\
-                                                row[auth_asym_id_col], row[auth_seq_id_col],\
+                                                row[auth_asym_id_col], row[auth_seq_id_col], \
                                                 row[auth_comp_id_col], row[auth_atom_id_col]
 
                                         index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
@@ -24289,7 +24289,7 @@ class NmrDpUtility:
 
                                     if has_auth_seq:
                                         _row[20], _row[21], _row[22], _row[23] =\
-                                            row[auth_asym_id_col], row[auth_seq_id_col],\
+                                            row[auth_asym_id_col], row[auth_seq_id_col], \
                                             row[auth_comp_id_col], row[auth_atom_id_col]
                                     else:
                                         _row[20], _row[21], _row[22], _row[23] =\
@@ -49358,7 +49358,7 @@ class NmrDpUtility:
                 _name = get_first_sf_tag(sf, 'Name')
                 _code = get_first_sf_tag(sf, 'Sf_framecode')
                 defined_software.append(_name)
-                if _id not in emptyValue and _name not in emptyValue\
+                if _id not in emptyValue and _name not in emptyValue \
                    and _id.isdigit() and _name not in software_dict:
                     _id_ = int(_id)
                     software_dict[_name] = (_id_, _code)
@@ -49388,14 +49388,14 @@ class NmrDpUtility:
                         _name = getPdbxNmrSoftwareName(_name_)
                         if _name in software_dict:
                             row[2], row[3], row[4] =\
-                                software_dict[_name][0],\
-                                f'${software_dict[_name][1]}' if _name in defined_software else None,\
+                                software_dict[_name][0], \
+                                f'${software_dict[_name][1]}' if _name in defined_software else None, \
                                 _name
                         else:
                             software_id += 1
                             _code = f'software_{software_id}'
                             row[2], row[3], row[4] =\
-                                software_id, f'${_code}' if _name in defined_software else None,\
+                                software_id, f'${_code}' if _name in defined_software else None, \
                                 _name
                             software_dict[_name] = (software_id, _code)
                     if 'Block_ID' in sf_allowed_tags:
@@ -49495,15 +49495,15 @@ class NmrDpUtility:
                 if data_format is not None and data_format != 'UNKNOWN':
                     if data_format in software_dict:
                         row[2], row[3], row[4] =\
-                            software_dict[data_format][0],\
-                            f'${software_dict[data_format][1]}' if data_format in defined_software else None,\
+                            software_dict[data_format][0], \
+                            f'${software_dict[data_format][1]}' if data_format in defined_software else None, \
                             data_format
                     else:
                         software_id += 1
                         _code = f'software_{software_id}'
                         row[2], row[3], row[4] =\
-                            software_id,\
-                            f'${_code}' if data_format in defined_software else None,\
+                            software_id, \
+                            f'${_code}' if data_format in defined_software else None, \
                             data_format
                         software_dict[data_format] = (software_id, _code)
 

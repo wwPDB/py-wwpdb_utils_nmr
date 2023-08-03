@@ -1628,7 +1628,7 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
             if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                 return seqId, compId, atomId
 
-            return item['auth_seq_id'], item['auth_comp_id'],\
+            return item['auth_seq_id'], item['auth_comp_id'], \
                 item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
 
         if len(atomId) > 1:
@@ -1641,7 +1641,7 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
                 if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                     return seqId, compId, atomId
 
-                return item['auth_seq_id'], item['auth_comp_id'],\
+                return item['auth_seq_id'], item['auth_comp_id'], \
                     item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
 
     if elemName == 'H' and atomId[-1] in ('1', '2', '3'):
@@ -1693,7 +1693,7 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
                         total += 1
 
                 if total == 1:
-                    return item['auth_seq_id'], item['auth_comp_id'],\
+                    return item['auth_seq_id'], item['auth_comp_id'], \
                         next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(_atomId_))
 
                 return seqId, compId, atomId
@@ -1708,7 +1708,7 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
                     total += 1
 
             if total == 1:
-                return mapping[0]['auth_seq_id'], mapping[0]['auth_comp_id'],\
+                return mapping[0]['auth_seq_id'], mapping[0]['auth_comp_id'], \
                     next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(atomId))
 
         return seqId, compId, atomId

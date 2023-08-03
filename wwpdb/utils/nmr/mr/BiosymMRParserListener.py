@@ -542,7 +542,7 @@ class BiosymMRParserListener(ParseTreeListener):
             # weight_ub = self.numberSelection[4]
             # max_penalty = self.numberSelection[5]
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -672,7 +672,7 @@ class BiosymMRParserListener(ParseTreeListener):
             # weight_ub = self.numberSelection[3]
             # max_penalty = self.numberSelection[4]
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -1932,7 +1932,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
                 dstFunc4 = self.validateAngleRange(weight, target_value, lower_limit4, upper_limit4)
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -2081,7 +2081,7 @@ class BiosymMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -2240,7 +2240,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
         chirality = str(ctx.Chiral_code())
 
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         self.__retrieveLocalSeqScheme()
@@ -2300,7 +2300,7 @@ class BiosymMRParserListener(ParseTreeListener):
         chainId4, seqId4, compId4, atomId4 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(3)))
         chainId5, seqId5, compId5, atomId5 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(4)))
 
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         self.__retrieveLocalSeqScheme()

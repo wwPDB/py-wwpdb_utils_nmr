@@ -630,7 +630,7 @@ class RosettaMRParserListener(ParseTreeListener):
                             seqId2 = atomSel['seq_id']
                             atomId2 = atomSel['atom_id']
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -1780,7 +1780,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if dstFunc is None:
             return
 
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         self.__retrieveLocalSeqScheme()
@@ -2045,7 +2045,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if dstFunc is None:
             return
 
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         self.__retrieveLocalSeqScheme()
@@ -2148,7 +2148,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if dstFunc is None:
             return
 
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         self.__retrieveLocalSeqScheme()
@@ -2298,7 +2298,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 seqId2 = int(g[0])
                 fixedChainId2 = g[1]
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -2415,7 +2415,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -2502,7 +2502,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if dstFunc is None:
             return
 
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         self.__retrieveLocalSeqScheme()
@@ -2593,7 +2593,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if dstFunc is None:
             return
 
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         self.__retrieveLocalSeqScheme()
@@ -2683,7 +2683,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             target_value = self.numberSelection[0]
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -2784,7 +2784,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             sDev = self.numberSelection[0]
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -3774,7 +3774,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                     f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.")
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -3943,7 +3943,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.ssbondRestraints -= 1
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()

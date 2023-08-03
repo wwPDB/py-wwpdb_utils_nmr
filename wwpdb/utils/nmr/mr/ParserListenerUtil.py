@@ -16,6 +16,8 @@ import numpy
 
 import pynmrstar
 
+from operator import itemgetter
+
 try:
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            emptyValue,
@@ -2962,7 +2964,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                      'coordinate': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                     {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                    {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                    {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id', 'default': '.'},
                                     {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'auth_comp_id'},
                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
                                     ]
@@ -2972,6 +2974,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
         lpCategory = _lpCategories[contentSubtype]
         keyItems = _keyItems[contentSubtype]
+
+        nmrExtPolySeq = []
+        has_nonpoly_only = gen_ent_asm_from_nonpoly = False
 
         try:
 
@@ -3000,8 +3005,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                     withRmsd=False)
                 except KeyError:
                     polySeq = []
-
-            nmrExtPolySeq = []
+                except ValueError:
+                    has_nonpoly_only = True
+                    polySeq = []
 
             if nmrPolySeq is not None:
 
@@ -3185,6 +3191,136 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
             except KeyError:
                 nonPoly = None
+
+        elif has_nonpoly_only:
+            modelNumName = None if prevResult is None or 'model_num_name' not in prevResult else prevResult['model_num_name']
+            authAsymId = None if prevResult is None or 'auth_asym_id' not in prevResult else prevResult['auth_asym_id']
+            authSeqId = None if prevResult is None or 'auth_seq_id' not in prevResult else prevResult['auth_seq_id']
+            authAtomId = None if prevResult is None or 'auth_atom_id' not in prevResult else prevResult['auth_atom_id']
+
+            tags = cR.getItemTags('atom_site')
+
+            if modelNumName is None:
+                modelNumName = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in tags else 'ndb_model'
+            if authAsymId is None:
+                authAsymId = 'pdbx_auth_asym_id' if 'pdbx_auth_asym_id' in tags else 'auth_asym_id'
+            if authSeqId is None:
+                authSeqId = 'pdbx_auth_seq_id' if 'pdbx_auth_seq_id' in tags else 'auth_seq_id'
+            if authAtomId is None:
+                authAtomId = 'auth_atom_id'
+            altAuthAtomId = 'pdbx_auth_atom_name' if 'pdbx_auth_atom_name' in tags else None
+
+            dataItems = [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
+                         {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
+                         {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
+                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
+                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'alt_comp_id'},
+                         {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                         {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'}
+                         ]
+
+            has_ins_code = 'pdbx_PDB_ins_code' in tags
+
+            if has_ins_code:
+                dataItems.append({'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code'})
+
+            if altAuthAtomId is not None:
+                dataItems.append({'name': altAuthAtomId, 'type': 'str', 'alt_name': 'alt_atom_id'})
+
+            filterItems = [{'name': modelNumName, 'type': 'int',
+                            'value': representativeModelId},
+                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')},
+                           {'name': 'group_PDB', 'type': 'str', 'value': 'HETATM'}
+                           ]
+
+            coord = cR.getDictListWithFilter('atom_site', dataItems, filterItems)
+
+            if len(coord) > 0:
+                nonPoly = []
+
+                compDict = {}
+                seqDict = {}
+                insCodeDict = {}
+
+                authChainDict = {}
+
+                chainIds = []
+                for item in coord:
+                    if item['alt_chain_id'] not in chainIds:
+                        chainIds.append(item['alt_chain_id'])
+
+                if has_ins_code:
+                    sortedSeq = sorted(set((item['alt_chain_id'], int(item['seq_id']), item['ins_code'], item['alt_comp_id']) for item in coord),
+                                       key=itemgetter(1))
+
+                    for c in chainIds:
+                        compDict[c] = [x[3] for x in sortedSeq if x[0] == c]
+                        seqDict[c] = [x[1] for x in sortedSeq if x[0] == c]
+                        insCodeDict[c] = [x[2] for x in sortedSeq if x[0] == c]
+
+                else:
+                    sortedSeq = sorted(set((item['alt_chain_id'], int(item['seq_id']), item['alt_comp_id']) for item in coord),
+                                       key=itemgetter(1))
+
+                    for c in chainIds:
+                        compDict[c] = [x[2] for x in sortedSeq if x[0] == c]
+                        seqDict[c] = [x[1] for x in sortedSeq if x[0] == c]
+
+                chainIds = []
+                for x in sortedSeq:
+                    if x[0] not in chainIds:
+                        chainIds.append(x[0])
+
+                for item in coord:
+                    c = item['alt_chain_id']
+                    if c not in authChainDict:
+                        authChainDict[c] = item['chain_id']
+
+                for i, c in enumerate(chainIds):
+                    ent = {}  # entity
+
+                    ent['chain_id'] = c
+                    ent['auth_chain_id'] = authChainDict[c]
+
+                    ent['seq_id'] = ent['auth_seq_id'] = seqDict[c]
+                    ent['comp_id'] = compDict[c]
+                    if c in insCodeDict:
+                        if any(i for i in insCodeDict[c] if i not in emptyValue):
+                            ent['ins_code'] = insCodeDict[c]
+
+                    ent['auth_seq_id'] = []
+                    for s in seqDict[c]:
+                        item = next((item for item in coord if item['alt_chain_id'] == c and int(item['seq_id']) == s), None)
+                        if item is not None:
+                            if item['seq_id'] not in emptyValue:
+                                try:
+                                    _s = int(item['seq_id'])
+                                except ValueError:
+                                    _s = None
+                                ent['auth_seq_id'].append(_s)
+                            else:
+                                ent['auth_seq_id'].append(None)
+                            ent['gap_in_auth_seq'] = False
+                            for p in range(len(ent['auth_seq_id']) - 1):
+                                s_p = ent['auth_seq_id'][p]
+                                s_q = ent['auth_seq_id'][p + 1]
+                                if s_p is None or s_q is None:
+                                    continue
+                                if s_p + 1 != s_q:
+                                    ent['gap_in_auth_seq'] = True
+                                    break
+
+                    ent['auth_comp_id'] = []
+                    for s in seqDict[c]:
+                        item = next((item for item in coord if item['alt_chain_id'] == c and int(item['seq_id']) == s), None)
+                        if item is not None:
+                            comp_id = item['comp_id']
+                            if comp_id not in emptyValue:
+                                ent['auth_comp_id'].append(comp_id)
+                            else:
+                                ent['auth_comp_id'].append('.')
+
+                    nonPoly.append(ent)
 
         contentSubtype = 'branched'
 
@@ -3460,7 +3596,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                       ],
                                                      filterItemByEntityId)
                     if len(roles) > 0:
-                        entityRole = ','.join([role['name'] for role in roles])
+                        entityRole = ','.join([role['name'] for role in roles if role['name'] is not None])
+                        if len(entityRole) == 0:
+                            entityRole = '.'
 
                 if entityType == 'polymer':
                     entityPolyType = oneLetterCodeCan = oneLetterCode = targetIdentifier = '.'
@@ -3914,6 +4052,88 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                'label_asym_id': ','.join(labelAsymIds),
                                                'comp_id': compId})
                         entityAssemblyId += 1
+
+                    elif has_nonpoly_only:
+                        gen_ent_asm_from_nonpoly = True
+
+            if gen_ent_asm_from_nonpoly:
+
+                _idx = {}
+                for item in nonPoly:
+                    for compId in item['comp_id']:
+                        if compId not in _idx:
+                            _idx[compId] = 0
+
+                for item in nonPoly:
+                    for idx, compId in enumerate(item['comp_id']):
+
+                        for entity in entities:
+                            entityId = int(entity['id'])
+                            entityType = entity.get('type', 'polymer')
+                            if entityType != 'non-polymer':
+                                continue
+                            entitySrcMethod = entity.get('src_method', '.')
+                            entityDesc = entity.get('pdbx_description', '.')
+                            entityFW = entity.get('formula_weight', '.')
+                            if entityFW not in emptyValue:
+                                entityFW = float(entityFW)
+                            entityCopies = entity.get('pdbx_number_of_molecules', '.')
+                            if entityCopies not in emptyValue:
+                                entityCopies = int(entityCopies)
+                            entityEC = entity.get('pdbx_ec', '.')
+                            entityParent = entity.get('pdbx_parent_entity_id', '.')
+                            if entityParent not in emptyValue:
+                                entityParent = int(entityParent)
+                            entityMutation = entity.get('pdbx_mutation', '.')
+                            entityFragment = entity.get('pdbx_fragment', '.')
+                            if compId != entityFragment:
+                                continue
+                            entityDetails = entity.get('details', '.')
+
+                            filterItemByEntityId = [{'name': 'entity_id', 'type': 'int', 'value': entityId}]
+
+                            entityRole = '.'
+                            if cR.hasCategory('entity_name_com'):
+                                roles = cR.getDictListWithFilter('entity_name_com',
+                                                                 [{'name': 'name', 'type': 'str'}
+                                                                  ],
+                                                                 filterItemByEntityId)
+                                if len(roles) > 0:
+                                    entityRole = ','.join([role['name'] for role in roles if role['name'] is not None])
+                                    if len(entityRole) == 0:
+                                        entityRole = '.'
+
+                            seqKey = (item['auth_chain_id'], item['auth_seq_id'][idx], compId)
+                            authToStarSeq[seqKey] = (entityAssemblyId, _idx[compId] + 1, entityId, True)
+                            authToOrigSeq[seqKey] = (item['seq_id'][idx], compId)
+                            if 'ins_code' in item and item['ins_code'][idx] not in emptyValue:
+                                authToInsCode[seqKey] = item['ins_code'][idx]
+                            authToEntityType[seqKey] = 'non-polymer'
+
+                            authAsymIds = labelAsymIds = []
+                            for _item in nonPoly:
+                                if idx < len(item['comp_id']) and item['comp_id'][idx] == compId:
+                                    if _item['auth_chain_id'] not in authAsymIds:
+                                        authAsymIds.append(_item['auth_chain_id'])
+                                    if _item['chain_id'] not in labelAsymIds:
+                                        labelAsymIds.append(_item['chain_id'])
+
+                            _idx[compId] += 1
+
+                            entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
+                                                   'entity_type': entityType, 'entity_src_method': entitySrcMethod,
+                                                   'entity_desc': entityDesc, 'entity_fw': entityFW,
+                                                   'entity_copies': entityCopies,
+                                                   'entity_details': entityDetails,
+                                                   'entity_role': entityRole,
+                                                   'auth_asym_id': ','.join(authAsymIds),
+                                                   'label_asym_id': ','.join(labelAsymIds),
+                                                   'fixed_auth_asym_id': item['auth_chain_id'],
+                                                   'fixed_label_asym_id': item['chain_id'],
+                                                   'comp_id': compId})
+                            entityAssemblyId += 1
+
+                            break
 
     except Exception as e:
         if verbose:

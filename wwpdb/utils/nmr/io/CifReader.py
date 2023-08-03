@@ -701,14 +701,9 @@ class CifReader:
                                        f"{itNameList[seq_id_col]} {row[seq_id_col]}, "
                                        f"{itNameList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
 
-                if len(chainIds) > 1:
-                    for c in chainIds:
-                        compDict[c] = [x[2] for x in sortedSeq if x[0] == c]
-                        seqDict[c] = [x[1] for x in sortedSeq if x[0] == c]
-                else:
-                    c = list(chainIds)[0]
-                    compDict[c] = [x[2] for x in sortedSeq]
-                    seqDict[c] = [x[1] for x in sortedSeq]
+                for c in chainIds:
+                    compDict[c] = [x[2] for x in sortedSeq if x[0] == c]
+                    seqDict[c] = [x[1] for x in sortedSeq if x[0] == c]
 
             else:
                 if catName == 'pdbx_nonpoly_scheme':
@@ -733,18 +728,11 @@ class CifReader:
                                        f"{itNameList[label_seq_col]} {row[label_seq_col]}, "
                                        f"{itNameList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
 
-                if len(chainIds) > 1:
-                    for c in chainIds:
-                        compDict[c] = [x[4] for x in sortedSeq if x[0] == c]
-                        seqDict[c] = [x[1] for x in sortedSeq if x[0] == c]
-                        insCodeDict[c] = [x[2] for x in sortedSeq if x[0] == c]
-                        labelSeqDict[c] = [x[3] for x in sortedSeq if x[0] == c]
-                else:
-                    c = list(chainIds)[0]
-                    compDict[c] = [x[4] for x in sortedSeq]
-                    seqDict[c] = [x[1] for x in sortedSeq]
-                    insCodeDict[c] = [x[2] for x in sortedSeq]
-                    labelSeqDict[c] = [x[3] for x in sortedSeq]
+                for c in chainIds:
+                    compDict[c] = [x[4] for x in sortedSeq if x[0] == c]
+                    seqDict[c] = [x[1] for x in sortedSeq if x[0] == c]
+                    insCodeDict[c] = [x[2] for x in sortedSeq if x[0] == c]
+                    labelSeqDict[c] = [x[3] for x in sortedSeq if x[0] == c]
 
             chainIds = []
             for x in sortedSeq:

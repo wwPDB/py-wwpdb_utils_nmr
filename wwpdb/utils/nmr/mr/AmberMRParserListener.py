@@ -3192,7 +3192,7 @@ class AmberMRParserListener(ParseTreeListener):
     def getAtomNumberDictFromAmbmaskInfo(self, seqId, atomId, order=0, useDefault=True):
         """ Return atom number dictionary like component from Amber 10 ambmask information.
         """
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return None
 
         if self.__concatHetero:
@@ -3520,7 +3520,7 @@ class AmberMRParserListener(ParseTreeListener):
     def updateSanderAtomNumberDict(self, factor, cifCheck=True, useDefault=True):
         """ Try to update Sander atom number dictionary.
         """
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return False
 
         authCompId = factor['auth_comp_id'].upper() if 'auth_comp_id' in factor else 'None'
@@ -3985,7 +3985,7 @@ class AmberMRParserListener(ParseTreeListener):
     def updateSanderAtomNumberDictWithAmbigCode(self, factor, cifCheck=True, useDefault=True):
         """ Try to update Sander atom number dictionary.
         """
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return False
 
         authCompId = factor['auth_comp_id'].upper() if 'auth_comp_id' in factor else 'None'
@@ -7973,7 +7973,7 @@ class AmberMRParserListener(ParseTreeListener):
         self.ambigAtomNameMapping[self.__cur_resname_for_mapping][ambigCode] = mapName
 
     def updateAmbigAtomNameMapping(self):
-        if not self.__hasPolySeq or len(self.ambigAtomNameMapping) == 0:
+        if (not self.__hasPolySeq and not self.__hasNonPolySeq) or len(self.ambigAtomNameMapping) == 0:
             return
 
         unambigResidues = None

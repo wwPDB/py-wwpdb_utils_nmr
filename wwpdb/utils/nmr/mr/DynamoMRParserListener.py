@@ -644,7 +644,7 @@ class DynamoMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
                                 f"The relative scale value of '{scale}' should be a positive value.")
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -815,7 +815,7 @@ class DynamoMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
                                 f"The relative scale value of '{scale}' should be a positive value.")
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -979,7 +979,7 @@ class DynamoMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
                                 f"The relative scale value of '{scale}' should be a positive value.")
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -2279,7 +2279,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -2398,7 +2398,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -2517,7 +2517,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -2712,7 +2712,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             diffSeqId = seqId1 - seqId2
@@ -2894,7 +2894,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             diffSeqId = seqId1 - seqId2
@@ -3076,7 +3076,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             diffSeqId = seqId1 - seqId2
@@ -3267,7 +3267,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             diffSeqId = seqId1 - seqId2
@@ -3539,7 +3539,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -3683,7 +3683,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -3827,7 +3827,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -4046,7 +4046,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if _class not in TALOS_PREDICTION_MIN_CLASSES:  # ignore suspicious predictions
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             for angleName in ('PHI', 'PSI'):
@@ -4228,7 +4228,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if _class not in TALOS_PREDICTION_MIN_CLASSES:  # ignore suspicious predictions
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             for angleName in ('PHI', 'PSI'):

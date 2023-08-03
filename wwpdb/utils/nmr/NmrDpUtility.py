@@ -40217,8 +40217,12 @@ class NmrDpUtility:
                 chain_assign_dic = self.report.chain_assignment.get()
 
                 if has_key_value(chain_assign_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+                    ref_chain_ids = {}
                     for ca in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+                        if ca['ref_chain_id'] in ref_chain_ids or (ca['length'] == 1 and 1 in ref_chain_ids.values()):
+                            continue
                         self.__label_asym_id_with_exptl_data.add(ca['test_chain_id'])
+                        ref_chain_ids[ca['ref_chain_id']] = ca['length']
 
             else:
 
@@ -41464,9 +41468,11 @@ class NmrDpUtility:
             if isinstance(item['entity_copies'], int):
                 components_ex_water += item['entity_copies']
 
-        ligand_total = sum(len(item['label_asym_id'].split(',')) for item in self.__caC['entity_assembly']
+        ligand_total = sum(len(item['label_asym_id'].split(',') if 'fixed_label_asym_id' not in item else item['fixed_label_asym_id'].split(','))
+                           for item in self.__caC['entity_assembly']
                            if item['entity_type'] == 'non-polymer' and 'ION' not in item['entity_desc'])
-        ion_total = sum(len(item['label_asym_id'].split(',')) for item in self.__caC['entity_assembly']
+        ion_total = sum(len(item['label_asym_id'].split(',') if 'fixed_label_asym_id' not in item else item['fixed_label_asym_id'].split(','))
+                        for item in self.__caC['entity_assembly']
                         if item['entity_type'] == 'non-polymer' and 'ION' in item['entity_desc'])
 
         self.__sail_flag = False
@@ -41588,7 +41594,7 @@ class NmrDpUtility:
                 assembly_name = struct[0]['pdbx_descriptor']
             asm_sf.add_tag('Name', assembly_name)
             asm_sf.add_tag('BMRB_code', None)
-            asm_sf.add_tag('Number_of_components', components_ex_water)
+            asm_sf.add_tag('Number_of_components', components_ex_water if components_ex_water > 0 else None)
             asm_sf.add_tag('Organic_ligands', ligand_total if ligand_total > 0 else None)
             asm_sf.add_tag('Metal_ions', ion_total if ion_total > 0 else None)
             asm_sf.add_tag('Non_standard_bonds', None)  # filled 'yes' if the assembly contains non-standard bonds
@@ -41658,24 +41664,26 @@ class NmrDpUtility:
                 item['entity_assembly_name'] = row[1]
                 row[2] = item['entity_id']
                 row[3] = f'$entity_{entity_id}' if entity_type != 'non-polymer' else f"$entity_{item['comp_id']}"
-                row[4] = item['label_asym_id']
-                row[5] = item['auth_asym_id']
+                _label_asym_id = 'label_asym_id' if 'fixed_label_asym_id' not in item else 'fixed_label_asym_id'
+                _auth_asym_id = 'auth_asym_id' if 'fixed_auth_asym_id' not in item else 'fixed_auth_asym_id'
+                row[4] = item[_label_asym_id]
+                row[5] = item[_auth_asym_id]
                 if len(self.__label_asym_id_with_exptl_data) > 0:
-                    if any(label_asym_id for label_asym_id in item['label_asym_id'].split(',')
+                    if any(label_asym_id for label_asym_id in item[_label_asym_id].split(',')
                            if label_asym_id in self.__label_asym_id_with_exptl_data):
                         row[6] = 'yes'
                 # Physical_state
                 # Conformational_isomer
                 if len(self.__auth_asym_ids_with_chem_exch) > 0:
-                    if any(auth_asym_id for auth_asym_id in item['auth_asym_id'].split(',')
+                    if any(auth_asym_id for auth_asym_id in item[_auth_asym_id].split(',')
                            if auth_asym_id in self.__auth_asym_ids_with_chem_exch.keys()):
                         row[8] = row[9] = 'yes'
                 if entity_total[entity_id] > 0 and entity_type[entity_id] == 'polymer' and len(self.__label_asym_id_with_exptl_data) > 0:
                     equiv_entity_assemblies = [_item for _item in self.__caC['entity_assembly'] if _item['entity'] == entity_id]
-                    _item = next((_item for _item in equiv_entity_assemblies if any(label_asym_id for label_asym_id in _item['label_asym_id'].split(',')
+                    _item = next((_item for _item in equiv_entity_assemblies if any(label_asym_id for label_asym_id in _item[_label_asym_id].split(',')
                                                                                     if label_asym_id in self.__label_asym_id_with_exptl_data)), None)
-                    group_id = sorted(sorted(set(_item['label_asym_id'].split(','))), key=len)[0]
-                    if any(__item for __item in equiv_entity_assemblies if not any(label_asym_id for label_asym_id in __item['label_asym_id'].split(',')
+                    group_id = sorted(sorted(set(_item[_label_asym_id].split(','))), key=len)[0]
+                    if any(__item for __item in equiv_entity_assemblies if not any(label_asym_id for label_asym_id in __item[_label_asym_id].split(',')
                                                                                    if label_asym_id in self.__label_asym_id_with_exptl_data)):
                         if _item == item or row[6] is None or row[6] == 'no':
                             row[10] = group_id
@@ -42743,8 +42751,19 @@ class NmrDpUtility:
             for _item in self.__caC['entity_assembly']:
                 if _item['entity_id'] != entity_id:
                     continue
+                if _item['auth_asym_id'] in auth_asym_ids:
+                    continue
                 auth_asym_ids.append(_item['auth_asym_id'])
-            ent_sf.add_tag('Polymer_strand_ID', ','.join(auth_asym_ids))
+            auth_asym_id_list = ','.join(auth_asym_ids)
+            if len(auth_asym_id_list) > 12 and ',' in auth_asym_id_list:
+                last_asym_id = ',..,' + auth_asym_id_list.rsplit(',', maxsplit=1)[-1]
+                max_len = 11 - len(last_asym_id)
+                while True:
+                    if auth_asym_id_list[max_len] == ',':
+                        break
+                    max_len -= 1
+                auth_asym_id_list = auth_asym_id_list[:max_len] + last_asym_id
+            ent_sf.add_tag('Polymer_strand_ID', auth_asym_id_list)
 
             ent_sf.add_tag('Polymer_seq_one_letter_code_can', None if entity_type != 'polymer' else item['one_letter_code_can'])
             ent_sf.add_tag('Polymer_seq_one_letter_code', None if entity_type != 'polymer' else item['one_letter_code'])
@@ -42762,8 +42781,10 @@ class NmrDpUtility:
             ent_sf.add_tag('Number_of_nonpolymer_components', None if entity_type != 'non-polymer' else 1)
             ent_sf.add_tag('Paramagnetic', 'no' if not paramag or entity_type != 'non-polymer' or item['comp_id'] not in PARAMAGNETIC_ELEMENTS else 'yes')
 
+            _label_asym_id = 'label_asym_id' if 'fixed_label_asym_id' not in item else 'fixed_label_asym_id'
+
             cys_total = 0
-            label_asym_ids = set(item['label_asym_id'].split(','))
+            label_asym_ids = set(item[_label_asym_id].split(','))
             for chain_id in label_asym_ids:
                 if entity_type == 'polymer':
                     ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)
@@ -42951,8 +42972,11 @@ class NmrDpUtility:
 
             index = 1
 
-            label_asym_ids = list(set(item['label_asym_id'].split(',')))
-            for chain_id in sorted(sorted(label_asym_ids), key=len):
+            label_asym_ids = []
+            for chain_id in item['label_asym_id'].split(','):
+                if chain_id not in label_asym_ids:
+                    label_asym_ids.append(chain_id)
+            for chain_id in label_asym_ids:
                 if entity_type == 'polymer':
                     ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)
                 elif entity_type == 'branched':
@@ -42970,6 +42994,8 @@ class NmrDpUtility:
 
                     auth_seq_id = ps['auth_seq_id'][idx]
                     if entity_type == 'non-polymer':
+                        if comp_id != item['comp_id']:
+                            continue
                         auth_seq_id = ps['seq_id'][idx]
 
                     # if auth_seq_id in auth_seq_ids:
@@ -43029,6 +43055,10 @@ class NmrDpUtility:
 
                         if seq_id in seq_ids:
                             continue
+
+                        if entity_type == 'non-polymer':
+                            if comp_id != item['comp_id']:
+                                continue
 
                         row = [None] * len(tags)
 

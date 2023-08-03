@@ -515,7 +515,7 @@ class IsdMRParserListener(ParseTreeListener):
         lower_limit = None
         upper_limit = self.__cur_dist_upper_limit
 
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         self.__retrieveLocalSeqScheme()

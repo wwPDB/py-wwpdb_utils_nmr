@@ -518,7 +518,7 @@ class SybylMRParserListener(ParseTreeListener):
             lower_limit = self.numberSelection[0]
             upper_limit = self.numberSelection[1]
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()

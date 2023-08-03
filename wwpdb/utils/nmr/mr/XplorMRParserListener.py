@@ -1835,7 +1835,7 @@ class XplorMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPoly:
                 return
 
             if len(self.atomSelectionSet[0]) == 0 or len(self.atomSelectionSet[1]) == 0:
@@ -2204,7 +2204,7 @@ class XplorMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
@@ -2484,7 +2484,7 @@ class XplorMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
             """
             if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
@@ -2944,7 +2944,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
             """
             if not self.areUniqueCoordAtoms('an RDC (XDIP)', XPLOR_ORIGIN_AXIS_COLS,
@@ -3225,7 +3225,7 @@ class XplorMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if not self.areUniqueCoordAtoms('an RDC (VEAN)'):
@@ -3494,7 +3494,7 @@ class XplorMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
             """
             if not self.areUniqueCoordAtoms('an RDC (TENSO)'):
@@ -3672,7 +3672,7 @@ class XplorMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if not self.areUniqueCoordAtoms('an RDC (ANIS)'):
@@ -3822,7 +3822,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#group_statement.
     def exitGroup_statement(self, ctx: XplorMRParser.Group_statementContext):  # pylint: disable=unused-argument
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         if len(self.atomSelectionSet) == 0:
@@ -3911,7 +3911,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             self.vector3D = [self.numberSelection[0], self.numberSelection[1], self.numberSelection[2]]
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             for atom1 in self.atomSelectionSet[0]:
@@ -3992,7 +3992,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#xadc_assign.
     def exitXadc_assign(self, ctx: XplorMRParser.Xadc_assignContext):  # pylint: disable=unused-argument
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         if self.__createSfDict:
@@ -4114,7 +4114,7 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__cur_subtype_altered:
                 self.jcoupStatements += 1
 
-            if not self.__hasPolySeq:  # can't decide whether VEAN or COUP wo the coordinates
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:  # can't decide whether VEAN or COUP wo the coordinates
                 return
 
             if self.potential != 'harmonic' and delta > 0.0:
@@ -4337,7 +4337,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 f"CA chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.")
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if not self.areUniqueCoordAtoms('a carbon chemical shift (CARB)'):
@@ -4936,7 +4936,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#rama_assign.
     def exitRama_assign(self, ctx: XplorMRParser.Rama_assignContext):  # pylint: disable=unused-argument
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         if not self.areUniqueCoordAtoms('a dihedral angle database (RAMA)'):
@@ -5114,7 +5114,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             dstFunc = {'target_Rgyr': targetRgyr, 'force_const': forceConst}
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if self.__createSfDict:
@@ -5220,7 +5220,7 @@ class XplorMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if not self.areUniqueCoordAtoms('a diffusion anisotropy (DANI)', XPLOR_ORIGIN_AXIS_COLS):
@@ -5569,7 +5569,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#orie_assign.
     def exitOrie_assign(self, ctx: XplorMRParser.Orie_assignContext):  # pylint: disable=unused-argument
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         if not self.areUniqueCoordAtoms('a residue-residue position/orientation database (ORIE)'):
@@ -5794,7 +5794,7 @@ class XplorMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if not self.areUniqueCoordAtoms('a CSA (DCSA)', XPLOR_ORIGIN_AXIS_COLS):
@@ -6304,7 +6304,7 @@ class XplorMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else self.paramagCenter
@@ -6567,7 +6567,7 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__cur_subtype_altered:
                 self.pcsStatements += 1
 
-            if not self.__hasPolySeq:  # can't decide whether CARB or XPCS wo the coordinates
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:  # can't decide whether CARB or XPCS wo the coordinates
                 return
 
             target = self.numberSelection[0]
@@ -6594,9 +6594,6 @@ class XplorMRParserListener(ParseTreeListener):
             dstFunc = self.validatePcsRange(1.0, target_value, lower_limit, upper_limit)
 
             if dstFunc is None:
-                return
-
-            if not self.__hasPolySeq:
                 return
 
             atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else self.paramagCenter
@@ -6828,7 +6825,7 @@ class XplorMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if not self.areUniqueCoordAtoms('a paramagnetic RDC (XRDC)', XPLOR_ORIGIN_AXIS_COLS):
@@ -6989,7 +6986,7 @@ class XplorMRParserListener(ParseTreeListener):
             if dstFunc2 is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if not self.areUniqueCoordAtoms('a paramagnetic orientation (XANG)'):
@@ -7143,7 +7140,7 @@ class XplorMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if not self.areUniqueCoordAtoms('a paramagnetic cross-correlation rate (XCCR)'):
@@ -7416,7 +7413,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#hbond_assign.
     def exitHbond_assign(self, ctx: XplorMRParser.Hbond_assignContext):  # pylint: disable=unused-argument
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         if not self.areUniqueCoordAtoms('a hydrogen bond geometry (HBDA)'):
@@ -7600,7 +7597,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#hbond_db_assign.
     def exitHbond_db_assign(self, ctx: XplorMRParser.Hbond_db_assignContext):  # pylint: disable=unused-argument
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         if not self.areUniqueCoordAtoms('a hydrogen bond database (HBDB)'):
@@ -7771,7 +7768,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#ncs_group_statement.
     def exitNcs_group_statement(self, ctx: XplorMRParser.Ncs_group_statementContext):  # pylint: disable=unused-argument
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         if len(self.atomSelectionSet) == 0:
@@ -8120,7 +8117,7 @@ class XplorMRParserListener(ParseTreeListener):
     def __consumeFactor_expressions(self, _factor, clauseName='atom selection expression', cifCheck=True):
         """ Consume factor expressions as atom selection if possible.
         """
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return _factor
 
         if not self.__hasCoord:
@@ -9757,8 +9754,9 @@ class XplorMRParserListener(ParseTreeListener):
             elif ctx.Atom():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> atom")
-                if not self.__hasPolySeq:
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
+
                 simpleNameIndex = simpleNamesIndex = 0  # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'
                 if ctx.Simple_name(0):
                     chainId = str(ctx.Simple_name(0))
@@ -10968,7 +10966,7 @@ class XplorMRParserListener(ParseTreeListener):
             elif ctx.SegIdentifier():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> segidentifier")
-                if not self.__hasPolySeq:
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
 
                 eval_factor = False

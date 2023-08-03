@@ -671,7 +671,7 @@ class CharmmMRParserListener(ParseTreeListener):
             if self.rSwitch is not None:
                 upper_linear_limit = self.rMax + self.rSwitch
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__allowZeroUpperLimit = False
@@ -796,7 +796,7 @@ class CharmmMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if len(self.atomSelectionSet) != 4:
@@ -2014,7 +2014,7 @@ class CharmmMRParserListener(ParseTreeListener):
     def __consumeFactor_expressions(self, _factor, clauseName='atom selection expression', cifCheck=True):
         """ Consume factor expressions as atom selection if possible.
         """
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return _factor
 
         if not self.__hasCoord:
@@ -3550,8 +3550,9 @@ class CharmmMRParserListener(ParseTreeListener):
             elif ctx.Atom():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> atom")
-                if not self.__hasPolySeq:
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
+
                 simpleNameIndex = simpleNamesIndex = 0  # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'
                 if ctx.Simple_name(0):
                     chainId = str(ctx.Simple_name(0))
@@ -4601,7 +4602,7 @@ class CharmmMRParserListener(ParseTreeListener):
             elif ctx.SegIdentifier():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> segidentifier")
-                if not self.__hasPolySeq:
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
 
                 eval_factor = False

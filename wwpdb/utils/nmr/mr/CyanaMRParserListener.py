@@ -876,7 +876,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
                     self.__local_dist_types.append(self.__cur_dist_type)
 
-                if not self.__hasPolySeq:  # can't decide whether NOE or RDC wo the coordinates
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:  # can't decide whether NOE or RDC wo the coordinates
                     return
 
                 self.__retrieveLocalSeqScheme()
@@ -1116,7 +1116,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
-                if not self.__hasPolySeq:
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
 
                 self.__retrieveLocalSeqScheme()
@@ -1394,7 +1394,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
                     self.__local_dist_types.append(self.__cur_dist_type)
 
-                if not self.__hasPolySeq:  # can't decide whether NOE or RDC wo the coordinates
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:  # can't decide whether NOE or RDC wo the coordinates
                     return
 
                 self.__retrieveLocalSeqScheme()
@@ -1634,7 +1634,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
-                if not self.__hasPolySeq:
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
 
                 self.__retrieveLocalSeqScheme()
@@ -3651,7 +3651,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             # support AMBER's dihedral angle naming convention for nucleic acids
@@ -4167,7 +4167,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -4477,7 +4477,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -4742,7 +4742,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
-                if not self.__hasPolySeq:
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
 
                 if self.__cur_subtype != 'dist':
@@ -5078,7 +5078,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
-                if not self.__hasPolySeq:
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
 
                 if self.__cur_subtype != 'dist':
@@ -5320,7 +5320,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
-                if not self.__hasPolySeq:
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
 
                 if self.__cur_subtype != 'dist':
@@ -5578,7 +5578,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
-                if not self.__hasPolySeq:
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
 
                 if self.__cur_subtype != 'dist':
@@ -5914,7 +5914,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
-                if not self.__hasPolySeq:
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
 
                 if self.__cur_subtype != 'dist':
@@ -6156,7 +6156,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if dstFunc is None:
                     return
 
-                if not self.__hasPolySeq:
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
 
                 if self.__cur_subtype != 'dist':
@@ -6295,7 +6295,7 @@ class CyanaMRParserListener(ParseTreeListener):
             value = self.numberSelection[0]
             weight = 1.0
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
@@ -6346,9 +6346,6 @@ class CyanaMRParserListener(ParseTreeListener):
                                                  self.__omitDistLimitOutlier)
 
             if dstFunc is None:
-                return
-
-            if not self.__hasPolySeq:
                 return
 
             if self.__createSfDict:
@@ -6703,7 +6700,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
                 self.__local_dist_types.append(self.__cur_dist_type)
 
-            if not self.__hasPolySeq:  # can't decide whether NOE or RDC wo the coordinates
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:  # can't decide whether NOE or RDC wo the coordinates
                 return
 
             chainId1 = jVal[self.__col_order_of_dist_w_chain['chain_id_1']]
@@ -7046,7 +7043,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             # support AMBER's dihedral angle naming convention for nucleic acids
@@ -7446,7 +7443,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -7588,7 +7585,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.ssbondRestraints -= 1
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             compId = 'CYSS'
@@ -7713,7 +7710,7 @@ class CyanaMRParserListener(ParseTreeListener):
             atomId1 = str(ctx.Simple_name_HB(0))
             atomId2 = str(ctx.Simple_name_HB(1))
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -7824,7 +7821,7 @@ class CyanaMRParserListener(ParseTreeListener):
             atomId1 = str(ctx.Simple_name(0))
             atomId2 = str(ctx.Simple_name(1))
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -7993,7 +7990,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                     f"Could not interpret '{str(ctx.Double_quote_string())}' as floating chiral stereo assignment.")
                     return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__retrieveLocalSeqScheme()
@@ -8271,7 +8268,7 @@ class CyanaMRParserListener(ParseTreeListener):
         self.ambigAtomNameMapping[self.__cur_resname_for_mapping][ambigCode] = mapName
 
     def updateAmbigAtomNameMapping(self):
-        if not self.__hasPolySeq or len(self.ambigAtomNameMapping) == 0:
+        if (not self.__hasPolySeq and not self.__hasNonPolySeq) or len(self.ambigAtomNameMapping) == 0:
             return
 
         unambigResidues = None

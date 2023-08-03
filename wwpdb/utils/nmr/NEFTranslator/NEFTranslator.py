@@ -1335,24 +1335,9 @@ class NEFTranslator:
                         raise KeyError(f"{lp_category[1:]} loop contains different {comp_id} ({row[1]} and {chk_dict[chk_key]}) "
                                        f"with the same {chain_id} {row[2]}, {seq_id} {row[0]}.")
 
-                if len(sorted_seq[0][2]) > 1:
-                    if len(chain_ids) > 1:
-                        for c in chain_ids:
-                            cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
-                            seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
-                    else:
-                        c = list(chain_ids)[0]
-                        cmp_dict[c] = [x[2] for x in sorted_seq]
-                        seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
-                else:
-                    if len(chain_ids) > 1:
-                        for c in chain_ids:
-                            cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
-                            seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
-                    else:
-                        c = list(chain_ids)[0]
-                        cmp_dict[c] = [x[2] for x in sorted_seq]
-                        seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
+                for c in chain_ids:
+                    cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
+                    seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
 
                 asm = []  # assembly of a loop
 
@@ -1575,24 +1560,9 @@ class NEFTranslator:
                         raise KeyError(f"{lp_category[1:]} loop contains different {comp_id} ({row[1]} and {chk_dict[chk_key]}) "
                                        f"with the same {chain_id} {row[2]}, {seq_id} {row[0]}.")
 
-                if len(sorted_seq[0][2]) > 1:
-                    if len(chain_ids) > 1:
-                        for c in chain_ids:
-                            cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
-                            seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
-                    else:
-                        c = list(chain_ids)[0]
-                        cmp_dict[c] = [x[2] for x in sorted_seq]
-                        seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
-                else:
-                    if len(chain_ids) > 1:
-                        for c in chain_ids:
-                            cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
-                            seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
-                    else:
-                        c = list(chain_ids)[0]
-                        cmp_dict[c] = [x[2] for x in sorted_seq]
-                        seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
+                for c in chain_ids:
+                    cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
+                    seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
 
                 asm = []  # assembly of a loop
 
@@ -1771,32 +1741,11 @@ class NEFTranslator:
                                        f"{asym_id} {row[2]}, {aseq_id} {row[0]}, "
                                        f"{acomp_id} {row[1]} vs {chk_dict[chk_key]}.")
 
-                if len(sorted_seq[0][4]) > 1:
-                    if len(chain_ids) > 1:
-                        for c in chain_ids:
-                            acmp_dict[c] = [x[4] for x in sorted_seq if x[0] == c]
-                            aseq_dict[c] = [x[3] for x in sorted_seq if x[0] == c]
-                            asym_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
-                            seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
-                    else:
-                        c = list(chain_ids)[0]
-                        acmp_dict[c] = [x[4] for x in sorted_seq]
-                        aseq_dict[c] = [x[3] for x in sorted_seq]
-                        asym_dict[c] = [x[2] for x in sorted_seq]
-                        seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
-                else:
-                    if len(chain_ids) > 1:
-                        for c in chain_ids:
-                            acmp_dict[c] = [x[4] for x in sorted_seq if x[0] == c]
-                            aseq_dict[c] = [x[3] for x in sorted_seq if x[0] == c]
-                            asym_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
-                            seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
-                    else:
-                        c = list(chain_ids)[0]
-                        acmp_dict[c] = [x[4] for x in sorted_seq]
-                        aseq_dict[c] = [x[3] for x in sorted_seq]
-                        asym_dict[c] = [x[2] for x in sorted_seq]
-                        seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq]
+                for c in chain_ids:
+                    acmp_dict[c] = [x[4] for x in sorted_seq if x[0] == c]
+                    aseq_dict[c] = [x[3] for x in sorted_seq if x[0] == c]
+                    asym_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
+                    seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
 
                 asm = []  # assembly of a loop
 

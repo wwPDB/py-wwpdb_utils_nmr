@@ -1345,7 +1345,7 @@ class CnsMRParserListener(ParseTreeListener):
                 lower_limit = target - dminus
                 upper_limit = target + dplus
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             self.__allowZeroUpperLimit = False
@@ -1745,7 +1745,7 @@ class CnsMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
@@ -1992,7 +1992,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CnsMRParser#group_statement.
     def exitGroup_statement(self, ctx: CnsMRParser.Group_statementContext):  # pylint: disable=unused-argument
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         if len(self.atomSelectionSet) == 0:
@@ -2081,7 +2081,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             self.vector3D = [self.numberSelection[0], self.numberSelection[1], self.numberSelection[2]]
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             for atom1 in self.atomSelectionSet[0]:
@@ -2166,7 +2166,7 @@ class CnsMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
             """
             if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
@@ -2585,7 +2585,7 @@ class CnsMRParserListener(ParseTreeListener):
                 if dstFunc2 is None:
                     return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if not self.areUniqueCoordAtoms('a J-coupling (COUP)'):
@@ -2778,7 +2778,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 f"CA chemical shift value '{ca_shift}' must be within range {CS_RESTRAINT_ERROR}.")
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if not self.areUniqueCoordAtoms('a carbon chemical shift (CARB)'):
@@ -3349,7 +3349,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CnsMRParser#conf_assign.
     def exitConf_assign(self, ctx: CnsMRParser.Conf_assignContext):  # pylint: disable=unused-argument
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         if not self.areUniqueCoordAtoms('a conformation database (CONF)'):
@@ -3533,7 +3533,7 @@ class CnsMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if not self.areUniqueCoordAtoms('a diffusion anisotropy (DANI)', XPLOR_ORIGIN_AXIS_COLS):
@@ -3893,7 +3893,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by CnsMRParser#ncs_group_statement.
     def exitNcs_group_statement(self, ctx: CnsMRParser.Ncs_group_statementContext):  # pylint: disable=unused-argument
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
         if len(self.atomSelectionSet) == 0:
@@ -4241,7 +4241,7 @@ class CnsMRParserListener(ParseTreeListener):
     def __consumeFactor_expressions(self, _factor, clauseName='atom selection expression', cifCheck=True):
         """ Consume factor expressions as atom selection if possible.
         """
-        if not self.__hasPolySeq:
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return _factor
 
         if not self.__hasCoord:
@@ -5854,8 +5854,9 @@ class CnsMRParserListener(ParseTreeListener):
             elif ctx.Atom():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> atom")
-                if not self.__hasPolySeq:
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
+
                 simpleNameIndex = simpleNamesIndex = 0  # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'
                 if ctx.Simple_name(0):
                     chainId = str(ctx.Simple_name(0))
@@ -7155,7 +7156,7 @@ class CnsMRParserListener(ParseTreeListener):
             elif ctx.SegIdentifier():
                 if self.__sel_expr_debug:
                     print("  " * self.depth + "--> segidentifier")
-                if not self.__hasPolySeq:
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
                     return
 
                 eval_factor = False

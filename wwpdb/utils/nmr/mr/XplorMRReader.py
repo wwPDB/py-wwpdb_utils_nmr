@@ -213,6 +213,11 @@ class XplorMRReader:
 if __name__ == "__main__":
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-combine-at-upload/bmr21102/sms21102/AmBErg_CC_restraints_PAR12p6ms.tbl',
+                 '../../tests-nmr/mock-data-combine-at-upload/bmr21102/sms21102/sms21102.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-combine-at-upload/bmr21100/sms21100/Ambig.tbl',
                  '../../tests-nmr/mock-data-combine-at-upload/bmr21100/sms21100/sms21100.cif')
 

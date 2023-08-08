@@ -18273,7 +18273,7 @@ class NmrDpUtility:
                                 if self.__nonblk_bad_nterm and atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                     continue
 
-                                if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                                if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
                                     continue
 
                                 err = f"Invalid atom_id {atom_id!r} (comp_id {comp_id}) in a loop {lp_category}."
@@ -18293,7 +18293,7 @@ class NmrDpUtility:
 
                     for atom_id in atom_ids:
 
-                        if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                        if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
                             continue
 
                         if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
@@ -18348,7 +18348,7 @@ class NmrDpUtility:
                             elif self.__nonblk_bad_nterm and atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                 pass
 
-                            elif self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                            elif self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
                                 pass
 
                             else:
@@ -18380,7 +18380,7 @@ class NmrDpUtility:
 
                             if atom_id not in ref_atom_ids:
 
-                                if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                                if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
                                     continue
 
                                 unk_atom_ids.append(atom_id)
@@ -18411,7 +18411,7 @@ class NmrDpUtility:
 
                         for atom_id in atom_ids:
 
-                            if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                            if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
                                 continue
 
                             if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
@@ -18478,7 +18478,7 @@ class NmrDpUtility:
                                     if self.__nonblk_bad_nterm and _auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                         continue
 
-                                    if self.__remediation_mode and _auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                                    if self.__remediation_mode and _auth_atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
                                         continue
 
                                     auth_atom_ids = self.__getAtomIdListInXplor(comp_id, _auth_atom_id)
@@ -18508,7 +18508,7 @@ class NmrDpUtility:
                                     if self.__nonblk_bad_nterm and auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                         continue
 
-                                    if self.__remediation_mode and auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                                    if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
                                         continue
 
                                     warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {auth_comp_id})."
@@ -18541,7 +18541,7 @@ class NmrDpUtility:
                                         if self.__nonblk_bad_nterm and auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                             continue
 
-                                        if self.__remediation_mode and auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                                        if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
                                             continue
 
                                         warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id}, non-standard residue)."
@@ -18563,7 +18563,7 @@ class NmrDpUtility:
                                     if self.__nonblk_bad_nterm and auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                         continue
 
-                                    if self.__remediation_mode and auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                                    if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
                                         continue
 
                                     warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id}, non-standard residue)."
@@ -18926,7 +18926,7 @@ class NmrDpUtility:
                     for atom_id in atom_ids:
                         if not atom_id.startswith(atom_type):
 
-                            if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663
+                            if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
                                 continue
 
                             err = f"Invalid atom_id {atom_id!r} (atom_type {atom_type}) in a loop {lp_category}."
@@ -27147,14 +27147,6 @@ class NmrDpUtility:
         """ Validate restraints of NMR-STAR restraint files.
         """
 
-        if self.__combined_mode:
-            return True
-
-        mr_file_path_list = 'restraint_file_path_list'
-
-        if mr_file_path_list not in self.__inputParamDict:
-            return True
-
         src_id = self.report.getInputSourceIdOfCoord()
 
         if src_id < 0:
@@ -27175,6 +27167,88 @@ class NmrDpUtility:
             self.__list_id_counter = {}
         if self.__mr_sf_dict_holder is None:
             self.__mr_sf_dict_holder = {}
+
+        if self.__combined_mode and not self.__remediation_mode:  # DAOTHER-8751
+            master_entry = self.__star_data[0]
+
+            fileListId = 0
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+            content_subtype = input_source_dic['content_subtype']
+
+            if file_type != 'nmr-star':
+                return True
+
+            file_name = input_source_dic['file_name']
+
+            original_file_name = file_name.replace('-corrected', '')
+            if 'original_file_name' in input_source_dic:
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+
+            if input_source_dic['content_subtype'] is None:
+                return True
+
+            for content_subtype in self.mr_content_subtypes:
+
+                if content_subtype not in input_source_dic['content_subtype']:
+                    continue
+
+                if content_subtype not in self.__mr_sf_dict_holder:
+                    self.__mr_sf_dict_holder[content_subtype] = []
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+
+                    if self.__validateStrMr__(fileListId, file_type, original_file_name, content_subtype, sf, sf_framecode, lp_category):
+                        del master_entry[sf]
+
+                        _sf = self.__mr_sf_dict_holder[content_subtype][-1]['saveframe']
+
+                        master_entry.add_saveframe(_sf)
+
+            if self.__dstPath is not None:
+
+                # __validateStrPk() will do the same task in later
+                if not any(content_subtype in self.pk_content_subtypes for content_type in input_source_dic['content_subtype']):
+
+                    if __pynmrstar_v3__:
+                        master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
+                    else:
+                        master_entry.write_to_file(self.__dstPath)
+
+                    if 'nmr_cif_file_path' in self.__outputParamDict:
+
+                        try:
+
+                            myIo = IoAdapterPy(False, sys.stderr)
+                            containerList = myIo.readFile(self.__dstPath)
+
+                            if containerList is not None and len(containerList) > 1:
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
+
+                                for c in containerList:
+                                    c.setType('data')
+
+                                myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+
+                        except Exception as e:
+                            self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Error  - {str(e)}\n")
+
+            return True
+
+        mr_file_path_list = 'restraint_file_path_list'
+
+        if mr_file_path_list not in self.__inputParamDict:
+            return True
 
         for fileListId in range(self.__cs_file_path_list_len, self.__file_path_list_len):
 
@@ -31423,14 +31497,6 @@ class NmrDpUtility:
         """ Validate spectral peak lists in NMR-STAR restraint files.
         """
 
-        if self.__combined_mode:
-            return True
-
-        mr_file_path_list = 'restraint_file_path_list'
-
-        if mr_file_path_list not in self.__inputParamDict:
-            return True
-
         src_id = self.report.getInputSourceIdOfCoord()
 
         if src_id < 0:
@@ -31450,6 +31516,75 @@ class NmrDpUtility:
         list_id = 1
 
         # self.__pk_sf_holder = []
+
+        if self.__combined_mode and not self.__remediation_mode:  # DAOTHER-8751
+            fileListId = 0
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+            content_subtype = input_source_dic['content_subtype']
+
+            if file_type != 'nmr-star':
+                return True
+
+            file_name = input_source_dic['file_name']
+
+            if input_source_dic['content_subtype'] is None:
+                return True
+
+            for content_subtype in self.pk_content_subtypes:
+
+                if content_subtype not in input_source_dic['content_subtype']:
+                    continue
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+
+                    self.__validateStrPk__(fileListId, file_type, content_subtype, list_id, sf, sf_framecode, lp_category)
+
+                    # self.__pk_sf_holder.append({'file_type': 'nmr-star', 'saveframe': sf})
+
+                    list_id += 1
+
+            if list_id > 1 and self.__dstPath is not None:
+                master_entry = self.__star_data[0]
+
+                if __pynmrstar_v3__:
+                    master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
+                else:
+                    master_entry.write_to_file(self.__dstPath)
+
+                if 'nmr_cif_file_path' in self.__outputParamDict:
+
+                    try:
+
+                        myIo = IoAdapterPy(False, sys.stderr)
+                        containerList = myIo.readFile(self.__dstPath)
+
+                        if containerList is not None and len(containerList) > 1:
+
+                            if self.__verbose:
+                                self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
+
+                            for c in containerList:
+                                c.setType('data')
+
+                            myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+
+                    except Exception as e:
+                        self.__lfh.write(f"+NmrDpUtility.__validateStrPk() ++ Error  - {str(e)}\n")
+
+            return True
+
+        mr_file_path_list = 'restraint_file_path_list'
+
+        if mr_file_path_list not in self.__inputParamDict:
+            return True
 
         for fileListId in range(self.__cs_file_path_list_len, self.__file_path_list_len):
 
@@ -31957,7 +32092,9 @@ class NmrDpUtility:
         _list_id = list_id
         if file_type == 'nmr-star' and self.__combined_mode:
             val = get_first_sf_tag(sf, 'ID')
-            if len(val) > 0:
+            if isinstance(val, int):
+                _list_id = val
+            elif len(val) > 0:
                 try:
                     _list_id = int(val)
                 except ValueError:
@@ -41447,7 +41584,7 @@ class NmrDpUtility:
                     if 'Entry_ID' in orig_lp_data[0]:
                         has_entry_id = True
 
-            elif not self.__has_star_entity and not self.__update_poly_seq:  # DAOTHER-6694
+            elif not self.__has_star_entity and not self.__update_poly_seq and file_type == 'nef':  # DAOTHER-6694, 8751
                 return False
 
         orig_asm_sf = None

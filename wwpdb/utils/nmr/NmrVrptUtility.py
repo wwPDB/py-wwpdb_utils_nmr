@@ -1302,6 +1302,13 @@ class NmrVrptUtility:
                     lower_linear_limit = r.get('lower_linear_limit')
                     upper_linear_limit = r.get('upper_linear_limit')
 
+                    if atom_id_1 is None or atom_id_2 is None\
+                       or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
+                        self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
+                                         f"{os.path.basename(self.__nmrDataPath)}.\n")
+                        skipped = True
+                        continue
+
                     offset = abs(auth_seq_id_1 - auth_seq_id_2)
 
                     if r['entity_asm_id_1'] != r['entity_asm_id_2']:
@@ -1531,6 +1538,14 @@ class NmrVrptUtility:
                     ins_code_3 = r.get('ins_code_3', '?')
                     ins_code_4 = r.get('ins_code_4', '?')
 
+                    if atom_id_1 is None or atom_id_2 is None or atom_id_3 is None or atom_id_4 is None\
+                       or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int)\
+                       or not isinstance(auth_seq_id_3, int) or not isinstance(auth_seq_id_4, int):
+                        self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                                         f"{os.path.basename(self.__nmrDataPath)}.\n")
+                        skipped = True
+                        continue
+
                     lower_limit = r['lower_limit']
                     upper_limit = r['upper_limit']
                     target_value = r['target_value']
@@ -1699,6 +1714,13 @@ class NmrVrptUtility:
                     atom_id_2 = r['atom_id_2']
                     ins_code_1 = r.get('ins_code_1', '?')
                     ins_code_2 = r.get('ins_code_2', '?')
+
+                    if atom_id_1 is None or atom_id_2 is None\
+                       or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
+                        self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
+                                         f"{os.path.basename(self.__nmrDataPath)}.\n")
+                        skipped = True
+                        continue
 
                     target_value = r['target_value']
                     target_value_uncertainty = r.get('target_value_uncertainty')

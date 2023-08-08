@@ -4520,7 +4520,7 @@ class NEFTranslator:
                     return (atom_list, ambiguity_code, details)
                 atom_id = atom_id[1:] + atom_id[0]
 
-            if atom_id[0] in ('H', 'Q', 'M') and (self.__remediation_mode or atom_id[0] == 'H'):  # DAOTHER-8663
+            if atom_id[0] in ('H', 'Q', 'M') and (self.__remediation_mode or atom_id[0] in ('H', 'M')):  # DAOTHER-8663, 8751
 
                 if atom_id.endswith('1') and not self.validate_comp_atom(comp_id, atom_id):
                     _atom_id = atom_id[:-1] + '3'
@@ -4588,7 +4588,7 @@ class NEFTranslator:
                 atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
                 return (atom_list, ambiguity_code, details)
 
-            if atom_id[0] in ('Q', 'M') and self.__remediation_mode:  # DAOTHER-8663
+            if atom_id[0] == 'M' or (atom_id[0] == 'Q' and self.__remediation_mode):  # DAOTHER-8663, 8751
 
                 if atom_id.startswith('QQ'):
                     atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', details, leave_unmatched, methyl_only)
@@ -4894,7 +4894,7 @@ class NEFTranslator:
                                 star_atom_list.remove(a)
                                 atom_list, details, atom_id_map = self.get_nef_atom(comp_id, star_atom_list, details, leave_unmatched)
                                 return (atom_list, details, atom_id_map)
-                        elif (atom_id.startswith('Q') or atom_id.startswith('M')) and self.__remediation_mode:  # DAOTHER-8663
+                        elif atom_id.startewith('M') or (atom_id.startswith('Q') and self.__remediation_mode):  # DAOTHER-8663, 8751
                             if atom_id[-1].isalnum():
                                 _atom_id = 'H' + atom_id[1:] + '%'
                             else:

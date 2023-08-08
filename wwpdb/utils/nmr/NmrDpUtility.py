@@ -23396,7 +23396,7 @@ class NmrDpUtility:
                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
-                    if len_atom_ids > 1:
+                    if len_atom_ids > 1 and _row[24] != 'UNMAPPED':
                         __row = copy.copy(_row)
                         if fill_auth_atom_id:
                             __row[19] = __row[6]
@@ -23739,6 +23739,8 @@ class NmrDpUtility:
                 lp.add_tag(tag)
 
             has_genuine_ambig_code = False
+
+            can_auth_asym_id_mapping = {}  # DAOTHER-8751
 
             index = 1
 
@@ -24222,6 +24224,10 @@ class NmrDpUtility:
 
                                     index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
+                                    can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
+                                                                          'offset': auth_seq_id - seq_id,
+                                                                          'ref_auth_seq_id': auth_seq_id}
+
                                 else:
 
                                     item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
@@ -24247,6 +24253,10 @@ class NmrDpUtility:
                                                 row[auth_comp_id_col], row[auth_atom_id_col]
 
                                         index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
+
+                                        can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
+                                                                              'offset': seq_key[1] - seq_id,
+                                                                              'ref_auth_seq_id': seq_key[1]}
 
                                     else:
                                         resolved = False
@@ -24317,6 +24327,41 @@ class NmrDpUtility:
                                 if resolved:
                                     index, _row = _index, __row
                                 break
+
+                        if not resolved and chain_id in can_auth_asym_id_mapping:  # DAOTHER-8751
+                            mapping = can_auth_asym_id_mapping[chain_id]
+
+                            auth_asym_id = mapping['auth_asym_id']
+                            offset = mapping['offset']
+                            ref_auth_seq_id = mapping['ref_auth_seq_id']
+
+                            item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
+
+                            if item is not None and ps is not None and any(_ps for _ps in ps_common
+                                                                           if _ps['chain_id'] == auth_asym_id and ref_auth_seq_id in _ps['seq_id']):
+                                resolved = True
+
+                                entity_assembly_id = item['entity_assembly_id']
+                                entity_id = item['entity_id']
+
+                                _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, None, None
+
+                                _row[16], _row[17], _row[18], _row[19] =\
+                                    auth_asym_id, seq_id, comp_id, atom_id
+
+                                if has_auth_seq:
+                                    _row[20], _row[21], _row[22], _row[23] =\
+                                        row[auth_asym_id_col], row[auth_seq_id_col], \
+                                        row[auth_comp_id_col], row[auth_atom_id_col]
+                                else:
+                                    _row[20], _row[21], _row[22], _row[23] =\
+                                        _row[16], _row[17], _row[18], _row[19]
+
+                                _row[24] = 'UNMAPPED'
+
+                                _seq_key = (auth_asym_id, seq_id)
+
+                                _index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, index)
 
                     if not resolved:
                         entity_id = None
@@ -39333,29 +39378,54 @@ class NmrDpUtility:
 
                 concatenated_nmr_chain = {}
 
-                for row, column in indices:
+                for row, col in indices:
 
-                    if mat[row][column] >= 0:
+                    if mat[row][col] >= 0:
+
                         if self.__combined_mode:
                             continue
 
-                        _cif_chain_ids = [cif_polymer_sequence[_row]['chain_id'] for _row, _column in indices if column == _column]
+                        # DAOTHER-8751
+                        has_row = has_col = False
+                        for _row, _col in indices:
+                            if mat[_row][_col] < 0:
+                                if _row == row:
+                                    has_row = True
+                                if _col == col:
+                                    has_col = True
+
+                        if has_row and has_col:
+                            continue
+
+                        _cif_chain_ids = [cif_polymer_sequence[_row]['chain_id'] for _row, _col in indices if col == _col]
 
                         if len(_cif_chain_ids) > 1:
-                            chain_id2 = nmr_polymer_sequence[column]['chain_id']
+                            chain_id2 = nmr_polymer_sequence[col]['chain_id']
                             concatenated_nmr_chain[chain_id2] = _cif_chain_ids
 
                     chain_id = cif_polymer_sequence[row]['chain_id']
-                    chain_id2 = nmr_polymer_sequence[column]['chain_id']
+                    chain_id2 = nmr_polymer_sequence[col]['chain_id']
 
                     result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                   if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
                     _result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
+                    if result['matched'] == 0:
+                        continue
+
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
                           'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
                           'sequence_coverage': result['sequence_coverage']}
+
+                    # DAOTHER-8751
+                    low_evid_chain_mapping = result['sequence_coverage'] < LOW_SEQ_COVERAGE
+                    if low_evid_chain_mapping:
+                        low_evid_chain_mapping = False
+                        for _row, _col in indices:
+                            if mat[_row][_col] >= 0:
+                                if _row == row or _col == col:
+                                    low_evid_chain_mapping = True
 
                     auth_chain_id = chain_id
                     if 'auth_chain_id' in cif_polymer_sequence[row]:
@@ -39480,7 +39550,8 @@ class NmrDpUtility:
                                 continue
 
                             if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
-                                continue
+                                if not low_evid_chain_mapping:  # DAOTHER-8751
+                                    continue
 
                         unmapped = []
                         conflict = []
@@ -39550,26 +39621,52 @@ class NmrDpUtility:
 
                 chain_assign = []
 
-                for row, column in indices:
+                for row, col in indices:
 
-                    if self.__combined_mode and mat[row][column] >= 0:
-                        continue
+                    if mat[row][col] >= 0:
+
+                        if self.__combined_mode:
+                            continue
+
+                        # DAOTHER-8751
+                        has_row = has_col = False
+                        for _row, _col in indices:
+                            if mat[_row][_col] < 0:
+                                if _row == row:
+                                    has_row = True
+                                if _col == col:
+                                    has_col = True
+
+                        if has_row and has_col:
+                            continue
 
                     chain_id = nmr_polymer_sequence[row]['chain_id']
-                    chain_id2 = cif_polymer_sequence[column]['chain_id']
+                    chain_id2 = cif_polymer_sequence[col]['chain_id']
 
                     result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                   if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
                     _result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
+                    if result['matched'] == 0:
+                        continue
+
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
                           'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
                           'sequence_coverage': result['sequence_coverage']}
 
+                    # DAOTHER-8751
+                    low_evid_chain_mapping = result['sequence_coverage'] < LOW_SEQ_COVERAGE
+                    if low_evid_chain_mapping:
+                        low_evid_chain_mapping = False
+                        for _row, _col in indices:
+                            if mat[_row][_col] >= 0:
+                                if _row == row or _col == col:
+                                    low_evid_chain_mapping = True
+
                     auth_chain_id2 = chain_id2
-                    if 'auth_chain_id' in cif_polymer_sequence[column]:
-                        auth_chain_id2 = cif_polymer_sequence[column]['auth_chain_id']
+                    if 'auth_chain_id' in cif_polymer_sequence[col]:
+                        auth_chain_id2 = cif_polymer_sequence[col]['auth_chain_id']
                         ca['test_auth_chain_id'] = auth_chain_id2
 
                     s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id)
@@ -39725,7 +39822,8 @@ class NmrDpUtility:
                                 continue
 
                             if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
-                                continue
+                                if not low_evid_chain_mapping:  # DAOTHER-8751
+                                    continue
 
                         unmapped = []
                         conflict = []
@@ -39958,16 +40056,29 @@ class NmrDpUtility:
 
                 concatenated_nmr_chain = {}
 
-                for row, column in indices:
+                for row, col in indices:
 
-                    if mat[row][column] >= 0:
+                    if mat[row][col] >= 0:
+
                         if self.__combined_mode:
                             continue
 
-                        _cif_chain_ids = [cif_polymer_sequence[_row]['chain_id'] for _row, _column in indices if column == _column]
+                        # DAOTHER-8751
+                        has_row = has_col = False
+                        for _row, _col in indices:
+                            if mat[_row][_col] < 0:
+                                if _row == row:
+                                    has_row = True
+                                if _col == col:
+                                    has_col = True
+
+                        if has_row and has_col:
+                            continue
+
+                        _cif_chain_ids = [cif_polymer_sequence[_row]['chain_id'] for _row, _col in indices if col == _col]
 
                         if len(_cif_chain_ids) > 1:
-                            chain_id2 = nmr_polymer_sequence[column]['chain_id']
+                            chain_id2 = nmr_polymer_sequence[col]['chain_id']
                             concatenated_nmr_chain[chain_id2] = _cif_chain_ids
 
                             warn = f"The chain ID {chain_id2!r} of the sequences in the NMR data "\
@@ -39981,16 +40092,28 @@ class NmrDpUtility:
                                 self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {warn}\n")
 
                     chain_id = cif_polymer_sequence[row]['chain_id']
-                    chain_id2 = nmr_polymer_sequence[column]['chain_id']
+                    chain_id2 = nmr_polymer_sequence[col]['chain_id']
 
                     result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                   if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
                     _result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
+                    if result['matched'] == 0:
+                        continue
+
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
                           'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
                           'sequence_coverage': result['sequence_coverage']}
+
+                    # DAOTHER-8751
+                    low_evid_chain_mapping = result['sequence_coverage'] < LOW_SEQ_COVERAGE
+                    if low_evid_chain_mapping:
+                        low_evid_chain_mapping = False
+                        for _row, _col in indices:
+                            if mat[_row][_col] >= 0:
+                                if _row == row or _col == col:
+                                    low_evid_chain_mapping = True
 
                     auth_chain_id = chain_id
                     if 'auth_chain_id' in cif_polymer_sequence[row]:
@@ -40148,7 +40271,8 @@ class NmrDpUtility:
                                 continue
 
                             if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
-                                continue
+                                if not low_evid_chain_mapping:  # DAOTHER-8751
+                                    continue
 
                         unmapped = []
                         conflict = []

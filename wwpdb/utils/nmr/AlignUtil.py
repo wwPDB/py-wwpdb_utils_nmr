@@ -1338,25 +1338,40 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
 
     chainAssign = []
 
-    for row, column in indices:
+    for row, col in indices:
 
-        if mat[row][column] >= 0:
+        if mat[row][col] >= 0:
+
+            has_row = has_col = False
+            for _row, _col in indices:
+                if mat[_row][_col] < 0:
+                    if _row == row:
+                        has_row = True
+                    if _col == col:
+                        has_col = True
+
+            if has_row and has_col:
+                continue
+
             _cif_chains = []
-            for _row, _column in indices:
-                if column == _column:
+            for _row, _col in indices:
+                if col == _col:
                     _cif_chains.append(polySeqModel[_row][chain_id_name])
 
             if len(_cif_chains) > 1:
-                chain_id2 = polySeqRst[column]['chain_id']
+                chain_id2 = polySeqRst[col]['chain_id']
 
                 warnings.append(f"[Concatenated sequence] The chain ID {chain_id2!r} of the sequences in {_a_mr_format_name} file "
                                 f"will be re-assigned to the chain IDs {_cif_chains} in the coordinates during biocuration.")
 
         chain_id = polySeqModel[row][chain_id_name]
-        chain_id2 = polySeqRst[column]['chain_id']
+        chain_id2 = polySeqRst[col]['chain_id']
 
         result = next(seq_align for seq_align in seqAlign
                       if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
+
+        if result['matched'] == 0:
+            continue
 
         ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
               'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],

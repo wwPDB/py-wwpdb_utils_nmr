@@ -18273,7 +18273,7 @@ class NmrDpUtility:
                                 if self.__nonblk_bad_nterm and atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                     continue
 
-                                if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
+                                if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                     continue
 
                                 err = f"Invalid atom_id {atom_id!r} (comp_id {comp_id}) in a loop {lp_category}."
@@ -18293,7 +18293,7 @@ class NmrDpUtility:
 
                     for atom_id in atom_ids:
 
-                        if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
+                        if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                             continue
 
                         if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
@@ -18348,7 +18348,7 @@ class NmrDpUtility:
                             elif self.__nonblk_bad_nterm and atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                 pass
 
-                            elif self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
+                            elif self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                 pass
 
                             else:
@@ -18380,7 +18380,7 @@ class NmrDpUtility:
 
                             if atom_id not in ref_atom_ids:
 
-                                if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
+                                if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                     continue
 
                                 unk_atom_ids.append(atom_id)
@@ -18411,7 +18411,7 @@ class NmrDpUtility:
 
                         for atom_id in atom_ids:
 
-                            if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
+                            if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                 continue
 
                             if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
@@ -18478,7 +18478,7 @@ class NmrDpUtility:
                                     if self.__nonblk_bad_nterm and _auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                         continue
 
-                                    if self.__remediation_mode and _auth_atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
+                                    if self.__remediation_mode and _auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                         continue
 
                                     auth_atom_ids = self.__getAtomIdListInXplor(comp_id, _auth_atom_id)
@@ -18508,7 +18508,7 @@ class NmrDpUtility:
                                     if self.__nonblk_bad_nterm and auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                         continue
 
-                                    if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
+                                    if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                         continue
 
                                     warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {auth_comp_id})."
@@ -18541,7 +18541,7 @@ class NmrDpUtility:
                                         if self.__nonblk_bad_nterm and auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                             continue
 
-                                        if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
+                                        if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                             continue
 
                                         warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id}, non-standard residue)."
@@ -18563,7 +18563,7 @@ class NmrDpUtility:
                                     if self.__nonblk_bad_nterm and auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
                                         continue
 
-                                    if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
+                                    if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                         continue
 
                                     warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id}, non-standard residue)."
@@ -18926,7 +18926,7 @@ class NmrDpUtility:
                     for atom_id in atom_ids:
                         if not atom_id.startswith(atom_type):
 
-                            if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8751  in ('Q', 'M'):  # DAOTHER-8663
+                            if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                 continue
 
                             err = f"Invalid atom_id {atom_id!r} (atom_type {atom_type}) in a loop {lp_category}."

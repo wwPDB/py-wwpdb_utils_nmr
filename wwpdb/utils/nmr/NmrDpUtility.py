@@ -31599,6 +31599,8 @@ class NmrDpUtility:
             if len(self.__star_data) == 0:
                 return True
 
+            master_entry = self.__star_data[0]
+
             fileListId = 0
 
             input_source = self.report.input_sources[fileListId]
@@ -31631,7 +31633,6 @@ class NmrDpUtility:
                     list_id += 1
 
             if list_id > 1 and self.__dstPath is not None:
-                master_entry = self.__star_data[0]
 
                 if __pynmrstar_v3__:
                     master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)

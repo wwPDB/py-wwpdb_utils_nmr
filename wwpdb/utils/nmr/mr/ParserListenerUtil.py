@@ -7083,14 +7083,12 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
     return list(chainAssign), warningMessage
 
 
-def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig=True, enableWarning=True, offset=1):
+def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, authAtomId, allowAmbig=True, enableWarning=True, offset=1):
     """ Select atoms of the coordinates.
         @return atom selection, warning mesage (None for valid case)
     """
 
     atomSelection = []
-
-    authAtomId = atomId
 
     _atomId = atomId
 

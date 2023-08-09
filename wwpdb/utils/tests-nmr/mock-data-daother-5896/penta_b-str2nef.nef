@@ -130,8 +130,8 @@ save_
 save_nef_distance_restraint_list_dis1
    _nef_distance_restraint_list.sf_category       nef_distance_restraint_list
    _nef_distance_restraint_list.sf_framecode      nef_distance_restraint_list_dis1
-   _nef_distance_restraint_list.restraint_origin  .
-   _nef_distance_restraint_list.potential_type    undefined
+   _nef_distance_restraint_list.restraint_origin  noe
+   _nef_distance_restraint_list.potential_type    square-well-parabolic
 
    loop_
       _nef_distance_restraint.index
@@ -153,63 +153,63 @@ save_nef_distance_restraint_list_dis1
       _nef_distance_restraint.upper_limit
       _nef_distance_restraint.upper_linear_limit
 
-     1    55    .   aaa   1   MET   HA     aaa   1   MET   HGy    1   4     .   .   1.8   5     .    
-     2    56    .   aaa   1   MET   HA     aaa   1   MET   HGx    1   4     .   .   1.8   5     .    
-     3    57    .   aaa   1   MET   HA     aaa   2   LYS   H      1   3     .   .   1.8   3.5   .    
-     4    61    .   aaa   1   MET   HGy    aaa   2   LYS   H      1   4     .   .   1.8   6     .    
-     5    66    .   aaa   2   LYS   H      aaa   2   LYS   HA     1   4     .   .   1.8   5     .    
-     6    68    .   aaa   2   LYS   HA     aaa   3   ILE   H      1   2.5   .   .   1.8   2.9   .    
-     7    69    .   aaa   2   LYS   HBy    aaa   2   LYS   HDx    1   4     .   .   1.8   7     .    
-     8    70    .   aaa   2   LYS   HBy    aaa   2   LYS   HEx    1   4     .   .   1.8   7     .    
-     9    71    .   aaa   2   LYS   HBy    aaa   3   ILE   H      1   4     .   .   1.8   6     .    
-     10   73    .   aaa   2   LYS   HEx    aaa   2   LYS   HGy    1   4     .   .   1.8   6     .    
-     11   74    .   aaa   2   LYS   HEx    aaa   2   LYS   HGx    1   4     .   .   1.8   6     .    
-     12   77    .   aaa   2   LYS   HEx    aaa   4   ILE   HD1%   1   4     .   .   1.8   7     .    
-     13   78    .   aaa   3   ILE   H      aaa   3   ILE   HA     1   4     .   .   1.8   5     .    
-     14   79    .   aaa   3   ILE   H      aaa   3   ILE   HB     1   3     .   .   1.8   3.5   .    
-     15   80    .   aaa   3   ILE   H      aaa   3   ILE   HG1y   1   4     .   .   1.8   5     .    
-     16   81    .   aaa   3   ILE   H      aaa   3   ILE   HG1x   1   4     .   .   1.8   5     .    
-     17   82    .   aaa   3   ILE   H      aaa   3   ILE   HG2%   1   4     .   .   1.8   6     .    
-     18   83    .   aaa   3   ILE   H      aaa   3   ILE   HD1%   1   4     .   .   1.8   6     .    
-     19   87    .   aaa   3   ILE   HA     aaa   3   ILE   HG1y   1   4     .   .   1.8   5     .    
-     20   88    .   aaa   3   ILE   HA     aaa   3   ILE   HG1x   1   4     .   .   1.8   5     .    
-     21   89    .   aaa   3   ILE   HA     aaa   3   ILE   HG2%   1   4     .   .   1.8   5.6   .    
-     22   90    .   aaa   3   ILE   HA     aaa   3   ILE   HD1%   1   4     .   .   1.8   6     .    
-     23   91    .   aaa   3   ILE   HA     aaa   4   ILE   H      1   3     .   .   1.8   3.5   .    
-     24   92    .   aaa   3   ILE   HA     aaa   4   ILE   HB     1   4     .   .   1.8   5     .    
-     25   93    .   aaa   3   ILE   HA     aaa   5   SER   H      1   4     .   .   1.8   5     .    
-     26   96    .   aaa   3   ILE   HB     aaa   3   ILE   HD1%   1   4     .   .   1.8   6     .    
-     27   97    .   aaa   3   ILE   HG1y   aaa   3   ILE   HG2%   1   4     .   .   1.8   7     .    
-     28   98    .   aaa   3   ILE   HG1y   aaa   4   ILE   H      1   4     .   .   1.8   6     .    
-     29   99    .   aaa   3   ILE   HG1y   aaa   4   ILE   HD1%   1   4     .   .   1.8   7     .    
-     30   107   .   aaa   3   ILE   HD1%   aaa   3   ILE   HG2%   1   4     .   .   1.8   7     .    
-     31   108   .   aaa   3   ILE   HG2%   aaa   4   ILE   H      1   4     .   .   1.8   6     .    
-     32   109   .   aaa   3   ILE   HG2%   aaa   4   ILE   HA     1   4     .   .   1.8   6     .    
-     33   110   .   aaa   3   ILE   HG2%   aaa   4   ILE   HG1y   1   4     .   .   1.8   7     .    
-     34   111   .   aaa   3   ILE   HG2%   aaa   5   SER   H      1   4     .   .   1.8   6     .    
-     35   124   .   aaa   4   ILE   H      aaa   4   ILE   HA     1   4     .   .   1.8   5     .    
-     36   125   .   aaa   4   ILE   H      aaa   4   ILE   HB     1   3     .   .   1.8   3.5   .    
-     37   126   .   aaa   4   ILE   H      aaa   4   ILE   HG1y   1   4     .   .   1.8   5     .    
-     38   127   .   aaa   4   ILE   H      aaa   4   ILE   HG1x   1   4     .   .   1.8   5     .    
-     39   128   .   aaa   4   ILE   H      aaa   4   ILE   HG2%   1   4     .   .   1.8   6     .    
-     40   129   .   aaa   4   ILE   H      aaa   4   ILE   HD1%   1   4     .   .   1.8   6     .    
-     41   130   .   aaa   4   ILE   H      aaa   5   SER   H      1   3     .   .   1.8   3.5   .    
-     42   134   .   aaa   4   ILE   HA     aaa   4   ILE   HG1y   1   4     .   .   1.8   5     .    
-     43   135   .   aaa   4   ILE   HA     aaa   4   ILE   HG1x   1   4     .   .   1.8   5     .    
-     44   136   .   aaa   4   ILE   HA     aaa   4   ILE   HG2%   1   4     .   .   1.8   5.6   .    
-     45   137   .   aaa   4   ILE   HA     aaa   4   ILE   HD1%   1   4     .   .   1.8   6     .    
-     46   138   .   aaa   4   ILE   HA     aaa   5   SER   H      1   4     .   .   1.8   5     .    
-     47   139   .   aaa   4   ILE   HB     aaa   4   ILE   HD1%   1   4     .   .   1.8   6     .    
-     48   140   .   aaa   4   ILE   HB     aaa   5   SER   H      1   4     .   .   1.8   5     .    
-     49   144   .   aaa   4   ILE   HG1y   aaa   4   ILE   HG2%   1   4     .   .   1.8   7     .    
-     50   145   .   aaa   4   ILE   HG1y   aaa   5   SER   H      1   4     .   .   1.8   5     .    
-     51   146   .   aaa   4   ILE   HG1x   aaa   5   SER   H      1   4     .   .   1.8   5     .    
-     52   153   .   aaa   4   ILE   HG2%   aaa   5   SER   H      1   4     .   .   1.8   6     .    
-     53   154   .   aaa   4   ILE   HG2%   aaa   5   SER   HBx    1   4     .   .   1.8   7     .    
-     54   154   .   aaa   4   ILE   HG2%   aaa   5   SER   HBy    1   4     .   .   1.8   7     .    
-     55   161   .   aaa   5   SER   H      aaa   5   SER   HA     1   3     .   .   1.8   3.5   .    
-     56   162   .   aaa   5   SER   H      aaa   5   SER   HBx    1   4     .   .   1.8   6     .    
-     57   162   .   aaa   5   SER   H      aaa   5   SER   HBy    1   4     .   .   1.8   6     .    
+     1    1    .   aaa   1   MET   HA     aaa   1   MET   HGy    1   4     .   .   1.8   5     .    
+     2    1    .   aaa   1   MET   HA     aaa   1   MET   HGx    1   4     .   .   1.8   5     .    
+     3    2    .   aaa   1   MET   HA     aaa   2   LYS   H      1   3     .   .   1.8   3.5   .    
+     4    3    .   aaa   1   MET   HGy    aaa   2   LYS   H      1   4     .   .   1.8   6     .    
+     5    4    .   aaa   2   LYS   H      aaa   2   LYS   HA     1   4     .   .   1.8   5     .    
+     6    5    .   aaa   2   LYS   HA     aaa   3   ILE   H      1   2.5   .   .   1.8   2.9   .    
+     7    6    .   aaa   2   LYS   HBy    aaa   2   LYS   HDx    1   4     .   .   1.8   7     .    
+     8    7    .   aaa   2   LYS   HBy    aaa   2   LYS   HEx    1   4     .   .   1.8   7     .    
+     9    8    .   aaa   2   LYS   HBy    aaa   3   ILE   H      1   4     .   .   1.8   6     .    
+     10   9    .   aaa   2   LYS   HEx    aaa   2   LYS   HGy    1   4     .   .   1.8   6     .    
+     11   9    .   aaa   2   LYS   HEx    aaa   2   LYS   HGx    1   4     .   .   1.8   6     .    
+     12   10   .   aaa   2   LYS   HEx    aaa   4   ILE   HD1%   1   4     .   .   1.8   7     .    
+     13   11   .   aaa   3   ILE   H      aaa   3   ILE   HA     1   4     .   .   1.8   5     .    
+     14   12   .   aaa   3   ILE   H      aaa   3   ILE   HB     1   3     .   .   1.8   3.5   .    
+     15   13   .   aaa   3   ILE   H      aaa   3   ILE   HG1y   1   4     .   .   1.8   5     .    
+     16   13   .   aaa   3   ILE   H      aaa   3   ILE   HG1x   1   4     .   .   1.8   5     .    
+     17   14   .   aaa   3   ILE   H      aaa   3   ILE   HG2%   1   4     .   .   1.8   6     .    
+     18   15   .   aaa   3   ILE   H      aaa   3   ILE   HD1%   1   4     .   .   1.8   6     .    
+     19   16   .   aaa   3   ILE   HA     aaa   3   ILE   HG1y   1   4     .   .   1.8   5     .    
+     20   16   .   aaa   3   ILE   HA     aaa   3   ILE   HG1x   1   4     .   .   1.8   5     .    
+     21   17   .   aaa   3   ILE   HA     aaa   3   ILE   HG2%   1   4     .   .   1.8   5.6   .    
+     22   18   .   aaa   3   ILE   HA     aaa   3   ILE   HD1%   1   4     .   .   1.8   6     .    
+     23   19   .   aaa   3   ILE   HA     aaa   4   ILE   H      1   3     .   .   1.8   3.5   .    
+     24   20   .   aaa   3   ILE   HA     aaa   4   ILE   HB     1   4     .   .   1.8   5     .    
+     25   21   .   aaa   3   ILE   HA     aaa   5   SER   H      1   4     .   .   1.8   5     .    
+     26   22   .   aaa   3   ILE   HB     aaa   3   ILE   HD1%   1   4     .   .   1.8   6     .    
+     27   23   .   aaa   3   ILE   HG1y   aaa   3   ILE   HG2%   1   4     .   .   1.8   7     .    
+     28   24   .   aaa   3   ILE   HG1y   aaa   4   ILE   H      1   4     .   .   1.8   6     .    
+     29   25   .   aaa   3   ILE   HG1y   aaa   4   ILE   HD1%   1   4     .   .   1.8   7     .    
+     30   26   .   aaa   3   ILE   HD1%   aaa   3   ILE   HG2%   1   4     .   .   1.8   7     .    
+     31   27   .   aaa   3   ILE   HG2%   aaa   4   ILE   H      1   4     .   .   1.8   6     .    
+     32   28   .   aaa   3   ILE   HG2%   aaa   4   ILE   HA     1   4     .   .   1.8   6     .    
+     33   29   .   aaa   3   ILE   HG2%   aaa   4   ILE   HG1y   1   4     .   .   1.8   7     .    
+     34   30   .   aaa   3   ILE   HG2%   aaa   5   SER   H      1   4     .   .   1.8   6     .    
+     35   31   .   aaa   4   ILE   H      aaa   4   ILE   HA     1   4     .   .   1.8   5     .    
+     36   32   .   aaa   4   ILE   H      aaa   4   ILE   HB     1   3     .   .   1.8   3.5   .    
+     37   33   .   aaa   4   ILE   H      aaa   4   ILE   HG1y   1   4     .   .   1.8   5     .    
+     38   33   .   aaa   4   ILE   H      aaa   4   ILE   HG1x   1   4     .   .   1.8   5     .    
+     39   34   .   aaa   4   ILE   H      aaa   4   ILE   HG2%   1   4     .   .   1.8   6     .    
+     40   35   .   aaa   4   ILE   H      aaa   4   ILE   HD1%   1   4     .   .   1.8   6     .    
+     41   36   .   aaa   4   ILE   H      aaa   5   SER   H      1   3     .   .   1.8   3.5   .    
+     42   37   .   aaa   4   ILE   HA     aaa   4   ILE   HG1y   1   4     .   .   1.8   5     .    
+     43   37   .   aaa   4   ILE   HA     aaa   4   ILE   HG1x   1   4     .   .   1.8   5     .    
+     44   38   .   aaa   4   ILE   HA     aaa   4   ILE   HG2%   1   4     .   .   1.8   5.6   .    
+     45   39   .   aaa   4   ILE   HA     aaa   4   ILE   HD1%   1   4     .   .   1.8   6     .    
+     46   40   .   aaa   4   ILE   HA     aaa   5   SER   H      1   4     .   .   1.8   5     .    
+     47   41   .   aaa   4   ILE   HB     aaa   4   ILE   HD1%   1   4     .   .   1.8   6     .    
+     48   42   .   aaa   4   ILE   HB     aaa   5   SER   H      1   4     .   .   1.8   5     .    
+     49   43   .   aaa   4   ILE   HG1y   aaa   4   ILE   HG2%   1   4     .   .   1.8   7     .    
+     50   44   .   aaa   4   ILE   HG1y   aaa   5   SER   H      1   4     .   .   1.8   5     .    
+     51   44   .   aaa   4   ILE   HG1x   aaa   5   SER   H      1   4     .   .   1.8   5     .    
+     52   45   .   aaa   4   ILE   HG2%   aaa   5   SER   H      1   4     .   .   1.8   6     .    
+     53   46   .   aaa   4   ILE   HG2%   aaa   5   SER   HBx    1   4     .   .   1.8   7     .    
+     54   46   .   aaa   4   ILE   HG2%   aaa   5   SER   HBy    1   4     .   .   1.8   7     .    
+     55   47   .   aaa   5   SER   H      aaa   5   SER   HA     1   3     .   .   1.8   3.5   .    
+     56   48   .   aaa   5   SER   H      aaa   5   SER   HBx    1   4     .   .   1.8   6     .    
+     57   48   .   aaa   5   SER   H      aaa   5   SER   HBy    1   4     .   .   1.8   6     .    
 
    stop_
 
@@ -218,8 +218,8 @@ save_
 save_nef_dihedral_restraint_list_dih1
    _nef_dihedral_restraint_list.sf_category       nef_dihedral_restraint_list
    _nef_dihedral_restraint_list.sf_framecode      nef_dihedral_restraint_list_dih1
-   _nef_dihedral_restraint_list.potential_type    undefined
    _nef_dihedral_restraint_list.restraint_origin  .
+   _nef_dihedral_restraint_list.potential_type    square-well-parabolic
 
    loop_
       _nef_dihedral_restraint.index
@@ -250,9 +250,9 @@ save_nef_dihedral_restraint_list_dih1
       _nef_dihedral_restraint.upper_linear_limit
       _nef_dihedral_restraint.name
 
-     1   1   .   aaa   2   LYS   C   aaa   3   ILE   N   aaa   3   ILE   CA   aaa   3   ILE   C   1   -40    0   .   -170   90    .   PHI    
-     2   2   .   aaa   3   ILE   C   aaa   4   ILE   N   aaa   4   ILE   CA   aaa   4   ILE   C   1   -120   0   .   -155   -85   .   PHI    
-     3   3   .   aaa   4   ILE   C   aaa   5   SER   N   aaa   5   SER   CA   aaa   5   SER   C   1   -35    0   .   180    110   .   PHI    
+     1   1   .   aaa   2   LYS   C   aaa   3   ILE   N   aaa   3   ILE   CA   aaa   3   ILE   C   1.0   -40    0.0   .   -170   90    .   PHI    
+     2   2   .   aaa   3   ILE   C   aaa   4   ILE   N   aaa   4   ILE   CA   aaa   4   ILE   C   1.0   -120   0.0   .   -155   -85   .   PHI    
+     3   3   .   aaa   4   ILE   C   aaa   5   SER   N   aaa   5   SER   CA   aaa   5   SER   C   1.0   -35    0.0   .   180    110   .   PHI    
 
    stop_
 

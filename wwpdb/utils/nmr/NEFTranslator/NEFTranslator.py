@@ -4894,7 +4894,7 @@ class NEFTranslator:
                                 star_atom_list.remove(a)
                                 atom_list, details, atom_id_map = self.get_nef_atom(comp_id, star_atom_list, details, leave_unmatched)
                                 return (atom_list, details, atom_id_map)
-                        elif atom_id.startewith('M') or (atom_id.startswith('Q') and self.__remediation_mode):  # DAOTHER-8663, 8751
+                        elif atom_id.startswith('M') or (atom_id.startswith('Q') and self.__remediation_mode):  # DAOTHER-8663, 8751
                             if atom_id[-1].isalnum():
                                 _atom_id = 'H' + atom_id[1:] + '%'
                             else:

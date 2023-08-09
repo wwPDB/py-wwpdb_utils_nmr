@@ -172,6 +172,7 @@
 # 22-Jun-2023  M. Yokochi - convert model file when pdbx_poly_seq category is missing for reuploading nmr_data after unlock (DAOTHER-8580)
 # 19-Jul-2023  M. Yokochi - fix not to merge restraint id (_Gen_dist_constraint.ID) if lower and upper bounds are different (DAOTHER-8705)
 # 20-Jul-2023  M. Yokochi - throw 'format_issue' error when polymer sequence extraction fails (DAOTHER-8644)
+# 09-Aug-2023  M. Yokochi - remediate combined nmr_data by default and improve robustness of sequence alignment (DAOTHER-8751)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -24226,9 +24227,10 @@ class NmrDpUtility:
 
                                     index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
-                                    can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
-                                                                          'offset': auth_seq_id - seq_id,
-                                                                          'ref_auth_seq_id': auth_seq_id}
+                                    if chain_id not in can_auth_asym_id_mapping:
+                                        can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
+                                                                              'ref_auth_seq_id': auth_seq_id
+                                                                              }
 
                                 else:
 
@@ -24256,9 +24258,10 @@ class NmrDpUtility:
 
                                         index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
-                                        can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
-                                                                              'offset': seq_key[1] - seq_id,
-                                                                              'ref_auth_seq_id': seq_key[1]}
+                                        if chain_id not in can_auth_asym_id_mapping:
+                                            can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
+                                                                                  'ref_auth_seq_id': seq_key[1]
+                                                                                  }
 
                                     else:
                                         resolved = False
@@ -24334,7 +24337,6 @@ class NmrDpUtility:
                             mapping = can_auth_asym_id_mapping[chain_id]
 
                             auth_asym_id = mapping['auth_asym_id']
-                            offset = mapping['offset']
                             ref_auth_seq_id = mapping['ref_auth_seq_id']
 
                             item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
@@ -27235,11 +27237,6 @@ class NmrDpUtility:
 
             file_name = input_source_dic['file_name']
 
-            original_file_name = file_name.replace('-corrected', '')
-            if 'original_file_name' in input_source_dic:
-                if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
-
             if input_source_dic['content_subtype'] is None:
                 return True
 
@@ -27256,6 +27253,12 @@ class NmrDpUtility:
 
                 for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    original_file_name = get_first_sf_tag(sf, 'Data_file_name')
+                    if len(original_file_name) == 0:
+                        original_file_name = file_name.replace('-corrected', '')
+                        if 'original_file_name' in input_source_dic:
+                            if input_source_dic['original_file_name'] is not None:
+                                original_file_name = os.path.basename(input_source_dic['original_file_name'])
 
                     if self.__validateStrMr__(fileListId, file_type, original_file_name, content_subtype, sf, sf_framecode, lp_category):
                         del master_entry[sf]
@@ -27384,8 +27387,8 @@ class NmrDpUtility:
             tagNames = [t[0] for t in sf.tags]
 
             for idx, origTagName in enumerate(origTagNames):
-                if origTagName not in tagNames and origTagName in self.sf_allowed_tags[file_type][content_subtype]:
-                    sf.add_tag(origTagName, _sf.tags[idx][1])
+                if origTagName in self.sf_allowed_tags[file_type][content_subtype]:
+                    set_sf_tag(sf, origTagName, _sf.tags[idx][1])
 
         try:
 
@@ -27569,6 +27572,7 @@ class NmrDpUtility:
                 auth_seq_id_names = [auth_item for auth_item in auth_items if 'seq' in auth_item]
                 auth_comp_id_names = [auth_item for auth_item in auth_items if 'comp' in auth_item]
                 auth_atom_id_names = [auth_item for auth_item in auth_items if 'atom' in auth_item and 'atom_name' not in auth_item]
+                auth_atom_name_names = [auth_item for auth_item in auth_items if 'atom_name' in auth_item]
 
                 auth_pdb_tags = auth_chain_id_names
                 auth_pdb_tags.extend(auth_seq_id_names)
@@ -27615,7 +27619,12 @@ class NmrDpUtility:
 
                 if has_key_seq or has_auth_seq:
 
+                    has_auth_atom_name = len(auth_atom_name_names) > 0 and set(auth_atom_name_names) & set(loop.tags) == set(auth_atom_name_names)
+
                     if valid_auth_seq:
+
+                        if has_auth_atom_name:
+                            auth_pdb_tags.extend(auth_atom_name_names)
 
                         dat = get_lp_tag(loop, auth_pdb_tags)
 
@@ -27627,6 +27636,12 @@ class NmrDpUtility:
                                 seq_id = int(row_[atom_dim_num + d])
                                 comp_id = row_[atom_dim_num * 2 + d]
                                 atom_id = row_[atom_dim_num * 3 + d]
+                                if has_auth_atom_name:
+                                    auth_atom_id = row_[atom_dim_num * 4 + d]
+                                    if auth_atom_id in emptyValue:
+                                        auth_atom_id = atom_id
+                                else:
+                                    auth_atom_id = atom_id
 
                                 _assign, warn = assignCoordPolymerSequenceWithChainId(self.__caC, self.__nefT, chain_id, seq_id, comp_id, atom_id)
 
@@ -27688,15 +27703,17 @@ class NmrDpUtility:
                                         chainId, cifSeqId, _, _ = __assign[0]
                                         cifSeqId -= _seq_id - seq_id
 
-                                        atom_sels[d] = [{'chain_id': chainId, 'seq_id': cifSeqId,
+                                        atom_sels[d] = [{'chain_id': chainId,
+                                                         'seq_id': cifSeqId,
                                                          'comp_id': comp_id.upper(),
-                                                         'atom_id': atom_id.upper(), 'auth_atom_id': atom_id}]
+                                                         'atom_id': atom_id.upper(),
+                                                         'auth_atom_id': auth_atom_id}]
                                         warn = None
 
                                         rescued = True
 
                                 if not rescued:
-                                    atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, seq_id, comp_id, atom_id,
+                                    atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, seq_id, comp_id, atom_id, auth_atom_id,
                                                                           allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'))
 
                                 if warn is not None:
@@ -27863,6 +27880,9 @@ class NmrDpUtility:
 
                     else:
 
+                        if has_auth_atom_name:
+                            key_tags.extend(auth_atom_name_names)
+
                         dat = get_lp_tag(loop, key_tags)
 
                         for idx, row_ in enumerate(dat):
@@ -27873,6 +27893,12 @@ class NmrDpUtility:
                                 seq_id = int(row_[atom_dim_num + d])
                                 comp_id = row_[atom_dim_num * 2 + d]
                                 atom_id = row_[atom_dim_num * 3 + d]
+                                if has_auth_atom_name:
+                                    auth_atom_id = row_[atom_dim_num * 4 + d]
+                                    if auth_atom_id in emptyValue:
+                                        auth_atom_id = atom_id
+                                else:
+                                    auth_atom_id = atom_id
 
                                 auth_asym_id = auth_seq_id = None
 
@@ -27965,7 +27991,7 @@ class NmrDpUtility:
 
                                     continue
 
-                                atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, seq_id, comp_id, atom_id,
+                                atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, seq_id, comp_id, atom_id, auth_atom_id,
                                                                       allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'))
 
                                 if warn is not None:
@@ -31583,8 +31609,6 @@ class NmrDpUtility:
 
             if file_type != 'nmr-star':
                 return True
-
-            file_name = input_source_dic['file_name']
 
             if input_source_dic['content_subtype'] is None:
                 return True

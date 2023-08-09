@@ -23342,7 +23342,8 @@ class NmrDpUtility:
                         row_src = src_lp.data[src_idx]
                         if src_idx + offset < len(src_lp.data):
                             row = src_lp.data[src_idx + offset]
-                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
+                                or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
                                and row[comp_id_col].upper() == comp_id\
                                and row[6] in missing_ch3:
                                 valid = True
@@ -23351,7 +23352,8 @@ class NmrDpUtility:
                                     break
                         if src_idx - offset >= 0:
                             row = src_lp.data[src_idx - offset]
-                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
+                                or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
                                and row[comp_id_col].upper() == comp_id\
                                and row[6] in missing_ch3:
                                 valid = True
@@ -23396,7 +23398,7 @@ class NmrDpUtility:
                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
-                    if len_atom_ids > 1 and _row[24] != 'UNMAPPED':
+                    if len_atom_ids > 1:
                         __row = copy.copy(_row)
                         if fill_auth_atom_id:
                             __row[19] = __row[6]
@@ -27214,6 +27216,10 @@ class NmrDpUtility:
             self.__mr_sf_dict_holder = {}
 
         if self.__combined_mode and not self.__remediation_mode:  # DAOTHER-8751
+
+            if len(self.__star_data) == 0:
+                return True
+
             master_entry = self.__star_data[0]
 
             fileListId = 0
@@ -31563,6 +31569,10 @@ class NmrDpUtility:
         # self.__pk_sf_holder = []
 
         if self.__combined_mode and not self.__remediation_mode:  # DAOTHER-8751
+
+            if len(self.__star_data) == 0:
+                return True
+
             fileListId = 0
 
             input_source = self.report.input_sources[fileListId]

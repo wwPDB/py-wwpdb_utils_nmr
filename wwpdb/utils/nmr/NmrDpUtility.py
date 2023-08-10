@@ -24274,7 +24274,7 @@ class NmrDpUtility:
 
                     if not resolved and seq_id is not None:
 
-                        def test_seq_id_offset(lp, index, row, _row, _idx, chain_id, seq_id, offset):
+                        def test_seq_id_offset(lp, index, row, _row, _idx, chain_id, seq_id, comp_id, offset):
                             _found = _resolved = False
                             _index = index
 
@@ -24285,7 +24285,8 @@ class NmrDpUtility:
                                 item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
 
                                 if item is not None and ps is not None and any(_ps for _ps in ps_common
-                                                                               if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
+                                                                               if _ps['chain_id'] == auth_asym_id
+                                                                               and auth_seq_id in _ps['seq_id']):
                                     entity_assembly_id = item['entity_assembly_id']
                                     entity_id = item['entity_id']
 
@@ -24293,14 +24294,63 @@ class NmrDpUtility:
 
                                     seq_key = next((k for k, v in auth_to_star_seq.items()
                                                     if v[0] == entity_assembly_id and v[1] == seq_id + offset and v[2] == entity_id), None)
-                                    if seq_key is not None:
+                                    if seq_key is not None and comp_id == seq_key[2]:
                                         _seq_key = (seq_key[0], seq_key[1])
                                         _row[16], _row[17], _row[18], _row[19] =\
                                             seq_key[0], seq_key[1] - offset, comp_id, atom_id
                                         if has_ins_code and seq_key in auth_to_ins_code:
                                             _row[27] = auth_to_ins_code[seq_key]
                                     else:
-                                        _seq_key = (auth_asym_id, auth_seq_id + offset)
+                                        if has_orig_seq:  # DAOTHER-8758
+                                            try:
+                                                orig_asym_id = row[orig_asym_id_col]
+                                                orig_seq_id = int(row[orig_seq_id_col])
+                                                _item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == orig_asym_id), None)
+                                                if _item is not None:
+                                                    _entity_assembly_id = _item['entity_assembly_id']
+                                                    _entity_id = _item['entity_id']
+                                                    __seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                                      if v[0] == _entity_assembly_id and v[1] in (seq_id, orig_seq_id) and v[2] == _entity_id), None)
+                                                    if __seq_key is not None:
+                                                        comp_id = __seq_key[2]
+                                                        _row[1], _row[2], _row[3], _row[4] = _entity_assembly_id, _entity_id, __seq_key[1], __seq_key[1]
+                                                        _seq_key = (__seq_key[0], __seq_key[1])
+                                                        _row[16], _row[17], _row[18], _row[19] =\
+                                                            __seq_key[0], __seq_key[1], comp_id, atom_id
+                                                        if has_ins_code and __seq_key in auth_to_ins_code:
+                                                            _row[27] = auth_to_ins_code[__seq_key]
+                                                    else:
+                                                        _seq_key = (auth_asym_id, auth_seq_id + offset)
+                                                else:
+                                                    _seq_key = (auth_asym_id, auth_seq_id + offset)
+                                            except ValueError:
+                                                _seq_key = (auth_asym_id, auth_seq_id + offset)
+                                        else:
+                                            _item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == chain_id), None)
+                                            if _item is not None:
+                                                _entity_assembly_id = _item['entity_assembly_id']
+                                                _entity_id = _item['entity_id']
+                                                __seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                                  if v[0] == _entity_assembly_id and v[1] == seq_id + offset and v[2] == _entity_id), None)
+                                                if __seq_key is not None:
+                                                    _offset = __seq_key[1] - (seq_id + offset)
+                                                    _seq_id = seq_id - _offset
+                                                    __seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                                      if v[0] == _entity_assembly_id and v[1] == _seq_id and v[2] == _entity_id), None)
+                                                    if __seq_key is not None and comp_id == __seq_key[2]:
+                                                        comp_id = __seq_key[2]
+                                                        _row[1], _row[2], _row[3], _row[4] = _entity_assembly_id, _entity_id, _seq_id, _seq_id
+                                                        _seq_key = (__seq_key[0], __seq_key[1])
+                                                        _row[16], _row[17], _row[18], _row[19] =\
+                                                            __seq_key[0], __seq_key[1], comp_id, atom_id
+                                                        if has_ins_code and __seq_key in auth_to_ins_code:
+                                                            _row[27] = auth_to_ins_code[__seq_key]
+                                                    else:
+                                                        _resolved = False
+                                                else:
+                                                    _resolved = False
+                                            else:
+                                                _resolved = False
 
                                     if has_auth_seq:
                                         _row[20], _row[21], _row[22], _row[23] =\
@@ -24310,7 +24360,8 @@ class NmrDpUtility:
                                         _row[20], _row[21], _row[22], _row[23] =\
                                             _row[16], _row[17], _row[18], _row[19]
 
-                                    _index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, _idx)
+                                    if _resolved:
+                                        _index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, _idx)
 
                                 else:
                                     _resolved = False
@@ -24319,14 +24370,14 @@ class NmrDpUtility:
 
                         found = False
                         for offset in range(1, 1000):
-                            found, resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, offset)
+                            found, resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, comp_id, offset)
 
                             if found:
                                 if resolved:
                                     index, _row = _index, __row
                                 break
 
-                            found, resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, -offset)
+                            found, resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, comp_id, -offset)
 
                             if found:
                                 if resolved:
@@ -24345,6 +24396,7 @@ class NmrDpUtility:
                                                                            if _ps['chain_id'] in (auth_asym_id, str(letterToDigit(auth_asym_id)))
                                                                            and ref_auth_seq_id in _ps['seq_id']):
                                 resolved = True
+                                found = False
 
                                 entity_assembly_id = item['entity_assembly_id']
                                 entity_id = item['entity_id']
@@ -24362,9 +24414,30 @@ class NmrDpUtility:
                                     _row[20], _row[21], _row[22], _row[23] =\
                                         _row[16], _row[17], _row[18], _row[19]
 
-                                _row[24] = 'UNMAPPED'
+                                if comp_id not in monDict3:
+                                    for item in self.__caC['entity_assembly']:
+                                        if 'comp_id' in item and comp_id == item['comp_id']:
+                                            _entity_assembly_id = item['entity_assembly_id']
+                                            _entity_id = item['entity_id']
 
-                                _seq_key = (auth_asym_id, seq_id)
+                                            __seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                              if v[0] == _entity_assembly_id and v[1] == seq_id and v[2] == _entity_id), None)
+                                            if __seq_key is not None:
+                                                found = True
+                                                comp_id = __seq_key[2]
+                                                _row[1], _row[2], _row[3], _row[4] = _entity_assembly_id, _entity_id, __seq_key[1], __seq_key[1]
+                                                _seq_key = (__seq_key[0], __seq_key[1])
+                                                _row[16], _row[17], _row[18], _row[19] =\
+                                                    __seq_key[0], __seq_key[1], comp_id, atom_id
+                                                if has_ins_code and __seq_key in auth_to_ins_code:
+                                                    _row[27] = auth_to_ins_code[__seq_key]
+
+                                                _seq_key = (__seq_key[0], __seq_key[1])
+
+                                if not found:
+                                    _row[24] = 'UNMAPPED'
+
+                                    _seq_key = (auth_asym_id, seq_id)
 
                                 _index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, index)
 

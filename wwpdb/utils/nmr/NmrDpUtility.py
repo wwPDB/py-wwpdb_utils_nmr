@@ -24333,7 +24333,7 @@ class NmrDpUtility:
                                     index, _row = _index, __row
                                 break
 
-                        if not resolved and chain_id in can_auth_asym_id_mapping:  # DAOTHER-8751
+                        if not resolved and chain_id in can_auth_asym_id_mapping:  # DAOTHER-8751, 8755
                             mapping = can_auth_asym_id_mapping[chain_id]
 
                             auth_asym_id = mapping['auth_asym_id']
@@ -24342,13 +24342,14 @@ class NmrDpUtility:
                             item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
 
                             if item is not None and ps is not None and any(_ps for _ps in ps_common
-                                                                           if _ps['chain_id'] == auth_asym_id and ref_auth_seq_id in _ps['seq_id']):
+                                                                           if _ps['chain_id'] in (auth_asym_id, str(letterToDigit(auth_asym_id)))
+                                                                           and ref_auth_seq_id in _ps['seq_id']):
                                 resolved = True
 
                                 entity_assembly_id = item['entity_assembly_id']
                                 entity_id = item['entity_id']
 
-                                _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, None, None
+                                _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
                                 _row[16], _row[17], _row[18], _row[19] =\
                                     auth_asym_id, seq_id, comp_id, atom_id

@@ -24080,6 +24080,11 @@ class NmrDpUtility:
 
                             index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
+                            if chain_id not in can_auth_asym_id_mapping:
+                                can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
+                                                                      'ref_auth_seq_id': auth_seq_id
+                                                                      }
+
                         else:
 
                             item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
@@ -24105,6 +24110,11 @@ class NmrDpUtility:
                                         row[auth_comp_id_col], row[auth_atom_id_col]
 
                                 index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
+
+                                if chain_id not in can_auth_asym_id_mapping:
+                                    can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
+                                                                          'ref_auth_seq_id': auth_seq_id
+                                                                          }
 
                             else:
                                 resolved = False
@@ -39601,7 +39611,7 @@ class NmrDpUtility:
 
                         j = 0
                         for i in range(length):
-                            if str(myAlign[i][0]) != '.':
+                            if str(myAlign[i][0]) != '.' and j < len(s1['seq_id']):
                                 seq_id1.append(s1['seq_id'][j])
                                 j += 1
                             else:
@@ -39609,7 +39619,7 @@ class NmrDpUtility:
 
                         j = 0
                         for i in range(length):
-                            if str(myAlign[i][1]) != '.':
+                            if str(myAlign[i][1]) != '.' and j < len(s2['seq_id']):
                                 seq_id2.append(s2['seq_id'][j])
                                 j += 1
                             else:
@@ -40322,7 +40332,7 @@ class NmrDpUtility:
 
                         j = 0
                         for i in range(length):
-                            if str(myAlign[i][0]) != '.':
+                            if str(myAlign[i][0]) != '.' and j < len(s1['seq_id']):
                                 seq_id1.append(s1['seq_id'][j])
                                 j += 1
                             else:
@@ -40330,7 +40340,7 @@ class NmrDpUtility:
 
                         j = 0
                         for i in range(length):
-                            if str(myAlign[i][1]) != '.':
+                            if str(myAlign[i][1]) != '.' and j < len(s2['seq_id']):
                                 seq_id2.append(s2['seq_id'][j])
                                 j += 1
                             else:

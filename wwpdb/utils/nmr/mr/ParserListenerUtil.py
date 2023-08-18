@@ -1454,26 +1454,26 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                   'default': '1', 'default-from': 'parent'},
                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                  ],
-                          'heteronucl_t1rho_data': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
-                                                     'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
-                                                     'enforce-enum': True},
-                                                    {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
-                                                     'enum': set(ALLOWED_ISOTOPE_NUMBERS),
-                                                     'enforce-enum': True},
-                                                    {'name': 'T1rho_val', 'type': 'float', 'mandatory': True},
-                                                    {'name': 'T1rho_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                                     'range': {'min_inclusive': 0.0}},
-                                                    {'name': 'Rex_val', 'type': 'float', 'mandatory': False},
-                                                    {'name': 'Rex_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
-                                                     'range': {'min_inclusive': 0.0}},
-                                                    {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
-                                                    {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
-                                                    {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
-                                                    {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
-                                                    {'name': 'Heteronucl_T1rho_list_ID', 'type': 'pointer-index', 'mandatory': True,
-                                                     'default': '1', 'default-from': 'parent'},
-                                                    {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
-                                                    ],
+                          'heteronucl_t1r_data': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                   'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                   'enforce-enum': True},
+                                                  {'name': 'T1rho_val', 'type': 'float', 'mandatory': True},
+                                                  {'name': 'T1rho_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                   'range': {'min_inclusive': 0.0}},
+                                                  {'name': 'Rex_val', 'type': 'float', 'mandatory': False},
+                                                  {'name': 'Rex_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                   'range': {'min_inclusive': 0.0}},
+                                                  {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                  {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Heteronucl_T1rho_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                   'default': '1', 'default-from': 'parent'},
+                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                  ],
                           'order_param_data': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
                                                 'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                 'enforce-enum': True},
@@ -4871,6 +4871,9 @@ def getRdcCode(atoms):
     if len(atoms) != 2:
         return None
 
+    if any(a is None for a in atoms):
+        return None
+
     atom1 = atoms[0]
     atom2 = atoms[1]
 
@@ -6660,7 +6663,7 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
             row[key_size + 6], row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
-    elif contentSubtype == 'heteronucl_t1rho_data':
+    elif contentSubtype == 'heteronucl_t1r_data':
         if atom1 is not None:
             row[key_size] = atomType = atom1['atom_id'][0]
             row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]

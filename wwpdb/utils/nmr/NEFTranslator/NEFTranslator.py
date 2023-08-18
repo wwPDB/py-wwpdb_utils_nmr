@@ -3733,7 +3733,7 @@ class NEFTranslator:
                         key_f.seek(0)
 
                     for j in range(key_len):
-                        key_f.write(f'{row[j].upper() if uppercases[j] else row[j]} ')
+                        key_f.write(f'{row[j].upper() if row[j] is not None and uppercases[j] else row[j]} ')
 
                     key = key_f.getvalue()
 

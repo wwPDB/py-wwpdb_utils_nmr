@@ -1426,7 +1426,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
 
             j = 0
             for i in range(length):
-                if str(myAlign[i][0]) != '.':
+                if str(myAlign[i][0]) != '.' and j < len(s1[seq_id_name]):
                     seq_id1.append(s1[seq_id_name][j])
                     j += 1
                 else:
@@ -1434,7 +1434,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
 
             j = 0
             for i in range(length):
-                if str(myAlign[i][1]) != '.':
+                if str(myAlign[i][1]) != '.' and j < len(s2['seq_id']):
                     seq_id2.append(s2['seq_id'][j])
                     j += 1
                 else:

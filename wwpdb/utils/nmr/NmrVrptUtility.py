@@ -1142,6 +1142,10 @@ class NmrVrptUtility:
                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                       ]
 
+        # DAOTHER-8705
+        if _auth_atom_id == 'pdbx_auth_atom_name':
+            data_items.append({'name': 'auth_atom_id', 'type': 'str', 'alt_name': 'alt_auth_atom_id'})
+
         _filter_items = []  # {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}]
 
         if len(self.__caC['polymer_sequence']) >= LEN_MAJOR_ASYM_ID:
@@ -1150,6 +1154,9 @@ class NmrVrptUtility:
 
         self.__atomIdList = {}
         self.__coordinates = {}
+
+        atom_name_unchecked = True
+        _auth_atom_id_ = 'auth_atom_id'
 
         try:
 
@@ -1160,12 +1167,21 @@ class NmrVrptUtility:
 
                 coord = self.__cR.getDictListWithFilter('atom_site', data_items, filter_items)
 
+                if atom_name_unchecked:
+                    atom_name_unchecked = False
+                    if _auth_atom_id == 'pdbx_auth_atom_name':
+                        for c in coord:
+                            if c['auth_atom_id'] is not None and c['alt_auth_atom_id'] is not None:
+                                if c['auth_atom_id'][0].isdigit() and c['alt_auth_atom_id'][0] == 'H':
+                                    _auth_atom_id_ = 'alt_auth_atom_id'
+                                    break
+
                 atom_id_list_per_model = {}
                 coordinates_per_model = {}
 
                 for c in coord:
                     atom_key = (c['auth_asym_id'], c['auth_seq_id'], c['auth_comp_id'],
-                                c['auth_atom_id'], c['pdbx_PDB_ins_code'])
+                                c[_auth_atom_id_], c['pdbx_PDB_ins_code'])
 
                     # tokens = ("ent_", "said_", "resname_", "seq_", "resnum_", "altcode_", "icode_", "chain_")
 

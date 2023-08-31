@@ -16688,6 +16688,30 @@ class NmrDpUtility:
             except AttributeError:
                 return False
 
+        for sf in self.__star_data[file_list_id].get_saveframes_by_category('assembly'):
+
+            try:
+                if __pynmrstar_v3_2__:
+                    loop = sf.get_loop('_Entity_assembly')
+                else:
+                    loop = sf.get_loop_by_category('_Entity_assembly')
+            except KeyError:
+                return False
+
+            if loop is None:
+                return False
+
+            dat = get_lp_tag(loop, ['Entity_ID'])
+
+            entity_id_set = set()
+
+            for row in dat:
+                if row not in emptyValue:
+                    entity_id_set.add(row)
+
+            if len(loops) != len(entity_id_set):  # DAOTHER-8800: Make sure all _Entity saveframes have an _Entity Comp Index loop before relying on these loops
+                return False
+
         asm = []  # molecular assembly of a loop
 
         chain_ids = set()

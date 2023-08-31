@@ -4544,6 +4544,10 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
 
     chainIds = [a['chain_id'] for a in atoms]
     seqIds = [a['seq_id'] for a in atoms]
+
+    if any('atom_id' not in a for a in atoms):
+        return None
+
     atomIds = [a['atom_id'] for a in atoms]
 
     if len(collections.Counter(chainIds).most_common()) > 1:

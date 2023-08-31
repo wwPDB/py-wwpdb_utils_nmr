@@ -29655,6 +29655,8 @@ class NmrDpUtility:
         if self.__mr_sf_dict_holder is None:
             self.__mr_sf_dict_holder = {}
 
+        derived_from_public_mr = False
+
         for ar in self.__inputParamDict[ar_file_path_list]:
 
             file_path = ar['file_name']
@@ -29664,6 +29666,9 @@ class NmrDpUtility:
 
             file_type = input_source_dic['file_type']
             content_subtype = input_source_dic['content_subtype']
+
+            if fileListId == self.__file_path_list_len and file_type == 'nm-res-mr':
+                derived_from_public_mr = True
 
             fileListId += 1
 
@@ -29723,7 +29728,7 @@ class NmrDpUtility:
                                        self.__mr_atom_name_mapping,
                                        self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT)
-                reader.setRemediateMode(self.__remediation_mode)
+                reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -29747,7 +29752,7 @@ class NmrDpUtility:
                                                self.__cR, self.__caC,
                                                self.__ccU, self.__csStat, self.__nefT,
                                                reasons)
-                        reader.setRemediateMode(self.__remediation_mode)
+                        reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,

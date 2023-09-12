@@ -24567,7 +24567,68 @@ class NmrDpUtility:
 
                 index += 1
 
+            aux_lp_category = self.aux_lp_categories[file_type][content_subtype][0]
+
+            def delete_aux_loop():
+
+                if not isinstance(sf, pynmrstar.Loop) and any(aux_loop for aux_loop in sf if aux_loop.category == aux_lp_category):
+
+                    if __pynmrstar_v3_2__:
+                        aux_loop = sf.get_loop(aux_lp_category)
+                    else:
+                        aux_loop = sf.get_loop_by_category(aux_lp_category)
+
+                    del sf[aux_loop]
+
             if has_genuine_ambig_code:
+
+                for _row in lp:
+
+                    if _row[12] not in (4, 5):
+                        continue
+
+                    ambig_id = _row[12]
+
+                    if _row[13] not in emptyValue:
+                        ambig_id = copy.copy(_row[12])
+                        ambig_set_id = copy.copy(_row[13])
+                        chain_id = _row[1]
+                        seq_id = _row[3]
+                        comp_id = _row[5]
+                        atom_id = _row[6]
+                        atom_type = _row[7]
+
+                        if atom_type == 'H':
+                            atom_in_same_group = self.__csStat.getProtonsInSameGroup(comp_id, atom_id)
+
+                            if not any(((ambig_id == 5 and (__row[1] != chain_id or __row[3] != seq_id))
+                                        or (ambig_id == 4 and __row[6] not in atom_in_same_group))
+                                       for __row in lp if __row[12] == ambig_id and __row[13] == ambig_set_id):
+
+                                for __row in lp:
+                                    if __row[12] == ambig_id and __row[13] == ambig_set_id:
+                                        __row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                        __row[13] = None
+
+                                if not isinstance(sf, pynmrstar.Loop) and any(aux_loop for aux_loop in sf if aux_loop.category == aux_lp_category):
+
+                                    if __pynmrstar_v3_2__:
+                                        aux_loop = sf.get_loop(aux_lp_category)
+                                    else:
+                                        aux_loop = sf.get_loop_by_category(aux_lp_category)
+
+                                    if 'Ambiguous_shift_set_ID' in aux_loop.tags:
+                                        ambig_set_id_col = aux_loop.tags.index('Ambiguous_shift_set_ID')
+
+                                        del_row_idx = []
+
+                                        for idx, __row in enumerate(aux_loop.data):
+                                            if __row[ambig_set_id_col] == ambig_set_id:
+                                                del_row_idx.append(idx)
+
+                                        if len(del_row_idx) > 0:
+                                            for idx in reversed(del_row_idx):
+                                                del aux_loop.data[idx]
 
                 has_genuine_ambig_code = False
 
@@ -24622,8 +24683,6 @@ class NmrDpUtility:
                         has_genuine_ambig_code = True
 
                 if has_genuine_ambig_code:
-
-                    aux_lp_category = self.aux_lp_categories[file_type][content_subtype][0]
 
                     aux_lp = pynmrstar.Loop.from_scratch(aux_lp_category)
 
@@ -24698,14 +24757,13 @@ class NmrDpUtility:
 
                         aux_lp.add_data(_aux_row)
 
-                    if not isinstance(sf, pynmrstar.Loop) and any(aux_loop for aux_loop in sf if aux_loop.category == aux_lp_category):
+                    delete_aux_loop()
 
-                        if __pynmrstar_v3_2__:
-                            aux_loop = sf.get_loop(aux_lp_category)
-                        else:
-                            aux_loop = sf.get_loop_by_category(aux_lp_category)
+                else:
+                    delete_aux_loop()
 
-                        del sf[aux_loop]
+            else:
+                delete_aux_loop()
 
         del sf[loop]
 
@@ -49960,6 +50018,10 @@ class NmrDpUtility:
                         #     lp = sf.get_loop(lp_category)
                         # else:
                         #     lp = sf.get_loop_by_category(lp_category)
+                        if self.__bmrb_only:
+                            sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
+                            if any(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                                continue
                         master_entry.add_saveframe(sf)
                 else:
                     for sf_item in self.__mr_sf_dict_holder[content_subtype]:

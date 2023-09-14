@@ -91,6 +91,7 @@
 # 16-Dec-2022  M. Yokochi - remove deprecated functions with minor code revisions (v3.2.2)
 # 27-Feb-2023  M. Yokochi - preserve author sequence scheme of the coordinates during NMR-STAR to NEF conversion (v3.2.3)
 # 13-Mar-2023  M. Yokochi - preserve the original atom nomenclature of NMR restraints into Auth_atom_name_* data items (v3.4.0)
+# 13-Sep-2023  M. Yokochi - fix/improve NEF atom nomenclature mapping (v3.5.0, DAOTHER-8817)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -105,6 +106,7 @@ import csv
 import itertools
 import copy
 import pynmrstar
+import collections
 
 from packaging import version
 from operator import itemgetter
@@ -130,7 +132,7 @@ except ImportError:
 
 
 __package_name__ = 'wwpdb.utils.nmr'
-__version__ = '3.4.0'
+__version__ = '3.5.0'
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
@@ -613,6 +615,11 @@ class NEFTranslator:
         self.selfSeqMap = None
         self.atomIdMap = None
 
+        # DAOTHER-8817: construct pseudo CCD from the coordinates
+        self.chemCompAtom = None
+        self.chemCompBond = None
+        self.chemCompTopo = None
+
         self.star2NefChainMapping = None
         self.star2CifChainMapping = None
 
@@ -666,6 +673,20 @@ class NEFTranslator:
         """
 
         self.__allow_missing_dist_restraint = flag
+
+    def set_chem_comp_dict(self, chem_comp_atom, chem_comp_bond, chem_comp_topo):
+        """ Set chem_comp dictionary derived from ParserListerUtil.coordAssemblyChecker().
+            DAOTHER-8817: construct pseudo CCD from the coordinates
+        """
+
+        if isinstance(chem_comp_atom, dict):
+            self.chemCompAtom = chem_comp_atom
+
+        if isinstance(chem_comp_bond, dict):
+            self.chemCompBond = chem_comp_bond
+
+        if isinstance(chem_comp_topo, dict):
+            self.chemCompTopo = chem_comp_topo
 
     def load_csv_data(self, csv_file, transpose=False):
         """ Load CSV data to list.
@@ -2273,29 +2294,31 @@ class NEFTranslator:
 
             for loop in loops:
 
-                if 'Details' in loop.tags and 'Details' not in allowed_tags:
-                    loop.remove_tag('Details')
+                if allowed_tags is not None:
 
-                if loop.category == '_Assigned_peak_chem_shift' and 'Peak_contribution_ID' in loop.tags and 'Contribution_fractional_val' in allowed_tags:
-                    col = loop.tags.index('Peak_contribution_ID')
-                    loop.tags[col] = 'Contribution_fractional_val'
+                    if 'Details' in loop.tags and 'Details' not in allowed_tags:
+                        loop.remove_tag('Details')
 
-                if loop.category == '_Atom_chem_shift' and 'NEF_atom_name' in loop.tags and 'PDB_atom_name' in allowed_tags:
-                    col = loop.tags.index('NEF_atom_name')
-                    loop.tags[col] = 'PDB_atom_name'
+                    if loop.category == '_Assigned_peak_chem_shift' and 'Peak_contribution_ID' in loop.tags and 'Contribution_fractional_val' in allowed_tags:
+                        col = loop.tags.index('Peak_contribution_ID')
+                        loop.tags[col] = 'Contribution_fractional_val'
 
-                if loop.category == '_Bond' and 'Order' in loop.tags and 'Value_order' in allowed_tags:
-                    col = loop.tags.index('Order')
-                    loop.tags[col] = 'Value_order'
+                    if loop.category == '_Atom_chem_shift' and 'NEF_atom_name' in loop.tags and 'PDB_atom_name' in allowed_tags:
+                        col = loop.tags.index('NEF_atom_name')
+                        loop.tags[col] = 'PDB_atom_name'
 
-                if loop.category == '_Spectral_dim':
-                    if 'Encoded_source_dimension_ID' in loop.tags and 'Encoded_reduced_dimension_ID' in allowed_tags:
-                        col = loop.tags.index('Encoded_source_dimension_ID')
-                        loop.tags[col] = 'Encoded_reduced_dimension_ID'
+                    if loop.category == '_Bond' and 'Order' in loop.tags and 'Value_order' in allowed_tags:
+                        col = loop.tags.index('Order')
+                        loop.tags[col] = 'Value_order'
 
-                    if 'Folding_type' in loop.tags and 'Under_sampling_type' in allowed_tags:
-                        col = loop.tags.index('Folding_type')
-                        loop.tags[col] = 'Under_sampling_type'
+                    if loop.category == '_Spectral_dim':
+                        if 'Encoded_source_dimension_ID' in loop.tags and 'Encoded_reduced_dimension_ID' in allowed_tags:
+                            col = loop.tags.index('Encoded_source_dimension_ID')
+                            loop.tags[col] = 'Encoded_reduced_dimension_ID'
+
+                        if 'Folding_type' in loop.tags and 'Under_sampling_type' in allowed_tags:
+                            col = loop.tags.index('Folding_type')
+                            loop.tags[col] = 'Under_sampling_type'
 
                 tag_data = []
 
@@ -4648,23 +4671,64 @@ class NEFTranslator:
         atom_list = []
         ambiguity_code = 1
         atoms = []
+        methyl_atoms = []
 
         try:
 
             if self.__ccU.updateChemCompDict(comp_id):
-                methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
-                not_methyl = not methyl_only or nef_atom[0] not in protonBeginCode or len(methyl_atoms) == 0
-                atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
-                         if not_methyl or (not not_methyl and a[self.__ccU.ccaAtomId] in methyl_atoms)]
+                cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
+
+                if cc_rel_status == 'REL':
+                    methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+                    not_methyl = not methyl_only or nef_atom[0] not in protonBeginCode or len(methyl_atoms) == 0
+                    atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
+                             if not_methyl or (not not_methyl and a[self.__ccU.ccaAtomId] in methyl_atoms)]
+
+                # DAOTHER-8817
+                elif self.chemCompAtom is not None and comp_id in self.chemCompAtom:
+                    atoms = copy.copy(self.chemCompAtom[comp_id])
+
+                    for v in self.chemCompBond[comp_id].values():
+                        if len(v) == 3:
+                            methyl_atoms.extend(v)
+
+                else:
+                    methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+                    not_methyl = not methyl_only or nef_atom[0] not in protonBeginCode or len(methyl_atoms) == 0
+                    atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
+                             if not_methyl or (not not_methyl and a[self.__ccU.ccaAtomId] in methyl_atoms)]
 
             else:
-                methyl_atoms = []
+
+                if self.chemCompAtom is not None and comp_id in self.chemCompAtom:
+                    atoms = copy.copy(self.chemCompAtom[comp_id])
+
+                    for v in self.chemCompBond[comp_id].values():
+                        if len(v) == 3:
+                            methyl_atoms.extend(v)
+
                 if leave_unmatched:
                     details = f"Unknown non-standard residue {comp_id} found."
                 elif self.__verbose:
                     self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Unknown non-standard residue {comp_id} found.\n")
 
             try:
+
+                # DAOTHER-8817: guess ambiguity code from pseudo CCD
+                def guess_ambiguity_code(atom_list):
+                    if self.chemCompBond is not None and comp_id in self.chemCompBond:
+                        for k, v in self.chemCompBond[comp_id].items():
+                            if atom_list[0] in v:
+                                len_v = len(v)
+                                if len_v == 2:
+                                    return 2  # methylen/amino
+                                if len_v == 1:
+                                    if k[0] == 'C' and self.chemCompTopo is not None and comp_id in self.chemCompTopo\
+                                       and any(len(tv) == 2 and tv[0][0] == 'C' and tv[1][0] == 'C'
+                                               for tk, tv in self.chemCompTopo[comp_id].items() if tk == k):
+                                        return 3  # aromatic opposite
+                                    return 1
+                    return 0
 
                 ref_atom = re.findall(r'(\S+)([xyXY])([%*])$|(\S+)([%*])$|(\S+)([xyXY]$)|([%*])(\S+)', nef_atom)[0]
 
@@ -4686,6 +4750,15 @@ class NEFTranslator:
 
                     xid = sorted(set(int(a[len_atom_type]) for a in alist2))
 
+                    # DAOTHER-8817: select proper atom groups
+                    xid_count = {}
+                    for _xid in xid:
+                        xid_count[_xid] = len([a for a in alist2 if int(a[len_atom_type]) == _xid])
+                    _xid_count = next((k for k, v in collections.Counter(xid_count.values()).most_common() if v == 2), None)
+                    if _xid_count is None:
+                        _xid_count = next((k for k, v in collections.Counter(xid_count.values()).most_common() if v == 1), None)
+                    xid = [k for k, v in xid_count.items() if v == _xid_count]
+
                     if xy_code == 'x':
                         atom_list = [a for a in alist2 if int(a[len_atom_type]) == xid[0]]
                         if len(atom_list) > 3:  # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
@@ -4698,13 +4771,26 @@ class NEFTranslator:
 
                     ambiguity_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
+                    # DAOTHER-8817: guess ambiguity code from pseudo CCD
+                    if ambiguity_code == 0:
+                        ambiguity_code = min([len(xid), 2]) if atom_list[0] in methyl_atoms else guess_ambiguity_code(atom_list)
+
                 elif atm_set == [3, 4]:  # endswith [%*] but neither [xyXY][%*]
 
-                    atom_type = ref_atom[3]
+                    atom_type = _atom_type = ref_atom[3]
                     wc_code = ref_atom[4]
 
                     if atom_type[0] not in ('%', '*'):
-                        if wc_code == '%':
+                        # DAOTHER-8817: H\S*[xyXY]\S+[%*]
+                        if atom_type[0] in protonBeginCode and ('X' in atom_type or 'Y' in atom_type or 'x' in atom_type or 'y' in atom_type):
+                            _atom_type = atom_type.replace('X', '').replace('Y', '').replace('x', '').replace('y', '')
+                            if wc_code == '%':
+                                pattern = re.compile(fr'{_atom_type}\d+') if is_std_comp_id else re.compile(fr'{_atom_type}\S?$')
+                            elif wc_code == '*':
+                                pattern = re.compile(fr'{_atom_type}\S+')
+                            elif self.__verbose:
+                                self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                        elif wc_code == '%':
                             pattern = re.compile(fr'{atom_type}\d+') if is_std_comp_id else re.compile(fr'{atom_type}\S?$')
                         elif wc_code == '*':
                             pattern = re.compile(fr'{atom_type}\S+')
@@ -4733,7 +4819,21 @@ class NEFTranslator:
 
                     atom_list = [a for a in atoms if re.search(pattern, a) and nef_atom[0] in ('H', '1', '2', '3', a[0])]
 
+                    if atom_type != _atom_type and self.chemCompBond is not None and comp_id in self.chemCompBond:
+                        _atom_list = []
+                        for a in atom_list:
+                            for v in self.chemCompBond[comp_id].values():
+                                if a in v and len(v) > 1:
+                                    _atom_list.extend(v)
+
+                        if len(_atom_list) > 0:
+                            atom_list = _atom_list
+
                     ambiguity_code = 1 if atom_list[0] in methyl_atoms else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
+
+                    # DAOTHER-8817: guess ambiguity code from pseudo CCD
+                    if ambiguity_code == 0:
+                        ambiguity_code = guess_ambiguity_code(atom_list)
 
                 elif atm_set == [5, 6]:  # endswith [xyXY]
 
@@ -4758,6 +4858,10 @@ class NEFTranslator:
 
                     ambiguity_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
+                    # DAOTHER-8817: guess ambiguity code from pseudo CCD
+                    if ambiguity_code == 0:
+                        ambiguity_code = guess_ambiguity_code(atom_list)
+
                 elif atm_set == [7, 8]:  # startswith [%*]
 
                     atom_type = ref_atom[8]
@@ -4773,6 +4877,10 @@ class NEFTranslator:
                     atom_list = [a for a in atoms if re.search(pattern, a)]
 
                     ambiguity_code = 1 if atom_list[0] in methyl_atoms else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
+
+                    # DAOTHER-8817: guess ambiguity code from pseudo CCD
+                    if ambiguity_code == 0:
+                        ambiguity_code = guess_ambiguity_code(atom_list)
 
                 elif self.__verbose:
                     self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
@@ -4822,10 +4930,10 @@ class NEFTranslator:
                 if nef_atom in atoms:
                     atom_list.append(nef_atom)
 
-                elif leave_unmatched:
+                else:  # DAOTHER-8817
                     atom_list.append(nef_atom)
                     ambiguity_code = None
-                    if details is None:
+                    if leave_unmatched and details is None:
                         details = f"{nef_atom} is invalid atom_id in comp_id {comp_id}."
 
             return (atom_list, ambiguity_code, details)

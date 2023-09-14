@@ -3,6 +3,7 @@
 # Date: 18-Feb-2022
 #
 # Updates:
+# 13-Sep-2023  M. Yokochi - construct pseudo CCD from the coordinates (DAOTHER-8817)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -3398,6 +3399,11 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     authToLabelChain = None if prevResult is None or 'auth_to_label_chain' not in prevResult else prevResult['auth_to_label_chain']
     entityAssembly = None if prevResult is None or 'entity_assembly' not in prevResult else prevResult['entity_assembly']
 
+    # DAOTHER-8817
+    chemCompAtom = None if prevResult is None or 'chem_comp_atom' not in prevResult else prevResult['chem_comp_atom']
+    chemCompBond = None if prevResult is None or 'chem_comp_bond' not in prevResult else prevResult['chem_comp_bond']
+    chemCompTopo = None if prevResult is None or 'chem_comp_topo' not in prevResult else prevResult['chem_comp_topo']
+
     try:
 
         tags = cR.getItemTags('atom_site')
@@ -3478,6 +3484,12 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
             coordAtomSite = {}
             labelToAuthSeq = {}
+
+            # DAOTHER-8817
+            chemCompAtom = {}
+            chemCompBond = {}
+            chemCompTopo = {}
+
             chainIds = set(c['chain_id'] for c in coord)
             for chainId in chainIds:
                 seqIds = set(c['seq_id'] for c in coord if c['chain_id'] == chainId)
@@ -3499,6 +3511,64 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         labelToAuthSeq[(authToLabelChain[chainId], int(altSeqId))] = seqKey
                     else:
                         labelToAuthSeq[seqKey] = seqKey
+
+                    # DAOTHER-8817
+                    if compId not in chemCompAtom:
+                        chemCompAtom[compId] = atomIds
+
+                        def to_np_array(a):
+                            """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
+                            """
+                            return numpy.asarray([a['x'], a['y'], a['z']], dtype=float)
+
+                        dataItems = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                     {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'}
+                                     ]
+
+                        filterItems = [{'name': modelNumName, 'type': 'int',
+                                        'value': representativeModelId},
+                                       {'name': authAsymId, 'type': 'str', 'value': chainId},
+                                       {'name': authSeqId, 'type': 'int', 'value': seqId},
+                                       {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                       ]
+
+                        resCoordDict = {c['atom_id']: to_np_array(c) for c in cR.getDictListWithFilter('atom_site', dataItems, filterItems)}
+
+                        chemCompBond[compId] = {}
+                        chemCompTopo[compId] = {}
+
+                        for proton in atomIds:
+                            if proton[0] in protonBeginCode:
+
+                                bonded = None
+                                distance = 1.5
+
+                                for heavy in atomIds:
+                                    if heavy[0] not in protonBeginCode:
+                                        _distance = numpy.linalg.norm(resCoordDict[proton] - resCoordDict[heavy])
+
+                                        if _distance < distance:
+                                            distance = _distance
+                                            bonded = heavy
+
+                                if bonded is not None:
+                                    if bonded not in chemCompBond[compId]:
+                                        chemCompBond[compId][bonded] = []
+                                    chemCompBond[compId][bonded].append(proton)
+
+                        for heavy in atomIds:
+                            if heavy[0] not in protonBeginCode:
+                                for heavy2 in atomIds:
+                                    if heavy2[0] not in protonBeginCode and heavy2 != heavy:
+                                        _distance = numpy.linalg.norm(resCoordDict[heavy] - resCoordDict[heavy2])
+
+                                        if _distance < 2.5:
+                                            if heavy not in chemCompTopo[compId]:
+                                                chemCompTopo[compId][heavy] = []
+                                            chemCompTopo[compId][heavy].append(heavy2)
+
             authToLabelSeq = {v: k for k, v in labelToAuthSeq.items()}
 
         if coordUnobsRes is None:
@@ -4163,7 +4233,10 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'auth_to_orig_seq': authToOrigSeq,
             'auth_to_ins_code': authToInsCode,
             'auth_to_entity_type': authToEntityType,
-            'entity_assembly': entityAssembly}
+            'entity_assembly': entityAssembly,
+            'chem_comp_atom': chemCompAtom,
+            'chem_comp_bond': chemCompBond,
+            'chem_comp_topo': chemCompTopo}
 
 
 def extendCoordChainsForExactNoes(modelChainIdExt,

@@ -173,6 +173,7 @@
 # 19-Jul-2023  M. Yokochi - fix not to merge restraint id (_Gen_dist_constraint.ID) if lower and upper bounds are different (DAOTHER-8705)
 # 20-Jul-2023  M. Yokochi - throw 'format_issue' error when polymer sequence extraction fails (DAOTHER-8644)
 # 09-Aug-2023  M. Yokochi - remediate combined nmr_data by default and improve robustness of sequence alignment (DAOTHER-8751)
+# 13-Sep-2023  M. Yokochi - construct pseudo CCD from the coordinates (DAOTHER-8817)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -19113,7 +19114,7 @@ class NmrDpUtility:
 
                         allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _atom_id)
 
-                        if ambig_code > allowed_ambig_code:
+                        if ambig_code > allowed_ambig_code > 0:
 
                             if allowed_ambig_code < 1:
 
@@ -23164,8 +23165,8 @@ class NmrDpUtility:
         except KeyError:
             pass
 
-        if self.__caC is None:
-            self.__retrieveCoordAssemblyChecker()
+        # if self.__caC is None:
+        #     self.__retrieveCoordAssemblyChecker()
 
         polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
@@ -24629,6 +24630,9 @@ class NmrDpUtility:
                                         if len(del_row_idx) > 0:
                                             for idx in reversed(del_row_idx):
                                                 del aux_loop.data[idx]
+
+                                            if len(aux_loop.data) == 0:
+                                                delete_aux_loop()
 
                 has_genuine_ambig_code = False
 
@@ -27157,7 +27161,7 @@ class NmrDpUtility:
 
                                     err = "Atom ("\
                                         + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
-                                        + f", {variant_name} {_variant_!r}) is unexpectedly incorporated in the coordinate."
+                                        + f", {variant_name} {_variant_!r}) is unexpectedly incorporated in the coordinates."
 
                                     self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                         {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -27176,7 +27180,7 @@ class NmrDpUtility:
 
                                     err = "Atom ("\
                                         + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
-                                        + f") which is a {variant_name} {_variant_!r} is not present in the coordinate."
+                                        + f") which is a {variant_name} {_variant_!r} is not present in the coordinates."
 
                                     checked = False
                                     if atom_id_[0] in protonBeginCode:
@@ -27187,7 +27191,7 @@ class NmrDpUtility:
                                                 checked = True
                                                 err = "Atom ("\
                                                     + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
-                                                    + f") which is a {variant_name} {_variant_!r} is not properly instantiated in the coordinate. Please re-upload the model file."
+                                                    + f") which is a {variant_name} {_variant_!r} is not properly instantiated in the coordinates. Please re-upload the model file."
 
                                     if self.__remediation_mode and checked:
                                         continue
@@ -27257,7 +27261,7 @@ class NmrDpUtility:
 
                                 err = "Atom ("\
                                     + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
-                                    + ") is unexpectedly incorporated in the coordinate."
+                                    + ") is unexpectedly incorporated in the coordinates."
 
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -27348,7 +27352,11 @@ class NmrDpUtility:
             asm_chk_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}{hash_code_ext}_asm_chk.pkl")
             self.__caC = load_from_pickle(asm_chk_cache_path)
 
-            if self.__caC is not None:
+            # DAOTHER-8817
+            if self.__caC is not None and 'chem_comp_atom' in self.__caC:
+                self.__nefT.set_chem_comp_dict(self.__caC['chem_comp_atom'],
+                                               self.__caC['chem_comp_bond'],
+                                               self.__caC['chem_comp_topo'])
                 return
 
         self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
@@ -27357,6 +27365,11 @@ class NmrDpUtility:
 
         if self.__caC is not None and asm_chk_cache_path:
             write_as_pickle(self.__caC, asm_chk_cache_path)
+
+        # DAOTHER-8817
+        self.__nefT.set_chem_comp_dict(self.__caC['chem_comp_atom'],
+                                       self.__caC['chem_comp_bond'],
+                                       self.__caC['chem_comp_topo'])
 
     def __validateStrMr(self):
         """ Validate restraints of NMR-STAR restraint files.
@@ -27375,8 +27388,8 @@ class NmrDpUtility:
         if not has_poly_seq:
             return False
 
-        if self.__caC is None:
-            self.__retrieveCoordAssemblyChecker()
+        # if self.__caC is None:
+        #     self.__retrieveCoordAssemblyChecker()
 
         if self.__list_id_counter is None:
             self.__list_id_counter = {}
@@ -27587,8 +27600,8 @@ class NmrDpUtility:
 
             if has_poly_seq_in_loop:
 
-                if self.__caC is None:
-                    self.__retrieveCoordAssemblyChecker()
+                # if self.__caC is None:
+                #     self.__retrieveCoordAssemblyChecker()
 
                 polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
@@ -29511,8 +29524,8 @@ class NmrDpUtility:
         if not has_poly_seq:
             return False
 
-        if self.__caC is None:
-            self.__retrieveCoordAssemblyChecker()
+        # if self.__caC is None:
+        #     self.__retrieveCoordAssemblyChecker()
 
         amberAtomNumberDict = None
         gromacsAtomNumberDict = None
@@ -31758,8 +31771,8 @@ class NmrDpUtility:
         if not has_poly_seq:
             return False
 
-        if self.__caC is None:
-            self.__retrieveCoordAssemblyChecker()
+        # if self.__caC is None:
+        #     self.__retrieveCoordAssemblyChecker()
 
         list_id = 1
 
@@ -31929,8 +31942,8 @@ class NmrDpUtility:
         if not has_poly_seq_in_loop:
             return False
 
-        if self.__caC is None:
-            self.__retrieveCoordAssemblyChecker()
+        # if self.__caC is None:
+        #     self.__retrieveCoordAssemblyChecker()
 
         auth_to_star_seq = self.__caC['auth_to_star_seq']
 
@@ -38170,6 +38183,9 @@ class NmrDpUtility:
 
                     return False
 
+            if self.__caC is None:
+                self.__retrieveCoordAssemblyChecker()
+
             return True
 
         except Exception:
@@ -40054,7 +40070,7 @@ class NmrDpUtility:
 
                                     if self.__combined_mode or chain_id not in concatenated_nmr_chain or chain_id2 not in concatenated_nmr_chain[chain_id]:
 
-                                        warn = f"{chain_id}:{_seq_id1}:{nmr_comp_id} is not present in the coordinate (chain_id {chain_id2}). "\
+                                        warn = f"{chain_id}:{_seq_id1}:{nmr_comp_id} is not present in the coordinates (chain_id {chain_id2}). "\
                                             "Please update the sequence in the Macromolecules page."
 
                                         self.__suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
@@ -41017,17 +41033,34 @@ class NmrDpUtility:
                                    in zip(ca['ref_seq_id'], ca['test_seq_id'])
                                    if ref_seq_id == seq_id), None)
 
-                if cif_seq_id is None:
+                if cif_seq_id is None and ca['sequence_coverage'] >= LOW_SEQ_COVERAGE:
                     continue
 
                 cif_ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == cif_chain_id)
 
-                cif_comp_id = next((_comp_id for _seq_id, _comp_id
-                                    in zip(cif_ps['seq_id'], cif_ps['comp_id'])
-                                    if _seq_id == cif_seq_id), None)
+                if ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-8751, issue #2
+                    cif_seq_id, cif_comp_id = next(((_seq_id, _comp_id) for _auth_seq_id, _seq_id, _comp_id
+                                                    in zip(cif_ps['auth_seq_id'], cif_ps['seq_id'], cif_ps['comp_id'])
+                                                    if _auth_seq_id == seq_id), (None, None))
 
-                if cif_comp_id is None:
-                    continue
+                    if cif_seq_id is None or cif_comp_id is None:
+                        continue
+
+                else:
+                    cif_comp_id = next((_comp_id for _seq_id, _comp_id
+                                        in zip(cif_ps['seq_id'], cif_ps['comp_id'])
+                                        if _seq_id == cif_seq_id), None)
+
+                    if cif_comp_id is None:
+                        continue
+
+                if ca['sequence_coverage'] < LOW_SEQ_COVERAGE:
+                    cif_comp_id = next((_comp_id for _seq_id, _comp_id
+                                        in zip(cif_ps['auth_seq_id'], cif_ps['comp_id'])
+                                        if _seq_id == seq_id), None)
+
+                    if cif_comp_id is None:
+                        continue
 
                 if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
                     _atom_id, _, details = self.__getAtomIdListWithAmbigCode(comp_id, atom_id)
@@ -41108,7 +41141,7 @@ class NmrDpUtility:
                     err = idx_msg + "Atom ("\
                         + self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
                                                         comp_id_names[j], comp_id, atom_id_names[j], atom_name)\
-                        + ") is not present in the coordinate."
+                        + ") is not present in the coordinates."
 
                     cyclic = self.__isCyclicPolymer(ref_chain_id)
 
@@ -41137,7 +41170,7 @@ class NmrDpUtility:
 
                         if cyclic and self.__bmrb_only and file_type == 'nmr-star' and seq_id == 1 and details_col != -1:
                             _details = loop.data[idx][details_col]
-                            details = f"{chain_id}:{seq_id}:{comp_id}:{atom_name} is not present in the coordinate. "\
+                            details = f"{chain_id}:{seq_id}:{comp_id}:{atom_name} is not present in the coordinates. "\
                                 "However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n"
                             if _details in emptyValue or (details not in _details):
                                 if _details in emptyValue:
@@ -48177,12 +48210,16 @@ class NmrDpUtility:
 
         key_items = self.key_items[file_type][content_subtype]
         data_items = self.data_items[file_type][content_subtype]
+        allowed_tags = self.allowed_tags[file_type][content_subtype]
 
         item_names = self.item_names_in_cs_loop[file_type]
         chain_id_name = item_names['chain_id']
         seq_id_name = item_names['seq_id']
         iso_number_name = item_names['isotope_number']
         atom_id_name = item_names['atom_id']
+        idx_name = 'ID'
+
+        modified = False
 
         for sf in self.__star_data[0].get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
@@ -48190,75 +48227,89 @@ class NmrDpUtility:
             if self.report.error.exists(file_name, sf_framecode):
                 continue
 
-            lp_data = next((lp['data'] for lp in self.__lp_data[content_subtype]
-                            if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode), None)
+            try:
 
-            if lp_data is None:
+                lp_data = next((lp['data'] for lp in self.__lp_data[content_subtype]
+                                if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode), None)
 
-                try:
-
-                    lp_data = self.__nefT.check_data(sf, lp_category, key_items, data_items, None, None, None,
+                if lp_data is None:
+                    lp_data = self.__nefT.check_data(sf, lp_category, key_items, data_items, allowed_tags, None, None,
                                                      enforce_allowed_tags=(file_type == 'nmr-star'),
                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
-                except Exception:
-                    pass
+                _key_items = copy.copy(key_items)
+                _key_items.append({'name': idx_name, 'type': 'positive-int'})
 
-            if lp_data is not None:
+                _lp_data = self.__nefT.check_data(sf, lp_category, _key_items, data_items, allowed_tags, None, None,
+                                                  enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                  excl_missing_data=self.__excl_missing_data)[0]
 
-                atoms = []
+            except Exception:
+                continue
 
-                chain_ids = set()
+            atoms = []
 
-                for row in lp_data:
-                    chain_ids.add(row[chain_id_name])
+            chain_ids = set()
 
-                min_seq_ids = {c: 0 for c in chain_ids}
+            for row in _lp_data:
+                chain_ids.add(row[chain_id_name])
 
-                for row in lp_data:
-                    chain_id = row[chain_id_name]
-                    seq_id = row[seq_id_name]
+            min_seq_ids = {c: 0 for c in chain_ids}
 
-                    if seq_id < min_seq_ids[chain_id]:
-                        min_seq_ids[chain_id] = seq_id
+            for row in _lp_data:
+                chain_id = row[chain_id_name]
+                seq_id = row[seq_id_name]
 
-                for idx, row in enumerate(lp_data):
-                    chain_id = row[chain_id_name]
-                    seq_id = row[seq_id_name]
-                    iso_number = row[iso_number_name]
-                    atom_id = row[atom_id_name]
+                if seq_id < min_seq_ids[chain_id]:
+                    min_seq_ids[chain_id] = seq_id
 
-                    atoms.append((chain_id if isinstance(chain_id, int) else int(chain_id),
-                                  seq_id - min_seq_ids[chain_id],
-                                  iso_number, atom_id, idx))
+            for row in _lp_data:
+                chain_id = row[chain_id_name]
+                seq_id = row[seq_id_name]
+                iso_number = row[iso_number_name]
+                atom_id = row[atom_id_name]
+                idx = row[idx_name]
 
-                sorted_atoms = sorted(atoms, key=itemgetter(0, 1, 2, 3, 4))
+                atoms.append((chain_id if isinstance(chain_id, int) else int(chain_id),
+                              seq_id - min_seq_ids[chain_id],
+                              iso_number, atom_id, idx))
 
-                sorted_idx = []
+            sorted_atoms = sorted(atoms, key=itemgetter(0, 1, 2, 3))
 
-                for atom in sorted_atoms:
-                    sorted_idx.append(atom[4])
+            sorted_idx = [atom[4] for atom in sorted_atoms]
 
-                if sorted_idx != list(range(len(lp_data))):
+            if sorted_idx != list(range(1, len(_lp_data) + 1)):
 
-                    if __pynmrstar_v3_2__:
-                        loop = sf.get_loop(lp_category)
-                    else:
-                        loop = sf.get_loop_by_category(lp_category)
+                if __pynmrstar_v3_2__:
+                    loop = sf.get_loop(lp_category)
+                else:
+                    loop = sf.get_loop_by_category(lp_category)
 
-                    lp = pynmrstar.Loop.from_scratch(lp_category)
+                lp = pynmrstar.Loop.from_scratch(lp_category)
 
-                    for tag in loop.tags:
-                        lp.add_tag(lp_category + '.' + tag)
+                for tag in loop.tags:
+                    lp.add_tag(lp_category + '.' + tag)
 
-                    for idx in sorted_idx:
-                        lp.add_data(loop.data[idx])
+                dat = [int(idx) for idx in get_lp_tag(loop, [idx_name])]
 
-                    del sf[loop]
+                idx_col = lp.tags.index(idx_name)
 
-                    sf.add_loop(lp)
+                for new_idx, old_idx in enumerate(sorted_idx, start=1):
+                    row = loop.data[dat.index(old_idx)]
+                    row[idx_col] = new_idx
+
+                    lp.add_data(row)
+
+                del sf[loop]
+
+                sf.add_loop(lp)
+
+                modified = True
+
+        if modified:
+            self.__depositNmrData()
 
         return True
 
@@ -48665,8 +48716,8 @@ class NmrDpUtility:
             for cst_sf in reversed(cst_sfs):
                 del master_entry[cst_sf]
 
-        if self.__caC is None:
-            self.__retrieveCoordAssemblyChecker()
+        # if self.__caC is None:
+        #     self.__retrieveCoordAssemblyChecker()
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -50414,8 +50465,8 @@ class NmrDpUtility:
                 for cst_sf in reversed(cst_sfs):
                     del master_entry[cst_sf]
 
-        if self.__caC is None:
-            self.__retrieveCoordAssemblyChecker()
+        # if self.__caC is None:
+        #     self.__retrieveCoordAssemblyChecker()
 
         sf_item = {}
 

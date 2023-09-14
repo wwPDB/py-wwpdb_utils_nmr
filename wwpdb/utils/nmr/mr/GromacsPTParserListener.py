@@ -81,6 +81,7 @@ class GromacsPTParserListener(ParseTreeListener):
     __polySeqModel = None
     __nonPolyModel = None
     __branchedModel = None
+    __chemCompAtom = None
 
     __hasPolySeqModel = False
     __hasNonPolyModel = False
@@ -121,10 +122,11 @@ class GromacsPTParserListener(ParseTreeListener):
         self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
         if cR is not None:
-            ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC, None, fullCheck=False)
+            ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC, None, fullCheck=True)
             self.__polySeqModel = ret['polymer_sequence']
             self.__nonPolyModel = ret['non_polymer']
             self.__branchedModel = ret['branched']
+            self.__chemCompAtom = ret['chem_comp_atom']
 
         self.__hasPolySeqModel = self.__polySeqModel is not None and len(self.__polySeqModel) > 0
         self.__hasNonPolyModel = self.__nonPolyModel is not None and len(self.__nonPolyModel) > 0
@@ -466,6 +468,75 @@ class GromacsPTParserListener(ParseTreeListener):
                     if len(self.__seqAlign) > 0:
                         break
 
+            if len(self.__seqAlign) == 0:
+                len_cif_na = sum([len(ps_cif['seq_id']) for ps_cif in polySeqModel if 'identical_chain_id' in ps_cif and len(ps_cif['seq_id']) > 3])
+                len_top_na = sum([len(ps_top['seq_id']) for ps_top in self.__polySeqPrmTop
+                                  if len(ps_top['seq_id']) > 3 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id'])])
+                if len_cif_na == len_top_na:
+                    chainIdList = []
+                    seqIdList = []
+                    authCompIdList = []
+                    for ps_top in self.__polySeqPrmTop:
+                        len_ps_cif_seq = len(ps_top['seq_id'])
+                        if len_ps_cif_seq > 3 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id']):
+                            chainId = ps_top['chain_id']
+                            for seqId, compId in zip(ps_top['seq_id'], ps_top['auth_comp_id']):
+                                chainIdList.append(chainId)
+                                seqIdList.append(seqId)
+                                authCompIdList.append(compId)
+
+                    chainIndex = letterToDigit(self.__polySeqModel[0]['chain_id']) - 1
+                    idOffset = 0
+
+                    touched = []
+
+                    polySeqPrmTop = []
+                    for ps_cif in polySeqModel:
+                        len_ps_cif_seq = len(ps_cif['seq_id'])
+                        if 'identical_chain_id' in ps_cif and len_ps_cif_seq > 3:
+                            chainId = indexToLetter(chainIndex)
+                            polySeqPrmTop.append({'chain_id': chainId,
+                                                  'seq_id': seqIdList[idOffset:idOffset + len_ps_cif_seq],
+                                                  'comp_id': ps_cif['comp_id'],
+                                                  'auth_comp_id': authCompIdList[idOffset:idOffset + len_ps_cif_seq]})
+
+                            for idx, (_chainId, _seqId) in enumerate(zip(chainIdList[idOffset:idOffset + len_ps_cif_seq],
+                                                                         seqIdList[idOffset:idOffset + len_ps_cif_seq])):
+                                for k, atomNum in self.__atomNumberDict.items():
+                                    if atomNum['chain_id'] == _chainId and atomNum['seq_id'] == _seqId:
+                                        atomNum['chain_id'] = chainId
+                                        atomNum['cif_comp_id'] = ps_cif['comp_id'][idx]
+                                        touched.append(k)
+
+                            idOffset += len_ps_cif_seq
+                            chainIndex += 1
+
+                    for ps_top in self.__polySeqPrmTop:
+                        if len(ps_top['seq_id']) > 3 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id']):
+                            continue
+                        _chainId = copy.copy(ps_top['chain_id'])
+                        chainId = indexToLetter(chainIndex)
+                        ps_top['chain_id'] = chainId
+                        polySeqPrmTop.append(ps_top)
+
+                        for k, atomNum in self.__atomNumberDict.items():
+                            if k in touched:
+                                continue
+                            if atomNum['chain_id'] == _chainId:
+                                atomNum['chain_id'] = chainId
+                                touched.append(k)
+
+                        chainIndex += 1
+
+                    self.__polySeqPrmTop = polySeqPrmTop
+
+                    self.__seqAlign, compIdMapping = alignPolymerSequence(self.__pA, polySeqModel, self.__polySeqPrmTop)
+
+                    _seqAlign = copy.copy(self.__seqAlign)
+                    for sa in _seqAlign:
+                        if sa['ref_chain_id'] != sa['test_chain_id']:
+                            self.__seqAlign.remove(sa)
+
             # test chain assignment before applying comp_id mapping
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
 
@@ -508,8 +579,26 @@ class GromacsPTParserListener(ParseTreeListener):
                             if atomId in chemCompAtomIds:
                                 atomNum['atom_id'] = atomId
                                 continue
+                            if self.__chemCompAtom is not None:
+                                if 'comp_id' in atomNum and atomNum['comp_id'] in self.__chemCompAtom:
+                                    if atomId in self.__chemCompAtom[atomNum['comp_id']]:
+                                        atomNum['atom_id'] = atomId
+                                        continue
+                                if 'cif_comp_id' in atomNum and atomNum['cif_comp_id'] in self.__chemCompAtom:
+                                    if atomId in self.__chemCompAtom[atomNum['cif_comp_id']]:
+                                        atomNum['atom_id'] = atomId
+                                        continue
                             self.__f.append(f"[Unknown atom name] "
                                             f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['auth_comp_id']!r} residue.")
+                        elif self.__chemCompAtom is not None:
+                            if 'comp_id' in atomNum and atomNum['comp_id'] in self.__chemCompAtom:
+                                if atomId in self.__chemCompAtom[atomNum['comp_id']]:
+                                    atomNum['atom_id'] = atomId
+                                    continue
+                            if 'cif_comp_id' in atomNum and atomNum['cif_comp_id'] in self.__chemCompAtom:
+                                if atomId in self.__chemCompAtom[atomNum['cif_comp_id']]:
+                                    atomNum['atom_id'] = atomId
+                                    continue
                     else:
                         authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
 
@@ -525,10 +614,28 @@ class GromacsPTParserListener(ParseTreeListener):
                             if atomId in chemCompAtomIds:
                                 atomNum['atom_id'] = atomId
                                 continue
+                            if self.__chemCompAtom is not None:
+                                if 'comp_id' in atomNum and atomNum['comp_id'] in self.__chemCompAtom:
+                                    if atomId in self.__chemCompAtom[atomNum['comp_id']]:
+                                        atomNum['atom_id'] = atomId
+                                        continue
+                                if 'cif_comp_id' in atomNum and atomNum['cif_comp_id'] in self.__chemCompAtom:
+                                    if atomId in self.__chemCompAtom[atomNum['cif_comp_id']]:
+                                        atomNum['atom_id'] = atomId
+                                        continue
                             atomNum['atom_id'] = atomNum['auth_atom_id']
                             self.__f.append(f"[Unknown atom name] "
                                             f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "
                                             f"(the original residue label is {atomNum['auth_comp_id']!r}).")
+                        elif self.__chemCompAtom is not None:
+                            if 'comp_id' in atomNum and atomNum['comp_id'] in self.__chemCompAtom:
+                                if atomId in self.__chemCompAtom[atomNum['comp_id']]:
+                                    atomNum['atom_id'] = atomId
+                                    continue
+                            if 'cif_comp_id' in atomNum and atomNum['cif_comp_id'] in self.__chemCompAtom:
+                                if atomId in self.__chemCompAtom[atomNum['cif_comp_id']]:
+                                    atomNum['atom_id'] = atomId
+                                    continue
 
             self.__chainAssign, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeqModel, self.__polySeqPrmTop, self.__seqAlign)
 

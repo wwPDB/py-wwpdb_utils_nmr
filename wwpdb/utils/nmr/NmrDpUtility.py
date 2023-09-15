@@ -15943,6 +15943,28 @@ class NmrDpUtility:
             for subtype in polymer_sequence_in_loop.keys():
                 subtype_with_poly_seq.append(subtype)
 
+            if self.__bmrb_only and self.__internal_mode:
+
+                to_entity_id = {}
+
+                for sf in self.__star_data[fileListId].get_saveframes_by_category('assembly'):
+
+                    try:
+
+                        if __pynmrstar_v3_2__:
+                            loop = sf.get_loop('_Entity_assembly')
+                        else:
+                            loop = sf.get_loop_by_category('_Entity_assembly')
+
+                        if loop is not None:
+                            dat = get_lp_tag(loop, ['ID', 'Entity_ID'])
+
+                            for row in dat:
+                                to_entity_id[row[0]] = row[1]
+
+                    except KeyError:
+                        pass
+
             for subtype_pair in itertools.combinations_with_replacement(subtype_with_poly_seq, 2):
 
                 # poly_seq is reference sequence and suppress tests on combinations of two sequences in loop
@@ -15977,6 +15999,11 @@ class NmrDpUtility:
                         for s2 in ps2:
 
                             chain_id = s2['chain_id']
+
+                            if self.__bmrb_only and self.__internal_mode\
+                               and chain_id not in ref_chain_ids and not ('identical_chain_id' in s2 and chain_id not in s2['identical_chain_id']):
+
+                                chain_id = to_entity_id.get(chain_id, chain_id)
 
                             if chain_id not in ref_chain_ids and not ('identical_chain_id' in s2 and chain_id not in s2['identical_chain_id']):
 
@@ -24022,6 +24049,7 @@ class NmrDpUtility:
                     resolved = False
 
                 if not resolved:
+
                     chain_id = row[chain_id_col]
                     if chain_id in emptyValue:
                         chain_id = 'A'
@@ -24480,8 +24508,9 @@ class NmrDpUtility:
                                 _index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, index)
 
                     if not resolved:
+
                         entity_id = None
-                        if self.__combined_mode and entity_id_col != -1:
+                        if (self.__combined_mode or (self.__bmrb_only and self.__internal_mode)) and entity_id_col != -1:
                             try:
                                 entity_id = int(row[entity_id_col])
                             except (ValueError, TypeError):
@@ -41878,10 +41907,39 @@ class NmrDpUtility:
 
         self.__cleanUpSf()
 
+        master_entry = self.__star_data[0]
+
+        # strip citation author names
+
+        sf_category = 'citations'
+
+        if sf_category in self.__sf_category_list:
+
+            for sf in master_entry.get_saveframes_by_category(sf_category):
+
+                lp_category = '_Citation_author'
+
+                try:
+
+                    if __pynmrstar_v3_2__:
+                        lp = sf.get_loop(lp_category)
+                    else:
+                        lp = sf.get_loop_by_category(lp_category)
+
+                    test_tags = ['Given_name', 'Family_name', 'First_initial', 'Middle_initials', 'Family_title']
+
+                    dat = get_lp_tag(lp, test_tags)
+
+                    for idx, row in enumerate(dat):
+                        for col in range(5):
+                            if row[col].startswith(' ') or row[col].endswith(' '):
+                                lp.data[idx][lp.tags.index(test_tags[col])] = row[col].strip()
+
+                except KeyError:
+                    pass
+
         if self.__caC is None:
             return self.__remediateCsLoop()
-
-        master_entry = self.__star_data[0]
 
         orig_poly_seq = input_source_dic['polymer_sequence']
 

@@ -23177,7 +23177,7 @@ class NmrDpUtility:
         br_seq_align = br_chain_assign = None
         np_seq_align = np_chain_assign = None
 
-        if content_subtype in polymer_sequence_in_loop:
+        if content_subtype in polymer_sequence_in_loop and self.__caC is not None:
             ps_in_loop = next((ps for ps in polymer_sequence_in_loop[content_subtype] if ps['sf_framecode'] == sf_framecode), None)
 
             if ps_in_loop is not None:
@@ -23509,7 +23509,7 @@ class NmrDpUtility:
             if not all(tag for tag in mandatory_items if tag in loop.tags):
                 return False
 
-            coord_atom_site = self.__caC['coord_atom_site']
+            coord_atom_site = self.__caC['coord_atom_site'] if self.__caC is not None else {}
 
             chain_id_col = loop.tags.index('chain_code')
             seq_id_col = loop.tags.index('sequence_code')
@@ -23599,10 +23599,12 @@ class NmrDpUtility:
             auth_pdb_tags = ['Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID']
             orig_pdb_tags = ['Original_PDB_strand_ID', 'Original_PDB_residue_no', 'Original_PDB_residue_name', 'Original_PDB_atom_name']
 
-            auth_to_star_seq = self.__caC['auth_to_star_seq']
-            auth_to_orig_seq = self.__caC['auth_to_orig_seq']
-            auth_to_ins_code = self.__caC['auth_to_ins_code']
-            coord_atom_site = self.__caC['coord_atom_site']
+            entity_assembly = self.__caC['entity_assembly'] if self.__caC is not None else []
+            auth_to_entity_type = self.__caC['auth_to_entity_type'] if self.__caC is not None else {}
+            auth_to_star_seq = self.__caC['auth_to_star_seq'] if self.__caC is not None else {}
+            auth_to_orig_seq = self.__caC['auth_to_orig_seq'] if self.__caC is not None else {}
+            auth_to_ins_code = self.__caC['auth_to_ins_code'] if self.__caC is not None else {}
+            coord_atom_site = self.__caC['coord_atom_site'] if self.__caC is not None else {}
 
             _auth_to_orig_seq = {}
 
@@ -23692,7 +23694,6 @@ class NmrDpUtility:
 
                 if len(common_auth_asym_ids) > 1:
                     auth_cs_tags = ['Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Val']
-                    auth_to_entity_type = self.__caC['auth_to_entity_type']
 
                     _common_auth_asym_ids = dict(common_auth_asym_ids)
 
@@ -23808,11 +23809,13 @@ class NmrDpUtility:
                     ambig_code = row[ambig_code_col]
                     if ambig_code not in emptyValue:
                         try:
-                            ambig_code = int(ambig_code)
+                            ambig_code = int(ambig_code) if isinstance(ambig_code, str) else ambig_code
                             if ambig_code in ALLOWED_AMBIGUITY_CODES:
                                 _row[12] = ambig_code
+                            else:
+                                _row[12] = None
                         except ValueError:
-                            pass
+                            _row[12] = None
 
                 if ambig_set_id_col != -1:
                     ambig_set_id = row[ambig_set_id_col]
@@ -23822,7 +23825,7 @@ class NmrDpUtility:
                             if ambig_set_id > 0:
                                 _row[13] = ambig_set_id
                         except ValueError:
-                            pass
+                            _row[13] = None
 
                 if occupancy_col != -1:
                     occupancy = row[occupancy_col]
@@ -24112,7 +24115,7 @@ class NmrDpUtility:
 
                         else:
 
-                            item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
+                            item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
                             if item is not None and ps is not None and any(_ps for _ps in ps if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
                                 entity_assembly_id = item['entity_assembly_id']
@@ -24153,7 +24156,7 @@ class NmrDpUtility:
                                 auth_asym_id = row[auth_asym_id_col]
                                 auth_seq_id = int(row[auth_seq_id_col])
 
-                                item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
+                                item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
                                 if item is not None and ps is not None and any(_ps for _ps in ps if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
                                     entity_assembly_id = item['entity_assembly_id']
@@ -24184,7 +24187,7 @@ class NmrDpUtility:
 
                         else:
 
-                            can_auth_asym_id = [_auth_asym_id for _auth_asym_id, _auth_seq_id, _comp_id in self.__caC['auth_to_star_seq']
+                            can_auth_asym_id = [_auth_asym_id for _auth_asym_id, _auth_seq_id, _comp_id in auth_to_star_seq
                                                 if _auth_seq_id == seq_id and _comp_id == comp_id]
 
                             if len(can_auth_asym_id) != 1:
@@ -24269,7 +24272,7 @@ class NmrDpUtility:
 
                                 else:
 
-                                    item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
+                                    item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
                                     if item is not None and ps is not None and any(_ps for _ps in ps if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
                                         entity_assembly_id = item['entity_assembly_id']
@@ -24317,7 +24320,7 @@ class NmrDpUtility:
                             if auth_asym_id is not None and auth_seq_id is not None:
                                 _found = _resolved = True
 
-                                item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
+                                item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
                                 if item is not None and ps is not None and any(_ps for _ps in ps_common
                                                                                if _ps['chain_id'] == auth_asym_id
@@ -24340,7 +24343,7 @@ class NmrDpUtility:
                                             try:
                                                 orig_asym_id = row[orig_asym_id_col]
                                                 orig_seq_id = int(row[orig_seq_id_col])
-                                                _item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == orig_asym_id), None)
+                                                _item = next((item for item in entity_assembly if item['auth_asym_id'] == orig_asym_id), None)
                                                 if _item is not None:
                                                     _entity_assembly_id = _item['entity_assembly_id']
                                                     _entity_id = _item['entity_id']
@@ -24361,7 +24364,7 @@ class NmrDpUtility:
                                             except ValueError:
                                                 _seq_key = (auth_asym_id, auth_seq_id + offset)
                                         else:
-                                            _item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == chain_id), None)
+                                            _item = next((item for item in entity_assembly if item['auth_asym_id'] == chain_id), None)
                                             if _item is not None:
                                                 _entity_assembly_id = _item['entity_assembly_id']
                                                 _entity_id = _item['entity_id']
@@ -24425,7 +24428,7 @@ class NmrDpUtility:
                             auth_asym_id = mapping['auth_asym_id']
                             ref_auth_seq_id = mapping['ref_auth_seq_id']
 
-                            item = next((item for item in self.__caC['entity_assembly'] if item['auth_asym_id'] == auth_asym_id), None)
+                            item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
                             if item is not None and ps is not None and any(_ps for _ps in ps_common
                                                                            if _ps['chain_id'] in (auth_asym_id, str(letterToDigit(auth_asym_id)))
@@ -24450,7 +24453,7 @@ class NmrDpUtility:
                                         _row[16], _row[17], _row[18], _row[19]
 
                                 if comp_id not in monDict3:
-                                    for item in self.__caC['entity_assembly']:
+                                    for item in entity_assembly:
                                         if 'comp_id' in item and comp_id == item['comp_id']:
                                             _entity_assembly_id = item['entity_assembly_id']
                                             _entity_id = item['entity_id']
@@ -24541,7 +24544,10 @@ class NmrDpUtility:
                     atom_id = _row[6]
                     ambig_id = _row[12]
 
-                    if ambig_id in (2, 3):
+                    if ambig_id == 0:
+                        _row[12] = None
+
+                    elif ambig_id in (2, 3):
                         _ambig_id = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                         if _ambig_id not in (0, ambig_id):
                             if _ambig_id != 1:
@@ -24550,9 +24556,9 @@ class NmrDpUtility:
                                 _row[12] = ambig_id = 4
 
                     elif ambig_id == 6:
-                        if len([item for item in self.__caC['entity_assembly']
+                        if len([item for item in entity_assembly
                                 if item['entity_type'] != 'non-polymer']) == 1\
-                           and len(self.__caC['entity_assembly'][0]['label_asym_id'].split(',')) == 1:
+                           and len(entity_assembly[0]['label_asym_id'].split(',')) == 1:
                             _row[12] = ambig_id = 5
 
                     if ambig_id in (1, 2, 3):
@@ -24609,6 +24615,8 @@ class NmrDpUtility:
                                 for __row in lp:
                                     if __row[12] == ambig_id and __row[13] == ambig_set_id:
                                         __row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                        if __row[12] == 0:
+                                            __row[12] = None
                                         __row[13] = None
 
                                 if not isinstance(sf, pynmrstar.Loop) and any(aux_loop for aux_loop in sf if aux_loop.category == aux_lp_category):
@@ -41870,6 +41878,9 @@ class NmrDpUtility:
 
         self.__cleanUpSf()
 
+        if self.__caC is None:
+            return self.__remediateCsLoop()
+
         master_entry = self.__star_data[0]
 
         orig_poly_seq = input_source_dic['polymer_sequence']
@@ -48540,6 +48551,17 @@ class NmrDpUtility:
         """
 
         if not self.__combined_mode:
+
+            if self.__bmrb_only and self.__internal_mode:
+                master_entry = self.__star_data[0]
+
+                master_entry = self.__c2S.normalize(master_entry)
+
+                if __pynmrstar_v3__:
+                    master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
+                else:
+                    master_entry.write_to_file(self.__dstPath)
+
             return True
 
         if self.__dstPath is None:
@@ -49108,7 +49130,7 @@ class NmrDpUtility:
 
             content_subtype = 'dihed_restraint'
 
-            auth_to_entity_type = self.__caC['auth_to_entity_type']
+            auth_to_entity_type = self.__caC['auth_to_entity_type'] if self.__caC is None else {}
 
             Dihedral_angle_tot_num = 0
             if content_subtype in self.__mr_sf_dict_holder:
@@ -50978,7 +51000,7 @@ class NmrDpUtility:
                     sf_category = self.sf_categories[file_type][content_subtype]
                     lp_category = self.lp_categories[file_type][content_subtype]
 
-                    auth_to_entity_type = self.__caC['auth_to_entity_type']
+                    auth_to_entity_type = self.__caC['auth_to_entity_type'] if self.__caC is None else {}
 
                     Dihedral_angle_tot_num = 0
                     for sf in master_entry.get_saveframes_by_category(sf_category):

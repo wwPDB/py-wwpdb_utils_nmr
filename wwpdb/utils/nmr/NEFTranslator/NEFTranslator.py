@@ -4728,7 +4728,7 @@ class NEFTranslator:
                                                for tk, tv in self.chemCompTopo[comp_id].items() if tk == k):
                                         return 3  # aromatic opposite
                                     return 1
-                    return 0
+                    return None
 
                 ref_atom = re.findall(r'(\S+)([xyXY])([%*])$|(\S+)([%*])$|(\S+)([xyXY]$)|([%*])(\S+)', nef_atom)[0]
 

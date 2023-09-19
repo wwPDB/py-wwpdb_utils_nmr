@@ -1376,6 +1376,11 @@ class NmrDpUtility:
         self.__mr_sf_dict_holder = None
         self.__pk_sf_holder = None
 
+        # combined nmr cif file path (used only for BMRB internal annotation)
+        self.__srcNmrCifPath = None
+        # saveframe category list of combined nmr cif file (used only for BMRB internal annotation)
+        self.__nmr_cif_sf_category_list = None
+
         # NMR content types
         self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref',
                                      'dist_restraint', 'dihed_restraint', 'rdc_restraint',
@@ -6846,6 +6851,15 @@ class NmrDpUtility:
                     if 'original_file_name' in ar:
                         input_source.setItemValue('original_file_name', ar['original_file_name'])
 
+            if self.__bmrb_only and self.__internal_mode and 'nmr_cif_file_path' in self.__inputParamDict:
+
+                nmr_cif = self.__inputParamDict['nmr_cif_file_path']
+
+                _nmr_cif = nmr_cif + '.cif2str'
+
+                if self.__c2S.convert(nmr_cif, _nmr_cif):
+                    self.__srcNmrCifPath = _nmr_cif
+
         # self.__file_path_list_len = self.__cs_file_path_list_len = 1
 
         self.__star_data_type = []
@@ -7346,6 +7360,32 @@ class NmrDpUtility:
                             os.remove(arPath_)
                         except OSError:
                             pass
+
+            if self.__bmrb_only and self.__internal_mode and self.__srcNmrCifPath is not None:
+
+                is_valid, message = self.__nefT.validate_file(self.__srcNmrCifPath, 'A')  # 'A' for NMR unified data
+
+                _file_type = message['file_type']  # nef/nmr-star/unknown
+
+                file_name = self.__srcNmrCifPath
+                file_type = 'nmr-star'
+
+                if is_valid:
+
+                    if _file_type == file_type:
+
+                        # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                        _is_done, _star_data_type, _star_data = self.__nefT.read_input_file(self.__srcNmrCifPath)
+
+                        if _is_done and _star_data_type == 'Entry' and is_done and self.__star_data_type[0] == 'Entry':
+
+                            self.__nmr_cif_sf_category_list, _ = self.__nefT.get_inventory_list(_star_data)
+                            dst_sf_category_list, _ = self.__nefT.get_inventory_list(self.__star_data[0])
+
+                            for src_sf_category in self.__nmr_cif_sf_category_list:
+                                if src_sf_category not in dst_sf_category_list and src_sf_category != 'constraint_statistics':
+                                    for _sf in _star_data.get_saveframes_by_category(src_sf_category):
+                                        self.__star_data[0].add_saveframe(_sf)
 
         return is_done
 
@@ -29313,6 +29353,10 @@ class NmrDpUtility:
 
                 sf_category = self.sf_categories[file_type][content_subtype]
 
+                if self.__bmrb_only and self.__internal_mode and self.__nmr_cif_sf_category_list is not None:
+                    if sf_category in self.__nmr_cif_sf_category_list:
+                        continue
+
                 if self.__star_data_type[fileListId] == 'Loop':
                     pass
 
@@ -29388,6 +29432,10 @@ class NmrDpUtility:
 
             sf_category = self.sf_categories['nmr-star'][content_subtype]
             sf_framecode = f'spectral_peak_list_{list_id}'
+
+            if self.__bmrb_only and self.__internal_mode and self.__nmr_cif_sf_category_list is not None:
+                if sf_category in self.__nmr_cif_sf_category_list:
+                    continue
 
             try:
 
@@ -50152,6 +50200,8 @@ class NmrDpUtility:
                         if self.__bmrb_only:
                             sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                             if any(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                                continue
+                            if self.__internal_mode and self.__nmr_cif_sf_category_list is not None and sf.category in self.__nmr_cif_sf_category_list:
                                 continue
                         master_entry.add_saveframe(sf)
                 else:

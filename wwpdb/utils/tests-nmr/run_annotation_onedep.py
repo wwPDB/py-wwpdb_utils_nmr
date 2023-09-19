@@ -11,8 +11,6 @@ try:
 except ImportError:
     from nmr.NmrDpUtility import NmrDpUtility
     auth_view = 'auth_view'
-    if not os.path.exists(auth_view):
-        auth_view = 'mock-data-combine-at-upload'
 
 
 __pynmrstar_v3_3__ = package_version.parse(pynmrstar.__version__) >= package_version.parse("3.3.0")

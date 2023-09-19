@@ -50507,7 +50507,10 @@ class NmrDpUtility:
         try:
             from wwpdb.utils.nmr.ann.BMRBjAnnTasks import BMRBjAnnTasks  # pylint: disable=import-outside-toplevel
         except ImportError:
-            from nmr.ann.BMRBjAnnTasks import BMRBjAnnTasks  # pylint: disable=import-outside-toplevel
+            try:
+                from nmr.ann.BMRBjAnnTasks import BMRBjAnnTasks  # pylint: disable=import-outside-toplevel
+            except ImportError:
+                return False
 
         ann = BMRBjAnnTasks(self.__verbose, self.__lfh,
                             self.__inputParamDict, self.__outputParamDict,

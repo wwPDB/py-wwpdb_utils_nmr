@@ -16984,16 +16984,16 @@ class NmrDpUtility:
                     ent['seq_id'].append(seq_id)
                     ent['comp_id'].append(comp_id)
 
-                    if self.__ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
-                        cc_name = self.__ccU.lastChemCompDict['_chem_comp.name']
-                        cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
-                        if cc_rel_status == 'REL':
+                    is_valid, cc_name, cc_rel_status = self.__getChemCompNameAndStatusOf(comp_id)
+
+                    if is_valid:  # matches with comp_id in CCD
+                        if cc_rel_status == 'REL' or cc_name is not None:
                             ent['chem_comp_name'].append(cc_name)
                         else:
                             ent['chem_comp_name'].append(f"(Not available due to CCD status code {cc_rel_status})")
 
                     else:
-                        ent['chem_comp_name'].append(None)
+                        ent['chem_comp_name'].append(cc_name)
 
                         warn = f"Non standard residue ({s['chain_id']}:{seq_id}:{comp_id}) did not match with chemical component dictionary (CCD)."
 
@@ -17013,6 +17013,40 @@ class NmrDpUtility:
 
         if len(asm) > 0:
             input_source.setItemValue('non_standard_residue', asm)
+
+    def __getChemCompNameAndStatusOf(self, comp_id):
+        """ Return _chem_comp.name and release status a given CCD ID, if possible.
+        """
+
+        cc_name = cc_rel_status = processing_site = None
+
+        if self.__star_data_type[0] == 'Entry' and 'chem_comp' in self.__sf_category_list:
+            chem_comp_sf = next((sf for sf in self.__star_data[0].frame_list if sf.name == f'chem_comp_{comp_id}'), None)
+
+            if chem_comp_sf is not None:
+                cc_name = get_first_sf_tag(chem_comp_sf, 'Name')
+                if cc_name in emptyValue:
+                    cc_name = None
+                processing_site = get_first_sf_tag(chem_comp_sf, 'Processing_site')
+                if processing_site in emptyValue:
+                    processing_site = None
+
+        if self.__ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
+            is_valid = True
+
+            if cc_name is None:
+                cc_name = self.__ccU.lastChemCompDict['_chem_comp.name']
+
+            if processing_site is not None and processing_site.startswith('BMRB'):
+                is_valid = False
+                cc_name += f', processing site {processing_site}'
+            else:
+                cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
+
+        else:
+            is_valid = False
+
+        return is_valid, cc_name, cc_rel_status
 
     def __appendPolymerSequenceAlignment(self):
         """ Append polymer sequence alignment of interesting loops.
@@ -17363,16 +17397,16 @@ class NmrDpUtility:
                                             ent['seq_id'].append(_seq_id)
                                             ent['comp_id'].append(_comp_id)
 
-                                            if self.__ccU.updateChemCompDict(_comp_id):  # matches with comp_id in CCD
-                                                cc_name = self.__ccU.lastChemCompDict['_chem_comp.name']
-                                                cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
-                                                if cc_rel_status == 'REL':
+                                            is_valid, cc_name, cc_rel_status = self.__getChemCompNameAndStatusOf(_comp_id)
+
+                                            if is_valid:  # matches with comp_id in CCD
+                                                if cc_rel_status == 'REL' or cc_name is not None:
                                                     ent['chem_comp_name'].append(cc_name)
                                                 else:
                                                     ent['chem_comp_name'].append(f"(Not available due to CCD status code {cc_rel_status})")
 
                                             else:
-                                                ent['chem_comp_name'].append(None)
+                                                ent['chem_comp_name'].append(cc_name)
 
                                             ent['exptl_data'].append({'coordinate': False})
 
@@ -17592,16 +17626,16 @@ class NmrDpUtility:
                                             ent['seq_id'].append(_seq_id)
                                             ent['comp_id'].append(_comp_id)
 
-                                            if self.__ccU.updateChemCompDict(_comp_id):  # matches with comp_id in CCD
-                                                cc_name = self.__ccU.lastChemCompDict['_chem_comp.name']
-                                                cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
-                                                if cc_rel_status == 'REL':
+                                            is_valid, cc_name, cc_rel_status = self.__getChemCompNameAndStatusOf(_comp_id)
+
+                                            if is_valid:  # matches with comp_id in CCD
+                                                if cc_rel_status == 'REL' or cc_name is not None:
                                                     ent['chem_comp_name'].append(cc_name)
                                                 else:
                                                     ent['chem_comp_name'].append(f"(Not available due to CCD status code {cc_rel_status})")
 
                                             else:
-                                                ent['chem_comp_name'].append(None)
+                                                ent['chem_comp_name'].append(cc_name)
 
                                             ent['exptl_data'].append({'coordinate': False})
 
@@ -18479,11 +18513,11 @@ class NmrDpUtility:
                                 unk_atom_ids.append(atom_id)
 
                         if len(unk_atom_ids) > 0:
-                            cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
-                            if cc_rel_status == 'REL':
-                                cc_name = self.__ccU.lastChemCompDict['_chem_comp.name']
-                            else:
-                                cc_name = f"(Not available due to CCD status code {cc_rel_status})"
+                            is_valid, cc_name, cc_rel_status = self.__getChemCompNameAndStatusOf(comp_id)
+
+                            if is_valid:
+                                if cc_rel_status != 'REL':
+                                    cc_name = f"(Not available due to CCD status code {cc_rel_status})"
 
                             warn = f"Unknown atom_id {unk_atom_ids!r} (comp_id {comp_id}, chem_comp_name {cc_name})."
 
@@ -39168,16 +39202,16 @@ class NmrDpUtility:
                     ent['seq_id'].append(seq_id)
                     ent['comp_id'].append(comp_id)
 
-                    if self.__ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
-                        cc_name = self.__ccU.lastChemCompDict['_chem_comp.name']
-                        cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
-                        if cc_rel_status == 'REL':
+                    is_valid, cc_name, cc_rel_status = self.__getChemCompNameAndStatusOf(comp_id)
+
+                    if is_valid:  # matches with comp_id in CCD
+                        if cc_rel_status == 'REL' or cc_name is not None:
                             ent['chem_comp_name'].append(cc_name)
                         else:
                             ent['chem_comp_name'].append(f"(Not available due to CCD status code {cc_rel_status})")
 
                     else:
-                        ent['chem_comp_name'].append(None)
+                        ent['chem_comp_name'].append(cc_name)
 
                     ent['exptl_data'].append({'coordinate': False})
 
@@ -50507,7 +50541,10 @@ class NmrDpUtility:
         try:
             from wwpdb.utils.nmr.ann.BMRBjAnnTasks import BMRBjAnnTasks  # pylint: disable=import-outside-toplevel
         except ImportError:
-            from nmr.ann.BMRBjAnnTasks import BMRBjAnnTasks  # pylint: disable=import-outside-toplevel
+            try:
+                from nmr.ann.BMRBjAnnTasks import BMRBjAnnTasks  # pylint: disable=import-outside-toplevel
+            except ImportError:
+                return False
 
         ann = BMRBjAnnTasks(self.__verbose, self.__lfh,
                             self.__inputParamDict, self.__outputParamDict,

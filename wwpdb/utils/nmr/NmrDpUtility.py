@@ -6369,6 +6369,9 @@ class NmrDpUtility:
                     else:
                         self.__bmrb_id = None
 
+                if self.__bmrb_id is not None:
+                    self.__entry_id = self.__bmrb_id
+
         entity_name_item = next(item for item in self.sf_tag_items['nmr-star']['entity'] if item['name'] == 'Name')
         entity_name_item['mandatory'] = self.__bmrb_only
 
@@ -24406,7 +24409,10 @@ class NmrDpUtility:
                                     else:
                                         resolved = False
 
-                    if not resolved and has_auth_seq:
+                    is_valid, cc_name, _ = self.__getChemCompNameAndStatusOf(comp_id)
+                    comp_id_bmrb_only = not is_valid and 'processing site' in cc_name
+
+                    if not resolved and has_auth_seq and not comp_id_bmrb_only:
                         try:
                             seq_id = int(row[auth_seq_id_col])
                         except (ValueError, TypeError):
@@ -24596,7 +24602,7 @@ class NmrDpUtility:
                         if len(atom_ids) == 0:
                             atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                         len_atom_ids = len(atom_ids)
-                        if len_atom_ids == 0:
+                        if len_atom_ids == 0 or comp_id_bmrb_only:
                             _row[6] = atom_id
                             _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                             if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:

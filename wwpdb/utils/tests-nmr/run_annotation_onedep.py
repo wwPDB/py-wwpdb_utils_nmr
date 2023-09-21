@@ -678,6 +678,7 @@ class gen_auth_view_onedep:
         utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         utility.addInput(name='resolve_conflict', value=True, type='param')
         utility.addInput(name='check_mandatory_tag', value=True, type='param')
+        utility.addInput(name='leave_intl_note', value=False, type='param')
         utility.addInput(name='merge_any_pk_as_is', value=True, type='param')
         utility.addInput(name='bmrb_only', value=True, type='param')
         utility.addInput(name='internal', value=True, type='param')

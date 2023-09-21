@@ -7385,6 +7385,16 @@ class NmrDpUtility:
                             self.__nmr_cif_sf_category_list, _ = self.__nefT.get_inventory_list(_star_data)
                             dst_sf_category_list, _ = self.__nefT.get_inventory_list(self.__star_data[0])
 
+                            # give priority to cs data of the combined file over ones of the cs-annotate file
+                            if 'assigned_chemical_shifts' in self.__nmr_cif_sf_category_list:
+                                if 'assigned_chemical_shifts' in dst_sf_category_list:
+                                    for sf in self.__star_data[0].get_saveframes_by_category('assigned_chemical_shifts'):
+                                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
+                                        self.__star_data[0].remove_saveframe(sf_framecode)
+                                for _sf in _star_data.get_saveframes_by_category('assigned_chemical_shifts'):
+                                    self.__star_data[0].add_saveframe(_sf)
+
+                            # move restraints of the combined file to the primary file
                             for src_sf_category in self.__nmr_cif_sf_category_list:
                                 if src_sf_category not in dst_sf_category_list and src_sf_category != 'constraint_statistics':
                                     for _sf in _star_data.get_saveframes_by_category(src_sf_category):

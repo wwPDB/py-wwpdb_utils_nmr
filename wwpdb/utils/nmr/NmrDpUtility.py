@@ -45650,6 +45650,9 @@ class NmrDpUtility:
 
                     len_model_ids += 1
 
+            if len_model_ids == 0:  # DAOTHER-8840
+                return None
+
             na['ring_atoms'] = ring_atoms
             na['distance'] = float(f"{dist / len_model_ids:.1f}")
             na['ring_distance'] = float(f"{ring_dist / len_model_ids:.1f}")

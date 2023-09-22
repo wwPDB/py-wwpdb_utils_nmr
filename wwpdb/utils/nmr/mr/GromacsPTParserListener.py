@@ -213,7 +213,7 @@ class GromacsPTParserListener(ParseTreeListener):
 
             NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S')
 
-            prevAtomName = ''
+            ancAtomName = prevAtomName = ''
             prevSeqId = prevCompId = None
             offset = 0
             for atom in self.__atoms:
@@ -229,7 +229,7 @@ class GromacsPTParserListener(ParseTreeListener):
                         retrievedAtomNumList.append(atomNum)
                 overrun = False
                 # the second condition indicates metal ions
-                if (terminus[atomNum - 2] and not prevCompId.endswith('5'))\
+                if (terminus[atomNum - 2] and (ancAtomName.endswith('T') or not prevCompId.endswith('5')))\
                    or (prevCompId is not None and prevCompId.endswith('3') and compId.endswith('5')
                        and not any(t for t in canceledTermNum if t - 10 < atomNum < t + 10))\
                    or (compId == atomName and compId.split('+')[0].title() in NAMES_ELEMENT)\
@@ -262,6 +262,7 @@ class GromacsPTParserListener(ParseTreeListener):
                                                   'auth_comp_id': compId,
                                                   'auth_atom_id': atomName,
                                                   'atom_type': atomType}
+                ancAtomName = prevAtomName
                 prevAtomName = atomName
                 prevSeqId = _seqId
                 prevCompId = compId
@@ -469,9 +470,9 @@ class GromacsPTParserListener(ParseTreeListener):
                         break
 
             if len(self.__seqAlign) == 0:
-                len_cif_na = sum([len(ps_cif['seq_id']) for ps_cif in polySeqModel if 'identical_chain_id' in ps_cif and len(ps_cif['seq_id']) > 3])
-                len_top_na = sum([len(ps_top['seq_id']) for ps_top in self.__polySeqPrmTop
-                                  if len(ps_top['seq_id']) > 3 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id'])])
+                len_cif_na = sum(len(ps_cif['seq_id']) for ps_cif in polySeqModel if 'identical_chain_id' in ps_cif and len(ps_cif['seq_id']) > 3)
+                len_top_na = sum(len(ps_top['seq_id']) for ps_top in self.__polySeqPrmTop
+                                 if len(ps_top['seq_id']) > 3 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id']))
                 if len_cif_na == len_top_na:
                     chainIdList = []
                     seqIdList = []

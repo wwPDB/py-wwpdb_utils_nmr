@@ -460,6 +460,8 @@ class GromacsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                atom1 = copy.copy(atom1)
+                atom2 = copy.copy(atom2)
                 if isIdenticalRestraint([atom1, atom2]):
                     continue
                 if self.__createSfDict and memberLogicCode == '.':
@@ -976,6 +978,10 @@ class GromacsMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
+                atom1 = copy.copy(atom1)
+                atom2 = copy.copy(atom2)
+                atom3 = copy.copy(atom3)
+                atom4 = copy.copy(atom4)
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4])
                 if angleName is None:
@@ -1249,6 +1255,8 @@ class GromacsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                atom1 = copy.copy(atom1)
+                atom2 = copy.copy(atom2)
                 if isIdenticalRestraint([atom1, atom2]):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
@@ -1491,6 +1499,9 @@ class GromacsMRParserListener(ParseTreeListener):
                 for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[atom_order[0]],
                                                              self.atomSelectionSet[atom_order[1]],
                                                              self.atomSelectionSet[atom_order[2]]):
+                    atom1 = copy.copy(atom1)
+                    atom2 = copy.copy(atom2)
+                    atom3 = copy.copy(atom3)
                     if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                     if self.__debug:
@@ -1516,6 +1527,10 @@ class GromacsMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[1],
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
+                    atom1 = copy.copy(atom1)
+                    atom2 = copy.copy(atom2)
+                    atom3 = copy.copy(atom3)
+                    atom4 = copy.copy(atom4)
                     if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                         continue
                     if self.__debug:
@@ -1644,6 +1659,8 @@ class GromacsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
+                atom1 = copy.copy(atom1)
+                atom2 = copy.copy(atom2)
                 if isIdenticalRestraint([atom1, atom2]):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):

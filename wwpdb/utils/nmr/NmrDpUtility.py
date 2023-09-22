@@ -23399,7 +23399,7 @@ class NmrDpUtility:
                     if not valid and len(missing_ch3) > 0:
                         atom_id = atom_id[:-1]
                     atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
-                    if len(atom_ids) == 0:
+                    if len(atom_ids) == 0 or atom_ids[0] not in _coord_atom_site['atom_id']:
                         atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                     if valid and len(missing_ch3) > 0:
                         atom_ids = [atom_id]
@@ -23505,7 +23505,7 @@ class NmrDpUtility:
                 if not valid and len(missing_ch3) > 0:
                     atom_id = atom_id[:-1]
                 atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
-                if len(atom_ids) == 0:
+                if len(atom_ids) == 0 or atom_ids[0] not in self.__csStat.getAllAtoms(comp_id):
                     atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                 if valid and len(missing_ch3) > 0:
                     atom_ids = [atom_id]
@@ -24609,7 +24609,7 @@ class NmrDpUtility:
                         _row[1], _row[2], _row[3], _row[4], _row[5] = chain_id, entity_id, seq_id, seq_id, comp_id
 
                         atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
-                        if len(atom_ids) == 0:
+                        if len(atom_ids) == 0 or atom_ids[0] not in self.__csStat.getAllAtoms(comp_id):
                             atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                         len_atom_ids = len(atom_ids)
                         if len_atom_ids == 0 or comp_id_bmrb_only:

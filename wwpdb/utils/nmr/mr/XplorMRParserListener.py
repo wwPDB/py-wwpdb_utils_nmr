@@ -5299,7 +5299,7 @@ class XplorMRParserListener(ParseTreeListener):
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                           'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
-                                          't1/t2_ratio', 't1/t2_ratio_err'
+                                          't1/t2_ratio', 't1/t2_ratio_err',
                                           'list_id', 'entry_id']
                     sf['tags'].append(['classification', self.classification])
                     sf['tags'].append(['coefficients', self.diffCoef])

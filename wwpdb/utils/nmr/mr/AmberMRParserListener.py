@@ -1263,7 +1263,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                               'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                                               'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
                                                               'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
-                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4'
+                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
                                                               'target_value', 'target_value_uncertainty',
                                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                                               'weight_1', 'weight_2',
@@ -1309,9 +1309,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                               'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                                               'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
                                                               'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
-                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4'
+                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
                                                               'auth_asym_id_5', 'auth_seq_id_5', 'auth_comp_id_5', 'auth_atom_id_5',
-                                                              'auth_asym_id_6', 'auth_seq_id_6', 'auth_comp_id_6', 'auth_atom_id_6'
+                                                              'auth_asym_id_6', 'auth_seq_id_6', 'auth_comp_id_6', 'auth_atom_id_6',
                                                               'target_value', 'target_value_uncertainty',
                                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                                               'weight_1', 'weight_2', 'weight_3',
@@ -1364,11 +1364,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                               'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                                               'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
                                                               'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
-                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4'
+                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
                                                               'auth_asym_id_5', 'auth_seq_id_5', 'auth_comp_id_5', 'auth_atom_id_5',
-                                                              'auth_asym_id_6', 'auth_seq_id_6', 'auth_comp_id_6', 'auth_atom_id_6'
+                                                              'auth_asym_id_6', 'auth_seq_id_6', 'auth_comp_id_6', 'auth_atom_id_6',
                                                               'auth_asym_id_7', 'auth_seq_id_7', 'auth_comp_id_7', 'auth_atom_id_7',
-                                                              'auth_asym_id_8', 'auth_seq_id_8', 'auth_comp_id_8', 'auth_atom_id_8'
+                                                              'auth_asym_id_8', 'auth_seq_id_8', 'auth_comp_id_8', 'auth_atom_id_8',
                                                               'target_value', 'target_value_uncertainty',
                                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                                               'weight_1', 'weight_2', 'weight_3', 'weight_4',
@@ -1556,7 +1556,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                           'plane_auth_asym_id_1', 'plane_auth_seq_id_1', 'plane_auth_comp_id_1', 'plane_auth_atom_id_1',
                                                           'plane_auth_asym_id_2', 'plane_auth_seq_id_2', 'plane_auth_comp_id_2', 'plane_auth_atom_id_2',
                                                           'plane_auth_asym_id_3', 'plane_auth_seq_id_3', 'plane_auth_comp_id_3', 'plane_auth_atom_id_3',
-                                                          'plane_auth_asym_id_4', 'plane_auth_seq_id_4', 'plane_auth_comp_id_4', 'plane_auth_atom_id_4'
+                                                          'plane_auth_asym_id_4', 'plane_auth_seq_id_4', 'plane_auth_comp_id_4', 'plane_auth_atom_id_4',
                                                           'point_auth_asym_id', 'point_auth_seq_id', 'ponit_auth_comp_id', 'point_auth_atom_id',
                                                           'target_value', 'target_value_uncertainty',
                                                           'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
@@ -2209,7 +2209,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                               'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                                               'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
                                                               'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
-                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4'
+                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
                                                               'target_value', 'target_value_uncertainty',
                                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                                               'weight_1', 'weight_2',
@@ -2255,9 +2255,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                               'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                                               'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
                                                               'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
-                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4'
+                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
                                                               'auth_asym_id_5', 'auth_seq_id_5', 'auth_comp_id_5', 'auth_atom_id_5',
-                                                              'auth_asym_id_6', 'auth_seq_id_6', 'auth_comp_id_6', 'auth_atom_id_6'
+                                                              'auth_asym_id_6', 'auth_seq_id_6', 'auth_comp_id_6', 'auth_atom_id_6',
                                                               'target_value', 'target_value_uncertainty',
                                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                                               'weight_1', 'weight_2', 'weight_3',
@@ -2310,11 +2310,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                               'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                                               'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
                                                               'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
-                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4'
+                                                              'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
                                                               'auth_asym_id_5', 'auth_seq_id_5', 'auth_comp_id_5', 'auth_atom_id_5',
-                                                              'auth_asym_id_6', 'auth_seq_id_6', 'auth_comp_id_6', 'auth_atom_id_6'
+                                                              'auth_asym_id_6', 'auth_seq_id_6', 'auth_comp_id_6', 'auth_atom_id_6',
                                                               'auth_asym_id_7', 'auth_seq_id_7', 'auth_comp_id_7', 'auth_atom_id_7',
-                                                              'auth_asym_id_8', 'auth_seq_id_8', 'auth_comp_id_8', 'auth_atom_id_8'
+                                                              'auth_asym_id_8', 'auth_seq_id_8', 'auth_comp_id_8', 'auth_atom_id_8',
                                                               'target_value', 'target_value_uncertainty',
                                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                                               'weight_1', 'weight_2', 'weight_3', 'weight_4',
@@ -2518,7 +2518,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                           'plane_auth_asym_id_1', 'plane_auth_seq_id_1', 'plane_auth_comp_id_1', 'plane_auth_atom_id_1',
                                                           'plane_auth_asym_id_2', 'plane_auth_seq_id_2', 'plane_auth_comp_id_2', 'plane_auth_atom_id_2',
                                                           'plane_auth_asym_id_3', 'plane_auth_seq_id_3', 'plane_auth_comp_id_3', 'plane_auth_atom_id_3',
-                                                          'plane_auth_asym_id_4', 'plane_auth_seq_id_4', 'plane_auth_comp_id_4', 'plane_auth_atom_id_4'
+                                                          'plane_auth_asym_id_4', 'plane_auth_seq_id_4', 'plane_auth_comp_id_4', 'plane_auth_atom_id_4',
                                                           'point_auth_asym_id', 'point_auth_seq_id', 'ponit_auth_comp_id', 'point_auth_atom_id',
                                                           'target_value', 'target_value_uncertainty',
                                                           'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',

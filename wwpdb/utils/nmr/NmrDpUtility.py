@@ -24420,7 +24420,7 @@ class NmrDpUtility:
                                         resolved = False
 
                     is_valid, cc_name, _ = self.__getChemCompNameAndStatusOf(comp_id)
-                    comp_id_bmrb_only = not is_valid and 'processing site' in cc_name
+                    comp_id_bmrb_only = not is_valid and cc_name is not None and 'processing site' in cc_name
 
                     if not resolved and has_auth_seq and not comp_id_bmrb_only:
                         try:
@@ -49289,7 +49289,7 @@ class NmrDpUtility:
 
             content_subtype = 'dihed_restraint'
 
-            auth_to_entity_type = self.__caC['auth_to_entity_type'] if self.__caC is None else {}
+            auth_to_entity_type = self.__caC['auth_to_entity_type'] if self.__caC is not None else {}
 
             Dihedral_angle_tot_num = 0
             if content_subtype in self.__mr_sf_dict_holder:
@@ -49984,9 +49984,15 @@ class NmrDpUtility:
                     lp_tags = lp['tags']
                     lp_data = lp['data']
 
-                    auth_asym_id_col = lp_tags.index('auth_asym_id') if 'auth_asym_id' in lp_tags else lp_tags.index('auth_asym_id_1')
-                    auth_seq_id_col = lp_tags.index('auth_seq_id') if 'auth_seq_id' in lp_tags else lp_tags.index('auth_seq_id_1')
-                    auth_comp_id_col = lp_tags.index('auth_comp_id') if 'auth_comp_id' in lp_tags else lp_tags.index('auth_comp_id_1')
+                    auth_asym_id_col = lp_tags.index('auth_asym_id') if 'auth_asym_id' in lp_tags\
+                        else lp_tags.index('auth_asym_id_1') if 'auth_asym_id_1' in lp_tags\
+                        else lp_tags.index('plane_1_auth_asym_id_1')
+                    auth_seq_id_col = lp_tags.index('auth_seq_id') if 'auth_seq_id' in lp_tags\
+                        else lp_tags.index('auth_seq_id_1') if 'auth_seq_id_1' in lp_tags\
+                        else lp_tags.index('plane_1_auth_seq_id_1')
+                    auth_comp_id_col = lp_tags.index('auth_comp_id') if 'auth_comp_id' in lp_tags\
+                        else lp_tags.index('auth_comp_id_1') if 'auth_comp_id_1' in lp_tags\
+                        else lp_tags.index('plane_1_auth_comp_id_1')
 
                     for row in lp_data:
                         auth_asym_id = row[auth_asym_id_col]
@@ -51164,7 +51170,7 @@ class NmrDpUtility:
                     sf_category = self.sf_categories[file_type][content_subtype]
                     lp_category = self.lp_categories[file_type][content_subtype]
 
-                    auth_to_entity_type = self.__caC['auth_to_entity_type'] if self.__caC is None else {}
+                    auth_to_entity_type = self.__caC['auth_to_entity_type'] if self.__caC is not None else {}
 
                     Dihedral_angle_tot_num = 0
                     for sf in master_entry.get_saveframes_by_category(sf_category):

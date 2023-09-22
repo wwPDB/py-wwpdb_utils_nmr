@@ -2919,14 +2919,15 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     """ Check assembly of the coordinates for MR/PT parser listener.
     """
 
-    changed = False
+    changed = has_nonpoly_only = gen_ent_asm_from_nonpoly = False
 
     polySeq = None if prevResult is None or 'polymer_sequence' not in prevResult else prevResult['polymer_sequence']
     altPolySeq = None if prevResult is None or 'alt_polymer_sequence' not in prevResult else prevResult['alt_polymer_sequence']
     nonPoly = None if prevResult is None or 'non_polymer' not in prevResult else prevResult['non_polymer']
     branched = None if prevResult is None or 'branched' not in prevResult else prevResult['branched']
+    nmrExtPolySeq = None if prevResult is None or 'nmr_ext_poly_seq' not in prevResult else prevResult['nmr_ext_poly_seq']
 
-    if polySeq is None:
+    if polySeq is None or nmrExtPolySeq is None:
         changed = True
 
         polySeqAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_poly_seq_scheme', 'auth_mon_id') else 'mon_id'
@@ -2977,7 +2978,6 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         keyItems = _keyItems[contentSubtype]
 
         nmrExtPolySeq = []
-        has_nonpoly_only = gen_ent_asm_from_nonpoly = False
 
         try:
 
@@ -3380,7 +3380,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         return {'polymer_sequence': polySeq,
                 'alt_polymer_sequence': altPolySeq,
                 'non_polymer': nonPoly,
-                'branched': branched}
+                'branched': branched,
+                'nmr_ext_poly_seq': nmrExtPolySeq}
 
     modelNumName = None if prevResult is None or 'model_num_name' not in prevResult else prevResult['model_num_name']
     authAsymId = None if prevResult is None or 'auth_asym_id' not in prevResult else prevResult['auth_asym_id']
@@ -4223,6 +4224,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'alt_polymer_sequence': altPolySeq,
             'non_polymer': nonPoly,
             'branched': branched,
+            'nmr_ext_poly_seq': nmrExtPolySeq,
             'coord_atom_site': coordAtomSite,
             'coord_unobs_res': coordUnobsRes,
             'label_to_auth_seq': labelToAuthSeq,
@@ -5625,7 +5627,7 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
         if has_ins_code:
             ins_code2 = getInsCode(authToInsCode, offsetHolder, atom2)
     if atom3 is not None:
-        star_atom3 = getStarAtom(authToStarSeq, offsetHolder, atom3, atom3)
+        star_atom3 = getStarAtom(authToStarSeq, offsetHolder, atom3, atom4)
         if 'atom_id' not in atom3:
             atom3['atom_id'] = None
         if has_ins_code:

@@ -307,6 +307,12 @@ class AmberMRReader:
 if __name__ == "__main__":
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-daother-8841/all_restraints_bp_030923-GglJOrl2.rst',
+                 '../../tests-nmr/mock-data-daother-8841/D_800609_model_P1.cif.V4',
+                 '../../tests-nmr/mock-data-daother-8841/complex_neutral-ziVR0Q9n.prmtop')
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-daother-8828/D_1292133069_mr-upload_P1.amber.V1',
                  '../../tests-nmr/mock-data-daother-8828/D_800607_model_P1.cif.V3',
                  '../../tests-nmr/mock-data-daother-8828/D_1292133069_mr-upload_P1.dat.V1')

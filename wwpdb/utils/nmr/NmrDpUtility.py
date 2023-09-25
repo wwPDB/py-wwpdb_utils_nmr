@@ -21588,6 +21588,16 @@ class NmrDpUtility:
                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                 except Exception:
+
+                    err = f"Assigned chemical shifts of {sf_framecode!r} saveframe did not parsed properly. Please fix problems reported."
+
+                    self.report.error.appendDescription('missing_mandatory_content',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Error  - {err}\n")
+
                     return False
 
             chk_row_tmp = f"[Check row of {chain_id_name} %s, {seq_id_name} %s, {comp_id_name} %s, {atom_id_name} %s"
@@ -23615,6 +23625,24 @@ class NmrDpUtility:
 
             items = ['chain_code', 'sequence_code', 'residue_name', 'atom_name', 'value', 'value_uncertainty', 'element', 'isotope_number']
 
+            mandatory_items = [item['name'] for item in self.key_items[file_type][content_subtype]
+                               if 'remove-bad-pattern' in item]
+
+            if not all(tag in loop.tags for tag in mandatory_items):
+
+                file_name = input_source_dic['file_name']
+
+                err = f"Assigned chemical shifts of {sf_framecode!r} saveframe did not parsed properly. Please fix problems reported."
+
+                self.report.error.appendDescription('missing_mandatory_content',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Error  - {err}\n")
+
+                return False
+
             mandatory_items = [item['name'] for item in self.key_items[file_type][content_subtype]]
             for item in self.data_items[file_type][content_subtype]:
                 if item['mandatory']:
@@ -23701,6 +23729,24 @@ class NmrDpUtility:
 
             if has_ins_code:
                 items.append('PDB_ins_code')
+
+            mandatory_items = [item['name'] for item in self.key_items[file_type][content_subtype]
+                               if 'remove-bad-pattern' in item]
+
+            if not all(tag in loop.tags for tag in mandatory_items):
+
+                file_name = input_source_dic['file_name']
+
+                err = f"Assigned chemical shifts of {sf_framecode!r} saveframe did not parsed properly. Please fix problems reported."
+
+                self.report.error.appendDescription('missing_mandatory_content',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Error  - {err}\n")
+
+                return False
 
             mandatory_items = [item['name'] for item in self.key_items[file_type][content_subtype]]
             for item in self.data_items[file_type][content_subtype]:
@@ -50489,13 +50535,14 @@ class NmrDpUtility:
                             lp = sf.get_loop(lp_category)
                         else:
                             lp = sf.get_loop_by_category(lp_category)
+
+                        dat = get_lp_tag(lp, ['Atom_isotope_number', 'Atom_type'])
+                        for row in dat:
+                            t = f'{row[0]}{row[1].title()} chemical shifts'
+                            if t in datum_counter:
+                                datum_counter[t] += 1
                     except KeyError:
                         continue
-                    dat = get_lp_tag(lp, ['Atom_isotope_number', 'Atom_type'])
-                    for row in dat:
-                        t = f'{row[0]}{row[1].title()} chemical shifts'
-                        if t in datum_counter:
-                            datum_counter[t] += 1
             elif content_subtype == 'dist_restraint':
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
@@ -50506,22 +50553,23 @@ class NmrDpUtility:
                             lp = sf.get_loop(lp_category)
                         else:
                             lp = sf.get_loop_by_category(lp_category)
+
+                        if constraint_type == 'hydrogen bond':
+                            datum_counter['hydrogen bond distance constraints'] += len(lp)
+                        elif constraint_type == 'symmetry':
+                            datum_counter['symmetry constraints'] += len(lp)
+                        else:
+                            if 'Combination_ID' in lp.tags and 'Member_ID' in lp.tags:
+                                dat = get_lp_tag(lp, ['Combination_ID', 'Member_ID'])
+                                for row in dat:
+                                    if row[0] in emptyValue and row[1] in emptyValue:
+                                        datum_counter['distance constraints'] += 1
+                                    else:
+                                        datum_counter['ambiguous distance constraints'] += 1
+                            else:
+                                datum_counter['distance constraints'] += len(lp)
                     except KeyError:
                         continue
-                    if constraint_type == 'hydrogen bond':
-                        datum_counter['hydrogen bond distance constraints'] += len(lp)
-                    elif constraint_type == 'symmetry':
-                        datum_counter['symmetry constraints'] += len(lp)
-                    else:
-                        if 'Combination_ID' in lp.tags and 'Member_ID' in lp.tags:
-                            dat = get_lp_tag(lp, ['Combination_ID', 'Member_ID'])
-                            for row in dat:
-                                if row[0] in emptyValue and row[1] in emptyValue:
-                                    datum_counter['distance constraints'] += 1
-                                else:
-                                    datum_counter['ambiguous distance constraints'] += 1
-                        else:
-                            datum_counter['distance constraints'] += len(lp)
             elif content_subtype == 'dihed_restraint':
                 datum_counter['torsion angle constraints'] += get_loop_size(content_subtype)
             elif content_subtype in ('rdc_restraint' 'rdc_raw_data'):

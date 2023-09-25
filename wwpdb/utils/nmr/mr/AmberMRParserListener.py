@@ -1209,8 +1209,6 @@ class AmberMRParserListener(ParseTreeListener):
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
-                                atom1 = copy.copy(atom1)
-                                atom2 = copy.copy(atom2)
                                 if isIdenticalRestraint([atom1, atom2]):
                                     continue
                                 if self.__createSfDict and memberLogicCode == '.':
@@ -1273,10 +1271,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                     self.atomSelectionSet[1],
                                                                                     self.atomSelectionSet[2],
                                                                                     self.atomSelectionSet[3]):
-                                    atom1 = copy.copy(atom1)
-                                    atom2 = copy.copy(atom2)
-                                    atom3 = copy.copy(atom3)
-                                    atom4 = copy.copy(atom4)
                                     if self.__debug:
                                         print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                                               f"weight={self.inGenDist_weight} "
@@ -1323,12 +1317,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                   self.atomSelectionSet[3],
                                                                                                   self.atomSelectionSet[4],
                                                                                                   self.atomSelectionSet[5]):
-                                    atom1 = copy.copy(atom1)
-                                    atom2 = copy.copy(atom2)
-                                    atom3 = copy.copy(atom3)
-                                    atom4 = copy.copy(atom4)
-                                    atom5 = copy.copy(atom5)
-                                    atom6 = copy.copy(atom6)
                                     if self.__debug:
                                         print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                                               f"weight={self.inGenDist_weight} "
@@ -1382,14 +1370,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                                 self.atomSelectionSet[5],
                                                                                                                 self.atomSelectionSet[6],
                                                                                                                 self.atomSelectionSet[7]):
-                                    atom1 = copy.copy(atom1)
-                                    atom2 = copy.copy(atom2)
-                                    atom3 = copy.copy(atom3)
-                                    atom4 = copy.copy(atom4)
-                                    atom5 = copy.copy(atom5)
-                                    atom6 = copy.copy(atom6)
-                                    atom7 = copy.copy(atom7)
-                                    atom8 = copy.copy(atom8)
                                     if self.__debug:
                                         print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                                               f"weight={self.inGenDist_weight} "
@@ -1451,9 +1431,6 @@ class AmberMRParserListener(ParseTreeListener):
                         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                                      self.atomSelectionSet[1],
                                                                      self.atomSelectionSet[2]):
-                            atom1 = copy.copy(atom1)
-                            atom2 = copy.copy(atom2)
-                            atom3 = copy.copy(atom3)
                             if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
                                 continue
                             if self.__debug:
@@ -1503,10 +1480,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                                             self.atomSelectionSet[1],
                                                                             self.atomSelectionSet[2],
                                                                             self.atomSelectionSet[3]):
-                            atom1 = copy.copy(atom1)
-                            atom2 = copy.copy(atom2)
-                            atom3 = copy.copy(atom3)
-                            atom4 = copy.copy(atom4)
                             angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                                    [atom1, atom2, atom3, atom4])
                             if angleName is None:
@@ -1567,11 +1540,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                        self.atomSelectionSet[2],
                                                                                        self.atomSelectionSet[3],
                                                                                        self.atomSelectionSet[4]):
-                                atom1 = copy.copy(atom1)
-                                atom2 = copy.copy(atom2)
-                                atom3 = copy.copy(atom3)
-                                atom4 = copy.copy(atom4)
-                                atom5 = copy.copy(atom5)
                                 if self.__debug:
                                     print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
                                           f"plane: |atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}| "
@@ -1620,14 +1588,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                             self.atomSelectionSet[5],
                                                                                                             self.atomSelectionSet[6],
                                                                                                             self.atomSelectionSet[7]):
-                                atom1 = copy.copy(atom1)
-                                atom2 = copy.copy(atom2)
-                                atom3 = copy.copy(atom3)
-                                atom4 = copy.copy(atom4)
-                                atom5 = copy.copy(atom5)
-                                atom6 = copy.copy(atom6)
-                                atom7 = copy.copy(atom7)
-                                atom8 = copy.copy(atom8)
                                 if self.__debug:
                                     print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
                                           f"plane1: |atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}| "
@@ -2121,8 +2081,6 @@ class AmberMRParserListener(ParseTreeListener):
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
-                                atom1 = copy.copy(atom1)
-                                atom2 = copy.copy(atom2)
                                 if isIdenticalRestraint([atom1, atom2]):
                                     continue
                                 if self.__createSfDict and memberLogicCode == '.':
@@ -2219,10 +2177,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                     self.atomSelectionSet[1],
                                                                                     self.atomSelectionSet[2],
                                                                                     self.atomSelectionSet[3]):
-                                    atom1 = copy.copy(atom1)
-                                    atom2 = copy.copy(atom2)
-                                    atom3 = copy.copy(atom3)
-                                    atom4 = copy.copy(atom4)
                                     if self.__debug:
                                         print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                                               f"weight={self.inGenDist_weight} "
@@ -2269,12 +2223,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                   self.atomSelectionSet[3],
                                                                                                   self.atomSelectionSet[4],
                                                                                                   self.atomSelectionSet[5]):
-                                    atom1 = copy.copy(atom1)
-                                    atom2 = copy.copy(atom2)
-                                    atom3 = copy.copy(atom3)
-                                    atom4 = copy.copy(atom4)
-                                    atom5 = copy.copy(atom5)
-                                    atom6 = copy.copy(atom6)
                                     if self.__debug:
                                         print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                                               f"weight={self.inGenDist_weight} "
@@ -2328,14 +2276,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                                 self.atomSelectionSet[5],
                                                                                                                 self.atomSelectionSet[6],
                                                                                                                 self.atomSelectionSet[7]):
-                                    atom1 = copy.copy(atom1)
-                                    atom2 = copy.copy(atom2)
-                                    atom3 = copy.copy(atom3)
-                                    atom4 = copy.copy(atom4)
-                                    atom5 = copy.copy(atom5)
-                                    atom6 = copy.copy(atom6)
-                                    atom7 = copy.copy(atom7)
-                                    atom8 = copy.copy(atom8)
                                     if self.__debug:
                                         print(f"subtype={self.__cur_subtype} id={self.geoRestraints} "
                                               f"weight={self.inGenDist_weight} "
@@ -2403,9 +2343,6 @@ class AmberMRParserListener(ParseTreeListener):
                         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                                      self.atomSelectionSet[1],
                                                                      self.atomSelectionSet[2]):
-                            atom1 = copy.copy(atom1)
-                            atom2 = copy.copy(atom2)
-                            atom3 = copy.copy(atom3)
                             if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
                                 continue
                             if self.__debug:
@@ -2461,10 +2398,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                                             self.atomSelectionSet[1],
                                                                             self.atomSelectionSet[2],
                                                                             self.atomSelectionSet[3]):
-                            atom1 = copy.copy(atom1)
-                            atom2 = copy.copy(atom2)
-                            atom3 = copy.copy(atom3)
-                            atom4 = copy.copy(atom4)
                             angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                                    [atom1, atom2, atom3, atom4])
                             if angleName is None:
@@ -2529,11 +2462,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                        self.atomSelectionSet[2],
                                                                                        self.atomSelectionSet[3],
                                                                                        self.atomSelectionSet[4]):
-                                atom1 = copy.copy(atom1)
-                                atom2 = copy.copy(atom2)
-                                atom3 = copy.copy(atom3)
-                                atom4 = copy.copy(atom4)
-                                atom5 = copy.copy(atom5)
                                 if self.__debug:
                                     print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
                                           f"plane: |atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}| "
@@ -2612,14 +2540,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                                             self.atomSelectionSet[5],
                                                                                                             self.atomSelectionSet[6],
                                                                                                             self.atomSelectionSet[7]):
-                                atom1 = copy.copy(atom1)
-                                atom2 = copy.copy(atom2)
-                                atom3 = copy.copy(atom3)
-                                atom4 = copy.copy(atom4)
-                                atom5 = copy.copy(atom5)
-                                atom6 = copy.copy(atom6)
-                                atom7 = copy.copy(atom7)
-                                atom8 = copy.copy(atom8)
                                 if self.__debug:
                                     print(f"subtype={self.__cur_subtype} id={self.planeRestraints} "
                                           f"plane1: |atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4}| "
@@ -5567,8 +5487,6 @@ class AmberMRParserListener(ParseTreeListener):
 
                         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                               self.atomSelectionSet[1]):
-                            atom1 = copy.copy(atom1)
-                            atom2 = copy.copy(atom2)
                             if isIdenticalRestraint([atom1, atom2]):
                                 continue
                             if self.__debug:
@@ -6894,8 +6812,6 @@ class AmberMRParserListener(ParseTreeListener):
 
                     for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                           self.atomSelectionSet[1]):
-                        atom1 = copy.copy(atom1)
-                        atom2 = copy.copy(atom2)
                         if isIdenticalRestraint([atom1, atom2]):
                             continue
                         if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
@@ -7555,9 +7471,6 @@ class AmberMRParserListener(ParseTreeListener):
                     for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                                  self.atomSelectionSet[1],
                                                                  self.atomSelectionSet[2]):
-                        atom1 = copy.copy(atom1)
-                        atom2 = copy.copy(atom2)
-                        atom3 = copy.copy(atom3)
                         if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
                             continue
                         if self.__debug:

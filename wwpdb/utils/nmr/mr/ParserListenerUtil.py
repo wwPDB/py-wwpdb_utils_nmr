@@ -5611,6 +5611,18 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
 
     row[0] = id
 
+    if combinationId == 'OR' or isinstance(memberId, int):
+        if atom1 is not None:
+            atom1 = copy.copy(atom1)
+        if atom2 is not None:
+            atom2 = copy.copy(atom2)
+        if atom3 is not None:
+            atom3 = copy.copy(atom3)
+        if atom4 is not None:
+            atom4 = copy.copy(atom4)
+        if atom5 is not None:
+            atom5 = copy.copy(atom5)
+
     star_atom1 = star_atom2 = star_atom3 = star_atom4 = star_atom4 = star_atom5 = None
     ins_code1 = ins_code2 = ins_code3 = ins_code4 = ins_code5 = None
 
@@ -6127,6 +6139,18 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
     atom3 = atoms[2] if atom_dim_num > 2 else None
     atom4 = atoms[3] if atom_dim_num > 3 else None
     atom5 = atoms[4] if atom_dim_num > 4 else None
+
+    if code == 'OR' or isinstance(memberId, int):
+        if atom1 is not None:
+            atom1 = copy.copy(atom1)
+        if atom2 is not None:
+            atom2 = copy.copy(atom2)
+        if atom3 is not None:
+            atom3 = copy.copy(atom3)
+        if atom4 is not None:
+            atom4 = copy.copy(atom4)
+        if atom5 is not None:
+            atom5 = copy.copy(atom5)
 
     if isinstance(atom1, list):
         atom1 = atom1[0] if len(atom1) > 0 else None

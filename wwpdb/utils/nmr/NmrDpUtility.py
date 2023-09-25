@@ -971,7 +971,7 @@ def is_peak_list(line, has_header=True):
     """
 
     if has_header and line.count('E') + line.count('e') >= 2:  # XEASY peak list
-        s = filter(None, re.split(r'[\t ]', line))
+        s = line.split()
         return 'U' in s or 'T' in s
 
     if 'Data Height' in line and 'w1' in line and 'w2' in line:  # Sparky peak list
@@ -991,7 +991,7 @@ def get_peak_list_format(line, has_header=True):
     """
 
     if has_header:  # and line.count('E') + line.count('e') >= 2:  # XEASY peak list
-        s = filter(None, re.split(r'[\t ]', line))
+        s = line.split()
         if 'U' in s or 'T' in s:
             return 'XEASY'
 

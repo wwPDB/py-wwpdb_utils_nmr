@@ -18495,8 +18495,11 @@ class NmrDpUtility:
                                 pass
 
                             else:
+                                is_valid, cc_name, cc_rel_status = self.__getChemCompNameAndStatusOf(comp_id)
 
-                                _, cc_name, _ = self.__getChemCompNameAndStatusOf(comp_id)
+                                if is_valid:
+                                    if cc_rel_status != 'REL':
+                                        cc_name = f"(Not available due to CCD status code {cc_rel_status})"
                                 cc_name = '' if cc_name is None else ', ' + cc_name
 
                                 err = f"Invalid atom_id {atom_id!r} (comp_id {comp_id!r}{cc_name}) in a loop {lp_category}."
@@ -18537,8 +18540,9 @@ class NmrDpUtility:
                             if is_valid:
                                 if cc_rel_status != 'REL':
                                     cc_name = f"(Not available due to CCD status code {cc_rel_status})"
+                            cc_name = '' if cc_name is None else ', ' + cc_name
 
-                            warn = f"Unknown atom_id {unk_atom_ids!r} (comp_id {comp_id}, chem_comp_name {cc_name})."
+                            warn = f"Unknown atom_id {unk_atom_ids!r} (comp_id {comp_id!r}{cc_name})."
 
                             self.report.warning.appendDescription('atom_nomenclature_mismatch',
                                                                   {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,

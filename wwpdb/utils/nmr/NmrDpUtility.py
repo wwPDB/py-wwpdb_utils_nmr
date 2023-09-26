@@ -974,7 +974,7 @@ def is_peak_list(line, has_header=True):
         s = line.split()
         return 'U' in s or 'T' in s
 
-    if 'Data Height' in line and 'w1' in line and 'w2' in line:  # Sparky peak list
+    if 'Assignment' in line and 'w1' in line and 'w2' in line:  # Sparky peak list
         return True
 
     if 'label' in line and 'dataset' in line and 'sw' in line and 'sf' in line:  # NMRView peak list
@@ -995,7 +995,7 @@ def get_peak_list_format(line, has_header=True):
         if 'U' in s or 'T' in s:
             return 'XEASY'
 
-    if 'Data Height' in line and 'w1' in line and 'w2' in line:  # Sparky peak list
+    if 'Assignment' in line and 'w1' in line and 'w2' in line:  # Sparky peak list
         return 'Sparky'
 
     if 'label' in line and 'dataset' in line and 'sw' in line and 'sf' in line:  # NMRView peak list

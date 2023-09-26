@@ -27324,7 +27324,7 @@ class NmrDpUtility:
 
                                 if self.__ccU.lastStatus:  # matches with comp_id in CCD
 
-                                    if not any(a for a in self.__ccU.lastAtomList if a[self.__ccU.ccaAtomId] == atom_id_):
+                                    if not self.__nefT.validate_comp_atom(comp_id, atom_id_):
 
                                         warn = "Atom ("\
                                             + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
@@ -27423,7 +27423,7 @@ class NmrDpUtility:
 
                             if self.__ccU.lastStatus:  # matches with comp_id in CCD
 
-                                if not any(a for a in self.__ccU.lastAtomList if a[self.__ccU.ccaAtomId] == atom_id_):
+                                if not self.__nefT.validate_comp_atom(comp_id, atom_id_):
 
                                     warn = "Atom ("\
                                         + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\

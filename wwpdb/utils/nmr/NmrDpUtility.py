@@ -18416,7 +18416,7 @@ class NmrDpUtility:
                                 if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                     continue
 
-                                err = f"Invalid atom_id {atom_id!r} (comp_id {comp_id}) in a loop {lp_category}."
+                                err = f"Invalid atom_id {atom_id!r} (comp_id {comp_id!r}) in a loop {lp_category}."
 
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -18493,7 +18493,10 @@ class NmrDpUtility:
 
                             else:
 
-                                err = f"Invalid atom_id {atom_id!r} (comp_id {comp_id}) in a loop {lp_category}."
+                                _, cc_name, _ = self.__getChemCompNameAndStatusOf(comp_id)
+                                cc_name = '' if cc_name is None else ', ' + cc_name
+
+                                err = f"Invalid atom_id {atom_id!r} (comp_id {comp_id!r}{cc_name}) in a loop {lp_category}."
 
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -19069,7 +19072,7 @@ class NmrDpUtility:
                             if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                 continue
 
-                            err = f"Invalid atom_id {atom_id!r} (atom_type {atom_type}) in a loop {lp_category}."
+                            err = f"Invalid atom_id {atom_id!r} (atom_type {atom_type!r}) in a loop {lp_category}."
 
                             self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,

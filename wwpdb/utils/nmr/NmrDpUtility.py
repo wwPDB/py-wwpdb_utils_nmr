@@ -5257,7 +5257,7 @@ class NmrDpUtility:
                                                                '_Assembly_citation', '_Author_annotation', '_Sample_component',
                                                                '_Chemical_rate', '_Auto_relaxation', '_Theoretical_auto_relaxation',
                                                                '_Binding_result', '_Binding_partners', '_Struct_anno_char'],
-                                                  'entity': ['_Entity_db_link', '_Entity_biological_function', '_Entity_common_name', '_Entity_systematic_name', '_Entity_keyword'
+                                                  'entity': ['_Entity_db_link', '_Entity_biological_function', '_Entity_common_name', '_Entity_systematic_name', '_Entity_keyword',
                                                              '_Entity_comp_index', '_Entity_poly_seq', '_Entity_chimera_segment', '_Entity_comp_index_alt',
                                                              '_Entity_atom_list', '_Entity_chem_comp_deleted_atom', '_Entity_bond', '_Entity_citation'],
                                                   'chem_shift': ['_Chem_shift_experiment', '_Systematic_chem_shift_offset',
@@ -7576,7 +7576,8 @@ class NmrDpUtility:
                 _srcPath = ofh.name
                 tmpPaths.append(_srcPath)
 
-        msg_template = "Cannot use keywords as data values unless quoted or semi-colon delineated. Perhaps this is a loop that wasn't properly terminated? Illegal value:"
+        msg_template = "Cannot use keywords as data values unless quoted or semi-colon delineated. "\
+            "Perhaps this is a loop that wasn't properly terminated? Illegal value:"
 
         try:
 
@@ -7590,7 +7591,8 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
 
-            _msg_template = r"Cannot use keywords as data values unless quoted or semi-colon delineated. Perhaps this is a loop that wasn't properly terminated\? Illegal value:"
+            _msg_template = r"Cannot use keywords as data values unless quoted or semi-colon delineated. "\
+                r"Perhaps this is a loop that wasn't properly terminated\? Illegal value:"
 
             if __pynmrstar_v3__:
                 msg_pattern = re.compile(r'^.*' + _msg_template + r".*on line (\d+).*$")
@@ -7622,7 +7624,8 @@ class NmrDpUtility:
         except StopIteration:
             pass
 
-        msg_template = "Cannot have a tag value start with an underscore unless the entire value is quoted. You may be missing a data value on the previous line. Illegal value:"
+        msg_template = "Cannot have a tag value start with an underscore unless the entire value is quoted. "\
+            "You may be missing a data value on the previous line. Illegal value:"
 
         try:
 

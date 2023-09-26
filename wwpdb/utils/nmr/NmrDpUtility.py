@@ -7398,6 +7398,10 @@ class NmrDpUtility:
                             for src_sf_category in self.__nmr_cif_sf_category_list:
                                 if src_sf_category not in dst_sf_category_list and src_sf_category != 'constraint_statistics':
                                     for _sf in _star_data.get_saveframes_by_category(src_sf_category):
+                                        for sf in self.__star_data[0].frame_list:
+                                            if sf.name == _sf.name:
+                                                self.__star_data[0].remove_saveframe(_sf.name)
+                                                break
                                         self.__star_data[0].add_saveframe(_sf)
 
         return is_done

@@ -218,8 +218,8 @@ save_
 save_nef_dihedral_restraint_list_dih1
    _nef_dihedral_restraint_list.sf_category       nef_dihedral_restraint_list
    _nef_dihedral_restraint_list.sf_framecode      nef_dihedral_restraint_list_dih1
-   _nef_dihedral_restraint_list.restraint_origin  .
    _nef_dihedral_restraint_list.potential_type    undefined
+   _nef_dihedral_restraint_list.restraint_origin  .
 
    loop_
       _nef_dihedral_restraint.index

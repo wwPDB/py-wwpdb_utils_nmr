@@ -27565,6 +27565,9 @@ class NmrDpUtility:
         """ Validate restraints of NMR-STAR restraint files.
         """
 
+        if self.__release_mode:
+            return True
+
         src_id = self.report.getInputSourceIdOfCoord()
 
         if src_id < 0:
@@ -31955,6 +31958,9 @@ class NmrDpUtility:
     def __validateStrPk(self):
         """ Validate spectral peak lists in NMR-STAR restraint files.
         """
+
+        if self.__release_mode:
+            return True
 
         src_id = self.report.getInputSourceIdOfCoord()
 

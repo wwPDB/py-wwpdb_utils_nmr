@@ -281,7 +281,7 @@ class AmberPTParserListener(ParseTreeListener):
                         retrievedAtomNumList.append(atomNum)
                 overrun = False
                 # the second condition indicates metal ions
-                if (terminus[atomNum - 2] and (ancAtomName.endswith('T') or not prevCompId.endswith('5')))\
+                if (terminus[atomNum - 1] and ancAtomName.endswith('T'))\
                    or (prevCompId is not None and prevCompId.endswith('3') and compId.endswith('5')
                        and not any(t for t in canceledTermNum if t - 10 < atomNum < t + 10))\
                    or (compId == atomName and compId.split('+')[0].title() in NAMES_ELEMENT)\

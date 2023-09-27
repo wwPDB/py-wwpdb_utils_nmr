@@ -23429,6 +23429,8 @@ class NmrDpUtility:
                         if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23]):
                             atom_ids = [atom_id]
                             atom_ids.extend(missing_ch3)
+                        else:
+                            missing_ch3.clear()
                     len_atom_ids = len(atom_ids)
                     if len_atom_ids == 0:
                         _row[6] = atom_id
@@ -48403,10 +48405,10 @@ class NmrDpUtility:
             else:
                 self.__star_data[0].entry_id = f'nef_{self.__entry_id.lower()}'
 
+        self.__sortCsLoop()
+
         if file_type == 'nef':
             return True
-
-        self.__sortCsLoop()
 
         if self.__updateAtomChemShiftId():
             self.__updateAmbiguousAtomChemShift()

@@ -23426,8 +23426,9 @@ class NmrDpUtility:
                     if len(atom_ids) == 0 or atom_ids[0] not in _coord_atom_site['atom_id']:
                         atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                     if valid and len(missing_ch3) > 0:
-                        atom_ids = [atom_id]
-                        atom_ids.extend(missing_ch3)
+                        if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23]):
+                            atom_ids = [atom_id]
+                            atom_ids.extend(missing_ch3)
                     len_atom_ids = len(atom_ids)
                     if len_atom_ids == 0:
                         _row[6] = atom_id

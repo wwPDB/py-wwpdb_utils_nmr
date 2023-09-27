@@ -194,8 +194,6 @@ class GromacsPTParserListener(ParseTreeListener):
 
             terminus = [atom['auth_atom_id'].endswith('T') for atom in self.__atoms]
 
-            canceledTermNum = []
-
             atomTotal = len(self.__atoms)
             if terminus[0]:
                 terminus[0] = False
@@ -203,7 +201,6 @@ class GromacsPTParserListener(ParseTreeListener):
                 j = i + 1
                 if terminus[i] and terminus[j]:
                     terminus[i] = False
-                    canceledTermNum.append(j)
             if terminus[-1]:
                 terminus[-1] = False
 
@@ -230,8 +227,7 @@ class GromacsPTParserListener(ParseTreeListener):
                 overrun = False
                 # the second condition indicates metal ions
                 if (terminus[atomNum - 1] and ancAtomName.endswith('T'))\
-                   or (prevCompId is not None and prevCompId.endswith('3') and compId.endswith('5')
-                       and not any(t for t in canceledTermNum if t - 10 < atomNum < t + 10))\
+                   or (prevCompId is not None and (prevCompId.endswith('3') or self.__csStat.peptideLike(prevCompId)) and compId.endswith('5'))\
                    or (compId == atomName and compId.split('+')[0].title() in NAMES_ELEMENT)\
                    or (compId == atomName and compId.split('-')[0].title() in NAMES_ELEMENT)\
                    or (len(prevAtomName) > 0 and prevAtomName[0] not in NON_METAL_ELEMENTS and prevSeqId != _seqId):

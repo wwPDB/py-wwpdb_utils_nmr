@@ -1179,7 +1179,8 @@ class NmrDpUtility:
                               'nmr-str2nef-release',
                               'nmr-cs-nef-consistency-check',
                               'nmr-cs-str-consistency-check',
-                              'nmr-cs-mr-merge'
+                              'nmr-cs-mr-merge',
+                              'nmr-str2str-annotate'
                               )
 
         # validation tasks for NMR data only
@@ -1321,6 +1322,21 @@ class NmrDpUtility:
         __mergeCsAndMrTasks.append(self.__mergeLegacyCsAndMr)
         __mergeCsAndMrTasks.append(self.__detectSimpleDistanceRestraint)
 
+        __annotateTasks = [self.__initializeDpReport,
+                           self.__validateInputSource,
+                           self.__detectContentSubType,
+                           self.__extractPolymerSequence,
+                           self.__extractPolymerSequenceInLoop,
+                           self.__extractCommonPolymerSequence,
+                           self.__extractNonStandardResidue,
+                           self.__appendPolymerSequenceAlignment,
+                           self.__testSequenceConsistency,
+                           self.__parseCoordinate,
+                           self.__detectCoordContentSubType,
+                           self.__extractCoordPolymerSequence,
+                           self.__extractCoordAtomSite
+                           ]
+
         # dictionary of processing tasks of each workflow operation
         self.__procTasksDict = {'consistency-check': __checkTasks,
                                 'deposit': __depositTasks,
@@ -1329,7 +1345,8 @@ class NmrDpUtility:
                                 'nmr-str2nef-release': __str2nefTasks,
                                 'nmr-cs-nef-consistency-check': [self.__depositLegacyNmrData],
                                 'nmr-cs-str-consistency-check': [self.__depositLegacyNmrData],
-                                'nmr-cs-mr-merge': __mergeCsAndMrTasks
+                                'nmr-cs-mr-merge': __mergeCsAndMrTasks,
+                                'nmr-str2str-annotate': __annotateTasks
                                 }
 
         # data processing report
@@ -6428,7 +6445,7 @@ class NmrDpUtility:
                 self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name']
             else:
                 self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name'] in trueValue
-        elif op in ('nmr-str-consistency-check', 'nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2nef-release'):
+        elif op in ('nmr-str-consistency-check', 'nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2nef-release', 'nmr-str2str-annotate'):
             self.__transl_pseudo_name = True
 
         if has_key_value(self.__inputParamDict, 'tolerant_seq_align'):
@@ -6568,7 +6585,7 @@ class NmrDpUtility:
              and self.report.error.getValueList('missing_mandatory_content',
                                                 input_source_dic['file_name'],
                                                 key='_Atom_chem_shift') is not None)
-            or (self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit') and self.__remediation_mode))\
+            or (self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2str-annotate') and self.__remediation_mode))\
            and self.report.isError() and self.__dstPath is not None:
 
             dir_path = os.path.dirname(self.__dstPath)
@@ -48824,7 +48841,7 @@ class NmrDpUtility:
         else:
             master_entry.write_to_file(self.__dstPath)
 
-        if self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit') and self.__remediation_mode:
+        if self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2str-annotate') and self.__remediation_mode:
 
             dir_path = os.path.dirname(self.__dstPath)
 

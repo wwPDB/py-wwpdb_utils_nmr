@@ -224,18 +224,12 @@ class GromacsPTParserListener(ParseTreeListener):
                     if _atomName != atomName:
                         atomName = _atomName
                         retrievedAtomNumList.append(atomNum)
-                overrun = False
-                # the second condition indicates metal ions
+
                 if (terminus[atomNum - 1] and ancAtomName.endswith('T'))\
                    or (prevCompId is not None and (prevCompId.endswith('3') or self.__csStat.peptideLike(prevCompId)) and compId.endswith('5'))\
                    or (compId == atomName and compId.split('+')[0].title() in NAMES_ELEMENT)\
                    or (compId == atomName and compId.split('-')[0].title() in NAMES_ELEMENT)\
                    or (len(prevAtomName) > 0 and prevAtomName[0] not in NON_METAL_ELEMENTS and prevSeqId != _seqId):
-
-                    if len(self.__polySeqPrmTop) > 0 and len(seqIdList) > 1 and prevAtomName.endswith('T'):
-                        seqIdList.pop()
-                        compIdList.pop()
-                        overrun = True
 
                     self.__polySeqPrmTop.append({'chain_id': chainId,
                                                  'seq_id': seqIdList,
@@ -245,11 +239,8 @@ class GromacsPTParserListener(ParseTreeListener):
                     chainIndex += 1
                     chainId = indexToLetter(chainIndex)
                     offset = 1 - _seqId
+
                 seqId = _seqId + offset
-                if overrun:
-                    prevAtom = self.__atomNumberDict[atomNum - 1]
-                    prevAtom['chain_id'] = chainId
-                    prevAtom['seq_id'] = seqId
                 if seqId not in seqIdList:
                     seqIdList.append(seqId)
                     compIdList.append(compId)

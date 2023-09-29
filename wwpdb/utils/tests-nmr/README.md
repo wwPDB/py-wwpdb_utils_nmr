@@ -4,7 +4,6 @@
 - python 3.6 or later
 
 - pip packages to be installed:
-	- wwpdb.utils.align
 	- pynmrstar
 	- munkres
 	- mmcif
@@ -16,19 +15,27 @@
 	- antlr4-python3-runtime
 	- typing_extensions
 
-- linux commands:
+- linux command:
 	- aria2c
 
+- shared library:
+	- alignlib.so (locate the shared library in wwpdb/utils/nmr/align) 
+
 ## How to set up
-- 1. Set path of PYTHONPATH.
+1. Set enviromnent variable PYTHONPATH 
 ```bash
     export PYTHONPATH=$PYTHONPATH:(path to wwpdb/utils)  # Required only the first time.
 ```
 
-- 2. Update CCD periodically.
+2. Update CCD periodically
 ```bash
     cd wwpdb/utils/nmr ; ./update_ccd.sh ; ./deploy_ccd.sh  # You must run this command every Wednesday UTC+00:00.
 ```
 
-- 3. Run unit tests in wwpdb/utils/tests-nmr
+3. Import test
+```pathon
+    from nmr.NmrDpUtility import NmrDpUtility
+```
 
+4. Run unit tests in wwpdb/utils/tests-nmr
+- Make sure that import path starts with **nmr**, instead of **wwpdb.utils.nmr**.

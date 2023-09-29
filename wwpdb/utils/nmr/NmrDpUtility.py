@@ -23394,7 +23394,7 @@ class NmrDpUtility:
             return auth_asym_id, auth_seq_id
 
         def fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
-            fill_auth_atom_id = _row[19] in emptyValue and _row[18] not in emptyValue
+            fill_auth_atom_id = self.__annotation_mode or (_row[19] in emptyValue and _row[18] not in emptyValue)
             fill_orig_atom_id = _row[23] not in emptyValue
 
             if _seq_key in coord_atom_site:
@@ -23402,7 +23402,7 @@ class NmrDpUtility:
                 _row[5] = comp_id
                 valid = True
                 missing_ch3 = []
-                if atom_id in self.__csStat.getRepMethylProtons(comp_id):
+                if not self.__annotation_mode and atom_id in self.__csStat.getRepMethylProtons(comp_id):
                     missing_ch3 = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
                     valid = self.__sail_flag
                     for offset in range(1, 10):
@@ -28041,18 +28041,19 @@ class NmrDpUtility:
                     auth_dat = get_lp_tag(loop, auth_pdb_tags)
                     if len(auth_dat) > 0:
                         has_auth_seq = valid_auth_seq = True
-                        for row in auth_dat:
-                            try:
-                                for d in range(atom_dim_num):
-                                    seq_key = (row[d], int(row[atom_dim_num + d]), row[atom_dim_num * 2 + d])
-                                    if seq_key not in auth_to_star_seq:
-                                        valid_auth_seq = False
+                        if not self.__annotation_mode:
+                            for row in auth_dat:
+                                try:
+                                    for d in range(atom_dim_num):
+                                        seq_key = (row[d], int(row[atom_dim_num + d]), row[atom_dim_num * 2 + d])
+                                        if seq_key not in auth_to_star_seq:
+                                            valid_auth_seq = False
+                                            break
+                                    if not valid_auth_seq:
                                         break
-                                if not valid_auth_seq:
+                                except (ValueError, TypeError):
+                                    has_auth_seq = valid_auth_seq = False
                                     break
-                            except (ValueError, TypeError):
-                                has_auth_seq = valid_auth_seq = False
-                                break
 
                 if has_key_seq or has_auth_seq:
 
@@ -28074,8 +28075,18 @@ class NmrDpUtility:
                             for row_ in dat:
 
                                 for d in range(atom_dim_num):
+                                    chain_id = row_[d]
+                                    seq_id = int(row_[atom_dim_num + d])
                                     comp_id = row_[atom_dim_num * 2 + d]
                                     atom_id = row_[atom_dim_num * 3 + d]
+
+                                    seq_key = (chain_id, seq_id, comp_id)
+
+                                    try:
+                                        auth_to_star_seq[seq_key]
+                                    except KeyError:
+                                        comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                        if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
 
                                     if comp_id in auth_atom_name_to_id:
                                         if atom_id in auth_atom_name_to_id[comp_id]:
@@ -28093,6 +28104,13 @@ class NmrDpUtility:
                                 seq_id = int(row_[atom_dim_num + d])
                                 comp_id = row_[atom_dim_num * 2 + d]
                                 atom_id = row_[atom_dim_num * 3 + d]
+
+                                try:
+                                    auth_to_star_seq[seq_key]
+                                except KeyError:
+                                    comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                    if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
+
                                 if has_auth_atom_name:
                                     auth_atom_id = row_[atom_dim_num * 4 + d]
                                     if auth_atom_id in emptyValue:
@@ -28352,8 +28370,18 @@ class NmrDpUtility:
                             for row_ in dat:
 
                                 for d in range(atom_dim_num):
+                                    chain_id = row_[d]
+                                    seq_id = int(row_[atom_dim_num + d])
                                     comp_id = row_[atom_dim_num * 2 + d]
                                     atom_id = row_[atom_dim_num * 3 + d]
+
+                                    seq_key = (chain_id, seq_id, comp_id)
+
+                                    try:
+                                        auth_to_star_seq[seq_key]
+                                    except KeyError:
+                                        comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                        if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
 
                                     if comp_id in auth_atom_name_to_id:
                                         if atom_id in auth_atom_name_to_id[comp_id]:
@@ -28371,6 +28399,13 @@ class NmrDpUtility:
                                 seq_id = int(row_[atom_dim_num + d])
                                 comp_id = row_[atom_dim_num * 2 + d]
                                 atom_id = row_[atom_dim_num * 3 + d]
+
+                                try:
+                                    auth_to_star_seq[seq_key]
+                                except KeyError:
+                                    comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                    if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
+
                                 if has_auth_atom_name:
                                     auth_atom_id = row_[atom_dim_num * 4 + d]
                                     if auth_atom_id in emptyValue:

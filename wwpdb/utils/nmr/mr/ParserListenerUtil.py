@@ -4,6 +4,7 @@
 #
 # Updates:
 # 13-Sep-2023  M. Yokochi - construct pseudo CCD from the coordinates (DAOTHER-8817)
+# 29-Sep-2023  M. Yokochi - add atom name mapping dictionary (DAOTHER-8817, 8828)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -3404,6 +3405,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     chemCompAtom = None if prevResult is None or 'chem_comp_atom' not in prevResult else prevResult['chem_comp_atom']
     chemCompBond = None if prevResult is None or 'chem_comp_bond' not in prevResult else prevResult['chem_comp_bond']
     chemCompTopo = None if prevResult is None or 'chem_comp_topo' not in prevResult else prevResult['chem_comp_topo']
+    authAtomNameToId = None if prevResult is None or 'auth_atom_name_to_id' not in prevResult else prevResult['auth_atom_name_to_id']
 
     try:
 
@@ -3419,7 +3421,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             authAtomId = 'auth_atom_id'
         altAuthAtomId = 'pdbx_auth_atom_name' if 'pdbx_auth_atom_name' in tags else None
 
-        if coordAtomSite is None or labelToAuthSeq is None or authToLabelSeq is None:
+        if coordAtomSite is None or labelToAuthSeq is None or authToLabelSeq is None or chemCompAtom is None or authAtomNameToId is None:
             changed = True
 
             dataItems = [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
@@ -3490,6 +3492,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             chemCompAtom = {}
             chemCompBond = {}
             chemCompTopo = {}
+
+            # DAOTHER-8828
+            authAtomNameToId = {}
 
             chainIds = set(c['chain_id'] for c in coord)
             for chainId in chainIds:
@@ -3569,6 +3574,10 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                             if heavy not in chemCompTopo[compId]:
                                                 chemCompTopo[compId][heavy] = []
                                             chemCompTopo[compId][heavy].append(heavy2)
+
+                        if altAuthAtomId is not None:
+                            authAtomNameToId[compId] = {c['alt_atom_id']: c['atom_id'] for c in coord
+                                                        if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId}
 
             authToLabelSeq = {v: k for k, v in labelToAuthSeq.items()}
 
@@ -4238,7 +4247,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'entity_assembly': entityAssembly,
             'chem_comp_atom': chemCompAtom,
             'chem_comp_bond': chemCompBond,
-            'chem_comp_topo': chemCompTopo}
+            'chem_comp_topo': chemCompTopo,
+            'auth_atom_name_to_id': authAtomNameToId}
 
 
 def extendCoordChainsForExactNoes(modelChainIdExt,
@@ -7189,7 +7199,7 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
     return list(chainAssign), warningMessage
 
 
-def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, authAtomId, allowAmbig=True, enableWarning=True, offset=1):
+def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, authAtomId, allowAmbig=True, enableWarning=True, preferPdbxAuthAtomName=False, offset=1):
     """ Select atoms of the coordinates.
         @return atom selection, warning mesage (None for valid case)
     """
@@ -7197,6 +7207,9 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, authAtomId, 
     atomSelection = []
 
     _atomId = atomId
+
+    if preferPdbxAuthAtomName and compId in caC['auth_atom_name_to_id'] and atomId in caC['auth_atom_name_to_id'][compId]:
+        atomId = caC['auth_atom_name_to_id'][compId][atomId]
 
     for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 
@@ -7275,7 +7288,7 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, authAtomId, 
 
         if lenAtomId == 0:
             if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
-                return selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig, enableWarning, offset=1)
+                return selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig, enableWarning, preferPdbxAuthAtomName, offset=1)
             if enableWarning:
                 warningMessage = f"[Invalid atom nomenclature] "\
                     f"{seqId}:{compId}:{atomId} is invalid atom nomenclature."

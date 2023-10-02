@@ -3369,8 +3369,8 @@ class TestNEFTranslator(unittest.TestCase):
         ]
         indat = [[549, "389", ".", "A", "384", "TYR", "HD%", "A", "449", "CYS", "HBy", 1, ".", ".", ".", ".", 5.7, "."]]
         outdat = [
-            [1, "389", ".", "A", 384, "TYR", "HD1", "A", 449, "CYS", "HB3", 1, ".", ".", ".", ".", 5.7, ".", 1, 13, "TYR", "HD1", 1, 78, "CYS", "HB3", "OR", "HD%", "HBy"],
-            [2, "389", ".", "A", 384, "TYR", "HD2", "A", 449, "CYS", "HB3", 1, ".", ".", ".", ".", 5.7, ".", 1, 13, "TYR", "HD2", 1, 78, "CYS", "HB3", "OR", "HD%", "HBy"],
+            [1, 1, ".", "A", 384, "TYR", "HD1", "A", 449, "CYS", "HB3", 1, ".", ".", ".", ".", 5.7, ".", 1, 13, "TYR", "HD1", 1, 78, "CYS", "HB3", "OR", "HD%", "HBy"],
+            [2, 1, ".", "A", 384, "TYR", "HD2", "A", 449, "CYS", "HB3", 1, ".", ".", ".", ".", 5.7, ".", 1, 13, "TYR", "HD2", 1, 78, "CYS", "HB3", "OR", "HD%", "HBy"],
         ]
         self.assertEqual(self.neft.nef2star_dist_row(intag, outtag, indat), outdat)
 

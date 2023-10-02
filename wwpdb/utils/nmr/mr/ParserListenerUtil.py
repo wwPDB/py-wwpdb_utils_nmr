@@ -7300,8 +7300,10 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, authAtomId, 
             continue
 
         for cifAtomId in _atomId:
-            atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
-                                  'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
+            _atomSelection = {'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
+                              'atom_id': cifAtomId, 'auth_atom_id': authAtomId}
+            if _atomSelection not in atomSelection:
+                atomSelection.append(_atomSelection)
 
             warningMessage = testCoordAtomIdConsistency(caC, nefT.get_ccu(), chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
 

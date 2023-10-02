@@ -175,7 +175,7 @@
 # 09-Aug-2023  M. Yokochi - remediate combined nmr_data by default and improve robustness of sequence alignment (DAOTHER-8751)
 # 13-Sep-2023  M. Yokochi - construct pseudo CCD from the coordinates (DAOTHER-8817)
 # 29-Sep-2023  M. Yokochi - add 'nmr-str2cif-annotation' workflow operation (DAOTHER-8817, 8828)
-# 02-Oct-2023  M. Yokochi - do not reorganize _Gen_dist_constraint.ID when _Gen_dist_constraint.Member_logic_code is 'OR' (DAOTHER-8855)
+# 02-Oct-2023  M. Yokochi - do not reorganize _Gen_dist_constraint.ID of native combined NMR data (DAOTHER-8855)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -1063,6 +1063,8 @@ class NmrDpUtility:
         self.__remediation_mode = False
         # whether NMR combined deposition or not (NMR conventional deposition)
         self.__combined_mode = True
+        # whether native NMR combined deposition
+        self.__native_combined = False
         # whether to allow sequence mismatch during annotation
         self.__annotation_mode = False
         # whether to use datablock name of public release
@@ -6346,6 +6348,9 @@ class NmrDpUtility:
                             d['default'] = 'A'
                             if 'default-from' in d:
                                 del d['default-from']
+
+        elif self.__combined_mode and not self.__remediation_mode:
+            self.__native_combined = True
 
         self.__remediation_loop_count = 0
 
@@ -28106,6 +28111,8 @@ class NmrDpUtility:
                                 comp_id = row_[atom_dim_num * 2 + d]
                                 atom_id = row_[atom_dim_num * 3 + d]
 
+                                seq_key = (chain_id, seq_id, comp_id)
+
                                 try:
                                     auth_to_star_seq[seq_key]
                                 except KeyError:
@@ -28400,6 +28407,8 @@ class NmrDpUtility:
                                 seq_id = int(row_[atom_dim_num + d])
                                 comp_id = row_[atom_dim_num * 2 + d]
                                 atom_id = row_[atom_dim_num * 3 + d]
+
+                                seq_key = (chain_id, seq_id, comp_id)
 
                                 try:
                                     auth_to_star_seq[seq_key]
@@ -28846,6 +28855,10 @@ class NmrDpUtility:
                         comp_id_2 = row[comp_id_2_col]
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
+
+                        if atom_id_1 is None or atom_id_2 is None:
+                            continue
+
                         atom_id_1_ = atom_id_1[0]
                         atom_id_2_ = atom_id_2[0]
                         if comp_id_1 == atom_id_1 or comp_id_2 == atom_id_2:
@@ -29164,19 +29177,7 @@ class NmrDpUtility:
         """
 
         loop = sf_item['loop']
-        """
-        # DAOTHER-8855
-        master_entry = self.__star_data[0]
 
-        sf_category = 'entry_information'
-
-        if sf_category in self.__sf_category_list:
-            sf = master_entry.get_saveframes_by_category(sf_category)[0]
-
-            src_data_format = get_first_sf_tag(sf, 'Source_data_format')
-            if src_data_format == 'nmr_exchange_format':
-                return True
-        """
         lp = pynmrstar.Loop.from_scratch(loop.category)
 
         for tag in loop.tags:
@@ -29325,7 +29326,7 @@ class NmrDpUtility:
             except ValueError:
                 _atom1 = _atom2 = {}
 
-            if member_logic_code == 'OR':  # DAOTHER-8855
+            if not self.__native_combined:  # DAOTHER-8855
                 _row[id_col] = sf_item['id']
             _row[member_id_col] = None
             lp.add_data(_row)
@@ -32671,9 +32672,9 @@ class NmrDpUtility:
                         for col, auth_assign_item_temp in enumerate(auth_assign_item_temps):
                             auth_assign_item = auth_assign_item_temp % dim
                             if col == 0:
-                                _row[items.index(auth_assign_item)] = auth_asym_id
+                                _row[items.index(auth_assign_item)] = auth_asym_id_
                             elif col == 1:
-                                _row[items.index(auth_assign_item)] = auth_seq_id
+                                _row[items.index(auth_assign_item)] = auth_seq_id_
                             elif col == 2:
                                 _row[items.index(auth_assign_item)] = comp_id
                             else:
@@ -32792,9 +32793,9 @@ class NmrDpUtility:
                     for col, auth_assign_item_temp in enumerate(auth_assign_item_temps):
                         auth_assign_item = auth_assign_item_temp % dim
                         if col == 0:
-                            _row[items.index(auth_assign_item)] = auth_asym_id
+                            _row[items.index(auth_assign_item)] = auth_asym_id_
                         elif col == 1:
-                            _row[items.index(auth_assign_item)] = auth_seq_id
+                            _row[items.index(auth_assign_item)] = auth_seq_id_
                         elif col == 2:
                             _row[items.index(auth_assign_item)] = comp_id
                         else:

@@ -175,6 +175,7 @@
 # 09-Aug-2023  M. Yokochi - remediate combined nmr_data by default and improve robustness of sequence alignment (DAOTHER-8751)
 # 13-Sep-2023  M. Yokochi - construct pseudo CCD from the coordinates (DAOTHER-8817)
 # 29-Sep-2023  M. Yokochi - add 'nmr-str2cif-annotation' workflow operation (DAOTHER-8817, 8828)
+# 02-Oct-2023  M. Yokochi - do not reorganize _Gen_dist_constraint.ID when _Gen_dist_constraint.Member_logic_code is 'OR' (DAOTHER-8855)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -7024,7 +7025,7 @@ class NmrDpUtility:
 
                 is_done = False
 
-            if _srcPath is not None:
+            if _srcPath is not None and not self.__annotation_mode:
                 try:
                     os.remove(_srcPath)
                 except OSError:
@@ -28265,10 +28266,10 @@ class NmrDpUtility:
                                 if id_col != -1:
                                     Id = loop.data[idx][id_col]
                                     try:
-                                        int(Id)
+                                        _Id = int(Id)
                                     except ValueError:
                                         Id = '.'
-                                Id = sf_item['id'] if isinstance(Id, str) else Id
+                                Id = sf_item['id'] if isinstance(Id, str) and Id == '.' else _Id
                                 combinationId = '.'
                                 if combination_id_col != -1:
                                     combinationId = loop.data[idx][combination_id_col]
@@ -28581,10 +28582,10 @@ class NmrDpUtility:
                                 if id_col != -1:
                                     Id = loop.data[idx][id_col]
                                     try:
-                                        int(Id)
+                                        _Id = int(Id)
                                     except ValueError:
                                         Id = '.'
-                                Id = sf_item['id'] if isinstance(Id, str) else Id
+                                Id = sf_item['id'] if isinstance(Id, str) and Id == '.' else _Id
                                 combinationId = '.'
                                 if combination_id_col != -1:
                                     combinationId = loop.data[idx][combination_id_col]
@@ -28683,6 +28684,8 @@ class NmrDpUtility:
                 sf_item['loop'] = lp
 
             if content_subtype == 'dist_restraint':
+
+                sf_item['loop'] = lp
 
                 # MR parser for XPLOR-NIH/CNS/CHARMM already fills _Gen_dist_constraint.ID with genuine IDs
                 if sf_item['file_type'] not in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cha'):
@@ -29161,7 +29164,19 @@ class NmrDpUtility:
         """
 
         loop = sf_item['loop']
+        """
+        # DAOTHER-8855
+        master_entry = self.__star_data[0]
 
+        sf_category = 'entry_information'
+
+        if sf_category in self.__sf_category_list:
+            sf = master_entry.get_saveframes_by_category(sf_category)[0]
+
+            src_data_format = get_first_sf_tag(sf, 'Source_data_format')
+            if src_data_format == 'nmr_exchange_format':
+                return True
+        """
         lp = pynmrstar.Loop.from_scratch(loop.category)
 
         for tag in loop.tags:
@@ -29310,7 +29325,8 @@ class NmrDpUtility:
             except ValueError:
                 _atom1 = _atom2 = {}
 
-            _row[id_col] = sf_item['id']
+            if member_logic_code == 'OR':  # DAOTHER-8855
+                _row[id_col] = sf_item['id']
             _row[member_id_col] = None
             lp.add_data(_row)
 

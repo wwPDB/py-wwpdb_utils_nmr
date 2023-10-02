@@ -92,6 +92,7 @@
 # 27-Feb-2023  M. Yokochi - preserve author sequence scheme of the coordinates during NMR-STAR to NEF conversion (v3.2.3)
 # 13-Mar-2023  M. Yokochi - preserve the original atom nomenclature of NMR restraints into Auth_atom_name_* data items (v3.4.0)
 # 13-Sep-2023  M. Yokochi - fix/improve NEF atom nomenclature mapping (v3.5.0, DAOTHER-8817)
+# 02-Oct-2023  M. Yokochi - do not reorganize _Gen_dist_constraint.ID (v3.5.1, DAOTHER-8855)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -132,7 +133,7 @@ except ImportError:
 
 
 __package_name__ = 'wwpdb.utils.nmr'
-__version__ = '3.5.0'
+__version__ = '3.5.1'
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
@@ -6081,7 +6082,7 @@ class NEFTranslator:
 
                     keys.add(key)
 
-                    if star_id_index >= 0:
+                    if star_id_index != -1:
                         b[star_id_index] = index
 
                     index += 1
@@ -6253,7 +6254,7 @@ class NEFTranslator:
 
                     keys.add(key)
 
-                    if star_id_index >= 0:
+                    if star_id_index != -1:
                         b[star_id_index] = index
 
                     index += 1
@@ -6372,7 +6373,7 @@ class NEFTranslator:
                                 else:
                                     out[star_tags.index(data_tag)] = data
 
-                        if star_id_index >= 0:
+                        if star_id_index != -1:
                             out[star_id_index] = index
 
                         out[star_ambig_code_index] = ambiguity_code
@@ -6627,7 +6628,7 @@ class NEFTranslator:
                                 else:
                                     out[star_tags.index(data_tag)] = data
 
-                        if star_id_index >= 0:
+                        if star_id_index != -1:
                             out[star_id_index] = index
 
                         out[star_ambig_code_index] = ambiguity_code
@@ -6744,6 +6745,16 @@ class NEFTranslator:
             except ValueError:
                 index_index = -1
 
+            try:
+                id_index = star_tags.index('_Gen_dist_constraint.ID')
+            except ValueError:
+                id_index = -1
+
+            try:
+                member_code_index = star_tags.index('_Gen_dist_constraint.Member_logic_code')
+            except ValueError:
+                member_code_index = -1
+
             key_indices = [star_tags.index(tag) for tag in ['_Gen_dist_constraint.Entity_assembly_ID_1',
                                                             '_Gen_dist_constraint.Comp_index_ID_1',
                                                             '_Gen_dist_constraint.Atom_ID_1',
@@ -6751,17 +6762,15 @@ class NEFTranslator:
                                                             '_Gen_dist_constraint.Comp_index_ID_2',
                                                             '_Gen_dist_constraint.Atom_ID_2']]
 
-            member_code_index = star_tags.index('_Gen_dist_constraint.Member_logic_code')
+            in_id_index = nef_tags.index('_nef_distance_restraint.restraint_id')
 
-            id_index = nef_tags.index('_nef_distance_restraint.restraint_id')
-
-            id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_list = sorted(set(int(row[in_id_index]) for row in loop_data))
 
             index = 1
 
-            for row_id in id_list:
+            for _id, row_id in enumerate(id_list, start=1):
 
-                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+                in_row = [row for row in loop_data if row[in_id_index] == str(row_id)]
 
                 buf_row = []
 
@@ -6796,7 +6805,7 @@ class NEFTranslator:
                     atom_list_1 = self.get_star_atom(row[nef_comp_index_1], row[nef_atom_index_1])[0]
                     atom_list_2 = self.get_star_atom(row[nef_comp_index_2], row[nef_atom_index_2])[0]
 
-                    or_code = len(atom_list_1) * len(atom_list_2) > 1
+                    or_code = len(in_row) > 1 or len(atom_list_1) * len(atom_list_2) > 1
 
                     for atom_1 in atom_list_1:
 
@@ -6849,7 +6858,11 @@ class NEFTranslator:
 
                                 #     buf[details_index] = ' '.join(filter(None, [details_1, detail_2]))
                                 #
-                            if or_code:
+
+                            if id_index != -1:
+                                buf[id_index] = _id
+
+                            if or_code and member_code_index != -1:
                                 buf[member_code_index] = 'OR'
 
                             buf_row.append(buf)
@@ -6872,7 +6885,7 @@ class NEFTranslator:
 
                     keys.add(key)
 
-                    if index_index >= 0:
+                    if index_index != -1:
                         row[index_index] = index
 
                     index += 1
@@ -6916,6 +6929,11 @@ class NEFTranslator:
             except ValueError:
                 index_index = -1
 
+            try:
+                id_index = nef_tags.index('_nef_distance_restraint.id')
+            except ValueError:
+                id_index = -1
+
             key_indices = [nef_tags.index(tag) for tag in ['_nef_distance_restraint.chain_code_1',
                                                            '_nef_distance_restraint.sequence_code_1',
                                                            '_nef_distance_restraint.atom_name_1',
@@ -6923,15 +6941,15 @@ class NEFTranslator:
                                                            '_nef_distance_restraint.sequence_code_2',
                                                            '_nef_distance_restraint.atom_name_2']]
 
-            id_index = star_tags.index('_Gen_dist_constraint.ID')
+            in_id_index = star_tags.index('_Gen_dist_constraint.ID')
 
-            id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_list = sorted(set(int(row[in_id_index]) for row in loop_data))
 
             index = 1
 
-            for row_id in id_list:
+            for _id, row_id in enumerate(id_list, start=1):
 
-                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+                in_row = [row for row in loop_data if row[in_id_index] == str(row_id)]
 
                 buf_row = []
 
@@ -7014,6 +7032,9 @@ class NEFTranslator:
                         else:
                             buf[data_index] = data
 
+                    if id_index != -1:
+                        buf_row[id_index] = _id
+
                     buf_row.append(buf)
 
                 keys = set()
@@ -7034,7 +7055,7 @@ class NEFTranslator:
 
                     keys.add(key)
 
-                    if index_index >= 0:
+                    if index_index != -1:
                         row[index_index] = index
 
                     index += 1
@@ -7085,6 +7106,16 @@ class NEFTranslator:
             except ValueError:
                 index_index = -1
 
+            try:
+                id_index = star_tags.index('_Gen_dist_constraint.ID')
+            except ValueError:
+                id_index = -1
+
+            try:
+                member_code_index = star_tags.index('_Gen_dist_constraint.Member_logic_code')
+            except ValueError:
+                member_code_index = -1
+
             key_indices = [star_tags.index(tag) for tag in ['_Gen_dist_constraint.Entity_assembly_ID_1',
                                                             '_Gen_dist_constraint.Comp_index_ID_1',
                                                             '_Gen_dist_constraint.Atom_ID_1',
@@ -7092,17 +7123,15 @@ class NEFTranslator:
                                                             '_Gen_dist_constraint.Comp_index_ID_2',
                                                             '_Gen_dist_constraint.Atom_ID_2']]
 
-            member_code_index = star_tags.index('_Gen_dist_constraint.Member_logic_code')
+            in_id_index = in_star_tags.index('_Gen_dist_constraint.ID')
 
-            id_index = in_star_tags.index('_Gen_dist_constraint.ID')
-
-            id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_list = sorted(set(int(row[in_id_index]) for row in loop_data))
 
             index = 1
 
-            for row_id in id_list:
+            for _id, row_id in enumerate(id_list, start=1):
 
-                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+                in_row = [row for row in loop_data if row[in_id_index] == str(row_id)]
 
                 buf_row = []
 
@@ -7137,7 +7166,7 @@ class NEFTranslator:
                     atom_list_1 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_1], row[in_star_atom_index_1])[0]
                     atom_list_2 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_2], row[in_star_atom_index_2])[0]
 
-                    or_code = len(atom_list_1) * len(atom_list_2) > 1
+                    or_code = len(in_row) > 1 or len(atom_list_1) * len(atom_list_2) > 1
 
                     for atom_1 in atom_list_1:
 
@@ -7187,7 +7216,9 @@ class NEFTranslator:
                                     else:
                                         buf[data_index] = data
 
-                            if or_code:
+                            if id_index != -1:
+                                buf[id_index] = _id
+                            if or_code and member_code_index != -1:
                                 buf[member_code_index] = 'OR'
 
                             buf_row.append(buf)
@@ -7210,7 +7241,7 @@ class NEFTranslator:
 
                     keys.add(key)
 
-                    if index_index >= 0:
+                    if index_index != -1:
                         row[index_index] = index
 
                     index += 1
@@ -7265,6 +7296,11 @@ class NEFTranslator:
             except ValueError:
                 index_index = -1
 
+            try:
+                id_index = star_tags.index('_Torsion_angle_constraint.ID')
+            except ValueError:
+                id_index = -1
+
             key_indices = [star_tags.index(tag) for tag in ['_Torsion_angle_constraint.Entity_assembly_ID_1',
                                                             '_Torsion_angle_constraint.Comp_index_ID_1',
                                                             '_Torsion_angle_constraint.Atom_ID_1',
@@ -7278,15 +7314,15 @@ class NEFTranslator:
                                                             '_Torsion_angle_constraint.Comp_index_ID_4',
                                                             '_Torsion_angle_constraint.Atom_ID_4']]
 
-            id_index = nef_tags.index('_nef_dihedral_restraint.restraint_id')
+            in_id_index = nef_tags.index('_nef_dihedral_restraint.restraint_id')
 
-            id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_list = sorted(set(int(row[in_id_index]) for row in loop_data))
 
             index = 1
 
-            for row_id in id_list:
+            for _id, row_id in enumerate(id_list, start=1):
 
-                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+                in_row = [row for row in loop_data if row[in_id_index] == str(row_id)]
 
                 buf_row = []
 
@@ -7395,6 +7431,9 @@ class NEFTranslator:
                                             else:
                                                 buf[data_index] = data
 
+                                    if id_index != -1:
+                                        buf[id_index] = _id
+
                                     buf_row.append(buf)
 
                 keys = set()
@@ -7415,7 +7454,7 @@ class NEFTranslator:
 
                     keys.add(key)
 
-                    if index_index >= 0:
+                    if index_index != -1:
                         row[index_index] = index
 
                     index += 1
@@ -7480,6 +7519,11 @@ class NEFTranslator:
             except ValueError:
                 index_index = -1
 
+            try:
+                id_index = star_tags.index('_Torsion_angle_constraint.ID')
+            except ValueError:
+                id_index = -1
+
             key_indices = [star_tags.index(tag) for tag in ['_Torsion_angle_constraint.Entity_assembly_ID_1',
                                                             '_Torsion_angle_constraint.Comp_index_ID_1',
                                                             '_Torsion_angle_constraint.Atom_ID_1',
@@ -7493,15 +7537,15 @@ class NEFTranslator:
                                                             '_Torsion_angle_constraint.Comp_index_ID_4',
                                                             '_Torsion_angle_constraint.Atom_ID_4']]
 
-            id_index = in_star_tags.index('_Torsion_angle_constraint.ID')
+            in_id_index = in_star_tags.index('_Torsion_angle_constraint.ID')
 
-            id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_list = sorted(set(int(row[in_id_index]) for row in loop_data))
 
             index = 1
 
-            for row_id in id_list:
+            for _id, row_id in enumerate(id_list, start=1):
 
-                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+                in_row = [row for row in loop_data if row[in_id_index] == str(row_id)]
 
                 buf_row = []
 
@@ -7620,6 +7664,9 @@ class NEFTranslator:
                                             else:
                                                 buf[data_index] = data
 
+                                    if id_index != -1:
+                                        buf_row[id_index] = _id
+
                                     buf_row.append(buf)
 
                 keys = set()
@@ -7640,7 +7687,7 @@ class NEFTranslator:
 
                     keys.add(key)
 
-                    if index_index >= 0:
+                    if index_index != -1:
                         row[index_index] = index
 
                     index += 1
@@ -7685,6 +7732,11 @@ class NEFTranslator:
             except ValueError:
                 index_index = -1
 
+            try:
+                id_index = star_tags.index('_RDC_constraint.ID')
+            except ValueError:
+                id_index = -1
+
             key_indices = [star_tags.index(tag) for tag in ['_RDC_constraint.Entity_assembly_ID_1',
                                                             '_RDC_constraint.Comp_index_ID_1',
                                                             '_RDC_constraint.Atom_ID_1',
@@ -7692,15 +7744,15 @@ class NEFTranslator:
                                                             '_RDC_constraint.Comp_index_ID_2',
                                                             '_RDC_constraint.Atom_ID_2']]
 
-            id_index = nef_tags.index('_nef_rdc_restraint.restraint_id')
+            in_id_index = nef_tags.index('_nef_rdc_restraint.restraint_id')
 
-            id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_list = sorted(set(int(row[in_id_index]) for row in loop_data))
 
             index = 1
 
-            for row_id in id_list:
+            for _id, row_id in enumerate(id_list, start=1):
 
-                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+                in_row = [row for row in loop_data if row[in_id_index] == str(row_id)]
 
                 buf_row = []
 
@@ -7777,6 +7829,9 @@ class NEFTranslator:
                                     else:
                                         buf[data_index] = data
 
+                            if id_index != -1:
+                                buf[id_index] = _id
+
                             buf_row.append(buf)
 
                 keys = set()
@@ -7797,7 +7852,7 @@ class NEFTranslator:
 
                     keys.add(key)
 
-                    if index_index >= 0:
+                    if index_index != -1:
                         row[index_index] = index
 
                     index += 1
@@ -7848,6 +7903,11 @@ class NEFTranslator:
             except ValueError:
                 index_index = -1
 
+            try:
+                id_index = star_tags.index('_RDC_constraint.ID')
+            except ValueError:
+                id_index = -1
+
             key_indices = [star_tags.index(tag) for tag in ['_RDC_constraint.Entity_assembly_ID_1',
                                                             '_RDC_constraint.Comp_index_ID_1',
                                                             '_RDC_constraint.Atom_ID_1',
@@ -7855,15 +7915,15 @@ class NEFTranslator:
                                                             '_RDC_constraint.Comp_index_ID_2',
                                                             '_RDC_constraint.Atom_ID_2']]
 
-            id_index = in_star_tags.index('_RDC_constraint.ID')
+            in_id_index = in_star_tags.index('_RDC_constraint.ID')
 
-            id_list = sorted(set(int(row[id_index]) for row in loop_data))
+            id_list = sorted(set(int(row[in_id_index]) for row in loop_data))
 
             index = 1
 
-            for row_id in id_list:
+            for _id, row_id in enumerate(id_list, start=1):
 
-                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
+                in_row = [row for row in loop_data if row[in_id_index] == str(row_id)]
 
                 buf_row = []
 
@@ -7946,6 +8006,9 @@ class NEFTranslator:
                                     else:
                                         buf[data_index] = data
 
+                            if id_index != -1:
+                                buf[id_index] = _id
+
                             buf_row.append(buf)
 
                 keys = set()
@@ -7966,7 +8029,7 @@ class NEFTranslator:
 
                     keys.add(key)
 
-                    if index_index >= 0:
+                    if index_index != -1:
                         row[index_index] = index
 
                     index += 1
@@ -8162,7 +8225,7 @@ class NEFTranslator:
 
                     keys.add(key)
 
-                    if index_index >= 0:
+                    if index_index != -1:
                         row[index_index] = index
 
                     index += 1
@@ -8343,7 +8406,7 @@ class NEFTranslator:
 
                     keys.add(key)
 
-                    if index_index >= 0:
+                    if index_index != -1:
                         row[index_index] = index
 
                     index += 1
@@ -8539,7 +8602,7 @@ class NEFTranslator:
 
                     keys.add(key)
 
-                    if index_index >= 0:
+                    if index_index != -1:
                         row[index_index] = index
 
                     index += 1

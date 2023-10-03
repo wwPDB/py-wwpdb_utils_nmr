@@ -6891,6 +6891,7 @@ class NmrDpUtility:
 
                 if self.__c2S.convert(nmr_cif, _nmr_cif):
                     self.__srcNmrCifPath = _nmr_cif
+                    self.__native_combined = True  # DAOTHER-8855
 
         # self.__file_path_list_len = self.__cs_file_path_list_len = 1
 

@@ -31,7 +31,7 @@ try:
                                                        RDC_RESTRAINT_ERROR,
                                                        coordAssemblyChecker,
                                                        getDistConstraintType)
-    from wwpdb.utils.nmr.AlignUtil import LARGE_ASYM_ID
+    from wwpdb.utils.nmr.AlignUtil import LARGE_ASYM_ID, monDict3
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 except ImportError:
@@ -42,7 +42,7 @@ except ImportError:
                                            RDC_RESTRAINT_ERROR,
                                            coordAssemblyChecker,
                                            getDistConstraintType)
-    from nmr.AlignUtil import LARGE_ASYM_ID
+    from nmr.AlignUtil import LARGE_ASYM_ID, monDict3
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
@@ -1142,9 +1142,10 @@ class NmrVrptUtility:
                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                       ]
 
-        # DAOTHER-8705
+        # DAOTHER-8705, 8817
         if _auth_atom_id == 'pdbx_auth_atom_name':
             data_items.append({'name': 'auth_atom_id', 'type': 'str', 'alt_name': 'alt_auth_atom_id'})
+            data_items.append({'name': 'pdbx_auth_comp_id', 'type': 'str', 'alt_name': 'alt_auth_comp_id'})
 
         _filter_items = []  # {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}]
 
@@ -1155,7 +1156,7 @@ class NmrVrptUtility:
         self.__atomIdList = {}
         self.__coordinates = {}
 
-        atom_name_unchecked = True
+        atom_name_unchecked = comp_name_unchecked = True
         _auth_atom_id_ = 'auth_atom_id'
 
         try:
@@ -1167,14 +1168,25 @@ class NmrVrptUtility:
 
                 coord = self.__cR.getDictListWithFilter('atom_site', data_items, filter_items)
 
+                # DAOTHER-8705
                 if atom_name_unchecked:
                     atom_name_unchecked = False
                     if _auth_atom_id == 'pdbx_auth_atom_name':
                         for c in coord:
-                            if c['auth_atom_id'] is not None and c['alt_auth_atom_id'] is not None:
-                                if c['auth_atom_id'][0].isdigit() and c['alt_auth_atom_id'][0] == 'H':
-                                    _auth_atom_id_ = 'alt_auth_atom_id'
-                                    break
+                            if c['auth_atom_id'] is not None and c['alt_auth_atom_id'] is not None\
+                               and c['auth_atom_id'][0].isdigit() and c['alt_auth_atom_id'][0] == 'H':
+                                _auth_atom_id_ = 'alt_auth_atom_id'
+                                break
+
+                # DAOTHER-8817
+                if comp_name_unchecked:
+                    comp_name_unchecked = False
+                    if _auth_atom_id == 'pdbx_auth_atom_name':
+                        for c in coord:
+                            if c['auth_comp_id'] is not None and c['auth_comp_id'] not in monDict3\
+                               and c['alt_auth_comp_id'] is not None and c['auth_comp_id'] != c['alt_auth_comp_id']:
+                                _auth_atom_id_ = 'alt_auth_atom_id'
+                                break
 
                 atom_id_list_per_model = {}
                 coordinates_per_model = {}

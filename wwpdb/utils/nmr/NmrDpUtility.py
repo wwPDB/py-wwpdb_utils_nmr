@@ -9298,7 +9298,7 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
 
-                else:
+                elif not self.__remediation_mode:
                     err = f"A saveframe with a category {lp_category!r} is missing. Please re-upload the {file_type.upper()} file."
 
                     self.report.error.appendDescription('missing_mandatory_content',
@@ -11396,7 +11396,7 @@ class NmrDpUtility:
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
         amber_file_type = file_type == 'nm-res-amb'
         gromacs_file_type = file_type in ('nm-res-gro', 'nm-aux-gro')
-        linear_mr_file_types = ['nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-syb']
+        linear_mr_file_types = ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-syb')
 
         xplor_missing_end = xplor_file_type and err_message.startswith(xplor_missing_end_err_msg)
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
@@ -12718,7 +12718,7 @@ class NmrDpUtility:
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
         amber_file_type = file_type == 'nm-res-amb'
         gromacs_file_type = file_type in ('nm-res-gro', 'nm-aux-gro')
-        linear_mr_file_types = ['nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-syb']
+        linear_mr_file_types = ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-syb')
 
         xplor_missing_end = xplor_file_type and err_message.startswith(xplor_missing_end_err_msg)
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
@@ -13591,6 +13591,8 @@ class NmrDpUtility:
         if self.__combined_mode or not self.__remediation_mode:
             return True
 
+        linear_mr_file_types = ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-syb')
+
         ar_file_path_list = 'atypical_restraint_file_path_list'
 
         if ar_file_path_list not in self.__inputParamDict:
@@ -13625,6 +13627,14 @@ class NmrDpUtility:
             fileListId += 1
 
             if file_type != 'nm-res-mr':
+
+                if file_type in linear_mr_file_types:
+                    with open(src_file, 'r') as ifh:
+                        for line in ifh:
+                            if 'Submitted Coord H atom name' in line:
+                                input_source.setItemValue('file_type', 'nm-res-mr')
+                                return self.__extractPublicMrFileIntoLegacyMr()
+
                 continue
 
             original_file_name = None
@@ -42952,6 +42962,8 @@ class NmrDpUtility:
                 if entity_type == 'polymer':
                     ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
                     nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id, label_scheme=False)
+                    if nmr_ps is None and 'identical_auth_chain_id' in ps:
+                        nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0], label_scheme=False)
 
                     if nmr_ps is not None:
                         j = ps['auth_seq_id'].index(auth_seq_id)
@@ -43164,6 +43176,8 @@ class NmrDpUtility:
                 if entity_type == 'polymer':
                     ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
                     nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id, label_scheme=False)
+                    if nmr_ps is None and 'identical_auth_chain_id' in ps:
+                        nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0], label_scheme=False)
 
                     if nmr_ps is not None:
                         j = ps['auth_seq_id'].index(auth_seq_id)

@@ -23771,6 +23771,14 @@ class NmrDpUtility:
 
                 lp.add_data(_row)
 
+            key_items = self.key_items[file_type][content_subtype]
+
+            conflict_id = self.__nefT.get_conflict_id(lp, lp_category, key_items)[0]
+
+            if len(conflict_id) > 0:
+                for _id in conflict_id:
+                    del lp.data[_id]
+
         else:
 
             if 'original_file_name' in input_source_dic:
@@ -24836,6 +24844,19 @@ class NmrDpUtility:
                 lp.add_data(_row)
 
                 index += 1
+
+            key_items = self.key_items[file_type][content_subtype]
+
+            conflict_id = self.__nefT.get_conflict_id(lp, lp_category, key_items)[0]
+
+            if len(conflict_id) > 0:
+                for _id in conflict_id:
+                    del lp.data[_id]
+
+                id_col = lp.tags.index('ID')
+
+                for _id, _row in enumerate(lp, start=1):
+                    _row[id_col] = _id
 
             aux_lp_category = self.aux_lp_categories[file_type][content_subtype][0]
 
@@ -41985,8 +42006,8 @@ class NmrDpUtility:
                             else:
                                 loop = sf.get_loop_by_category(lp_category)
 
-                            for lid in conflict_id:
-                                del loop.data[lid]
+                            for _id in conflict_id:
+                                del loop.data[_id]
 
                         conflict_id = self.__nefT.get_bad_pattern_id(sf, lp_category, key_items, data_items)[0]
 
@@ -41998,8 +42019,8 @@ class NmrDpUtility:
                             else:
                                 loop = sf.get_loop_by_category(lp_category)
 
-                            for lid in conflict_id:
-                                del loop.data[lid]
+                            for _id in conflict_id:
+                                del loop.data[_id]
 
                         if modified:
 
@@ -42088,8 +42109,8 @@ class NmrDpUtility:
                                 else:
                                     _loop = sf.get_loop_by_category(lp_category)
 
-                                for lid in conflict_id:
-                                    del _loop.data[lid]
+                                for _id in conflict_id:
+                                    del _loop.data[_id]
 
                         except Exception:
                             pass

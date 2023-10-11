@@ -17,7 +17,7 @@ class TestNmrDpUtility(unittest.TestCase):
         here = os.path.abspath(os.path.dirname(__file__))
         self.data_dir_path = os.path.join(here, 'mock-data-daother-8817/')
         self.data_file_path = {'daother-8817-ann': {'str': 'daother-8817-nef2cif.str',
-					'cif': 'D_8000212514_model_P1.cif.V5'}}
+                                                    'cif': 'D_8000212514_model_P1.cif.V5'}}
         self.utility = NmrDpUtility()
 
     def tearDown(self):

@@ -20075,7 +20075,7 @@ class NmrDpUtility:
                     if conflict:
 
                         msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + f" {row_1[angle_type_name]}, "
-                        msg += self.__getResucedAtomNotations(key_items, row_1)
+                        msg += self.__getReducedAtomNotations(key_items, row_1)
 
                         if index_tag in row_1:
                             warn = f"[Check rows of {index_tag} {row_1[index_tag]} vs {row_2[index_tag]}, {id_tag} {row_1[id_tag]} vs {row_2[id_tag]}] "
@@ -20095,7 +20095,7 @@ class NmrDpUtility:
                     elif inconsist:
 
                         msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + f" {row_1[angle_type_name]}, "
-                        msg += self.__getResucedAtomNotations(key_items, row_1)
+                        msg += self.__getReducedAtomNotations(key_items, row_1)
 
                         if index_tag in row_1:
                             warn = f"[Check rows of {index_tag} {row_1[index_tag]} vs {row_2[index_tag]}, {id_tag} {row_1[id_tag]} vs {row_2[id_tag]}] "
@@ -20115,7 +20115,7 @@ class NmrDpUtility:
             if redundant:
 
                 msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + f" {row_1[angle_type_name]}, "
-                msg += self.__getResucedAtomNotations(key_items, row_1)
+                msg += self.__getReducedAtomNotations(key_items, row_1)
 
                 idx_msg = index_tag + ' '
                 if index_tag in lp_data[0]:
@@ -23293,6 +23293,8 @@ class NmrDpUtility:
         input_source = self.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
+
         has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
         if not has_poly_seq_in_loop:
@@ -23687,8 +23689,6 @@ class NmrDpUtility:
 
             if not all(tag in loop.tags for tag in mandatory_items):
 
-                file_name = input_source_dic['file_name']
-
                 err = f"Assigned chemical shifts of {sf_framecode!r} saveframe did not parsed properly. Please fix problems reported."
 
                 self.report.error.appendDescription('missing_mandatory_content',
@@ -23776,7 +23776,22 @@ class NmrDpUtility:
             conflict_id = self.__nefT.get_conflict_id(lp, lp_category, key_items)[0]
 
             if len(conflict_id) > 0:
+                conflict_id_set = self.__nefT.get_conflict_id_set(lp, lp_category, key_items)[0]
+
                 for _id in conflict_id:
+                    _id_set = next(id_set for id_set in conflict_id_set if _id in id_set)
+                    msg = ' vs '.join([str(lp.data[_id_]).replace('None', '.').replace(',', '').replace("'", '') for _id_ in _id_set])
+
+                    warn = f"Resolved redundancy of assigned chemical shifts ({msg}) by deletion of the latter one."
+
+                    self.report.warning.appendDescription('redundant_data',
+                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                           'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Warning  - {warn}\n")
+
                     del lp.data[_id]
 
         else:
@@ -23799,8 +23814,6 @@ class NmrDpUtility:
                                if 'remove-bad-pattern' in item]
 
             if not all(tag in loop.tags for tag in mandatory_items):
-
-                file_name = input_source_dic['file_name']
 
                 err = f"Assigned chemical shifts of {sf_framecode!r} saveframe did not parsed properly. Please fix problems reported."
 
@@ -24850,7 +24863,22 @@ class NmrDpUtility:
             conflict_id = self.__nefT.get_conflict_id(lp, lp_category, key_items)[0]
 
             if len(conflict_id) > 0:
+                conflict_id_set = self.__nefT.get_conflict_id_set(lp, lp_category, key_items)[0]
+
                 for _id in conflict_id:
+                    _id_set = next(id_set for id_set in conflict_id_set if _id in id_set)
+                    msg = ' vs '.join([str(lp.data[_id_]).replace('None', '.').replace(',', '').replace("'", '') for _id_ in _id_set])
+
+                    warn = f"Resolved redundancy of assigned chemical shifts ({msg}) by deletion of the latter one."
+
+                    self.report.warning.appendDescription('redundant_data',
+                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                           'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Warning  - {warn}\n")
+
                     del lp.data[_id]
 
                 id_col = lp.tags.index('ID')
@@ -27602,7 +27630,7 @@ class NmrDpUtility:
 
         return f"{chain_id_name} {chain_id}, {seq_id_name} {seq_id}, {comp_id_name} {comp_id}, {atom_id_name} {atom_id}"
 
-    def __getResucedAtomNotations(self, key_items, row_data):
+    def __getReducedAtomNotations(self, key_items, row_data):
         """ Return reduced from of series of atom notations.
         """
 

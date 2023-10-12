@@ -5621,7 +5621,7 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
 
     row[0] = id
 
-    if combinationId == 'OR' or isinstance(memberId, int):
+    if code == 'OR' or isinstance(memberId, int):
         if atom1 is not None:
             atom1 = copy.copy(atom1)
         if atom2 is not None:

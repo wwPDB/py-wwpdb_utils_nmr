@@ -3835,7 +3835,7 @@ class XplorMRParserListener(ParseTreeListener):
             if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
-                                      'list_id', 'entry_id']
+                                      'list_id']
                 sf['tags'].append(['weight', self.planeWeight])
 
         for atom1 in self.atomSelectionSet[0]:
@@ -3846,7 +3846,7 @@ class XplorMRParserListener(ParseTreeListener):
                 sf['index_id'] += 1
                 sf['loop']['data'].append([sf['index_id'], sf['id'],
                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
-                                           sf['list_id'], self.__entryId])
+                                           sf['list_id']])
 
     # Enter a parse tree produced by XplorMRParser#harmonic_statement.
     def enterHarmonic_statement(self, ctx: XplorMRParser.Harmonic_statementContext):
@@ -4002,7 +4002,7 @@ class XplorMRParserListener(ParseTreeListener):
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                       'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
-                                      'list_id', 'entry_id']
+                                      'list_id']
                 sf['tags'].append(['classification', self.classification])
                 sf['tags'].append(['expect_grid', self.adistExpectGrid])
                 sf['tags'].append(['expect_value', self.adistExpectValue])
@@ -4023,7 +4023,7 @@ class XplorMRParserListener(ParseTreeListener):
                 sf['loop']['data'].append([sf['index_id'], sf['id'],
                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
-                                           sf['list_id'], self.__entryId])
+                                           sf['list_id']])
 
     # Enter a parse tree produced by XplorMRParser#coupling_statement.
     def enterCoupling_statement(self, ctx: XplorMRParser.Coupling_statementContext):
@@ -5019,7 +5019,7 @@ class XplorMRParserListener(ParseTreeListener):
                                       'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
                                       'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
                                       'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
-                                      'list_id', 'entry_id']
+                                      'list_id']
                 sf['tags'].append(['classification', self.classification])
                 sf['tags'].append(['scale', self.ramaScale])
                 sf['tags'].append(['cutoff', self.ramaCutoff])
@@ -5049,7 +5049,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
                                                atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
                                                atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
     # Enter a parse tree produced by XplorMRParser#collapse_statement.
     def enterCollapse_statement(self, ctx: XplorMRParser.Collapse_statementContext):
@@ -5124,7 +5124,7 @@ class XplorMRParserListener(ParseTreeListener):
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                           'target_Rgry', 'force_constant'
-                                          'list_id', 'entry_id']
+                                          'list_id']
                     sf['tags'].append(['classification', self.classification])
                     sf['tags'].append(['scale', self.radiScale])
 
@@ -5137,7 +5137,7 @@ class XplorMRParserListener(ParseTreeListener):
                     sf['loop']['data'].append([sf['index_id'], sf['id'],
                                                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                                targetRgyr, forceConst,
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
         finally:
             self.numberSelection.clear()
@@ -5300,7 +5300,7 @@ class XplorMRParserListener(ParseTreeListener):
                                           'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                           'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
                                           't1/t2_ratio', 't1/t2_ratio_err',
-                                          'list_id', 'entry_id']
+                                          'list_id']
                     sf['tags'].append(['classification', self.classification])
                     sf['tags'].append(['coefficients', self.diffCoef])
                     sf['tags'].append(['force_constant', self.diffForceConst])
@@ -5322,7 +5322,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
                                                target, delta,
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
         finally:
             self.numberSelection.clear()
@@ -5651,7 +5651,7 @@ class XplorMRParserListener(ParseTreeListener):
                                       'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
                                       'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
                                       'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
-                                      'list_id', 'entry_id']
+                                      'list_id']
                 sf['tags'].append(['classification', self.classification])
                 sf['tags'].append(['cutoff', self.nbaseCutoff])
                 sf['tags'].append(['height', self.nbaseHeight])
@@ -5683,7 +5683,7 @@ class XplorMRParserListener(ParseTreeListener):
                                            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
                                            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
                                            atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
-                                           sf['list_id'], self.__entryId])
+                                           sf['list_id']])
 
     # Enter a parse tree produced by XplorMRParser#csa_statement.
     def enterCsa_statement(self, ctx: XplorMRParser.Csa_statementContext):
@@ -7065,7 +7065,7 @@ class XplorMRParserListener(ParseTreeListener):
                                           'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                           'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
                                           'theta', 'phi', 'err',
-                                          'list_id', 'entry_id']
+                                          'list_id']
                     sf['tags'].append(['classification', self.classification])
                     sf['tags'].append(['force_constant', self.nbaseForceConst])
 
@@ -7084,7 +7084,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
                                                theta, phi, delta,
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
         finally:
             self.numberSelection.clear()
@@ -7781,7 +7781,7 @@ class XplorMRParserListener(ParseTreeListener):
             if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
-                                      'list_id', 'entry_id']
+                                      'list_id']
                 sf['tags'].append(['sigma_b', self.ncsSigb])
                 sf['tags'].append(['weight', self.ncsWeight])
 
@@ -7795,7 +7795,7 @@ class XplorMRParserListener(ParseTreeListener):
                 sf['index_id'] += 1
                 sf['loop']['data'].append([sf['index_id'], sf['id'],
                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
-                                           sf['list_id'], self.__entryId])
+                                           sf['list_id']])
 
     # Enter a parse tree produced by XplorMRParser#selection.
     def enterSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument

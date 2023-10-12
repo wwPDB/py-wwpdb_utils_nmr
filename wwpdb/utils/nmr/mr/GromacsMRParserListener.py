@@ -1462,7 +1462,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                               'target_value', 'target_value_uncertainty',
                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                               'multiplicity',
-                                              'list_id', 'entry_id']
+                                              'list_id']
                     else:
                         sf['loop']['tags'] = ['index_id', 'id',
                                               'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
@@ -1472,7 +1472,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                               'target_value', 'target_value_uncertainty',
                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                               'multiplicity',
-                                              'list_id', 'entry_id']
+                                              'list_id']
 
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
@@ -1508,7 +1508,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                                    dstFunc.get('upper_limit'),
                                                    dstFunc.get('upper_linear_limit'),
                                                    mult,
-                                                   sf['list_id'], self.__entryId])
+                                                   sf['list_id']])
 
             else:
 
@@ -1534,7 +1534,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                                    dstFunc.get('upper_limit'),
                                                    dstFunc.get('upper_linear_limit'),
                                                    mult,
-                                                   sf['list_id'], self.__entryId])
+                                                   sf['list_id']])
 
         except ValueError:
             self.angRestraints -= 1
@@ -1638,7 +1638,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                           'target_value', 'target_value_uncertainty',
                                           'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                           'multiplicity',
-                                          'list_id', 'entry_id']
+                                          'list_id']
 
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
@@ -1662,7 +1662,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                                dstFunc.get('upper_limit'),
                                                dstFunc.get('upper_linear_limit'),
                                                mult,
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
         except ValueError:
             self.angRestraints -= 1
@@ -1732,12 +1732,12 @@ class GromacsMRParserListener(ParseTreeListener):
                         sf['loop']['tags'] = ['index_id', 'id',
                                               'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                               'kx', 'ky', 'kz',
-                                              'list_id', 'entry_id']
+                                              'list_id']
                     else:
                         sf['loop']['tags'] = ['index_id', 'id',
                                               'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                               'g', 'r', 'k',
-                                              'list_id', 'entry_id']
+                                              'list_id']
 
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
@@ -1754,7 +1754,7 @@ class GromacsMRParserListener(ParseTreeListener):
                     sf['loop']['data'].append([sf['index_id'], sf['id'],
                                                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                                a, b, c,
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
         except ValueError:
             self.geoRestraints -= 1

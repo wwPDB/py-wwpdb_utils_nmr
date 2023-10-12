@@ -7921,7 +7921,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                           'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
-                                          'list_id', 'entry_id']
+                                          'list_id']
 
             has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
@@ -7939,7 +7939,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['loop']['data'].append([sf['index_id'], sf['id'],
                                                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
         finally:
             self.atomSelectionSet.clear()

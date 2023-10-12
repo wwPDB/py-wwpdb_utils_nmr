@@ -2265,7 +2265,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                       'chirality',
-                                      'list_id', 'entry_id']
+                                      'list_id']
 
         for atom1 in self.atomSelectionSet[0]:
             if self.__debug:
@@ -2276,7 +2276,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 sf['loop']['data'].append([sf['index_id'], sf['id'],
                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                            chirality,
-                                           sf['list_id'], self.__entryId])
+                                           sf['list_id']])
 
     # Enter a parse tree produced by BiosymMRParser#prochirality_constraints.
     def enterProchirality_constraints(self, ctx: BiosymMRParser.Prochirality_constraintsContext):  # pylint: disable=unused-argument
@@ -2335,7 +2335,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                       'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
                                       'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
                                       'auth_asym_id_5', 'auth_seq_id_5', 'auth_comp_id_5', 'auth_atom_id_5',
-                                      'list_id', 'entry_id']
+                                      'list_id']
 
         for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                    self.atomSelectionSet[1],
@@ -2353,7 +2353,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
                                            atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
                                            atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
-                                           sf['list_id'], self.__entryId])
+                                           sf['list_id']])
 
     def areUniqueCoordAtoms(self, subtype_name):
         """ Check whether atom selection sets are uniquely assigned.

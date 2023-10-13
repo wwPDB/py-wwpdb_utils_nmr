@@ -15323,37 +15323,42 @@ class NmrDpUtility:
                     for line in ifh:
                         ofh.write(line)
 
-            if os.path.exists(mr_file_link):
-                os.remove(mr_file_link)
+            try:
 
-            os.symlink(mr_file_path, mr_file_link)
+                if os.path.exists(mr_file_link):
+                    os.remove(mr_file_link)
 
-            if len(pk_list_paths) > 0:
+                os.symlink(mr_file_path, mr_file_link)
 
-                pk_dir = os.path.join(dir_path, 'nmr_peak_lists')
+                if len(pk_list_paths) > 0:
 
-                try:
+                    pk_dir = os.path.join(dir_path, 'nmr_peak_lists')
 
-                    if not os.path.isdir(pk_dir):
-                        os.makedirs(pk_dir)
+                    try:
 
-                except OSError:
-                    pass
+                        if not os.path.isdir(pk_dir):
+                            os.makedirs(pk_dir)
 
-                for pk_list_path in pk_list_paths:
+                    except OSError:
+                        pass
 
-                    pk_file_path = pk_list_path['nm-pea-any']
-                    if 'original_file_name' in pk_list_path and pk_list_path['original_file_name'] is not None:
-                        original_file_name = pk_list_path['original_file_name']
-                    else:
-                        original_file_name = os.path.basename(file_path)
+                    for pk_list_path in pk_list_paths:
 
-                    rem_pk_file_path = os.path.join(pk_dir, original_file_name)
+                        pk_file_path = pk_list_path['nm-pea-any']
+                        if 'original_file_name' in pk_list_path and pk_list_path['original_file_name'] is not None:
+                            original_file_name = pk_list_path['original_file_name']
+                        else:
+                            original_file_name = os.path.basename(file_path)
 
-                    if os.path.exists(rem_pk_file_path):
-                        os.remove(rem_pk_file_path)
+                        rem_pk_file_path = os.path.join(pk_dir, original_file_name)
 
-                    os.symlink(pk_file_path, rem_pk_file_path)
+                        if os.path.exists(rem_pk_file_path):
+                            os.remove(rem_pk_file_path)
+
+                        os.symlink(pk_file_path, rem_pk_file_path)
+
+            except OSError:
+                pass
 
         return not self.report.isError()
 
@@ -23792,6 +23797,7 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Warning  - {warn}\n")
 
+                for _id in conflict_id:
                     del lp.data[_id]
 
         else:
@@ -24879,6 +24885,7 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Warning  - {warn}\n")
 
+                for _id in conflict_id:
                     del lp.data[_id]
 
                 id_col = lp.tags.index('ID')
@@ -32729,17 +32736,6 @@ class NmrDpUtility:
                             else:
                                 _row[items.index(assign_item)] = atom_id
 
-                        for col, auth_assign_item_temp in enumerate(auth_assign_item_temps):
-                            auth_assign_item = auth_assign_item_temp % dim
-                            if col == 0:
-                                _row[items.index(auth_assign_item)] = auth_asym_id_
-                            elif col == 1:
-                                _row[items.index(auth_assign_item)] = auth_seq_id_
-                            elif col == 2:
-                                _row[items.index(auth_assign_item)] = comp_id
-                            else:
-                                _row[items.index(auth_assign_item)] = atom_id
-
                     else:
 
                         chain_id = seq_id = comp_id = atom_id = None
@@ -32843,23 +32839,12 @@ class NmrDpUtility:
                             _row[items.index(assign_item)] = entity_assembly_id
                         elif col == 1:
                             _row[items.index(assign_item)] = entity_id
-                        elif col in (2, 3):
+                        elif col == 2:
                             _row[items.index(assign_item)] = seq_id
-                        elif col == 4:
+                        elif col == 3:
                             _row[items.index(assign_item)] = comp_id
                         else:
                             _row[items.index(assign_item)] = atom_id
-
-                    for col, auth_assign_item_temp in enumerate(auth_assign_item_temps):
-                        auth_assign_item = auth_assign_item_temp % dim
-                        if col == 0:
-                            _row[items.index(auth_assign_item)] = auth_asym_id_
-                        elif col == 1:
-                            _row[items.index(auth_assign_item)] = auth_seq_id_
-                        elif col == 2:
-                            _row[items.index(auth_assign_item)] = comp_id
-                        else:
-                            _row[items.index(auth_assign_item)] = atom_id
 
                 else:
 
@@ -32901,9 +32886,9 @@ class NmrDpUtility:
                                     _row[items.index(assign_item)] = entity_assembly_id
                                 elif col == 1:
                                     _row[items.index(assign_item)] = entity_id
-                                elif col in (2, 3):
+                                elif col == 2:
                                     _row[items.index(assign_item)] = seq_id
-                                elif col == 4:
+                                elif col == 3:
                                     _row[items.index(assign_item)] = comp_id
                                 else:
                                     _row[items.index(assign_item)] = atom_id

@@ -3120,10 +3120,15 @@ class NmrVrptUtility:
                     write_as_pickle(self.__results, pickle_file)
                     return True
 
-                if os.path.exists(pickle_file):
-                    os.remove(pickle_file)
+                try:
 
-                os.symlink(cache_path, pickle_file)
+                    if os.path.exists(pickle_file):
+                        os.remove(pickle_file)
+
+                    os.symlink(cache_path, pickle_file)
+
+                except OSError:
+                    pass
 
         elif 'result_pickle_file_path' in self.__outputParamDict:
             pickle_file = self.__outputParamDict['result_pickle_file_path']

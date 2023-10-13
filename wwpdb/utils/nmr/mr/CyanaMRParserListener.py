@@ -38,6 +38,8 @@ try:
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
+                                                       getStarAtom,
+                                                       resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        getDstFuncForHBond,
@@ -113,6 +115,8 @@ except ImportError:
                                            getSaveframe,
                                            getLoop,
                                            getRow,
+                                           getStarAtom,
+                                           resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
                                            getDstFuncForHBond,
@@ -978,7 +982,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
-                                if isIdenticalRestraint([atom1, atom2]):
+                                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                                     continue
                                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                                     continue
@@ -1046,8 +1050,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if isIdenticalRestraint([atom1, atom2]):
+                    if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
+                    if self.__createSfDict and isinstance(memberId, int):
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                            continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__createSfDict and memberLogicCode == '.':
@@ -1085,6 +1094,9 @@ class CyanaMRParserListener(ParseTreeListener):
                             upperLimit = float(dstFunc['upper_limit'])
                             if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
+
+                if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                    sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
             else:  # cco
 
@@ -1496,7 +1508,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
-                                if isIdenticalRestraint([atom1, atom2]):
+                                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                                     continue
                                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                                     continue
@@ -1564,8 +1576,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if isIdenticalRestraint([atom1, atom2]):
+                    if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
+                    if self.__createSfDict and isinstance(memberId, int):
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                            continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__createSfDict and memberLogicCode == '.':
@@ -1603,6 +1620,9 @@ class CyanaMRParserListener(ParseTreeListener):
                             upperLimit = float(dstFunc['upper_limit'])
                             if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
+
+                if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                    sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
             else:  # cco
 
@@ -4267,7 +4287,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
@@ -4784,8 +4804,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if isIdenticalRestraint([atom1, atom2]):
+                    if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
+                    if self.__createSfDict and isinstance(memberId, int):
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                            continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__createSfDict and memberLogicCode == '.':
@@ -4826,6 +4851,9 @@ class CyanaMRParserListener(ParseTreeListener):
                             upperLimit = float(dstFunc['upper_limit'])
                             if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
+
+                if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                    sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
                 if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
@@ -5120,8 +5148,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if isIdenticalRestraint([atom1, atom2]):
+                    if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
+                    if self.__createSfDict and isinstance(memberId, int):
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                            continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__createSfDict and memberLogicCode == '.':
@@ -5162,6 +5195,9 @@ class CyanaMRParserListener(ParseTreeListener):
                             upperLimit = float(dstFunc['upper_limit'])
                             if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
+
+                if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                    sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
                 if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
@@ -5362,8 +5398,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if isIdenticalRestraint([atom1, atom2]):
+                    if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
+                    if self.__createSfDict and isinstance(memberId, int):
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                            continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__createSfDict and memberLogicCode == '.':
@@ -5404,6 +5445,9 @@ class CyanaMRParserListener(ParseTreeListener):
                             upperLimit = float(dstFunc['upper_limit'])
                             if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
+
+                if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                    sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
                 if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
@@ -5620,8 +5664,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if isIdenticalRestraint([atom1, atom2]):
+                    if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
+                    if self.__createSfDict and isinstance(memberId, int):
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                            continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__createSfDict and memberLogicCode == '.':
@@ -5662,6 +5711,9 @@ class CyanaMRParserListener(ParseTreeListener):
                             upperLimit = float(dstFunc['upper_limit'])
                             if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
+
+                if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                    sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
                 if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
@@ -5956,8 +6008,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if isIdenticalRestraint([atom1, atom2]):
+                    if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
+                    if self.__createSfDict and isinstance(memberId, int):
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                            continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__createSfDict and memberLogicCode == '.':
@@ -5998,6 +6055,9 @@ class CyanaMRParserListener(ParseTreeListener):
                             upperLimit = float(dstFunc['upper_limit'])
                             if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
+
+                if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                    sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
                 if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
@@ -6198,8 +6258,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if isIdenticalRestraint([atom1, atom2]):
+                    if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
+                    if self.__createSfDict and isinstance(memberId, int):
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                            continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                         continue
                     if self.__createSfDict and memberLogicCode == '.':
@@ -6240,6 +6305,9 @@ class CyanaMRParserListener(ParseTreeListener):
                             upperLimit = float(dstFunc['upper_limit'])
                             if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
+
+                if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                    sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
                 if num_col > 0 and self.__cur_subtype == 'dist':
                     self.distRestraints += 1
@@ -6371,8 +6439,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
+                if self.__createSfDict and isinstance(memberId, int):
+                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                    if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                        continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__createSfDict and memberLogicCode == '.':
@@ -6410,6 +6483,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         upperLimit = float(dstFunc['upper_limit'])
                         if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
+
+            if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
         except ValueError:
             self.distRestraints -= 1
@@ -6809,7 +6885,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                               self.atomSelectionSet[1]):
-                            if isIdenticalRestraint([atom1, atom2]):
+                            if isIdenticalRestraint([atom1, atom2], self.__nefT):
                                 continue
                             if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                                 continue
@@ -6887,8 +6963,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
+                if self.__createSfDict and isinstance(memberId, int):
+                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                    if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                        continue
                 if self.__createSfDict and memberLogicCode == '.':
                     altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
                     if altAtomId1 is not None or altAtomId2 is not None:
@@ -6924,6 +7005,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         upperLimit = float(dstFunc['upper_limit'])
                         if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
+
+            if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
         except ValueError:
             self.distRestraints -= 1
@@ -7672,7 +7756,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
@@ -7783,7 +7867,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
@@ -7921,13 +8005,13 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                           'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
-                                          'list_id', 'entry_id']
+                                          'list_id']
 
             has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
@@ -7939,7 +8023,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     sf['loop']['data'].append([sf['index_id'], sf['id'],
                                                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
         finally:
             self.atomSelectionSet.clear()
@@ -8018,7 +8102,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if isIdenticalRestraint([atom1, atom2]):
+                    if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (CYANA macro: atom stereo) id={self.fchiralRestraints} "
@@ -8052,7 +8136,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                           self.atomSelectionSet[1]):
-                        if isIdenticalRestraint([atom1, atom2]):
+                        if isIdenticalRestraint([atom1, atom2], self.__nefT):
                             continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} (CYANA macro: atom stereo) id={self.fchiralRestraints} "
@@ -8101,7 +8185,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                       self.atomSelectionSet[1]):
-                    if isIdenticalRestraint([atom1, atom2]):
+                    if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (CYANA macro: atom stereo) id={self.fchiralRestraints} "
@@ -8151,7 +8235,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                           self.atomSelectionSet[1]):
-                        if isIdenticalRestraint([atom1, atom2]):
+                        if isIdenticalRestraint([atom1, atom2], self.__nefT):
                             continue
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} (CYANA macro: atom stereo) id={self.fchiralRestraints} "

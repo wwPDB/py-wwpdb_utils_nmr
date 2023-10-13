@@ -43,6 +43,8 @@ try:
                                                        getAuxLoops,
                                                        getRow,
                                                        getAuxRow,
+                                                       getStarAtom,
+                                                       resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
@@ -127,6 +129,8 @@ except ImportError:
                                            getAuxLoops,
                                            getRow,
                                            getAuxRow,
+                                           getStarAtom,
+                                           resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
@@ -1407,8 +1411,13 @@ class CnsMRParserListener(ParseTreeListener):
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else '.'
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
-                    if isIdenticalRestraint([atom1, atom2]):
+                    if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
+                    if self.__createSfDict and isinstance(memberId, int):
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                            continue
                     if self.__createSfDict and memberLogicCode == '.':
                         altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
                         if altAtomId1 is not None or altAtomId2 is not None:
@@ -1450,6 +1459,9 @@ class CnsMRParserListener(ParseTreeListener):
                             upperLimit = float(dstFunc['upper_limit'])
                             if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
+
+            if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.numberSelection.clear()
@@ -2004,7 +2016,7 @@ class CnsMRParserListener(ParseTreeListener):
             if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
-                                      'list_id', 'entry_id']
+                                      'list_id']
                 sf['tags'].append(['weight', self.planeWeight])
 
         for atom1 in self.atomSelectionSet[0]:
@@ -2015,7 +2027,7 @@ class CnsMRParserListener(ParseTreeListener):
                 sf['index_id'] += 1
                 sf['loop']['data'].append([sf['index_id'], sf['id'],
                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
-                                           sf['list_id'], self.__entryId])
+                                           sf['list_id']])
 
     # Enter a parse tree produced by CnsMRParser#harmonic_statement.
     def enterHarmonic_statement(self, ctx: CnsMRParser.Harmonic_statementContext):
@@ -2309,7 +2321,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if self.__symmetric == 'no':
                     if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
@@ -3430,7 +3442,7 @@ class CnsMRParserListener(ParseTreeListener):
                                       'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
                                       'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
                                       'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
-                                      'list_id', 'entry_id']
+                                      'list_id']
                 sf['tags'].append(['classification', self.classification])
                 sf['tags'].append(['error', self.ramaError])
                 sf['tags'].append(['force_constant', self.ramaForceConst])
@@ -3457,7 +3469,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
                                                atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
                                                atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
     # Enter a parse tree produced by CnsMRParser#diffusion_statement.
     def enterDiffusion_statement(self, ctx: CnsMRParser.Diffusion_statementContext):
@@ -3612,7 +3624,7 @@ class CnsMRParserListener(ParseTreeListener):
                                           'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
                                           'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
                                           't1/t2_ratio', 't1/t2_ratio_err',
-                                          'list_id', 'entry_id']
+                                          'list_id']
                     sf['tags'].append(['classification', self.classification])
                     sf['tags'].append(['coefficients', self.diffCoef])
                     sf['tags'].append(['force_constant', self.diffForceConst])
@@ -3620,7 +3632,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
@@ -3633,7 +3645,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
                                                target, delta,
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
         finally:
             self.numberSelection.clear()
@@ -3905,7 +3917,7 @@ class CnsMRParserListener(ParseTreeListener):
             if len(sf['loop']['tags']) == 0:
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
-                                      'list_id', 'entry_id']
+                                      'list_id']
                 sf['tags'].append(['sigma_b', self.ncsSigb])
                 sf['tags'].append(['weight', self.ncsWeight])
 
@@ -3919,7 +3931,7 @@ class CnsMRParserListener(ParseTreeListener):
                 sf['index_id'] += 1
                 sf['loop']['data'].append([sf['index_id'], sf['id'],
                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
-                                           sf['list_id'], self.__entryId])
+                                           sf['list_id']])
 
     # Enter a parse tree produced by CnsMRParser#selection.
     def enterSelection(self, ctx: CnsMRParser.SelectionContext):  # pylint: disable=unused-argument

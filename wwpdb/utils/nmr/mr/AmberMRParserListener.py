@@ -36,6 +36,8 @@ try:
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
+                                                       getStarAtom,
+                                                       resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
@@ -95,6 +97,8 @@ except ImportError:
                                            getSaveframe,
                                            getLoop,
                                            getRow,
+                                           getStarAtom,
+                                           resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
@@ -1209,8 +1213,13 @@ class AmberMRParserListener(ParseTreeListener):
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
-                                if isIdenticalRestraint([atom1, atom2]):
+                                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                                     continue
+                                if self.__createSfDict and isinstance(memberId, int):
+                                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                                    if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                                        continue
                                 if self.__createSfDict and memberLogicCode == '.':
                                     altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
                                     if altAtomId1 is not None or altAtomId2 is not None:
@@ -1247,6 +1256,9 @@ class AmberMRParserListener(ParseTreeListener):
                                         if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                             sf['constraint_subsubtype'] = 'ambi'
 
+                            if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                                sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
+
                         # generalized distance
                         else:
 
@@ -1265,7 +1277,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                               'target_value', 'target_value_uncertainty',
                                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                                               'weight_1', 'weight_2',
-                                                              'list_id', 'entry_id']
+                                                              'list_id']
 
                                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                                     self.atomSelectionSet[1],
@@ -1290,7 +1302,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    dstFunc.get('upper_limit'),
                                                                    dstFunc.get('upper_linear_limit'),
                                                                    self.inGenDist_weight[0], self.inGenDist_weight[1],
-                                                                   sf['list_id'], self.__entryId])
+                                                                   sf['list_id']])
 
                             # generalized distance 3
                             elif lenIat == COL_DIST_COORD3:
@@ -1309,7 +1321,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                               'target_value', 'target_value_uncertainty',
                                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                                               'weight_1', 'weight_2', 'weight_3',
-                                                              'list_id', 'entry_id']
+                                                              'list_id']
 
                                 for atom1, atom2, atom3, atom4, atom5, atom6 in itertools.product(self.atomSelectionSet[0],
                                                                                                   self.atomSelectionSet[1],
@@ -1339,7 +1351,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    dstFunc.get('upper_limit'),
                                                                    dstFunc.get('upper_linear_limit'),
                                                                    self.inGenDist_weight[0], self.inGenDist_weight[1], self.inGenDist_weight[2],
-                                                                   sf['list_id'], self.__entryId])
+                                                                   sf['list_id']])
 
                             # generalized distance 4
                             else:
@@ -1360,7 +1372,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                               'target_value', 'target_value_uncertainty',
                                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                                               'weight_1', 'weight_2', 'weight_3', 'weight_4',
-                                                              'list_id', 'entry_id']
+                                                              'list_id']
 
                                 for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
                                                                                                                 self.atomSelectionSet[1],
@@ -1396,7 +1408,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    dstFunc.get('upper_linear_limit'),
                                                                    self.inGenDist_weight[0], self.inGenDist_weight[1],
                                                                    self.inGenDist_weight[2], self.inGenDist_weight[3],
-                                                                   sf['list_id'], self.__entryId])
+                                                                   sf['list_id']])
 
                             self.rstwt = [0.0, 0.0, 0.0, 0.0]
 
@@ -1426,7 +1438,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                       'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
                                                       'target_value', 'target_value_uncertainty',
                                                       'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
-                                                      'list_id', 'entry_id']
+                                                      'list_id']
 
                         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                                      self.atomSelectionSet[1],
@@ -1447,7 +1459,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                            dstFunc.get('lower_limit'),
                                                            dstFunc.get('upper_limit'),
                                                            dstFunc.get('upper_linear_limit'),
-                                                           sf['list_id'], self.__entryId])
+                                                           sf['list_id']])
 
                     # torsional angle
                     elif self.__cur_subtype == 'dihed':
@@ -1533,7 +1545,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                           'point_auth_asym_id', 'point_auth_seq_id', 'ponit_auth_comp_id', 'point_auth_atom_id',
                                                           'target_value', 'target_value_uncertainty',
                                                           'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
-                                                          'list_id', 'entry_id']
+                                                          'list_id']
 
                             for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                                        self.atomSelectionSet[1],
@@ -1558,7 +1570,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                dstFunc.get('lower_limit'),
                                                                dstFunc.get('upper_limit'),
                                                                dstFunc.get('upper_linear_limit'),
-                                                               sf['list_id'], self.__entryId])
+                                                               sf['list_id']])
 
                         # plane-plane angle
                         else:
@@ -1578,7 +1590,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                           'plane_2_auth_asym_id_8', 'plane_2_auth_seq_id_8', 'plane_2_auth_comp_id_8', 'plane_2_auth_atom_id_8',
                                                           'target_value', 'target_value_uncertainty',
                                                           'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
-                                                          'list_id', 'entry_id']
+                                                          'list_id']
 
                             for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
                                                                                                             self.atomSelectionSet[1],
@@ -1609,7 +1621,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                dstFunc.get('lower_limit'),
                                                                dstFunc.get('upper_limit'),
                                                                dstFunc.get('upper_linear_limit'),
-                                                               sf['list_id'], self.__entryId])
+                                                               sf['list_id']])
 
                 # try to update AMBER atom number dictionary based on Sander comments
                 elif self.__hasPolySeq and self.iresid == 0:
@@ -2081,8 +2093,13 @@ class AmberMRParserListener(ParseTreeListener):
 
                             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                                   self.atomSelectionSet[1]):
-                                if isIdenticalRestraint([atom1, atom2]):
+                                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                                     continue
+                                if self.__createSfDict and isinstance(memberId, int):
+                                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                                    if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                                        continue
                                 if self.__createSfDict and memberLogicCode == '.':
                                     altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
                                     if altAtomId1 is not None or altAtomId2 is not None:
@@ -2118,6 +2135,9 @@ class AmberMRParserListener(ParseTreeListener):
                                         upperLimit = float(dstFunc['upper_limit'])
                                         if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                             sf['constraint_subsubtype'] = 'ambi'
+
+                            if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                                sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
                         # generalized distance
                         else:
@@ -2171,7 +2191,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                               'target_value', 'target_value_uncertainty',
                                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                                               'weight_1', 'weight_2',
-                                                              'list_id', 'entry_id']
+                                                              'list_id']
 
                                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                                     self.atomSelectionSet[1],
@@ -2196,7 +2216,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    dstFunc.get('upper_limit'),
                                                                    dstFunc.get('upper_linear_limit'),
                                                                    self.inGenDist_weight[0], self.inGenDist_weight[1],
-                                                                   sf['list_id'], self.__entryId])
+                                                                   sf['list_id']])
 
                             # generalized distance 3
                             elif lenWeight == 3:
@@ -2215,7 +2235,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                               'target_value', 'target_value_uncertainty',
                                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                                               'weight_1', 'weight_2', 'weight_3',
-                                                              'list_id', 'entry_id']
+                                                              'list_id']
 
                                 for atom1, atom2, atom3, atom4, atom5, atom6 in itertools.product(self.atomSelectionSet[0],
                                                                                                   self.atomSelectionSet[1],
@@ -2245,7 +2265,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    dstFunc.get('upper_limit'),
                                                                    dstFunc.get('upper_linear_limit'),
                                                                    self.inGenDist_weight[0], self.inGenDist_weight[1], self.inGenDist_weight[2],
-                                                                   sf['list_id'], self.__entryId])
+                                                                   sf['list_id']])
 
                             # generalized distance 4
                             else:
@@ -2266,7 +2286,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                               'target_value', 'target_value_uncertainty',
                                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                                               'weight_1', 'weight_2', 'weight_3', 'weight_4',
-                                                              'list_id', 'entry_id']
+                                                              'list_id']
 
                                 for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
                                                                                                                 self.atomSelectionSet[1],
@@ -2302,7 +2322,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    dstFunc.get('upper_linear_limit'),
                                                                    self.inGenDist_weight[0], self.inGenDist_weight[1],
                                                                    self.inGenDist_weight[2], self.inGenDist_weight[3],
-                                                                   sf['list_id'], self.__entryId])
+                                                                   sf['list_id']])
 
                             self.rstwt = [0.0, 0.0, 0.0, 0.0]
 
@@ -2338,7 +2358,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                       'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
                                                       'target_value', 'target_value_uncertainty',
                                                       'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
-                                                      'list_id', 'entry_id']
+                                                      'list_id']
 
                         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                                      self.atomSelectionSet[1],
@@ -2359,7 +2379,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                            dstFunc.get('lower_limit'),
                                                            dstFunc.get('upper_limit'),
                                                            dstFunc.get('upper_linear_limit'),
-                                                           sf['list_id'], self.__entryId])
+                                                           sf['list_id']])
 
                     # torsional angle
                     elif self.__cur_subtype == 'dihed':
@@ -2455,7 +2475,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                           'point_auth_asym_id', 'point_auth_seq_id', 'ponit_auth_comp_id', 'point_auth_atom_id',
                                                           'target_value', 'target_value_uncertainty',
                                                           'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
-                                                          'list_id', 'entry_id']
+                                                          'list_id']
 
                             for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                                        self.atomSelectionSet[1],
@@ -2480,7 +2500,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                dstFunc.get('lower_limit'),
                                                                dstFunc.get('upper_limit'),
                                                                dstFunc.get('upper_linear_limit'),
-                                                               sf['list_id'], self.__entryId])
+                                                               sf['list_id']])
 
                         # plane-plane angle
                         else:
@@ -2530,7 +2550,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                           'plane_2_auth_asym_id_8', 'plane_2_auth_seq_id_8', 'plane_2_auth_comp_id_8', 'plane_2_auth_atom_id_8',
                                                           'target_value', 'target_value_uncertainty',
                                                           'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
-                                                          'list_id', 'entry_id']
+                                                          'list_id']
 
                             for atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8 in itertools.product(self.atomSelectionSet[0],
                                                                                                             self.atomSelectionSet[1],
@@ -2561,7 +2581,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                dstFunc.get('lower_limit'),
                                                                dstFunc.get('upper_limit'),
                                                                dstFunc.get('upper_linear_limit'),
-                                                               sf['list_id'], self.__entryId])
+                                                               sf['list_id']])
 
                 # try to update AMBER atom number dictionary based on Sander comments
                 elif self.__hasPolySeq:
@@ -5487,7 +5507,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                               self.atomSelectionSet[1]):
-                            if isIdenticalRestraint([atom1, atom2]):
+                            if isIdenticalRestraint([atom1, atom2], self.__nefT):
                                 continue
                             if self.__debug:
                                 print(f"subtype={self.__cur_subtype} dataset={imix} mixing_time={mix} peak={ipeak} "
@@ -6812,7 +6832,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                           self.atomSelectionSet[1]):
-                        if isIdenticalRestraint([atom1, atom2]):
+                        if isIdenticalRestraint([atom1, atom2], self.__nefT):
                             continue
                         if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                             continue

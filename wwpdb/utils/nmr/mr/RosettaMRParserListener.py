@@ -37,6 +37,8 @@ try:
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
+                                                       getStarAtom,
+                                                       resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        getDstFuncForSsBond,
@@ -103,6 +105,8 @@ except ImportError:
                                            getSaveframe,
                                            getLoop,
                                            getRow,
+                                           getStarAtom,
+                                           resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
                                            getDstFuncForSsBond,
@@ -697,8 +701,13 @@ class RosettaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
+                if self.__createSfDict and isinstance(memberId, int):
+                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                    if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                        continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__createSfDict and memberLogicCode == '.':
@@ -736,6 +745,9 @@ class RosettaMRParserListener(ParseTreeListener):
                         upperLimit = float(dstFunc['upper_limit'])
                         if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
+
+            if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.atomSelectionInComment.clear()
@@ -1812,7 +1824,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                       'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
                                       'target_value', 'target_value_uncertainty',
                                       'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
-                                      'list_id', 'entry_id']
+                                      'list_id']
 
         if self.__cur_nest is not None:
             if self.__debug:
@@ -1837,7 +1849,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                            dstFunc.get('lower_limit'),
                                            dstFunc.get('upper_limit'),
                                            dstFunc.get('upper_linear_limit'),
-                                           sf['list_id'], self.__entryId])
+                                           sf['list_id']])
 
     def validateAngleRange(self, weight):
         """ Validate angle value range.
@@ -2346,7 +2358,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                           'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                           'ref_auth_asym_id', 'ref_auth_seq_id', 'ref_auth_comp_id', 'ref_auth_atom_id',
                                           'cart_x', 'cart_y', 'cart_z',
-                                          'list_id', 'entry_id']
+                                          'list_id']
 
             if self.__cur_nest is not None:
                 if self.__debug:
@@ -2356,7 +2368,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
@@ -2369,7 +2381,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
                                                cartX, cartY, cartZ,
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
         except ValueError:
             self.geoRestraints -= 1
@@ -2447,7 +2459,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                           'origin_auth_asym_id_2', 'origin_auth_seq_id_2', 'origin_auth_comp_id_2', 'origin_auth_atom_id_2',
                                           'origin_auth_asym_id_3', 'origin_auth_seq_id_3', 'origin_auth_comp_id_3', 'origin_auth_atom_id_3',
                                           'local_cart_x', 'local_cart_y', 'local_cart_z',
-                                          'list_id', 'entry_id']
+                                          'list_id']
 
             if self.__cur_nest is not None:
                 if self.__debug:
@@ -2469,7 +2481,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
                                                atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
                                                cartX, cartY, cartZ,
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
         except ValueError:
             self.geoRestraints -= 1
@@ -2544,7 +2556,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                       'opposing_auth_asym_id',
                                       'target_value', 'target_value_uncertainty',
                                       'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
-                                      'list_id', 'entry_id']
+                                      'list_id']
 
         if self.__cur_nest is not None:
             if self.__debug:
@@ -2564,7 +2576,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                            dstFunc.get('lower_limit'),
                                            dstFunc.get('upper_limit'),
                                            dstFunc.get('upper_linear_limit'),
-                                           sf['list_id'], self.__entryId])
+                                           sf['list_id']])
 
     # Enter a parse tree produced by RosettaMRParser#site_residues_restraints.
     def enterSite_residues_restraints(self, ctx: RosettaMRParser.Site_residues_restraintsContext):  # pylint: disable=unused-argument
@@ -2630,7 +2642,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                       'interacting_auth_asym_id_2', 'interacting_auth_seq_id_2', 'interacting_auth_comp_id_2',
                                       'target_value', 'target_value_uncertainty',
                                       'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
-                                      'list_id', 'entry_id']
+                                      'list_id']
 
         if self.__cur_nest is not None:
             if self.__debug:
@@ -2653,7 +2665,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                            dstFunc.get('lower_limit'),
                                            dstFunc.get('upper_limit'),
                                            dstFunc.get('upper_linear_limit'),
-                                           sf['list_id'], self.__entryId])
+                                           sf['list_id']])
 
     # Enter a parse tree produced by RosettaMRParser#min_residue_atomic_distance_restraints.
     def enterMin_residue_atomic_distance_restraints(self, ctx: RosettaMRParser.Min_residue_atomic_distance_restraintsContext):  # pylint: disable=unused-argument
@@ -2728,7 +2740,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                           'interacting_auth_asym_id_2', 'interacting_auth_seq_id_2', 'interacting_auth_comp_id_2',
                                           'target_value', 'target_value_uncertainty',
                                           'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
-                                          'list_id', 'entry_id']
+                                          'list_id']
 
             if self.__cur_nest is not None:
                 if self.__debug:
@@ -2749,7 +2761,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                dstFunc.get('lower_limit'),
                                                dstFunc.get('upper_limit'),
                                                dstFunc.get('upper_linear_limit'),
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
         except ValueError:
             self.geoRestraints -= 1
@@ -2831,7 +2843,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1',
                                           'bin_code', 'standard_deviation',
-                                          'list_id', 'entry_id']
+                                          'list_id']
 
             if self.__cur_nest is not None:
                 if self.__debug:
@@ -2846,7 +2858,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     sf['loop']['data'].append([sf['index_id'], sf['id'],
                                                res['chain_id'], res['seq_id'], res['comp_id'],
                                                binChar, sDev,
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
         except ValueError:
             self.geoRestraints -= 1
@@ -3871,7 +3883,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
@@ -4037,8 +4049,13 @@ class RosettaMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
+                if self.__createSfDict and isinstance(memberId, int):
+                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                    if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                        continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__debug:

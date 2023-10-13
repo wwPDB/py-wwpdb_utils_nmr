@@ -31,6 +31,8 @@ try:
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
+                                                       getStarAtom,
+                                                       resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
@@ -74,6 +76,8 @@ except ImportError:
                                            getSaveframe,
                                            getLoop,
                                            getRow,
+                                           getStarAtom,
+                                           resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
@@ -460,8 +464,13 @@ class GromacsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
+                if self.__createSfDict and isinstance(memberId, int):
+                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                    if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                        continue
                 if self.__createSfDict and memberLogicCode == '.':
                     altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
                     if altAtomId1 is not None or altAtomId2 is not None:
@@ -497,6 +506,9 @@ class GromacsMRParserListener(ParseTreeListener):
                         upperLimit = float(dstFunc['upper_limit'])
                         if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
+
+            if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
         except ValueError:
             self.distRestraints -= 1
@@ -1249,7 +1261,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
@@ -1462,7 +1474,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                               'target_value', 'target_value_uncertainty',
                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                               'multiplicity',
-                                              'list_id', 'entry_id']
+                                              'list_id']
                     else:
                         sf['loop']['tags'] = ['index_id', 'id',
                                               'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
@@ -1472,7 +1484,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                               'target_value', 'target_value_uncertainty',
                                               'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                               'multiplicity',
-                                              'list_id', 'entry_id']
+                                              'list_id']
 
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
@@ -1508,7 +1520,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                                    dstFunc.get('upper_limit'),
                                                    dstFunc.get('upper_linear_limit'),
                                                    mult,
-                                                   sf['list_id'], self.__entryId])
+                                                   sf['list_id']])
 
             else:
 
@@ -1534,7 +1546,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                                    dstFunc.get('upper_limit'),
                                                    dstFunc.get('upper_linear_limit'),
                                                    mult,
-                                                   sf['list_id'], self.__entryId])
+                                                   sf['list_id']])
 
         except ValueError:
             self.angRestraints -= 1
@@ -1638,13 +1650,13 @@ class GromacsMRParserListener(ParseTreeListener):
                                           'target_value', 'target_value_uncertainty',
                                           'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
                                           'multiplicity',
-                                          'list_id', 'entry_id']
+                                          'list_id']
 
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue
@@ -1662,7 +1674,7 @@ class GromacsMRParserListener(ParseTreeListener):
                                                dstFunc.get('upper_limit'),
                                                dstFunc.get('upper_linear_limit'),
                                                mult,
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
         except ValueError:
             self.angRestraints -= 1
@@ -1732,12 +1744,12 @@ class GromacsMRParserListener(ParseTreeListener):
                         sf['loop']['tags'] = ['index_id', 'id',
                                               'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                               'kx', 'ky', 'kz',
-                                              'list_id', 'entry_id']
+                                              'list_id']
                     else:
                         sf['loop']['tags'] = ['index_id', 'id',
                                               'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                               'g', 'r', 'k',
-                                              'list_id', 'entry_id']
+                                              'list_id']
 
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
@@ -1754,7 +1766,7 @@ class GromacsMRParserListener(ParseTreeListener):
                     sf['loop']['data'].append([sf['index_id'], sf['id'],
                                                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                                a, b, c,
-                                               sf['list_id'], self.__entryId])
+                                               sf['list_id']])
 
         except ValueError:
             self.geoRestraints -= 1

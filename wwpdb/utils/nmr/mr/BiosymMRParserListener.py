@@ -35,6 +35,8 @@ try:
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
+                                                       getStarAtom,
+                                                       resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -94,6 +96,8 @@ except ImportError:
                                            getSaveframe,
                                            getLoop,
                                            getRow,
+                                           getStarAtom,
+                                           resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
                                            REPRESENTATIVE_MODEL_ID,
@@ -599,8 +603,13 @@ class BiosymMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
+                if self.__createSfDict and isinstance(memberId, int):
+                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                    if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                        continue
                 if self.__createSfDict and memberLogicCode == '.':
                     altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
                     if altAtomId1 is not None or altAtomId2 is not None:
@@ -636,6 +645,9 @@ class BiosymMRParserListener(ParseTreeListener):
                         upperLimit = float(dstFunc['upper_limit'])
                         if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
+
+            if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.numberSelection.clear()
@@ -729,8 +741,13 @@ class BiosymMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
+                if self.__createSfDict and isinstance(memberId, int):
+                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                    if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                        continue
                 if self.__createSfDict and memberLogicCode == '.':
                     altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
                     if altAtomId1 is not None or altAtomId2 is not None:
@@ -2265,7 +2282,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 sf['loop']['tags'] = ['index_id', 'id',
                                       'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
                                       'chirality',
-                                      'list_id', 'entry_id']
+                                      'list_id']
 
         for atom1 in self.atomSelectionSet[0]:
             if self.__debug:
@@ -2276,7 +2293,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 sf['loop']['data'].append([sf['index_id'], sf['id'],
                                            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
                                            chirality,
-                                           sf['list_id'], self.__entryId])
+                                           sf['list_id']])
 
     # Enter a parse tree produced by BiosymMRParser#prochirality_constraints.
     def enterProchirality_constraints(self, ctx: BiosymMRParser.Prochirality_constraintsContext):  # pylint: disable=unused-argument
@@ -2335,7 +2352,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                       'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
                                       'auth_asym_id_4', 'auth_seq_id_4', 'auth_comp_id_4', 'auth_atom_id_4',
                                       'auth_asym_id_5', 'auth_seq_id_5', 'auth_comp_id_5', 'auth_atom_id_5',
-                                      'list_id', 'entry_id']
+                                      'list_id']
 
         for atom1, atom2, atom3, atom4, atom5 in itertools.product(self.atomSelectionSet[0],
                                                                    self.atomSelectionSet[1],
@@ -2353,7 +2370,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                            atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
                                            atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id'],
                                            atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
-                                           sf['list_id'], self.__entryId])
+                                           sf['list_id']])
 
     def areUniqueCoordAtoms(self, subtype_name):
         """ Check whether atom selection sets are uniquely assigned.

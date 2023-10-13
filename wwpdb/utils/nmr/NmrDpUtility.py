@@ -15323,37 +15323,42 @@ class NmrDpUtility:
                     for line in ifh:
                         ofh.write(line)
 
-            if os.path.exists(mr_file_link):
-                os.remove(mr_file_link)
+            try:
 
-            os.symlink(mr_file_path, mr_file_link)
+                if os.path.exists(mr_file_link):
+                    os.remove(mr_file_link)
 
-            if len(pk_list_paths) > 0:
+                os.symlink(mr_file_path, mr_file_link)
 
-                pk_dir = os.path.join(dir_path, 'nmr_peak_lists')
+                if len(pk_list_paths) > 0:
 
-                try:
+                    pk_dir = os.path.join(dir_path, 'nmr_peak_lists')
 
-                    if not os.path.isdir(pk_dir):
-                        os.makedirs(pk_dir)
+                    try:
 
-                except OSError:
-                    pass
+                        if not os.path.isdir(pk_dir):
+                            os.makedirs(pk_dir)
 
-                for pk_list_path in pk_list_paths:
+                    except OSError:
+                        pass
 
-                    pk_file_path = pk_list_path['nm-pea-any']
-                    if 'original_file_name' in pk_list_path and pk_list_path['original_file_name'] is not None:
-                        original_file_name = pk_list_path['original_file_name']
-                    else:
-                        original_file_name = os.path.basename(file_path)
+                    for pk_list_path in pk_list_paths:
 
-                    rem_pk_file_path = os.path.join(pk_dir, original_file_name)
+                        pk_file_path = pk_list_path['nm-pea-any']
+                        if 'original_file_name' in pk_list_path and pk_list_path['original_file_name'] is not None:
+                            original_file_name = pk_list_path['original_file_name']
+                        else:
+                            original_file_name = os.path.basename(file_path)
 
-                    if os.path.exists(rem_pk_file_path):
-                        os.remove(rem_pk_file_path)
+                        rem_pk_file_path = os.path.join(pk_dir, original_file_name)
 
-                    os.symlink(pk_file_path, rem_pk_file_path)
+                        if os.path.exists(rem_pk_file_path):
+                            os.remove(rem_pk_file_path)
+
+                        os.symlink(pk_file_path, rem_pk_file_path)
+
+            except OSError:
+                pass
 
         return not self.report.isError()
 

@@ -23792,6 +23792,7 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Warning  - {warn}\n")
 
+                for _id in conflict_id:
                     del lp.data[_id]
 
         else:
@@ -24879,6 +24880,7 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Warning  - {warn}\n")
 
+                for _id in conflict_id:
                     del lp.data[_id]
 
                 id_col = lp.tags.index('ID')
@@ -32729,17 +32731,6 @@ class NmrDpUtility:
                             else:
                                 _row[items.index(assign_item)] = atom_id
 
-                        for col, auth_assign_item_temp in enumerate(auth_assign_item_temps):
-                            auth_assign_item = auth_assign_item_temp % dim
-                            if col == 0:
-                                _row[items.index(auth_assign_item)] = auth_asym_id_
-                            elif col == 1:
-                                _row[items.index(auth_assign_item)] = auth_seq_id_
-                            elif col == 2:
-                                _row[items.index(auth_assign_item)] = comp_id
-                            else:
-                                _row[items.index(auth_assign_item)] = atom_id
-
                     else:
 
                         chain_id = seq_id = comp_id = atom_id = None
@@ -32843,23 +32834,12 @@ class NmrDpUtility:
                             _row[items.index(assign_item)] = entity_assembly_id
                         elif col == 1:
                             _row[items.index(assign_item)] = entity_id
-                        elif col in (2, 3):
+                        elif col == 2:
                             _row[items.index(assign_item)] = seq_id
-                        elif col == 4:
+                        elif col == 3:
                             _row[items.index(assign_item)] = comp_id
                         else:
                             _row[items.index(assign_item)] = atom_id
-
-                    for col, auth_assign_item_temp in enumerate(auth_assign_item_temps):
-                        auth_assign_item = auth_assign_item_temp % dim
-                        if col == 0:
-                            _row[items.index(auth_assign_item)] = auth_asym_id_
-                        elif col == 1:
-                            _row[items.index(auth_assign_item)] = auth_seq_id_
-                        elif col == 2:
-                            _row[items.index(auth_assign_item)] = comp_id
-                        else:
-                            _row[items.index(auth_assign_item)] = atom_id
 
                 else:
 
@@ -32901,9 +32881,9 @@ class NmrDpUtility:
                                     _row[items.index(assign_item)] = entity_assembly_id
                                 elif col == 1:
                                     _row[items.index(assign_item)] = entity_id
-                                elif col in (2, 3):
+                                elif col == 2:
                                     _row[items.index(assign_item)] = seq_id
-                                elif col == 4:
+                                elif col == 3:
                                     _row[items.index(assign_item)] = comp_id
                                 else:
                                     _row[items.index(assign_item)] = atom_id

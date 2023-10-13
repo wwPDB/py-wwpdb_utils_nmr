@@ -43,6 +43,8 @@ try:
                                                        getAuxLoops,
                                                        getRow,
                                                        getAuxRow,
+                                                       getStarAtom,
+                                                       resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
@@ -127,6 +129,8 @@ except ImportError:
                                            getAuxLoops,
                                            getRow,
                                            getAuxRow,
+                                           getStarAtom,
+                                           resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
@@ -1407,8 +1411,13 @@ class CnsMRParserListener(ParseTreeListener):
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else '.'
                 for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
                                                       self.atomSelectionSet[i + 1]):
-                    if isIdenticalRestraint([atom1, atom2]):
+                    if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
+                    if self.__createSfDict and isinstance(memberId, int):
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                            continue
                     if self.__createSfDict and memberLogicCode == '.':
                         altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
                         if altAtomId1 is not None or altAtomId2 is not None:
@@ -1450,6 +1459,9 @@ class CnsMRParserListener(ParseTreeListener):
                             upperLimit = float(dstFunc['upper_limit'])
                             if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
+
+            if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.numberSelection.clear()
@@ -2309,7 +2321,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if self.__symmetric == 'no':
                     if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
@@ -3620,7 +3632,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[4],
                                                   self.atomSelectionSet[5]):
-                if isIdenticalRestraint([atom1, atom2]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                     continue

@@ -8,6 +8,7 @@
 """
 import sys
 import re
+import copy
 import itertools
 import collections
 
@@ -33,6 +34,8 @@ try:
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
+                                                       getStarAtom,
+                                                       resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -87,6 +90,8 @@ except ImportError:
                                            getSaveframe,
                                            getLoop,
                                            getRow,
+                                           getStarAtom,
+                                           resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
                                            REPRESENTATIVE_MODEL_ID,
@@ -578,8 +583,13 @@ class IsdMRParserListener(ParseTreeListener):
 
         for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                               self.atomSelectionSet[1]):
-            if isIdenticalRestraint([atom1, atom2]):
+            if isIdenticalRestraint([atom1, atom2], self.__nefT):
                 continue
+            if self.__createSfDict and isinstance(memberId, int):
+                star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                    continue
             if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                 continue
             if self.__createSfDict and memberLogicCode == '.':
@@ -617,6 +627,9 @@ class IsdMRParserListener(ParseTreeListener):
                     upperLimit = float(dstFunc['upper_limit'])
                     if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                         sf['constraint_subsubtype'] = 'ambi'
+
+        if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+            sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
     def splitAtomSelectionExpr(self, atomSelection):  # pylint: disable=no-self-use
         """ Split ISD atom selection expression.

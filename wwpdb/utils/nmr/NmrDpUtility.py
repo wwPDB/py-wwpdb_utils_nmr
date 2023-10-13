@@ -23785,6 +23785,10 @@ class NmrDpUtility:
 
                 for _id in conflict_id:
                     _id_set = next(id_set for id_set in conflict_id_set if _id in id_set)
+
+                    if len(set(str(lp.data[_id_]) for _id_ in _id_set)) == 1:
+                       continue
+
                     msg = ' vs '.join([str(lp.data[_id_]).replace('None', '.').replace(',', '').replace("'", '') for _id_ in _id_set])
 
                     warn = f"Resolved redundancy of assigned chemical shifts ({msg}) by deletion of the latter one."
@@ -24873,6 +24877,10 @@ class NmrDpUtility:
 
                 for _id in conflict_id:
                     _id_set = next(id_set for id_set in conflict_id_set if _id in id_set)
+
+                    if len(set(str(lp.data[_id_]) for _id_ in _id_set)) == 1:
+                       continue
+
                     msg = ' vs '.join([str(lp.data[_id_]).replace('None', '.').replace(',', '').replace("'", '') for _id_ in _id_set])
 
                     warn = f"Resolved redundancy of assigned chemical shifts ({msg}) by deletion of the latter one."

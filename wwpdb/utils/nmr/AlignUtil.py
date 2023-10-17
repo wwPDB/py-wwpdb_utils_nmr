@@ -68,7 +68,7 @@ monDict3 = {'ALA': 'A',
 
 protonBeginCode = ('H', '1', '2', '3')
 pseProBeginCode = ('H', 'Q', 'M', '1', '2', '3')
-aminoProtonCode = ('H', 'HN', 'H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3')
+aminoProtonCode = ('H', 'HN', 'H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3', 'H1*', 'H2*', 'H3*')
 jcoupBbPairCode = ('N', 'H', 'CA', 'C')
 rdcBbPairCode = ('N', 'H', 'CA')
 
@@ -87,7 +87,7 @@ def hasLargeInnerSeqGap(polySeq, seqIdName='seq_id'):
     _s = polySeq[seqIdName]
 
     for idx, seqId in enumerate(_s):
-        if idx > 0 and seqId - _s[idx - 1] > 20:
+        if idx > 0 and None not in (seqId, _s[idx - 1]) and seqId - _s[idx - 1] > 20:
             return True
 
     return False
@@ -97,10 +97,21 @@ def hasLargeSeqGap(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id')
     """ Return whether large gap in combined sequence of polySeq1 and polySeq2.
     """
 
-    _s = sorted(set(polySeq1[seqIdName1]) | set(polySeq2[seqIdName2]))
+    if None not in polySeq1[seqIdName1] and None not in polySeq2[seqIdName2]:
+        _s = sorted(set(polySeq1[seqIdName1]) | set(polySeq2[seqIdName2]))
+    elif None not in polySeq1[seqIdName1]:
+        seqIds = [seqId for seqId in polySeq2[seqIdName2] if seqId is not None]
+        _s = sorted(set(polySeq1[seqIdName1]) | set(seqIds))
+    elif None not in polySeq2[seqIdName2]:
+        seqIds = [seqId for seqId in polySeq1[seqIdName1] if seqId is not None]
+        _s = sorted(set(seqIds) | set(polySeq2[seqIdName2]))
+    else:
+        seqId1s = [seqId for seqId in polySeq1[seqIdName1] if seqId is not None]
+        seqId2s = [seqId for seqId in polySeq2[seqIdName2] if seqId is not None]
+        _s = sorted(set(seqId1s) | set(seqId2s))
 
     for idx, seqId in enumerate(_s):
-        if idx > 0 and seqId - _s[idx - 1] > 20:
+        if idx > 0 and None not in (seqId, _s[idx - 1]) and seqId - _s[idx - 1] > 20:
             return True
 
     return False
@@ -110,7 +121,12 @@ def fillInnerBlankCompId(polySeq, seqIdName='seq_id'):
     """ Fill inner blanked comp_ID.
     """
 
-    _s = list(range(polySeq[seqIdName][0], polySeq[seqIdName][-1] + 1))
+    if None not in polySeq[seqIdName]:
+        _s = list(range(polySeq[seqIdName][0], polySeq[seqIdName][-1] + 1))
+    else:
+        seqIds = [seqId for seqId in polySeq[seqIdName] if seqId is not None]
+        _s = list(range(seqIds[0], seqIds[-1] + 1))
+
     _c = []
 
     for seqId in _s:
@@ -135,9 +151,23 @@ def fillBlankCompId(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'
     """
 
     if seqIdName1 == seqIdName2:
-        _s = sorted(set(polySeq1[seqIdName1]) | set(polySeq2[seqIdName2]))
+        if None not in polySeq1[seqIdName1] and None not in polySeq2[seqIdName2]:
+            _s = sorted(set(polySeq1[seqIdName1]) | set(polySeq2[seqIdName2]))
+        elif None not in polySeq1[seqIdName1]:
+            seqIds = [seqId for seqId in polySeq2[seqIdName2] if seqId is not None]
+            _s = sorted(set(polySeq1[seqIdName1]) | set(seqIds))
+        elif None not in polySeq2[seqIdName2]:
+            seqIds = [seqId for seqId in polySeq1[seqIdName1] if seqId is not None]
+            _s = sorted(set(seqIds) | set(polySeq2[seqIdName2]))
+        else:
+            seqId1s = [seqId for seqId in polySeq1[seqIdName1] if seqId is not None]
+            seqId2s = [seqId for seqId in polySeq2[seqIdName2] if seqId is not None]
+            _s = sorted(set(seqId1s) | set(seqId2s))
     else:
-        _s = polySeq2[seqIdName2]
+        if None not in polySeq2[seqIdName2]:
+            _s = polySeq2[seqIdName2]
+        else:
+            _s = [seqId for seqId in polySeq2[seqIdName2] if seqId is not None]
 
     _c = []
 
@@ -166,7 +196,12 @@ def fillBlankCompIdWithOffset(polySeq, offset, seqIdName='seq_id'):
     """ Fill blanked comp_ID with offset.
     """
 
-    _s = list(range(polySeq[seqIdName][0] - offset, polySeq[seqIdName][-1] + 1))
+    if None not in polySeq[seqIdName]:
+        _s = list(range(polySeq[seqIdName][0] - offset, polySeq[seqIdName][-1] + 1))
+    else:
+        seqIds = [seqId for seqId in polySeq[seqIdName] if seqId is not None]
+        _s = list(range(seqIds[0] - offset, seqIds[-1] + 1))
+
     _c = []
 
     for seqId in _s:
@@ -196,11 +231,11 @@ def beautifyPolySeq(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'
     if _polySeq1[seqIdName1] != _polySeq2[seqIdName2]:
         return _polySeq1, _polySeq2
 
-    _s = [seqId for seqId in _polySeq1[seqIdName1] if seqId > 0]
+    _s = [seqId for seqId in _polySeq1[seqIdName1] if seqId is not None and seqId > 0]
     _c1 = [compId for seqId, compId
-           in zip(_polySeq1[seqIdName1], _polySeq1['comp_id']) if seqId > 0]
+           in zip(_polySeq1[seqIdName1], _polySeq1['comp_id']) if seqId is not None and seqId > 0]
     _c2 = [compId for seqId, compId
-           in zip(_polySeq1[seqIdName1], _polySeq2['comp_id']) if seqId > 0]
+           in zip(_polySeq1[seqIdName1], _polySeq2['comp_id']) if seqId is not None and seqId > 0]
 
     gapS = []
     gapP = []
@@ -321,12 +356,28 @@ def getGaugeCode(seqIdList, offset=0):
     _lenSeqId = len(seqIdList)
 
     offset = 0
+    lastSeqId = None
     for idx, seqId in enumerate(seqIdList):
 
         if seqId is None:
-            p = idx + offset
-            gaugeCode = gaugeCode[0:p] + ' ' + gaugeCode[p:]
-            offset += 1
+
+            # 5n8m: nmr restraint remediation
+            _offset = 1
+            nextSeqId = None
+            while True:
+                if idx + _offset >= _lenSeqId:
+                    break
+                nextSeqId = seqIdList[idx + _offset]
+                if nextSeqId is not None:
+                    break
+                _offset += 1
+
+            if lastSeqId is None or nextSeqId is None or nextSeqId > lastSeqId + 1:
+                p = idx + offset
+                gaugeCode = gaugeCode[0:p] + ' ' + gaugeCode[p:]
+                offset += 1
+        else:
+            lastSeqId = seqId
 
     return gaugeCode[:_lenSeqId]
 
@@ -563,16 +614,24 @@ def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
     if nonPolyRemap is None:
 
         for ps in polySeqRst:
-            minSeqId = min(ps['seq_id'])
-            maxSeqId = max(ps['seq_id'])
+            if None not in ps['seq_id']:
+                minSeqId = min(ps['seq_id'])
+                maxSeqId = max(ps['seq_id'])
+            else:
+                seqIds = [seqId for seqId in ps['seq_id'] if seqId is not None]
+                minSeqId = min(seqIds)
+                maxSeqId = max(seqIds)
 
             _seqIds = list(range(minSeqId, maxSeqId + 1))
             _compIds = ["."] * (maxSeqId - minSeqId + 1)
             _authCompIds = ["."] * (maxSeqId - minSeqId + 1)
 
-            for idx, seqId in enumerate(ps['seq_id']):
-                _compIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
-                _authCompIds[_seqIds.index(seqId)] = ps['auth_comp_id'][idx]
+            idx = 0
+            for seqId in ps['seq_id']:
+                if seqId is not None and seqId in _seqIds:
+                    _compIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
+                    _authCompIds[_seqIds.index(seqId)] = ps['auth_comp_id'][idx]
+                    idx += 1
 
             ps['seq_id'] = _seqIds
             ps['comp_id'] = _compIds
@@ -949,6 +1008,9 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                     for p, g in enumerate(test_gauge_code):
                         if g == ' ':
                             test_code = test_code[0:p] + '-' + test_code[p + 1:]
+                # 5n8m: nmr restraint remediation
+                _s1['seq_id'] = seq_id1
+                _s2['seq_id'] = seq_id2
 
             matched = mid_code.count('|')
 
@@ -1252,6 +1314,9 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
                     for p, g in enumerate(test_gauge_code):
                         if g == ' ':
                             test_code = test_code[0:p] + '-' + test_code[p + 1:]
+                # 5n8m: nmr restraint remediation
+                _s1['seq_id'] = seq_id1
+                _s2['seq_id'] = seq_id2
 
             matched = mid_code.count('|')
 

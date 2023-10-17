@@ -27,6 +27,7 @@ try:
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            protonBeginCode,
+                                           aminoProtonCode,
                                            letterToDigit, indexToLetter,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
@@ -48,6 +49,7 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (monDict3,
                                protonBeginCode,
+                               aminoProtonCode,
                                letterToDigit, indexToLetter,
                                alignPolymerSequence,
                                assignPolymerSequence,
@@ -88,6 +90,8 @@ class AmberPTParserListener(ParseTreeListener):
     __polySeqModel = None
     __nonPolyModel = None
     __branchedModel = None
+    __coordAtomSite = None
+    __coordUnobsRes = None
     __chemCompAtom = None
 
     __hasPolySeqModel = False
@@ -149,6 +153,8 @@ class AmberPTParserListener(ParseTreeListener):
             self.__polySeqModel = ret['polymer_sequence']
             self.__nonPolyModel = ret['non_polymer']
             self.__branchedModel = ret['branched']
+            self.__coordAtomSite = ret['coord_atom_site']
+            self.__coordUnobsRes = ret['coord_unobs_res']
             self.__chemCompAtom = ret['chem_comp_atom']
 
         self.__hasPolySeqModel = self.__polySeqModel is not None and len(self.__polySeqModel) > 0
@@ -263,6 +269,21 @@ class AmberPTParserListener(ParseTreeListener):
 
             NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S')
 
+            def is_na_segment(prev_comp_id, prev_atom_name, comp_id):
+                if prev_comp_id is None:
+                    return False
+                if prev_comp_id.endswith('3') and prev_atom_name.endswith('T'):
+                    return True
+                return comp_id.endswith('5') and (prev_comp_id.endswith('3') or self.__csStat.peptideLike(prev_comp_id))
+
+            def is_metal_ion(comp_id, atom_name):
+                if comp_id is None:
+                    return False
+                if comp_id != atom_name:
+                    return False
+                return comp_id.split('+')[0].title() in NAMES_ELEMENT\
+                    or comp_id.split('-')[0].title() in NAMES_ELEMENT
+
             ancAtomName = prevAtomName = ''
             prevSeqId = prevCompId = None
             offset = 0
@@ -278,9 +299,8 @@ class AmberPTParserListener(ParseTreeListener):
                         retrievedAtomNumList.append(atomNum)
 
                 if (terminus[atomNum - 1] and ancAtomName.endswith('T'))\
-                   or (prevCompId is not None and (prevCompId.endswith('3') or self.__csStat.peptideLike(prevCompId)) and compId.endswith('5'))\
-                   or (compId == atomName and compId.split('+')[0].title() in NAMES_ELEMENT)\
-                   or (compId == atomName and compId.split('-')[0].title() in NAMES_ELEMENT)\
+                   or is_na_segment(prevCompId, prevAtomName, compId)\
+                   or is_metal_ion(compId, atomName) or is_metal_ion(prevCompId, prevAtomName)\
                    or (len(prevAtomName) > 0 and prevAtomName[0] not in NON_METAL_ELEMENTS and prevSeqId != _seqId):
 
                     self.__polySeqPrmTop.append({'chain_id': chainId,
@@ -844,6 +864,18 @@ class AmberPTParserListener(ParseTreeListener):
             if len(delete_atom_nums) > 0:
                 for atom_num in sorted(delete_atom_nums, reverse=True):
                     del self.__atomNumberDict[atom_num]
+
+            for atomNum in self.__atomNumberDict.values():
+                if 'atom_id' in atomNum and atomNum['atom_id'] in aminoProtonCode:
+                    _seqKey = (atomNum['chain_id'], atomNum['seq_id'] - 1)
+                    seqKey = (atomNum['chain_id'], atomNum['seq_id'])
+                    if _seqKey in self.__coordUnobsRes and seqKey in self.__coordAtomSite:
+                        coordAtomSite = self.__coordAtomSite[seqKey]
+                        if atomNum['atom_id'] not in coordAtomSite['atom_id']:
+                            for atomId in aminoProtonCode:
+                                if atomId in coordAtomSite['atom_id']:
+                                    atomNum['atom_id'] = atomId
+                                    break
 
             if self.__chainAssign is not None:
                 trimSequenceAlignment(self.__seqAlign, self.__chainAssign)

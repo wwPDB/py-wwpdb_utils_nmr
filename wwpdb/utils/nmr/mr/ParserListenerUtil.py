@@ -3519,7 +3519,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         labelToAuthSeq[seqKey] = seqKey
 
                     # DAOTHER-8817
-                    if compId not in chemCompAtom:
+                    if compId not in chemCompAtom and compId not in monDict3:
                         chemCompAtom[compId] = atomIds
 
                         def to_np_array(a):

@@ -23507,6 +23507,8 @@ class NmrDpUtility:
                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
                         if len_atom_ids > 1:
+                            if _row[12] == 1 and _row[6] not in methyl_atoms:
+                                _row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
                             __row = copy.copy(_row)
                             if fill_auth_atom_id:
                                 __row[19] = __row[6]
@@ -23613,6 +23615,8 @@ class NmrDpUtility:
                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
                     if len_atom_ids > 1:
+                        if _row[12] == 1 and _row[6] not in methyl_atoms:
+                            _row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
                         __row = copy.copy(_row)
                         if fill_auth_atom_id:
                             __row[19] = __row[6]

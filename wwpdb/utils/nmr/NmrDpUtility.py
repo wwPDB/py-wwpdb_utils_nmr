@@ -16635,7 +16635,7 @@ class NmrDpUtility:
                        or 'identical_chain_id' in ps and _chain_id in ps['identical_chain_id']:
 
                         for _seq_id, _comp_id in zip(ps_in_cs_loop['seq_id'], ps_in_cs_loop['comp_id']):
-                            if _seq_id not in ps['seq_id']:
+                            if _seq_id not in ps['seq_id'] and _seq_id is not None:
                                 ext_seq_key_set.add((chain_id, _seq_id, _comp_id))
 
         if len(ext_seq_key_set) > 0:
@@ -16648,13 +16648,13 @@ class NmrDpUtility:
                 if seq_id in ps['seq_id']:
                     continue
 
-                if seq_id < ps['seq_id'][0]:
+                if ps['seq_id'][0] is not None and seq_id < ps['seq_id'][0]:
                     pos = 0
-                elif seq_id > ps['seq_id'][-1]:
+                elif ps['seq_id'][-1] is not None and seq_id > ps['seq_id'][-1]:
                     pos = len(ps['seq_id'])
                 else:
                     for idx, _seq_id in enumerate(ps['seq_id']):
-                        if seq_id < _seq_id:
+                        if _seq_id is None or seq_id < _seq_id:
                             continue
                         pos = idx
                         break
@@ -23787,7 +23787,7 @@ class NmrDpUtility:
                     _id_set = next(id_set for id_set in conflict_id_set if _id in id_set)
 
                     if len(set(str(lp.data[_id_]) for _id_ in _id_set)) == 1:
-                       continue
+                        continue
 
                     msg = ' vs '.join([str(lp.data[_id_]).replace('None', '.').replace(',', '').replace("'", '') for _id_ in _id_set])
 
@@ -24879,7 +24879,7 @@ class NmrDpUtility:
                     _id_set = next(id_set for id_set in conflict_id_set if _id in id_set)
 
                     if len(set(str(lp.data[_id_]) for _id_ in _id_set)) == 1:
-                       continue
+                        continue
 
                     msg = ' vs '.join([str(lp.data[_id_]).replace('None', '.').replace(',', '').replace("'", '') for _id_ in _id_set])
 
@@ -43224,22 +43224,26 @@ class NmrDpUtility:
                     if nmr_ps is not None:
                         j = ps['auth_seq_id'].index(auth_seq_id)
                         label_seq_id = ps['seq_id'][j]
-                        length = len(ps['seq_id'])
-                        cyclic = self.__isCyclicPolymer(nmr_ps['chain_id'])
-                        if cyclic and label_seq_id in (1, length):
-                            row[seq_link_col] = 'cyclic'
-                        elif label_seq_id == 1 and length == 1:
-                            row[seq_link_col] = 'single'
-                        elif seq_id == 1:
-                            row[seq_link_col] = 'start'
-                        elif label_seq_id == length:
-                            row[seq_link_col] = 'end'
-                        elif label_seq_id - 1 == ps['seq_id'][j - 1] and label_seq_id + 1 == ps['seq_id'][j + 1]:
-                            row[seq_link_col] = 'middle'
-                        elif label_seq_id == 1:
-                            row[seq_link_col] = 'middle'
-                        else:
-                            row[seq_link_col] = 'break'
+                        if label_seq_id is not None:
+                            try:
+                                length = len(ps['seq_id'])
+                                cyclic = self.__isCyclicPolymer(nmr_ps['chain_id'])
+                                if cyclic and label_seq_id in (1, length):
+                                    row[seq_link_col] = 'cyclic'
+                                elif label_seq_id == 1 and length == 1:
+                                    row[seq_link_col] = 'single'
+                                elif seq_id == 1:
+                                    row[seq_link_col] = 'start'
+                                elif label_seq_id == length:
+                                    row[seq_link_col] = 'end'
+                                elif label_seq_id - 1 == ps['seq_id'][j - 1] and label_seq_id + 1 == ps['seq_id'][j + 1]:
+                                    row[seq_link_col] = 'middle'
+                                elif label_seq_id == 1:
+                                    row[seq_link_col] = 'middle'
+                                else:
+                                    row[seq_link_col] = 'break'
+                            except IndexError:
+                                pass
 
                         entity_poly_type = next((item['entity_poly_type'] for item in self.__caC['entity_assembly']
                                                  if item['entity_id'] == entity_id and item['entity_type'] == 'polymer'), None)

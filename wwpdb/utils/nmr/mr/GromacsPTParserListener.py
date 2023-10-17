@@ -216,12 +216,16 @@ class GromacsPTParserListener(ParseTreeListener):
 
             NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S')
 
-            def is_na_segment(prev_comp_id, prev_atom_name, comp_id):
+            def is_segment(prev_comp_id, prev_atom_name, comp_id, atom_name):
                 if prev_comp_id is None:
                     return False
-                if prev_comp_id.endswith('3') and prev_atom_name.endswith('T'):
+                is_prev_term_atom = prev_atom_name.endswith('T')
+                if is_prev_term_atom and atom_name.endswith('T'):
                     return True
-                return comp_id.endswith('5') and (prev_comp_id.endswith('3') or self.__csStat.peptideLike(prev_comp_id))
+                is_prev_3_prime_comp = prev_comp_id.endswith('3')
+                if is_prev_3_prime_comp and is_prev_term_atom:
+                    return True
+                return comp_id.endswith('5') and (is_prev_3_prime_comp or self.__csStat.peptideLike(prev_comp_id))
 
             def is_metal_ion(comp_id, atom_name):
                 if comp_id is None:
@@ -230,6 +234,11 @@ class GromacsPTParserListener(ParseTreeListener):
                     return False
                 return comp_id.split('+')[0].title() in NAMES_ELEMENT\
                     or comp_id.split('-')[0].title() in NAMES_ELEMENT
+
+            def is_metal_elem(prev_atom_name, prev_seq_id, seq_id):
+                if len(prev_atom_name) == 0:
+                    return False
+                return prev_seq_id != seq_id and prev_atom_name[0] not in NON_METAL_ELEMENTS
 
             ancAtomName = prevAtomName = ''
             prevSeqId = prevCompId = None
@@ -247,9 +256,10 @@ class GromacsPTParserListener(ParseTreeListener):
                         retrievedAtomNumList.append(atomNum)
 
                 if (terminus[atomNum - 1] and ancAtomName.endswith('T'))\
-                   or is_na_segment(prevCompId, prevAtomName, compId)\
-                   or is_metal_ion(compId, atomName) or is_metal_ion(prevCompId, prevAtomName)\
-                   or (len(prevAtomName) > 0 and prevAtomName[0] not in NON_METAL_ELEMENTS and prevSeqId != _seqId):
+                   or is_segment(prevCompId, prevAtomName, compId, atomName)\
+                   or is_metal_ion(compId, atomName)\
+                   or is_metal_ion(prevCompId, prevAtomName)\
+                   or is_metal_elem(prevAtomName, prevSeqId, _seqId):
 
                     self.__polySeqPrmTop.append({'chain_id': chainId,
                                                  'seq_id': seqIdList,

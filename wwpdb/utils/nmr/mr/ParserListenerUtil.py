@@ -5937,8 +5937,9 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
 
     elif mrSubtype == 'csa':
-        row[key_size] = atomType = atom1['atom_id'][0]
-        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom1 is not None:
+            row[key_size] = atomType = atom1['atom_id'][0]
+            row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size + 2] = dstFunc['target_value']
             float_row_idx.append(key_size + 2)
@@ -5984,8 +5985,9 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id']
 
     elif mrSubtype == 'procs':
-        row[key_size] = atomType = atom1['atom_id'][0]
-        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom1 is not None:
+            row[key_size] = atomType = atom1['atom_id'][0]
+            row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         row[key_size + 2] = dstFunc['obs_value'] if atom2 is None else dstFunc['obs_value_2']
         # Chem_shift_val_err
 
@@ -5997,8 +5999,9 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
     elif mrSubtype == 'pcs':
-        row[key_size] = atomType = atom1['atom_id'][0]
-        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom1 is not None:
+            row[key_size] = atomType = atom1['atom_id'][0]
+            row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         # Chem_shift_val
         # Chem_shift_val_err
         if hasKeyValue(dstFunc, 'target_value'):
@@ -6012,8 +6015,9 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
     elif mrSubtype == 'pre':
-        row[key_size] = atomType = atom1['atom_id'][0]
-        row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom1 is not None:
+            row[key_size] = atomType = atom1['atom_id'][0]
+            row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size + 2] = dstFunc['target_value']
             float_row_idx.append(key_size + 2)
@@ -6038,10 +6042,12 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
         # Dipole_1_atom_isotope_number_1
         # Dipole_1_atom_type_2
         # Dipole_1_atom_isotope_number_2
-        row[key_size + 4] = atomType = atom3['atom_id'][0]
-        row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        row[key_size + 6] = atomType = atom4['atom_id'][0]
-        row[key_size + 7] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom3 is not None:
+            row[key_size + 4] = atomType = atom3['atom_id'][0]
+            row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom4 is not None:
+            row[key_size + 6] = atomType = atom4['atom_id'][0]
+            row[key_size + 7] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         if hasKeyValue(dstFunc, 'target_value'):
             row[key_size + 8] = dstFunc['target_value']
             float_row_idx.append(key_size + 8)
@@ -6558,13 +6564,15 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
 
     elif contentSubtype == 'rdc_raw_data':
         row[key_size] = getRdcCode([atom1, atom2])
-        row[key_size + 1] = atomType = atom1['atom_id'][0]
-        row[key_size + 2] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom1 is not None:
+            row[key_size + 1] = atomType = atom1['atom_id'][0]
+            row[key_size + 2] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         val = getRowValue('Ambiguity_code_1')
         if val is not None and val in ('1', '2', '3'):
             row[key_size + 3] = val
-        row[key_size + 4] = atomType = atom2['atom_id'][0]
-        row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom2 is not None:
+            row[key_size + 4] = atomType = atom2['atom_id'][0]
+            row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         val = getRowValue('Ambiguity_code_2')
         if val is not None and val in ('1', '2', '3'):
             row[key_size + 6] = val

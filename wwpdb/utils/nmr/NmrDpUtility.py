@@ -17089,7 +17089,7 @@ class NmrDpUtility:
 
         cc_name = cc_rel_status = processing_site = None
 
-        if self.__star_data_type[0] == 'Entry' and 'chem_comp' in self.__sf_category_list:
+        if len(self.__star_data_type) > 0 and self.__star_data_type[0] == 'Entry' and 'chem_comp' in self.__sf_category_list:
             chem_comp_sf = next((sf for sf in self.__star_data[0].frame_list if sf.name == f'chem_comp_{comp_id}'), None)
 
             if chem_comp_sf is not None:

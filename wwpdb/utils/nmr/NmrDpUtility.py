@@ -6948,14 +6948,15 @@ class NmrDpUtility:
 
             self.__dirPath = os.path.dirname(srcPath)
 
-            codec = detect_bom(srcPath, 'utf-8')
+            if os.path.exists(srcPath):
+                codec = detect_bom(srcPath, 'utf-8')
 
-            _srcPath = None
+                _srcPath = None
 
-            if codec != 'utf-8':
-                _srcPath = srcPath + '~'
-                convert_codec(srcPath, _srcPath, codec, 'utf-8')
-                srcPath = _srcPath
+                if codec != 'utf-8':
+                    _srcPath = srcPath + '~'
+                    convert_codec(srcPath, _srcPath, codec, 'utf-8')
+                    srcPath = _srcPath
 
             is_valid, message = self.__nefT.validate_file(srcPath, 'A')  # 'A' for NMR unified data
 
@@ -16648,6 +16649,8 @@ class NmrDpUtility:
                 if seq_id in ps['seq_id']:
                     continue
 
+                pos = None
+
                 if ps['seq_id'][0] is not None and seq_id < ps['seq_id'][0]:
                     pos = 0
                 elif ps['seq_id'][-1] is not None and seq_id > ps['seq_id'][-1]:
@@ -16659,8 +16662,9 @@ class NmrDpUtility:
                         pos = idx
                         break
 
-                ps['seq_id'].insert(pos, seq_id)
-                ps['comp_id'].insert(pos, comp_id)
+                if pos is not None:
+                    ps['seq_id'].insert(pos, seq_id)
+                    ps['comp_id'].insert(pos, comp_id)
 
         return True
 
@@ -20119,9 +20123,6 @@ class NmrDpUtility:
 
             if redundant:
 
-                msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + f" {row_1[angle_type_name]}, "
-                msg += self.__getReducedAtomNotations(key_items, row_1)
-
                 idx_msg = index_tag + ' '
                 if index_tag in lp_data[0]:
                     for row_id in id_set:
@@ -20143,7 +20144,7 @@ class NmrDpUtility:
                 if not idx_msg.endswith(' vs '):
                     continue
 
-                warn = f"[Check rows of {idx_msg[:-4]}] Found redundant restraints for the same {data_unit_name} ({msg})."
+                warn = f"[Check rows of {idx_msg[:-4]}] Found redundant restraints for the same {data_unit_name}."
 
                 self.report.warning.appendDescription('redundant_data',
                                                       {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -25693,6 +25694,7 @@ class NmrDpUtility:
 
                     for row in loop:
                         lp.add_data(row)
+
                         chain_id = row[chain_id_col]
                         try:
                             seq_id = int(row[seq_id_col])
@@ -28401,6 +28403,7 @@ class NmrDpUtility:
                                                               auth_to_star_seq, auth_to_ins_code, offset_holder,
                                                               [atom1, atom2])
                                         lp.add_data(_row)
+
                                 elif atom_sels[0] is not None:
                                     atom2 = None
                                     for atom1 in atom_sels[0]:
@@ -28411,6 +28414,7 @@ class NmrDpUtility:
                                                               auth_to_star_seq, auth_to_ins_code, offset_holder,
                                                               [atom1, atom2])
                                         lp.add_data(_row)
+
                                 elif atom_sels[1] is not None:
                                     atom1 = None
                                     for atom2 in atom_sels[1]:
@@ -28421,6 +28425,7 @@ class NmrDpUtility:
                                                               auth_to_star_seq, auth_to_ins_code, offset_holder,
                                                               [atom1, atom2])
                                         lp.add_data(_row)
+
                                 else:
                                     atom1 = atom2 = None
                                     sf_item['index_id'] += 1
@@ -28719,6 +28724,7 @@ class NmrDpUtility:
                                                               auth_to_star_seq, auth_to_ins_code, offset_holder,
                                                               [atom1, atom2])
                                         lp.add_data(_row)
+
                                 elif atom_sels[0] is not None:
                                     atom2 = None
                                     for atom1 in atom_sels[0]:
@@ -28729,6 +28735,7 @@ class NmrDpUtility:
                                                               auth_to_star_seq, auth_to_ins_code, offset_holder,
                                                               [atom1, atom2])
                                         lp.add_data(_row)
+
                                 elif atom_sels[1] is not None:
                                     atom1 = None
                                     for atom2 in atom_sels[1]:
@@ -28739,6 +28746,7 @@ class NmrDpUtility:
                                                               auth_to_star_seq, auth_to_ins_code, offset_holder,
                                                               [atom1, atom2])
                                         lp.add_data(_row)
+
                                 else:
                                     atom1 = atom2 = None
                                     sf_item['index_id'] += 1
@@ -41696,9 +41704,14 @@ class NmrDpUtility:
                 cif_ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == cif_chain_id)
 
                 if ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-8751, issue #2
-                    cif_seq_id, cif_comp_id = next(((_seq_id, _comp_id) for _auth_seq_id, _seq_id, _comp_id
-                                                    in zip(cif_ps['auth_seq_id'], cif_ps['seq_id'], cif_ps['comp_id'])
-                                                    if _auth_seq_id == seq_id), (None, None))
+                    if 'auth_seq_id' in cif_ps:
+                        cif_seq_id, cif_comp_id = next(((_seq_id, _comp_id) for _auth_seq_id, _seq_id, _comp_id
+                                                        in zip(cif_ps['auth_seq_id'], cif_ps['seq_id'], cif_ps['comp_id'])
+                                                        if _auth_seq_id == seq_id), (None, None))
+                    else:
+                        cif_seq_id, cif_comp_id = next(((_seq_id, _comp_id) for _seq_id, _comp_id
+                                                        in zip(cif_ps['seq_id'], cif_ps['comp_id'])
+                                                        if _seq_id == seq_id), (None, None))
 
                     if cif_seq_id is None or cif_comp_id is None:
                         continue
@@ -41712,9 +41725,14 @@ class NmrDpUtility:
                         continue
 
                 if ca['sequence_coverage'] < LOW_SEQ_COVERAGE:
-                    cif_comp_id = next((_comp_id for _seq_id, _comp_id
-                                        in zip(cif_ps['auth_seq_id'], cif_ps['comp_id'])
-                                        if _seq_id == seq_id), None)
+                    if 'auth_seq_id' in cif_ps:
+                        cif_comp_id = next((_comp_id for _seq_id, _comp_id
+                                            in zip(cif_ps['auth_seq_id'], cif_ps['comp_id'])
+                                            if _seq_id == seq_id), None)
+                    else:
+                        cif_comp_id = next((_comp_id for _seq_id, _comp_id
+                                            in zip(cif_ps['seq_id'], cif_ps['comp_id'])
+                                            if _seq_id == seq_id), None)
 
                     if cif_comp_id is None:
                         continue

@@ -5210,6 +5210,10 @@ def getRestraintName(mrSubtype, title=False):
         return "Paramagnetic angle restraints" if title else "paramagnetic angle restraints"
     if mrSubtype.startswith('pccr'):
         return "Paramagnetic CCR restraints" if title else "paramagnetic CCR restraints"
+    if mrSubtype.startswith('ccr_d_csa'):
+        return "CCR D-CSA restraints" if title else "CCR D-CSA restraints"
+    if mrSubtype.startswith('ccr_dd'):
+        return "CCR D-D restraints" if title else "CCR D-D restraints"
     if mrSubtype.startswith('geo'):
         return "Coordinate geometry restraints" if title else "coordinate geometry restraints"
     if mrSubtype.startswith('noepk'):
@@ -6198,8 +6202,10 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         @return: data array
     """
 
+    has_ins_code = authToInsCode is not None and contentSubtype in NMR_STAR_LP_DATA_ITEMS_INS_CODE
+
     key_size = len(NMR_STAR_LP_KEY_ITEMS[contentSubtype])
-    data_size = len(NMR_STAR_LP_DATA_ITEMS[contentSubtype])
+    data_size = len(NMR_STAR_LP_DATA_ITEMS_INS_CODE[contentSubtype]) if has_ins_code else len(NMR_STAR_LP_DATA_ITEMS[contentSubtype])
 
     float_row_idx = []
 

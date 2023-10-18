@@ -43074,7 +43074,7 @@ class NmrDpUtility:
                 nef_index += 1
 
             if len(self.__auth_asym_ids_with_chem_exch) > 0:
-                for idx, item in enumerate(self.__caC['entity_assembly']):
+                for item in self.__caC['entity_assembly']:
                     entity_type = item['entity_type']
                     if entity_type == 'non-polymer':
                         continue
@@ -43299,7 +43299,7 @@ class NmrDpUtility:
 
             if len(self.__auth_asym_ids_with_chem_exch) > 0:
                 _entity_assembly_id = loop.data[-1][chain_id_col]
-                for idx, item in enumerate(self.__caC['entity_assembly']):
+                for item in self.__caC['entity_assembly']:
                     entity_type = item['entity_type']
                     if entity_type == 'non-polymer':
                         continue
@@ -44199,19 +44199,17 @@ class NmrDpUtility:
                 else:
                     ps = next(ps for ps in self.__caC['non_polymer'] if ps['chain_id'] == chain_id)
 
-                seq_ids = set()
+                # seq_ids = set()
 
-                for idx, comp_id in enumerate(ps['comp_id']):
-                    seq_id = ps['seq_id'][idx]
+                for auth_seq_id, seq_id, comp_id in zip(ps['auth_seq_id'], ps['seq_id'], ps['comp_id']):
 
-                    if seq_id in seq_ids:
-                        continue
+                    # if seq_id in seq_ids:
+                    #     continue
 
-                    auth_seq_id = ps['auth_seq_id'][idx]
                     if entity_type == 'non-polymer':
                         if comp_id != item['comp_id']:
                             continue
-                        auth_seq_id = ps['seq_id'][idx]
+                        auth_seq_id = seq_id
 
                     # if auth_seq_id in auth_seq_ids:
                     #    continue
@@ -44265,8 +44263,7 @@ class NmrDpUtility:
                     else:
                         ps = next(ps for ps in self.__caC['non_polymer'] if ps['chain_id'] == chain_id)
 
-                    for i, comp_id in enumerate(ps['comp_id']):
-                        seq_id = ps['seq_id'][i]
+                    for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                         if seq_id in seq_ids:
                             continue

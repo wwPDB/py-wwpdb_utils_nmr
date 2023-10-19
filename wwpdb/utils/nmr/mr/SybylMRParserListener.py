@@ -293,7 +293,7 @@ class SybylMRParserListener(ParseTreeListener):
             self.__pA.setVerbose(verbose)
 
         if reasons is not None and 'model_chain_id_ext' in reasons:
-            self.__polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes,\
+            self.__polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes, \
                 self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq =\
                 extendCoordChainsForExactNoes(reasons['model_chain_id_ext'],
                                               self.__polySeq, self.__altPolySeq,

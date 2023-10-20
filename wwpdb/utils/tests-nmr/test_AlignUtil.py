@@ -6,7 +6,10 @@
 ##
 import unittest
 
-from wwpdb.utils.nmr.AlignUtil import (letterToDigit, indexToLetter)
+try:
+    from wwpdb.utils.nmr.AlignUtil import (letterToDigit, indexToLetter)
+except ImportError:
+    from nmr.AlignUtil import (letterToDigit, indexToLetter)
 
 
 class TestAlignUtil(unittest.TestCase):

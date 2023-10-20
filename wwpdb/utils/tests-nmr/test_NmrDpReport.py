@@ -25,7 +25,20 @@
 import unittest
 # import json
 
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportChainAssignment, NmrDpReportError, NmrDpReportWarning
+try:
+    from wwpdb.utils.nmr.NmrDpReport import (NmrDpReport,
+                                             NmrDpReportInputSource,
+                                             NmrDpReportSequenceAlignment,
+                                             NmrDpReportChainAssignment,
+                                             NmrDpReportError,
+                                             NmrDpReportWarning)
+except ImportError:
+    from nmr.NmrDpReport import (NmrDpReport,
+                                 NmrDpReportInputSource,
+                                 NmrDpReportSequenceAlignment,
+                                 NmrDpReportChainAssignment,
+                                 NmrDpReportError,
+                                 NmrDpReportWarning)
 
 
 class TestNmrDpReport(unittest.TestCase):

@@ -22,7 +22,12 @@ import os
 import sys
 import pynmrstar
 from packaging import version
-from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+
+try:
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+except ImportError:
+    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
+
 
 if __package__ is None or __package__ == "":
     from os import path

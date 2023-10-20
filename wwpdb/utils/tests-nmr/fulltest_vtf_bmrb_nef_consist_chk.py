@@ -8,8 +8,11 @@ import unittest
 import os
 import json
 
-from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-
+try:
+    from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
+except ImportError:
+    from nmr.NmrDpUtility import NmrDpUtility
+x
 
 class TestNmrDpUtility(unittest.TestCase):
 

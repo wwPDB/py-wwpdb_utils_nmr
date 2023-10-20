@@ -799,7 +799,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                                 offset = None
                                 for seq_id, comp_id in zip(poly_seq_rst['seq_id'], poly_seq_rst['comp_id']):
-                                    if seq_id not in seq_id_mapping:
+                                    if seq_id is not None and seq_id not in seq_id_mapping:
                                         _seq_id = next((_seq_id for _seq_id, _comp_id in zip(poly_seq_model['seq_id'], poly_seq_model['comp_id'])
                                                         if _seq_id not in seq_id_mapping.values() and _comp_id == comp_id), None)
                                         if _seq_id is not None:
@@ -808,7 +808,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                                 if offset is not None:
                                     for seq_id in poly_seq_rst['seq_id']:
-                                        if seq_id not in seq_id_mapping:
+                                        if seq_id is not None and seq_id not in seq_id_mapping:
                                             seq_id_mapping[seq_id] = seq_id - offset
 
                             if any(k for k, v in seq_id_mapping.items() if k != v)\
@@ -8815,27 +8815,29 @@ class XplorMRParserListener(ParseTreeListener):
                         compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
                     elif 'gap_in_auth_seq' in ps and seqId is not None:
                         compId = None
-                        min_auth_seq_id = ps['auth_seq_id'][0]
-                        max_auth_seq_id = ps['auth_seq_id'][-1]
-                        if min_auth_seq_id <= seqId <= max_auth_seq_id:
-                            _seqId_ = seqId + 1
-                            while _seqId_ <= max_auth_seq_id:
-                                if _seqId_ in ps['auth_seq_id']:
-                                    break
-                                _seqId_ += 1
-                            if _seqId_ not in ps['auth_seq_id']:
-                                _seqId_ = seqId - 1
-                                while _seqId_ >= min_auth_seq_id:
+                        auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                        if len(auth_seq_id_list) > 0:
+                            min_auth_seq_id = min(auth_seq_id_list)
+                            max_auth_seq_id = max(auth_seq_id_list)
+                            if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                                _seqId_ = seqId + 1
+                                while _seqId_ <= max_auth_seq_id:
                                     if _seqId_ in ps['auth_seq_id']:
                                         break
-                                    _seqId_ -= 1
-                            if _seqId_ in ps['auth_seq_id']:
-                                idx = ps['auth_seq_id'].index(_seqId_) - _seqId_ - seqId
-                                try:
-                                    seqId = ps['auth_seq_id'][idx]
-                                    compId = ps['comp_id'][idx]
-                                except IndexError:
-                                    pass
+                                    _seqId_ += 1
+                                if _seqId_ not in ps['auth_seq_id']:
+                                    _seqId_ = seqId - 1
+                                    while _seqId_ >= min_auth_seq_id:
+                                        if _seqId_ in ps['auth_seq_id']:
+                                            break
+                                        _seqId_ -= 1
+                                if _seqId_ in ps['auth_seq_id']:
+                                    idx = ps['auth_seq_id'].index(_seqId_) - _seqId_ - seqId
+                                    try:
+                                        seqId = ps['auth_seq_id'][idx]
+                                        compId = ps['comp_id'][idx]
+                                    except IndexError:
+                                        pass
                     else:
                         compId = None
 
@@ -9204,7 +9206,8 @@ class XplorMRParserListener(ParseTreeListener):
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             if self.__cur_subtype != 'plane' and coordAtomSite is not None:
                                                 checked = False
-                                                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == ps['auth_seq_id'][0]:
+                                                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                                                     if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in atomSiteAtomId)
                                                                                       or _atomId == 'P' or _atomId.startswith('HOP')):
                                                         checked = True
@@ -9239,7 +9242,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
-                                        if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == ps['auth_seq_id'][0]:
+                                        auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                        if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                                             if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in atomSiteAtomId)
                                                                               or _atomId == 'P' or _atomId.startswith('HOP')):
                                                 continue
@@ -9368,7 +9372,7 @@ class XplorMRParserListener(ParseTreeListener):
             seqKey = (authChainId, authSeqId)
             if seqKey not in self.__coordUnobsRes:
                 return labelSeqId - 1
-        return ps['seq_id'][-1] - 1
+        return max(list(filter(None, ps['seq_id']))) - 1
 
     def doesNonPolySeqIdMatchWithPolySeqUnobs(self, chainId, seqId):
         _ps_ = next((_ps_ for _ps_ in self.__polySeq if _ps_['auth_chain_id'] == chainId), None)
@@ -9380,7 +9384,8 @@ class XplorMRParserListener(ParseTreeListener):
                     if self.__labelToAuthSeq[_seqKey_] in self.__coordUnobsRes:
                         return True
                 else:
-                    max_label_seq_id = _ps_['seq_id'][-1]
+                    seq_id_list = list(filter(None, _ps_['seq_id']))
+                    max_label_seq_id = max(seq_id_list)
                     _seqId_ = seqId + 1
                     while _seqId_ <= max_label_seq_id:
                         if _seqId_ in _ps_['seq_id']:
@@ -9389,7 +9394,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 break
                         _seqId_ += 1
                     if _seqId_ not in _ps_['seq_id']:
-                        min_label_seq_id = _ps_['seq_id'][0]
+                        min_label_seq_id = min(seq_id_list)
                         _seqId_ = seqId - 1
                         while _seqId_ >= min_label_seq_id:
                             if _seqId_ in _ps_['seq_id']:

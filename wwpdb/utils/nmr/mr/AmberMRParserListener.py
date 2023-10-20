@@ -3232,26 +3232,28 @@ class AmberMRParserListener(ParseTreeListener):
             chainId = ps['auth_chain_id']
 
             if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
-                min_auth_seq_id = ps['auth_seq_id'][0]
-                max_auth_seq_id = ps['auth_seq_id'][-1]
-                if min_auth_seq_id <= seqId <= max_auth_seq_id:
-                    _seqId_ = seqId + 1
-                    while _seqId_ <= max_auth_seq_id:
-                        if _seqId_ in ps['auth_seq_id']:
-                            break
-                        _seqId_ += 1
-                    if _seqId_ not in ps['auth_seq_id']:
-                        _seqId_ = seqId - 1
-                        while _seqId_ >= min_auth_seq_id:
+                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                if len(auth_seq_id_list) > 0:
+                    min_auth_seq_id = min(auth_seq_id_list)
+                    max_auth_seq_id = max(auth_seq_id_list)
+                    if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                        _seqId_ = seqId + 1
+                        while _seqId_ <= max_auth_seq_id:
                             if _seqId_ in ps['auth_seq_id']:
                                 break
-                            _seqId_ -= 1
-                    if _seqId_ in ps['auth_seq_id']:
-                        idx = ps['auth_seq_id'].index(_seqId_) - (_seqId_ - seqId)
-                        try:
-                            seqId = ps['auth_seq_id'][idx]
-                        except IndexError:
-                            pass
+                            _seqId_ += 1
+                        if _seqId_ not in ps['auth_seq_id']:
+                            _seqId_ = seqId - 1
+                            while _seqId_ >= min_auth_seq_id:
+                                if _seqId_ in ps['auth_seq_id']:
+                                    break
+                                _seqId_ -= 1
+                        if _seqId_ in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(_seqId_) - (_seqId_ - seqId)
+                            try:
+                                seqId = ps['auth_seq_id'][idx]
+                            except IndexError:
+                                pass
 
             if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
                 idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
@@ -3344,7 +3346,8 @@ class AmberMRParserListener(ParseTreeListener):
                                 if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                     checked = False
                                     _seqId = factor['seq_id']
-                                    if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == ps['auth_seq_id'][0]:
+                                    auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                    if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == min(auth_seq_id_list):
                                         if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                             checked = True
                                     if _atomId[0] in protonBeginCode:
@@ -3375,8 +3378,9 @@ class AmberMRParserListener(ParseTreeListener):
 
                 seqKey = (chainId, seqId)
                 if seqKey not in self.__authToLabelSeq and 'gap_in_auth_seq' in ps:
-                    min_auth_seq_id = ps['auth_seq_id'][0]
-                    max_auth_seq_id = ps['auth_seq_id'][-1]
+                    auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                    min_auth_seq_id = min(auth_seq_id_list)
+                    max_auth_seq_id = max(auth_seq_id_list)
                     if min_auth_seq_id <= seqId <= max_auth_seq_id:
                         offset = 1
                         while seqId + offset <= max_auth_seq_id:
@@ -3488,7 +3492,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         factor['auth_atom_id'] = authAtomId
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
-                                            if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == ps['auth_seq_id'][0]:
+                                            auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                            if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                                                 if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
@@ -3566,26 +3571,28 @@ class AmberMRParserListener(ParseTreeListener):
             seqId = factor['auth_seq_id']
 
             if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
-                min_auth_seq_id = ps['auth_seq_id'][0]
-                max_auth_seq_id = ps['auth_seq_id'][-1]
-                if min_auth_seq_id <= seqId <= max_auth_seq_id:
-                    offset = 1
-                    while seqId + offset <= max_auth_seq_id:
-                        if seqId + offset in ps['auth_seq_id']:
-                            break
-                        offset += 1
-                    if seqId + offset not in ps['auth_seq_id']:
-                        offset = -1
-                        while seqId + offset >= min_auth_seq_id:
+                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                if len(auth_seq_id_list) > 0:
+                    min_auth_seq_id = min(auth_seq_id_list)
+                    max_auth_seq_id = max(auth_seq_id_list)
+                    if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                        offset = 1
+                        while seqId + offset <= max_auth_seq_id:
                             if seqId + offset in ps['auth_seq_id']:
                                 break
-                            offset -= 1
-                    if seqId + offset in ps['auth_seq_id']:
-                        idx = ps['auth_seq_id'].index(seqId + offset) - offset
-                        try:
-                            seqId = ps['auth_seq_id'][idx]
-                        except IndexError:
-                            pass
+                            offset += 1
+                        if seqId + offset not in ps['auth_seq_id']:
+                            offset = -1
+                            while seqId + offset >= min_auth_seq_id:
+                                if seqId + offset in ps['auth_seq_id']:
+                                    break
+                                offset -= 1
+                        if seqId + offset in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                            try:
+                                seqId = ps['auth_seq_id'][idx]
+                            except IndexError:
+                                pass
 
             if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
                 idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
@@ -3691,7 +3698,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
                                             _seqId = factor['seq_id']
-                                            if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == ps['auth_seq_id'][0]:
+                                            auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                            if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == min(auth_seq_id_list):
                                                 if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
@@ -3774,7 +3782,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
                                             _seqId = _factor['seq_id']
-                                            if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == ps['auth_seq_id'][0]:
+                                            auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                            if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == min(auth_seq_id_list):
                                                 if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
@@ -3896,7 +3905,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__sanderAtomNumberDict[iat] = factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
-                                            if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == np['auth_seq_id'][0]:
+                                            auth_seq_id_list = list(filter(None, np['auth_seq_id']))
+                                            if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                                                 if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
@@ -3978,7 +3988,8 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.__sanderAtomNumberDict[igr] = _factor
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
-                                            if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == np['auth_seq_id'][0]:
+                                            auth_seq_id_list = list(filter(None, np['auth_seq_id']))
+                                            if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                                                 if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
@@ -4049,26 +4060,28 @@ class AmberMRParserListener(ParseTreeListener):
                     continue
 
                 if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
-                    min_auth_seq_id = ps['auth_seq_id'][0]
-                    max_auth_seq_id = ps['auth_seq_id'][-1]
-                    if min_auth_seq_id <= seqId <= max_auth_seq_id:
-                        offset = 1
-                        while seqId + offset <= max_auth_seq_id:
-                            if seqId + offset in ps['auth_seq_id']:
-                                break
-                            offset += 1
-                        if seqId + offset not in ps['auth_seq_id']:
-                            offset = -1
-                            while seqId + offset >= min_auth_seq_id:
+                    auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                    if len(auth_seq_id_list) > 0:
+                        min_auth_seq_id = min(auth_seq_id_list)
+                        max_auth_seq_id = max(auth_seq_id_list)
+                        if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                            offset = 1
+                            while seqId + offset <= max_auth_seq_id:
                                 if seqId + offset in ps['auth_seq_id']:
                                     break
-                                offset -= 1
-                        if seqId + offset in ps['auth_seq_id']:
-                            idx = ps['auth_seq_id'].index(seqId + offset) - offset
-                            try:
-                                seqId = ps['auth_seq_id'][idx]
-                            except IndexError:
-                                pass
+                                offset += 1
+                            if seqId + offset not in ps['auth_seq_id']:
+                                offset = -1
+                                while seqId + offset >= min_auth_seq_id:
+                                    if seqId + offset in ps['auth_seq_id']:
+                                        break
+                                    offset -= 1
+                            if seqId + offset in ps['auth_seq_id']:
+                                idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                                try:
+                                    seqId = ps['auth_seq_id'][idx]
+                                except IndexError:
+                                    pass
 
                 if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
                     idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
@@ -4159,7 +4172,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
                                                 _seqId = factor['seq_id']
-                                                if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == ps['auth_seq_id'][0]:
+                                                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                                if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == min(auth_seq_id_list):
                                                     if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
@@ -4242,7 +4256,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
                                                 _seqId = _factor['seq_id']
-                                                if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == ps['auth_seq_id'][0]:
+                                                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                                if _seqId == 1 or (chainId, _seqId - 1) in self.__coordUnobsRes or _seqId == min(auth_seq_id_list):
                                                     if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
@@ -4347,7 +4362,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             self.__sanderAtomNumberDict[iat] = factor
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
-                                                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == np['auth_seq_id'][0]:
+                                                auth_seq_id_list = list(filter(None, np['auth_seq_id']))
+                                                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                                                     if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
@@ -4429,7 +4445,8 @@ class AmberMRParserListener(ParseTreeListener):
                                             self.__sanderAtomNumberDict[igr] = _factor
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
-                                                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == np['auth_seq_id'][0]:
+                                                auth_seq_id_list = list(filter(None, np['auth_seq_id']))
+                                                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                                                     if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in coordAtomSite['atom_id']) or _atomId == 'P'):
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
@@ -8098,29 +8115,31 @@ class AmberMRParserListener(ParseTreeListener):
                 if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.add((chainId, seqId, cifCompId, True))
             elif 'gap_in_auth_seq' in ps:
-                min_auth_seq_id = ps['auth_seq_id'][0]
-                max_auth_seq_id = ps['auth_seq_id'][-1]
-                if min_auth_seq_id <= seqId <= max_auth_seq_id:
-                    offset = 1
-                    while seqId + offset <= max_auth_seq_id:
-                        if seqId + offset in ps['auth_seq_id']:
-                            break
-                        offset += 1
-                    if seqId + offset not in ps['auth_seq_id']:
-                        offset = -1
-                        while seqId + offset >= min_auth_seq_id:
+                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                if len(auth_seq_id_list) > 0:
+                    min_auth_seq_id = min(auth_seq_id_list)
+                    max_auth_seq_id = max(auth_seq_id_list)
+                    if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                        offset = 1
+                        while seqId + offset <= max_auth_seq_id:
                             if seqId + offset in ps['auth_seq_id']:
                                 break
-                            offset -= 1
-                    if seqId + offset in ps['auth_seq_id']:
-                        idx = ps['auth_seq_id'].index(seqId + offset) - offset
-                        try:
-                            seqId_ = ps['auth_seq_id'][idx]
-                            cifCompId = ps['comp_id'][idx]
-                            if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.add((chainId, seqId_, cifCompId, True))
-                        except IndexError:
-                            pass
+                            offset += 1
+                        if seqId + offset not in ps['auth_seq_id']:
+                            offset = -1
+                            while seqId + offset >= min_auth_seq_id:
+                                if seqId + offset in ps['auth_seq_id']:
+                                    break
+                                offset -= 1
+                        if seqId + offset in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(seqId + offset) - offset
+                            try:
+                                seqId_ = ps['auth_seq_id'][idx]
+                                cifCompId = ps['comp_id'][idx]
+                                if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                    chainAssign.add((chainId, seqId_, cifCompId, True))
+                            except IndexError:
+                                pass
 
         if self.__hasNonPolySeq:
             for np in self.__nonPolySeq:
@@ -8324,7 +8343,9 @@ class AmberMRParserListener(ParseTreeListener):
             if cca is not None and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                 checked = False
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
-                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or (ps is not None and ps['auth_seq_id'][0] == seqId):
+                if ps is not None:
+                    auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or (ps is not None and min(auth_seq_id_list) == seqId):
                     if atomId in aminoProtonCode and atomId != 'H1':
                         self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                         return

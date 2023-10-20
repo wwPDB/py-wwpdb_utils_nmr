@@ -8,7 +8,12 @@
 import unittest
 import os
 import sys
-from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
+
+try:
+    from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
+except ImportError:
+    from nmr.CifToNmrStar import CifToNmrStar
+
 
 if __package__ is None or __package__ == "":
     from os import path

@@ -18,8 +18,12 @@
 import unittest
 import os
 
-from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReportInputSource
+try:
+    from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
+    from wwpdb.utils.nmr.NmrDpReport import NmrDpReportInputSource
+except ImportError:
+    from nmr.NmrDpUtility import NmrDpUtility
+    from nmr.NmrDpReport import NmrDpReportInputSource
 
 
 class TestNmrDpUtility(unittest.TestCase):

@@ -9,7 +9,10 @@
 ##
 import unittest
 
-from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+try:
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+except ImportError:
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 
 class TestBMRBChemShiftStat(unittest.TestCase):

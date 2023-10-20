@@ -9,7 +9,12 @@ import unittest
 import os
 import sys
 from shutil import copyfile
-from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
+
+try:
+    from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
+except ImportError:
+    from nmr.NmrStarToCif import NmrStarToCif
+
 
 if __package__ is None or __package__ == "":
     from os import path

@@ -11,7 +11,10 @@ import unittest
 import os
 import platform
 
-from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+try:
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+except ImportError:
+    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
 class ImportTests(unittest.TestCase):

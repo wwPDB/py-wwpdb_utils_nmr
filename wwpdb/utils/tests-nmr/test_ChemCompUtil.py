@@ -5,7 +5,6 @@
 # Updates:
 #
 import unittest
-import os
 import sys
 
 try:

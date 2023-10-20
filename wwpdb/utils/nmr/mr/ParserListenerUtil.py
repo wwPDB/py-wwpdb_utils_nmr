@@ -3097,9 +3097,11 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         cif_label_seq_id = cif_label_seq_ids[i + offset] - offset - offset_2
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
 
-                                        if cif_label_seq_id < s2['seq_id'][0]:
+                                        s2_seq_id_list = list(filter(None, s2['seq_id']))
+
+                                        if cif_label_seq_id < min(s2_seq_id_list):
                                             pos = 0
-                                        elif cif_label_seq_id > s2['seq_id'][-1]:
+                                        elif cif_label_seq_id > max(s2_seq_id_list):
                                             pos = len(s2['seq_id'])
                                         else:
                                             for idx, _seq_id in enumerate(s2['seq_id']):
@@ -3124,17 +3126,20 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                 ps = copy.copy(polySeq[0])
                 ps['auth_seq_id'] = ps['seq_id']
                 altPolySeq = [ps]
-                lastSeqId = ps['auth_seq_id'][-1]
+                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                lastSeqId = max(auth_seq_id_list)
 
                 for chainId in range(1, len(polySeq)):
                     ps = copy.copy(polySeq[chainId])
-                    if ps['seq_id'][0] <= lastSeqId:
-                        offset = lastSeqId + 1 - ps['seq_id'][0]
+                    seq_id_list = list(filter(None, ps['seq_id']))
+                    if min(seq_id_list) <= lastSeqId:
+                        offset = lastSeqId + 1 - min(seq_id_list)
                     else:
                         offset = 0
                     ps['auth_seq_id'] = [s + offset for s in ps['seq_id']]
                     altPolySeq.append(ps)
-                    lastSeqId = ps['auth_seq_id'][-1]
+                    auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                    lastSeqId = max(auth_seq_id_list)
 
             for ps in polySeq:
                 if 'ins_code' in ps and len(collections.Counter(ps['ins_code']).most_common()) == 1:
@@ -5043,10 +5048,12 @@ def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=1, modelNumNa
         return False
 
     labelAsymId = ps['chain_id']
-    begAuthSeqId = ps['auth_seq_id'][0]
-    endAuthSeqId = ps['auth_seq_id'][-1]
-    begLabelSeqId = ps['seq_id'][0]
-    endLabelSeqId = ps['seq_id'][-1]
+    auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+    seq_id_list = list(filter(None, ps['seq_id']))
+    begAuthSeqId = min(auth_seq_id_list)
+    endAuthSeqId = max(auth_seq_id_list)
+    begLabelSeqId = min(seq_id_list)
+    endLabelSeqId = max(seq_id_list)
 
     try:
 
@@ -7154,39 +7161,41 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
                 chainAssign.add((chainId, seqId, cifCompId, True))
 
         elif 'gap_in_auth_seq' in ps:
-            min_auth_seq_id = ps['auth_seq_id'][0]
-            max_auth_seq_id = ps['auth_seq_id'][-1]
-            if min_auth_seq_id <= seqId <= max_auth_seq_id:
-                _seqId_ = seqId + 1
-                while _seqId_ <= max_auth_seq_id:
-                    if _seqId_ in ps['auth_seq_id']:
-                        break
-                    _seqId_ += 1
-                if _seqId_ not in ps['auth_seq_id']:
-                    _seqId_ = seqId - 1
-                    while _seqId_ >= min_auth_seq_id:
+            auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+            if len(auth_seq_id_list) > 0:
+                min_auth_seq_id = min(auth_seq_id_list)
+                max_auth_seq_id = max(auth_seq_id_list)
+                if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                    _seqId_ = seqId + 1
+                    while _seqId_ <= max_auth_seq_id:
                         if _seqId_ in ps['auth_seq_id']:
                             break
-                        _seqId_ -= 1
-                if _seqId_ in ps['auth_seq_id']:
-                    idx = ps['auth_seq_id'].index(_seqId_) - (_seqId_ - seqId)
-                    try:
-                        seqId_ = ps['auth_seq_id'][idx]
-                        cifCompId = ps['comp_id'][idx]
-                        origCompId = ps['auth_comp_id'][idx]
-                        if cifCompId != compId:
-                            compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
-                            if compId in compIds:
-                                cifCompId = compId
-                                origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
-                                                  if _seqId == seqId and _compId == compId)
-                        if compId in (cifCompId, origCompId):
-                            if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.add((chainId, seqId_, cifCompId, True))
-                            elif len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.add((chainId, seqId_, cifCompId, True))
-                    except IndexError:
-                        pass
+                        _seqId_ += 1
+                    if _seqId_ not in ps['auth_seq_id']:
+                        _seqId_ = seqId - 1
+                        while _seqId_ >= min_auth_seq_id:
+                            if _seqId_ in ps['auth_seq_id']:
+                                break
+                            _seqId_ -= 1
+                    if _seqId_ in ps['auth_seq_id']:
+                        idx = ps['auth_seq_id'].index(_seqId_) - (_seqId_ - seqId)
+                        try:
+                            seqId_ = ps['auth_seq_id'][idx]
+                            cifCompId = ps['comp_id'][idx]
+                            origCompId = ps['auth_comp_id'][idx]
+                            if cifCompId != compId:
+                                compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                                if compId in compIds:
+                                    cifCompId = compId
+                                    origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                                      if _seqId == seqId and _compId == compId)
+                            if compId in (cifCompId, origCompId):
+                                if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                    chainAssign.add((chainId, seqId_, cifCompId, True))
+                                elif len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                    chainAssign.add((chainId, seqId_, cifCompId, True))
+                        except IndexError:
+                            pass
 
     if hasNonPoly or hasBranched:
 
@@ -7486,7 +7495,9 @@ def testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, atomId, seqKey,
         if cca is not None and seqKey not in caC['coord_unobs_res'] and ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
             checked = False
             ps = next((ps for ps in caC['polymer_sequence'] if ps['auth_chain_id'] == chainId), None)
-            if seqId == 1 or (chainId, seqId - 1) in caC['coord_unobs_res'] or (ps is not None and ps['auth_seq_id'][0] == seqId):
+            if ps is not None:
+                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+            if seqId == 1 or (chainId, seqId - 1) in caC['coord_unobs_res'] or (ps is not None and min(auth_seq_id_list) == seqId):
                 if aminoProtonCode and atomId != 'H1':
                     testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     return None

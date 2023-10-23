@@ -17,15 +17,15 @@
 
 - downgrading urllib3 from v2 to v1 if Python version is less than 3.10.
 ```bash
-    pip install urllib3==1.26.18
+    pip install urllib3==1.26.18  # Only for Python 3.6/3.7/3.8/3.9 users
 ```
 
 - linux command:
 	- aria2c
 
 - shared library :
-	- alignlib.so (locate the shared library of wwpdb.utils.align in wwpdb/utils/nmr/align)
-	- By default, Python  3.6, 3.7, and 3.8 compatible alignlib.so is included.
+	- alignlib.so (the shared library of wwpdb.utils.align package located in wwpdb/utils/nmr/align directory)
+	- By default, Python  3.6, 3.7, and 3.8 compatible shared libraries are included.
 	  Python 3.6 users must use alignlib.cpython-36m-x86_64-linux-gnu.so.
 	  Python 3.7 users must use alignlib.cpython-37m-x86_64-linux-gnu.so.
 	  Python 3.8 users must use alignlib.cpython-38-x86_64-linux-gnu.so.
@@ -33,9 +33,9 @@
 	```bash
 		cd py-wwpdb_utils_nmr/wwpdb/utils/nmr/align
 		pip install wwpdb.utils.align
-		cp ~/.pyenv/versions/3.x.y/lib/python3.x/site-packages/wwpdb/utils/align/alignlib.cpython-3x-x86_64-linux-gnu.so .
+		cp ~/.pyenv/versions/3.x.y/lib/python3.x/site-packages/wwpdb/utils/align/alignlib.cpython-3x-x86_64-linux-gnu.so .  # Please re-write these lines
 		rm -f alignlib.so ; ln -s alignlib.cpython-3x-x86_64-linux-gnu.so alignlib.so
-		pip uninstall wwpdb.utils.align # uninstall wwpdb.utils.align package to stay in stand-alone mode.
+		pip uninstall wwpdb.utils.align  # Uninstall wwpdb.utils.align package without affecting standalone mode.
 	```
 
 ## How to set up

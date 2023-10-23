@@ -43784,7 +43784,10 @@ class NmrDpUtility:
                                 if _seq_id is not None:
                                     _ps = next(_ps for _ps in poly_seq if _ps['chain_id'] == _chain_id)
                                     if _seq_id in _ps['seq_id']:
-                                        _comp_id = _ps['comp_id'][_ps['seq_id'].index(_seq_id)]
+                                        try:
+                                            _comp_id = _ps['comp_id'][_ps['seq_id'].index(_seq_id)]
+                                        except IndexError:
+                                            pass
 
                     if _chain_id is not None and _seq_id is not None and comp_id == _comp_id:
                         if chain_id not in self.__chain_id_map_for_remediation:
@@ -43795,11 +43798,14 @@ class NmrDpUtility:
                     else:
                         _ps = next((_ps for _ps in poly_seq if _ps['chain_id'] == _chain_id and _ps['seq_id'] == _seq_id), None)
                         if _ps is not None:
-                            _comp_id = _ps['comp_id'][_ps['seq_id'].index(_seq_id)]
-                            if comp_id == _comp_id:
-                                if chain_id not in self.__chain_id_map_for_remediation:
-                                    self.__chain_id_map_for_remediation[chain_id] = _chain_id
-                                self.__seq_id_map_for_remediation[seq_key] = (_chain_id, _seq_id)
+                            try:
+                                _comp_id = _ps['comp_id'][_ps['seq_id'].index(_seq_id)]
+                                if comp_id == _comp_id:
+                                    if chain_id not in self.__chain_id_map_for_remediation:
+                                        self.__chain_id_map_for_remediation[chain_id] = _chain_id
+                                    self.__seq_id_map_for_remediation[seq_key] = (_chain_id, _seq_id)
+                            except IndexError:
+                                pass
 
         self.__mergePolymerSequenceInCsLoop(0)
 

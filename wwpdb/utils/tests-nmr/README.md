@@ -17,7 +17,7 @@
 
 - downgrading urllib3 from v2 to v1 if Python version is less than 3.10.
 ```bash
-    pip install urllib3==1.26.18  # Only for Python 3.6/3.7/3.8/3.9 users
+    pip install urllib3==1.26.18  # Only for Python 3.6, 3.7, 3.8, and 3.9 users
 ```
 
 - linux command:
@@ -26,9 +26,9 @@
 - shared library :
 	- alignlib.so (the shared library of wwpdb.utils.align package located in wwpdb/utils/nmr/align directory)
 	- By default, Python  3.6, 3.7, and 3.8 compatible shared libraries are included.
-	  Python 3.6 users must use alignlib.cpython-36m-x86_64-linux-gnu.so.
-	  Python 3.7 users must use alignlib.cpython-37m-x86_64-linux-gnu.so.
-	  Python 3.8 users must use alignlib.cpython-38-x86_64-linux-gnu.so.
+	  	- Python 3.6 users must link alignlib.cpython-36m-x86_64-linux-gnu.so to alignlib.so
+	  	- Python 3.7 users must link alignlib.cpython-37m-x86_64-linux-gnu.so to alignlib.so
+	  	- Python 3.8 users must link alignlib.cpython-38-x86_64-linux-gnu.so to alignlib.so
 	- For other environments, the shared library is avaialble by the following instuctions:
 	```bash
 		cd py-wwpdb_utils_nmr/wwpdb/utils/nmr/align

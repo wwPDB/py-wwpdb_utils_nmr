@@ -15,17 +15,17 @@
 	- antlr4-python3-runtime
 	- typing_extensions
 
-- downgrading urllib3 from v2 to v1 if Python version is less than 3.10.
+- If your Python version is less than 3.10, downgrade urllib3 from v2 to v1. Otherwise, the urllib3 v2 requires openSSL 1.1.1+.
 ```bash
-    pip install urllib3==1.26.18  # Only for Python 3.6, 3.7, 3.8, and 3.9 users
+    pip install urllib3==1.26.18  # Only for Python 3.6, 3.7, 3.8, and 3.9 users.
 ```
 
 - linux command:
 	- aria2c
 
-- shared library :
-	- alignlib.so (the shared library of wwpdb.utils.align package located in wwpdb/utils/nmr/align directory)
-	- By default, Python  3.6, 3.7, and 3.8 compatible shared libraries are included.
+- shared library:
+	- wwpdb/utils/nmr/align/alignlib.so, a shared library of [py-wwpdb_utils_align](https://github.com/wwPDB/py-wwpdb_utils_align) package
+	- Python 3.6, 3.7, and 3.8 compatible shared libraries are included by default.
 	  	- Python 3.6 users must link alignlib.cpython-36m-x86_64-linux-gnu.so to alignlib.so
 	  	- Python 3.7 users must link alignlib.cpython-37m-x86_64-linux-gnu.so to alignlib.so
 	  	- Python 3.8 users must link alignlib.cpython-38-x86_64-linux-gnu.so to alignlib.so
@@ -33,8 +33,8 @@
 	```bash
 		cd py-wwpdb_utils_nmr/wwpdb/utils/nmr/align
 		pip install wwpdb.utils.align
-		cp ~/.pyenv/versions/3.x.y/lib/python3.x/site-packages/wwpdb/utils/align/alignlib.cpython-3x-x86_64-linux-gnu.so .  # Please re-write these lines
-		rm -f alignlib.so ; ln -s alignlib.cpython-3x-x86_64-linux-gnu.so alignlib.so
+		cp ~/.pyenv/versions/3.x.y/lib/python3.x/site-packages/wwpdb/utils/align/alignlib.cpython-3x-x86_64-linux-gnu.so .  # Please rewrite 'x' and 'y' with digits.
+		rm -f alignlib.so ; ln -s alignlib.cpython-3x-x86_64-linux-gnu.so alignlib.so  Please rewrite 'x' with digit.
 		pip uninstall wwpdb.utils.align  # Uninstall wwpdb.utils.align package without affecting standalone mode.
 	```
 

@@ -2157,8 +2157,11 @@ def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssign):
                     break
 
                 while True:
-                    if _test_ps['comp_id'][beg] != '.':
-                        break
+                    try:
+                        if _test_ps['comp_id'][beg] != '.':
+                            break
+                    except IndexError:
+                        return None, None
                     beg += 1
                     if beg == end:
                         return None, None
@@ -2169,8 +2172,11 @@ def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssign):
                     end = len_test_ps
 
                 while True:
-                    if _test_ps['comp_id'][end - 1] != '.':
-                        break
+                    try:
+                        if _test_ps['comp_id'][end - 1] != '.':
+                            break
+                    except IndexError:
+                        return None, None
                     end -= 1
                     if end == beg:
                         return None, None
@@ -2316,8 +2322,11 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel, polySeqRst, chainAssign):
                     break
 
                 while True:
-                    if _test_ps['comp_id'][beg] != '.':
-                        break
+                    try:
+                        if _test_ps['comp_id'][beg] != '.':
+                            break
+                    except IndexError:
+                        return None, None, None
                     beg += 1
                     if beg == end:
                         return None, None, None
@@ -2380,8 +2389,11 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel, polySeqRst, chainAssign):
                     end = test_ps['seq_id'].index(_test_seq_id) + 1
 
                 while True:
-                    if _test_ps['comp_id'][end - 1] != '.':
-                        break
+                    try:
+                        if _test_ps['comp_id'][end - 1] != '.':
+                            break
+                    except IndexError:
+                        return None, None, None
                     end -= 1
                     if end == beg:
                         return None, None, None

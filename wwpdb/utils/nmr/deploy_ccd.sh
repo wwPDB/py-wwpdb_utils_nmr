@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SRC_DIR=ftp.pdbj.org/pub/pdb/refdata/chem_comp
+SRC_DIR=$PWD/ftp.pdbj.org/pub/pdb/refdata/chem_comp
 
 if [ ! -d $SRC_DIR ] ; then
  ./update_ccd.sh

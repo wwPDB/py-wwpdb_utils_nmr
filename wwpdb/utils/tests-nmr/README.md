@@ -1,7 +1,7 @@
 # How to set up standalone mode for wwpdb.utils.nmr package
 
 ## Requirements
-- python 3.6 or 3.7
+- python 3.6 or later
 
 - pip packages to be installed:
 	- pynmrstar
@@ -15,12 +15,28 @@
 	- antlr4-python3-runtime
 	- typing_extensions
 
+- downgrading urllib3 from v2 to v1 if Python version is less than 3.10.
+```bash
+    pip install urllib3==1.26.18
+```
+
 - linux command:
 	- aria2c
 
-- shared library:
-	- alignlib.so (locate the shared library in wwpdb/utils/nmr/align)
-	- alignlib.so is a softlink to alignlib.cpython-37m-x86_64-linux-gnu.so by default, Python 3.6 user must use alignlib.cpython-36m-x86_64-linux-gnu.so, instead by editing the softlink.
+- shared library :
+	- alignlib.so (locate the shared library of wwpdb.utils.align in wwpdb/utils/nmr/align)
+	- By default, Python  3.6, 3.7, and 3.8 compatible alignlib.so is included.
+	  Python 3.6 users must use alignlib.cpython-36m-x86_64-linux-gnu.so.
+	  Python 3.7 users must use alignlib.cpython-37m-x86_64-linux-gnu.so.
+	  Python 3.8 users must use alignlib.cpython-38-x86_64-linux-gnu.so.
+	- For other environments, the shared library is avaialble by the following instuctions:
+	```bash
+		cd py-wwpdb_utils_nmr/wwpdb/utils/nmr/align
+		pip install wwpdb.utils.align
+		cp ~/.pyenv/versions/3.x.y/lib/python3.x/site-packages/wwpdb/utils/align/alignlib.cpython-3x-x86_64-linux-gnu.so .
+		rm -f alignlib.so ; ln -s alignlib.cpython-3x-x86_64-linux-gnu.so alignlib.so
+		pip uninstall wwpdb.utils.align # uninstall wwpdb.utils.align package to stay in stand-alone mode.
+	```
 
 ## How to set up
 1. Set enviromnent variable PYTHONPATH 
@@ -34,8 +50,13 @@
 ```
 
 3. Import test
-```pathon
+```python
     from nmr.NmrDpUtility import NmrDpUtility
 ```
 
 4. Run unit tests in wwpdb/utils/tests-nmr
+```bash
+   python test_ChemCompUtil.py
+   python test_BMRBChemShiftStat.py
+   python test_AlignUtil.py
+```

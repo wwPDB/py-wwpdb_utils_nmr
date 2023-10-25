@@ -12,7 +12,7 @@ MMCIF_CC=pub/pdb/refdata/chem_comp
 if [ ! `which aria2c` ] ; then
 
  echo "aria2c: command not found..."
- echo "Please install aria2 (https://aria2.github.io/ZZ)."
+ echo "Please install aria2 (https://aria2.github.io)."
  exit 1
 
 fi

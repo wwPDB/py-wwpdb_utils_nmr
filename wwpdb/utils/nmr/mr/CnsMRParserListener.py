@@ -4900,6 +4900,10 @@ class CnsMRParserListener(ParseTreeListener):
             for ps in psList:
 
                 for seqId in _factor['seq_id']:
+
+                    if seqId is None:
+                        continue
+
                     _seqId_ = seqId
                     seqId = self.getRealSeqId(ps, seqId, isPolySeq)
 

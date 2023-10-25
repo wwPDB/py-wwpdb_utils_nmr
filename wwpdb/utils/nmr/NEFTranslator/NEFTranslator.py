@@ -1462,7 +1462,18 @@ class NEFTranslator:
 
             len_loop_data = len(loop.data)
 
-            if set(tags) & set(loop.tags) == set(tags):
+            if lp_category == '_Atom_chem_shift' and self.__remediation_mode and set(tags) & set(loop.tags) == set(tags) and set(tags__) & set(loop.tags) == set(tags__):
+                seq_data = get_lp_tag(loop, tags)
+                has_valid_chain_id = True
+                for row in seq_data:
+                    if row[2] in emptyValue:
+                        has_valid_chain_id = False
+                        break
+                if not has_valid_chain_id:
+                    seq_data = get_lp_tag(loop, tags__)
+                    for row in seq_data:
+                        row[2] = def_chain_id if row[2] in emptyValue else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
+            elif set(tags) & set(loop.tags) == set(tags):
                 seq_data = get_lp_tag(loop, tags)
                 for row in seq_data:
                     if row[2] in emptyValue:

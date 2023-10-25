@@ -2910,6 +2910,9 @@ def translateToStdResName(compId, ccU=None):
     if compId == 'HEMC':
         return 'HEC'
 
+    if compId in ('H2O', 'WAT'):
+        return 'HOH'
+
     return compId
 
 

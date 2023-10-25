@@ -127,19 +127,31 @@ def fillInnerBlankCompId(polySeq, seqIdName='seq_id'):
         seqIds = [seqId for seqId in polySeq[seqIdName] if seqId is not None]
         _s = list(range(seqIds[0], seqIds[-1] + 1))
 
+    has_auth_comp_id = 'auth_comp_id' in polySeq
+
     _c = []
+    if has_auth_comp_id:
+        _a_c = []
 
     for seqId in _s:
         if seqId in polySeq[seqIdName]:
             idx = polySeq[seqIdName].index(seqId)
             if idx < len(polySeq['comp_id']):
                 _c.append(polySeq['comp_id'][idx])
+                if has_auth_comp_id:
+                    _a_c.append(polySeq['auth_comp_id'][idx])
             else:
                 _c.append('.')
+                if has_auth_comp_id:
+                    _a_c.append('.')
         else:
             _c.append('.')
+            if has_auth_comp_id:
+                _a_c.append('.')
 
     ps = {'chain_id': polySeq['chain_id'], 'seq_id': _s, 'comp_id': _c}
+    if has_auth_comp_id:
+        ps['auth_comp_id'] = _a_c
     if 'gap_in_auth_seq' in polySeq:
         ps['gap_in_auth_seq'] = polySeq['gap_in_auth_seq']
 
@@ -169,19 +181,31 @@ def fillBlankCompId(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'
         else:
             _s = [seqId for seqId in polySeq2[seqIdName2] if seqId is not None]
 
+    has_auth_comp_id = 'auth_comp_id' in polySeq2
+
     _c = []
+    if has_auth_comp_id:
+        _a_c = []
 
     for seqId in _s:
         if seqId in polySeq2[seqIdName2]:
             idx = polySeq2[seqIdName2].index(seqId)
             if idx < len(polySeq2['comp_id']):
                 _c.append(polySeq2['comp_id'][idx])
+                if has_auth_comp_id:
+                    _a_c.append(polySeq2['auth_comp_id'][idx])
             else:
                 _c.append('.')
+                if has_auth_comp_id:
+                    _a_c.append('.')
         else:
             _c.append('.')
+            if has_auth_comp_id:
+                _a_c.append('.')
 
     ps = {'chain_id': polySeq2['chain_id'], seqIdName2: _s, 'comp_id': _c}
+    if has_auth_comp_id:
+        ps['auth_comp_id'] = _a_c
     if seqIdName2 == 'auth_seq_id':
         ps['seq_id'] = polySeq2['seq_id']
     if seqIdName2 == 'seq_id' and 'auth_seq_id' in polySeq2:
@@ -202,19 +226,31 @@ def fillBlankCompIdWithOffset(polySeq, offset, seqIdName='seq_id'):
         seqIds = [seqId for seqId in polySeq[seqIdName] if seqId is not None]
         _s = list(range(seqIds[0] - offset, seqIds[-1] + 1))
 
+    has_auth_comp_id = 'auth_comp_id' in polySeq
+
     _c = []
+    if has_auth_comp_id:
+        _a_c = []
 
     for seqId in _s:
         if seqId in polySeq[seqIdName]:
             idx = polySeq[seqIdName].index(seqId)
             if idx < len(polySeq['comp_id']):
                 _c.append(polySeq['comp_id'][idx])
+                if has_auth_comp_id:
+                    _a_c.append(polySeq['auth_comp_id'][idx])
             else:
                 _c.append('.')
+                if has_auth_comp_id:
+                    _a_c.append('.')
         else:
             _c.append('.')
+            if has_auth_comp_id:
+                _a_c.append('.')
 
     ps = {'chain_id': polySeq['chain_id'], 'seq_id': _s, 'comp_id': _c}
+    if has_auth_comp_id:
+        ps['auth_comp_id'] = _a_c
     if 'gap_in_auth_seq' in polySeq:
         ps['gap_in_auth_seq'] = polySeq['gap_in_auth_seq']
 
@@ -231,11 +267,20 @@ def beautifyPolySeq(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'
     if _polySeq1[seqIdName1] != _polySeq2[seqIdName2]:
         return _polySeq1, _polySeq2
 
+    has_auth_comp_id1 = 'auth_comp_id' in polySeq1
+    has_auth_comp_id2 = 'auth_comp_id' in polySeq2
+
     _s = [seqId for seqId in _polySeq1[seqIdName1] if seqId is not None and seqId > 0]
     _c1 = [compId for seqId, compId
            in zip(_polySeq1[seqIdName1], _polySeq1['comp_id']) if seqId is not None and seqId > 0]
+    if has_auth_comp_id1:
+        _a_c1 = [authCompId for seqId, authCompId
+                 in zip(_polySeq1[seqIdName1], _polySeq1['auth_comp_id']) if seqId is not None and seqId > 0]
     _c2 = [compId for seqId, compId
            in zip(_polySeq1[seqIdName1], _polySeq2['comp_id']) if seqId is not None and seqId > 0]
+    if has_auth_comp_id2:
+        _a_c2 = [authCompId for seqId, authCompId
+                 in zip(_polySeq2[seqIdName1], _polySeq2['auth_comp_id']) if seqId is not None and seqId > 0]
 
     gapS = []
     gapP = []
@@ -254,6 +299,10 @@ def beautifyPolySeq(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'
         ps1 = {'chain_id': _polySeq1['chain_id'], 'seq_id': _s, 'comp_id': _c1}
         ps2 = {'chain_id': _polySeq2['chain_id'], 'seq_id': _s, 'comp_id': _c2}
 
+        if has_auth_comp_id1:
+            ps1['auth_comp_id'] = _a_c1
+        if has_auth_comp_id2:
+            ps2['auth_comp_id'] = _a_c2
         if 'gap_in_auth_seq' in polySeq1:
             ps1['gap_in_auth_seq'] = polySeq1['gap_in_auth_seq']
         if 'gap_in_auth_seq' in polySeq2:
@@ -268,10 +317,18 @@ def beautifyPolySeq(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'
         for sp in range(1, lenSpacer + 1):
             _c1.insert(p, '.')
             _c2.insert(p, '.')
+            if has_auth_comp_id1:
+                _a_c1.insert(p, '.')
+            if has_auth_comp_id2:
+                _a_c2.insert(p, '.')
 
     ps1 = {'chain_id': _polySeq1['chain_id'], 'seq_id': _s, 'comp_id': _c1}
     ps2 = {'chain_id': _polySeq2['chain_id'], 'seq_id': _s, 'comp_id': _c2}
 
+    if has_auth_comp_id1:
+        ps1['auth_comp_id'] = _a_c1
+    if has_auth_comp_id2:
+        ps2['auth_comp_id'] = _a_c2
     if 'gap_in_auth_seq' in polySeq1:
         ps1['gap_in_auth_seq'] = polySeq1['gap_in_auth_seq']
     if 'gap_in_auth_seq' in polySeq2:
@@ -840,9 +897,11 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                 if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
                     _s2 = fillInnerBlankCompId(_s2)
 
-            has_auth_seq_id = 'auth_seq_id' in _s1
-            has_auth_comp_id = 'auth_comp_id' in _s2
-            _seq_id_name = 'auth_seq_id' if has_auth_seq_id else 'seq_id'
+            has_auth_seq_id1 = 'auth_seq_id' in _s1
+            has_auth_seq_id2 = 'auth_seq_id' in _s2
+            has_auth_comp_id1 = 'auth_comp_id' in _s1
+            has_auth_comp_id2 = 'auth_comp_id' in _s2
+            _seq_id_name = 'auth_seq_id' if has_auth_seq_id1 else 'seq_id'
 
             if 'gap_in_auth_seq' in s1 and s1['gap_in_auth_seq']:
 
@@ -965,11 +1024,15 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                    if __c1 != '.' and __c2 != '.' and __c1 != __c2):
                 seq_id1 = []
                 seq_id2 = []
-                if has_auth_seq_id:
+                if has_auth_seq_id1:
                     auth_seq_id1 = []
+                if has_auth_seq_id2:
+                    auth_seq_id2 = []
                 comp_id1 = []
                 comp_id2 = []
-                if has_auth_comp_id:
+                if has_auth_comp_id1:
+                    auth_comp_id1 = []
+                if has_auth_comp_id2:
                     auth_comp_id2 = []
                 idx1 = 0
                 idx2 = 0
@@ -981,31 +1044,39 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                         while idx1 < len(_s1['seq_id']):
                             if _s1['comp_id'][idx1] == myPr0:
                                 seq_id1.append(_s1['seq_id'][idx1])
-                                if has_auth_seq_id:
+                                if has_auth_seq_id1:
                                     auth_seq_id1.append(_s1['auth_seq_id'][idx1])
                                 comp_id1.append(myPr0)
+                                if has_auth_comp_id1:
+                                    auth_comp_id1.append(_s1['auth_comp_id'][idx1])
                                 idx1 += 1
                                 break
                             idx1 += 1
                     elif idx1 < len(_s1['seq_id']):
                         seq_id1.append(None)
-                        if has_auth_seq_id:
+                        if has_auth_seq_id1:
                             auth_seq_id1.append(None)
                         comp_id1.append('.')
+                        if has_auth_comp_id1:
+                            auth_comp_id1.append('.')
                     if myPr1 != '.':
                         while idx2 < len(_s2['seq_id']):
                             if _s2['comp_id'][idx2] == myPr1:
                                 seq_id2.append(_s2['seq_id'][idx2])
+                                if has_auth_seq_id2:
+                                    auth_seq_id2.append(_s2['auth_seq_id'][idx2])
                                 comp_id2.append(myPr1)
-                                if has_auth_comp_id:
+                                if has_auth_comp_id2:
                                     auth_comp_id2.append(_s2['auth_comp_id'][idx2])
                                 idx2 += 1
                                 break
                             idx2 += 1
                     elif idx2 < len(_s2['seq_id']):
                         seq_id2.append(None)
+                        if has_auth_seq_id2:
+                            auth_seq_id2.append(None)
                         comp_id2.append('.')
-                        if has_auth_comp_id:
+                        if has_auth_comp_id2:
                             auth_comp_id2.append('.')
                 ref_code = getOneLetterCodeSequence(comp_id1)
                 test_code = getOneLetterCodeSequence(comp_id2)
@@ -1023,11 +1094,15 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                 # 5n8m: nmr restraint remediation
                 _s1['seq_id'] = seq_id1
                 _s2['seq_id'] = seq_id2
-                if has_auth_seq_id:
+                if has_auth_seq_id1:
                     _s1['auth_seq_id'] = auth_seq_id1
+                if has_auth_seq_id2:
+                    _s2['auth_seq_id'] = auth_seq_id2
                 _s1['comp_id'] = comp_id1
                 _s2['comp_id'] = comp_id2
-                if has_auth_comp_id:
+                if has_auth_comp_id1:
+                    _s1['auth_comp_id'] = auth_comp_id1
+                if has_auth_comp_id2:
                     _s2['auth_comp_id'] = auth_comp_id2
 
             matched = mid_code.count('|')
@@ -1164,9 +1239,11 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
                 if hasLargeInnerSeqGap(_s2) and not hasLargeInnerSeqGap(_s1):
                     _s2 = fillInnerBlankCompId(_s2)
 
-            has_auth_seq_id = 'auth_seq_id' in _s1
-            has_auth_comp_id = 'auth_comp_id' in _s2
-            _seq_id_name = 'auth_seq_id' if has_auth_seq_id else 'seq_id'
+            has_auth_seq_id1 = 'auth_seq_id' in _s1
+            has_auth_seq_id2 = 'auth_seq_id' in _s2
+            has_auth_comp_id1 = 'auth_comp_id' in _s1
+            has_auth_comp_id2 = 'auth_comp_id' in _s2
+            _seq_id_name = 'auth_seq_id' if has_auth_seq_id1 else 'seq_id'
 
             if 'gap_in_auth_seq' in s1 and s1['gap_in_auth_seq']:
 
@@ -1289,11 +1366,15 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
                    if __c1 != '.' and __c2 != '.' and __c1 != __c2):
                 seq_id1 = []
                 seq_id2 = []
-                if has_auth_seq_id:
+                if has_auth_seq_id1:
                     auth_seq_id1 = []
+                if has_auth_seq_id2:
+                    auth_seq_id2 = []
                 comp_id1 = []
                 comp_id2 = []
-                if has_auth_comp_id:
+                if has_auth_comp_id1:
+                    auth_comp_id1 = []
+                if has_auth_comp_id2:
                     auth_comp_id2 = []
                 idx1 = 0
                 idx2 = 0
@@ -1305,31 +1386,39 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
                         while idx1 < len(_s1['seq_id']):
                             if _s1['comp_id'][idx1] == myPr0:
                                 seq_id1.append(_s1['seq_id'][idx1])
-                                if has_auth_seq_id:
+                                if has_auth_seq_id1:
                                     auth_seq_id1.append(_s1['auth_seq_id'][idx1])
+                                if has_auth_comp_id1:
+                                    auth_comp_id1.append(_s1['auth_comp_id'][idx1])
                                 comp_id1.append(myPr0)
                                 idx1 += 1
                                 break
                             idx1 += 1
                     elif idx1 < len(_s1['seq_id']):
                         seq_id1.append(None)
-                        if has_auth_seq_id:
+                        if has_auth_seq_id1:
                             auth_seq_id1.append(None)
                         comp_id1.append('.')
+                        if has_auth_comp_id1:
+                            auth_comp_id1.append('.')
                     if myPr1 != '.':
                         while idx2 < len(_s2['seq_id']):
                             if _s2['comp_id'][idx2] == myPr1:
                                 seq_id2.append(_s2['seq_id'][idx2])
+                                if has_auth_seq_id2:
+                                    auth_seq_id2.append(_s2['auth_seq_id'][idx2])
                                 comp_id2.append(myPr1)
-                                if has_auth_comp_id:
+                                if has_auth_comp_id2:
                                     auth_comp_id2.append(_s2['auth_comp_id'][idx2])
                                 idx2 += 1
                                 break
                             idx2 += 1
                     elif idx2 < len(_s2['seq_id']):
                         seq_id2.append(None)
+                        if has_auth_seq_id2:
+                            auth_seq_id2.append(None)
                         comp_id2.append('.')
-                        if has_auth_comp_id:
+                        if has_auth_comp_id2:
                             auth_comp_id2.append('.')
                 ref_code = getOneLetterCodeSequence(comp_id1)
                 test_code = getOneLetterCodeSequence(comp_id2)
@@ -1347,11 +1436,15 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
                 # 5n8m: nmr restraint remediation
                 _s1['seq_id'] = seq_id1
                 _s2['seq_id'] = seq_id2
-                if has_auth_seq_id:
+                if has_auth_seq_id1:
                     _s1['auth_seq_id'] = auth_seq_id1
+                if has_auth_seq_id2:
+                    _s2['auth_seq_id'] = auth_seq_id2
                 _s1['comp_id'] = comp_id1
                 _s2['comp_id'] = comp_id2
-                if has_auth_comp_id:
+                if has_auth_comp_id1:
+                    _s1['auth_comp_id'] = auth_comp_id1
+                if has_auth_comp_id2:
                     _s2['auth_comp_id'] = auth_comp_id2
 
             matched = mid_code.count('|')
@@ -1363,7 +1456,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                          'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
-            if has_auth_seq_id:
+            if has_auth_seq_id1:
                 seq_align['ref_auth_seq_id'] = _s1['auth_seq_id']
 
             seqAlign.append(seq_align)
@@ -2573,7 +2666,7 @@ def splitPolySeqRstForNonPoly(ccU, nonPolyModel, polySeqRst, seqAlign, chainAssi
             sa = next(sa for sa in seqAlign if sa['ref_chain_id'] == ref_chain_id and sa['test_chain_id'] == test_chain_id)
 
             for test_seq_id, mid_code in zip_longest(sa['test_seq_id'], sa['mid_code']):
-                if mid_code in emptyValue:
+                if test_seq_id in test_ps['seq_id'] and mid_code in emptyValue:
                     test_comp_id, test_auth_comp_id = next((comp_id, auth_comp_id)
                                                            for seq_id, comp_id, auth_comp_id
                                                            in zip(test_ps['seq_id'], test_ps['comp_id'], test_ps['auth_comp_id'])

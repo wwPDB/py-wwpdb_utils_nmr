@@ -34,7 +34,7 @@
 		cd py-wwpdb_utils_nmr/wwpdb/utils/nmr/align
 		pip install wwpdb.utils.align
 		cp ~/.pyenv/versions/3.x.y/lib/python3.x/site-packages/wwpdb/utils/align/alignlib.cpython-3x-x86_64-linux-gnu.so .  # Please rewrite 'x' and 'y' with digits.
-		rm -f alignlib.so ; ln -s alignlib.cpython-3x-x86_64-linux-gnu.so alignlib.so  Please rewrite 'x' with digit.
+		rm -f alignlib.so ; ln -s alignlib.cpython-3x-x86_64-linux-gnu.so alignlib.so  # Please rewrite 'x' with digit.
 		pip uninstall wwpdb.utils.align  # Uninstall wwpdb.utils.align package without affecting standalone mode.
 	```
 
@@ -58,5 +58,4 @@
 ```bash
    python test_ChemCompUtil.py
    python test_BMRBChemShiftStat.py
-   python test_AlignUtil.py
 ```

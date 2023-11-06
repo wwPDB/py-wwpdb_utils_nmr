@@ -689,7 +689,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 if memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
-                    memberLogicCode = '.'
+                    if self.atomSelectionSet[0][0]['auth_atom_id'] != 'CEN' and self.atomSelectionSet[1][0]['auth_atom_id'] != 'CEN':
+                        memberLogicCode = '.'
 
                 memberId = '.'
                 if memberLogicCode == 'OR':
@@ -3042,7 +3043,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                     f"{funcType} standard deviation 'sd={sd}' must be a positive value.")
 
-                if len(self.numberFSelection) > 3:
+                if len(self.numberFSelection) > 4:  # DAOTHER-8932, tag must be numeric, otherwise rswitch will be ignored
                     rswitch = self.numberFSelection[3]
 
                     func['rswitch'] = rswitch
@@ -3053,11 +3054,11 @@ class RosettaMRParserListener(ParseTreeListener):
                                         f"{funcType} additional value for switching from the upper limit to the upper linear limit "
                                         f"'rswitch={rswitch}' must not be a negative value.")
 
-                if ctx.Simple_name(0):
-                    func['tag'] = str(ctx.Simple_name(0))
+                    func['tag'] = str(self.numberFSelection[4])
 
                 func['lower_limit'] = lb
                 func['upper_limit'] = ub
+
                 if ub + rswitch < DIST_ERROR_MAX or self.__cur_subtype != 'dist':
                     func['upper_linear_limit'] = ub + rswitch
                 if lb - rswitch >= DIST_ERROR_MIN or self.__cur_subtype != 'dist':
@@ -3104,7 +3105,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                     f"{funcType} standard deviation 'sd={sd}' must be a positive value.")
 
-                if len(self.numberFSelection) > 4:
+                if len(self.numberFSelection) > 5:  # DAOTHER-8932, tag must be numeric, otherwise rswitch will be ignored
                     rswitch = self.numberFSelection[4]
 
                     func['rswitch'] = rswitch
@@ -3115,8 +3116,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                         f"{funcType} additional value for switching from the upper limit to the upper linear limit "
                                         f"'rswitch={rswitch}' must not be a negative value.")
 
-                if ctx.Simple_name(0):
-                    func['tag'] = str(ctx.Simple_name(0))
+                    func['tag'] = str(self.numberFSelection[5])
 
                 func['lower_limit'] = lb
                 func['upper_limit'] = ub
@@ -3169,7 +3169,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                     f"{funcType} standard deviation 'sd={sd}' must be a positive value.")
 
-                if len(self.numberFSelection) > 5:
+                if len(self.numberFSelection) > 6:  # DAOTHER-8932, tag must be numeric, otherwise rswitch will be ignored
                     rswitch = self.numberFSelection[5]
 
                     func['rswitch'] = rswitch
@@ -3180,8 +3180,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                         f"{funcType} additional value for switching from the upper limit to the upper linear limit "
                                         f"'rswitch={rswitch}' must not be a negative value.")
 
-                if ctx.Simple_name(0):
-                    func['tag'] = str(ctx.Simple_name(0))
+                    func['tag'] = str(self.numberFSelection[6])
 
                 func['lower_limit'] = lb + offset
                 func['upper_limit'] = ub + offset

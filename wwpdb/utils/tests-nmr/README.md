@@ -3,7 +3,7 @@
 ## Requirements
 - python 3.6 or later
 
-- pip packages to be installed:
+- pip packages:
 	- pynmrstar
 	- munkres
 	- mmcif
@@ -28,14 +28,14 @@
 	- Python 3.6, 3.7, and 3.8 compatible shared libraries are included by default.
 	  	- Python 3.6 users must link alignlib.cpython-36m-x86_64-linux-gnu.so to alignlib.so
 	  	- Python 3.7 users must link alignlib.cpython-37m-x86_64-linux-gnu.so to alignlib.so
-	  	- Python 3.8 users must link alignlib.cpython-38-x86_64-linux-gnu.so to alignlib.so
-	- For other environments, the shared library is avaialble by the following instuctions:
+	  	- Python 3.8 users must link alignlib.cpython-38-x86_64-linux-gnu.so to alignlib.so (default)
+	- For other environments, the shared library is avaialble by following instuctions:
 	```bash
 		cd py-wwpdb_utils_nmr/wwpdb/utils/nmr/align
 		pip install wwpdb.utils.align
-		cp ~/.pyenv/versions/3.x.y/lib/python3.x/site-packages/wwpdb/utils/align/alignlib.cpython-3x-x86_64-linux-gnu.so .  # Please rewrite 'x' and 'y' with digits.
-		rm -f alignlib.so ; ln -s alignlib.cpython-3x-x86_64-linux-gnu.so alignlib.so  # Please rewrite 'x' with digit.
-		pip uninstall wwpdb.utils.align  # Uninstall wwpdb.utils.align package without affecting standalone mode.
+		cp ~/.pyenv/versions/3.x.y/lib/python3.x/site-packages/wwpdb/utils/align/alignlib.cpython-3x-x86_64-linux-gnu.so .  # Please replace 'x' and 'y' with proper digits.
+		rm -f alignlib.so ; ln -s alignlib.cpython-3x-x86_64-linux-gnu.so alignlib.so  # Please replace 'x' with proper digit.
+		pip uninstall wwpdb.utils.align  # Uninstall wwpdb.utils.align package without affecting the standalone mode.
 	```
 
 ## How to set up
@@ -49,7 +49,7 @@
     cd wwpdb/utils/nmr ; ./update_ccd.sh ; ./deploy_ccd.sh  # You must run this command every Wednesday UTC+00:00.
 ```
 
-3. Import test
+3. Test importing modules
 ```python
     from nmr.NmrDpUtility import NmrDpUtility
 ```
@@ -57,5 +57,5 @@
 4. Run unit tests in wwpdb/utils/tests-nmr
 ```bash
    python test_ChemCompUtil.py
-   python test_BMRBChemShiftStat.py
+   python test_BMRBChemShiftStat.py  # Run twice test_BMRBChemShiftStat.py just in case.
 ```

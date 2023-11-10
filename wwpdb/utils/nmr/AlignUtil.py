@@ -628,6 +628,20 @@ def getRestraintFormatName(fileType, ambig=False):
     return 'other restraint'
 
 
+def getRestraintFormatNames(fileTypes, ambig=False):
+    """ Return restraint format name.
+    """
+    if len(fileTypes) == 0:
+        return None
+
+    if isinstance(fileTypes, str):
+        return getRestraintFormatName(fileTypes, ambig)
+
+    nameList = [getRestraintFormatName(fileType, ambig) for fileType in set(fileTypes)]
+
+    return ', or '.join(nameList)
+
+
 def updatePolySeqRst(polySeqRst, chainId, seqId, compId, authCompId=None):
     """ Update polymer sequence of the current MR file.
     """

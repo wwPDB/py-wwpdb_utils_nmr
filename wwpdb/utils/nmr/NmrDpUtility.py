@@ -176,6 +176,7 @@
 # 13-Sep-2023  M. Yokochi - construct pseudo CCD from the coordinates (DAOTHER-8817)
 # 29-Sep-2023  M. Yokochi - add 'nmr-str2cif-annotation' workflow operation (DAOTHER-8817, 8828)
 # 02-Oct-2023  M. Yokochi - do not reorganize _Gen_dist_constraint.ID of native combined NMR data (DAOTHER-8855)
+# 10-Nov-2023  M. Yokochi - raise a content mismatch error properly for NMR spectral peak list when the file is irrelevant (DAOTHER-8949)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -227,6 +228,7 @@ try:
                                            getOneLetterCode, getOneLetterCodeSequence,
                                            letterToDigit,
                                            getRestraintFormatName,
+                                           getRestraintFormatNames,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -326,6 +328,7 @@ except ImportError:
                                getOneLetterCode, getOneLetterCodeSequence,
                                letterToDigit,
                                getRestraintFormatName,
+                               getRestraintFormatNames,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -1194,6 +1197,7 @@ class NmrDpUtility:
         __nmrCheckTasks = [self.__detectContentSubType,
                            self.__extractPublicMrFileIntoLegacyMr,
                            self.__detectContentSubTypeOfLegacyMr,
+                           self.__detectContentSubTypeOfLegacyPk,
                            self.__extractPolymerSequence,
                            self.__extractPolymerSequenceInLoop,
                            # self.__testSequenceConsistency,
@@ -11159,6 +11163,273 @@ class NmrDpUtility:
             if self.__mr_debug:
                 if self.__remediation_loop_count > 5:
                     self.__lfh.write(f'repetiation of remediation: {self.__inputParamDictCopy}\n')
+
+        return not self.report.isError()
+
+    def __detectContentSubTypeOfLegacyPk(self):
+        """ Detect content subtype of legacy NMR spectral peak files.
+        """
+
+        if self.__combined_mode:
+            return True
+
+        ar_file_path_list = 'atypical_restraint_file_path_list'
+
+        if ar_file_path_list not in self.__inputParamDict:
+            return True
+
+        fileListId = self.__file_path_list_len
+
+        for ar in self.__inputParamDict[ar_file_path_list]:
+            file_path = ar['file_name']
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+
+            fileListId += 1
+
+            if file_type != 'nm-pea-any':
+                continue
+
+            original_file_name = None
+            if 'original_file_name' in input_source_dic:
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                if file_name != original_file_name and original_file_name is not None:
+                    file_name = f"{original_file_name} ({file_name})"
+
+            has_spectral_peak = False
+
+            with open(file_path, 'r', encoding='utf-8') as ifh:
+                has_header = False
+                for idx, line in enumerate(ifh):
+                    if line.isspace() or comment_pattern.match(line):
+                        if line.startswith('#INAME'):
+                            has_header = True
+                        continue
+                    if is_peak_list(line, has_header):
+                        has_spectral_peak = True
+                    if has_spectral_peak or idx >= self.mr_max_spacer_lines:
+                        break
+
+            if has_spectral_peak:
+                continue
+
+            has_mr_header = False
+            has_pdb_format = False
+            has_cif_format = False
+            has_str_format = False
+
+            try:
+
+                header = True
+                pdb_record = False
+                cs_str = False
+                mr_str = False
+
+                has_datablock = False
+                has_anonymous_saveframe = False
+                has_save = False
+                has_loop = False
+                has_stop = False
+
+                first_str_line_num = -1
+                last_str_line_num = -1
+
+                i = 0
+
+                with open(file_path, 'r') as ifh:
+                    for line in ifh:
+                        i += 1
+
+                        # skip MR header
+                        if header:
+                            if line.startswith('*'):
+                                continue
+                            if startsWithPdbRecord(line):
+                                continue
+                            header = False
+
+                        if mr_file_header_pattern.match(line):
+                            has_mr_header = True
+
+                        # skip legacy PDB
+                        if startsWithPdbRecord(line):
+                            has_pdb_format = pdb_record = True
+                            continue
+                        if pdb_record:
+                            pdb_record = False
+                            if line.startswith('END'):
+                                continue
+
+                        # check STAR
+                        str_syntax = False
+                        if datablock_pattern.match(line):
+                            str_syntax = has_datablock = True
+                        elif sf_anonymous_pattern.match(line):
+                            str_syntax = has_anonymous_saveframe = True
+                        elif save_pattern.match(line):
+                            str_syntax = has_save = True
+                        elif loop_pattern.match(line):
+                            str_syntax = has_loop = True
+                        elif stop_pattern.match(line):
+                            str_syntax = has_stop = True
+
+                        if str_syntax:
+                            if first_str_line_num < 0:
+                                first_str_line_num = i
+                            last_str_line_num = i
+                            if (has_anonymous_saveframe and has_save) or (has_loop and has_stop):
+                                has_str_format = True
+                            elif has_datablock and has_loop and not has_stop:
+                                has_cif_format = True
+
+                if last_str_line_num - first_str_line_num < 10:
+                    has_str_format = has_cif_format = False
+
+                if has_pdb_format:
+                    err = f"The spectral peak list file {file_name!r} (any format) is identified as coordinate file. "\
+                        "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
+
+                    self.report.error.appendDescription('content_mismatch',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+
+                    continue
+
+                if has_mr_header:
+                    err = f"The spectral peak list file {file_name!r} (any format) is identified as {getRestraintFormatName('nm-res-mr')}. "\
+                        "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
+
+                    self.report.error.appendDescription('content_mismatch',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+
+                    continue
+
+                # split STAR and others
+                if has_str_format:
+
+                    file_subtype = 'O'
+
+                    is_valid, message = self.__nefT.validate_file(file_path, file_subtype)
+
+                    if not is_valid:
+                        _is_valid, message = self.__nefT.validate_file(file_path, 'S')
+                        if _is_valid:
+                            cs_str = True
+                    else:
+                        mr_str = True
+
+                elif has_cif_format:
+
+                    _file_path = file_path + '.cif2str'
+
+                    if not self.__c2S.convert(file_path, _file_path):
+                        _file_path = file_path
+
+                    file_subtype = 'O'
+
+                    is_valid, message = self.__nefT.validate_file(_file_path, file_subtype)
+
+                    if not is_valid:
+                        _is_valid, message = self.__nefT.validate_file(_file_path, 'S')
+                        if _is_valid:
+                            cs_str = True
+                    else:
+                        mr_str = True
+
+                if cs_str:
+                    err = f"The spectral peak list file {file_name!r} (any format) is identified as "\
+                        f"{self.readable_file_type[message['file_type']]} formatted assigned chemical shift file. "\
+                        "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
+
+                    self.report.error.appendDescription('content_mismatch',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+
+                    continue
+
+                if mr_str:
+                    err = f"The spectral peak list file {file_name!r} (any format) is identified as "\
+                        f"{self.readable_file_type[message['file_type']]} formatted restraint file. "\
+                        "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
+
+                    self.report.error.appendDescription('content_mismatch',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+
+                    continue
+
+            except Exception as e:
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - " + str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {str(e)}\n")
+
+                return False
+
+            _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMr(file_path, file_name, 'nm-pea-any', [], True)
+
+            len_valid_types = len(valid_types)
+            len_possible_types = len(possible_types)
+
+            if len_valid_types == 0 and len_possible_types == 0:
+                continue
+
+            if len_possible_types == 0:
+
+                err = f"The spectral peak list file {file_name!r} (any format) is identified as {getRestraintFormatNames(valid_types)} file. "\
+                    "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
+
+                self.report.error.appendDescription('content_mismatch',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+
+            elif len_valid_types == 0:
+
+                err = f"The spectral peak list file {file_name!r} (any format) can be {possible_types}. "\
+                    "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
+
+                self.report.error.appendDescription('content_mismatch',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+
+            else:
+
+                err = f"The spectral peak list file {file_name!r} (any format) is identified as {getRestraintFormatNames(valid_types)} file"\
+                    f"and can be {getRestraintFormatNames(possible_types)} file as well. "\
+                    "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
+
+                self.report.error.appendDescription('content_mismatch',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
 
         return not self.report.isError()
 

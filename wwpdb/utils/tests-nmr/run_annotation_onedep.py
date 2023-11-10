@@ -581,7 +581,8 @@ class gen_auth_view_onedep:
             self.__ar_file_type.append('nm-pea-any')
             self.__ar_file_path.append(pk_dic[key]['file_name'])
 
-        print(f'Chemical shifts: {self.__star_file_path}')
+        cs_title = 'Chemical shifts' if self.__nmr_cif_file_path is None else 'Master template'
+        print(f'{cs_title}: {self.__star_file_path}')
         print(f'Coordinates    : {self.__cif_file_path}')
         if self.__nmr_cif_file_path is not None:
             print(f'NMR data       : {self.__nmr_cif_file_path}')

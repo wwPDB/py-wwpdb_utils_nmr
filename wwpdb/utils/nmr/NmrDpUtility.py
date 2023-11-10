@@ -7129,7 +7129,9 @@ class NmrDpUtility:
                     except OSError:
                         pass
 
-                is_valid, message = self.__nefT.validate_file(csPath, 'S')  # 'S' for assigned chemical shifts
+                is_valid, message = self.__nefT.validate_file(csPath, 'S',
+                                                              allow_empty=(self.__bmrb_only and self.__internal_mode
+                                                                           and 'nmr_cif_file_path' in self.__inputParamDict))  # 'S' for assigned chemical shifts
 
                 self.__original_error_message.append(message)
 

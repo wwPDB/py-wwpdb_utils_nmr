@@ -848,7 +848,7 @@ class NEFTranslator:
 
         return any(t[0] == item and t[1] == 'yes' for t in mandatoryTag)
 
-    def validate_file(self, in_file, file_subtype='A'):
+    def validate_file(self, in_file, file_subtype='A', allow_empty=False):
         """ Validate input NEF/NMR-STAR file.
             @param infile: input NEF/NMR-STAR file path
             @param file_subtype: should be 'A', 'S', 'R', or 'O'
@@ -946,12 +946,12 @@ class NEFTranslator:
                         for lp_category, sf_category in zip(minimal_lp_category_nef_a, minimal_sf_category_nef_a):
                             content_subtype = 'assigned chemical shifts' if 'shift' in lp_category else 'distance restraints'
                             if lp_category not in lp_list:
-                                is_valid = False
+                                is_valid = allow_empty
                                 error.append(err_template_for_missing_mandatory_loop
                                              % (lp_category, content_subtype, _file_type))
                             else:
                                 if is_empty_loop(star_data, lp_category):
-                                    is_valid = False
+                                    is_valid = allow_empty
                                     if data_type == 'Loop':
                                         if count_non_empty_loops(star_data, lp_category) == 0:
                                             error.append(err_template_for_empty_mandatory_loop
@@ -981,12 +981,12 @@ class NEFTranslator:
 
                         for lp_category, sf_category in zip(minimal_lp_category_nef_s, minimal_sf_category_nef_s):
                             if lp_category not in lp_list:
-                                is_valid = False
+                                is_valid = allow_empty
                                 error.append(err_template_for_missing_mandatory_loop
                                              % (lp_category, content_subtype, _file_type))
                             else:
                                 if is_empty_loop(star_data, lp_category):
-                                    is_valid = False
+                                    is_valid = allow_empty
                                     if data_type == 'Loop':
                                         if count_non_empty_loops(star_data, lp_category) == 0:
                                             error.append(err_template_for_empty_mandatory_loop
@@ -1016,12 +1016,12 @@ class NEFTranslator:
 
                         for lp_category, sf_category in zip(minimal_lp_category_nef_r, minimal_sf_category_nef_r):
                             if lp_category not in lp_list:
-                                is_valid = False
+                                is_valid = allow_empty
                                 error.append(err_template_for_missing_mandatory_loop
                                              % (lp_category, content_subtype, _file_type))
                             else:
                                 if is_empty_loop(star_data, lp_category):
-                                    is_valid = False
+                                    is_valid = allow_empty
                                     if data_type == 'Loop':
                                         if count_non_empty_loops(star_data, lp_category) == 0:
                                             error.append(err_template_for_empty_mandatory_loop
@@ -1056,12 +1056,12 @@ class NEFTranslator:
                         for lp_category, sf_category in zip(minimal_lp_category_star_a, minimal_sf_category_star_a):
                             content_subtype = 'assigned chemical shifts' if 'shift' in lp_category else 'distance restraints'
                             if lp_category not in lp_list:
-                                is_valid = False
+                                is_valid = allow_empty
                                 error.append(err_template_for_missing_mandatory_loop
                                              % (lp_category, content_subtype, _file_type))
                             else:
                                 if is_empty_loop(star_data, lp_category):
-                                    is_valid = False
+                                    is_valid = allow_empty
                                     if data_type == 'Loop':
                                         if count_non_empty_loops(star_data, lp_category) == 0:
                                             error.append(err_template_for_empty_mandatory_loop
@@ -1091,12 +1091,12 @@ class NEFTranslator:
 
                         for lp_category, sf_category in zip(minimal_lp_category_star_s, minimal_sf_category_star_s):
                             if lp_category not in lp_list:
-                                is_valid = False
+                                is_valid = allow_empty
                                 error.append(err_template_for_missing_mandatory_loop
                                              % (lp_category, content_subtype, _file_type))
                             else:
                                 if is_empty_loop(star_data, lp_category):
-                                    is_valid = False
+                                    is_valid = allow_empty
                                     if data_type == 'Loop':
                                         if count_non_empty_loops(star_data, lp_category) == 0:
                                             error.append(err_template_for_empty_mandatory_loop
@@ -1126,12 +1126,12 @@ class NEFTranslator:
 
                         for lp_category, sf_category in zip(minimal_lp_category_star_r, minimal_sf_category_star_r):
                             if lp_category not in lp_list:
-                                is_valid = False
+                                is_valid = allow_empty
                                 error.append(err_template_for_missing_mandatory_loop
                                              % (lp_category, content_subtype, _file_type))
                             else:
                                 if is_empty_loop(star_data, lp_category):
-                                    is_valid = False
+                                    is_valid = allow_empty
                                     if data_type == 'Loop':
                                         if count_non_empty_loops(star_data, lp_category) == 0:
                                             error.append(err_template_for_empty_mandatory_loop
@@ -1157,7 +1157,7 @@ class NEFTranslator:
                                                              % (lp_category, sf_framecodes, _file_type))
 
                     elif file_subtype == 'O':  # DAOTHER-7545, issue #2
-                        is_valid = False
+                        is_valid = allow_empty
                         for lp_category in allowed_lp_category_star_o:
                             if lp_category in lp_list and not is_empty_loop(star_data, lp_category):
                                 is_valid = True
@@ -1168,7 +1168,7 @@ class NEFTranslator:
                             for lp_category, sf_category in zip(allowed_lp_category_star_o, allowed_sf_category_star_o):
                                 if lp_category in lp_list:
                                     if is_empty_loop(star_data, lp_category):
-                                        is_valid = False
+                                        is_valid = allow_empty
                                         if data_type == 'Loop':
                                             error.append(warn_template_for_empty_mandatory_loop
                                                          % (lp_category, _file_type))

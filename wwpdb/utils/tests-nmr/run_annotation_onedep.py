@@ -708,7 +708,7 @@ class gen_auth_view_onedep:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print(f"{self.__bmrb_id}: {report['information']['status']}, {error_type}")
 
-        if self.__has_peak:
+        if self.__has_peak and os.path.exists(self.__annotated_star_file_path):
             star_data = pynmrstar.Entry.from_file(self.__annotated_star_file_path)
             for sf in star_data.get_saveframes_by_category('spectral_peak_list'):
                 set_sf_tag(sf, 'Text_data', '.')

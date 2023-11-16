@@ -19,6 +19,54 @@ __pynmrstar_v3_1__ = package_version.parse(pynmrstar.__version__) >= package_ver
 __pynmrstar_v3__ = package_version.parse(pynmrstar.__version__) >= package_version.parse("3.0.0")
 
 
+def get_inventory_list(star_data):
+    """ Return lists of saveframe category names and loop category names in an NEF/NMR-STAR file.
+        @return: list of saveframe category names, list of loop category names
+    """
+
+    sf_list = []
+    lp_list = []
+
+    if isinstance(star_data, pynmrstar.Entry):
+
+        for sf in star_data.frame_list:
+            sf_list.append(sf.category)
+
+            for lp in sf:
+                lp_list.append(lp.category)
+
+    elif isinstance(star_data, pynmrstar.Saveframe):
+
+        for lp in star_data:
+            lp_list.append(lp.category)
+
+    elif star_data is not None:
+        lp_list.append(star_data.category)
+
+    return sf_list, lp_list
+
+
+def is_empty_loop(star_data, lp_category):
+    """ Return whether one of specified loops is empty loop.
+        @return: True for empty loop exists, False otherwise
+    """
+
+    if isinstance(star_data, pynmrstar.Entry):
+        loops = star_data.get_loops_by_category(lp_category)
+
+        return any(len(loop) == 0 for loop in loops)
+
+    if isinstance(star_data, pynmrstar.Saveframe):
+        if __pynmrstar_v3_2__:
+            loop = star_data.get_loop(lp_category)
+        else:
+            loop = star_data.get_loop_by_category(lp_category)
+
+        return len(loop) == 0
+
+    return len(star_data) == 0
+
+
 def get_lp_tag(lp, tags):
     """ Return the selected loop tags by row as a list of lists.
     """
@@ -158,6 +206,7 @@ class gen_auth_view_onedep:
         self.__mr_name_pattern = re.compile(r'D_[0-9]+_mr-upload_P([0-9]+).(\S+).V([0-9]+)$')
         self.__pk_name_pattern = re.compile(r'D_[0-9]+_nmr-peaks-upload_P([0-9]+).dat.V([0-9]+)$')
         self.__nmr_cif_name_pattern = re.compile(r'D_[0-9]+_nmr-data-str_P([0-9]+).cif.V([0-9]+)$')
+        self.__cs_ann_name_pattern = re.compile(r'D_[0-9]+_cs-(\S+)_P1.cif.V([0-9]+)')
 
         self.__datablock_pattern = re.compile(r"\s*data_\S+\s*")
         self.__sf_anonymous_pattern = re.compile(r"\s*save_\S+\s*")
@@ -240,6 +289,35 @@ class gen_auth_view_onedep:
                 if _version is None or version > _version:
                     self.__nmr_cif_file_path = os.path.join(self.__data_dir, file_name)
                     _version = version
+
+        self.__cs_ann_file_path = None
+        _mile_stone = None
+        _version = None
+
+        for file_name in os.listdir(self.__data_dir):
+
+            if self.__cs_ann_name_pattern.match(file_name):
+                g = self.__cs_ann_name_pattern.search(file_name).groups()
+                mile_stone = g[0]
+                version = int(g[1])
+
+                if mile_stone == 'release':
+                    if _mile_stone != 'release':
+                        _mile_stone = mile_stone
+                        _version = version
+                        self.__cs_ann_file_path = os.path.join(self.__data_dir, file_name)
+                    elif version > _version:
+                        _version = version
+                        self.__cs_ann_file_path = os.path.join(self.__data_dir, file_name)
+
+                elif mile_stone == 'annotate':
+                    if _mile_stone is None:
+                        _mile_stone = mile_stone
+                        _version = version
+                        self.__cs_ann_file_path = os.path.join(self.__data_dir, file_name)
+                    elif _mile_stone == 'annotate' and version > _version:
+                        _version = version
+                        self.__cs_ann_file_path = os.path.join(self.__data_dir, file_name)
 
         has_amber = False
         has_gromacs = False
@@ -581,8 +659,12 @@ class gen_auth_view_onedep:
             self.__ar_file_type.append('nm-pea-any')
             self.__ar_file_path.append(pk_dic[key]['file_name'])
 
-        cs_title = 'Chemical shifts' if self.__nmr_cif_file_path is None else 'Master template'
+        self.__master_has_cs_loop = self.has_cs_loop(self.__star_file_path)
+
+        cs_title = 'Chemical shifts' if self.__nmr_cif_file_path is None and self.__master_has_cs_loop else 'Master template'
         print(f'{cs_title}: {self.__star_file_path}')
+        if self.__nmr_cif_file_path is None and not self.__master_has_cs_loop and self.__cs_ann_file_path is not None:
+            print(f'Chemical shifts: {self.__cs_ann_file_path}')
         print(f'Coordinates    : {self.__cif_file_path}')
         if self.__nmr_cif_file_path is not None:
             print(f'NMR data       : {self.__nmr_cif_file_path}')
@@ -654,11 +736,30 @@ class gen_auth_view_onedep:
 
         return False
 
+    def has_cs_loop(self, file_path):  # pylint: disable=no-self-use
+        try:
+
+            star_data = pynmrstar.Entry.from_file(file_path)
+            _, lp_list = get_inventory_list(star_data)
+
+            lp_category = '_Atom_chem_shift'
+
+            if lp_category not in lp_list:
+                return False
+
+            return not is_empty_loop(star_data, lp_category)
+
+        except Exception:
+            return False
+
     def test_nmr_cs_mr_merge(self):
 
         utility = NmrDpUtility()
 
-        utility.addInput(name='chem_shift_file_path_list', value=[self.__star_file_path], type='file_list')
+        cs_path_list = [self.__star_file_path]
+        if self.__nmr_cif_file_path is None and not self.__master_has_cs_loop and self.__cs_ann_file_path is not None:
+            cs_path_list.append(self.__cs_ann_file_path)
+        utility.addInput(name='chem_shift_file_path_list', value=cs_path_list, type='file_list')
         combined, original_file_name = is_combined_nmr_data(self.__star_file_path)
         if self.__nmr_cif_file_path is not None:
             utility.addInput(name='nmr_cif_file_path', value=self.__nmr_cif_file_path, type='file')
@@ -691,7 +792,7 @@ class gen_auth_view_onedep:
         utility.addOutput(name='return_letter_path', value=self.__return_letter_path, type='file')
         utility.setDestination(self.__annotated_star_file_path)
         utility.setLog(self.__annotated_log_file_path)
-        utility.setVerbose(False)
+        utility.setVerbose(True)
 
         utility.op('nmr-cs-mr-merge')
 

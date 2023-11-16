@@ -7129,7 +7129,9 @@ class NmrDpUtility:
                     except OSError:
                         pass
 
-                allow_empty = self.__bmrb_only and self.__internal_mode and 'nmr_cif_file_path' in self.__inputParamDict
+                allow_empty = self.__bmrb_only and self.__internal_mode\
+                    and ('nmr_cif_file_path' in self.__inputParamDict
+                         or (csListId == 0 and len(self.__inputParamDict[cs_file_path_list]) > 1))
 
                 is_valid, message = self.__nefT.validate_file(csPath, 'S', allow_empty)  # 'S' for assigned chemical shifts
 
@@ -7400,6 +7402,24 @@ class NmrDpUtility:
                             os.remove(arPath_)
                         except OSError:
                             pass
+
+            if self.__bmrb_only and self.__internal_mode and len(self.__inputParamDict[cs_file_path_list]) > 1:
+                for csListId, cs in enumerate(self.__inputParamDict[cs_file_path_list]):
+                    if csListId == 0:
+                        dst_sf_category_list, _ = self.__nefT.get_inventory_list(self.__star_data[0])
+                        if 'assigned_chemical_shifts' in dst_sf_category_list:
+                            for sf in self.__star_data[0].get_saveframes_by_category('assigned_chemical_shifts'):
+                                sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
+                                self.__star_data[0].remove_saveframe(sf_framecode)
+                        continue
+                    if self.__star_data_type[csListId] == 'Entry' and self.__star_data[csListId] is not None:
+                        src_sf_category_list, _ = self.__nefT.get_inventory_list(self.__star_data[csListId])
+
+                        # copy cs data of the annotated cs file to the master template
+                        if 'assigned_chemical_shifts' in src_sf_category_list:
+                            for _sf in self.__star_data[csListId].get_saveframes_by_category('assigned_chemical_shifts'):
+                                self.__star_data[0].add_saveframe(_sf)
+                                self.__star_data[csListId].remove_saveframe(_sf)
 
             if self.__bmrb_only and self.__internal_mode and self.__srcNmrCifPath is not None:
 

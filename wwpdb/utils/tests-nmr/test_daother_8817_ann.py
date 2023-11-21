@@ -20,7 +20,11 @@ class TestNmrDpUtility(unittest.TestCase):
         here = os.path.abspath(os.path.dirname(__file__))
         self.data_dir_path = os.path.join(here, 'mock-data-daother-8817/')
         self.data_file_path = {'daother-8817-ann': {'str': 'daother-8817-nef2cif.str',
-                                                    'cif': 'D_8000212514_model_P1.cif.V5'}}
+                                                    'cif': 'D_8000212514_model_P1.cif.V5'},
+                               'daother-8817-ann-2nd': {'str': 'D_8000212514_nmr-data-str_P1.str.V2',
+                                                        'cif': 'D_8000212514_model_P1.cif.V2'
+                                                        }
+                               }
         self.utility = NmrDpUtility()
 
     def tearDown(self):
@@ -45,6 +49,8 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(self.data_dir_path + entry_id + '-str2cif-annotate-log.json', 'r') as file:
             report = json.loads(file.read())
 
+        self.assertIsNone(report['error'])
+
         if report['error'] is None:
             print('%s: %s' % (entry_id, report['information']['status']))
         elif 'format_issue' in report['error']:
@@ -57,6 +63,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_str2cif_annotate_daother_8817(self):
         self.__test_nmr_str2cif_annotate('daother-8817-ann')
+
+    def test_nmr_str2cif_annotate_daother_8817_2nd(self):
+        self.__test_nmr_str2cif_annotate('daother-8817-ann-2nd')
 
 
 if __name__ == '__main__':

@@ -50,7 +50,7 @@ save_nef_molecular_system
    _Assembly.Molecules_in_chemical_exchange   .
    _Assembly.Paramagnetic                     no
    _Assembly.Thiol_state                      'all free'
-   _Assembly.Molecular_mass                   19531.041
+   _Assembly.Molecular_mass                   19502.041
    _Assembly.Enzyme_commission_number         .
    _Assembly.Details                          .
    _Assembly.DB_query_date                    .
@@ -74,7 +74,7 @@ save_nef_molecular_system
       _Entity_assembly.Assembly_ID
 
      1   entity_1     1   $entity_1     A   A   yes   .   .   .   .   .   'KRAS G12V GMPPNP bound'   NEED_ACC_NO   1    
-     2   entity_LIG   2   $entity_LIG   B   B   yes   .   .   .   .   .   ?                          NEED_ACC_NO   1    
+     2   entity_7ZC   2   $entity_7ZC   B   B   yes   .   .   .   .   .   ?                          NEED_ACC_NO   1    
 
    stop_
 
@@ -263,7 +263,7 @@ save_nef_molecular_system
      1   1   167   LYS   167   A   167   LYS   .   middle   .    167   NEED_ACC_NO   1    
      1   1   168   GLU   168   A   168   GLU   .   middle   .    168   NEED_ACC_NO   1    
      1   1   169   LYS   169   A   169   LYS   .   end      .    169   NEED_ACC_NO   1    
-     2   2   1     LIG   1     B   500   LIG   .   .        .    170   NEED_ACC_NO   1    
+     2   2   1     7ZC   1     B   500   7ZC   .   .        .    170   NEED_ACC_NO   1    
 
    stop_
 
@@ -682,13 +682,13 @@ REIRKHKEK
 
 save_
 
-save_entity_LIG
+save_entity_7ZC
    _Entity.Sf_category                      entity
-   _Entity.Sf_framecode                     entity_LIG
+   _Entity.Sf_framecode                     entity_7ZC
    _Entity.Entry_ID                         NEED_ACC_NO
    _Entity.ID                               2
-   _Entity.BMRB_code                        LIG
-   _Entity.Name                             3-PYRIDIN-4-YL-2,4-DIHYDRO-INDENO[1,2-.C.]PYRAZOLE
+   _Entity.BMRB_code                        7ZC
+   _Entity.Name                             1-(5-methoxy-1H-indol-3-yl)-N,N-dimethyl-methanamine
    _Entity.Type                             non-polymer
    _Entity.Polymer_common_type              .
    _Entity.Polymer_type                     .
@@ -704,8 +704,8 @@ save_entity_LIG
    _Entity.Nstd_monomer                     .
    _Entity.Nstd_chirality                   .
    _Entity.Nstd_linkage                     .
-   _Entity.Nonpolymer_comp_ID               LIG
-   _Entity.Nonpolymer_comp_label            $chem_comp_LIG
+   _Entity.Nonpolymer_comp_ID               7ZC
+   _Entity.Nonpolymer_comp_label            $chem_comp_7ZC
    _Entity.Number_of_monomers               .
    _Entity.Number_of_nonpolymer_components  1
    _Entity.Paramagnetic                     no
@@ -716,7 +716,7 @@ save_entity_LIG
    _Entity.Mutation                         .
    _Entity.EC_number                        .
    _Entity.Calc_isoelectric_point           .
-   _Entity.Formula_weight                   233.268
+   _Entity.Formula_weight                   204.268
    _Entity.Formula_weight_exptl             .
    _Entity.Formula_weight_exptl_meth        .
    _Entity.Details                          ?
@@ -731,7 +731,7 @@ save_entity_LIG
       _Entity_comp_index.Entry_ID
       _Entity_comp_index.Entity_ID
 
-     1   500   LIG   $chem_comp_LIG   NEED_ACC_NO   2    
+     1   500   7ZC   $chem_comp_7ZC   NEED_ACC_NO   2    
 
    stop_
 
@@ -785,21 +785,21 @@ save_nef_chemical_shift_list_3C11
      10   1   1   74   74   THR   HG21   H   1   1.087   0.020   .   1   .   .   .   A   74    THR   HG21   A   74    THR   HG2%   .   NEED_ACC_NO   1    
      11   1   1   74   74   THR   HG22   H   1   1.087   0.020   .   1   .   .   .   A   74    THR   HG22   A   74    THR   HG2%   .   NEED_ACC_NO   1    
      12   1   1   74   74   THR   HG23   H   1   1.087   0.020   .   1   .   .   .   A   74    THR   HG23   A   74    THR   HG2%   .   NEED_ACC_NO   1    
-     13   2   2   1    1    LIG   H11    H   1   3.811   0.020   .   1   .   .   .   B   500   LIG   H11    B   500   LIG   HX1%   .   NEED_ACC_NO   1    
-     14   2   2   1    1    LIG   H12    H   1   3.811   0.020   .   1   .   .   .   B   500   LIG   H12    B   500   LIG   HX1%   .   NEED_ACC_NO   1    
-     15   2   2   1    1    LIG   H13    H   1   3.811   0.020   .   1   .   .   .   B   500   LIG   H13    B   500   LIG   HX1%   .   NEED_ACC_NO   1    
-     16   2   2   1    1    LIG   H2     H   1   7.197   0.020   .   1   .   .   .   B   500   LIG   H2     B   500   LIG   H2     .   NEED_ACC_NO   1    
-     17   2   2   1    1    LIG   H3     H   1   7.489   0.020   .   1   .   .   .   B   500   LIG   H3     B   500   LIG   H3     .   NEED_ACC_NO   1    
-     18   2   2   1    1    LIG   H4     H   1   7.369   0.020   .   1   .   .   .   B   500   LIG   H4     B   500   LIG   H4     .   NEED_ACC_NO   1    
-     19   2   2   1    1    LIG   H5     H   1   7.489   0.020   .   1   .   .   .   B   500   LIG   H5     B   500   LIG   H5     .   NEED_ACC_NO   1    
-     20   2   2   1    1    LIG   H61    H   1   3.617   0.020   .   2   .   .   .   B   500   LIG   H61    B   500   LIG   H6%    .   NEED_ACC_NO   1    
-     21   2   2   1    1    LIG   H62    H   1   3.617   0.020   .   2   .   .   .   B   500   LIG   H62    B   500   LIG   H6%    .   NEED_ACC_NO   1    
-     22   2   2   1    1    LIG   H71    H   1   2.766   0.020   .   2   .   .   .   B   500   LIG   H71    B   500   LIG   Hx%    .   NEED_ACC_NO   1    
-     23   2   2   1    1    LIG   H72    H   1   2.766   0.020   .   2   .   .   .   B   500   LIG   H72    B   500   LIG   Hx%    .   NEED_ACC_NO   1    
-     24   2   2   1    1    LIG   H73    H   1   2.766   0.020   .   2   .   .   .   B   500   LIG   H73    B   500   LIG   Hx%    .   NEED_ACC_NO   1    
-     25   2   2   1    1    LIG   H81    H   1   2.766   0.020   .   2   .   .   .   B   500   LIG   H81    B   500   LIG   Hy%    .   NEED_ACC_NO   1    
-     26   2   2   1    1    LIG   H82    H   1   2.766   0.020   .   2   .   .   .   B   500   LIG   H82    B   500   LIG   Hy%    .   NEED_ACC_NO   1    
-     27   2   2   1    1    LIG   H83    H   1   2.766   0.020   .   2   .   .   .   B   500   LIG   H83    B   500   LIG   Hy%    .   NEED_ACC_NO   1    
+     13   2   2   1    1    7ZC   H1     H   1   3.811   0.020   .   1   .   .   .   B   500   7ZC   H1     B   500   LIG   HX1%   .   NEED_ACC_NO   1    
+     14   2   2   1    1    7ZC   H2     H   1   3.811   0.020   .   1   .   .   .   B   500   7ZC   H2     B   500   LIG   HX1%   .   NEED_ACC_NO   1    
+     15   2   2   1    1    7ZC   H3     H   1   3.811   0.020   .   1   .   .   .   B   500   7ZC   H3     B   500   LIG   HX1%   .   NEED_ACC_NO   1    
+     16   2   2   1    1    7ZC   H17    H   1   7.197   0.020   .   1   .   .   .   B   500   7ZC   H17    B   500   LIG   H2     .   NEED_ACC_NO   1    
+     17   2   2   1    1    7ZC   H4     H   1   7.489   0.020   .   1   .   .   .   B   500   7ZC   H4     B   500   LIG   H3     .   NEED_ACC_NO   1    
+     18   2   2   1    1    7ZC   H5     H   1   7.369   0.020   .   1   .   .   .   B   500   7ZC   H5     B   500   LIG   H4     .   NEED_ACC_NO   1    
+     19   2   2   1    1    7ZC   H7     H   1   7.489   0.020   .   1   .   .   .   B   500   7ZC   H7     B   500   LIG   H5     .   NEED_ACC_NO   1    
+     20   2   2   1    1    7ZC   H8     H   1   3.617   0.020   .   2   .   .   .   B   500   7ZC   H8     B   500   LIG   H6%    .   NEED_ACC_NO   1    
+     21   2   2   1    1    7ZC   H9     H   1   3.617   0.020   .   2   .   .   .   B   500   7ZC   H9     B   500   LIG   H6%    .   NEED_ACC_NO   1    
+     22   2   2   1    1    7ZC   H11    H   1   2.766   0.020   .   2   .   .   .   B   500   7ZC   H11    B   500   LIG   Hx%    .   NEED_ACC_NO   1    
+     23   2   2   1    1    7ZC   H12    H   1   2.766   0.020   .   2   .   .   .   B   500   7ZC   H12    B   500   LIG   Hx%    .   NEED_ACC_NO   1    
+     24   2   2   1    1    7ZC   H13    H   1   2.766   0.020   .   2   .   .   .   B   500   7ZC   H13    B   500   LIG   Hx%    .   NEED_ACC_NO   1    
+     25   2   2   1    1    7ZC   H14    H   1   2.766   0.020   .   2   .   .   .   B   500   7ZC   H14    B   500   LIG   Hy%    .   NEED_ACC_NO   1    
+     26   2   2   1    1    7ZC   H15    H   1   2.766   0.020   .   2   .   .   .   B   500   7ZC   H15    B   500   LIG   Hy%    .   NEED_ACC_NO   1    
+     27   2   2   1    1    7ZC   H16    H   1   2.766   0.020   .   2   .   .   .   B   500   7ZC   H16    B   500   LIG   Hy%    .   NEED_ACC_NO   1    
 
    stop_
 
@@ -832,16 +832,20 @@ save_
 save_nef_distance_restraint_list_1
    _Gen_dist_constraint_list.Sf_category         general_distance_constraints
    _Gen_dist_constraint_list.Sf_framecode        nef_distance_restraint_list_1
-   _Gen_dist_constraint_list.Constraint_type     .
-   _Gen_dist_constraint_list.Potential_type      undefined
-   _Gen_dist_constraint_list.Data_file_name      D_1292133086_nmr-data-original_P1.str
-   _Gen_dist_constraint_list.ID                  1
    _Gen_dist_constraint_list.Entry_ID            NEED_ACC_NO
+   _Gen_dist_constraint_list.ID                  1
+   _Gen_dist_constraint_list.Data_file_name      D_1292133086_nmr-data-original_P1.str
+   _Gen_dist_constraint_list.Constraint_type     .
    _Gen_dist_constraint_list.Constraint_file_ID  1
+   _Gen_dist_constraint_list.Potential_type      undefined
    _Gen_dist_constraint_list.Block_ID            1
 
    loop_
+      _Gen_dist_constraint.Index_ID
       _Gen_dist_constraint.ID
+      _Gen_dist_constraint.Combination_ID
+      _Gen_dist_constraint.Member_ID
+      _Gen_dist_constraint.Member_logic_code
       _Gen_dist_constraint.Entity_assembly_ID_1
       _Gen_dist_constraint.Entity_ID_1
       _Gen_dist_constraint.Comp_index_ID_1
@@ -852,18 +856,14 @@ save_nef_distance_restraint_list_1
       _Gen_dist_constraint.Comp_index_ID_2
       _Gen_dist_constraint.Comp_ID_2
       _Gen_dist_constraint.Atom_ID_2
-      _Gen_dist_constraint.Index_ID
-      _Gen_dist_constraint.Combination_ID
-      _Gen_dist_constraint.Member_ID
-      _Gen_dist_constraint.Member_logic_code
+      _Gen_dist_constraint.Distance_val
       _Gen_dist_constraint.Target_val
       _Gen_dist_constraint.Target_val_uncertainty
       _Gen_dist_constraint.Lower_linear_limit
+      _Gen_dist_constraint.Upper_linear_limit
       _Gen_dist_constraint.Distance_lower_bound_val
       _Gen_dist_constraint.Distance_upper_bound_val
-      _Gen_dist_constraint.Upper_linear_limit
       _Gen_dist_constraint.Weight
-      _Gen_dist_constraint.Distance_val
       _Gen_dist_constraint.Auth_asym_ID_1
       _Gen_dist_constraint.Auth_seq_ID_1
       _Gen_dist_constraint.Auth_comp_ID_1
@@ -874,76 +874,76 @@ save_nef_distance_restraint_list_1
       _Gen_dist_constraint.Auth_comp_ID_2
       _Gen_dist_constraint.Auth_atom_ID_2
       _Gen_dist_constraint.Auth_atom_name_2
-      _Gen_dist_constraint.Gen_dist_constraint_list_ID
       _Gen_dist_constraint.Entry_ID
+      _Gen_dist_constraint.Gen_dist_constraint_list_ID
 
-     1    2   2   1    LIG   H71    2   2   1   LIG   H2    1    .   1   OR   .   .   .   2.49   3.32   .   1.0   .   B   500   LIG   H71    Hx%    B   500   LIG   H2    H2     1   NEED_ACC_NO    
-     1    2   2   1    LIG   H72    2   2   1   LIG   H2    2    .   2   OR   .   .   .   2.49   3.32   .   1.0   .   B   500   LIG   H72    Hx%    B   500   LIG   H2    H2     1   NEED_ACC_NO    
-     1    2   2   1    LIG   H73    2   2   1   LIG   H2    3    .   3   OR   .   .   .   2.49   3.32   .   1.0   .   B   500   LIG   H73    Hx%    B   500   LIG   H2    H2     1   NEED_ACC_NO    
-     2    2   2   1    LIG   H2     2   2   1   LIG   H11   4    .   1   OR   .   .   .   2.01   2.68   .   1.0   .   B   500   LIG   H2     H2     B   500   LIG   H11   HX1%   1   NEED_ACC_NO    
-     2    2   2   1    LIG   H2     2   2   1   LIG   H12   5    .   2   OR   .   .   .   2.01   2.68   .   1.0   .   B   500   LIG   H2     H2     B   500   LIG   H12   HX1%   1   NEED_ACC_NO    
-     2    2   2   1    LIG   H2     2   2   1   LIG   H13   6    .   3   OR   .   .   .   2.01   2.68   .   1.0   .   B   500   LIG   H2     H2     B   500   LIG   H13   HX1%   1   NEED_ACC_NO    
-     3    2   2   1    LIG   H3     2   2   1   LIG   H11   7    .   1   OR   .   .   .   3.03   4.05   .   1.0   .   B   500   LIG   H3     H3     B   500   LIG   H11   HX1%   1   NEED_ACC_NO    
-     3    2   2   1    LIG   H3     2   2   1   LIG   H12   8    .   2   OR   .   .   .   3.03   4.05   .   1.0   .   B   500   LIG   H3     H3     B   500   LIG   H12   HX1%   1   NEED_ACC_NO    
-     3    2   2   1    LIG   H3     2   2   1   LIG   H13   9    .   3   OR   .   .   .   3.03   4.05   .   1.0   .   B   500   LIG   H3     H3     B   500   LIG   H13   HX1%   1   NEED_ACC_NO    
-     4    2   2   1    LIG   H3     2   2   1   LIG   H4    10   .   .   .    .   .   .   1.89   2.53   .   1.0   .   B   500   LIG   H3     H3     B   500   LIG   H4    H4     1   NEED_ACC_NO    
-     5    2   2   1    LIG   H71    2   2   1   LIG   H5    11   .   1   OR   .   .   .   3.31   4.41   .   1.0   .   B   500   LIG   H71    Hx%    B   500   LIG   H5    H5     1   NEED_ACC_NO    
-     5    2   2   1    LIG   H72    2   2   1   LIG   H5    12   .   2   OR   .   .   .   3.31   4.41   .   1.0   .   B   500   LIG   H72    Hx%    B   500   LIG   H5    H5     1   NEED_ACC_NO    
-     5    2   2   1    LIG   H73    2   2   1   LIG   H5    13   .   3   OR   .   .   .   3.31   4.41   .   1.0   .   B   500   LIG   H73    Hx%    B   500   LIG   H5    H5     1   NEED_ACC_NO    
-     6    1   1   56   LEU   HD21   2   2   1   LIG   H2    14   .   .   OR   .   .   .   3.38   4.51   .   1.0   .   A   56    LEU   HD21   HDy%   B   500   LIG   H2    H2     1   NEED_ACC_NO    
-     6    1   1   56   LEU   HD22   2   2   1   LIG   H2    15   .   .   OR   .   .   .   3.38   4.51   .   1.0   .   A   56    LEU   HD22   HDy%   B   500   LIG   H2    H2     1   NEED_ACC_NO    
-     6    1   1   56   LEU   HD23   2   2   1   LIG   H2    16   .   .   OR   .   .   .   3.38   4.51   .   1.0   .   A   56    LEU   HD23   HDy%   B   500   LIG   H2    H2     1   NEED_ACC_NO    
-     7    1   1   56   LEU   HD21   2   2   1   LIG   H3    17   .   .   OR   .   .   .   3.42   7      .   1.0   .   A   56    LEU   HD21   HDy%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
-     7    1   1   56   LEU   HD22   2   2   1   LIG   H3    18   .   .   OR   .   .   .   3.42   7      .   1.0   .   A   56    LEU   HD22   HDy%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
-     7    1   1   56   LEU   HD23   2   2   1   LIG   H3    19   .   .   OR   .   .   .   3.42   7      .   1.0   .   A   56    LEU   HD23   HDy%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
-     8    1   1   56   LEU   HD11   2   2   1   LIG   H3    20   .   .   OR   .   .   .   3.02   4.02   .   1.0   .   A   56    LEU   HD11   HDx%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
-     8    1   1   56   LEU   HD12   2   2   1   LIG   H3    21   .   .   OR   .   .   .   3.02   4.02   .   1.0   .   A   56    LEU   HD12   HDx%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
-     8    1   1   56   LEU   HD13   2   2   1   LIG   H3    22   .   .   OR   .   .   .   3.02   4.02   .   1.0   .   A   56    LEU   HD13   HDx%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
-     9    1   1   56   LEU   HD11   2   2   1   LIG   H5    23   .   .   OR   .   .   .   5.12   6.83   .   1.0   .   A   56    LEU   HD11   HDx%   B   500   LIG   H5    H5     1   NEED_ACC_NO    
-     9    1   1   56   LEU   HD12   2   2   1   LIG   H5    24   .   .   OR   .   .   .   5.12   6.83   .   1.0   .   A   56    LEU   HD12   HDx%   B   500   LIG   H5    H5     1   NEED_ACC_NO    
-     9    1   1   56   LEU   HD13   2   2   1   LIG   H5    25   .   .   OR   .   .   .   5.12   6.83   .   1.0   .   A   56    LEU   HD13   HDx%   B   500   LIG   H5    H5     1   NEED_ACC_NO    
-     10   1   1   7    VAL   HG21   2   2   1   LIG   H3    26   .   .   OR   .   .   .   2.68   3.57   .   1.0   .   A   7     VAL   HG21   HGy%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
-     10   1   1   7    VAL   HG22   2   2   1   LIG   H3    27   .   .   OR   .   .   .   2.68   3.57   .   1.0   .   A   7     VAL   HG22   HGy%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
-     10   1   1   7    VAL   HG23   2   2   1   LIG   H3    28   .   .   OR   .   .   .   2.68   3.57   .   1.0   .   A   7     VAL   HG23   HGy%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
-     11   1   1   7    VAL   HG21   2   2   1   LIG   H4    29   .   .   OR   .   .   .   2.11   2.82   .   1.0   .   A   7     VAL   HG21   HGy%   B   500   LIG   H4    H4     1   NEED_ACC_NO    
-     11   1   1   7    VAL   HG22   2   2   1   LIG   H4    30   .   .   OR   .   .   .   2.11   2.82   .   1.0   .   A   7     VAL   HG22   HGy%   B   500   LIG   H4    H4     1   NEED_ACC_NO    
-     11   1   1   7    VAL   HG23   2   2   1   LIG   H4    31   .   .   OR   .   .   .   2.11   2.82   .   1.0   .   A   7     VAL   HG23   HGy%   B   500   LIG   H4    H4     1   NEED_ACC_NO    
-     13   1   1   74   THR   HG21   2   2   1   LIG   H2    32   .   .   OR   .   .   .   3.4    4.53   .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H2    H2     1   NEED_ACC_NO    
-     13   1   1   74   THR   HG22   2   2   1   LIG   H2    33   .   .   OR   .   .   .   3.4    4.53   .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H2    H2     1   NEED_ACC_NO    
-     13   1   1   74   THR   HG23   2   2   1   LIG   H2    34   .   .   OR   .   .   .   3.4    4.53   .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H2    H2     1   NEED_ACC_NO    
-     14   1   1   74   THR   HG21   2   2   1   LIG   H3    35   .   .   OR   .   .   .   2.74   7      .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
-     14   1   1   74   THR   HG22   2   2   1   LIG   H3    36   .   .   OR   .   .   .   2.74   7      .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
-     14   1   1   74   THR   HG23   2   2   1   LIG   H3    37   .   .   OR   .   .   .   2.74   7      .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
-     15   1   1   74   THR   HG21   2   2   1   LIG   H71   38   .   1   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG21   2   2   1   LIG   H72   39   .   2   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG21   2   2   1   LIG   H73   40   .   3   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG22   2   2   1   LIG   H71   41   .   4   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG22   2   2   1   LIG   H72   42   .   5   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG22   2   2   1   LIG   H73   43   .   6   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG23   2   2   1   LIG   H71   44   .   7   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG23   2   2   1   LIG   H72   45   .   8   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG23   2   2   1   LIG   H73   46   .   9   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD11   2   2   1   LIG   H71   47   .   1   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD11   HDx%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD11   2   2   1   LIG   H72   48   .   2   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD11   HDx%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD11   2   2   1   LIG   H73   49   .   3   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD11   HDx%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD12   2   2   1   LIG   H71   50   .   4   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD12   HDx%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD12   2   2   1   LIG   H72   51   .   5   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD12   HDx%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD12   2   2   1   LIG   H73   52   .   6   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD12   HDx%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD13   2   2   1   LIG   H71   53   .   7   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD13   HDx%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD13   2   2   1   LIG   H72   54   .   8   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD13   HDx%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD13   2   2   1   LIG   H73   55   .   9   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD13   HDx%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG21   2   2   1   LIG   H71   56   .   1   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG21   HGy%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG21   2   2   1   LIG   H72   57   .   2   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG21   HGy%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG21   2   2   1   LIG   H73   58   .   3   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG21   HGy%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG22   2   2   1   LIG   H71   59   .   4   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG22   HGy%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG22   2   2   1   LIG   H72   60   .   5   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG22   HGy%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG22   2   2   1   LIG   H73   61   .   6   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG22   HGy%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG23   2   2   1   LIG   H71   62   .   7   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG23   HGy%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG23   2   2   1   LIG   H72   63   .   8   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG23   HGy%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG23   2   2   1   LIG   H73   64   .   9   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG23   HGy%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     18   1   1   7    VAL   HG21   2   2   1   LIG   H5    65   .   .   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG21   HGy%   B   500   LIG   H5    H5     1   NEED_ACC_NO    
-     18   1   1   7    VAL   HG22   2   2   1   LIG   H5    66   .   .   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG22   HGy%   B   500   LIG   H5    H5     1   NEED_ACC_NO    
-     18   1   1   7    VAL   HG23   2   2   1   LIG   H5    67   .   .   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG23   HGy%   B   500   LIG   H5    H5     1   NEED_ACC_NO    
+     1    1    .   .   OR   2   2   1    7ZC   H11    2   2   1   7ZC   H17   .   .   .   .   .   2.49   3.32   1.0   B   500   7ZC   H11    Hx%    B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     2    1    .   .   OR   2   2   1    7ZC   H12    2   2   1   7ZC   H17   .   .   .   .   .   2.49   3.32   1.0   B   500   7ZC   H12    Hx%    B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     3    1    .   .   OR   2   2   1    7ZC   H13    2   2   1   7ZC   H17   .   .   .   .   .   2.49   3.32   1.0   B   500   7ZC   H13    Hx%    B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     4    2    .   .   OR   2   2   1    7ZC   H17    2   2   1   7ZC   H1    .   .   .   .   .   2.01   2.68   1.0   B   500   7ZC   H17    H2     B   500   7ZC   H1    HX1%   NEED_ACC_NO   1    
+     5    2    .   .   OR   2   2   1    7ZC   H17    2   2   1   7ZC   H2    .   .   .   .   .   2.01   2.68   1.0   B   500   7ZC   H17    H2     B   500   7ZC   H2    HX1%   NEED_ACC_NO   1    
+     6    2    .   .   OR   2   2   1    7ZC   H17    2   2   1   7ZC   H3    .   .   .   .   .   2.01   2.68   1.0   B   500   7ZC   H17    H2     B   500   7ZC   H3    HX1%   NEED_ACC_NO   1    
+     7    3    .   .   OR   2   2   1    7ZC   H4     2   2   1   7ZC   H1    .   .   .   .   .   3.03   4.05   1.0   B   500   7ZC   H4     H3     B   500   7ZC   H1    HX1%   NEED_ACC_NO   1    
+     8    3    .   .   OR   2   2   1    7ZC   H4     2   2   1   7ZC   H2    .   .   .   .   .   3.03   4.05   1.0   B   500   7ZC   H4     H3     B   500   7ZC   H2    HX1%   NEED_ACC_NO   1    
+     9    3    .   .   OR   2   2   1    7ZC   H4     2   2   1   7ZC   H3    .   .   .   .   .   3.03   4.05   1.0   B   500   7ZC   H4     H3     B   500   7ZC   H3    HX1%   NEED_ACC_NO   1    
+     10   4    .   .   .    2   2   1    7ZC   H4     2   2   1   7ZC   H5    .   .   .   .   .   1.89   2.53   1.0   B   500   7ZC   H4     H3     B   500   7ZC   H5    H4     NEED_ACC_NO   1    
+     11   5    .   .   OR   2   2   1    7ZC   H11    2   2   1   7ZC   H7    .   .   .   .   .   3.31   4.41   1.0   B   500   7ZC   H11    Hx%    B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     12   5    .   .   OR   2   2   1    7ZC   H12    2   2   1   7ZC   H7    .   .   .   .   .   3.31   4.41   1.0   B   500   7ZC   H12    Hx%    B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     13   5    .   .   OR   2   2   1    7ZC   H13    2   2   1   7ZC   H7    .   .   .   .   .   3.31   4.41   1.0   B   500   7ZC   H13    Hx%    B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     14   6    .   .   OR   1   1   56   LEU   HD21   2   2   1   7ZC   H17   .   .   .   .   .   3.38   4.51   1.0   A   56    LEU   HD21   HDy%   B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     15   6    .   .   OR   1   1   56   LEU   HD22   2   2   1   7ZC   H17   .   .   .   .   .   3.38   4.51   1.0   A   56    LEU   HD22   HDy%   B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     16   6    .   .   OR   1   1   56   LEU   HD23   2   2   1   7ZC   H17   .   .   .   .   .   3.38   4.51   1.0   A   56    LEU   HD23   HDy%   B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     17   7    .   .   OR   1   1   56   LEU   HD21   2   2   1   7ZC   H4    .   .   .   .   .   3.42   7      1.0   A   56    LEU   HD21   HDy%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     18   7    .   .   OR   1   1   56   LEU   HD22   2   2   1   7ZC   H4    .   .   .   .   .   3.42   7      1.0   A   56    LEU   HD22   HDy%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     19   7    .   .   OR   1   1   56   LEU   HD23   2   2   1   7ZC   H4    .   .   .   .   .   3.42   7      1.0   A   56    LEU   HD23   HDy%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     20   8    .   .   OR   1   1   56   LEU   HD11   2   2   1   7ZC   H4    .   .   .   .   .   3.02   4.02   1.0   A   56    LEU   HD11   HDx%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     21   8    .   .   OR   1   1   56   LEU   HD12   2   2   1   7ZC   H4    .   .   .   .   .   3.02   4.02   1.0   A   56    LEU   HD12   HDx%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     22   8    .   .   OR   1   1   56   LEU   HD13   2   2   1   7ZC   H4    .   .   .   .   .   3.02   4.02   1.0   A   56    LEU   HD13   HDx%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     23   9    .   .   OR   1   1   56   LEU   HD11   2   2   1   7ZC   H7    .   .   .   .   .   5.12   6.83   1.0   A   56    LEU   HD11   HDx%   B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     24   9    .   .   OR   1   1   56   LEU   HD12   2   2   1   7ZC   H7    .   .   .   .   .   5.12   6.83   1.0   A   56    LEU   HD12   HDx%   B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     25   9    .   .   OR   1   1   56   LEU   HD13   2   2   1   7ZC   H7    .   .   .   .   .   5.12   6.83   1.0   A   56    LEU   HD13   HDx%   B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     26   10   .   .   OR   1   1   7    VAL   HG21   2   2   1   7ZC   H4    .   .   .   .   .   2.68   3.57   1.0   A   7     VAL   HG21   HGy%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     27   10   .   .   OR   1   1   7    VAL   HG22   2   2   1   7ZC   H4    .   .   .   .   .   2.68   3.57   1.0   A   7     VAL   HG22   HGy%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     28   10   .   .   OR   1   1   7    VAL   HG23   2   2   1   7ZC   H4    .   .   .   .   .   2.68   3.57   1.0   A   7     VAL   HG23   HGy%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     29   11   .   .   OR   1   1   7    VAL   HG21   2   2   1   7ZC   H5    .   .   .   .   .   2.11   2.82   1.0   A   7     VAL   HG21   HGy%   B   500   7ZC   H5    H4     NEED_ACC_NO   1    
+     30   11   .   .   OR   1   1   7    VAL   HG22   2   2   1   7ZC   H5    .   .   .   .   .   2.11   2.82   1.0   A   7     VAL   HG22   HGy%   B   500   7ZC   H5    H4     NEED_ACC_NO   1    
+     31   11   .   .   OR   1   1   7    VAL   HG23   2   2   1   7ZC   H5    .   .   .   .   .   2.11   2.82   1.0   A   7     VAL   HG23   HGy%   B   500   7ZC   H5    H4     NEED_ACC_NO   1    
+     32   13   .   .   OR   1   1   74   THR   HG21   2   2   1   7ZC   H17   .   .   .   .   .   3.4    4.53   1.0   A   74    THR   HG21   HG2%   B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     33   13   .   .   OR   1   1   74   THR   HG22   2   2   1   7ZC   H17   .   .   .   .   .   3.4    4.53   1.0   A   74    THR   HG22   HG2%   B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     34   13   .   .   OR   1   1   74   THR   HG23   2   2   1   7ZC   H17   .   .   .   .   .   3.4    4.53   1.0   A   74    THR   HG23   HG2%   B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     35   14   .   .   OR   1   1   74   THR   HG21   2   2   1   7ZC   H4    .   .   .   .   .   2.74   7      1.0   A   74    THR   HG21   HG2%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     36   14   .   .   OR   1   1   74   THR   HG22   2   2   1   7ZC   H4    .   .   .   .   .   2.74   7      1.0   A   74    THR   HG22   HG2%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     37   14   .   .   OR   1   1   74   THR   HG23   2   2   1   7ZC   H4    .   .   .   .   .   2.74   7      1.0   A   74    THR   HG23   HG2%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     38   15   .   .   OR   1   1   74   THR   HG21   2   2   1   7ZC   H11   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG21   HG2%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     39   15   .   .   OR   1   1   74   THR   HG21   2   2   1   7ZC   H12   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG21   HG2%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     40   15   .   .   OR   1   1   74   THR   HG21   2   2   1   7ZC   H13   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG21   HG2%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     41   15   .   .   OR   1   1   74   THR   HG22   2   2   1   7ZC   H11   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG22   HG2%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     42   15   .   .   OR   1   1   74   THR   HG22   2   2   1   7ZC   H12   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG22   HG2%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     43   15   .   .   OR   1   1   74   THR   HG22   2   2   1   7ZC   H13   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG22   HG2%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     44   15   .   .   OR   1   1   74   THR   HG23   2   2   1   7ZC   H11   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG23   HG2%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     45   15   .   .   OR   1   1   74   THR   HG23   2   2   1   7ZC   H12   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG23   HG2%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     46   15   .   .   OR   1   1   74   THR   HG23   2   2   1   7ZC   H13   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG23   HG2%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     47   16   .   .   OR   1   1   56   LEU   HD11   2   2   1   7ZC   H11   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD11   HDx%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     48   16   .   .   OR   1   1   56   LEU   HD11   2   2   1   7ZC   H12   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD11   HDx%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     49   16   .   .   OR   1   1   56   LEU   HD11   2   2   1   7ZC   H13   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD11   HDx%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     50   16   .   .   OR   1   1   56   LEU   HD12   2   2   1   7ZC   H11   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD12   HDx%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     51   16   .   .   OR   1   1   56   LEU   HD12   2   2   1   7ZC   H12   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD12   HDx%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     52   16   .   .   OR   1   1   56   LEU   HD12   2   2   1   7ZC   H13   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD12   HDx%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     53   16   .   .   OR   1   1   56   LEU   HD13   2   2   1   7ZC   H11   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD13   HDx%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     54   16   .   .   OR   1   1   56   LEU   HD13   2   2   1   7ZC   H12   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD13   HDx%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     55   16   .   .   OR   1   1   56   LEU   HD13   2   2   1   7ZC   H13   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD13   HDx%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     56   17   .   .   OR   1   1   7    VAL   HG21   2   2   1   7ZC   H11   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG21   HGy%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     57   17   .   .   OR   1   1   7    VAL   HG21   2   2   1   7ZC   H12   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG21   HGy%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     58   17   .   .   OR   1   1   7    VAL   HG21   2   2   1   7ZC   H13   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG21   HGy%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     59   17   .   .   OR   1   1   7    VAL   HG22   2   2   1   7ZC   H11   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG22   HGy%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     60   17   .   .   OR   1   1   7    VAL   HG22   2   2   1   7ZC   H12   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG22   HGy%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     61   17   .   .   OR   1   1   7    VAL   HG22   2   2   1   7ZC   H13   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG22   HGy%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     62   17   .   .   OR   1   1   7    VAL   HG23   2   2   1   7ZC   H11   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG23   HGy%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     63   17   .   .   OR   1   1   7    VAL   HG23   2   2   1   7ZC   H12   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG23   HGy%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     64   17   .   .   OR   1   1   7    VAL   HG23   2   2   1   7ZC   H13   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG23   HGy%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     65   18   .   .   OR   1   1   7    VAL   HG21   2   2   1   7ZC   H7    .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG21   HGy%   B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     66   18   .   .   OR   1   1   7    VAL   HG22   2   2   1   7ZC   H7    .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG22   HGy%   B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     67   18   .   .   OR   1   1   7    VAL   HG23   2   2   1   7ZC   H7    .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG23   HGy%   B   500   7ZC   H7    H5     NEED_ACC_NO   1    
 
    stop_
 

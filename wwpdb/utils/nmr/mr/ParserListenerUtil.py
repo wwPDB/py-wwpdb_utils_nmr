@@ -7298,7 +7298,7 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
     return list(chainAssign), warningMessage
 
 
-def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, authAtomId, allowAmbig=True, enableWarning=True, preferPdbxAuthAtomName=False, offset=1):
+def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId, authAtomId, allowAmbig=True, enableWarning=True, preferPdbxAuthAtomName=False, offset=1):
     """ Select atoms of the coordinates.
         @return atom selection, warning mesage (None for valid case)
     """
@@ -7312,7 +7312,7 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, authAtomId, 
 
     for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 
-        seqKey, coordAtomSite = getCoordAtomSiteOf(caC, chainId, cifSeqId, True)
+        seqKey, coordAtomSite = getCoordAtomSiteOf(caC, authChainId, chainId, cifSeqId, True)
         _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
         if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
             _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
@@ -7361,7 +7361,7 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, authAtomId, 
                     for np in nonPolySeq:
                         if np['auth_chain_id'] == chainId and cifSeqId in np['auth_seq_id']:
                             cifSeqId = np['seq_id'][np['auth_seq_id'].index(cifSeqId)]
-                            seqKey, coordAtomSite = getCoordAtomSiteOf(caC, chainId, cifSeqId, True)
+                            seqKey, coordAtomSite = getCoordAtomSiteOf(caC, authChainId, chainId, cifSeqId, True)
                             if coordAtomSite is not None:
                                 break
                 except ValueError:
@@ -7387,7 +7387,7 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, authAtomId, 
 
         if lenAtomId == 0:
             if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
-                return selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, allowAmbig, enableWarning, preferPdbxAuthAtomName, offset=1)
+                return selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId, allowAmbig, enableWarning, preferPdbxAuthAtomName, offset=1)
             if enableWarning:
                 warningMessage = f"[Invalid atom nomenclature] "\
                     f"{seqId}:{compId}:{atomId} is invalid atom nomenclature."
@@ -7404,7 +7404,7 @@ def selectCoordAtoms(caC, nefT, chainAssign, seqId, compId, atomId, authAtomId, 
             if _atomSelection not in atomSelection:
                 atomSelection.append(_atomSelection)
 
-            warningMessage = testCoordAtomIdConsistency(caC, nefT.get_ccu(), chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
+            warningMessage = testCoordAtomIdConsistency(caC, nefT.get_ccu(), authChainId, chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
 
     return atomSelection, warningMessage
 
@@ -7425,7 +7425,7 @@ def getRealChainSeqId(ccU, polySeq, seqId, compId=None, isPolySeq=True):
     return polySeq['chain_id' if isPolySeq else 'auth_chain_id'], seqId
 
 
-def getCoordAtomSiteOf(caC, chainId, seqId, cifCheck=True, asis=True):
+def getCoordAtomSiteOf(caC, authChainId, chainId, seqId, cifCheck=True, asis=True):
     """ Return sequence key and its atom list of the coordinates.
         @return: sequence key, atom list in the sequence
     """
@@ -7437,6 +7437,9 @@ def getCoordAtomSiteOf(caC, chainId, seqId, cifCheck=True, asis=True):
         if asis:
             if seqKey in coordAtomSites:
                 coordAtomSite = coordAtomSites[seqKey]
+            elif authChainId != chainId and (authChainId, seqId) in coordAtomSites:
+                seqKey = (authChainId, seqId)
+                coordAtomSite = coordAtomSites[seqKey]
             else:
                 labelToAuthSeq = caC['label_to_auth_seq']
                 if seqKey in labelToAuthSeq:
@@ -7446,7 +7449,7 @@ def getCoordAtomSiteOf(caC, chainId, seqId, cifCheck=True, asis=True):
     return seqKey, coordAtomSite
 
 
-def testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, atomId, seqKey, coordAtomSite, enableWarning=True):
+def testCoordAtomIdConsistency(caC, ccU, authChainId, chainId, seqId, compId, atomId, seqKey, coordAtomSite, enableWarning=True):
     """ Check existence of specified atom in the coordinates.
         @return: waring message (None for valid case)
     """
@@ -7459,7 +7462,7 @@ def testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, atomId, seqKey,
         elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
             found = True
         else:
-            _seqKey, _coordAtomSite = getCoordAtomSiteOf(caC, chainId, seqId, asis=False)
+            _seqKey, _coordAtomSite = getCoordAtomSiteOf(caC, authChainId, chainId, seqId, asis=False)
             if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
@@ -7469,7 +7472,7 @@ def testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, atomId, seqKey,
                     seqKey = _seqKey
 
     else:
-        _seqKey, _coordAtomSite = getCoordAtomSiteOf(caC, chainId, seqId, asis=False)
+        _seqKey, _coordAtomSite = getCoordAtomSiteOf(caC, authChainId, chainId, seqId, asis=False)
         if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
             if atomId in _coordAtomSite['atom_id']:
                 found = True
@@ -7481,7 +7484,7 @@ def testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, atomId, seqKey,
     if found:
         return None
 
-    _seqKey, _coordAtomSite = getCoordAtomSiteOf(caC, chainId, seqId, asis=False)
+    _seqKey, _coordAtomSite = getCoordAtomSiteOf(caC, authChainId, chainId, seqId, asis=False)
     if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
         if atomId in _coordAtomSite['atom_id']:
             found = True
@@ -7502,7 +7505,7 @@ def testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, atomId, seqKey,
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
             if seqId == 1 or (chainId, seqId - 1) in caC['coord_unobs_res'] or (ps is not None and min(auth_seq_id_list) == seqId):
                 if aminoProtonCode and atomId != 'H1':
-                    testCoordAtomIdConsistency(caC, ccU, chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
+                    testCoordAtomIdConsistency(caC, ccU, authChainId, chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     return None
                 if atomId in aminoProtonCode or atomId == 'P' or atomId.startswith('HOP'):
                     checked = True

@@ -6302,56 +6302,58 @@ class NmrDpUtility:
             if self.__inputParamDictCopy is None:
                 self.__inputParamDictCopy = copy.deepcopy(self.__inputParamDict)
 
-            for v in self.key_items['nmr-star'].values():
-                if v is None:
-                    continue
-                for d in v:
-                    if d['name'].startswith('Entity_assembly_ID'):
-                        d['type'] = 'str'
-                        d['default'] = 'A'
-                        if 'default-from' in d:
-                            del d['default-from']
+            if not self.__validation_server:
 
-            for v in self.consist_key_items['nmr-star'].values():
-                if v is None:
-                    continue
-                for d in v:
-                    if d['name'].startswith('Entity_assembly_ID'):
-                        d['type'] = 'str'
-                        d['default'] = 'A'
-                        if 'default-from' in d:
-                            del d['default-from']
-
-            for d in self.pk_data_items['nmr-star']:
-                if d['name'].startswith('Entity_assembly_ID'):
-                    d['type'] = 'str'
-                    d['default'] = 'A'
-                    if 'default-from' in d:
-                        del d['default-from']
-                    if 'enforce-non-zero' in d:
-                        del d['enforce-non-zero']
-
-            for v in self.aux_key_items['nmr-star'].values():
-                if v is None:
-                    continue
-                for v2 in v.values():
-                    for d in v2:
+                for v in self.key_items['nmr-star'].values():
+                    if v is None:
+                        continue
+                    for d in v:
                         if d['name'].startswith('Entity_assembly_ID'):
                             d['type'] = 'str'
                             d['default'] = 'A'
                             if 'default-from' in d:
                                 del d['default-from']
 
-            for v in self.aux_data_items['nmr-star'].values():
-                if v is None:
-                    continue
-                for v2 in v.values():
-                    for d in v2:
+                for v in self.consist_key_items['nmr-star'].values():
+                    if v is None:
+                        continue
+                    for d in v:
                         if d['name'].startswith('Entity_assembly_ID'):
                             d['type'] = 'str'
                             d['default'] = 'A'
                             if 'default-from' in d:
                                 del d['default-from']
+
+                for d in self.pk_data_items['nmr-star']:
+                    if d['name'].startswith('Entity_assembly_ID'):
+                        d['type'] = 'str'
+                        d['default'] = 'A'
+                        if 'default-from' in d:
+                            del d['default-from']
+                        if 'enforce-non-zero' in d:
+                            del d['enforce-non-zero']
+
+                for v in self.aux_key_items['nmr-star'].values():
+                    if v is None:
+                        continue
+                    for v2 in v.values():
+                        for d in v2:
+                            if d['name'].startswith('Entity_assembly_ID'):
+                                d['type'] = 'str'
+                                d['default'] = 'A'
+                                if 'default-from' in d:
+                                    del d['default-from']
+
+                for v in self.aux_data_items['nmr-star'].values():
+                    if v is None:
+                        continue
+                    for v2 in v.values():
+                        for d in v2:
+                            if d['name'].startswith('Entity_assembly_ID'):
+                                d['type'] = 'str'
+                                d['default'] = 'A'
+                                if 'default-from' in d:
+                                    del d['default-from']
 
         elif self.__combined_mode and not self.__remediation_mode:
             self.__native_combined = True

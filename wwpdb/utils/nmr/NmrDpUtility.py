@@ -1331,7 +1331,6 @@ class NmrDpUtility:
         __mergeCsAndMrTasks = __checkTasks
         __mergeCsAndMrTasks.append(self.__updatePolymerSequence)
         __mergeCsAndMrTasks.append(self.__mergeLegacyCsAndMr)
-        __mergeCsAndMrTasks.append(self.__updateConstraintStats)
         __mergeCsAndMrTasks.append(self.__detectSimpleDistanceRestraint)
 
         __annotateTasks = [self.__initializeDpReport,

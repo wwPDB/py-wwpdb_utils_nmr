@@ -28088,30 +28088,31 @@ class NmrDpUtility:
                 if not any(content_subtype in self.pk_content_subtypes for content_type in input_source_dic['content_subtype']):
 
                     if not self.__annotation_mode:
+
                         if __pynmrstar_v3__:
                             master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
                         else:
                             master_entry.write_to_file(self.__dstPath)
 
-                    if 'nmr_cif_file_path' in self.__outputParamDict:
+                        if 'nmr_cif_file_path' in self.__outputParamDict:
 
-                        try:
+                            try:
 
-                            myIo = IoAdapterPy(False, sys.stderr)
-                            containerList = myIo.readFile(self.__dstPath)
+                                myIo = IoAdapterPy(False, sys.stderr)
+                                containerList = myIo.readFile(self.__dstPath)
 
-                            if containerList is not None and len(containerList) > 1:
+                                if containerList is not None and len(containerList) > 1:
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
+                                    if self.__verbose:
+                                        self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
-                                for c in containerList:
-                                    c.setType('data')
+                                    for c in containerList:
+                                        c.setType('data')
 
-                                myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+                                    myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
 
-                        except Exception as e:
-                            self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Error  - {str(e)}\n")
+                            except Exception as e:
+                                self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Error  - {str(e)}\n")
 
             return True
 
@@ -32583,30 +32584,31 @@ class NmrDpUtility:
             if list_id > 1 and self.__dstPath is not None:
 
                 if not self.__annotation_mode:
+
                     if __pynmrstar_v3__:
                         master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
                     else:
                         master_entry.write_to_file(self.__dstPath)
 
-                if 'nmr_cif_file_path' in self.__outputParamDict:
+                    if 'nmr_cif_file_path' in self.__outputParamDict:
 
-                    try:
+                        try:
 
-                        myIo = IoAdapterPy(False, sys.stderr)
-                        containerList = myIo.readFile(self.__dstPath)
+                            myIo = IoAdapterPy(False, sys.stderr)
+                            containerList = myIo.readFile(self.__dstPath)
 
-                        if containerList is not None and len(containerList) > 1:
+                            if containerList is not None and len(containerList) > 1:
 
-                            if self.__verbose:
-                                self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
+                                if self.__verbose:
+                                    self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
-                            for c in containerList:
-                                c.setType('data')
+                                for c in containerList:
+                                    c.setType('data')
 
-                            myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+                                myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
 
-                    except Exception as e:
-                        self.__lfh.write(f"+NmrDpUtility.__validateStrPk() ++ Error  - {str(e)}\n")
+                        except Exception as e:
+                            self.__lfh.write(f"+NmrDpUtility.__validateStrPk() ++ Error  - {str(e)}\n")
 
             return True
 

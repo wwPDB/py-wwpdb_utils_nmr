@@ -29418,8 +29418,7 @@ class NmrDpUtility:
                 auth_seq_id_col = lp.tags.index('Auth_seq_ID_2')
                 auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
 
-                _protein_angles = 0
-                _other_angles = 0
+                _protein_angles = _other_angles = 0
 
                 prev_id = -1
                 for row in lp:
@@ -29441,7 +29440,7 @@ class NmrDpUtility:
                         else:
                             _other_angles += 1
 
-                if _protein_angles > 0 and _other_angles == 0:
+                if _protein_angles > _other_angles:
                     sf_item['constraint_type'] = 'protein dihedral angle'
 
                     tagNames = [t[0] for t in sf.tags]
@@ -29450,8 +29449,7 @@ class NmrDpUtility:
                         sf_item['constraint_subtype'] = 'backbone chemical shifts'
                         sf.add_tag('Constraint_subtype', 'backbone chemical shifts')
 
-                _na_angles = 0
-                _other_angles = 0
+                _na_angles = _other_angles = 0
 
                 prev_id = -1
                 for row in lp:
@@ -29473,7 +29471,7 @@ class NmrDpUtility:
                         else:
                             _other_angles += 1
 
-                if _na_angles > 0 and _other_angles == 0:
+                if _na_angles > _other_angles:
                     sf_item['constraint_type'] = 'nucleic acid dihedral angle'
 
                     tagNames = [t[0] for t in sf.tags]
@@ -29482,8 +29480,7 @@ class NmrDpUtility:
                         sf_item['constraint_subtype'] = 'unknown'
                         sf.add_tag('Constraint_type', 'unknown')
 
-                _br_angles = 0
-                _other_angles = 0
+                _br_angles = _other_angles = 0
 
                 prev_id = -1
                 for row in lp:
@@ -29505,7 +29502,7 @@ class NmrDpUtility:
                         else:
                             _other_angles += 1
 
-                if _br_angles > 0 and _other_angles == 0:
+                if _br_angles > _other_angles:
                     sf_item['constraint_type'] = 'saccaride dihedral angle'
 
                     tagNames = [t[0] for t in sf.tags]
@@ -50232,11 +50229,8 @@ class NmrDpUtility:
                     auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
                     angle_name_col = lp.tags.index('Torsion_angle_name')
 
-                    _protein_angles = 0
-                    _other_angles = 0
-
-                    _protein_bb_angles = 0
-                    _protein_oth_angles = 0
+                    _protein_angles = _other_angles = 0
+                    _protein_bb_angles = _protein_oth_angles = 0
 
                     prev_id = -1
                     for row in lp:
@@ -50277,7 +50271,7 @@ class NmrDpUtility:
                             else:
                                 _other_angles += 1
 
-                    if _protein_angles > 0 and _other_angles == 0:
+                    if _protein_angles > _other_angles:
                         sf_item['constraint_type'] = 'protein dihedral angle'
 
                         sf = sf_item['saveframe']
@@ -50362,8 +50356,7 @@ class NmrDpUtility:
                     auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
                     angle_name_col = lp.tags.index('Torsion_angle_name')
 
-                    _na_angles = 0
-                    _other_angles = 0
+                    _na_angles = _other_angles = 0
 
                     prev_id = -1
                     for row in lp:
@@ -50408,7 +50401,7 @@ class NmrDpUtility:
                             else:
                                 _other_angles += 1
 
-                    if _na_angles > 0 and _other_angles == 0:
+                    if _na_angles > _other_angles:
                         sf_item['constraint_type'] = 'nucleic acid dihedral angle'
 
                         sf = sf_item['saveframe']
@@ -50468,8 +50461,7 @@ class NmrDpUtility:
                     auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
                     angle_name_col = lp.tags.index('Torsion_angle_name')
 
-                    _br_angles = 0
-                    _other_angles = 0
+                    _br_angles = _other_angles = 0
 
                     prev_id = -1
                     for row in lp:
@@ -50497,7 +50489,7 @@ class NmrDpUtility:
                             else:
                                 _other_angles += 1
 
-                    if _br_angles > 0 and _other_angles == 0:
+                    if _br_angles > _other_angles:
                         sf_item['constraint_type'] = 'saccaride dihedral angle'
 
                         sf = sf_item['saveframe']
@@ -51522,7 +51514,7 @@ class NmrDpUtility:
         if not isinstance(master_entry, pynmrstar.Entry):
             return False
 
-        if 'constraint_statistics' in self.__sf_category_list:
+        if 'constraint_statistics' in self.__sf_category_list and self.__list_id_counter is not None:
             return False
 
         if self.__bmrb_only and self.__internal_mode and self.__bmrb_id is not None:
@@ -51540,42 +51532,62 @@ class NmrDpUtility:
 
         if len(cst_sfs) > 0:
 
-            lp_category = '_Constraint_file'
+            if self.__list_id_counter is None:
+                master_entry.remove_saveframe(sf_framecode)
 
-            key_items = [{'name': 'ID', 'type': 'int'},
-                         {'name': 'Constraint_filename', 'type': 'str'},
-                         {'name': 'Block_ID', 'type': 'int'},
-                         ]
-            data_items = [{'name': 'Constraint_type', 'type': 'str', 'mandatory': True},
-                          {'name': 'Constraint_subtype', 'type': 'str'},
-                          {'name': 'Constraint_subsubtype', 'type': 'str',
-                           'enum': ('ambi', 'simple')},
-                          {'name': 'Constraint_number', 'type': 'int'},
-                          {'name': 'Constraint_stat_list_ID', 'type': 'int', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
-                          {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
-                          ]
+            else:
 
-            allowed_tags = ['ID', 'Constraint_filename', 'Software_ID', 'Software_label', 'Software_name',
-                            'Block_ID', 'Constraint_type', 'Constraint_subtype', 'Constraint_subsubtype', 'Constraint_number',
-                            'Sf_ID', 'Entry_ID', 'Constraint_stat_list_ID']
+                lp_category = '_Constraint_file'
 
-            try:
+                key_items = [{'name': 'ID', 'type': 'int'},
+                             {'name': 'Constraint_filename', 'type': 'str'},
+                             {'name': 'Block_ID', 'type': 'int'},
+                             ]
+                data_items = [{'name': 'Constraint_type', 'type': 'str', 'mandatory': True},
+                              {'name': 'Constraint_subtype', 'type': 'str'},
+                              {'name': 'Constraint_subsubtype', 'type': 'str',
+                               'enum': ('ambi', 'simple')},
+                              {'name': 'Constraint_number', 'type': 'int'},
+                              {'name': 'Constraint_stat_list_ID', 'type': 'int', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': False}
+                              ]
 
-                for parent_pointer, cst_sf in enumerate(cst_sfs, start=1):
+                allowed_tags = ['ID', 'Constraint_filename', 'Software_ID', 'Software_label', 'Software_name',
+                                'Block_ID', 'Constraint_type', 'Constraint_subtype', 'Constraint_subsubtype', 'Constraint_number',
+                                'Sf_ID', 'Entry_ID', 'Constraint_stat_list_ID']
 
-                    self.__nefT.check_data(cst_sf, lp_category, key_items, data_items,
-                                           allowed_tags, None, parent_pointer=parent_pointer,
-                                           enforce_allowed_tags=(file_type == 'nmr-star'),
-                                           excl_missing_data=self.__excl_missing_data)
+                try:
 
-                return True
+                    for parent_pointer, cst_sf in enumerate(cst_sfs, start=1):
 
-            except Exception:
-                for cst_sf in reversed(cst_sfs):
-                    del master_entry[cst_sf]
+                        self.__nefT.check_data(cst_sf, lp_category, key_items, data_items,
+                                               allowed_tags, None, parent_pointer=parent_pointer,
+                                               enforce_allowed_tags=(file_type == 'nmr-star'),
+                                               excl_missing_data=self.__excl_missing_data)
+
+                    return True
+
+                except Exception:
+                    for cst_sf in reversed(cst_sfs):
+                        del master_entry[cst_sf]
 
         # if self.__caC is None:
         #     self.__retrieveCoordAssemblyChecker()
+
+        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
+
+        # initialize loop counter
+        lp_counts = {t: 0 for t in self.nmr_content_subtypes}
+
+        # increment loop counter of each content subtype
+        for lp_category in self.__lp_category_list:
+
+            if lp_category in self.lp_categories[file_type].values():
+                lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
+
+        content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
+
+        input_source.setItemValue('content_subtype', content_subtypes)
 
         sf_item = {}
 
@@ -52184,11 +52196,8 @@ class NmrDpUtility:
                         auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
                         angle_name_col = lp.tags.index('Torsion_angle_name')
 
-                        _protein_angles = 0
-                        _other_angles = 0
-
-                        _protein_bb_angles = 0
-                        _protein_oth_angles = 0
+                        _protein_angles = _other_angles = 0
+                        _protein_bb_angles = _protein_oth_angles = 0
 
                         prev_id = -1
                         for row in lp:
@@ -52229,7 +52238,7 @@ class NmrDpUtility:
                                 else:
                                     _other_angles += 1
 
-                        if _protein_angles > 0 and _other_angles == 0:
+                        if _protein_angles > _other_angles == 0:
                             sf_item[sf_framecode]['constraint_type'] = 'protein dihedral angle'
 
                             tagNames = [t[0] for t in sf.tags]
@@ -52270,8 +52279,7 @@ class NmrDpUtility:
                         auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
                         angle_name_col = lp.tags.index('Torsion_angle_name')
 
-                        _na_angles = 0
-                        _other_angles = 0
+                        _na_angles = _other_angles = 0
 
                         prev_id = -1
                         for row in lp:
@@ -52316,7 +52324,7 @@ class NmrDpUtility:
                                 else:
                                     _other_angles += 1
 
-                        if _na_angles > 0 and _other_angles == 0:
+                        if _na_angles > _other_angles:
                             sf_item[sf_framecode]['constraint_type'] = 'nucleic acid dihedral angle'
 
                             tagNames = [t[0] for t in sf.tags]
@@ -52350,8 +52358,7 @@ class NmrDpUtility:
                         auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
                         angle_name_col = lp.tags.index('Torsion_angle_name')
 
-                        _br_angles = 0
-                        _other_angles = 0
+                        _br_angles = _other_angles = 0
 
                         prev_id = -1
                         for row in lp:
@@ -52379,7 +52386,7 @@ class NmrDpUtility:
                                 else:
                                     _other_angles += 1
 
-                        if _br_angles > 0 and _other_angles == 0:
+                        if _br_angles > _other_angles:
                             sf_item[sf_framecode]['constraint_type'] = 'saccaride dihedral angle'
 
                             tagNames = [t[0] for t in sf.tags]

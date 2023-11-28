@@ -24487,6 +24487,9 @@ class NmrDpUtility:
                                     if seq_key in auth_to_star_seq:
                                         _row[16] = row[auth_asym_id_col] = auth_asym_id
                                         _row[20] = row[orig_asym_id_col] = auth_asym_id
+                                        _row[5] = row[comp_id_col] = auth_comp_id
+                                        _row[18] = row[auth_comp_id_col] = auth_comp_id
+                                        comp_id = auth_comp_id
                                         _seq_key = (seq_key[0], seq_key[1])
                                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                             if seq_key not in auth_to_star_seq:

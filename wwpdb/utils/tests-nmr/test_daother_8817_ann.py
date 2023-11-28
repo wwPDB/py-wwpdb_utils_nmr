@@ -23,7 +23,9 @@ class TestNmrDpUtility(unittest.TestCase):
                                                     'cif': 'D_8000212514_model_P1.cif.V5'},
                                'daother-8817-ann-2nd': {'str': 'D_8000212514_nmr-data-str_P1.str.V2',
                                                         'cif': 'D_8000212514_model_P1.cif.V2'
-                                                        }
+                                                        },
+                               'daother-8817-ann-3rd': {'str': 'daother-8817-nef2cif.str',
+                                                        'cif': 'D_8000212514_model_P1.cif.V2'}
                                }
         self.utility = NmrDpUtility()
 
@@ -66,6 +68,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_str2cif_annotate_daother_8817_2nd(self):
         self.__test_nmr_str2cif_annotate('daother-8817-ann-2nd')
+
+    def test_nmr_str2cif_annotate_daother_8817_3rd(self):
+        self.__test_nmr_str2cif_annotate('daother-8817-ann-3rd')
 
 
 if __name__ == '__main__':

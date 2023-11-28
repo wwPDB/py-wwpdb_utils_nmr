@@ -24473,12 +24473,22 @@ class NmrDpUtility:
                             if self.__annotation_mode:
                                 auth_asym_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                      if _auth_seq_id == auth_seq_id_ and _auth_comp_id == auth_comp_id), auth_asym_id)
-                                if (auth_asym_id, auth_seq_id_, auth_comp_id) in auth_to_star_seq:
+                                seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
+                                if seq_key in auth_to_star_seq:
                                     _row[16] = row[auth_asym_id_col] = auth_asym_id
                                     _row[20] = row[orig_asym_id_col] = auth_asym_id
-                                    seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                                     _seq_key = (seq_key[0], seq_key[1])
                                     entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                else:
+                                    auth_asym_id, auth_comp_id = next(((_auth_asym_id, _auth_comp_id)
+                                                                       for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                                       if _auth_seq_id == auth_seq_id_), (auth_asym_id, auth_comp_id))
+                                    seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
+                                    if seq_key in auth_to_star_seq:
+                                        _row[16] = row[auth_asym_id_col] = auth_asym_id
+                                        _row[20] = row[orig_asym_id_col] = auth_asym_id
+                                        _seq_key = (seq_key[0], seq_key[1])
+                                        entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                             if seq_key not in auth_to_star_seq:
                                 auth_comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                      if _auth_asym_id == auth_asym_id and _auth_seq_id == auth_seq_id_), auth_comp_id)
@@ -28521,6 +28531,14 @@ class NmrDpUtility:
                                         seq_key = (chain_id, seq_id, comp_id)
                                         if seq_key in auth_to_star_seq:
                                             row_[d] = chain_id
+                                        else:
+                                            chain_id, comp_id = next(((_auth_asym_id, _auth_comp_id)
+                                                                      for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                                      if _auth_seq_id == seq_id), (chain_id, comp_id))
+                                            seq_key = (chain_id, seq_id, comp_id)
+                                            if seq_key in auth_to_star_seq:
+                                                row_[d] = chain_id
+                                                row_[atom_dim_num * 2 + d] = comp_id
                                     if seq_key not in auth_to_star_seq:
                                         comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                         if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
@@ -28803,6 +28821,14 @@ class NmrDpUtility:
                                             seq_key = (chain_id, seq_id, comp_id)
                                             if seq_key in auth_to_star_seq:
                                                 row_[d] = chain_id
+                                            else:
+                                                chain_id, comp_id = next(((_auth_asym_id, _auth_comp_id)
+                                                                          for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                                          if _auth_seq_id == seq_id), (chain_id, comp_id))
+                                                seq_key = (chain_id, seq_id, comp_id)
+                                                if seq_key in auth_to_star_seq:
+                                                    row_[d] = chain_id
+                                                    row_[atom_dim_num * 2 + d] = comp_id
                                         if seq_key not in auth_to_star_seq:
                                             comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                             if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
@@ -28835,6 +28861,14 @@ class NmrDpUtility:
                                         seq_key = (chain_id, seq_id, comp_id)
                                         if seq_key in auth_to_star_seq:
                                             row_[d] = chain_id
+                                        else:
+                                            chain_id, comp_id = next(((_auth_asym_id, _auth_comp_id)
+                                                                      for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                                      if _auth_seq_id == seq_id), (chain_id, comp_id))
+                                            seq_key = (chain_id, seq_id, comp_id)
+                                            if seq_key in auth_to_star_seq:
+                                                row_[d] = chain_id
+                                                row_[atom_dim_num * 2 + d] = comp_id
                                     if seq_key not in auth_to_star_seq:
                                         comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                         if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
@@ -33083,7 +33117,14 @@ class NmrDpUtility:
                             if self.__annotation_mode:
                                 auth_asym_id_ = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                       if _auth_seq_id == auth_seq_id_ and _auth_comp_id == comp_id), auth_asym_id_)
-                                if (auth_asym_id_, auth_seq_id_, comp_id) in auth_to_star_seq:
+                                seq_key = (auth_asym_id_, auth_seq_id_, comp_id)
+                                if seq_key in auth_to_star_seq:
+                                    row[loop.tags.index(auth_assign_item_temps[0] % dim)] = auth_asym_id
+                                    entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                else:
+                                    auth_asym_id_, comp_id = next(((_auth_asym_id, _auth_comp_id)
+                                                                   for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                                   if _auth_seq_id == auth_seq_id_), (auth_asym_id_, comp_id))
                                     seq_key = (auth_asym_id_, auth_seq_id_, comp_id)
                                     if seq_key in auth_to_star_seq:
                                         row[loop.tags.index(auth_assign_item_temps[0] % dim)] = auth_asym_id
@@ -33205,7 +33246,14 @@ class NmrDpUtility:
                         if self.__annotation_mode:
                             auth_asym_id_ = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                   if _auth_seq_id == auth_seq_id_ and _auth_comp_id == comp_id), auth_asym_id_)
-                            if (auth_asym_id_, auth_seq_id_, comp_id) in auth_to_star_seq:
+                            seq_key = (auth_asym_id_, auth_seq_id_, comp_id)
+                            if seq_key in auth_to_star_seq:
+                                row[loop.tags.index(auth_assign_items[0])] = auth_asym_id_
+                                entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                            else:
+                                auth_asym_id_, comp_id = next(((_auth_asym_id, _auth_comp_id)
+                                                               for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                               if _auth_seq_id == auth_seq_id_), (auth_asym_id_, comp_id))
                                 seq_key = (auth_asym_id_, auth_seq_id_, comp_id)
                                 if seq_key in auth_to_star_seq:
                                     row[loop.tags.index(auth_assign_items[0])] = auth_asym_id_

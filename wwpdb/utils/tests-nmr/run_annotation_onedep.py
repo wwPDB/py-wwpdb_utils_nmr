@@ -203,7 +203,7 @@ class gen_auth_view_onedep:
         self.__auth_view = auth_view
 
         self.__cif_name_pattern = re.compile(r'D_[0-9]+_model-(\S+)_P1.cif.V([0-9]+)$')
-        self.__mr_name_pattern = re.compile(r'D_[0-9]+_mr-upload_P([0-9]+).(\S+).V([0-9]+)$')
+        self.__mr_name_pattern = re.compile(r'D_[0-9]+_mr-(\S+)_P([0-9]+).(\S+).V([0-9]+)$')
         self.__pk_name_pattern = re.compile(r'D_[0-9]+_nmr-peaks-upload_P([0-9]+).dat.V([0-9]+)$')
         self.__nmr_cif_name_pattern = re.compile(r'D_[0-9]+_nmr-data-str_P([0-9]+).cif.V([0-9]+)$')
         self.__cs_ann_name_pattern = re.compile(r'D_[0-9]+_cs-(\S+)_P1.cif.V([0-9]+)')
@@ -329,11 +329,12 @@ class gen_auth_view_onedep:
 
             if self.__mr_name_pattern.match(file_name):
                 g = self.__mr_name_pattern.search(file_name).groups()
-                # part = int(g[0])
-                content_type = g[1]
-                version = int(g[2])
+                mile_stone = g[0]
+                # part = int(g[1])
+                content_type = g[2]
+                version = int(g[3])
 
-                key = content_type + g[0]
+                key = content_type + g[1]
 
                 file_path = os.path.join(self.__data_dir, file_name)
 
@@ -344,13 +345,16 @@ class gen_auth_view_onedep:
 
                     has_amber = True
                     if key in ax_dic:
-                        if version > ax_dic[key]['version']:
+                        if (version > ax_dic[key]['version'] and mile_stone == ax_dic[key]['mile_stone'])\
+                           or (mile_stone == 'annotate' and mile_stone != ax_dic[key]['mile_stone']):
+                            ax_dic[key]['mile_stone'] = mile_stone
                             ax_dic[key]['version'] = version
                             ax_dic[key]['content_type'] = content_type
                             ax_dic[key]['file_name'] = file_path
                             ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
                     else:
                         ax_dic[key] = {}
+                        ax_dic[key]['mile_stone'] = mile_stone
                         ax_dic[key]['version'] = version
                         ax_dic[key]['content_type'] = content_type
                         ax_dic[key]['file_name'] = file_path
@@ -363,13 +367,16 @@ class gen_auth_view_onedep:
 
                     has_gromacs = True
                     if key in ax_dic:
-                        if version > ax_dic[key]['version']:
+                        if (version > ax_dic[key]['version'] and mile_stone == ax_dic[key]['mile_stone'])\
+                           or (mile_stone == 'annotate' and mile_stone != ax_dic[key]['mile_stone']):
+                            ax_dic[key]['mile_stone'] = mile_stone
                             ax_dic[key]['version'] = version
                             ax_dic[key]['content_type'] = content_type
                             ax_dic[key]['file_name'] = file_path
                             ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
                     else:
                         ax_dic[key] = {}
+                        ax_dic[key]['mile_stone'] = mile_stone
                         ax_dic[key]['version'] = version
                         ax_dic[key]['content_type'] = content_type
                         ax_dic[key]['file_name'] = file_path
@@ -384,13 +391,16 @@ class gen_auth_view_onedep:
                             content_type = 'gromacs'
 
                     if key in mr_dic:
-                        if version > mr_dic[key]['version']:
+                        if (version > mr_dic[key]['version'] and mile_stone == mr_dic[key]['mile_stone'])\
+                           or (mile_stone == 'annotate' and mile_stone != mr_dic[key]['mile_stone']):
+                            mr_dic[key]['mile_stone'] = mile_stone
                             mr_dic[key]['version'] = version
                             mr_dic[key]['content_type'] = content_type
                             mr_dic[key]['file_name'] = file_path
                             mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
                     else:
                         mr_dic[key] = {}
+                        mr_dic[key]['mile_stone'] = mile_stone
                         mr_dic[key]['version'] = version
                         mr_dic[key]['content_type'] = content_type
                         mr_dic[key]['file_name'] = file_path
@@ -422,23 +432,27 @@ class gen_auth_view_onedep:
 
                     if self.__mr_name_pattern.match(file_name):
                         g = self.__mr_name_pattern.search(file_name).groups()
-                        # part = int(g[0])
-                        content_type = g[1]
-                        version = int(g[2])
+                        mile_stone = g[0]
+                        # part = int(g[1])
+                        content_type = g[2]
+                        version = int(g[3])
 
-                        key = content_type + g[0]
+                        key = content_type + g[1]
 
                         file_path = os.path.join(self.__data_dir, file_name)
 
                         if content_type == 'amber':
                             if key in ax_dic:
-                                if version > ax_dic[key]['version']:
+                                if (version > ax_dic[key]['version'] and mile_stone == ax_dic[key]['mile_stone'])\
+                                   or (mile_stone == 'annotate' and mile_stone != ax_dic[key]['mile_stone']):
+                                    ax_dic[key]['mile_stone'] = mile_stone
                                     ax_dic[key]['version'] = version
                                     ax_dic[key]['content_type'] = 'dat'
                                     ax_dic[key]['file_name'] = file_path
                                     ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
                             else:
                                 ax_dic[key] = {}
+                                ax_dic[key]['mile_stone'] = mile_stone
                                 ax_dic[key]['version'] = version
                                 ax_dic[key]['content_type'] = 'dat'
                                 ax_dic[key]['file_name'] = file_path
@@ -446,13 +460,16 @@ class gen_auth_view_onedep:
 
                         else:
                             if key in mr_dic:
-                                if version > mr_dic[key]['version']:
+                                if (version > mr_dic[key]['version'] and mile_stone == mr_dic[key]['mile_stone'])\
+                                   or (mile_stone == 'annotate' and mile_stone != mr_dic[key]['mile_stone']):
+                                    mr_dic[key]['mile_stone'] = mile_stone
                                     mr_dic[key]['version'] = version
                                     mr_dic[key]['content_type'] = 'amber' if content_type == 'dat' else content_type
                                     mr_dic[key]['file_name'] = file_path
                                     mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
                             else:
                                 mr_dic[key] = {}
+                                mr_dic[key]['mile_stone'] = mile_stone
                                 mr_dic[key]['version'] = version
                                 mr_dic[key]['content_type'] = 'amber' if content_type == 'dat' else content_type
                                 mr_dic[key]['file_name'] = file_path
@@ -484,23 +501,27 @@ class gen_auth_view_onedep:
 
                     if self.__mr_name_pattern.match(file_name):
                         g = self.__mr_name_pattern.search(file_name).groups()
-                        # part = int(g[0])
-                        content_type = g[1]
-                        version = int(g[2])
+                        mile_stone = g[0]
+                        # part = int(g[1])
+                        content_type = g[2]
+                        version = int(g[3])
 
-                        key = content_type + g[0]
+                        key = content_type + g[1]
 
                         file_path = os.path.join(self.__data_dir, file_name)
 
                         if content_type == 'gromacs':
                             if key in ax_dic:
-                                if version > ax_dic[key]['version']:
+                                if (version > ax_dic[key]['version'] and mile_stone == ax_dic[key]['mile_stone'])\
+                                   or (mile_stone == 'annotate' and mile_stone != ax_dic[key]['mile_stone']):
+                                    ax_dic[key]['mile_stone'] = mile_stone
                                     ax_dic[key]['version'] = version
                                     ax_dic[key]['content_type'] = 'dat'
                                     ax_dic[key]['file_name'] = file_path
                                     ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
                             else:
                                 ax_dic[key] = {}
+                                ax_dic[key]['mile_stone'] = mile_stone
                                 ax_dic[key]['version'] = version
                                 ax_dic[key]['content_type'] = 'dat'
                                 ax_dic[key]['file_name'] = file_path
@@ -508,13 +529,16 @@ class gen_auth_view_onedep:
 
                         else:
                             if key in mr_dic:
-                                if version > mr_dic[key]['version']:
+                                if (version > mr_dic[key]['version'] and mile_stone == mr_dic[key]['mile_stone'])\
+                                   or (mile_stone == 'annotate' and mile_stone != mr_dic[key]['mile_stone']):
+                                    mr_dic[key]['mile_stone'] = mile_stone
                                     mr_dic[key]['version'] = version
                                     mr_dic[key]['content_type'] = 'gromacs' if content_type == 'dat' else content_type
                                     mr_dic[key]['file_name'] = file_path
                                     mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
                             else:
                                 mr_dic[key] = {}
+                                mr_dic[key]['mile_stone'] = mile_stone
                                 mr_dic[key]['version'] = version
                                 mr_dic[key]['content_type'] = 'gromacs' if content_type == 'dat' else content_type
                                 mr_dic[key]['file_name'] = file_path

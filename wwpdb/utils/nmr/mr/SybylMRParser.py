@@ -10,15 +10,15 @@ else:
 
 def serializedATN():
     return [
-        4,1,14,33,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,1,0,5,0,10,8,0,10,0,12,
+        4,1,15,33,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,1,0,5,0,10,8,0,10,0,12,
         0,13,9,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,4,1,22,8,1,11,1,12,1,23,1,2,
-        1,2,1,2,1,2,1,2,1,3,1,3,1,3,0,0,4,0,2,4,6,0,1,1,0,5,6,30,0,11,1,
+        1,2,1,2,1,2,1,2,1,3,1,3,1,3,0,0,4,0,2,4,6,0,1,1,0,5,7,30,0,11,1,
         0,0,0,2,16,1,0,0,0,4,25,1,0,0,0,6,30,1,0,0,0,8,10,3,2,1,0,9,8,1,
         0,0,0,10,13,1,0,0,0,11,9,1,0,0,0,11,12,1,0,0,0,12,14,1,0,0,0,13,
         11,1,0,0,0,14,15,5,0,0,1,15,1,1,0,0,0,16,17,5,1,0,0,17,18,5,2,0,
         0,18,19,5,3,0,0,19,21,5,4,0,0,20,22,3,4,2,0,21,20,1,0,0,0,22,23,
-        1,0,0,0,23,21,1,0,0,0,23,24,1,0,0,0,24,3,1,0,0,0,25,26,5,10,0,0,
-        26,27,5,10,0,0,27,28,3,6,3,0,28,29,3,6,3,0,29,5,1,0,0,0,30,31,7,
+        1,0,0,0,23,21,1,0,0,0,23,24,1,0,0,0,24,3,1,0,0,0,25,26,5,11,0,0,
+        26,27,5,11,0,0,27,28,3,6,3,0,28,29,3,6,3,0,29,5,1,0,0,0,30,31,7,
         0,0,0,31,7,1,0,0,0,2,11,23
     ]
 
@@ -35,9 +35,9 @@ class SybylMRParser ( Parser ):
     literalNames = [ "<INVALID>", "'ATOM1'", "'ATOM2'", "'LOWER'", "'UPPER'" ]
 
     symbolicNames = [ "<INVALID>", "Atom1", "Atom2", "Lower", "Upper", "Integer", 
-                      "Float", "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
-                      "Atom_selection", "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", 
-                      "LINE_COMMENT" ]
+                      "Float", "Float_DecimalComma", "SHARP_COMMENT", "EXCLM_COMMENT", 
+                      "SMCLN_COMMENT", "Atom_selection", "SPACE", "ENCLOSE_COMMENT", 
+                      "SECTION_COMMENT", "LINE_COMMENT" ]
 
     RULE_sybyl_mr = 0
     RULE_distance_restraints = 1
@@ -54,14 +54,15 @@ class SybylMRParser ( Parser ):
     Upper=4
     Integer=5
     Float=6
-    SHARP_COMMENT=7
-    EXCLM_COMMENT=8
-    SMCLN_COMMENT=9
-    Atom_selection=10
-    SPACE=11
-    ENCLOSE_COMMENT=12
-    SECTION_COMMENT=13
-    LINE_COMMENT=14
+    Float_DecimalComma=7
+    SHARP_COMMENT=8
+    EXCLM_COMMENT=9
+    SMCLN_COMMENT=10
+    Atom_selection=11
+    SPACE=12
+    ENCLOSE_COMMENT=13
+    SECTION_COMMENT=14
+    LINE_COMMENT=15
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -195,7 +196,7 @@ class SybylMRParser ( Parser ):
                 self.state = 23 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==10):
+                if not (_la==11):
                     break
 
         except RecognitionException as re:
@@ -274,6 +275,9 @@ class SybylMRParser ( Parser ):
         def Float(self):
             return self.getToken(SybylMRParser.Float, 0)
 
+        def Float_DecimalComma(self):
+            return self.getToken(SybylMRParser.Float_DecimalComma, 0)
+
         def Integer(self):
             return self.getToken(SybylMRParser.Integer, 0)
 
@@ -300,7 +304,7 @@ class SybylMRParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 30
             _la = self._input.LA(1)
-            if not(_la==5 or _la==6):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 224) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

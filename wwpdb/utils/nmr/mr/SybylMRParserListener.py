@@ -1493,6 +1493,9 @@ class SybylMRParserListener(ParseTreeListener):
         if ctx.Float():
             self.numberSelection.append(float(str(ctx.Float())))
 
+        elif ctx.Float_DecimalComma():
+            self.numberSelection.append(float(str(ctx.Float_DecimalComma()).replace(',', '.', 1)))
+
         elif ctx.Integer():
             self.numberSelection.append(float(str(ctx.Integer())))
 

@@ -272,7 +272,7 @@ ambig_list:
 	Ambig (Simple_name_MP | Ambig_code_MP) Equ_op_MP (Simple_name_MP Integer_MP)+ RETURN_MP;
 
 /* number expression in restrains */
-number:	Float | Integer;
+number:	Float | Float_DecimalComma | Integer;
 
 /* atom id extenstion with ambig code */
 gen_atom_name:

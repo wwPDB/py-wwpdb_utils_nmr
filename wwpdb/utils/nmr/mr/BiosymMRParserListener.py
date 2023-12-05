@@ -1426,6 +1426,15 @@ class BiosymMRParserListener(ParseTreeListener):
                         except StopIteration:
                             break
 
+                if authAtomId == 'HN' and cifAtomId in ('HN1', 'HN2') and self.__csStat.peptideLike(cifCompId)\
+                   and coordAtomSite is not None and cifAtomId not in coordAtomSite['atom_id']:
+                    if cifAtomId == 'HN2':
+                        if 'H2' not in coordAtomSite['atom_id']:
+                            continue
+                        cifAtomId = 'H2'
+                    if cifAtomId == 'HN1' and 'H' in coordAtomSite['atom_id']:
+                        cifAtomId = 'H'
+
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
                                       'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
 

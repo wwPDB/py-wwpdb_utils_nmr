@@ -41164,6 +41164,9 @@ class NmrDpUtility:
                                 _seq_id1 = seq_id1[i] - offset_1 if seq_id1[i] is not None else None
                                 _seq_id2 = seq_id2[i] - offset_2 if seq_id2[i] is not None else None
 
+                                if _seq_id1 is None and _seq_id2 is None:
+                                    continue
+
                                 conflict.append({'ref_seq_id': _seq_id1, 'ref_comp_id': nmr_comp_id,
                                                  'test_seq_id': _seq_id2, 'test_comp_id': cif_comp_id})
 
@@ -41615,20 +41618,26 @@ class NmrDpUtility:
 
                             elif nmr_comp_id != cif_comp_id and aligned[i]:
 
-                                conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
-                                                 'test_seq_id': seq_id2[i], 'test_comp_id': nmr_comp_id})
+                                _seq_id1 = seq_id1[i]
+                                _seq_id2 = seq_id2[i]
+
+                                if _seq_id1 is None and _seq_id2 is None:
+                                    continue
+
+                                conflict.append({'ref_seq_id': _seq_id1, 'ref_comp_id': cif_comp_id,
+                                                 'test_seq_id': _seq_id2, 'test_comp_id': nmr_comp_id})
 
                                 try:
-                                    label_seq_id = seq_id1[i]
+                                    label_seq_id = _seq_id1
                                     auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(label_seq_id)]
                                 except (KeyError, IndexError, ValueError):
-                                    label_seq_id = seq_id1[i]
+                                    label_seq_id = _seq_id1
                                     auth_seq_id = label_seq_id
 
                                 cif_seq_code = f"{chain_id}:{label_seq_id}:{cif_comp_id}"
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insertion error'
-                                nmr_seq_code = f"{chain_id2}:{seq_id2[i]}:{nmr_comp_id}"
+                                nmr_seq_code = f"{chain_id2}:{_seq_id2}:{nmr_comp_id}"
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insertion error'
 

@@ -112,6 +112,7 @@ Peak:			P E A K;				// = Integer
 Spectrum:		S P E C T R U M;			// = Integer
 //Weight:		W E I G H T;				// = Real
 Volume:			V O L U M E;				// = Real
+Vol:			V O L;					// = Real
 Ppm1:			P P M '1';				// = Real
 Ppm2:			P P M '2';				// = Real
 //Cv:			C V;					// = Integer

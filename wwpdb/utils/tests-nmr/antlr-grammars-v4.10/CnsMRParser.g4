@@ -141,10 +141,11 @@ noe_annotation:
 	Peak Equ_op? number_a |
 	Spectrum Equ_op? number_a |
 	Weight Equ_op? number_a |
-	Volume Equ_op? number_a |
+	(Volume | Vol) Equ_op? number_a |
 	Ppm1 Equ_op? number_a |
 	Ppm2 Equ_op? number_a |
-	Cv Equ_op? number_a;
+	Cv Equ_op? number_a |
+	Comma;
 
 /* CNS: Dihedral angle restraints - Syntax - restranits/dihedral
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html

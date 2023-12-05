@@ -1739,9 +1739,9 @@ class DynamoMRParserListener(ParseTreeListener):
                         except StopIteration:
                             break
 
-                if authAtomId == 'HN' and cifAtomId in ('HN1', 'HN2') and self.__csStat.peptideLike(cifCompId)\
+                if authAtomId in ('H', 'HN') and cifAtomId in ('HN1', 'HN2', 'HNA') and self.__csStat.peptideLike(cifCompId)\
                    and coordAtomSite is not None and cifAtomId not in coordAtomSite['atom_id']:
-                    if cifAtomId == 'HN2':
+                    if cifAtomId in ('HN2', 'HNA'):
                         if 'H2' not in coordAtomSite['atom_id']:
                             continue
                         cifAtomId = 'H2'

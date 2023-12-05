@@ -6302,58 +6302,56 @@ class NmrDpUtility:
             if self.__inputParamDictCopy is None:
                 self.__inputParamDictCopy = copy.deepcopy(self.__inputParamDict)
 
-            if not self.__validation_server:
-
-                for v in self.key_items['nmr-star'].values():
-                    if v is None:
-                        continue
-                    for d in v:
-                        if d['name'].startswith('Entity_assembly_ID'):
-                            d['type'] = 'str'
-                            d['default'] = 'A'
-                            if 'default-from' in d:
-                                del d['default-from']
-
-                for v in self.consist_key_items['nmr-star'].values():
-                    if v is None:
-                        continue
-                    for d in v:
-                        if d['name'].startswith('Entity_assembly_ID'):
-                            d['type'] = 'str'
-                            d['default'] = 'A'
-                            if 'default-from' in d:
-                                del d['default-from']
-
-                for d in self.pk_data_items['nmr-star']:
+            for v in self.key_items['nmr-star'].values():
+                if v is None:
+                    continue
+                for d in v:
                     if d['name'].startswith('Entity_assembly_ID'):
                         d['type'] = 'str'
                         d['default'] = 'A'
                         if 'default-from' in d:
                             del d['default-from']
-                        if 'enforce-non-zero' in d:
-                            del d['enforce-non-zero']
 
-                for v in self.aux_key_items['nmr-star'].values():
-                    if v is None:
-                        continue
-                    for v2 in v.values():
-                        for d in v2:
-                            if d['name'].startswith('Entity_assembly_ID'):
-                                d['type'] = 'str'
-                                d['default'] = 'A'
-                                if 'default-from' in d:
-                                    del d['default-from']
+            for v in self.consist_key_items['nmr-star'].values():
+                if v is None:
+                    continue
+                for d in v:
+                    if d['name'].startswith('Entity_assembly_ID'):
+                        d['type'] = 'str'
+                        d['default'] = 'A'
+                        if 'default-from' in d:
+                            del d['default-from']
 
-                for v in self.aux_data_items['nmr-star'].values():
-                    if v is None:
-                        continue
-                    for v2 in v.values():
-                        for d in v2:
-                            if d['name'].startswith('Entity_assembly_ID'):
-                                d['type'] = 'str'
-                                d['default'] = 'A'
-                                if 'default-from' in d:
-                                    del d['default-from']
+            for d in self.pk_data_items['nmr-star']:
+                if d['name'].startswith('Entity_assembly_ID'):
+                    d['type'] = 'str'
+                    d['default'] = 'A'
+                    if 'default-from' in d:
+                        del d['default-from']
+                    if 'enforce-non-zero' in d:
+                        del d['enforce-non-zero']
+
+            for v in self.aux_key_items['nmr-star'].values():
+                if v is None:
+                    continue
+                for v2 in v.values():
+                    for d in v2:
+                        if d['name'].startswith('Entity_assembly_ID'):
+                            d['type'] = 'str'
+                            d['default'] = 'A'
+                            if 'default-from' in d:
+                                del d['default-from']
+
+            for v in self.aux_data_items['nmr-star'].values():
+                if v is None:
+                    continue
+                for v2 in v.values():
+                    for d in v2:
+                        if d['name'].startswith('Entity_assembly_ID'):
+                            d['type'] = 'str'
+                            d['default'] = 'A'
+                            if 'default-from' in d:
+                                del d['default-from']
 
         elif self.__combined_mode and not self.__remediation_mode:
             self.__native_combined = True
@@ -7131,7 +7129,11 @@ class NmrDpUtility:
                     except OSError:
                         pass
 
-                is_valid, message = self.__nefT.validate_file(csPath, 'S')  # 'S' for assigned chemical shifts
+                allow_empty = self.__bmrb_only and self.__internal_mode\
+                    and ('nmr_cif_file_path' in self.__inputParamDict
+                         or (csListId == 0 and len(self.__inputParamDict[cs_file_path_list]) > 1))
+
+                is_valid, message = self.__nefT.validate_file(csPath, 'S', allow_empty)  # 'S' for assigned chemical shifts
 
                 self.__original_error_message.append(message)
 
@@ -7181,7 +7183,7 @@ class NmrDpUtility:
 
                         if star_data_type == 'Saveframe':
                             self.__has_legacy_sf_issue = True
-                            self.__fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message)
+                            self.__fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message, allowEmpty=allow_empty)
                             _is_done, star_data_type, star_data = self.__nefT.read_input_file(csPath)
 
                         if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
@@ -7204,7 +7206,7 @@ class NmrDpUtility:
                         else:
                             self.__star_data[-1] = self.__convertCsToEntry(star_data)
 
-                elif not self.__fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message):
+                elif not self.__fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message, allowEmpty=allow_empty):
                     is_done = False
 
                 if _csPath is not None:
@@ -7401,6 +7403,24 @@ class NmrDpUtility:
                         except OSError:
                             pass
 
+            if self.__bmrb_only and self.__internal_mode and len(self.__inputParamDict[cs_file_path_list]) > 1:
+                for csListId, cs in enumerate(self.__inputParamDict[cs_file_path_list]):
+                    if csListId == 0:
+                        dst_sf_category_list, _ = self.__nefT.get_inventory_list(self.__star_data[0])
+                        if 'assigned_chemical_shifts' in dst_sf_category_list:
+                            for sf in self.__star_data[0].get_saveframes_by_category('assigned_chemical_shifts'):
+                                sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
+                                self.__star_data[0].remove_saveframe(sf_framecode)
+                        continue
+                    if self.__star_data_type[csListId] == 'Entry' and self.__star_data[csListId] is not None:
+                        src_sf_category_list, _ = self.__nefT.get_inventory_list(self.__star_data[csListId])
+
+                        # copy cs data of the annotated cs file to the master template
+                        if 'assigned_chemical_shifts' in src_sf_category_list:
+                            for _sf in self.__star_data[csListId].get_saveframes_by_category('assigned_chemical_shifts'):
+                                self.__star_data[0].add_saveframe(_sf)
+                                self.__star_data[csListId].remove_saveframe(_sf)
+
             if self.__bmrb_only and self.__internal_mode and self.__srcNmrCifPath is not None:
 
                 is_valid, message = self.__nefT.validate_file(self.__srcNmrCifPath, 'A')  # 'A' for NMR unified data
@@ -7443,7 +7463,8 @@ class NmrDpUtility:
 
         return is_done
 
-    def __fixFormatIssueOfInputSource(self, file_list_id, file_name, file_type, srcPath=None, fileSubType='S', message=None, tmpPaths=None):
+    def __fixFormatIssueOfInputSource(self, file_list_id, file_name, file_type, srcPath=None, fileSubType='S',
+                                      message=None, tmpPaths=None, allowEmpty=False):
         """ Fix format issue of NMR data.
         """
 
@@ -8297,7 +8318,7 @@ class NmrDpUtility:
 
         if len(tmpPaths) > len_tmp_paths:
 
-            is_valid, _message = self.__nefT.validate_file(_srcPath, fileSubType)
+            is_valid, _message = self.__nefT.validate_file(_srcPath, fileSubType, allowEmpty)
 
             if not is_valid:
 
@@ -8311,11 +8332,12 @@ class NmrDpUtility:
                             break
 
                 if retry and len_tmp_paths < 10:
-                    return self.__fixFormatIssueOfInputSource(file_list_id, file_name, file_type, _srcPath, fileSubType, _message, tmpPaths)
+                    return self.__fixFormatIssueOfInputSource(file_list_id, file_name, file_type, _srcPath, fileSubType,
+                                                              _message, tmpPaths, allowEmpty)
 
         is_done = True
 
-        is_valid, message = self.__nefT.validate_file(_srcPath, fileSubType)
+        is_valid, message = self.__nefT.validate_file(_srcPath, fileSubType, allowEmpty)
 
         _file_type = message['file_type']  # nef/nmr-star/unknown
 

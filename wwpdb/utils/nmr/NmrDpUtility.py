@@ -42178,42 +42178,52 @@ class NmrDpUtility:
                     atom_id_ = atom_id
                     atom_name = atom_id
 
-                seq_key = (cif_chain_id, cif_seq_id)
+                if self.__remediation_mode and (chain_id, seq_id, comp_id) in self.__caC['auth_to_star_seq']:
+                    seq_key = (chain_id, seq_id)
+                    cif_comp_id = comp_id
 
-                if seq_key in self.__coord_unobs_res:  # DAOTHER-7665
-                    continue
+                    if seq_key in self.__caC['coord_unobs_res']:  # DAOTHER-7665
+                        continue
 
-                coord_atom_site_ = None if seq_key not in self.__coord_atom_site else self.__coord_atom_site[seq_key]
+                    coord_atom_site_ = self.__caC['coord_atom_site'][seq_key]
 
-                if file_type == 'nmr-star' and seq_id != alt_seq_id:
+                else:
+                    seq_key = (cif_chain_id, cif_seq_id)
 
-                    if coord_atom_site_ is None or coord_atom_site_['comp_id'] != cif_comp_id\
-                       or (atom_id_ not in coord_atom_site_['atom_id']
-                           and (('auth_atom_id' in coord_atom_site_ and atom_id_ not in coord_atom_site_['auth_atom_id'])
-                                or 'auth_atom_id' not in coord_atom_site_)):
+                    if seq_key in self.__coord_unobs_res:  # DAOTHER-7665
+                        continue
 
-                        cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id
-                                           in zip(ca['ref_seq_id'], ca['test_seq_id'])
-                                           if ref_seq_id == alt_seq_id), None)
+                    coord_atom_site_ = None if seq_key not in self.__coord_atom_site else self.__coord_atom_site[seq_key]
 
-                        if cif_seq_id is None:
-                            continue
+                    if file_type == 'nmr-star' and seq_id != alt_seq_id:
 
-                        cif_ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == cif_chain_id)
+                        if coord_atom_site_ is None or coord_atom_site_['comp_id'] != cif_comp_id\
+                           or (atom_id_ not in coord_atom_site_['atom_id']
+                               and (('auth_atom_id' in coord_atom_site_ and atom_id_ not in coord_atom_site_['auth_atom_id'])
+                                    or 'auth_atom_id' not in coord_atom_site_)):
 
-                        cif_comp_id = next((_comp_id for _seq_id, _comp_id
-                                            in zip(cif_ps['seq_id'], cif_ps['comp_id'])
-                                            if _seq_id == cif_seq_id), None)
+                            cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id
+                                               in zip(ca['ref_seq_id'], ca['test_seq_id'])
+                                               if ref_seq_id == alt_seq_id), None)
 
-                        if cif_comp_id is None:
-                            continue
+                            if cif_seq_id is None:
+                                continue
 
-                        seq_key = (cif_chain_id, cif_seq_id)
+                            cif_ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == cif_chain_id)
 
-                        if seq_key in self.__coord_unobs_res:  # DAOTHER-7665
-                            continue
+                            cif_comp_id = next((_comp_id for _seq_id, _comp_id
+                                                in zip(cif_ps['seq_id'], cif_ps['comp_id'])
+                                                if _seq_id == cif_seq_id), None)
 
-                        coord_atom_site_ = None if seq_key not in self.__coord_atom_site else self.__coord_atom_site[seq_key]
+                            if cif_comp_id is None:
+                                continue
+
+                            seq_key = (cif_chain_id, cif_seq_id)
+
+                            if seq_key in self.__coord_unobs_res:  # DAOTHER-7665
+                                continue
+
+                            coord_atom_site_ = None if seq_key not in self.__coord_atom_site else self.__coord_atom_site[seq_key]
 
                 if coord_atom_site_ is None or coord_atom_site_['comp_id'] != cif_comp_id\
                    or (atom_id_ not in coord_atom_site_['atom_id']

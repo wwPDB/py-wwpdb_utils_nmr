@@ -42194,7 +42194,7 @@ class NmrDpUtility:
                     if seq_key in self.__caC['coord_unobs_res']:  # DAOTHER-7665
                         continue
 
-                    if seq_key not in self.__caC['corrd_atom_site']:
+                    if seq_key not in self.__caC['coord_atom_site']:
                         continue
 
                     coord_atom_site_ = self.__caC['coord_atom_site'][seq_key]

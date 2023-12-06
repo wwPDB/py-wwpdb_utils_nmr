@@ -42089,6 +42089,45 @@ class NmrDpUtility:
 
             details_col = loop.tags.index('Details') if 'Details' in loop.tags and self.__leave_intl_note else -1
 
+        def get_coord_atom_site_of(chain_id, seq_id, comp_id):
+
+            if (chain_id, seq_id, comp_id) in self.__caC['auth_to_star_seq']:
+                seq_key = (chain_id, seq_id)
+
+                if seq_key in self.__caC['coord_unobs_res']:  # DAOTHER-7665
+                    return True, None, None
+
+                if seq_key not in self.__caC['coord_atom_site']:
+                    return True, None, None
+
+                coord_atom_site_ = self.__caC['coord_atom_site'][seq_key]
+
+                cif_comp_id = coord_atom_site_['comp_id']
+
+                if comp_id == cif_comp_id:
+                    return True, seq_key, coord_atom_site_
+
+            if (chain_id, seq_id) in self.__caC['label_to_auth_seq']:
+                _chain_id, _seq_id = self.__caC['label_to_auth_seq'][(chain_id, seq_id)]
+
+                if (_chain_id, _seq_id, comp_id) in self.__caC['auth_to_star_seq']:
+                    seq_key = (_chain_id, _seq_id)
+
+                    if seq_key in self.__caC['coord_unobs_res']:  # DAOTHER-7665
+                        return True, None, None
+
+                    if seq_key not in self.__caC['coord_atom_site']:
+                        return True, None, None
+
+                    coord_atom_site_ = self.__caC['coord_atom_site'][seq_key]
+
+                    cif_comp_id = coord_atom_site_['comp_id']
+
+                    if comp_id == cif_comp_id:
+                        return True, seq_key, coord_atom_site_
+
+            return False, None, None
+
         for idx, row in enumerate(lp_data):
 
             for j in range(num_dim):
@@ -42187,19 +42226,18 @@ class NmrDpUtility:
                     atom_id_ = atom_id
                     atom_name = atom_id
 
-                if self.__remediation_mode and (chain_id, seq_id, comp_id) in self.__caC['auth_to_star_seq']:
-                    seq_key = (chain_id, seq_id)
+                found, seq_key, coord_atom_site_ = get_coord_atom_site_of(chain_id, seq_id, comp_id)
+
+                if found:
+
+                    if seq_key is None:
+                        continue
+
+                    cif_chain_id, cif_seq_id = self.__caC['auth_to_label_seq'][seq_key]
                     cif_comp_id = comp_id
 
-                    if seq_key in self.__caC['coord_unobs_res']:  # DAOTHER-7665
-                        continue
-
-                    if seq_key not in self.__caC['coord_atom_site']:
-                        continue
-
-                    coord_atom_site_ = self.__caC['coord_atom_site'][seq_key]
-
                 else:
+
                     seq_key = (cif_chain_id, cif_seq_id)
 
                     if seq_key in self.__coord_unobs_res:  # DAOTHER-7665

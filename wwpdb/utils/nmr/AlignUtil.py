@@ -646,6 +646,9 @@ def updatePolySeqRst(polySeqRst, chainId, seqId, compId, authCompId=None):
     """ Update polymer sequence of the current MR file.
     """
 
+    if seqId is None or compId in emptyValue:
+        return
+
     ps = next((ps for ps in polySeqRst if ps['chain_id'] == chainId), None)
     if ps is None:
         polySeqRst.append({'chain_id': chainId, 'seq_id': [], 'comp_id': [], 'auth_comp_id': []})
@@ -671,6 +674,9 @@ def updatePolySeqRstFromAtomSelectionSet(polySeqRst, atomSelectionSet):
             chainId = atom['chain_id']
             seqId = atom['seq_id']
             compId = atom.get('comp_id', '.')
+
+            if seqId is None or compId in emptyValue:
+                continue
 
             updatePolySeqRst(polySeqRst, chainId, seqId, compId)
 
@@ -1033,9 +1039,10 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
             ref_gauge_code = getGaugeCode(_s1['seq_id'])
             test_gauge_code = getGaugeCode(_s2['seq_id'])
 
-            if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
-                   in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
-                   if __c1 != '.' and __c2 != '.' and __c1 != __c2):
+            if conflict == 0\
+               and any((__s1, __s2) for (__s1, __s2, __c1, __c2)
+                       in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
+                       if __c1 != '.' and __c2 != '.' and __c1 != __c2):
                 seq_id1 = []
                 seq_id2 = []
                 if has_auth_seq_id1:

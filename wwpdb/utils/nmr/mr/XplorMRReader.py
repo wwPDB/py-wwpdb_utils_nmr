@@ -213,6 +213,26 @@ class XplorMRReader:
 if __name__ == "__main__":
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/5jyv/DN-HN_ThCikA_gel_complex_complete.tbl',
+                     '../../tests-nmr/mock-data-remediation/5jyv/5jyv.cif')
+    reader = XplorMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5jyv/DN-HN_ThCikA_gel_complex_complete.tbl',
+                 '../../tests-nmr/mock-data-remediation/5jyv/5jyv.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/5jyv/c13noe-square_cika.tbl',
+                     '../../tests-nmr/mock-data-remediation/5jyv/5jyv.cif')
+    reader = XplorMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5jyv/c13noe-square_cika.tbl',
+                 '../../tests-nmr/mock-data-remediation/5jyv/5jyv.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-combine-at-upload/bmr21102/sms21102/AmBErg_CC_restraints_PAR12p6ms.tbl',
                  '../../tests-nmr/mock-data-combine-at-upload/bmr21102/sms21102/sms21102.cif')
 

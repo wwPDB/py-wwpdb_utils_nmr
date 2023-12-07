@@ -12636,7 +12636,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
 
     def __retrieveLocalSeqScheme(self):
-        if self.__reasons is None or ('local_seq_scheme' not in self.__reasons and 'inhibit_label_seq_scheme' not in self.__reasons):
+        if self.__reasons is None or 'inhibit_label_seq_scheme' not in self.__reasons:
             return
         if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']\
            and self.__cur_subtype in self.__reasons['label_seq_scheme']\
@@ -12644,6 +12644,8 @@ class XplorMRParserListener(ParseTreeListener):
            and 'segment_id_mismatch' not in self.__reasons:
             self.__preferAuthSeq = False
             self.__authSeqId = 'label_seq_id'
+            return
+        if 'local_seq_scheme' not in self.__reasons:
             return
         if self.__cur_subtype == 'dist':
             key = (self.__cur_subtype, self.distRestraints)

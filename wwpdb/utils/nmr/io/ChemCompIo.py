@@ -83,7 +83,10 @@ class ChemCompReader:
                 ('_chem_comp_atom.pdbx_model_Cartn_z_ideal', '%s', 'str', ''),
                 ('_chem_comp_atom.pdbx_component_atom_id', '%s', 'str', ''),
                 ('_chem_comp_atom.pdbx_component_comp_id', '%s', 'str', ''),
-                ('_chem_comp_atom.pdbx_ordinal', '%s', 'str', '')
+                ('_chem_comp_atom.pdbx_ordinal', '%s', 'str', ''),
+                ('_chem_comp_atom.pdbx_backbone_atom_flag', '%s', 'str', ''),
+                ('_chem_comp_atom.pdbx_n_terminal_atom_flag', '%s', 'str', ''),
+                ('_chem_comp_atom.pdbx_c_terminal_atom_flag', '%s', 'str', '')
             ],
             'chem_comp_bond': [
                 ('_chem_comp_bond.comp_id', '%s', 'str', ''),

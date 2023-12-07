@@ -4695,6 +4695,11 @@ class NEFTranslator:
                     not_methyl = not methyl_only or nef_atom[0] not in protonBeginCode or len(methyl_atoms) == 0
                     atoms = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
                              if not_methyl or (not not_methyl and a[self.__ccU.ccaAtomId] in methyl_atoms)]
+                    alt_atom_dict = {a[self.__ccU.ccaAltAtomId]: a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
+                                     if not_methyl or (not not_methyl and a[self.__ccU.ccaAtomId] in methyl_atoms)
+                                     and a[self.__ccU.ccaAltAtomId] != a[self.__ccU.ccaAtomId]}
+                    if nef_atom in alt_atom_dict:
+                        nef_atom = alt_atom_dict[nef_atom]
 
                 # DAOTHER-8817
                 elif self.chemCompAtom is not None and comp_id in self.chemCompAtom:

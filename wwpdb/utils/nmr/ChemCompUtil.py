@@ -79,6 +79,9 @@ class ChemCompUtil:
         atomId = next(d for d in _chemCompAtomDict if d[0] == '_chem_comp_atom.atom_id')
         self.ccaAtomId = _chemCompAtomDict.index(atomId)
 
+        altAtomId = next(d for d in _chemCompAtomDict if d[0] == '_chem_comp_atom.alt_atom_id')
+        self.ccaAltAtomId = _chemCompAtomDict.index(altAtomId)
+
         aromaticFlag = next(d for d in _chemCompAtomDict if d[0] == '_chem_comp_atom.pdbx_aromatic_flag')
         self.ccaAromaticFlag = _chemCompAtomDict.index(aromaticFlag)
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SRC_DIR=$PWD/ftp.pdbj.org/pub/pdb/refdata/chem_comp
+SRC_DIR=$PWD/chem_comp
 
 if [ ! -d $SRC_DIR ] ; then
  ./update_ccd.sh
@@ -29,7 +29,14 @@ while read cif_file
 do
 
  cc=`basename $cif_file .cif`
- div_dir=$DST_DIR/${cc:0:1}/$cc
+
+ if [ ${#cc} -gt 3 ] ; then
+  cc_hash=${cc:2}
+ else
+  cc_hash=${cc:0:1}
+ fi
+
+ div_dir=$DST_DIR/$cc_hash/$cc
 
  if [ ! -L $div_dir/$cc.cif ] || [ ! -e $div_dir/$cc.cif ] ; then
   rm -f $div_dir/$cc.cif

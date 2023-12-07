@@ -20,9 +20,6 @@
     pip install urllib3==1.26.18  # Only for Python 3.6, 3.7, 3.8, and 3.9 users.
 ```
 
-- linux command:
-	- [aria2c](https://aria2.github.io)
-
 - shared library:
 	- wwpdb/utils/nmr/align/alignlib.so, a shared library of [py-wwpdb_utils_align](https://github.com/wwPDB/py-wwpdb_utils_align) package
 	- Python 3.6, 3.7, and 3.8 compatible shared libraries are included by default.

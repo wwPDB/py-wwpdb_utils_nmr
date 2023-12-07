@@ -9238,13 +9238,17 @@ class XplorMRParserListener(ParseTreeListener):
                                                 if _atomId[0] in protonBeginCode:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                     if len(bondedTo) > 0:
-                                                        if coordAtomSite is not None and bondedTo[0] in atomSiteAtomId and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                                            checked = True
-                                                            if len(origAtomId) == 1:
-                                                                _atomSelection[-1]['hydrogen_not_instantiated'] = True
-                                                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                                f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "
-                                                                                "Please re-upload the model file.")
+                                                        if coordAtomSite is not None and bondedTo[0] in atomSiteAtomId:
+                                                            if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
+                                                               or (self.__csStat.peptideLike(compId)
+                                                                   and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                                                                   and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
+                                                                checked = True
+                                                                if len(origAtomId) == 1:
+                                                                    _atomSelection[-1]['hydrogen_not_instantiated'] = True
+                                                                    self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "
+                                                                                    "Please re-upload the model file.")
                                                 if not checked and not self.__cur_union_expr:
                                                     if chainId in LARGE_ASYM_ID:
                                                         if isPolySeq and not self.__preferAuthSeq\

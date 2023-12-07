@@ -3353,11 +3353,15 @@ class AmberMRParserListener(ParseTreeListener):
                                     if _atomId[0] in protonBeginCode:
                                         bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                         if len(bondedTo) > 0:
-                                            if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                                checked = True
-                                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
-                                                                "Please re-upload the model file.")
+                                            if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
+                                                if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
+                                                   or (self.__csStat.peptideLike(compId)
+                                                       and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                                                       and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
+                                                    checked = True
+                                                    self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                    "Please re-upload the model file.")
                                     if not checked:
                                         if chainId in LARGE_ASYM_ID:
                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -3499,11 +3503,15 @@ class AmberMRParserListener(ParseTreeListener):
                                             if _atomId[0] in protonBeginCode:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                 if len(bondedTo) > 0:
-                                                    if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                                        checked = True
-                                                        self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
-                                                                        "Please re-upload the model file.")
+                                                    if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
+                                                        if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
+                                                           or (self.__csStat.peptideLike(compId)
+                                                               and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                                                               and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
+                                                            checked = True
+                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                            "Please re-upload the model file.")
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -3705,11 +3713,15 @@ class AmberMRParserListener(ParseTreeListener):
                                             if _atomId[0] in protonBeginCode:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                 if len(bondedTo) > 0:
-                                                    if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                                        checked = True
-                                                        self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
-                                                                        "Please re-upload the model file.")
+                                                    if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
+                                                        if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
+                                                           or (self.__csStat.peptideLike(compId)
+                                                               and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                                                               and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
+                                                            checked = True
+                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                            "Please re-upload the model file.")
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -3789,11 +3801,15 @@ class AmberMRParserListener(ParseTreeListener):
                                             if _atomId[0] in protonBeginCode:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                 if len(bondedTo) > 0:
-                                                    if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                                        checked = True
-                                                        self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
-                                                                        "Please re-upload the model file.")
+                                                    if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
+                                                        if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
+                                                           or (self.__csStat.peptideLike(compId)
+                                                               and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                                                               and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
+                                                            checked = True
+                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                            "Please re-upload the model file.")
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -3912,11 +3928,15 @@ class AmberMRParserListener(ParseTreeListener):
                                             if _atomId[0] in protonBeginCode:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                 if len(bondedTo) > 0:
-                                                    if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                                        checked = True
-                                                        self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
-                                                                        "Please re-upload the model file.")
+                                                    if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
+                                                        if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
+                                                           or (self.__csStat.peptideLike(compId)
+                                                               and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                                                               and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
+                                                            checked = True
+                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                            "Please re-upload the model file.")
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -3995,11 +4015,15 @@ class AmberMRParserListener(ParseTreeListener):
                                             if _atomId[0] in protonBeginCode:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                 if len(bondedTo) > 0:
-                                                    if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                                        checked = True
-                                                        self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
-                                                                        "Please re-upload the model file.")
+                                                    if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
+                                                        if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
+                                                           or (self.__csStat.peptideLike(compId)
+                                                               and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                                                               and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
+                                                            checked = True
+                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                            "Please re-upload the model file.")
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -4179,11 +4203,15 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if _atomId[0] in protonBeginCode:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                     if len(bondedTo) > 0:
-                                                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                                            checked = True
-                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
-                                                                            "Please re-upload the model file.")
+                                                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
+                                                            if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
+                                                               or (self.__csStat.peptideLike(compId)
+                                                                   and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                                                                   and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
+                                                                checked = True
+                                                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                                "Please re-upload the model file.")
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -4263,11 +4291,15 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if _atomId[0] in protonBeginCode:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                     if len(bondedTo) > 0:
-                                                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                                            checked = True
-                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
-                                                                            "Please re-upload the model file.")
+                                                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
+                                                            if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
+                                                               or (self.__csStat.peptideLike(compId)
+                                                                   and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                                                                   and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
+                                                                checked = True
+                                                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                                "Please re-upload the model file.")
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -4369,11 +4401,15 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if _atomId[0] in protonBeginCode:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
                                                     if len(bondedTo) > 0:
-                                                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                                            checked = True
-                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
-                                                                            "Please re-upload the model file.")
+                                                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
+                                                            if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
+                                                               or (self.__csStat.peptideLike(compId)
+                                                                   and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                                                                   and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
+                                                                checked = True
+                                                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                                "Please re-upload the model file.")
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -4452,11 +4488,15 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if _atomId[0] in protonBeginCode:
                                                     bondedTo = self.__ccU.getBondedTo(compId, _atomId)
                                                     if len(bondedTo) > 0:
-                                                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                                            checked = True
-                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
-                                                                            "Please re-upload the model file.")
+                                                        if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
+                                                            if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
+                                                               or (self.__csStat.peptideLike(compId)
+                                                                   and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                                                                   and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
+                                                                checked = True
+                                                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                                "Please re-upload the model file.")
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -8355,12 +8395,16 @@ class AmberMRParserListener(ParseTreeListener):
                     if atomId[0] in protonBeginCode:
                         bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
                         if len(bondedTo) > 0:
-                            if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id'] and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                if enableWarning:
-                                    self.__f.append(f"[Hydrogen not instantiated] "
-                                                    f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
-                                                    "Please re-upload the model file.")
-                                    return
+                            if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
+                                if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
+                                   or (self.__csStat.peptideLike(compId)
+                                       and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                                       and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
+                                    if enableWarning:
+                                        self.__f.append(f"[Hydrogen not instantiated] "
+                                                        f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
+                                                        "Please re-upload the model file.")
+                                        return
                     if enableWarning:
                         if chainId in LARGE_ASYM_ID:
                             self.__f.append(f"[Atom not found] "

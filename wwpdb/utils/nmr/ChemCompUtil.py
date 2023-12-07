@@ -6,6 +6,7 @@
 # 27-Apr-2022  M. Yokochi - enable to use cached data for standard residues
 # 11-Nov-2022  M. Yokochi - add getProtonsInSameGroup() (NMR restraint remediation)
 # 13-Jun-2023  M. Yokochi - add getEffectiveFormulaWeight()
+# 07-Dec-2023  M. Yokochi - add support for PTM items (backbone, n_terminal, c_terminal atom flags)
 ##
 """ Wrapper class for retrieving chemical component dictionary.
     @author: Masashi Yokochi
@@ -50,7 +51,7 @@ class ChemCompUtil:
         self.lastAtomList = None
         self.lastBonds = None
 
-        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
+        # taken from wwpdb.utils.nmr.io.ChemCompIo
         _chemCompAtomDict = [
             ('_chem_comp_atom.comp_id', '%s', 'str', ''),
             ('_chem_comp_atom.atom_id', '%s', 'str', ''),
@@ -69,7 +70,10 @@ class ChemCompUtil:
             ('_chem_comp_atom.pdbx_model_Cartn_z_ideal', '%s', 'str', ''),
             ('_chem_comp_atom.pdbx_component_atom_id', '%s', 'str', ''),
             ('_chem_comp_atom.pdbx_component_comp_id', '%s', 'str', ''),
-            ('_chem_comp_atom.pdbx_ordinal', '%s', 'str', ' ')
+            ('_chem_comp_atom.pdbx_ordinal', '%s', 'str', ' '),
+            ('_chem_comp_atom.pdbx_backbone_atom_flag', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_n_terminal_atom_flag', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_c_terminal_atom_flag', '%s', 'str', '')
         ]
 
         atomId = next(d for d in _chemCompAtomDict if d[0] == '_chem_comp_atom.atom_id')
@@ -91,7 +95,16 @@ class ChemCompUtil:
         self.ccaCartnY = _chemCompAtomDict.index(cartnY)
         self.ccaCartnZ = _chemCompAtomDict.index(cartnZ)
 
-        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
+        backboneAtomFlag = next(d for d in _chemCompAtomDict if d[0] == '_chem_comp_atom.pdbx_backbone_atom_flag')
+        self.ccaBackboneAtomFlag = _chemCompAtomDict.index(backboneAtomFlag)
+
+        nTerminalAtomFlag = next(d for d in _chemCompAtomDict if d[0] == '_chem_comp_atom.pdbx_n_terminal_atom_flag')
+        self.ccaNTerminalAtomFlag = _chemCompAtomDict.index(nTerminalAtomFlag)
+
+        cTerminalAtomFlag = next(d for d in _chemCompAtomDict if d[0] == '_chem_comp_atom.pdbx_c_terminal_atom_flag')
+        self.ccaCTerminalAtomFlag = _chemCompAtomDict.index(cTerminalAtomFlag)
+
+        # taken from wwpdb.utils.nmr.io.ChemCompIo
         _chemCompBondDict = [
             ('_chem_comp_bond.comp_id', '%s', 'str', ''),
             ('_chem_comp_bond.atom_id_1', '%s', 'str', ''),

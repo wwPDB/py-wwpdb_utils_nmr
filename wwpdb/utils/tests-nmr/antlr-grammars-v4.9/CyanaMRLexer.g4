@@ -52,7 +52,9 @@ fragment Z:		[zZ];
 Ambig_code:		(DECIMAL '-' DECIMAL ':' DECIMAL | (ALPHA | '_') SIMPLE_NAME '.' DECIMAL);
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
+Float_DecimalComma:	('+' | '-')? (DEC_COM_DEC) ('E' ('+' | '-')? DECIMAL)?;
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
+fragment DEC_COM_DEC:	(DECIMAL ',' DECIMAL?) | (',' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
@@ -96,7 +98,7 @@ Atom_stereo:		A T O M ' '+ S T E R E O -> mode(PRINT_MODE);
 Var:			V A R -> mode(VARIABLE_MODE);
 Unset:			U N S E T -> mode(VARIABLE_MODE);
 
-SetVar:			SIMPLE_NAME ':=' (SIMPLE_NAME | Float | Integer);
+SetVar:			SIMPLE_NAME ':=' (SIMPLE_NAME | Float | Float_DecimalComma | Integer);
 
 Print:			P R I N T -> mode(PRINT_MODE);
 

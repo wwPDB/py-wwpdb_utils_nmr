@@ -390,5 +390,5 @@ talos_restraint_wo_s2:
 		Integer Simple_name;
 
 /* number expression in restrains */
-number:	Float | Integer;
+number:	Float | Float_DecimalComma | Integer;
 

@@ -3147,6 +3147,15 @@ class CyanaMRParserListener(ParseTreeListener):
                         except StopIteration:
                             break
 
+                if authAtomId in ('H', 'HN') and cifAtomId in ('HN1', 'HN2', 'HNA') and self.__csStat.peptideLike(cifCompId)\
+                   and coordAtomSite is not None and cifAtomId not in coordAtomSite['atom_id']:
+                    if cifAtomId in ('HN2', 'HNA'):
+                        if 'H2' not in coordAtomSite['atom_id']:
+                            continue
+                        cifAtomId = 'H2'
+                    if cifAtomId == 'HN1' and 'H' in coordAtomSite['atom_id']:
+                        cifAtomId = 'H'
+
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
                                       'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
 
@@ -8460,6 +8469,9 @@ class CyanaMRParserListener(ParseTreeListener):
     def exitNumber(self, ctx: CyanaMRParser.NumberContext):
         if ctx.Float():
             self.numberSelection.append(float(str(ctx.Float())))
+
+        elif ctx.Float_DecimalComma():
+            self.numberSelection.append(float(str(ctx.Float_DecimalComma()).replace(',', '.', 1)))
 
         elif ctx.Integer():
             self.numberSelection.append(float(str(ctx.Integer())))

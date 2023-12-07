@@ -8783,7 +8783,19 @@ class XplorMRParserListener(ParseTreeListener):
             seqSpecified = not _factor['seq_not_specified']
         foundCompId = False
 
-        for chainId in (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)]):
+        chainIds = (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)])
+
+        for chainId in chainIds:
+
+            if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']\
+               and self.__cur_subtype in self.__reasons['label_seq_scheme']\
+               and self.__reasons['label_seq_scheme'][self.__cur_subtype]\
+               and 'inhibit_label_seq_scheme' in self.__reasons and chainId in self.__reasons['inhibit_label_seq_scheme']\
+               and self.__cur_subtype in self.__reasons['inhibit_label_seq_scheme'][chainId]\
+               and self.__reasons['inhibit_label_seq_scheme'][chainId][self.__cur_subtype]\
+               and 'segment_id_mismatch' not in self.__reasons:
+                continue
+
             psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == chainId]
 
             if len(psList) == 0:
@@ -9021,7 +9033,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                                     if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
                                                         if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                            self.reasonsForReParsing['label_seq_scheme'] = True
+                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                        if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
+                                                            self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                                 """
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -9038,7 +9052,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                                     if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
                                                         if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                            self.reasonsForReParsing['label_seq_scheme'] = True
+                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                        if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
+                                                            self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                                 """
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -9092,7 +9108,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                                     if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
                                                         if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                            self.reasonsForReParsing['label_seq_scheme'] = True
+                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                        if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
+                                                            self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                                 """
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -9109,7 +9127,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                                     if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
                                                         if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                            self.reasonsForReParsing['label_seq_scheme'] = True
+                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                        if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
+                                                            self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                                 """
                                                 self.__preferAuthSeq = False
                                                 self.__authSeqId = 'label_seq_id'
@@ -9235,7 +9255,10 @@ class XplorMRParserListener(ParseTreeListener):
                                                             offset = self.getLabelSeqOffsetDueToUnobs(ps)
                                                             self.reasonsForReParsing['label_seq_offset'][chainId] = offset
                                                             if offset != 0:
-                                                                self.reasonsForReParsing['label_seq_scheme'] = True
+                                                                if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                                    self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                                if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
+                                                                    self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                                         if seqId < 1 and len(self.__polySeq) == 1:
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "
@@ -9243,6 +9266,33 @@ class XplorMRParserListener(ParseTreeListener):
                                                                             f"in polymer sequence of chain {chainId} of the coordinates. "
                                                                             "Please update the sequence in the Macromolecules page.")
                                                         else:
+                                                            if len(chainIds) > 1 and isPolySeq:
+                                                                __preferAuthSeq = self.__preferAuthSeq
+                                                                self.__preferAuthSeq = False
+                                                                for __chainId in chainIds:
+                                                                    if __chainId == chainId:
+                                                                        continue
+                                                                    __psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == __chainId]
+                                                                    if len(__psList) == 0:
+                                                                        continue
+                                                                    for __ps in __psList:
+                                                                        __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)
+                                                                        __seqKey, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck)
+                                                                        if __coordAtomSite is not None:
+                                                                            __compId = __coordAtomSite['comp_id']
+                                                                            __atomIds = self.getAtomIdList(_factor, __compId, atomId)
+                                                                            if compId != __compId and __atomIds[0] in __coordAtomSite['atom_id']:
+                                                                                if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                                                    self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                                                if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
+                                                                                    self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
+                                                                                if 'inhibit_labe_seq_scheme' not in self.reasonsForReParsing:
+                                                                                    self.reasonsForReParsing['inhibit_label_seq_scheme'] = {}
+                                                                                if chainId not in self.reasonsForReParsing['inhibit_label_seq_scheme']:
+                                                                                    self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId] = {}
+                                                                                self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId][self.__cur_subtype] = True
+                                                                                break
+                                                                self.__preferAuthSeq = __preferAuthSeq
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
@@ -9273,6 +9323,33 @@ class XplorMRParserListener(ParseTreeListener):
                                                                     f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
                                                                     "Please update the sequence in the Macromolecules page.")
                                                 elif seqSpecified:
+                                                    if len(chainIds) > 1 and isPolySeq:
+                                                        __preferAuthSeq = self.__preferAuthSeq
+                                                        self.__preferAuthSeq = False
+                                                        for __chainId in chainIds:
+                                                            if __chainId == chainId:
+                                                                continue
+                                                            __psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == __chainId]
+                                                            if len(__psList) == 0:
+                                                                continue
+                                                            for __ps in __psList:
+                                                                __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)
+                                                                __seqKey, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck)
+                                                                if __coordAtomSite is not None:
+                                                                    __compId = __coordAtomSite['comp_id']
+                                                                    __atomIds = self.getAtomIdList(_factor, __compId, atomId)
+                                                                    if compId != __compId and __atomIds[0] in __coordAtomSite['atom_id']:
+                                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                                        if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
+                                                                            self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
+                                                                        if 'inhibit_labe_seq_scheme' not in self.reasonsForReParsing:
+                                                                            self.reasonsForReParsing['inhibit_label_seq_scheme'] = {}
+                                                                        if chainId not in self.reasonsForReParsing['inhibit_label_seq_scheme']:
+                                                                            self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId] = {}
+                                                                        self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId][self.__cur_subtype] = True
+                                                                        break
+                                                        self.__preferAuthSeq = __preferAuthSeq
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
 
@@ -12554,14 +12631,22 @@ class XplorMRParserListener(ParseTreeListener):
         if not self.__preferAuthSeq:
             self.__preferLabelSeqCount += 1
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
-                self.reasonsForReParsing['label_seq_scheme'] = True
+                if 'label_seq_scheme' not in self.reasonsForReParsing:
+                    self.reasonsForReParsing['label_seq_scheme'] = {}
+                self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
 
     def __retrieveLocalSeqScheme(self):
-        if self.__reasons is None or 'local_seq_scheme' not in self.__reasons:
+        if self.__reasons is None\
+           or ('local_seq_scheme' not in self.__reasons and 'inhibit_label_seq_scheme' not in self.__reasons):
             return
-        if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
+        if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']\
+           and self.__cur_subtype in self.__reasons['label_seq_scheme']\
+           and self.__reasons['label_seq_scheme'][self.__cur_subtype]\
+           and 'segment_id_mismatch' not in self.__reasons:
             self.__preferAuthSeq = False
             self.__authSeqId = 'label_seq_id'
+            return
+        if 'local_seq_scheme' not in self.__reasons:
             return
         if self.__cur_subtype == 'dist':
             key = (self.__cur_subtype, self.distRestraints)

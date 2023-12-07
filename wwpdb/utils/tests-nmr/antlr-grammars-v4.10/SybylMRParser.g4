@@ -33,5 +33,5 @@ distance_restraint:
 	number number;
 
 /* number expression in restrains */
-number:	Float | Integer;
+number:	Float | Float_DecimalComma | Integer;
 

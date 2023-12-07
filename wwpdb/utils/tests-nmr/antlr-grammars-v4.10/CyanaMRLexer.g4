@@ -24,7 +24,9 @@ options { caseInsensitive=true; }
 Ambig_code:		(DECIMAL '-' DECIMAL ':' DECIMAL | (ALPHA | '_') SIMPLE_NAME '.' DECIMAL);
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('E' ('+' | '-')? DECIMAL)?;
+Float_DecimalComma:	('+' | '-')? (DEC_COM_DEC) ('E' ('+' | '-')? DECIMAL)?;
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
+fragment DEC_COM_DEC:	(DECIMAL ',' DECIMAL?) | (',' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
@@ -68,7 +70,7 @@ Atom_stereo:		'ATOM' ' '+ 'STEREO' -> mode(PRINT_MODE);
 Var:			'VAR' -> mode(VARIABLE_MODE);
 Unset:			'UNSET' -> mode(VARIABLE_MODE);
 
-SetVar:			SIMPLE_NAME ':=' (SIMPLE_NAME | Float | Integer);
+SetVar:			SIMPLE_NAME ':=' (SIMPLE_NAME | Float | Float_DecimalComma | Integer);
 
 Print:			'PRINT' -> mode(PRINT_MODE);
 

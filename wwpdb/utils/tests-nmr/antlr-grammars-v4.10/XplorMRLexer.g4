@@ -68,6 +68,7 @@ Peak:			'PEAK';					// = Integer
 Spectrum:		'SPECTRUM';				// = Integer
 //Weight:		'WEIGHT';				// = Real
 Volume:			'VOLUME';				// = Real
+Vol:			'VOL';					// = Real
 Ppm1:			'PPM1';					// = Real
 Ppm2:			'PPM2';					// = Real
 //Cv:			'CV';					// = Integer

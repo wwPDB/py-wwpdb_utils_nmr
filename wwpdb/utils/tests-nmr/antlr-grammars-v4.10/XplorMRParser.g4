@@ -196,10 +196,11 @@ noe_annotation:
 	Peak Equ_op? number_a |
 	Spectrum Equ_op? number_a |
 	Weight Equ_op? number_a |
-	Volume Equ_op? number_a |
+	(Volume | Vol) Equ_op? number_a |
 	Ppm1 Equ_op? number_a |
 	Ppm2 Equ_op? number_a |
-	Cv Equ_op? number_a;
+	Cv Equ_op? number_a |
+	Comma;
 
 /* XPLOR-NIH: Dihedral angle restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/cdih_syntax.html

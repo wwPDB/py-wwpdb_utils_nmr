@@ -4900,7 +4900,8 @@ class CnsMRParserListener(ParseTreeListener):
                and self.__reasons['label_seq_scheme'][self.__cur_subtype]\
                and 'inhibit_label_seq_scheme' in self.__reasons and chainId in self.__reasons['inhibit_label_seq_scheme']\
                and self.__cur_subtype in self.__reasons['inhibit_label_seq_scheme'][chainId]\
-               and self.__reasons['inhibit_label_seq_scheme'][chainId][self.__cur_subtype]:
+               and self.__reasons['inhibit_label_seq_scheme'][chainId][self.__cur_subtype]\
+               and 'segment_id_mismatch' not in self.__reasons:
                 continue
 
             psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == chainId]
@@ -8480,6 +8481,8 @@ class CnsMRParserListener(ParseTreeListener):
         if not self.__preferAuthSeq:
             self.__preferLabelSeqCount += 1
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
+                if 'label_seq_scheme' not in self.reasonsForReParsing:
+                    self.reasonsForReParsing['label_seq_scheme'] = {}
                 self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
 
     def __retrieveLocalSeqScheme(self):
@@ -8487,7 +8490,8 @@ class CnsMRParserListener(ParseTreeListener):
             return
         if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']\
            and self.__cur_subtype in self.__reasons['label_seq_scheme']\
-           and self.__reasons['label_seq_scheme'][self.__cur_subtype]:
+           and self.__reasons['label_seq_scheme'][self.__cur_subtype]\
+           and 'segment_id_mismatch' not in self.__reasons:
             self.__preferAuthSeq = False
             self.__authSeqId = 'label_seq_id'
             return

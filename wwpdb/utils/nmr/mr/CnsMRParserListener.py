@@ -5082,30 +5082,29 @@ class CnsMRParserListener(ParseTreeListener):
                                 if len(_atomIds_) > 0:
                                     atomIds = _atomIds_
 
-                        if self.__cur_subtype == 'dist' and atomId in XPLOR_NITROXIDE_NAMES and coordAtomSite is not None\
-                           and atomId not in atomSiteAtomId:
-                            if compId == 'CYS' and 'SG' in atomSiteAtomId:
+                        if self.__cur_subtype == 'dist' and atomId in XPLOR_NITROXIDE_NAMES:  # and coordAtomSite is not None and atomId not in atomSiteAtomId:
+                            if compId == 'CYS':
                                 atomIds = ['SG']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
-                            elif compId == 'SER' and 'OG' in atomSiteAtomId:
+                            elif compId == 'SER':
                                 atomIds = ['OG']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
-                            elif compId == 'GLU' and 'OE2' in atomSiteAtomId:
+                            elif compId == 'GLU':
                                 atomIds = ['OE2']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
-                            elif compId == 'ASP' and 'OD2' in atomSiteAtomId:
+                            elif compId == 'ASP':
                                 atomIds = ['OD2']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
-                            elif compId == 'GLN' and 'NE2' in atomSiteAtomId:
+                            elif compId == 'GLN':
                                 atomIds = ['NE2']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
-                            elif compId == 'ASN' and 'ND2' in atomSiteAtomId:
+                            elif compId == 'ASN':
                                 atomIds = ['ND2']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
-                            elif compId == 'LYS' and 'NZ' in atomSiteAtomId:
+                            elif compId == 'LYS':
                                 atomIds = ['NZ']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
-                            elif compId == 'THR' and 'OG1' in atomSiteAtomId:
+                            elif compId == 'THR':
                                 atomIds = ['OG1']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
 

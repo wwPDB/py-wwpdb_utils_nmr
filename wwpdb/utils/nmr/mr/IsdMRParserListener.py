@@ -53,6 +53,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
                                            protonBeginCode,
+                                           pseProBeginCode,
                                            aminoProtonCode,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
@@ -109,6 +110,7 @@ except ImportError:
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
                                protonBeginCode,
+                               pseProBeginCode,
                                aminoProtonCode,
                                updatePolySeqRst,
                                sortPolySeqRst,
@@ -1064,25 +1066,28 @@ class IsdMRParserListener(ParseTreeListener):
 
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
 
-            if self.__cur_subtype == 'dist' and _compId is not None and _compId.startswith('MTS') and cifCompId != _compId\
-               and _atomId[0] in ('O', 'N') and coordAtomSite is not None:
+            if self.__cur_subtype == 'dist' and _compId is not None and (_compId.startswith('MTS') or _compId.startswith('ORI')) and cifCompId != _compId:
+                if _atomId[0] in ('O', 'N'):
 
-                if cifCompId == 'CYS' and 'SG' in coordAtomSite['atom_id']:
-                    atomId = 'SG'
-                elif cifCompId == 'SER' and 'OG' in coordAtomSite['atom_id']:
-                    atomId = 'OG'
-                elif cifCompId == 'GLU' and 'OE2' in coordAtomSite['atom_id']:
-                    atomId = 'OE2'
-                elif cifCompId == 'ASP' and 'OD2' in coordAtomSite['atom_id']:
-                    atomId = 'OD2'
-                elif cifCompId == 'GLN' and 'NE2' in coordAtomSite['atom_id']:
-                    atomId = 'NE2'
-                elif cifCompId == 'ASN' and 'ND2' in coordAtomSite['atom_id']:
-                    atomId = 'ND2'
-                elif cifCompId == 'LYS' and 'NZ' in coordAtomSite['atom_id']:
-                    atomId = 'NZ'
-                elif cifCompId == 'THR' and 'OG1' in coordAtomSite['atom_id']:
-                    atomId = 'OG1'
+                    if cifCompId == 'CYS':
+                        atomId = 'SG'
+                    elif cifCompId == 'SER':
+                        atomId = 'OG'
+                    elif cifCompId == 'GLU':
+                        atomId = 'OE2'
+                    elif cifCompId == 'ASP':
+                        atomId = 'OD2'
+                    elif cifCompId == 'GLN':
+                        atomId = 'NE2'
+                    elif cifCompId == 'ASN':
+                        atomId = 'ND2'
+                    elif cifCompId == 'LYS':
+                        atomId = 'NZ'
+                    elif cifCompId == 'THR':
+                        atomId = 'OG1'
+
+                elif self.__csStat.peptideLike(cifCompId):
+                    atomId = 'CA'
 
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
                 _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
@@ -1094,7 +1099,7 @@ class IsdMRParserListener(ParseTreeListener):
                         _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, coordAtomSite)
 
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
-            if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+            if details is not None and len(atomId) > 1 and not atomId[-1].isalpha() and (atomId[0] in pseProBeginCode or atomId[0] in ('C', 'N', 'P', 'F')):
                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
                 if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                     _atomId = [_atomId[int(atomId[-1]) - 1]]

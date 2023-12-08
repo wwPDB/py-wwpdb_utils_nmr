@@ -4589,6 +4589,8 @@ class NEFTranslator:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                 else:
                     atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id + '*', details, leave_unmatched, methyl_only)
+                    if details is not None:
+                        atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
 
             return (atom_list, ambiguity_code, details)
 

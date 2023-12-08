@@ -7620,13 +7620,17 @@ class XplorMRParserListener(ParseTreeListener):
         if self.donor_columnSel < 0:
             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                             "The donor atom has not been selected. 'don' tag must be exist in an atom selection expression of each Hydrogen bond database (HBDB) statement. "
-                            "e.g. assign (acc and resid 2 and segid A and name O ) (don and resid 8 and segid A and name HN)")
+                            "e.g. assign (acc and resid 2 and segid A and name O ) (don and resid 8 and segid A and name HN) "
+                            "Or, did you accidentally insert excess 'assign' clauses in a scalar J-coupling restraint? "
+                            "FYI, COUPling couplings-statement END where the syntax of couplings-statement is as follows; assign (selection) (selection) (selection) (selection) J-obs J-err")
             return
 
         if self.acceptor_columnSel < 0:
             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                             "The acceptor atom has not been selected. 'acc' tag must be exist in an atom selection expression of each Hydrogen bond database (HBDB) statement. "
-                            "e.g. assign (acc and resid 2 and segid A and name O ) (don and resid 8 and segid A and name HN)")
+                            "e.g. assign (acc and resid 2 and segid A and name O ) (don and resid 8 and segid A and name HN) "
+                            "Or, did you accidentally insert excess 'assign' clauses in a scalar J-coupling restraint? "
+                            "FYI, COUPling couplings-statement END where the syntax of couplings-statement is as follows; assign (selection) (selection) (selection) (selection) J-obs J-err")
             return
 
         acceptor = self.atomSelectionSet[self.acceptor_columnSel][0]
@@ -8978,30 +8982,29 @@ class XplorMRParserListener(ParseTreeListener):
                                 if len(_atomIds_) > 0:
                                     atomIds = _atomIds_
 
-                        if self.__cur_subtype == 'dist' and atomId in XPLOR_NITROXIDE_NAMES and coordAtomSite is not None\
-                           and atomId not in atomSiteAtomId:
-                            if compId == 'CYS' and 'SG' in atomSiteAtomId:
+                        if self.__cur_subtype == 'dist' and atomId in XPLOR_NITROXIDE_NAMES:  # and coordAtomSite is not None and atomId not in atomSiteAtomId:
+                            if compId == 'CYS':
                                 atomIds = ['SG']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
-                            elif compId == 'SER' and 'OG' in atomSiteAtomId:
+                            elif compId == 'SER':
                                 atomIds = ['OG']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
-                            elif compId == 'GLU' and 'OE2' in atomSiteAtomId:
+                            elif compId == 'GLU':
                                 atomIds = ['OE2']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
-                            elif compId == 'ASP' and 'OD2' in atomSiteAtomId:
+                            elif compId == 'ASP':
                                 atomIds = ['OD2']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
-                            elif compId == 'GLN' and 'NE2' in atomSiteAtomId:
+                            elif compId == 'GLN':
                                 atomIds = ['NE2']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
-                            elif compId == 'ASN' and 'ND2' in atomSiteAtomId:
+                            elif compId == 'ASN':
                                 atomIds = ['ND2']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
-                            elif compId == 'LYS' and 'NZ' in atomSiteAtomId:
+                            elif compId == 'LYS':
                                 atomIds = ['NZ']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
-                            elif compId == 'THR' and 'OG1' in atomSiteAtomId:
+                            elif compId == 'THR':
                                 atomIds = ['OG1']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
 

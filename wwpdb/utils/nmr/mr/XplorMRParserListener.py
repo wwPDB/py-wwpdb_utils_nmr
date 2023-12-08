@@ -7620,13 +7620,17 @@ class XplorMRParserListener(ParseTreeListener):
         if self.donor_columnSel < 0:
             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                             "The donor atom has not been selected. 'don' tag must be exist in an atom selection expression of each Hydrogen bond database (HBDB) statement. "
-                            "e.g. assign (acc and resid 2 and segid A and name O ) (don and resid 8 and segid A and name HN)")
+                            "e.g. assign (acc and resid 2 and segid A and name O ) (don and resid 8 and segid A and name HN) "
+                            "Or, did you accidentally insert excess 'assign' clauses in a scalar J-coupling restraint? "
+                            "FYI, COUPling couplings-statement END where the syntax of couplings-statement is as follows; assign (selection) (selection) (selection) (selection) J-obs J-err")
             return
 
         if self.acceptor_columnSel < 0:
             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                             "The acceptor atom has not been selected. 'acc' tag must be exist in an atom selection expression of each Hydrogen bond database (HBDB) statement. "
-                            "e.g. assign (acc and resid 2 and segid A and name O ) (don and resid 8 and segid A and name HN)")
+                            "e.g. assign (acc and resid 2 and segid A and name O ) (don and resid 8 and segid A and name HN) "
+                            "Or, did you accidentally insert excess 'assign' clauses in a scalar J-coupling restraint? "
+                            "FYI, COUPling couplings-statement END where the syntax of couplings-statement is as follows; assign (selection) (selection) (selection) (selection) J-obs J-err")
             return
 
         acceptor = self.atomSelectionSet[self.acceptor_columnSel][0]

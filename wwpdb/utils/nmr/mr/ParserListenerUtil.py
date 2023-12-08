@@ -1621,7 +1621,7 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                 'default': '1', 'default-from': 'parent'},
                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                ],
-                          'fchiral_restraint': [{'name': 'Stereospecific_assignment_code', 'type': 'str', 'mandatory': True},
+                          'fchiral_restraint': [{'name': 'Stereospecific_assignment_code', 'type': 'str', 'mandatory': False},
                                                 {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                 {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                                 {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},

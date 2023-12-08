@@ -246,7 +246,7 @@ class AmberMRReader:
                                                      self.__mrAtomNameMapping,
                                                      self.__cR, self.__caC,
                                                      self.__ccU, self.__csStat, self.__nefT,
-                                                     self.__atomNumberDict, reasons)
+                                                     self.__atomNumberDict if 'global_sequence_offset' not in reasons else None, reasons)
                     listener.setDebugMode(self.__debug)
                     listener.createSfDict(createSfDict)
                     if createSfDict:
@@ -305,6 +305,12 @@ class AmberMRReader:
 
 
 if __name__ == "__main__":
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2lww/2lww-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2lww/2lww.cif',
+                 None)
+
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/5n8m/RST.prot-dist',

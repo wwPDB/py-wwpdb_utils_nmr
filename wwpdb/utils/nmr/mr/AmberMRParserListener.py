@@ -825,6 +825,13 @@ class AmberMRParserListener(ParseTreeListener):
                         if 'ambig_atom_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['ambig_atom_id_remap'] = self.ambigAtomNameMapping
 
+                if 'global_sequence_offset' in self.reasonsForReParsing:
+                    for k, v in self.reasonsForReParsing['global_sequence_offset'].items():
+                        if v is None:
+                            del self.reasonsForReParsing['global_sequence_offset'][k]
+                    if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
+                        del self.reasonsForReParsing['global_sequence_offset']
+
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 
@@ -1637,6 +1644,9 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.lastComment is None or not self.dist_sander_pat.match(self.lastComment)\
                             else self.dist_sander_pat.search(self.lastComment).groups()
 
+                        failed = False
+                        factor1 = factor2 = None
+
                         for col, iat in enumerate(self.iat):
                             offset = col * 3
 
@@ -1688,6 +1698,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                                     f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                     f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
+                                                    failed = True
+                                                    if col == 0:
+                                                        factor1 = factor
+                                                    else:
+                                                        factor2 = factor
                                                     continue
                                                 factor = {'auth_seq_id': int(g[offset + 0]),
                                                           'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
@@ -1698,6 +1713,11 @@ class AmberMRParserListener(ParseTreeListener):
                                                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                                     f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                     f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
+                                                    failed = True
+                                                    if col == 0:
+                                                        factor1 = factor
+                                                    else:
+                                                        factor2 = factor
 
                                     else:
                                         s = None
@@ -1767,6 +1787,22 @@ class AmberMRParserListener(ParseTreeListener):
                                                         self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                                         f"Couldn't specify 'igr({varNum})={igr}' in the coordinates "
                                                                         f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
+                                                failed = True
+                                                if col == 0:
+                                                    if factor1 is None:
+                                                        factor1 = factor
+                                                else:
+                                                    if factor2 is None:
+                                                        factor2 = factor
+
+                        if failed and factor1 is not None and factor2 is not None\
+                           and factor1['auth_seq_id'] != factor2['auth_seq_id']\
+                           and factor1['auth_comp_id'] != factor2['auth_comp_id']:
+                            compId1 = translateToStdResName(factor1['auth_comp_id'], self.__ccU)
+                            compId2 = translateToStdResName(factor2['auth_comp_id'], self.__ccU)
+                            if compId1 in monDict3 and compId2 in monDict3\
+                               and self.__csStat.peptideLike(compId1) and self.__csStat.peptideLike(compId2):
+                                self.checkSequenceOffset(factor1['auth_seq_id'], compId1, factor2['auth_seq_id'], compId2)
 
                     if self.__cur_subtype == 'ang':
                         subtype_name = 'angle restraint'
@@ -3602,6 +3638,25 @@ class AmberMRParserListener(ParseTreeListener):
                             except IndexError:
                                 pass
 
+            if self.__reasons is not None and 'global_sequence_offset' in self.__reasons:
+                __chainId = __offset = None
+                for _ps in self.__polySeq:
+                    _chainId = _ps['chain_id']
+                    if _chainId in self.__reasons['global_sequence_offset']:
+                        _seq_id_list = list(filter(None, _ps['auth_seq_id']))
+                        _offset = self.__reasons['global_sequence_offset'][_chainId]
+                        if len(_seq_id_list) > 0:
+                            _min_seq_id = min(_seq_id_list)
+                            _max_seq_id = max(_seq_id_list)
+                            if _min_seq_id <= factor['auth_seq_id'] + _offset <= _max_seq_id:
+                                __chainId = _chainId
+                                __offset = _offset
+                                break
+                if __chainId is not None:
+                    if ps['chain_id'] != __chainId:
+                        continue
+                    seqId = factor['auth_seq_id'] + __offset
+
             if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
                 idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
                 compId = ps['comp_id'][idx]
@@ -4107,6 +4162,25 @@ class AmberMRParserListener(ParseTreeListener):
                                 except IndexError:
                                     pass
 
+                if self.__reasons is not None and 'global_sequence_offset' in self.__reasons:
+                    __chainId = __offset = None
+                    for _ps in self.__polySeq:
+                        _chainId = _ps['chain_id']
+                        if _chainId in self.__reasons['global_sequence_offset']:
+                            _seq_id_list = list(filter(None, _ps['auth_seq_id']))
+                            _offset = self.__reasons['global_sequence_offset'][_chainId]
+                            if len(_seq_id_list) > 0:
+                                _min_seq_id = min(_seq_id_list)
+                                _max_seq_id = max(_seq_id_list)
+                                if _min_seq_id <= factor['auth_seq_id'] + _offset <= _max_seq_id:
+                                    __chainId = _chainId
+                                    __offset = _offset
+                                    break
+                    if __chainId is not None:
+                        if ps['chain_id'] != __chainId:
+                            continue
+                        seqId = factor['auth_seq_id'] + __offset
+
                 if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
                     idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
                     compId = ps['comp_id'][idx]
@@ -4512,6 +4586,57 @@ class AmberMRParserListener(ParseTreeListener):
             return False
 
         return self.updateSanderAtomNumberDictWithAmbigCode(factor, cifCheck, False)
+
+    def checkSequenceOffset(self, seqId1, compId1, seqId2, compId2):
+        """ Try to find sequence offset from Sander comments.
+        """
+        if not self.__hasPolySeq:
+            return False
+
+        gap = seqId2 - seqId1
+
+        found = False
+        _chainId = _idx1 = None
+
+        for ps in self.__polySeq:
+            chainId = ps['chain_id']
+            compIds = ps['comp_id']
+
+            if compId1 in compIds and compId2 in compIds:
+                idx1 = [idx for idx, compId in enumerate(compIds) if compId == compId1]
+                idx2 = [idx for idx, compId in enumerate(compIds) if compId == compId2]
+
+                for idx in idx1:
+
+                    if idx + gap in idx2:
+
+                        if found:
+                            return False
+
+                        _chainId = chainId
+                        _idx1 = idx
+
+                        found = True
+
+        if not found:
+            return False
+
+        ps = next(ps for ps in self.__polySeq if ps['chain_id'] == _chainId)
+        offset = ps['auth_seq_id'][_idx1] - seqId1
+
+        if 'global_sequence_offset' not in self.reasonsForReParsing:
+            self.reasonsForReParsing['global_sequence_offset'] = {}
+        if chainId in self.reasonsForReParsing['global_sequence_offset']:
+            if self.reasonsForReParsing['global_sequence_offset'][chainId] is None:
+                return False
+            if self.reasonsForReParsing['global_sequence_offset'][chainId] == offset:
+                return True
+            self.reasonsForReParsing['global_sequence_offset'][chainId] = None
+            return False
+
+        self.reasonsForReParsing['global_sequence_offset'][chainId] = offset
+
+        return True
 
     def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
         """ Return realistic bond constraint taking into account the current coordinates.

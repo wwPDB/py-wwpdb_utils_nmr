@@ -4593,7 +4593,6 @@ class AmberMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq:
             return False
 
-        enforceAuthSeq = self.__reasons is not None and 'auth_seq_scheme' in self.__reasons
         gap = seqId2 - seqId1
 
         found = False

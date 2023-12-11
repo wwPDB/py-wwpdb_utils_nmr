@@ -3594,7 +3594,7 @@ class NmrDpUtility:
                                                              {'name': 'Cross_correlation_DD_list_ID', 'type': 'pointer-index', 'mandatory': True,
                                                               'default': '1', 'default-from': 'parent'}
                                                              ],
-                                        'fchiral_restraint': [{'name': 'Stereospecific_assignment_code', 'type': 'str', 'mandatory': True},
+                                        'fchiral_restraint': [{'name': 'Stereospecific_assignment_code', 'type': 'str', 'mandatory': False},
                                                               {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                               {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                                               {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},

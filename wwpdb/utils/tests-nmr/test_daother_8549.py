@@ -38,7 +38,7 @@ class TestNmrDpUtility(unittest.TestCase):
         logOutPath2 = os.path.join(data_dir_path, 'D_8000212194-logstrstr.json')
         logOutPath1 = os.path.join(data_dir_path, 'D_8000212194-logstrnef.json')
         # strOut = os.path.join(data_dir_path, 'dummy.str')
-        self.utility.setVerbose(True)
+        self.utility.setVerbose(False)
 
         self.utility.setSource(inputNmrDataStrFile)
         # self.utility.setDestination(strOut)
@@ -63,7 +63,7 @@ class TestNmrDpUtility(unittest.TestCase):
     #     logOutPath2 = os.path.join(data_dir_path, '2mes-logstrstr.json')
     #     logOutPath1 = os.path.join(data_dir_path, '2mes-logstrnef.json')
     #     # strOut = os.path.join(data_dir_path, 'dummy.str')
-    #     self.utility.setVerbose(True)
+    #     self.utility.setVerbose(False)
 
     #     self.utility.setSource(inputNmrDataStrFile)
     #     # self.utility.setDestination(strOut)

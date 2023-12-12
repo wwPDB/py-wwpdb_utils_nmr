@@ -225,7 +225,9 @@ class GromacsPTParserListener(ParseTreeListener):
                 is_prev_3_prime_comp = prev_comp_id.endswith('3')
                 if is_prev_3_prime_comp and is_prev_term_atom:
                     return True
-                return comp_id.endswith('5') and (is_prev_3_prime_comp or self.__csStat.peptideLike(prev_comp_id))
+                return comp_id.endswith('5')\
+                       and (is_prev_3_prime_comp
+                            or self.__csStat.peptideLike(translateToStdResName(prev_comp_id, self.__ccU)))
 
             def is_metal_ion(comp_id, atom_name):
                 if comp_id is None:
@@ -730,7 +732,8 @@ class GromacsPTParserListener(ParseTreeListener):
                             idx = ps_cif['auth_seq_id'].index(ref_seq_id)
                             atomNum['comp_id'] = ps_cif['comp_id'][idx]
 
-                        if orphan and test_seq_id == first_seq_id and self.__csStat.getTypeOfCompId(atomNum['comp_id'])[0]:
+                        if orphan and test_seq_id == first_seq_id\
+                           and self.__csStat.peptideLike(translateToStdResName(atomNum['comp_id'])):
                             if self.__ccU.updateChemCompDict(atomNum['comp_id']):
                                 chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                                 leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList

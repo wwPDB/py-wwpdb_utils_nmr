@@ -66,7 +66,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name="merge_any_pk_as_is", value=True, type="param")
         self.utility.setDestination(self.data_dir_path + entry_id + '_cs_mr_merged.str')
         self.utility.setLog(report_file)
-        self.utility.setVerbose(True)
+        self.utility.setVerbose(False)
         self.utility.setMrDebugMode(False)
 
         self.utility.op('nmr-cs-mr-merge')

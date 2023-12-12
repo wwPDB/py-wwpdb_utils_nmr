@@ -23753,14 +23753,30 @@ class NmrDpUtility:
                     if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                         _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                 else:
-                    if atom_id in ('H1', 'HT1') and 'H' in _coord_atom_site['atom_id']:
-                        atom_id = 'H'
-                        if fill_auth_atom_id:
-                            _row[19] = atom_id
-                    elif atom_id in ('H', 'HT1') and 'H1' in _coord_atom_site['atom_id']:
-                        atom_id = 'H1'
-                        if fill_auth_atom_id:
-                            _row[19] = atom_id
+                    if atom_id in ('H1', 'HT1') and 'H' in _coord_atom_site['atom_id']\
+                       and atom_id not in _coord_atom_site['atom_id']:
+                        if self.__ccU.updateChemCompDict(comp_id):
+                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
+                            if cca is None:
+                                atom_id = 'H'
+                                if fill_auth_atom_id:
+                                    _row[19] = atom_id
+                        else:
+                            atom_id = 'H'
+                            if fill_auth_atom_id:
+                                _row[19] = atom_id
+                    elif atom_id in ('H', 'HT1') and 'H1' in _coord_atom_site['atom_id']\
+                        and atom_id not in _coord_atom_site['atom_id']:
+                        if self.__ccU.updateChemCompDict(comp_id):
+                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
+                            if cca is None:
+                                atom_id = 'H1'
+                                if fill_auth_atom_id:
+                                    _row[19] = atom_id
+                        else:
+                            atom_id = 'H1'
+                            if fill_auth_atom_id:
+                                _row[19] = atom_id
                     if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 3.0):
                         missing_ch3 = []
                     if not valid and len(missing_ch3) > 0:

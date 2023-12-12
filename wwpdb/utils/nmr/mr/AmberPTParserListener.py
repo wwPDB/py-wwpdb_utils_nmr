@@ -281,8 +281,8 @@ class AmberPTParserListener(ParseTreeListener):
                 if is_prev_3_prime_comp and is_prev_term_atom:
                     return True
                 return comp_id.endswith('5')\
-                       and (is_prev_3_prime_comp
-                            or self.__csStat.peptideLike(translateToStdResName(prev_comp_id, self.__ccU)))
+                    and (is_prev_3_prime_comp
+                         or self.__csStat.peptideLike(translateToStdResName(prev_comp_id, self.__ccU)))
 
             def is_metal_ion(comp_id, atom_name):
                 if comp_id is None:

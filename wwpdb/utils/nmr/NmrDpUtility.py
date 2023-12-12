@@ -20127,6 +20127,13 @@ class NmrDpUtility:
                     for lcid in conflict_id:
                         del loop.data[lcid]
 
+                    index_tag = self.index_tags[file_type][content_subtype]
+                    if index_tag is not None:
+                        index_col = loop.tags.index(index_tag) if index_tag in loop.tags else -1
+                        if index_col != -1:
+                            for idx, row in enumerate(loop, start=1):
+                                row[index_col] = idx
+
             # try to parse data without bad patterns
 
             if has_bad_pattern:
@@ -21123,6 +21130,13 @@ class NmrDpUtility:
 
                                         for lcid in conflict_id:
                                             del _loop.data[lcid]
+
+                                        index_tag = self.index_tags[file_type][content_subtype]
+                                        if index_tag is not None:
+                                            index_col = loop.tags.index(index_tag) if index_tag in loop.tags else -1
+                                            if index_col != -1:
+                                                for idx, row in enumerate(loop, start=1):
+                                                    row[index_col] = idx
 
                                 # try to parse data without bad patterns
 
@@ -23766,7 +23780,7 @@ class NmrDpUtility:
                             if fill_auth_atom_id:
                                 _row[19] = atom_id
                     elif atom_id in ('H', 'HT1') and 'H1' in _coord_atom_site['atom_id']\
-                        and atom_id not in _coord_atom_site['atom_id']:
+                            and atom_id not in _coord_atom_site['atom_id']:
                         if self.__ccU.updateChemCompDict(comp_id):
                             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
                             if cca is None:
@@ -29710,6 +29724,15 @@ class NmrDpUtility:
         upper_limit_col = loop.tags.index('Distance_upper_bound_val') if 'Distance_upper_bound_val' in loop.tags else -1
         weight_col = loop.tags.index('Weight') if 'Weight' in loop.tags else -1
 
+        def concat_target_val(row):
+            return (str(row[target_val_col]) if target_val_col != -1 else '')\
+                + (str(row[target_val_err_col]) if target_val_err_col != -1 else '')\
+                + (str(row[lower_linear_limit_col]) if lower_linear_limit_col != -1 else '')\
+                + (str(row[upper_linear_limit_col]) if upper_linear_limit_col != -1 else '')\
+                + (str(row[lower_limit_col]) if lower_limit_col != -1 else '')\
+                + (str(row[upper_limit_col]) if upper_limit_col != -1 else '')\
+                + (str(row[weight_col]) if weight_col != -1 else '')
+
         _rest_id = None
         _member_logic_code = None
         _atom1 = _atom2 = {}
@@ -29730,13 +29753,7 @@ class NmrDpUtility:
                 rest_id = row[id_col]
                 member_id = row[member_id_col]
                 member_logic_code = row[member_logic_code_col]
-                values = (str(row[target_val_col]) if target_val_col != -1 else '')\
-                    + (str(row[target_val_err_col]) if target_val_err_col != -1 else '')\
-                    + (str(row[lower_linear_limit_col]) if lower_linear_limit_col != -1 else '')\
-                    + (str(row[upper_linear_limit_col]) if upper_linear_limit_col != -1 else '')\
-                    + (str(row[lower_limit_col]) if lower_limit_col != -1 else '')\
-                    + (str(row[upper_limit_col]) if upper_limit_col != -1 else '')\
-                    + (str(row[weight_col]) if weight_col != -1 else '')
+                values = concat_target_val(row)
 
                 try:
                     atom1 = {'chain_id': row[chain_id_1_col],
@@ -29878,6 +29895,25 @@ class NmrDpUtility:
 
                 if index_id in member_id_dict:
                     row[member_id_col] = member_id_dict[index_id]
+
+        def concat_all_val(row):
+            return row[chain_id_1_col] + str(row[seq_id_1_col]) + row[comp_id_1_col] + row[atom_id_1_col]\
+                + row[chain_id_2_col] + str(row[seq_id_2_col]) + row[comp_id_2_col] + row[atom_id_2_col]\
+                + concat_target_val(row)
+
+        len_data = len(lp.data)
+
+        for idx, row in enumerate(lp, start=1):
+            if row[member_logic_code_col] != 'OR':
+                continue
+            if idx - 2 > 0:
+                _row = lp.data[idx - 2]
+                if concat_all_val(row) == concat_all_val(_row):
+                    row[member_logic_code_col] = '.'
+            if idx < len_data:
+                _row = lp.data[idx]
+                if concat_all_val(row) == concat_all_val(_row):
+                    row[member_logic_code_col] = '.'
 
         try:
 

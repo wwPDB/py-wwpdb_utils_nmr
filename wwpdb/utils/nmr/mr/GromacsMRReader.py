@@ -73,6 +73,8 @@ class GromacsMRReader:
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+        if nefT is None:
+            self.__nefT.set_remediation_mode(True)
 
         # GromacsPTParserListener.getAtomNumberDict()
         self.__atomNumberDict = atomNumberDict

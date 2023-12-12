@@ -270,6 +270,56 @@ class ChemCompUtil:
 
         return [p for p in attached if p in allProtons and ((exclSelf and p != atomId) or not exclSelf)]
 
+    def getAtomsBasedOnGreekLetterSystem(self, compId, atomId):
+        """ Return atoms match with greek letter system of a given comp_id.
+        """
+
+        if len(atomId) < 2:
+            return {}
+
+        elem = atomId[0]
+
+        if elem not in ('H', 'C', 'N', 'O', 'S', 'P'):
+            return {}
+
+        greek_letter = atomId[1]
+
+        if greek_letter not in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
+            return {}
+
+        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+            return {}
+
+        if not any(a[self.ccaAtomId] == 'CA' for a in self.lastAtomList):
+            return {}
+
+        allProtons = [a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] == 'H']
+
+        touched = ['N', 'C']
+        parents = ['CA']
+
+        for letter in ['A', 'B', 'G', 'D', 'E', 'Z', 'H']:
+
+            if greek_letter == letter:
+                atoms = parents
+                for p in parents:
+                    attached = [a for a in self.getBondedAtoms(compId, p) if a in allProtons]
+                    atoms.extend(attached)
+                return {a for a in atoms if a[0] == elem}
+
+            touched.extend(parents)
+
+            _parents = []
+            for p in parents:
+                _parents.extend([a for a in self.getBondedAtoms(compId, p) if a not in touched and a not in allProtons])
+
+            if len(_parents) == 0:
+                return {}
+
+            parents = list(set(_parents))
+
+        return {}
+
     def hasBond(self, compId, atomId1, atomId2):
         """ Return whether given two atoms are connected by a covalent bond.
         """

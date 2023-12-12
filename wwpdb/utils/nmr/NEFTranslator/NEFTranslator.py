@@ -4629,6 +4629,15 @@ class NEFTranslator:
 
                 if atom_id.startswith('QQ'):
                     atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[2:] + '*', details, leave_unmatched, methyl_only)
+                    if details is not None and self.__csStat.peptideLike(comp_id) and atom_id[2] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
+                        grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[2])
+                        if len(grk_atoms) > 0:
+                            atom_list = []
+                            details = None
+                            for grk_atom in sorted(list(grk_atoms)):
+                                _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
+                                atom_list.extend(_atom_list)
+                            return (atom_list, ambiguity_code, details)
                     return (atom_list, ambiguity_code, details)
 
                 if atom_id.startswith('QR') or atom_id.startswith('QX'):
@@ -4637,6 +4646,7 @@ class NEFTranslator:
                     if len(qr_atoms) == 0:
                         return (atom_list, ambiguity_code, details)
                     atom_list = []
+                    details = None
                     for qr_atom in qr_atoms:
                         _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, qr_atom, details, leave_unmatched, methyl_only)
                         atom_list.extend(_atom_list)
@@ -4645,6 +4655,15 @@ class NEFTranslator:
                 if atom_id.startswith('Q') or atom_id.startswith('M'):
                     if atom_id[-1].isalnum():
                         atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched, methyl_only)
+                        if details is not None and self.__csStat.peptideLike(comp_id) and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
+                            grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[1])
+                            if len(grk_atoms) > 0:
+                                atom_list = []
+                                details = None
+                                for grk_atom in sorted(list(grk_atoms)):
+                                    _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
+                                    atom_list.extend(_atom_list)
+                                return (atom_list, ambiguity_code, details)
                         return (atom_list, ambiguity_code, details)
                     atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:-1] + '*', details, leave_unmatched, methyl_only)
                     return (atom_list, ambiguity_code, details)
@@ -4659,6 +4678,16 @@ class NEFTranslator:
                 _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, atom_id + '%', details, leave_unmatched, methyl_only)
                 if _details is None:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
+
+            if details is not None and self.__csStat.peptideLike(comp_id) and atom_id[0] in ('C', 'N', 'O', 'P')\
+               and len(atom_id) > 1 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
+                grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, atom_id)
+                if len(grk_atoms) > 0:
+                    atom_list = []
+                    details = None
+                    for grk_atom in sorted(list(grk_atoms)):
+                        _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
+                        atom_list.extend(_atom_list)
 
             return (atom_list, ambiguity_code, details)
 

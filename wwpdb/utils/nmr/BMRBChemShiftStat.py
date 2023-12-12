@@ -109,7 +109,7 @@ class BMRBChemShiftStat:
 
         return comp_id in self.__all_comp_ids
 
-    def peptideLike(self, comp_id):
+    def peptideLike(self, comp_id, excl_minor_atom=False):
         """ Return whether a given comp_id is peptide-like component.
         """
 
@@ -139,9 +139,9 @@ class BMRBChemShiftStat:
                     result = False
                     return result
 
-            peptide_like = len(self.getBackBoneAtoms(comp_id, True, True, False, False))
-            nucleotide_like = len(self.getBackBoneAtoms(comp_id, True, False, True, False))
-            carbohydrate_like = len(self.getBackBoneAtoms(comp_id, True, False, False, True))
+            peptide_like = len(self.getBackBoneAtoms(comp_id, excl_minor_atom, True, False, False))
+            nucleotide_like = len(self.getBackBoneAtoms(comp_id, excl_minor_atom, False, True, False))
+            carbohydrate_like = len(self.getBackBoneAtoms(comp_id, excl_minor_atom, False, False, True))
 
             result = peptide_like > nucleotide_like and peptide_like > carbohydrate_like
 
@@ -150,7 +150,7 @@ class BMRBChemShiftStat:
         finally:
             self.__cachedDictForPeptideLike[comp_id] = result
 
-    def getTypeOfCompId(self, comp_id):
+    def getTypeOfCompId(self, comp_id, excl_minor_atom=False):
         """ Return type of a given comp_id.
             @return: array of bool: peptide, nucleotide, carbohydrate
         """
@@ -186,9 +186,9 @@ class BMRBChemShiftStat:
                     results[2] = True
                     return results
 
-            peptide_like = len(self.getBackBoneAtoms(comp_id, True, True, False, False))
-            nucleotide_like = len(self.getBackBoneAtoms(comp_id, True, False, True, False))
-            carbohydrate_like = len(self.getBackBoneAtoms(comp_id, True, False, False, True))
+            peptide_like = len(self.getBackBoneAtoms(comp_id, excl_minor_atom, True, False, False))
+            nucleotide_like = len(self.getBackBoneAtoms(comp_id, excl_minor_atom, False, True, False))
+            carbohydrate_like = len(self.getBackBoneAtoms(comp_id, excl_minor_atom, False, False, True))
 
             results[0] = peptide_like > nucleotide_like and peptide_like > carbohydrate_like
             results[1] = nucleotide_like > peptide_like and nucleotide_like > carbohydrate_like

@@ -73,6 +73,8 @@ class CyanaMRReader:
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+        if nefT is None:
+            self.__nefT.set_remediation_mode(True)
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -215,6 +217,11 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-daother-8945/D_1000278694_mr-upload_P1.cyana.V4',
+                 '../../tests-nmr/mock-data-daother-8945/D_800635_model_P1.cif.V4')
+
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/5z5q/1103_4.8_BMRB.upl',

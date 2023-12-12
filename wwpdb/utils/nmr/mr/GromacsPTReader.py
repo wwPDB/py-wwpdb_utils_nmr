@@ -69,6 +69,8 @@ class GromacsPTReader:
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+        if nefT is None:
+            self.__nefT.set_remediation_mode(True)
 
     def setLexerMaxErrorReport(self, maxErrReport):
         self.__maxLexerErrorReport = maxErrReport

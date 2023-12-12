@@ -147,6 +147,9 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getProtonsInSameGroup('TYR', 'HD2'), ['HD2'])
         self.assertEqual(self.bmrb_cs_stat.getProtonsInSameGroup('ILE', 'HD11'), ['HD11', 'HD12', 'HD13'])
 
+    def test_peptide_line(self):
+        self.assertEqual(self.bmrb_cs_stat.peptideLike('6NA'), True)
+        self.assertEqual(self.bmrb_cs_stat.peptideLike('D4P'), True)
 
 if __name__ == '__main__':
     unittest.main()

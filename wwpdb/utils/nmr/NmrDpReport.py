@@ -2204,6 +2204,30 @@ class NmrDpReportError:
 
         return any(item for item in self.__contents if item == 'anomalous_data')
 
+    def sortFormatIssueError(self):
+        """ Sort 'format_issue' error
+        """
+
+        if self.__contents is None:
+            return
+
+        item = 'format_issue'
+
+        if item not in self.__contents or self.__contents[item] is None or len(self.__contents[item]) < 2:
+            return
+
+        d = copy.copy(self.__contents[item])
+
+        self.__contents[item] = []
+
+        for c in d:
+            if 'must' not in c['description']:
+                self.__contents[item].append(c)
+
+        for c in d:
+            if 'must' in c['description']:
+                self.__contents[item].append(c)
+
     def clean(self):
         """ Clean-up empty items and update stats.
         """

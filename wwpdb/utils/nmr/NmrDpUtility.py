@@ -6650,6 +6650,7 @@ class NmrDpUtility:
             if self.report_prev.warning.get() is not None:
                 self.report.setCorrectedWarning(self.report_prev)
 
+        self.report.error.sortFormatIssueError()
         self.report.warning.sortChemicalShiftValidation()
         self.report.warning.sortBySigma('conflicted_data')
         self.report.warning.sortBySigma('inconsistent_data')
@@ -50111,6 +50112,10 @@ class NmrDpUtility:
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        original_file_name = input_source_dic['file_name']
+        if 'original_file_name' in input_source_dic and input_source_dic['original_file_name'] is not None:
+            original_file_name = os.path.basename(input_source_dic['original_file_name'])
+
         file_type = 'nmr-star'
 
         master_entry.entry_id = f'cs_{self.__entry_id.lower()}'
@@ -51453,6 +51458,7 @@ class NmrDpUtility:
                     lp_category = self.lp_categories[file_type][content_subtype]
                     for sf_item in self.__mr_sf_dict_holder[content_subtype]:
                         sf = sf_item['saveframe']
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                         if content_subtype == 'fchiral_restraint':
                             set_sf_tag(sf, 'Stereo_assigned_count', sf_item['id'])
                         # if __pynmrstar_v3_2__:
@@ -51460,11 +51466,23 @@ class NmrDpUtility:
                         # else:
                         #     lp = sf.get_loop_by_category(lp_category)
                         if self.__bmrb_only:
-                            sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                             if any(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode):
                                 continue
                             if self.__internal_mode and self.__nmr_cif_sf_category_list is not None and sf.category in self.__nmr_cif_sf_category_list:
                                 continue
+                        else:
+                            if any(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                                err = f"Couldn't add a saveframe with name {sf_framecode!r} since a saveframe with that name already exists in {original_file_name!r} file. "\
+                                      f"Please remove {sf_framecode!r} saveframe and re-upload the {self.readable_file_type[file_type]} file."
+
+                                self.report.error.appendDescription('format_issue',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                                self.__lfh.write("+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - "
+                                                 f"{file_name} {err}\n")
+                                continue
+
                         master_entry.add_saveframe(sf)
                 else:
                     for sf_item in self.__mr_sf_dict_holder[content_subtype]:
@@ -51491,6 +51509,25 @@ class NmrDpUtility:
 
                         sf.add_tag('Text_data_format', 'json')
                         sf.add_tag('Text_data', getPrettyJson(other_data))
+
+                        if self.__bmrb_only:
+                            if any(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                                continue
+                            if self.__internal_mode and self.__nmr_cif_sf_category_list is not None and sf.category in self.__nmr_cif_sf_category_list:
+                                continue
+                        else:
+                            if any(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                                err = f"Couldn't add a saveframe with name {sf_framecode!r} since a saveframe with that name already exists in {original_file_name!r} file. "\
+                                      f"Please remove {sf_framecode!r} saveframe and re-upload the {self.readable_file_type[file_type]} file."
+
+                                self.report.error.appendDescription('format_issue',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                                self.__lfh.write("+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - "
+                                                 f"{file_name} {err}\n")
+                                continue
+
                         master_entry.add_saveframe(sf)
 
         for sf in ext_mr_sf_holder:

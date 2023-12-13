@@ -133,6 +133,12 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('DG', 'H22'), 'H21')
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('DG', "H2'"), "H2''")
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('DG', "H2''"), "H2'")
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('D4P', 'H1'), 'H6')
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('D4P', 'H3'), 'H5')
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('GHP', 'HC2'), 'H6')
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('GHP', 'H3'), 'H5')
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('D4P', 'C2'), 'C6')
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('GHP', 'C2'), 'C6')
 
     def test_maxambigcode(self):
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('ARG', 'HB2'), 2)
@@ -140,6 +146,10 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('TYR', 'HE2'), 3)
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('GLU', 'HB2'), 2)
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('LYS', 'HZ1'), 1)
+        self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('D4P', 'H1'), 3)
+        self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('D4P', 'H6'), 3)
+        self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('GHP', 'HC2'), 3)
+        self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('GHP', 'H6'), 3)
 
     def test_prot_in_same_group(self):
         self.assertEqual(self.bmrb_cs_stat.getProtonsInSameGroup('ARG', 'HB2'), ['HB2', 'HB3'])
@@ -150,6 +160,8 @@ class TestBMRBChemShiftStat(unittest.TestCase):
     def test_peptide_line(self):
         self.assertEqual(self.bmrb_cs_stat.peptideLike('6NA'), True)
         self.assertEqual(self.bmrb_cs_stat.peptideLike('D4P'), True)
+        self.assertEqual(self.bmrb_cs_stat.peptideLike('GHP'), True)
+
 
 if __name__ == '__main__':
     unittest.main()

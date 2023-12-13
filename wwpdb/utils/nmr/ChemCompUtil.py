@@ -7,6 +7,7 @@
 # 11-Nov-2022  M. Yokochi - add getProtonsInSameGroup() (NMR restraint remediation)
 # 13-Jun-2023  M. Yokochi - add getEffectiveFormulaWeight()
 # 07-Dec-2023  M. Yokochi - add support for PTM items (backbone, n_terminal, c_terminal atom flags)
+# 13-Dec-2023  M. Yokochi - add getAtomsBasedOnGreekLetterSystem(), peptideLike() and getTypeOfCompId() (DAOTHER-8945)
 ##
 """ Wrapper class for retrieving chemical component dictionary.
     @author: Masashi Yokochi
@@ -325,6 +326,81 @@ class ChemCompUtil:
         """
         return atomId2 in self.getBondedAtoms(compId, atomId1)
 
+    def peptideLike(self, compId=None):
+        """ Return whether a given comp_id is peptide-like component.
+        """
+
+        if compId is not None:
+            if not self.updateChemCompDict(compId):
+                return False
+
+        ctype = self.lastChemCompDict['_chem_comp.type'].upper()
+
+        if 'PEPTIDE' in ctype:
+            return True
+
+        if 'DNA' in ctype or 'RNA' in ctype or 'SACCHARIDE' in ctype:
+            return False
+
+        peptide_like = len([a for a in self.lastAtomList
+                            if a[self.ccaAtomId] in ("C", "CA", "H", "HA", "HA2", "HA3", "N", "O")])
+
+        nucleotide_like = len([a for a in self.lastAtomList
+                               if a[self.ccaAtomId] in ("C1'", "C2'", "C3'", "C4'", "C5'",
+                                                        "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "HO2'",
+                                                        "P", "OP1", "OP2", "O5'", "O3'")])
+
+        carbohydrate_like = len([a for a in self.lastAtomList
+                                 if a[self.ccaAtomId] in ("C1", "C2", "C3", "C4", "C5", "C6",
+                                                          "H1", "H2", "H3", "H4", "H5", "H61", "H62",
+                                                          "O1", "O4", "O6")])
+
+        return peptide_like > nucleotide_like and peptide_like > carbohydrate_like
+
+    def getTypeOfCompId(self, compId=None):
+        """ Return type of a given comp_id.
+            @return: array of bool: peptide, nucleotide, carbohydrate
+        """
+
+        if compId is not None:
+            if not self.updateChemCompDict(compId):
+                return False, False, False
+
+        results = [False] * 3
+
+        ctype = self.lastChemCompDict['_chem_comp.type'].upper()
+
+        if 'PEPTIDE' in ctype:
+            results[0] = True
+            return results
+
+        if 'DNA' in ctype or 'RNA' in ctype:
+            results[1] = True
+            return results
+
+        if 'SACCHARIDE' in ctype:
+            results[2] = True
+            return results
+
+        peptide_like = len([a for a in self.lastAtomList
+                            if a[self.ccaAtomId] in ("C", "CA", "H", "HA", "HA2", "HA3", "N", "O")])
+
+        nucleotide_like = len([a for a in self.lastAtomList
+                               if a[self.ccaAtomId] in ("C1'", "C2'", "C3'", "C4'", "C5'",
+                                                        "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "HO2'",
+                                                        "P", "OP1", "OP2", "O5'", "O3'")])
+
+        carbohydrate_like = len([a for a in self.lastAtomList
+                                 if a[self.ccaAtomId] in ("C1", "C2", "C3", "C4", "C5", "C6",
+                                                          "H1", "H2", "H3", "H4", "H5", "H61", "H62",
+                                                          "O1", "O4", "O6")])
+
+        results[0] = peptide_like > nucleotide_like and peptide_like > carbohydrate_like
+        results[1] = nucleotide_like > peptide_like and nucleotide_like > carbohydrate_like
+        results[2] = carbohydrate_like > peptide_like and carbohydrate_like > nucleotide_like
+
+        return results
+
     def getEffectiveFormulaWeight(self, compId):
         """ Return effective formula weight of a given comp_id.
         """
@@ -337,7 +413,13 @@ class ChemCompUtil:
 
         fw = float(self.lastChemCompDict['_chem_comp.formula_weight'])
 
-        leavingTypeSymbols = [a[self.ccaTypeSymbol] for a in self.lastAtomList if a[self.ccaLeavingAtomFlag] == 'Y']
+        peptide_like = self.peptideLike()
+
+        leavingTypeSymbols = [a[self.ccaTypeSymbol] for a in self.lastAtomList
+                              if not (a[self.ccaLeavingAtomFlag] != 'Y'
+                                      or (peptide_like
+                                          and a[self.ccaNTerminalAtomFlag] == 'N'
+                                          and a[self.ccaCTerminalAtomFlag] == 'N'))]
 
         try:
 

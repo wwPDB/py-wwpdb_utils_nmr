@@ -4403,6 +4403,9 @@
         "exactly_overlaid_model": {
           "$ref": "#/definitions/common_message"
         },
+        "hydrogen_not_instantiated": {
+          "$ref": "#/definitions/common_message"
+        },
         "total": {
           "type": "integer",
           "minumum": 0

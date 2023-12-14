@@ -23607,6 +23607,8 @@ class NmrDpUtility:
         """ Remediate assigned chemical shift loop based on coordinates.
         """
 
+        has_coordinate = self.report.getInputSourceIdOfCoord() >= 0
+
         input_source = self.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
@@ -24969,7 +24971,7 @@ class NmrDpUtility:
                         except (ValueError, TypeError):
                             seq_id = None
 
-                    if not resolved and seq_id is not None:
+                    if not resolved and seq_id is not None and has_coordinate:
 
                         def test_seq_id_offset(lp, index, row, _row, _idx, chain_id, seq_id, comp_id, offset):
                             _found = _resolved = False
@@ -25146,6 +25148,9 @@ class NmrDpUtility:
                                 entity_id = int(row[entity_id_col])
                             except (ValueError, TypeError):
                                 entity_id = None
+
+                        if not has_coordinate:
+                            seq_id = int(row[seq_id_col])
 
                         _row[1], _row[2], _row[3], _row[4], _row[5] = chain_id, entity_id, seq_id, seq_id, comp_id
 

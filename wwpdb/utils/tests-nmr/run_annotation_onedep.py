@@ -804,7 +804,6 @@ class gen_auth_view_onedep:
         utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         utility.addInput(name='resolve_conflict', value=True, type='param')
         utility.addInput(name='check_mandatory_tag', value=True, type='param')
-        utility.addInput(name='leave_intl_note', value=False, type='param')
         utility.addInput(name='merge_any_pk_as_is', value=True, type='param')
         utility.addInput(name='bmrb_only', value=True, type='param')
         utility.addInput(name='internal', value=True, type='param')
@@ -813,6 +812,7 @@ class gen_auth_view_onedep:
         utility.addInput(name='avs_letter_path', value=self.__avs_letter_path, type='file')
         if len(sys.argv) > 2:
             utility.addInput(name='elec_dep_hash_code', value=sys.argv[2], type='param')
+        utility.addOutput(name='leave_intl_note', value=False, type='param')
         utility.addOutput(name='return_letter_path', value=self.__return_letter_path, type='file')
         utility.setDestination(self.__annotated_star_file_path)
         utility.setLog(self.__annotated_log_file_path)

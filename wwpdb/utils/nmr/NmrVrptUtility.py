@@ -1668,7 +1668,7 @@ class NmrVrptUtility:
                 list_id = int(sf_tag[0]['ID'])
 
                 try:
-                    rdc_type = sf_tag[0]['Details']  # i.e. RDC_HNC, RDC_NH, RDC_CN_i_1, RDC_CAHA, RDC_HNHA, RDC_HNHA_i_1, RDC_CAC, RDC_CAN, RDC_HH, RDC_CC, RDC_other
+                    rdc_type = sf_tag[0]['Details']  # e.g. RDC_HNC, RDC_NH, RDC_CN_i_1, RDC_CAHA, RDC_HNHA, RDC_HNHA_i_1, RDC_CAC, RDC_CAN, RDC_HH, RDC_CC, RDC_other
                     if rdc_type in (None, '', '.', '?', 'null'):
                         rdc_type = 'UNNAMED'
                 except KeyError:

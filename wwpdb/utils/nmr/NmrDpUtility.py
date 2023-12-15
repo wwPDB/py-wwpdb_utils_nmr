@@ -107,12 +107,12 @@
 # 18-Nov-2020  M. Yokochi - fix calculation of CS completeness, fix empty polymer_sequence_in_loop due to atom_site.pdbx_PDB_ins_code (DAOTHER-6128)
 # 20-Nov-2020  M. Yokochi - rename 'remarkable_data' warning category to 'unusual/rare_data' (DAOTHER-6372)
 # 26-Nov-2020  M. Yokochi - detect the nearest ferromagnetic atom, in addition to paramagnetic atom (DAOTHER-6366)
-# 27-Nov-2020  M. Yokochi - add support for non-IUPAC atom names for standard amino acids, i.e. ARG:HB1/HB2 -> HB2/HB3 (DAOTHER-6373)
+# 27-Nov-2020  M. Yokochi - add support for non-IUPAC atom names for standard amino acids, e.g. ARG:HB1/HB2 -> HB2/HB3 (DAOTHER-6373)
 # 17-Dec-2020  M. Yokochi - support 'atom_not_found' error with message revision (DAOTHER-6345)
 # 25-Jan-2021  M. Yokochi - simplify code for Entity_assemble_ID and chain_code
 # 25-Jan-2021  M. Yokochi - add CS validation code about rotameric state of ILE/LEU/VAL residue
 # 03-Feb-2021  M. Yokochi - update polymer sequence which shares the same entity and missing in the molecular assembly information if necessary,
-#                           i.e. double stranded DNA (DAOTHER-6128, BMRB entry: 16812, PDB ID: 6kae)
+#                           e.g. double stranded DNA (DAOTHER-6128, BMRB entry: 16812, PDB ID: 6kae)
 # 10-Mar-2021  M. Yokochi - block NEF deposition missing '_nef_sequence' category and turn off salvage routine for the case (DAOTHER-6694)
 # 10-Mar-2021  M. Yokochi - add support for audit loop in NEF (DAOTHER-6327)
 # 12-Mar-2021  M. Yokochi - add diagnostic routine to fix inconsistent sf_framecode of conventional CS file (DAOTHER-6693)
@@ -10747,7 +10747,7 @@ class NmrDpUtility:
                             if _err is not None and not comment_pattern.match(_err) and not _err.isspace():
                                 s = '. ' if _err.startswith('Do you') else ':\n'
                                 err = err[:len_err] +\
-                                    ("However, the error may be due to missing statement (i.e. 'noe', 'restraint dihedral', 'sanisotropy') "
+                                    ("However, the error may be due to missing statement (e.g. 'noe', 'restraint dihedral', 'sanisotropy') "
                                      f"at the beginning of {_err.strip().split(' ')[0]!r} and note that the statement should be ended with 'end' tag "
                                      if _err.lower().strip().startswith('class')
                                      else "However, the error may be due to the previous input ") +\

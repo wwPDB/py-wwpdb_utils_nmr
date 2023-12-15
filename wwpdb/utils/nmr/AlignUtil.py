@@ -2016,7 +2016,10 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
             candidate = sorted(__atomId for __atomId in coordAtomSite['atom_id'] if __atomId.startswith(_atomId_))
 
             if order < len(candidate):
-                return item['auth_seq_id'], item['auth_comp_id'], candidate[order]
+                if item is not None:
+                    return item['auth_seq_id'], item['auth_comp_id'], candidate[order]
+                else:
+                    return seqId, compId, candidate[order]
 
     if len(atomId) == 1:
 
@@ -2029,7 +2032,10 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
 
             if total == 1:
                 _atomId = next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(atomId))
-                return item['auth_seq_id'], item['auth_comp_id'], _atomId
+                if item is not None:
+                    return item['auth_seq_id'], item['auth_comp_id'], _atomId
+                else:
+                    seqId, compId, _atomId
 
     return seqId, compId, atomId
 

@@ -4443,7 +4443,7 @@ def isLongRangeRestraint(atoms, polySeq=None):
 
 
 def getAltProtonIdInBondConstraint(atoms, csStat):
-    """ Return alternative atom_id in swappable proton group, which involves in bond constraint (i.e. amino group in Watson-Crick pair).
+    """ Return alternative atom_id in swappable proton group, which involves in bond constraint (e.g. amino group in Watson-Crick pair).
     """
 
     if len(atoms) < 2:

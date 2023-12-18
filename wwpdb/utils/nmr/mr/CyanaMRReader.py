@@ -219,6 +219,16 @@ class CyanaMRReader:
 if __name__ == "__main__":
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6drg/Cycle7_Cyana_With_GW_Constraints.upl',
+                     '../../tests-nmr/mock-data-remediation/6drg/6drg.cif')
+    reader = CyanaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6drg/Cycle7_Cyana_With_GW_Constraints.upl',
+                 '../../tests-nmr/mock-data-remediation/6drg/6drg.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-daother-8945/D_1000278694_mr-upload_P1.cyana.V4',
                  '../../tests-nmr/mock-data-daother-8945/D_800635_model_P1.cif.V4')
 

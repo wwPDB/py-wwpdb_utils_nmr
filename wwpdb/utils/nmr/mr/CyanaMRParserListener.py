@@ -3019,7 +3019,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 cifSeqId += offset
                 cifCompId = compId
 
-            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord, asis=self.__preferAuthSeq)
 
             if self.__cur_subtype == 'dist' and _compId is not None and (_compId.startswith('MTS') or _compId.startswith('ORI')) and cifCompId != _compId:
                 if _atomId[0] in ('O', 'N'):
@@ -3109,7 +3109,6 @@ class CyanaMRParserListener(ParseTreeListener):
                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, asis=False)
                         if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                             if lenAtomId > 0 and _atomId[0] in _coordAtomSite['atom_id']:
-                                # self.__preferAuthSeq = False
                                 self.__authSeqId = 'label_seq_id'
                                 self.__setLocalSeqScheme()
                                 continue
@@ -8530,27 +8529,28 @@ class CyanaMRParserListener(ParseTreeListener):
     def __setLocalSeqScheme(self):
         if 'local_seq_scheme' not in self.reasonsForReParsing:
             self.reasonsForReParsing['local_seq_scheme'] = {}
+        preferAuthSeq = self.__authSeqId == 'auth_seq_id'
         if self.__cur_subtype == 'dist':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.distRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.distRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'dihed':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.dihedRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.dihedRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'rdc':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.rdcRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.rdcRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'pcs':
-            self.reasonsForReParsing['loca_seq_scheme'][(self.__cur_subtype, self.pcsRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['loca_seq_scheme'][(self.__cur_subtype, self.pcsRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'noepk':
-            self.reasonsForReParsing['loca_seq_scheme'][(self.__cur_subtype, self.noepkRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['loca_seq_scheme'][(self.__cur_subtype, self.noepkRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'jcoup':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.jcoupRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.jcoupRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'geo':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.geoRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.geoRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'hbond':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.hbondRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.hbondRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'ssbond':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.ssbondRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.ssbondRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'fchiral':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.fchiralRestraints)] = self.__preferAuthSeq
-        if not self.__preferAuthSeq:
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.fchiralRestraints)] = preferAuthSeq
+        if not preferAuthSeq:
             self.__preferLabelSeqCount += 1
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
                 self.reasonsForReParsing['label_seq_scheme'] = True

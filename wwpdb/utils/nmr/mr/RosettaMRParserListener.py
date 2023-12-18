@@ -1220,7 +1220,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 
-            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord, asis=self.__preferAuthSeq)
+
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
                 _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
                 if atomId != _atomId and coordAtomSite is not None and _atomId in coordAtomSite['atom_id']:
@@ -4142,19 +4143,20 @@ class RosettaMRParserListener(ParseTreeListener):
     def __setLocalSeqScheme(self):
         if 'local_seq_scheme' not in self.reasonsForReParsing:
             self.reasonsForReParsing['local_seq_scheme'] = {}
+        preferAuthSeq = self.__authSeqId == 'auth_seq_id'
         if self.__cur_subtype == 'dist':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.distRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.distRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'ang':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.angRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.angRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'dihed':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.dihedRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.dihedRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'rdc':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.rdcRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.rdcRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'geo':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.geoRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.geoRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'ssbond':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.ssbondRestraints)] = self.__preferAuthSeq
-        if not self.__preferAuthSeq:
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.ssbondRestraints)] = preferAuthSeq
+        if not preferAuthSeq:
             self.__preferLabelSeqCount += 1
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
                 self.reasonsForReParsing['label_seq_scheme'] = True

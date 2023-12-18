@@ -5,6 +5,7 @@
 # Updates:
 # 19-Jul-2023  M. Yokochi - add trustPdbxAuthAtomName() for OneDep validation package (DAOTHER-8705)
 # 19-Jul-2023  M. Yokochi - fix distance/dihedral angle/RDC averaging when lower/upper bounds are different in a restraint (DAOTER-8705)
+# 18-Dec-2023  M. Yokochi - retrieve non-leaving hydrogens independent of MolProbity (DAOTHER-8945)
 ##
 """ Wrapper class for NMR restraint validation.
     @author: Masashi Yokochi
@@ -24,25 +25,33 @@ from operator import itemgetter
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import CifReader, LEN_MAJOR_ASYM_ID
+    from wwpdb.utils.nmr.io.CifReader import (CifReader,
+                                              LEN_MAJOR_ASYM_ID,
+                                              calculate_uninstanced_coord)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_ERROR,
                                                        RDC_RESTRAINT_ERROR,
                                                        coordAssemblyChecker,
                                                        getDistConstraintType)
-    from wwpdb.utils.nmr.AlignUtil import LARGE_ASYM_ID, monDict3
+    from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
+                                           monDict3,
+                                           protonBeginCode)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 except ImportError:
-    from nmr.io.CifReader import CifReader, LEN_MAJOR_ASYM_ID
+    from nmr.io.CifReader import (CifReader,
+                                  LEN_MAJOR_ASYM_ID,
+                                  calculate_uninstanced_coord)
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_ERROR,
                                            RDC_RESTRAINT_ERROR,
                                            coordAssemblyChecker,
                                            getDistConstraintType)
-    from nmr.AlignUtil import LARGE_ASYM_ID, monDict3
+    from nmr.AlignUtil import (LARGE_ASYM_ID,
+                               monDict3,
+                               protonBeginCode)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
@@ -1833,6 +1842,96 @@ class NmrVrptUtility:
 
         try:
 
+            def get_uninstanced_hydrogen_coord(model_id, atom_key):
+
+                if atom_key in self.__coordinates[model_id]:
+                    return None
+
+                auth_asym_id, auth_seq_id, comp_id, atom_id, ins_code = atom_key
+
+                if atom_id[0] not in protonBeginCode:
+                    return None
+
+                if not self.__ccU.updateChemCompDict(comp_id):
+                    return None
+
+                if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] != 'REL':
+                    return None
+
+                cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id), None)
+
+                if cca is None:
+                    return None
+
+                bonded_to = self.__ccU.getBondedAtoms(comp_id, atom_id)
+
+                if len(bonded_to) == 0:
+                    return None
+
+                ref_atom_id = bonded_to[0]
+
+                _atom_key = (auth_asym_id, auth_seq_id, comp_id, ref_atom_id, ins_code)
+
+                if _atom_key not in self.__coordinates[model_id]:
+                    return None
+
+                if not (cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'
+                        or (self.__csStat.peptideLike(comp_id)
+                            and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                            and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N')):
+                    return None
+
+                neighbor_to = self.__ccU.getBondedAtoms(comp_id, ref_atom_id, exclProton=True)
+
+                if len(neighbor_to) == 0:
+                    return None
+
+                if len(neighbor_to) < 2:
+                    for _ref_atom_id in neighbor_to:
+                        _neighbor_to = self.__ccU.getBondedAtoms(comp_id, _ref_atom_id, exclProton=True)
+                        for __ref_atom_id in _neighbor_to:
+                            if __ref_atom_id not in neighbor_to:
+                                neighbor_to.append(__ref_atom_id)
+                                break
+                        if len(neighbor_to) >= 2:
+                            break
+
+                if len(neighbor_to) < 2:
+                    return None
+
+                ref_atom_ids = [ref_atom_id]
+                ref_atoms_xyz = [self.__coordinates[model_id][_atom_key]]
+
+                for _ref_atom_id in neighbor_to:
+                    __atom_key = (auth_asym_id, auth_seq_id, comp_id, _ref_atom_id, ins_code)
+                    if __atom_key in self.__coordinates[model_id]:
+                        ref_atom_ids.append(_ref_atom_id)
+                        ref_atoms_xyz.append(self.__coordinates[model_id][__atom_key])
+
+                src_ccd_xyz = np.asarray([float(cca[self.__ccU.ccaCartnX]),
+                                          float(cca[self.__ccU.ccaCartnY]),
+                                          float(cca[self.__ccU.ccaCartnZ])], dtype=float)
+
+                ccd_atoms_xyz = []
+                for _ref_atom_id in ref_atom_ids:
+                    _cca = next((_cca for _cca in self.__ccU.lastAtomList if _cca[self.__ccU.ccaAtomId] == _ref_atom_id), None)
+                    if _cca is not None:
+                        ccd_atoms_xyz.append(np.asarray([float(_cca[self.__ccU.ccaCartnX]),
+                                                         float(_cca[self.__ccU.ccaCartnY]),
+                                                         float(_cca[self.__ccU.ccaCartnZ])], dtype=float))
+
+                if len(ref_atoms_xyz) != len(ccd_atoms_xyz):
+                    return None
+
+                dst_ccd_xyz, rmsd = calculate_uninstanced_coord(np.asarray(ccd_atoms_xyz),
+                                                                np.asarray(ref_atoms_xyz),
+                                                                np.asarray([src_ccd_xyz]))
+
+                if rmsd > 0.1:
+                    return None
+
+                return dst_ccd_xyz[0]
+
             def calc_dist_rest_viol(rest_key, restraints):
 
                 error_per_model = {}
@@ -1857,20 +1956,24 @@ class NmrVrptUtility:
                         try:
                             pos_1 = self.__coordinates[model_id][atom_key_1]
                         except KeyError:
-                            if self.__verbose:
-                                self.__lfh.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
-                                                 f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
-                                                 f"not found in the coordinates for distance restraint {rest_key}.\n")
-                            atom_present = False
+                            pos_1 = get_uninstanced_hydrogen_coord(model_id, atom_key_1)
+                            if pos_1 is None:
+                                if self.__verbose:
+                                    self.__lfh.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
+                                                     f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
+                                                     f"not found in the coordinates for distance restraint {rest_key}.\n")
+                                atom_present = False
 
                         try:
                             pos_2 = self.__coordinates[model_id][atom_key_2]
                         except KeyError:
-                            if self.__verbose:
-                                self.__lfh.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
-                                                 f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
-                                                 f"not found in the coordinates for distance restraint {rest_key}.\n")
-                            atom_present = False
+                            pos_2 = get_uninstanced_hydrogen_coord(model_id, atom_key_2)
+                            if pos_2 is None:
+                                if self.__verbose:
+                                    self.__lfh.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
+                                                     f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
+                                                     f"not found in the coordinates for distance restraint {rest_key}.\n")
+                                atom_present = False
 
                         if atom_present:
 

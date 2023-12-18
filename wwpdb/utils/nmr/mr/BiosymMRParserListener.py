@@ -1235,7 +1235,7 @@ class BiosymMRParserListener(ParseTreeListener):
                         if compId in (cifCompId, origCompId):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
-                                # self.__authSeqId = 'label_seq_id'
+                                self.__authSeqId = 'label_seq_id'
                                 self.__setLocalSeqScheme()
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
@@ -1243,7 +1243,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                 #     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
-                            # self.__authSeqId = 'label_seq_id'
+                            self.__authSeqId = 'label_seq_id'
                             self.__setLocalSeqScheme()
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
@@ -1296,7 +1296,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 cifSeqId += offset
                 cifCompId = compId
 
-            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord, asis=self.__preferAuthSeq)
 
             if self.__cur_subtype == 'dist' and _compId is not None and (_compId.startswith('MTS') or _compId.startswith('ORI')) and cifCompId != _compId:
                 if _atomId[0] in ('O', 'N'):
@@ -1390,8 +1390,7 @@ class BiosymMRParserListener(ParseTreeListener):
                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, asis=False)
                         if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                             if lenAtomId > 0 and _atomId[0] in _coordAtomSite['atom_id']:
-                                # self.__preferAuthSeq = False
-                                # self.__authSeqId = 'label_seq_id'
+                                self.__authSeqId = 'label_seq_id'
                                 self.__setLocalSeqScheme()
                                 continue
                     self.__f.append(f"[Sequence mismatch] {self.__getCurrentRestraint()}"
@@ -1467,13 +1466,13 @@ class BiosymMRParserListener(ParseTreeListener):
                     if atomId in _coordAtomSite['atom_id']:
                         found = True
                         self.__preferAuthSeq = False
-                        # self.__authSeqId = 'label_seq_id'
+                        self.__authSeqId = 'label_seq_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
                     elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                         found = True
                         self.__preferAuthSeq = False
-                        # self.__authSeqId = 'label_seq_id'
+                        self.__authSeqId = 'label_seq_id'
                         # self.__authAtomId = 'auth_atom_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
@@ -1484,12 +1483,12 @@ class BiosymMRParserListener(ParseTreeListener):
                 if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
                         found = True
-                        # self.__authSeqId = 'auth_seq_id'
+                        self.__authSeqId = 'auth_seq_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
                     elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                         found = True
-                        # self.__authSeqId = 'auth_seq_id'
+                        self.__authSeqId = 'auth_seq_id'
                         # self.__authAtomId = 'auth_atom_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
@@ -1504,13 +1503,13 @@ class BiosymMRParserListener(ParseTreeListener):
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
                     self.__preferAuthSeq = False
-                    # self.__authSeqId = 'label_seq_id'
+                    self.__authSeqId = 'label_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                     found = True
                     self.__preferAuthSeq = False
-                    # self.__authSeqId = 'label_seq_id'
+                    self.__authSeqId = 'label_seq_id'
                     # self.__authAtomId = 'auth_atom_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
@@ -1521,12 +1520,12 @@ class BiosymMRParserListener(ParseTreeListener):
             if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
-                    # self.__authSeqId = 'auth_seq_id'
+                    self.__authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                     found = True
-                    # self.__authSeqId = 'auth_seq_id'
+                    self.__authSeqId = 'auth_seq_id'
                     # self.__authAtomId = 'auth_atom_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
@@ -1546,13 +1545,13 @@ class BiosymMRParserListener(ParseTreeListener):
                     if atomId in _coordAtomSite['atom_id']:
                         found = True
                         self.__preferAuthSeq = False
-                        # self.__authSeqId = 'label_seq_id'
+                        self.__authSeqId = 'label_seq_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
                     elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                         found = True
                         self.__preferAuthSeq = False
-                        # self.__authSeqId = 'label_seq_id'
+                        self.__authSeqId = 'label_seq_id'
                         # self.__authAtomId = 'auth_atom_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
@@ -1562,12 +1561,12 @@ class BiosymMRParserListener(ParseTreeListener):
                 if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
                         found = True
-                        # self.__authSeqId = 'auth_seq_id'
+                        self.__authSeqId = 'auth_seq_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
                     elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                         found = True
-                        # self.__authSeqId = 'auth_seq_id'
+                        self.__authSeqId = 'auth_seq_id'
                         # self.__authAtomId = 'auth_atom_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
@@ -2453,13 +2452,14 @@ class BiosymMRParserListener(ParseTreeListener):
     def __setLocalSeqScheme(self):
         if 'local_seq_scheme' not in self.reasonsForReParsing:
             self.reasonsForReParsing['local_seq_scheme'] = {}
+        preferAuthSeq = self.__authSeqId == 'auth_seq_id'
         if self.__cur_subtype == 'dist':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.distRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.distRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'dihed':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.dihedRestraints)] = self.__preferAuthSeq
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.dihedRestraints)] = preferAuthSeq
         elif self.__cur_subtype == 'geo':
-            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.geoRestraints)] = self.__preferAuthSeq
-        if not self.__preferAuthSeq:
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.geoRestraints)] = preferAuthSeq
+        if not preferAuthSeq:
             self.__preferLabelSeqCount += 1
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
                 self.reasonsForReParsing['label_seq_scheme'] = True

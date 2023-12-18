@@ -2035,7 +2035,7 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
                 if item is not None:
                     return item['auth_seq_id'], item['auth_comp_id'], _atomId
                 else:
-                    seqId, compId, _atomId
+                    return seqId, compId, _atomId
 
     return seqId, compId, atomId
 

@@ -577,14 +577,11 @@ class BMRBChemShiftStat:
         if comp_id in self.__cachedDictForMethylProtons:
             return copy.copy(self.__cachedDictForMethylProtons[comp_id])
 
-        try:
+        result = self.__ccU.getMethylAtoms(comp_id)
 
-            result = self.__ccU.getMethylAtoms(comp_id)
+        self.__cachedDictForMethylProtons[comp_id] = result
 
-            return result
-
-        finally:
-            self.__cachedDictForMethylProtons[comp_id] = result
+        return result
 
     def getRepMethylProtons(self, comp_id):
         """ Return representative protons in methyl group of a given comp_id.
@@ -596,14 +593,11 @@ class BMRBChemShiftStat:
         if comp_id in self.__cachedDictForRepMethylProtons:
             return copy.copy(self.__cachedDictForRepMethylProtons[comp_id])
 
-        try:
+        result = self.__ccU.getRepMethylProtons(comp_id)
 
-            result = self.__ccU.getRepMethylProtons(comp_id)
+        self.__cachedDictForProtonInSameGroup[comp_id] = result
 
-            return result
-
-        finally:
-            self.__cachedDictForProtonInSameGroup[comp_id] = result
+        return result
 
     def getNonRepMethylProtons(self, comp_id):
         """ Return non-representative protons in methyl group of a given comp_id.
@@ -615,14 +609,11 @@ class BMRBChemShiftStat:
         if comp_id in self.__cachedDictForNonRepMethylProtons:
             return copy.copy(self.__cachedDictForNonRepMethylProtons[comp_id])
 
-        try:
+        result = self.__ccU.getNonRepMethylProtons(comp_id)
 
-            result = self.__ccU.getNonRepMethylProtons(comp_id)
+        self.__cachedDictForNonRepMethylProtons[comp_id] = result
 
-            return result
-
-        finally:
-            self.__cachedDictForNonRepMethylProtons[comp_id] = result
+        return result
 
     def getProtonsInSameGroup(self, comp_id, atom_id, excl_self=False):
         """ Return protons in the same group of a given comp_id and atom_id.
@@ -635,14 +626,11 @@ class BMRBChemShiftStat:
         if key in self.__cachedDictForProtonInSameGroup:
             return copy.copy(self.__cachedDictForProtonInSameGroup[key])
 
-        try:
+        result = self.__ccU.getProtonsInSameGroup(comp_id, atom_id, excl_self)
 
-            result = self.__ccU.getProtonsInSameGroup(comp_id, atom_id, excl_self)
+        self.__cachedDictForProtonInSameGroup[key] = result
 
-            return result
-
-        finally:
-            self.__cachedDictForProtonInSameGroup[key] = result
+        return result
 
     def getSideChainAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False, carbohydrates_like=False):
         """ Return sidechain atoms of a given comp_id.

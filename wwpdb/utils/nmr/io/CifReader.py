@@ -27,6 +27,7 @@
 # 14-Apr-2023   my  - enable to use cache datablock (NMR restraint remediation)
 # 19-Apr-2023   my  - support multiple datablock (NMR restraint validation)
 # 24-Apr-2023   my  - add 'default' attribute for data items (NMR restraint validation)
+# 18-Dec-2023   my  - add calculate_uninstanced_coord() (DAOTHER-8945)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -51,7 +52,8 @@ from mmcif.io.PdbxReader import PdbxReader
 from sklearn.cluster import DBSCAN
 from rmsd.calculate_rmsd import (NAMES_ELEMENT, centroid, check_reflections, rmsd,  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
                                  kabsch_rmsd, quaternion_rmsd,
-                                 reorder_hungarian, reorder_brute, reorder_distance)
+                                 reorder_hungarian, reorder_brute, reorder_distance,
+                                 quaternion_rotate)
 
 # must be one of kabsch_rmsd, quaternion_rmsd, None
 ROTATION_METHOD = quaternion_rmsd
@@ -167,6 +169,29 @@ def calculate_rmsd(p, q):
         result_rmsd = ROTATION_METHOD(p_coord, q_coord)
 
     return result_rmsd
+
+
+def calculate_uninstanced_coord(p_coord, q_coord, s_coord):
+    """ Calculate RMSD of two reference coordinates (p_coord, q_coord) and complement missing coordinate (s_coord). (DAOTHER-8945)
+        @return: complemented coordinates, RMSD value
+    """
+
+    assert p_coord.shape[0] == q_coord.shape[0]
+
+    p_cent = centroid(p_coord)
+    q_cent = centroid(q_coord)
+
+    p_coord -= p_cent
+    s_coord -= p_cent
+    q_coord -= q_cent
+
+    rot = quaternion_rotate(p_coord, q_coord)
+    p_coord = np.dot(p_coord, rot)
+
+    s_coord = np.dot(s_coord, rot)
+    s_coord += q_cent
+
+    return s_coord, quaternion_rmsd(p_coord, q_coord)
 
 
 class CifReader:

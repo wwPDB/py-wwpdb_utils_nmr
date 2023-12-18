@@ -244,15 +244,22 @@ class ChemCompUtil:
 
         return atmList
 
-    def getBondedAtoms(self, compId, atomId):
+    def getBondedAtoms(self, compId, atomId, exclProton=False, onlyProton=False):
         """ Return bonded atoms to a given atom.
         """
 
         if compId != self.lastCompId and not self.updateChemCompDict(compId):
             return []
 
-        return [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != atomId else b[self.ccbAtomId2])
-                for b in self.lastBonds if atomId in (b[self.ccbAtomId1], b[self.ccbAtomId2])]
+        bondedAtoms = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != atomId else b[self.ccbAtomId2])
+                       for b in self.lastBonds if atomId in (b[self.ccbAtomId1], b[self.ccbAtomId2])]
+
+        if not exclProton and not onlyProton:
+            return bondedAtoms
+
+        allProtons = [a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] == 'H']
+
+        return [a for a in bondedAtoms if (exclProton and a not in allProtons) or (onlyProton and a in allProtons)]
 
     def getProtonsInSameGroup(self, compId, atomId, exclSelf=False):
         """ Return protons in the same group of a given comp_id and atom_id.
@@ -261,15 +268,14 @@ class ChemCompUtil:
         if compId != self.lastCompId and not self.updateChemCompDict(compId):
             return []
 
-        allProtons = [a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] == 'H']
+        bondedTo = self.getBondedAtoms(compId, atomId)
 
-        if atomId not in allProtons:
+        if len(bondedTo) == 0:
             return []
 
-        bondedTo = self.getBondedAtoms(compId, atomId)[0]
-        attached = self.getBondedAtoms(compId, bondedTo)
+        attached = self.getBondedAtoms(compId, bondedTo[0], onlyProton=True)
 
-        return [p for p in attached if p in allProtons and ((exclSelf and p != atomId) or not exclSelf)]
+        return [p for p in attached if (exclSelf and p != atomId) or not exclSelf]
 
     def getAtomsBasedOnGreekLetterSystem(self, compId, atomId):
         """ Return atoms match with greek letter system of a given comp_id.
@@ -294,8 +300,6 @@ class ChemCompUtil:
         if not any(a[self.ccaAtomId] == 'CA' for a in self.lastAtomList):
             return {}
 
-        allProtons = [a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] == 'H']
-
         touched = ['N', 'C']
         parents = ['CA']
 
@@ -304,15 +308,14 @@ class ChemCompUtil:
             if greek_letter == letter:
                 atoms = parents
                 for p in parents:
-                    attached = [a for a in self.getBondedAtoms(compId, p) if a in allProtons]
-                    atoms.extend(attached)
+                    atoms.extend(self.getBondedAtoms(compId, p, onlyProton=True))
                 return {a for a in atoms if a[0] == elem}
 
             touched.extend(parents)
 
             _parents = []
             for p in parents:
-                _parents.extend([a for a in self.getBondedAtoms(compId, p) if a not in touched and a not in allProtons])
+                _parents.extend([a for a in self.getBondedAtoms(compId, p, exclProton=True) if a not in touched])
 
             if len(_parents) == 0:
                 return {}

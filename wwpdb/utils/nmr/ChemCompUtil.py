@@ -268,8 +268,12 @@ class ChemCompUtil:
         if compId != self.lastCompId and not self.updateChemCompDict(compId):
             return []
 
-        bondedTo = self.getBondedAtoms(compId, atomId)[0]
-        attached = self.getBondedAtoms(compId, bondedTo, onlyProton=True)
+        bondedTo = self.getBondedAtoms(compId, atomId)
+
+        if len(bondedTo) == 0:
+            return []
+
+        attached = self.getBondedAtoms(compId, bondedTo[0], onlyProton=True)
 
         return [p for p in attached if (exclSelf and p != atomId) or not exclSelf]
 

@@ -1668,15 +1668,16 @@ class BMRBChemShiftStat:
 
                 elif ambig_code >= 2:
                     geminal_name = self.getGeminalAtom(comp_id, name)
-                    _name = name[:-1]
-                    if _name[0] == 'H':
-                        name_set.add('Q' + _name[1:])
-                        if geminal_name[:-1].isdigit():
-                            name_set.add(_name + '#')
-                            name_set.add(_name + '%')
-                            name_set.add(_name + '*')
-                            name_set.add(_name + 'X')
-                            name_set.add(_name + 'Y')
+                    if geminal_name is not None:
+                        _name = name[:-1]
+                        if _name[0] == 'H':
+                            name_set.add('Q' + _name[1:])
+                            if geminal_name[:-1].isdigit():
+                                name_set.add(_name + '#')
+                                name_set.add(_name + '%')
+                                name_set.add(_name + '*')
+                                name_set.add(_name + 'X')
+                                name_set.add(_name + 'Y')
 
             if self.__ccU.updateChemCompDict(comp_id):
 

@@ -826,7 +826,8 @@ class AmberMRParserListener(ParseTreeListener):
                             self.reasonsForReParsing['ambig_atom_id_remap'] = self.ambigAtomNameMapping
 
                 if 'global_sequence_offset' in self.reasonsForReParsing:
-                    for k, v in self.reasonsForReParsing['global_sequence_offset'].items():
+                    globalSequenceOffset = copy.copy(self.reasonsForReParsing['global_sequence_offset'])
+                    for k, v in globalSequenceOffset.items():
                         if v is None:
                             del self.reasonsForReParsing['global_sequence_offset'][k]
                     if len(self.reasonsForReParsing['global_sequence_offset']) == 0:

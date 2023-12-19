@@ -4655,7 +4655,7 @@ class NEFTranslator:
                 if atom_id.startswith('Q') or atom_id.startswith('M'):
                     if atom_id[-1].isalnum():
                         atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched, methyl_only)
-                        if details is not None and self.__csStat.peptideLike(comp_id) and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
+                        if details is not None and self.__csStat.peptideLike(comp_id) and len(atom_id) > 1 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
                             grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[1])
                             if len(grk_atoms) > 0:
                                 atom_list = []

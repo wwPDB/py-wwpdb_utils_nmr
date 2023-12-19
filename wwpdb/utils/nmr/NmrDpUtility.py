@@ -29929,8 +29929,8 @@ class NmrDpUtility:
                     row[member_id_col] = member_id_dict[index_id]
 
         def concat_all_val(row):
-            return row[chain_id_1_col] + str(row[seq_id_1_col]) + row[comp_id_1_col] + row[atom_id_1_col]\
-                + row[chain_id_2_col] + str(row[seq_id_2_col]) + row[comp_id_2_col] + row[atom_id_2_col]\
+            return str(row[chain_id_1_col]) + str(row[seq_id_1_col]) + str(row[comp_id_1_col]) + str(row[atom_id_1_col])\
+                + str(row[chain_id_2_col]) + str(row[seq_id_2_col]) + str(row[comp_id_2_col]) + str(row[atom_id_2_col])\
                 + concat_target_val(row)
 
         len_data = len(lp.data)
@@ -42261,6 +42261,9 @@ class NmrDpUtility:
                 if seq_key not in self.__caC['coord_atom_site']:
                     return True, None, None
 
+                if seq_key not in self.__caC['auth_to_label_seq']:
+                    return True, None, None
+
                 coord_atom_site_ = self.__caC['coord_atom_site'][seq_key]
 
                 cif_comp_id = coord_atom_site_['comp_id']
@@ -42278,6 +42281,9 @@ class NmrDpUtility:
                         return True, None, None
 
                     if seq_key not in self.__caC['coord_atom_site']:
+                        return True, None, None
+
+                    if seq_key not in self.__caC['auth_to_label_seq']:
                         return True, None, None
 
                     coord_atom_site_ = self.__caC['coord_atom_site'][seq_key]

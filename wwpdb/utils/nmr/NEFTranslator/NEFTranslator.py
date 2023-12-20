@@ -1284,6 +1284,8 @@ class NEFTranslator:
 
         tags = [seq_id, comp_id, chain_id]
 
+        is_dihed_lp = 'nef_dihedral_restraint' in lp_category
+
         for loop in loops:
             cmp_dict = {}
             seq_dict = {}
@@ -1315,6 +1317,8 @@ class NEFTranslator:
             else:
                 for idx, row in enumerate(seq_data):
                     if is_empty(row) and idx < len_loop_data:
+                        if is_dihed_lp and 'name' in loop.tags and loop.data[idx][loop.tags.index('name')] == 'PPA':
+                            continue
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
@@ -1329,6 +1333,8 @@ class NEFTranslator:
                     int(row[0])
                 except ValueError:
                     if idx < len_loop_data:
+                        if is_dihed_lp and 'name' in loop.tags and loop.data[idx][loop.tags.index('name')] == 'PPA':
+                            continue
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
@@ -1454,6 +1460,8 @@ class NEFTranslator:
         tags_ = [seq_id, comp_id]
         tags__ = [seq_id, comp_id, alt_chain_id]  # DAOTHER-7421
 
+        is_dihed_lp = 'Torsion_angle_constraint' in lp_category
+
         for loop in loops:
             cmp_dict = {}
             seq_dict = {}
@@ -1528,6 +1536,8 @@ class NEFTranslator:
             else:
                 for idx, row in enumerate(seq_data):
                     if is_empty(row) and idx < len_loop_data:
+                        if is_dihed_lp and 'Torsion_angle_name' in loop.tags and loop.data[idx][loop.tags.index('Torsion_angle_name')] == 'PPA':
+                            continue
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
@@ -1542,6 +1552,8 @@ class NEFTranslator:
                     int(row[0])
                 except ValueError:
                     if idx < len_loop_data:
+                        if is_dihed_lp and 'Torsion_angle_name' in loop.tags and loop.data[idx][loop.tags.index('Torsion_angle_name')] == 'PPA':
+                            continue
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
@@ -1689,6 +1701,8 @@ class NEFTranslator:
         tags = [aseq_id, acomp_id, asym_id, seq_id, chain_id]
         tags_ = [aseq_id, acomp_id, seq_id, asym_id]
 
+        is_dihed_lp = 'Torsion_angle_constraint' in lp_category
+
         for loop in loops:
             seq_dict = {}
             acmp_dict = {}
@@ -1731,6 +1745,8 @@ class NEFTranslator:
             else:
                 for idx, row in enumerate(seq_data):
                     if is_empty(row) and idx < len_loop_data:
+                        if is_dihed_lp and 'Torsion_angle_name' in loop.tags and loop.data[idx][loop.tags.index('Torsion_angle_name')] == 'PPA':
+                            continue
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
@@ -1745,6 +1761,8 @@ class NEFTranslator:
                     int(row[3])
                 except ValueError:
                     if idx < len_loop_data:
+                        if is_dihed_lp and 'Torsion_angle_name' in loop.tags and loop.data[idx][loop.tags.index('Torsion_angle_name')] == 'PPA':
+                            continue
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]

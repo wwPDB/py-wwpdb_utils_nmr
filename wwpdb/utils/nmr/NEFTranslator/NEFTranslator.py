@@ -1284,6 +1284,7 @@ class NEFTranslator:
 
         tags = [seq_id, comp_id, chain_id]
 
+        is_dist_lp = 'nef_distance_restraint' in lp_category
         is_dihed_lp = 'nef_dihedral_restraint' in lp_category
 
         for loop in loops:
@@ -1317,6 +1318,10 @@ class NEFTranslator:
             else:
                 for idx, row in enumerate(seq_data):
                     if is_empty(row) and idx < len_loop_data:
+                        if is_dist_lp and 'residue_name_1' in loop.tags and 'residue_name_2' in loop.tags\
+                           and (loop.data[idx][loop.tags.index('residue_name_1')] == 'HOH'
+                                or loop.data[idx][loop.tags.index('residue_name_2')] == 'HOH'):
+                            continue
                         if is_dihed_lp and 'name' in loop.tags and loop.data[idx][loop.tags.index('name')] == 'PPA':
                             continue
                         r = {}
@@ -1333,6 +1338,10 @@ class NEFTranslator:
                     int(row[0])
                 except ValueError:
                     if idx < len_loop_data:
+                        if is_dist_lp and 'residue_name_1' in loop.tags and 'residue_name_2' in loop.tags\
+                           and (loop.data[idx][loop.tags.index('residue_name_1')] == 'HOH'
+                                or loop.data[idx][loop.tags.index('residue_name_2')] == 'HOH'):
+                            continue
                         if is_dihed_lp and 'name' in loop.tags and loop.data[idx][loop.tags.index('name')] == 'PPA':
                             continue
                         r = {}
@@ -1460,6 +1469,7 @@ class NEFTranslator:
         tags_ = [seq_id, comp_id]
         tags__ = [seq_id, comp_id, alt_chain_id]  # DAOTHER-7421
 
+        is_dist_lp = 'Gen_dist_constraint' in lp_category
         is_dihed_lp = 'Torsion_angle_constraint' in lp_category
 
         for loop in loops:
@@ -1536,6 +1546,10 @@ class NEFTranslator:
             else:
                 for idx, row in enumerate(seq_data):
                     if is_empty(row) and idx < len_loop_data:
+                        if is_dist_lp and 'Auth_comp_ID_1' in loop.tags and 'Auth_comp_ID_2' in loop.tags\
+                           and (loop.data[idx][loop.tags.index('Auth_comp_ID_1')] == 'HOH'
+                                or loop.data[idx][loop.tags.index('Auth_comp_ID_2')] == 'HOH'):
+                            continue
                         if is_dihed_lp and 'Torsion_angle_name' in loop.tags and loop.data[idx][loop.tags.index('Torsion_angle_name')] == 'PPA':
                             continue
                         r = {}
@@ -1552,6 +1566,10 @@ class NEFTranslator:
                     int(row[0])
                 except ValueError:
                     if idx < len_loop_data:
+                        if is_dist_lp and 'Auth_comp_ID_1' in loop.tags and 'Auth_comp_ID_2' in loop.tags\
+                           and (loop.data[idx][loop.tags.index('Auth_comp_ID_1')] == 'HOH'
+                                or loop.data[idx][loop.tags.index('Auth_comp_ID_2')] == 'HOH'):
+                            continue
                         if is_dihed_lp and 'Torsion_angle_name' in loop.tags and loop.data[idx][loop.tags.index('Torsion_angle_name')] == 'PPA':
                             continue
                         r = {}
@@ -1701,6 +1719,7 @@ class NEFTranslator:
         tags = [aseq_id, acomp_id, asym_id, seq_id, chain_id]
         tags_ = [aseq_id, acomp_id, seq_id, asym_id]
 
+        is_dist_lp = 'Gen_dist_constraint' in lp_category
         is_dihed_lp = 'Torsion_angle_constraint' in lp_category
 
         for loop in loops:
@@ -1745,6 +1764,10 @@ class NEFTranslator:
             else:
                 for idx, row in enumerate(seq_data):
                     if is_empty(row) and idx < len_loop_data:
+                        if is_dist_lp and 'Auth_comp_ID_1' in loop.tags and 'Auth_comp_ID_2' in loop.tags\
+                           and (loop.data[idx][loop.tags.index('Auth_comp_ID_1')] == 'HOH'
+                                or loop.data[idx][loop.tags.index('Auth_comp_ID_2')] == 'HOH'):
+                            continue
                         if is_dihed_lp and 'Torsion_angle_name' in loop.tags and loop.data[idx][loop.tags.index('Torsion_angle_name')] == 'PPA':
                             continue
                         r = {}
@@ -1761,6 +1784,10 @@ class NEFTranslator:
                     int(row[3])
                 except ValueError:
                     if idx < len_loop_data:
+                        if is_dist_lp and 'Auth_comp_ID_1' in loop.tags and 'Auth_comp_ID_2' in loop.tags\
+                           and (loop.data[idx][loop.tags.index('Auth_comp_ID_1')] == 'HOH'
+                                or loop.data[idx][loop.tags.index('Auth_comp_ID_2')] == 'HOH'):
+                            continue
                         if is_dihed_lp and 'Torsion_angle_name' in loop.tags and loop.data[idx][loop.tags.index('Torsion_angle_name')] == 'PPA':
                             continue
                         r = {}

@@ -113,7 +113,7 @@ nested_restraints:
 	nested_restraint+;
 
 nested_restraint:
-	(MultiConstraint | AmbiguousConstraint | (KofNConstraint Integer)) any_restraint+ END;
+	(MultiConstraint | AmbiguousConstraint | (KofNConstraint Integer)) (any_restraint | nested_restraint)+ END;
 
 any_restraint:
 	atom_pair_restraint |

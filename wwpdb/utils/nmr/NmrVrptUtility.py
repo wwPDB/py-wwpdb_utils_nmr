@@ -1998,7 +1998,7 @@ class NmrVrptUtility:
                             if len(dist_list) == 0:
                                 continue
 
-                            lower_bound, upper_bound = bound_key
+                            lower_bound, upper_bound, _ = bound_key
                             avr_d = dist_inv_6_summed(dist_list)
 
                             _error = dist_error(lower_bound, upper_bound, avr_d)

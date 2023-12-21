@@ -1722,6 +1722,8 @@ class NEFTranslator:
         is_dist_lp = 'Gen_dist_constraint' in lp_category
         is_dihed_lp = 'Torsion_angle_constraint' in lp_category
 
+        seq_id_col = 3
+
         for loop in loops:
             seq_dict = {}
             acmp_dict = {}
@@ -1738,6 +1740,7 @@ class NEFTranslator:
                 seq_data = get_lp_tag(loop, tags_)
                 for row in seq_data:
                     row.append('1')
+                seq_id_col = 4
             else:
                 _tags_exist = False
                 for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
@@ -1781,7 +1784,7 @@ class NEFTranslator:
 
             for idx, row in enumerate(seq_data):
                 try:
-                    int(row[3])
+                    int(row[seq_id_col])
                 except ValueError:
                     if idx < len_loop_data:
                         if is_dist_lp and 'Auth_comp_ID_1' in loop.tags and 'Auth_comp_ID_2' in loop.tags\

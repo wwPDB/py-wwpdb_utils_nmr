@@ -1930,6 +1930,8 @@ class CyanaMRParserListener(ParseTreeListener):
         return dstFunc
 
     def getRealChainSeqId(self, ps, seqId, compId=None, isPolySeq=True):
+        if compId in ('MTS', 'ORI'):
+            compId = None
         if compId is not None:
             compId = translateToStdResName(compId, self.__ccU)
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
@@ -2029,7 +2031,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                if compId in (cifCompId, origCompId):
+                if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.add((chainId, seqId, cifCompId, True))
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -2071,7 +2073,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, self.__hasCoord)
                                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                                if compId in (cifCompId, origCompId):
+                                if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
                                     elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -2099,7 +2101,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                     if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
-                    if compId in (cifCompId, origCompId):
+                    if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((chainId, seqId, cifCompId, False))
                     elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -2128,7 +2130,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                        if compId in (cifCompId, origCompId):
+                        if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                                 # if 'label_seq_scheme' not in self.reasonsForReParsing:
@@ -2156,7 +2158,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                                 _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
                                 atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                            if compId in (cifCompId, origCompId):
+                            if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
                                     # if 'label_seq_scheme' not in self.reasonsForReParsing:
@@ -2207,13 +2209,14 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                        if compId in (cifCompId, origCompId):
+                        if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
-                                self.__authSeqId = 'label_seq_id'
-                                self.__setLocalSeqScheme()
-                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                #     self.reasonsForReParsing['label_seq_scheme'] = True
+                                if compId in (cifCompId, origCompId):
+                                    self.__authSeqId = 'label_seq_id'
+                                    self.__setLocalSeqScheme()
+                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
                             self.__authSeqId = 'label_seq_id'
@@ -2329,7 +2332,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                if compId in (cifCompId, origCompId):
+                if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.add((chainId, seqId, cifCompId, True))
                         if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
@@ -2375,7 +2378,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, self.__hasCoord)
                                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                                if compId in (cifCompId, origCompId):
+                                if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
                                     elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -2406,7 +2409,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                     if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
-                    if compId in (cifCompId, origCompId):
+                    if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((chainId, seqId, cifCompId, False))
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
@@ -2443,7 +2446,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                        if compId in (cifCompId, origCompId):
+                        if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
@@ -2479,7 +2482,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                                 _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
                                 atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                            if compId in (cifCompId, origCompId):
+                            if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
@@ -2548,15 +2551,16 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                        if compId in (cifCompId, origCompId):
+                        if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
-                                self.__authSeqId = 'label_seq_id'
-                                self.__setLocalSeqScheme()
-                                if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
-                                    self.__chainNumberDict[refChainId] = chainId
-                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                #     self.reasonsForReParsing['label_seq_scheme'] = True
+                                if compId in (cifCompId, origCompId):
+                                    self.__authSeqId = 'label_seq_id'
+                                    self.__setLocalSeqScheme()
+                                    if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                        self.__chainNumberDict[refChainId] = chainId
+                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
                             self.__authSeqId = 'label_seq_id'

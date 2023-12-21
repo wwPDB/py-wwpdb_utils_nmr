@@ -2993,7 +2993,7 @@ class RosettaMRParserListener(ParseTreeListener):
         self.__is_first_nest = False
 
     # Enter a parse tree produced by RosettaMRParser#func_type_def.
-    def enterFunc_type_def(self, ctx: RosettaMRParser.Func_type_defContext):  # pylint: disable=unused-argument
+    def enterFunc_type_def(self, ctx: RosettaMRParser.Func_type_defContext):
         if ctx.SCALARWEIGHTEDFUNC():  # weight func_type_def
             func = {}
             valid = True

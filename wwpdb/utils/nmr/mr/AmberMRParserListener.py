@@ -1756,7 +1756,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
                                 elif varNum in self.igr:
                                     igr = self.igr[varNum]
-                                    if igr[0] not in self.__sanderAtomNumberDict:
+                                    if any(_igr not in self.__sanderAtomNumberDict for _igr in igr):
                                         if g is None:
                                             self.reportSanderCommentIssue(subtype_name)
                                             return
@@ -3785,6 +3785,15 @@ class AmberMRParserListener(ParseTreeListener):
                                         return True
 
                     elif 'igr' in factor:
+
+                        if any(_igr in self.__sanderAtomNumberDict for _igr in factor['igr']):
+                            for _igr in factor['igr']:
+                                if _igr in self.__sanderAtomNumberDict:
+                                    factor['igr'].remove(_igr)
+                                    _atomId = self.__sanderAtomNumberDict[_igr]['atom_id']
+                                    if _atomId in atomIds:
+                                        atomIds.remove(_atomId)
+
                         for igr, _atomId in zip(sorted(factor['igr']), atomIds):
                             _factor = copy.copy(factor)
                             ccdCheck = not cifCheck

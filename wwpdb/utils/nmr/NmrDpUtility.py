@@ -29734,6 +29734,8 @@ class NmrDpUtility:
                 row.append('.')
         member_logic_code_col = loop.tags.index('Member_logic_code')
 
+        combination_id_col = loop.tags.index('Combination_ID') if 'Combination_ID' in loop.tags else -1
+
         chain_id_1_col = loop.tags.index('Auth_asym_ID_1')
         seq_id_1_col = loop.tags.index('Auth_seq_ID_1')
         comp_id_1_col = loop.tags.index('Auth_comp_ID_1')
@@ -29830,7 +29832,7 @@ class NmrDpUtility:
 
                             modified = True
 
-                else:
+                elif member_logic_code != 'AND':
 
                     if not isAmbigAtomSelection([atom1, _atom1], self.__csStat)\
                        and not isAmbigAtomSelection([atom2, _atom2], self.__csStat):
@@ -29853,7 +29855,8 @@ class NmrDpUtility:
 
             if not self.__native_combined:  # DAOTHER-8855
                 _row[id_col] = sf_item['id']
-            _row[member_id_col] = None
+            if combination_id_col == -1 or (combination_id_col != -1 and _row[combination_id_col] in emptyValue):
+                _row[member_id_col] = None
             lp.add_data(_row)
 
         if not modified and not has_member_id:
@@ -29924,13 +29927,16 @@ class NmrDpUtility:
         if len(member_id_dict) > 0:
             for row in lp:
                 index_id = row[index_id_col]
+                member_logic_code = row[member_logic_code_col]
+                if member_logic_code == 'AND':
+                    continue
 
                 if index_id in member_id_dict:
                     row[member_id_col] = member_id_dict[index_id]
 
         def concat_all_val(row):
-            return row[chain_id_1_col] + str(row[seq_id_1_col]) + row[comp_id_1_col] + row[atom_id_1_col]\
-                + row[chain_id_2_col] + str(row[seq_id_2_col]) + row[comp_id_2_col] + row[atom_id_2_col]\
+            return str(row[chain_id_1_col]) + str(row[seq_id_1_col]) + str(row[comp_id_1_col]) + str(row[atom_id_1_col])\
+                + str(row[chain_id_2_col]) + str(row[seq_id_2_col]) + str(row[comp_id_2_col]) + str(row[atom_id_2_col])\
                 + concat_target_val(row)
 
         len_data = len(lp.data)
@@ -42261,6 +42267,9 @@ class NmrDpUtility:
                 if seq_key not in self.__caC['coord_atom_site']:
                     return True, None, None
 
+                if seq_key not in self.__caC['auth_to_label_seq']:
+                    return True, None, None
+
                 coord_atom_site_ = self.__caC['coord_atom_site'][seq_key]
 
                 cif_comp_id = coord_atom_site_['comp_id']
@@ -42278,6 +42287,9 @@ class NmrDpUtility:
                         return True, None, None
 
                     if seq_key not in self.__caC['coord_atom_site']:
+                        return True, None, None
+
+                    if seq_key not in self.__caC['auth_to_label_seq']:
                         return True, None, None
 
                     coord_atom_site_ = self.__caC['coord_atom_site'][seq_key]
@@ -50242,7 +50254,8 @@ class NmrDpUtility:
                     sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                     # MR parser for XPLOR-NIH/CNS/CHARMM already fills _Gen_dist_constraint.ID with genuine IDs
-                    if not sf_framecode.startswith('XPLOR') and not sf_framecode.startswith('CNS') and not sf_framecode.startswith('CHARMM'):
+                    if not sf_framecode.startswith('XPLOR') and not sf_framecode.startswith('CNS')\
+                       and not sf_framecode.startswith('CHARMM'):
                         self.__updateGenDistConstIdInMrStr(sf_item)
 
                     potential_type = get_first_sf_tag(sf, 'Potential_type')

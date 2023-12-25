@@ -242,6 +242,7 @@ class GromacsPTParserListener(ParseTreeListener):
                     return False
                 return prev_seq_id != seq_id and prev_atom_name[0] not in NON_METAL_ELEMENTS
 
+            hasSegCompId = False
             ancAtomName = prevAtomName = ''
             prevSeqId = prevCompId = None
             offset = 0
@@ -251,7 +252,9 @@ class GromacsPTParserListener(ParseTreeListener):
                 atomType = atom['atom_type']
                 _seqId = atom['auth_seq_id']
                 compId = atom['auth_comp_id']
-                if compId not in monDict3 and self.__mrAtomNameMapping is not None and atomName[0] in protonBeginCode:
+                if not hasSegCompId and (compId.endswith('5') or compId.endswith('3')):
+                    hasSegCompId = True
+                if not hasSegCompId and compId not in monDict3 and self.__mrAtomNameMapping is not None and atomName[0] in protonBeginCode:
                     _, compId, _atomName = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, compId, atomName)
                     if _atomName != atomName:
                         atomName = _atomName

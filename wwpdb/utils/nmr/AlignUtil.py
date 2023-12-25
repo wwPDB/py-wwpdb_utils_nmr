@@ -875,6 +875,9 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
             if not_decided_s2_comp_id:
                 s2 = copy.deepcopy(s2)
                 s2['comp_id'] = [c2[:-1] if c2.endswith('?') else c2 for c2 in s2['comp_id']]
+                if len(s1['comp_id']) == len(s2['comp_id']):
+                    if not any(cmp2 not in cmp1 for cmp1, cmp2 in zip(s1['comp_id'], s2['comp_id'])):
+                        s2['comp_id'] = copy.copy(s1['comp_id'])
 
             pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
             pA.addTestSequence(s2['comp_id'], chain_id)
@@ -1220,6 +1223,9 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
             if not_decided_s2_comp_id:
                 s2 = copy.deepcopy(s2)
                 s2['comp_id'] = [c2[:-1] if c2.endswith('?') else c2 for c2 in s2['comp_id']]
+                if len(s1['comp_id']) == len(s2['comp_id']):
+                    if not any(cmp2 not in cmp1 for cmp1, cmp2 in zip(s1['comp_id'], s2['comp_id'])):
+                        s2['comp_id'] = copy.copy(s1['comp_id'])
 
             pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
             pA.addTestSequence(s2['comp_id'], chain_id)

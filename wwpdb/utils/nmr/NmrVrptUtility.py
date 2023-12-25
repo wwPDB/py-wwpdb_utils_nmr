@@ -6,6 +6,7 @@
 # 19-Jul-2023  M. Yokochi - add trustPdbxAuthAtomName() for OneDep validation package (DAOTHER-8705)
 # 19-Jul-2023  M. Yokochi - fix distance/dihedral angle/RDC averaging when lower/upper bounds are different in a restraint (DAOTER-8705)
 # 18-Dec-2023  M. Yokochi - retrieve non-leaving hydrogens independent of MolProbity (DAOTHER-8945)
+# 20-Dec-2023  M. Yokochi - add support for case 'Member_logic_code' value equals 'AND'
 ##
 """ Wrapper class for NMR restraint validation.
     @author: Masashi Yokochi
@@ -1281,7 +1282,7 @@ class NmrVrptUtility:
                 tags = self.__rR.getItemTags(lp_category)
 
                 has_combination_id = 'Combination_ID' in tags
-                # has_member_logic_code = 'Member_logic_code' in tags
+                has_member_logic_code = 'Member_logic_code' in tags
                 has_member_id = 'Member_ID' in tags
                 has_pdb_ins_code_1 = 'PDB_ins_code_1' in tags
                 has_pdb_ins_code_2 = 'PDB_ins_code_2' in tags
@@ -1292,9 +1293,9 @@ class NmrVrptUtility:
 
                 if has_combination_id:
                     data_items.append({'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'})
-                # if has_member_logic_code:
-                #     data_items.append({'name': 'Member_logic_code', 'type': 'enum', 'alt_name': 'member_logic_code',
-                #                        'enum': ('OR', 'AND')})
+                if has_member_logic_code:
+                    data_items.append({'name': 'Member_logic_code', 'type': 'enum', 'alt_name': 'member_logic_code',
+                                       'enum': ('OR', 'AND')})
                 if has_member_id:
                     data_items.append({'name': 'Member_ID', 'type': 'int', 'alt_name': 'member_id'})
                 if has_pdb_ins_code_1:
@@ -1404,12 +1405,15 @@ class NmrVrptUtility:
                     else:
                         bond_flag = None
 
+                    or_member = r.get('member_logic_code') != 'AND'
+
                     self.__distRestDict[rest_key].append({'atom_key_1': (auth_asym_id_1, auth_seq_id_1, comp_id_1,
                                                                          atom_id_1, ins_code_1),
                                                           'atom_key_2': (auth_asym_id_2, auth_seq_id_2, comp_id_2,
                                                                          atom_id_2, ins_code_2),
                                                           'combination_id': r.get('combination_id'),
                                                           'member_id': r.get('member_id'),
+                                                          'or_member': or_member,
                                                           'distance_type': distance_type,
                                                           'distance_sub_type': distance_sub_type,
                                                           'bond_flag': bond_flag,
@@ -1946,7 +1950,7 @@ class NmrVrptUtility:
                         lower_bound = r['lower_bound']
                         upper_bound = r['upper_bound']
 
-                        bound_key = (lower_bound, upper_bound)
+                        bound_key = (lower_bound, upper_bound, 'or' if r['or_member'] else r['member_id'])
 
                         if bound_key not in dist_list_set:
                             dist_list_set[bound_key] = []
@@ -1994,7 +1998,7 @@ class NmrVrptUtility:
                             if len(dist_list) == 0:
                                 continue
 
-                            lower_bound, upper_bound = bound_key
+                            lower_bound, upper_bound, _ = bound_key
                             avr_d = dist_inv_6_summed(dist_list)
 
                             _error = dist_error(lower_bound, upper_bound, avr_d)

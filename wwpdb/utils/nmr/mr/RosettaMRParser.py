@@ -10,7 +10,7 @@ else:
 
 def serializedATN():
     return [
-        4,1,64,471,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,64,472,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
         2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,
         7,20,2,21,7,21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,
@@ -29,38 +29,38 @@ def serializedATN():
         17,1,17,1,17,1,17,1,17,1,17,1,18,4,18,217,8,18,11,18,12,18,218,1,
         19,1,19,1,19,1,19,1,19,1,20,4,20,227,8,20,11,20,12,20,228,1,21,1,
         21,1,21,1,21,1,21,1,22,4,22,237,8,22,11,22,12,22,238,1,23,1,23,1,
-        23,1,23,3,23,245,8,23,1,23,4,23,248,8,23,11,23,12,23,249,1,23,1,
-        23,1,24,1,24,1,24,1,24,1,24,1,24,1,24,1,24,1,24,1,24,3,24,264,8,
-        24,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,3,25,275,8,25,1,
-        25,1,25,5,25,279,8,25,10,25,12,25,282,9,25,1,25,1,25,1,25,1,25,1,
-        25,1,25,3,25,290,8,25,1,25,1,25,5,25,294,8,25,10,25,12,25,297,9,
-        25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,3,25,306,8,25,1,25,1,25,5,
-        25,310,8,25,10,25,12,25,313,9,25,1,25,1,25,1,25,1,25,1,25,1,25,1,
-        25,1,25,1,25,1,25,1,25,1,25,1,25,4,25,328,8,25,11,25,12,25,329,1,
-        25,1,25,1,25,1,25,1,25,1,25,3,25,338,8,25,1,25,1,25,1,25,1,25,1,
-        25,1,25,4,25,346,8,25,11,25,12,25,347,1,25,1,25,1,25,1,25,1,25,1,
-        25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,4,
-        25,368,8,25,11,25,12,25,369,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,
-        25,1,25,1,25,1,25,1,25,5,25,384,8,25,10,25,12,25,387,9,25,4,25,389,
-        8,25,11,25,12,25,390,3,25,393,8,25,1,25,1,25,1,25,1,25,1,25,1,25,
-        3,25,401,8,25,1,25,1,25,1,25,1,25,1,25,3,25,408,8,25,1,25,1,25,1,
-        25,1,25,5,25,414,8,25,10,25,12,25,417,9,25,1,25,1,25,1,25,1,25,1,
-        25,1,25,1,25,4,25,426,8,25,11,25,12,25,427,1,25,1,25,1,25,1,25,1,
-        25,1,25,1,25,1,25,1,25,4,25,439,8,25,11,25,12,25,440,3,25,443,8,
-        25,1,25,3,25,446,8,25,1,26,4,26,449,8,26,11,26,12,26,450,1,27,1,
-        27,1,27,1,27,1,27,1,27,1,28,4,28,460,8,28,11,28,12,28,461,1,29,1,
-        29,1,29,1,30,1,30,1,31,1,31,1,31,0,0,32,0,2,4,6,8,10,12,14,16,18,
-        20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,
-        0,9,1,0,60,62,1,1,64,64,2,0,1,2,9,9,1,0,3,4,3,0,18,18,25,25,39,40,
-        3,0,21,22,26,26,46,46,2,0,23,23,43,43,2,0,31,31,44,45,1,0,50,51,
-        519,0,80,1,0,0,0,2,85,1,0,0,0,4,95,1,0,0,0,6,99,1,0,0,0,8,107,1,
-        0,0,0,10,111,1,0,0,0,12,121,1,0,0,0,14,125,1,0,0,0,16,137,1,0,0,
-        0,18,141,1,0,0,0,20,161,1,0,0,0,22,165,1,0,0,0,24,176,1,0,0,0,26,
-        180,1,0,0,0,28,193,1,0,0,0,30,197,1,0,0,0,32,204,1,0,0,0,34,208,
+        23,1,23,3,23,245,8,23,1,23,1,23,4,23,249,8,23,11,23,12,23,250,1,
+        23,1,23,1,24,1,24,1,24,1,24,1,24,1,24,1,24,1,24,1,24,1,24,3,24,265,
+        8,24,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,3,25,276,8,25,
+        1,25,1,25,5,25,280,8,25,10,25,12,25,283,9,25,1,25,1,25,1,25,1,25,
+        1,25,1,25,3,25,291,8,25,1,25,1,25,5,25,295,8,25,10,25,12,25,298,
+        9,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,3,25,307,8,25,1,25,1,25,
+        5,25,311,8,25,10,25,12,25,314,9,25,1,25,1,25,1,25,1,25,1,25,1,25,
+        1,25,1,25,1,25,1,25,1,25,1,25,1,25,4,25,329,8,25,11,25,12,25,330,
+        1,25,1,25,1,25,1,25,1,25,1,25,3,25,339,8,25,1,25,1,25,1,25,1,25,
+        1,25,1,25,4,25,347,8,25,11,25,12,25,348,1,25,1,25,1,25,1,25,1,25,
+        1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,
+        4,25,369,8,25,11,25,12,25,370,1,25,1,25,1,25,1,25,1,25,1,25,1,25,
+        1,25,1,25,1,25,1,25,1,25,5,25,385,8,25,10,25,12,25,388,9,25,4,25,
+        390,8,25,11,25,12,25,391,3,25,394,8,25,1,25,1,25,1,25,1,25,1,25,
+        1,25,3,25,402,8,25,1,25,1,25,1,25,1,25,1,25,3,25,409,8,25,1,25,1,
+        25,1,25,1,25,5,25,415,8,25,10,25,12,25,418,9,25,1,25,1,25,1,25,1,
+        25,1,25,1,25,1,25,4,25,427,8,25,11,25,12,25,428,1,25,1,25,1,25,1,
+        25,1,25,1,25,1,25,1,25,1,25,4,25,440,8,25,11,25,12,25,441,3,25,444,
+        8,25,1,25,3,25,447,8,25,1,26,4,26,450,8,26,11,26,12,26,451,1,27,
+        1,27,1,27,1,27,1,27,1,27,1,28,4,28,461,8,28,11,28,12,28,462,1,29,
+        1,29,1,29,1,30,1,30,1,31,1,31,1,31,0,0,32,0,2,4,6,8,10,12,14,16,
+        18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,
+        62,0,9,1,0,60,62,1,1,64,64,2,0,1,2,9,9,1,0,3,4,3,0,18,18,25,25,39,
+        40,3,0,21,22,26,26,46,46,2,0,23,23,43,43,2,0,31,31,44,45,1,0,50,
+        51,521,0,80,1,0,0,0,2,85,1,0,0,0,4,95,1,0,0,0,6,99,1,0,0,0,8,107,
+        1,0,0,0,10,111,1,0,0,0,12,121,1,0,0,0,14,125,1,0,0,0,16,137,1,0,
+        0,0,18,141,1,0,0,0,20,161,1,0,0,0,22,165,1,0,0,0,24,176,1,0,0,0,
+        26,180,1,0,0,0,28,193,1,0,0,0,30,197,1,0,0,0,32,204,1,0,0,0,34,208,
         1,0,0,0,36,216,1,0,0,0,38,220,1,0,0,0,40,226,1,0,0,0,42,230,1,0,
-        0,0,44,236,1,0,0,0,46,244,1,0,0,0,48,263,1,0,0,0,50,442,1,0,0,0,
-        52,448,1,0,0,0,54,452,1,0,0,0,56,459,1,0,0,0,58,463,1,0,0,0,60,466,
-        1,0,0,0,62,468,1,0,0,0,64,79,3,2,1,0,65,79,3,4,2,0,66,79,3,8,4,0,
+        0,0,44,236,1,0,0,0,46,244,1,0,0,0,48,264,1,0,0,0,50,443,1,0,0,0,
+        52,449,1,0,0,0,54,453,1,0,0,0,56,460,1,0,0,0,58,464,1,0,0,0,60,467,
+        1,0,0,0,62,469,1,0,0,0,64,79,3,2,1,0,65,79,3,4,2,0,66,79,3,8,4,0,
         67,79,3,12,6,0,68,79,3,16,8,0,69,79,3,20,10,0,70,79,3,24,12,0,71,
         79,3,28,14,0,72,79,3,32,16,0,73,79,3,36,18,0,74,79,3,40,20,0,75,
         79,3,44,22,0,76,79,3,52,26,0,77,79,3,56,28,0,78,64,1,0,0,0,78,65,
@@ -112,81 +112,81 @@ def serializedATN():
         236,235,1,0,0,0,237,238,1,0,0,0,238,236,1,0,0,0,238,239,1,0,0,0,
         239,45,1,0,0,0,240,245,5,14,0,0,241,245,5,15,0,0,242,243,5,16,0,
         0,243,245,5,50,0,0,244,240,1,0,0,0,244,241,1,0,0,0,244,242,1,0,0,
-        0,245,247,1,0,0,0,246,248,3,48,24,0,247,246,1,0,0,0,248,249,1,0,
-        0,0,249,247,1,0,0,0,249,250,1,0,0,0,250,251,1,0,0,0,251,252,5,17,
-        0,0,252,47,1,0,0,0,253,264,3,6,3,0,254,264,3,10,5,0,255,264,3,14,
-        7,0,256,264,3,18,9,0,257,264,3,22,11,0,258,264,3,26,13,0,259,264,
-        3,30,15,0,260,264,3,34,17,0,261,264,3,38,19,0,262,264,3,42,21,0,
-        263,253,1,0,0,0,263,254,1,0,0,0,263,255,1,0,0,0,263,256,1,0,0,0,
-        263,257,1,0,0,0,263,258,1,0,0,0,263,259,1,0,0,0,263,260,1,0,0,0,
-        263,261,1,0,0,0,263,262,1,0,0,0,264,49,1,0,0,0,265,266,7,4,0,0,266,
-        267,3,62,31,0,267,268,3,62,31,0,268,443,1,0,0,0,269,270,5,27,0,0,
-        270,271,3,62,31,0,271,272,3,62,31,0,272,274,3,62,31,0,273,275,3,
-        62,31,0,274,273,1,0,0,0,274,275,1,0,0,0,275,280,1,0,0,0,276,279,
-        5,55,0,0,277,279,3,62,31,0,278,276,1,0,0,0,278,277,1,0,0,0,279,282,
-        1,0,0,0,280,278,1,0,0,0,280,281,1,0,0,0,281,443,1,0,0,0,282,280,
-        1,0,0,0,283,284,5,19,0,0,284,285,3,62,31,0,285,286,3,62,31,0,286,
-        287,3,62,31,0,287,289,3,62,31,0,288,290,3,62,31,0,289,288,1,0,0,
-        0,289,290,1,0,0,0,290,295,1,0,0,0,291,294,5,55,0,0,292,294,3,62,
-        31,0,293,291,1,0,0,0,293,292,1,0,0,0,294,297,1,0,0,0,295,293,1,0,
-        0,0,295,296,1,0,0,0,296,443,1,0,0,0,297,295,1,0,0,0,298,299,5,20,
-        0,0,299,300,3,62,31,0,300,301,3,62,31,0,301,302,3,62,31,0,302,303,
-        3,62,31,0,303,305,3,62,31,0,304,306,3,62,31,0,305,304,1,0,0,0,305,
-        306,1,0,0,0,306,311,1,0,0,0,307,310,5,55,0,0,308,310,3,62,31,0,309,
-        307,1,0,0,0,309,308,1,0,0,0,310,313,1,0,0,0,311,309,1,0,0,0,311,
-        312,1,0,0,0,312,443,1,0,0,0,313,311,1,0,0,0,314,315,7,5,0,0,315,
-        316,3,62,31,0,316,317,3,62,31,0,317,318,3,62,31,0,318,443,1,0,0,
-        0,319,320,7,6,0,0,320,321,3,62,31,0,321,322,3,62,31,0,322,323,3,
-        62,31,0,323,324,3,62,31,0,324,443,1,0,0,0,325,327,5,24,0,0,326,328,
-        3,62,31,0,327,326,1,0,0,0,328,329,1,0,0,0,329,327,1,0,0,0,329,330,
-        1,0,0,0,330,443,1,0,0,0,331,332,5,28,0,0,332,333,3,62,31,0,333,334,
-        3,62,31,0,334,337,5,55,0,0,335,336,5,29,0,0,336,338,3,62,31,0,337,
-        335,1,0,0,0,337,338,1,0,0,0,338,443,1,0,0,0,339,340,5,30,0,0,340,
-        345,5,50,0,0,341,342,3,62,31,0,342,343,3,62,31,0,343,344,3,62,31,
-        0,344,346,1,0,0,0,345,341,1,0,0,0,346,347,1,0,0,0,347,345,1,0,0,
-        0,347,348,1,0,0,0,348,443,1,0,0,0,349,350,7,7,0,0,350,351,3,62,31,
-        0,351,352,3,62,31,0,352,353,3,62,31,0,353,354,3,62,31,0,354,355,
-        3,62,31,0,355,356,3,62,31,0,356,443,1,0,0,0,357,358,5,32,0,0,358,
-        443,3,62,31,0,359,443,5,33,0,0,360,361,5,34,0,0,361,362,3,62,31,
-        0,362,363,3,50,25,0,363,443,1,0,0,0,364,365,5,35,0,0,365,367,5,50,
-        0,0,366,368,3,50,25,0,367,366,1,0,0,0,368,369,1,0,0,0,369,367,1,
-        0,0,0,369,370,1,0,0,0,370,443,1,0,0,0,371,372,5,36,0,0,372,392,5,
-        55,0,0,373,374,3,62,31,0,374,375,3,62,31,0,375,376,3,62,31,0,376,
-        393,1,0,0,0,377,378,5,37,0,0,378,379,3,62,31,0,379,380,3,62,31,0,
-        380,388,3,62,31,0,381,385,5,55,0,0,382,384,3,62,31,0,383,382,1,0,
-        0,0,384,387,1,0,0,0,385,383,1,0,0,0,385,386,1,0,0,0,386,389,1,0,
-        0,0,387,385,1,0,0,0,388,381,1,0,0,0,389,390,1,0,0,0,390,388,1,0,
-        0,0,390,391,1,0,0,0,391,393,1,0,0,0,392,373,1,0,0,0,392,377,1,0,
-        0,0,393,443,1,0,0,0,394,395,5,38,0,0,395,396,3,62,31,0,396,397,3,
-        62,31,0,397,398,3,62,31,0,398,400,3,62,31,0,399,401,3,62,31,0,400,
-        399,1,0,0,0,400,401,1,0,0,0,401,443,1,0,0,0,402,403,5,41,0,0,403,
-        404,3,62,31,0,404,405,3,62,31,0,405,407,3,62,31,0,406,408,5,42,0,
-        0,407,406,1,0,0,0,407,408,1,0,0,0,408,443,1,0,0,0,409,410,5,47,0,
-        0,410,411,3,62,31,0,411,415,3,62,31,0,412,414,3,62,31,0,413,412,
-        1,0,0,0,414,417,1,0,0,0,415,413,1,0,0,0,415,416,1,0,0,0,416,443,
-        1,0,0,0,417,415,1,0,0,0,418,419,5,48,0,0,419,425,5,50,0,0,420,421,
-        3,62,31,0,421,422,3,62,31,0,422,423,3,62,31,0,423,424,3,62,31,0,
-        424,426,1,0,0,0,425,420,1,0,0,0,426,427,1,0,0,0,427,425,1,0,0,0,
-        427,428,1,0,0,0,428,443,1,0,0,0,429,430,5,49,0,0,430,438,5,50,0,
-        0,431,432,3,62,31,0,432,433,3,62,31,0,433,434,3,62,31,0,434,435,
-        3,62,31,0,435,436,3,62,31,0,436,437,3,62,31,0,437,439,1,0,0,0,438,
-        431,1,0,0,0,439,440,1,0,0,0,440,438,1,0,0,0,440,441,1,0,0,0,441,
-        443,1,0,0,0,442,265,1,0,0,0,442,269,1,0,0,0,442,283,1,0,0,0,442,
-        298,1,0,0,0,442,314,1,0,0,0,442,319,1,0,0,0,442,325,1,0,0,0,442,
-        331,1,0,0,0,442,339,1,0,0,0,442,349,1,0,0,0,442,357,1,0,0,0,442,
-        359,1,0,0,0,442,360,1,0,0,0,442,364,1,0,0,0,442,371,1,0,0,0,442,
-        394,1,0,0,0,442,402,1,0,0,0,442,409,1,0,0,0,442,418,1,0,0,0,442,
-        429,1,0,0,0,443,445,1,0,0,0,444,446,3,2,1,0,445,444,1,0,0,0,445,
-        446,1,0,0,0,446,51,1,0,0,0,447,449,3,54,27,0,448,447,1,0,0,0,449,
-        450,1,0,0,0,450,448,1,0,0,0,450,451,1,0,0,0,451,53,1,0,0,0,452,453,
-        5,50,0,0,453,454,5,55,0,0,454,455,5,50,0,0,455,456,5,55,0,0,456,
-        457,3,60,30,0,457,55,1,0,0,0,458,460,3,58,29,0,459,458,1,0,0,0,460,
-        461,1,0,0,0,461,459,1,0,0,0,461,462,1,0,0,0,462,57,1,0,0,0,463,464,
-        5,50,0,0,464,465,5,50,0,0,465,59,1,0,0,0,466,467,7,8,0,0,467,61,
-        1,0,0,0,468,469,7,8,0,0,469,63,1,0,0,0,42,78,80,89,97,109,123,139,
-        163,178,195,206,218,228,238,244,249,263,274,278,280,289,293,295,
-        305,309,311,329,337,347,369,385,390,392,400,407,415,427,440,442,
-        445,450,461
+        0,245,248,1,0,0,0,246,249,3,48,24,0,247,249,3,46,23,0,248,246,1,
+        0,0,0,248,247,1,0,0,0,249,250,1,0,0,0,250,248,1,0,0,0,250,251,1,
+        0,0,0,251,252,1,0,0,0,252,253,5,17,0,0,253,47,1,0,0,0,254,265,3,
+        6,3,0,255,265,3,10,5,0,256,265,3,14,7,0,257,265,3,18,9,0,258,265,
+        3,22,11,0,259,265,3,26,13,0,260,265,3,30,15,0,261,265,3,34,17,0,
+        262,265,3,38,19,0,263,265,3,42,21,0,264,254,1,0,0,0,264,255,1,0,
+        0,0,264,256,1,0,0,0,264,257,1,0,0,0,264,258,1,0,0,0,264,259,1,0,
+        0,0,264,260,1,0,0,0,264,261,1,0,0,0,264,262,1,0,0,0,264,263,1,0,
+        0,0,265,49,1,0,0,0,266,267,7,4,0,0,267,268,3,62,31,0,268,269,3,62,
+        31,0,269,444,1,0,0,0,270,271,5,27,0,0,271,272,3,62,31,0,272,273,
+        3,62,31,0,273,275,3,62,31,0,274,276,3,62,31,0,275,274,1,0,0,0,275,
+        276,1,0,0,0,276,281,1,0,0,0,277,280,5,55,0,0,278,280,3,62,31,0,279,
+        277,1,0,0,0,279,278,1,0,0,0,280,283,1,0,0,0,281,279,1,0,0,0,281,
+        282,1,0,0,0,282,444,1,0,0,0,283,281,1,0,0,0,284,285,5,19,0,0,285,
+        286,3,62,31,0,286,287,3,62,31,0,287,288,3,62,31,0,288,290,3,62,31,
+        0,289,291,3,62,31,0,290,289,1,0,0,0,290,291,1,0,0,0,291,296,1,0,
+        0,0,292,295,5,55,0,0,293,295,3,62,31,0,294,292,1,0,0,0,294,293,1,
+        0,0,0,295,298,1,0,0,0,296,294,1,0,0,0,296,297,1,0,0,0,297,444,1,
+        0,0,0,298,296,1,0,0,0,299,300,5,20,0,0,300,301,3,62,31,0,301,302,
+        3,62,31,0,302,303,3,62,31,0,303,304,3,62,31,0,304,306,3,62,31,0,
+        305,307,3,62,31,0,306,305,1,0,0,0,306,307,1,0,0,0,307,312,1,0,0,
+        0,308,311,5,55,0,0,309,311,3,62,31,0,310,308,1,0,0,0,310,309,1,0,
+        0,0,311,314,1,0,0,0,312,310,1,0,0,0,312,313,1,0,0,0,313,444,1,0,
+        0,0,314,312,1,0,0,0,315,316,7,5,0,0,316,317,3,62,31,0,317,318,3,
+        62,31,0,318,319,3,62,31,0,319,444,1,0,0,0,320,321,7,6,0,0,321,322,
+        3,62,31,0,322,323,3,62,31,0,323,324,3,62,31,0,324,325,3,62,31,0,
+        325,444,1,0,0,0,326,328,5,24,0,0,327,329,3,62,31,0,328,327,1,0,0,
+        0,329,330,1,0,0,0,330,328,1,0,0,0,330,331,1,0,0,0,331,444,1,0,0,
+        0,332,333,5,28,0,0,333,334,3,62,31,0,334,335,3,62,31,0,335,338,5,
+        55,0,0,336,337,5,29,0,0,337,339,3,62,31,0,338,336,1,0,0,0,338,339,
+        1,0,0,0,339,444,1,0,0,0,340,341,5,30,0,0,341,346,5,50,0,0,342,343,
+        3,62,31,0,343,344,3,62,31,0,344,345,3,62,31,0,345,347,1,0,0,0,346,
+        342,1,0,0,0,347,348,1,0,0,0,348,346,1,0,0,0,348,349,1,0,0,0,349,
+        444,1,0,0,0,350,351,7,7,0,0,351,352,3,62,31,0,352,353,3,62,31,0,
+        353,354,3,62,31,0,354,355,3,62,31,0,355,356,3,62,31,0,356,357,3,
+        62,31,0,357,444,1,0,0,0,358,359,5,32,0,0,359,444,3,62,31,0,360,444,
+        5,33,0,0,361,362,5,34,0,0,362,363,3,62,31,0,363,364,3,50,25,0,364,
+        444,1,0,0,0,365,366,5,35,0,0,366,368,5,50,0,0,367,369,3,50,25,0,
+        368,367,1,0,0,0,369,370,1,0,0,0,370,368,1,0,0,0,370,371,1,0,0,0,
+        371,444,1,0,0,0,372,373,5,36,0,0,373,393,5,55,0,0,374,375,3,62,31,
+        0,375,376,3,62,31,0,376,377,3,62,31,0,377,394,1,0,0,0,378,379,5,
+        37,0,0,379,380,3,62,31,0,380,381,3,62,31,0,381,389,3,62,31,0,382,
+        386,5,55,0,0,383,385,3,62,31,0,384,383,1,0,0,0,385,388,1,0,0,0,386,
+        384,1,0,0,0,386,387,1,0,0,0,387,390,1,0,0,0,388,386,1,0,0,0,389,
+        382,1,0,0,0,390,391,1,0,0,0,391,389,1,0,0,0,391,392,1,0,0,0,392,
+        394,1,0,0,0,393,374,1,0,0,0,393,378,1,0,0,0,394,444,1,0,0,0,395,
+        396,5,38,0,0,396,397,3,62,31,0,397,398,3,62,31,0,398,399,3,62,31,
+        0,399,401,3,62,31,0,400,402,3,62,31,0,401,400,1,0,0,0,401,402,1,
+        0,0,0,402,444,1,0,0,0,403,404,5,41,0,0,404,405,3,62,31,0,405,406,
+        3,62,31,0,406,408,3,62,31,0,407,409,5,42,0,0,408,407,1,0,0,0,408,
+        409,1,0,0,0,409,444,1,0,0,0,410,411,5,47,0,0,411,412,3,62,31,0,412,
+        416,3,62,31,0,413,415,3,62,31,0,414,413,1,0,0,0,415,418,1,0,0,0,
+        416,414,1,0,0,0,416,417,1,0,0,0,417,444,1,0,0,0,418,416,1,0,0,0,
+        419,420,5,48,0,0,420,426,5,50,0,0,421,422,3,62,31,0,422,423,3,62,
+        31,0,423,424,3,62,31,0,424,425,3,62,31,0,425,427,1,0,0,0,426,421,
+        1,0,0,0,427,428,1,0,0,0,428,426,1,0,0,0,428,429,1,0,0,0,429,444,
+        1,0,0,0,430,431,5,49,0,0,431,439,5,50,0,0,432,433,3,62,31,0,433,
+        434,3,62,31,0,434,435,3,62,31,0,435,436,3,62,31,0,436,437,3,62,31,
+        0,437,438,3,62,31,0,438,440,1,0,0,0,439,432,1,0,0,0,440,441,1,0,
+        0,0,441,439,1,0,0,0,441,442,1,0,0,0,442,444,1,0,0,0,443,266,1,0,
+        0,0,443,270,1,0,0,0,443,284,1,0,0,0,443,299,1,0,0,0,443,315,1,0,
+        0,0,443,320,1,0,0,0,443,326,1,0,0,0,443,332,1,0,0,0,443,340,1,0,
+        0,0,443,350,1,0,0,0,443,358,1,0,0,0,443,360,1,0,0,0,443,361,1,0,
+        0,0,443,365,1,0,0,0,443,372,1,0,0,0,443,395,1,0,0,0,443,403,1,0,
+        0,0,443,410,1,0,0,0,443,419,1,0,0,0,443,430,1,0,0,0,444,446,1,0,
+        0,0,445,447,3,2,1,0,446,445,1,0,0,0,446,447,1,0,0,0,447,51,1,0,0,
+        0,448,450,3,54,27,0,449,448,1,0,0,0,450,451,1,0,0,0,451,449,1,0,
+        0,0,451,452,1,0,0,0,452,53,1,0,0,0,453,454,5,50,0,0,454,455,5,55,
+        0,0,455,456,5,50,0,0,456,457,5,55,0,0,457,458,3,60,30,0,458,55,1,
+        0,0,0,459,461,3,58,29,0,460,459,1,0,0,0,461,462,1,0,0,0,462,460,
+        1,0,0,0,462,463,1,0,0,0,463,57,1,0,0,0,464,465,5,50,0,0,465,466,
+        5,50,0,0,466,59,1,0,0,0,467,468,7,8,0,0,468,61,1,0,0,0,469,470,7,
+        8,0,0,470,63,1,0,0,0,43,78,80,89,97,109,123,139,163,178,195,206,
+        218,228,238,244,248,250,264,275,279,281,290,294,296,306,310,312,
+        330,338,348,370,386,391,393,401,408,416,428,441,443,446,451,462
     ]
 
 class RosettaMRParser ( Parser ):
@@ -2037,6 +2037,13 @@ class RosettaMRParser ( Parser ):
                 return self.getTypedRuleContext(RosettaMRParser.Any_restraintContext,i)
 
 
+        def nested_restraint(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(RosettaMRParser.Nested_restraintContext)
+            else:
+                return self.getTypedRuleContext(RosettaMRParser.Nested_restraintContext,i)
+
+
         def KofNConstraint(self):
             return self.getToken(RosettaMRParser.KofNConstraint, 0)
 
@@ -2084,19 +2091,31 @@ class RosettaMRParser ( Parser ):
             else:
                 raise NoViableAltException(self)
 
-            self.state = 247 
+            self.state = 248 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 246
-                self.any_restraint()
-                self.state = 249 
+                self.state = 248
+                self._errHandler.sync(self)
+                token = self._input.LA(1)
+                if token in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]:
+                    self.state = 246
+                    self.any_restraint()
+                    pass
+                elif token in [14, 15, 16]:
+                    self.state = 247
+                    self.nested_restraint()
+                    pass
+                else:
+                    raise NoViableAltException(self)
+
+                self.state = 250 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & 16382) != 0)):
+                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & 131070) != 0)):
                     break
 
-            self.state = 251
+            self.state = 252
             self.match(RosettaMRParser.END)
         except RecognitionException as re:
             localctx.exception = re
@@ -2173,57 +2192,57 @@ class RosettaMRParser ( Parser ):
         localctx = RosettaMRParser.Any_restraintContext(self, self._ctx, self.state)
         self.enterRule(localctx, 48, self.RULE_any_restraint)
         try:
-            self.state = 263
+            self.state = 264
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [1, 2, 9]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 253
+                self.state = 254
                 self.atom_pair_restraint()
                 pass
             elif token in [3, 4]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 254
+                self.state = 255
                 self.angle_restraint()
                 pass
             elif token in [5]:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 255
+                self.state = 256
                 self.dihedral_restraint()
                 pass
             elif token in [6]:
                 self.enterOuterAlt(localctx, 4)
-                self.state = 256
+                self.state = 257
                 self.dihedral_pair_restraint()
                 pass
             elif token in [7]:
                 self.enterOuterAlt(localctx, 5)
-                self.state = 257
+                self.state = 258
                 self.coordinate_restraint()
                 pass
             elif token in [8]:
                 self.enterOuterAlt(localctx, 6)
-                self.state = 258
+                self.state = 259
                 self.local_coordinate_restraint()
                 pass
             elif token in [10]:
                 self.enterOuterAlt(localctx, 7)
-                self.state = 259
+                self.state = 260
                 self.site_restraint()
                 pass
             elif token in [11]:
                 self.enterOuterAlt(localctx, 8)
-                self.state = 260
+                self.state = 261
                 self.site_residues_restraint()
                 pass
             elif token in [12]:
                 self.enterOuterAlt(localctx, 9)
-                self.state = 261
+                self.state = 262
                 self.min_residue_atomic_distance_restraint()
                 pass
             elif token in [13]:
                 self.enterOuterAlt(localctx, 10)
-                self.state = 262
+                self.state = 263
                 self.big_bin_restraint()
                 pass
             else:
@@ -2389,111 +2408,109 @@ class RosettaMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 442
+            self.state = 443
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [18, 25, 39, 40]:
-                self.state = 265
+                self.state = 266
                 _la = self._input.LA(1)
                 if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 1649301258240) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 266
-                self.number_f()
                 self.state = 267
+                self.number_f()
+                self.state = 268
                 self.number_f()
                 pass
             elif token in [27]:
-                self.state = 269
-                self.match(RosettaMRParser.BOUNDED)
                 self.state = 270
-                self.number_f()
+                self.match(RosettaMRParser.BOUNDED)
                 self.state = 271
                 self.number_f()
                 self.state = 272
                 self.number_f()
-                self.state = 274
+                self.state = 273
+                self.number_f()
+                self.state = 275
                 self._errHandler.sync(self)
-                la_ = self._interp.adaptivePredict(self._input,17,self._ctx)
+                la_ = self._interp.adaptivePredict(self._input,18,self._ctx)
                 if la_ == 1:
-                    self.state = 273
+                    self.state = 274
                     self.number_f()
 
 
-                self.state = 280
+                self.state = 281
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,19,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,20,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
-                        self.state = 278
+                        self.state = 279
                         self._errHandler.sync(self)
                         token = self._input.LA(1)
                         if token in [55]:
-                            self.state = 276
+                            self.state = 277
                             self.match(RosettaMRParser.Simple_name)
                             pass
                         elif token in [50, 51]:
-                            self.state = 277
+                            self.state = 278
                             self.number_f()
                             pass
                         else:
                             raise NoViableAltException(self)
                  
-                    self.state = 282
+                    self.state = 283
                     self._errHandler.sync(self)
-                    _alt = self._interp.adaptivePredict(self._input,19,self._ctx)
+                    _alt = self._interp.adaptivePredict(self._input,20,self._ctx)
 
                 pass
             elif token in [19]:
-                self.state = 283
-                self.match(RosettaMRParser.PERIODICBOUNDED)
                 self.state = 284
-                self.number_f()
+                self.match(RosettaMRParser.PERIODICBOUNDED)
                 self.state = 285
                 self.number_f()
                 self.state = 286
                 self.number_f()
                 self.state = 287
                 self.number_f()
-                self.state = 289
+                self.state = 288
+                self.number_f()
+                self.state = 290
                 self._errHandler.sync(self)
-                la_ = self._interp.adaptivePredict(self._input,20,self._ctx)
+                la_ = self._interp.adaptivePredict(self._input,21,self._ctx)
                 if la_ == 1:
-                    self.state = 288
+                    self.state = 289
                     self.number_f()
 
 
-                self.state = 295
+                self.state = 296
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,22,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,23,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
-                        self.state = 293
+                        self.state = 294
                         self._errHandler.sync(self)
                         token = self._input.LA(1)
                         if token in [55]:
-                            self.state = 291
+                            self.state = 292
                             self.match(RosettaMRParser.Simple_name)
                             pass
                         elif token in [50, 51]:
-                            self.state = 292
+                            self.state = 293
                             self.number_f()
                             pass
                         else:
                             raise NoViableAltException(self)
                  
-                    self.state = 297
+                    self.state = 298
                     self._errHandler.sync(self)
-                    _alt = self._interp.adaptivePredict(self._input,22,self._ctx)
+                    _alt = self._interp.adaptivePredict(self._input,23,self._ctx)
 
                 pass
             elif token in [20]:
-                self.state = 298
-                self.match(RosettaMRParser.OFFSETPERIODICBOUNDED)
                 self.state = 299
-                self.number_f()
+                self.match(RosettaMRParser.OFFSETPERIODICBOUNDED)
                 self.state = 300
                 self.number_f()
                 self.state = 301
@@ -2502,142 +2519,142 @@ class RosettaMRParser ( Parser ):
                 self.number_f()
                 self.state = 303
                 self.number_f()
-                self.state = 305
+                self.state = 304
+                self.number_f()
+                self.state = 306
                 self._errHandler.sync(self)
-                la_ = self._interp.adaptivePredict(self._input,23,self._ctx)
+                la_ = self._interp.adaptivePredict(self._input,24,self._ctx)
                 if la_ == 1:
-                    self.state = 304
+                    self.state = 305
                     self.number_f()
 
 
-                self.state = 311
+                self.state = 312
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,25,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,26,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
-                        self.state = 309
+                        self.state = 310
                         self._errHandler.sync(self)
                         token = self._input.LA(1)
                         if token in [55]:
-                            self.state = 307
+                            self.state = 308
                             self.match(RosettaMRParser.Simple_name)
                             pass
                         elif token in [50, 51]:
-                            self.state = 308
+                            self.state = 309
                             self.number_f()
                             pass
                         else:
                             raise NoViableAltException(self)
                  
-                    self.state = 313
+                    self.state = 314
                     self._errHandler.sync(self)
-                    _alt = self._interp.adaptivePredict(self._input,25,self._ctx)
+                    _alt = self._interp.adaptivePredict(self._input,26,self._ctx)
 
                 pass
             elif token in [21, 22, 26, 46]:
-                self.state = 314
+                self.state = 315
                 _la = self._input.LA(1)
                 if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 70368817577984) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 315
-                self.number_f()
                 self.state = 316
                 self.number_f()
                 self.state = 317
                 self.number_f()
+                self.state = 318
+                self.number_f()
                 pass
             elif token in [23, 43]:
-                self.state = 319
+                self.state = 320
                 _la = self._input.LA(1)
                 if not(_la==23 or _la==43):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 320
-                self.number_f()
                 self.state = 321
                 self.number_f()
                 self.state = 322
                 self.number_f()
                 self.state = 323
                 self.number_f()
+                self.state = 324
+                self.number_f()
                 pass
             elif token in [24]:
-                self.state = 325
+                self.state = 326
                 self.match(RosettaMRParser.CIRCULARSPLINE)
-                self.state = 327 
+                self.state = 328 
                 self._errHandler.sync(self)
                 _alt = 1
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt == 1:
-                        self.state = 326
+                        self.state = 327
                         self.number_f()
 
                     else:
                         raise NoViableAltException(self)
-                    self.state = 329 
+                    self.state = 330 
                     self._errHandler.sync(self)
-                    _alt = self._interp.adaptivePredict(self._input,26,self._ctx)
+                    _alt = self._interp.adaptivePredict(self._input,27,self._ctx)
 
                 pass
             elif token in [28]:
-                self.state = 331
-                self.match(RosettaMRParser.GAUSSIANFUNC)
                 self.state = 332
-                self.number_f()
+                self.match(RosettaMRParser.GAUSSIANFUNC)
                 self.state = 333
                 self.number_f()
                 self.state = 334
+                self.number_f()
+                self.state = 335
                 self.match(RosettaMRParser.Simple_name)
-                self.state = 337
+                self.state = 338
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==29:
-                    self.state = 335
-                    self.match(RosettaMRParser.WEIGHT)
                     self.state = 336
+                    self.match(RosettaMRParser.WEIGHT)
+                    self.state = 337
                     self.number_f()
 
 
                 pass
             elif token in [30]:
-                self.state = 339
-                self.match(RosettaMRParser.SOGFUNC)
                 self.state = 340
+                self.match(RosettaMRParser.SOGFUNC)
+                self.state = 341
                 self.match(RosettaMRParser.Integer)
-                self.state = 345 
+                self.state = 346 
                 self._errHandler.sync(self)
                 _alt = 1
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt == 1:
-                        self.state = 341
-                        self.number_f()
                         self.state = 342
                         self.number_f()
                         self.state = 343
                         self.number_f()
+                        self.state = 344
+                        self.number_f()
 
                     else:
                         raise NoViableAltException(self)
-                    self.state = 347 
+                    self.state = 348 
                     self._errHandler.sync(self)
-                    _alt = self._interp.adaptivePredict(self._input,28,self._ctx)
+                    _alt = self._interp.adaptivePredict(self._input,29,self._ctx)
 
                 pass
             elif token in [31, 44, 45]:
-                self.state = 349
+                self.state = 350
                 _la = self._input.LA(1)
                 if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 52778705616896) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 350
-                self.number_f()
                 self.state = 351
                 self.number_f()
                 self.state = 352
@@ -2648,88 +2665,90 @@ class RosettaMRParser ( Parser ):
                 self.number_f()
                 self.state = 355
                 self.number_f()
+                self.state = 356
+                self.number_f()
                 pass
             elif token in [32]:
-                self.state = 357
-                self.match(RosettaMRParser.CONSTANTFUNC)
                 self.state = 358
+                self.match(RosettaMRParser.CONSTANTFUNC)
+                self.state = 359
                 self.number_f()
                 pass
             elif token in [33]:
-                self.state = 359
+                self.state = 360
                 self.match(RosettaMRParser.IDENTITY)
                 pass
             elif token in [34]:
-                self.state = 360
-                self.match(RosettaMRParser.SCALARWEIGHTEDFUNC)
                 self.state = 361
-                self.number_f()
+                self.match(RosettaMRParser.SCALARWEIGHTEDFUNC)
                 self.state = 362
+                self.number_f()
+                self.state = 363
                 self.func_type_def()
                 pass
             elif token in [35]:
-                self.state = 364
-                self.match(RosettaMRParser.SUMFUNC)
                 self.state = 365
+                self.match(RosettaMRParser.SUMFUNC)
+                self.state = 366
                 self.match(RosettaMRParser.Integer)
-                self.state = 367 
+                self.state = 368 
                 self._errHandler.sync(self)
                 _alt = 1
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt == 1:
-                        self.state = 366
+                        self.state = 367
                         self.func_type_def()
 
                     else:
                         raise NoViableAltException(self)
-                    self.state = 369 
+                    self.state = 370 
                     self._errHandler.sync(self)
-                    _alt = self._interp.adaptivePredict(self._input,29,self._ctx)
+                    _alt = self._interp.adaptivePredict(self._input,30,self._ctx)
 
                 pass
             elif token in [36]:
-                self.state = 371
-                self.match(RosettaMRParser.SPLINE)
                 self.state = 372
+                self.match(RosettaMRParser.SPLINE)
+                self.state = 373
                 self.match(RosettaMRParser.Simple_name)
-                self.state = 392
+                self.state = 393
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
                 if token in [50, 51]:
-                    self.state = 373
-                    self.number_f()
                     self.state = 374
                     self.number_f()
                     self.state = 375
                     self.number_f()
+                    self.state = 376
+                    self.number_f()
                     pass
                 elif token in [37]:
-                    self.state = 377
-                    self.match(RosettaMRParser.NONE)
                     self.state = 378
-                    self.number_f()
+                    self.match(RosettaMRParser.NONE)
                     self.state = 379
                     self.number_f()
                     self.state = 380
                     self.number_f()
-                    self.state = 388 
+                    self.state = 381
+                    self.number_f()
+                    self.state = 389 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     while True:
-                        self.state = 381
+                        self.state = 382
                         self.match(RosettaMRParser.Simple_name)
-                        self.state = 385
+                        self.state = 386
                         self._errHandler.sync(self)
-                        _alt = self._interp.adaptivePredict(self._input,30,self._ctx)
+                        _alt = self._interp.adaptivePredict(self._input,31,self._ctx)
                         while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                             if _alt==1:
-                                self.state = 382
+                                self.state = 383
                                 self.number_f() 
-                            self.state = 387
+                            self.state = 388
                             self._errHandler.sync(self)
-                            _alt = self._interp.adaptivePredict(self._input,30,self._ctx)
+                            _alt = self._interp.adaptivePredict(self._input,31,self._ctx)
 
-                        self.state = 390 
+                        self.state = 391 
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
                         if not (_la==55):
@@ -2741,100 +2760,98 @@ class RosettaMRParser ( Parser ):
 
                 pass
             elif token in [38]:
-                self.state = 394
-                self.match(RosettaMRParser.FADE)
                 self.state = 395
-                self.number_f()
+                self.match(RosettaMRParser.FADE)
                 self.state = 396
                 self.number_f()
                 self.state = 397
                 self.number_f()
                 self.state = 398
                 self.number_f()
-                self.state = 400
+                self.state = 399
+                self.number_f()
+                self.state = 401
                 self._errHandler.sync(self)
-                la_ = self._interp.adaptivePredict(self._input,33,self._ctx)
+                la_ = self._interp.adaptivePredict(self._input,34,self._ctx)
                 if la_ == 1:
-                    self.state = 399
+                    self.state = 400
                     self.number_f()
 
 
                 pass
             elif token in [41]:
-                self.state = 402
-                self.match(RosettaMRParser.SQUARE_WELL2)
                 self.state = 403
-                self.number_f()
+                self.match(RosettaMRParser.SQUARE_WELL2)
                 self.state = 404
                 self.number_f()
                 self.state = 405
                 self.number_f()
-                self.state = 407
+                self.state = 406
+                self.number_f()
+                self.state = 408
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==42:
-                    self.state = 406
+                    self.state = 407
                     self.match(RosettaMRParser.DEGREES)
 
 
                 pass
             elif token in [47]:
-                self.state = 409
-                self.match(RosettaMRParser.ETABLE)
                 self.state = 410
-                self.number_f()
+                self.match(RosettaMRParser.ETABLE)
                 self.state = 411
                 self.number_f()
-                self.state = 415
+                self.state = 412
+                self.number_f()
+                self.state = 416
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,35,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,36,self._ctx)
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt==1:
-                        self.state = 412
+                        self.state = 413
                         self.number_f() 
-                    self.state = 417
+                    self.state = 418
                     self._errHandler.sync(self)
-                    _alt = self._interp.adaptivePredict(self._input,35,self._ctx)
+                    _alt = self._interp.adaptivePredict(self._input,36,self._ctx)
 
                 pass
             elif token in [48]:
-                self.state = 418
-                self.match(RosettaMRParser.USOG)
                 self.state = 419
+                self.match(RosettaMRParser.USOG)
+                self.state = 420
                 self.match(RosettaMRParser.Integer)
-                self.state = 425 
+                self.state = 426 
                 self._errHandler.sync(self)
                 _alt = 1
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt == 1:
-                        self.state = 420
-                        self.number_f()
                         self.state = 421
                         self.number_f()
                         self.state = 422
                         self.number_f()
                         self.state = 423
                         self.number_f()
+                        self.state = 424
+                        self.number_f()
 
                     else:
                         raise NoViableAltException(self)
-                    self.state = 427 
+                    self.state = 428 
                     self._errHandler.sync(self)
-                    _alt = self._interp.adaptivePredict(self._input,36,self._ctx)
+                    _alt = self._interp.adaptivePredict(self._input,37,self._ctx)
 
                 pass
             elif token in [49]:
-                self.state = 429
-                self.match(RosettaMRParser.SOG)
                 self.state = 430
+                self.match(RosettaMRParser.SOG)
+                self.state = 431
                 self.match(RosettaMRParser.Integer)
-                self.state = 438 
+                self.state = 439 
                 self._errHandler.sync(self)
                 _alt = 1
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt == 1:
-                        self.state = 431
-                        self.number_f()
                         self.state = 432
                         self.number_f()
                         self.state = 433
@@ -2845,22 +2862,24 @@ class RosettaMRParser ( Parser ):
                         self.number_f()
                         self.state = 436
                         self.number_f()
+                        self.state = 437
+                        self.number_f()
 
                     else:
                         raise NoViableAltException(self)
-                    self.state = 440 
+                    self.state = 441 
                     self._errHandler.sync(self)
-                    _alt = self._interp.adaptivePredict(self._input,37,self._ctx)
+                    _alt = self._interp.adaptivePredict(self._input,38,self._ctx)
 
                 pass
             else:
                 raise NoViableAltException(self)
 
-            self.state = 445
+            self.state = 446
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,39,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,40,self._ctx)
             if la_ == 1:
-                self.state = 444
+                self.state = 445
                 self.comment()
 
 
@@ -2907,19 +2926,19 @@ class RosettaMRParser ( Parser ):
         self.enterRule(localctx, 52, self.RULE_rdc_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 448 
+            self.state = 449 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 447
+                    self.state = 448
                     self.rdc_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 450 
+                self.state = 451 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,40,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,41,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -2973,15 +2992,15 @@ class RosettaMRParser ( Parser ):
         self.enterRule(localctx, 54, self.RULE_rdc_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 452
-            self.match(RosettaMRParser.Integer)
             self.state = 453
-            self.match(RosettaMRParser.Simple_name)
-            self.state = 454
             self.match(RosettaMRParser.Integer)
-            self.state = 455
+            self.state = 454
             self.match(RosettaMRParser.Simple_name)
+            self.state = 455
+            self.match(RosettaMRParser.Integer)
             self.state = 456
+            self.match(RosettaMRParser.Simple_name)
+            self.state = 457
             self.number()
         except RecognitionException as re:
             localctx.exception = re
@@ -3026,19 +3045,19 @@ class RosettaMRParser ( Parser ):
         self.enterRule(localctx, 56, self.RULE_disulfide_bond_linkages)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 459 
+            self.state = 460 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 458
+                    self.state = 459
                     self.disulfide_bond_linkage()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 461 
+                self.state = 462 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,41,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,42,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -3082,9 +3101,9 @@ class RosettaMRParser ( Parser ):
         self.enterRule(localctx, 58, self.RULE_disulfide_bond_linkage)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 463
-            self.match(RosettaMRParser.Integer)
             self.state = 464
+            self.match(RosettaMRParser.Integer)
+            self.state = 465
             self.match(RosettaMRParser.Integer)
         except RecognitionException as re:
             localctx.exception = re
@@ -3129,7 +3148,7 @@ class RosettaMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 466
+            self.state = 467
             _la = self._input.LA(1)
             if not(_la==50 or _la==51):
                 self._errHandler.recoverInline(self)
@@ -3179,7 +3198,7 @@ class RosettaMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 468
+            self.state = 469
             _la = self._input.LA(1)
             if not(_la==50 or _la==51):
                 self._errHandler.recoverInline(self)

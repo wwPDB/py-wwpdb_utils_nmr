@@ -9902,10 +9902,11 @@ class XplorMRParserListener(ParseTreeListener):
                         self.factor['chain_id'] = self.__polySeq[0]['chain_id']
                         self.factor['auth_chain_id'] = chainId
                     elif self.__reasons is not None:
-                        self.factor['atom_id'] = [None]
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                        "Couldn't specify segment name "
-                                        f"'{chainId}' the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError
+                        if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
+                            self.factor['atom_id'] = [None]
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                            "Couldn't specify segment name "
+                                            f"'{chainId}' the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError
                     else:
                         if 'segment_id_mismatch' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['segment_id_mismatch'] = {}
@@ -11113,9 +11114,10 @@ class XplorMRParserListener(ParseTreeListener):
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']
                             self.factor['auth_chain_id'] = [begChainId, endChainId]
                         else:
-                            self.factor['atom_id'] = [None]
-                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                            f"Couldn't specify segment name {begChainId:!r}:{endChainId:!r} in the coordinates.")
+                            if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
+                                self.factor['atom_id'] = [None]
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                f"Couldn't specify segment name {begChainId:!r}:{endChainId:!r} in the coordinates.")
 
                 else:
                     if ctx.Simple_name(0) or ctx.Double_quote_string(0):
@@ -11167,10 +11169,11 @@ class XplorMRParserListener(ParseTreeListener):
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']
                             self.factor['auth_chain_id'] = chainId
                         elif self.__reasons is not None:
-                            self.factor['atom_id'] = [None]
-                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                            "Couldn't specify segment name "
-                                            f"'{chainId}' in the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError
+                            if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
+                                self.factor['atom_id'] = [None]
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                "Couldn't specify segment name "
+                                                f"'{chainId}' in the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError
                         else:
                             if 'segment_id_mismatch' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['segment_id_mismatch'] = {}

@@ -276,11 +276,15 @@ def beautifyPolySeq(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'
     if has_auth_comp_id1:
         _a_c1 = [authCompId for seqId, authCompId
                  in zip(_polySeq1[seqIdName1], _polySeq1['auth_comp_id']) if seqId is not None and seqId > 0]
+        if _a_c1 in emptyValue:
+            _a_c1 = _c1
     _c2 = [compId for seqId, compId
            in zip(_polySeq1[seqIdName1], _polySeq2['comp_id']) if seqId is not None and seqId > 0]
     if has_auth_comp_id2:
         _a_c2 = [authCompId for seqId, authCompId
                  in zip(_polySeq2[seqIdName1], _polySeq2['auth_comp_id']) if seqId is not None and seqId > 0]
+        if _a_c2 in emptyValue:
+            _a_c2 = _c2
 
     gapS = []
     gapP = []
@@ -657,7 +661,7 @@ def updatePolySeqRst(polySeqRst, chainId, seqId, compId, authCompId=None):
     if seqId not in ps['seq_id']:
         ps['seq_id'].append(seqId)
         ps['comp_id'].append(compId)
-        ps['auth_comp_id'].append(compId if authCompId is None else authCompId)
+        ps['auth_comp_id'].append(compId if authCompId in emptyValue else authCompId)
 
 
 def updatePolySeqRstFromAtomSelectionSet(polySeqRst, atomSelectionSet):
@@ -708,6 +712,8 @@ def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
                 if seqId is not None and seqId in _seqIds:
                     _compIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
                     _authCompIds[_seqIds.index(seqId)] = ps['auth_comp_id'][idx]
+                    if ps['auth_comp_id'][idx] in emptyValue:
+                        _authCompIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
                     idx += 1
 
             ps['seq_id'] = _seqIds
@@ -742,6 +748,8 @@ def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
                 if minSeqId <= seqId <= maxSeqId:
                     _compIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
                     _authCompIds[_seqIds.index(seqId)] = ps['auth_comp_id'][idx]
+                    if ps['auth_comp_id'][idx] in emptyValue:
+                        _authCompIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
 
             _endSeqIds = []
             _endCompIds = []
@@ -761,6 +769,8 @@ def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
                 else:
                     authCompId = next(item['comp_id'] for item in remapList
                                       if item['chain_id'] == ps['chain_id'] and item['seq_id'] == seqId)
+                if authCompId in emptyValue:
+                    authCompId = compId
                 if seqId > maxSeqId:
                     _endSeqIds.append(seqId)
                     _endCompIds.append(compId)

@@ -2885,7 +2885,7 @@ def translateToStdResName(compId, ccU=None):
                and 'CYSTEINE' in ccU.lastChemCompDict['_chem_comp.name']:
                 return 'CYS'
 
-    if compId == 'CYZ':
+    if compId in ('CYZ', 'CYX'):
         return 'CYS'
 
     if len(compId) == 3:

@@ -4602,6 +4602,8 @@ class NEFTranslator:
                 if details is None:
                     return (atom_list, ambiguity_code, details)
                 atom_id = atom_id[1:] + atom_id[0]
+                if atom_id in self.__csStat.getMethylAtoms(comp_id):
+                    methyl_only = True
 
             if atom_id[0] in ('H', 'Q', 'M') and (self.__remediation_mode or atom_id[0] in ('H', 'M')):  # DAOTHER-8663, 8751
 

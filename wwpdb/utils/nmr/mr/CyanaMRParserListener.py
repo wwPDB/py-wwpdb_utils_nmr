@@ -730,24 +730,24 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(compId1) == 1 and len(compId2) == 1 and compId1.isalpha() and compId2.isalpha():
                 atom_like = self.__csStat.getAtomLikeNameSet(True, True, 1)
                 if atomId1 in atom_like and atomId2 in atom_like:
-                    isRna = False
+                    one_letter_na = False
                     if self.__hasPolySeq\
                        and (compId1 in ('A', 'C', 'G', 'I', 'T', 'U') or compId2 in ('A', 'C', 'G', 'I', 'T', 'U')):
                         chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                         for cifChainId, cifSeqId, cifCompId, isPolySeq in chainAssign1:
                             if isPolySeq:
                                 seqKey = (cifChainId, cifSeqId, cifCompId)
-                                if seqKey in self.__authToEntityType and self.__authToEntityType[seqKey] == 'polyribonucleotide':
-                                    isRna = True
+                                if seqKey in self.__authToEntityType and 'ribonucleotide' in self.__authToEntityType[seqKey]:
+                                    one_letter_na = True
                                     break
                         chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
                         for cifChainId, cifSeqId, cifCompId, isPolySeq in chainAssign2:
                             if isPolySeq:
                                 seqKey = (cifChainId, cifSeqId, cifCompId)
-                                if seqKey in self.__authToEntityType and self.__authToEntityType[seqKey] == 'polyribonucleotide':
-                                    isRna = True
+                                if seqKey in self.__authToEntityType and 'ribonucleotide' in self.__authToEntityType[seqKey]:
+                                    one_letter_na = True
                                     break
-                    if not isRna:
+                    if not one_letter_na:
                         self.exitDistance_wo_comp_restraint(compId1, seqId1, atomId1, compId2, seqId2, atomId2)
                     return
 

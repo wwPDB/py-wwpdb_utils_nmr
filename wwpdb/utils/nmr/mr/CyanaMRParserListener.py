@@ -265,6 +265,7 @@ class CyanaMRParserListener(ParseTreeListener):
     __authToLabelSeq = None
     __authToStarSeq = None
     __authToInsCode = None
+    __authToEntityType = None
 
     __offsetHolder = None
 
@@ -374,6 +375,7 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__authToLabelSeq = ret['auth_to_label_seq']
             self.__authToStarSeq = ret['auth_to_star_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
+            self.__authToEntityType = ret['auth_to_entity_type']
 
         self.__offsetHolder = {}
 
@@ -728,7 +730,25 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(compId1) == 1 and len(compId2) == 1 and compId1.isalpha() and compId2.isalpha():
                 atom_like = self.__csStat.getAtomLikeNameSet(True, True, 1)
                 if atomId1 in atom_like and atomId2 in atom_like:
-                    self.exitDistance_wo_comp_restraint(compId1, seqId1, atomId1, compId2, seqId2, atomId2)
+                    isRna = False
+                    if self.__hasPolySeq\
+                       and (compId1 in ('A', 'C', 'G', 'I', 'T', 'U') or compId2 in ('A', 'C', 'G', 'I', 'T', 'U')):
+                        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                        for cifChainId, cifSeqId, cifCompId, isPolySeq in chainAssign1:
+                            if isPolySeq:
+                                seqKey = (cifChainId, cifSeqId, cifCompId)
+                                if seqKey in self.__authToEntityType and self.__authToEntityType[seqKey] == 'polyribonucleotide':
+                                    isRna = True
+                                    break
+                        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+                        for cifChainId, cifSeqId, cifCompId, isPolySeq in chainAssign2:
+                            if isPolySeq:
+                                seqKey = (cifChainId, cifSeqId, cifCompId)
+                                if seqKey in self.__authToEntityType and self.__authToEntityType[seqKey] == 'polyribonucleotide':
+                                    isRna = True
+                                    break
+                    if not isRna:
+                        self.exitDistance_wo_comp_restraint(compId1, seqId1, atomId1, compId2, seqId2, atomId2)
                     return
 
             target_value = None
@@ -1069,7 +1089,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} 1 id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -1595,7 +1615,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} 2 id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -4853,7 +4873,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} 3 id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -5197,7 +5217,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} 4 id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -5447,7 +5467,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} 5 id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -5713,7 +5733,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} 6 id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -6057,7 +6077,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} 7 id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -6307,7 +6327,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} 8 id={self.distRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -6488,7 +6508,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                altAtomId1, altAtomId2,
                                                                dstFunc)
                 if self.__debug:
-                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                    print(f"subtype={self.__cur_subtype} 9 id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     if isinstance(memberId, int):
@@ -7010,7 +7030,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                altAtomId1, altAtomId2,
                                                                dstFunc)
                 if self.__debug:
-                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                    print(f"subtype={self.__cur_subtype} 10 id={self.distRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     if isinstance(memberId, int):

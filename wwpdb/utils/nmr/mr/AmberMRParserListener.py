@@ -4061,16 +4061,25 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.__hasNonPolySeq and useDefault:
 
+            total_ions = 0
+            for np in self.__nonPolySeq:
+                total_ions += np['comp_id'].count(authCompId)
+
             for np in self.__nonPolySeq:
                 chainId = np['auth_chain_id']
 
-                if factor['auth_seq_id'] in np['auth_seq_id']:
-                    idx = np['auth_seq_id'].index(factor['auth_seq_id'])
-                    seqId = np['seq_id'][idx]
-                    compId = np['comp_id'][idx]
+                if factor['auth_seq_id'] in np['auth_seq_id'] or (total_ions == 1 and authCompId in np['comp_id']):
+                    if total_ions == 1 and authCompId in np['comp_id']:
+                        idx = np['comp_id'].index(authCompId)
+                        seqId = np['seq_id'][idx]
+                        compId = authCompId
+                    else:
+                        idx = np['auth_seq_id'].index(factor['auth_seq_id'])
+                        seqId = np['seq_id'][idx]
+                        compId = np['comp_id'][idx]
 
                     authCompId = factor['auth_comp_id'].upper() if 'auth_comp_id' in factor else 'None'
-                    authAtomId = factor['auth_atom_id']
+                    authAtomId = factor['auth_atom_id'].upper()
 
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
 

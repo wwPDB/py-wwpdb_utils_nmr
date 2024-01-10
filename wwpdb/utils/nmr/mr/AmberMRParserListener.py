@@ -3448,9 +3448,9 @@ class AmberMRParserListener(ParseTreeListener):
                             if _min_seq_id <= seqId + _offset <= _max_seq_id:
                                 __chainId = _chainId
                                 __offset = _offset
-                                # break
+                                # pass through
                 if __chainId is not None:
-                    if ps['auth_chain_id'] != __chainId:
+                    if chainId != __chainId:
                         continue
                     seqId += __offset
 
@@ -3828,7 +3828,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 __offset = _offset
                                 break
                 if __chainId is not None:
-                    if ps['auth_chain_id'] != __chainId:
+                    if chainId != __chainId:
                         continue
                     seqId = factor['auth_seq_id'] + __offset
 
@@ -4321,6 +4321,7 @@ class AmberMRParserListener(ParseTreeListener):
             found = False
 
             for ps in (self.__polySeq if useDefault else self.__altPolySeq):
+
                 if ps['auth_chain_id'] != chainId:
                     continue
 
@@ -4367,7 +4368,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     __offset = _offset
                                     break
                     if __chainId is not None:
-                        if ps['auth_chain_id'] != __chainId:
+                        if chainId != __chainId:
                             continue
                         seqId = factor['auth_seq_id'] + __offset
 

@@ -874,6 +874,16 @@ class XplorMRParserListener(ParseTreeListener):
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['seq_id_remap']
 
+            if 'global_sequence_offset' in self.reasonsForReParsing:
+                globalSequenceOffset = copy.copy(self.reasonsForReParsing['global_sequence_offset'])
+                for k, v in globalSequenceOffset.items():
+                    if v is None or len(v) != 1:
+                        del self.reasonsForReParsing['global_sequence_offset'][k]
+                    else:
+                        self.reasonsForReParsing['global_sequence_offset'][k] = list(v)[0]
+                    if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
+                        del self.reasonsForReParsing['global_sequence_offset']
+
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 
@@ -9366,6 +9376,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                         self.__preferAuthSeq = __preferAuthSeq
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
+                                                    if self.__cur_subtype == 'dist' and isPolySeq and isChainSpecified and compId in monDict3 and self.__csStat.peptideLike(compId):
+                                                        self.checkDistSequenceOffset(chainId, seqId, compId, origAtomId)
 
         return foundCompId
 
@@ -9376,6 +9388,9 @@ class XplorMRParserListener(ParseTreeListener):
             offset = 0
             if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
                 offset = self.__reasons['label_seq_offset'][chainId]
+            if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
+               and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
+                offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
             if seqKey in self.__authToLabelSeq:
                 _chainId, _seqId = self.__authToLabelSeq[seqKey]
@@ -9394,6 +9409,9 @@ class XplorMRParserListener(ParseTreeListener):
             offset = 0
             if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
                 offset = self.__reasons['label_seq_offset'][chainId]
+            if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
+               and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
+                offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
@@ -9505,6 +9523,51 @@ class XplorMRParserListener(ParseTreeListener):
                             if __seqKey__ in self.__coordUnobsRes:
                                 return True
         return False
+
+    def checkDistSequenceOffset(self, chainId, seqId, compId, origAtomId):
+        """ Try to find sequence offset.
+        """
+        if not self.__hasPolySeq or self.__cur_subtype != 'dist':
+            return False
+
+        ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
+
+        if ps is None:
+            return False
+
+        compIds = ps['comp_id']
+        compIdsCan = []
+
+        for _compId in set(compIds):
+            if compId == _compId:
+                continue
+            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(_compId, origAtomId[0])
+            if len(_atomId) > 0 and details is None:
+                compIdsCan.append(_compId)
+
+        if len(compIdsCan) > 1:
+            return False
+
+        compId = compIdsCan[0]
+
+        idx_list = [idx for idx, _compId in enumerate(compIds) if _compId == compId]
+
+        offsets = set(ps['auth_seq_id'][idx] - seqId for idx in idx_list)
+
+        if 'global_sequence_offset' not in self.reasonsForReParsing:
+            self.reasonsForReParsing['global_sequence_offset'] = {}
+        if chainId in self.reasonsForReParsing['global_sequence_offset']:
+            if self.reasonsForReParsing['global_sequence_offset'][chainId] is None:
+                return False
+            self.reasonsForReParsing['global_sequence_offset'][chainId] &= offsets
+            if len(self.reasonsForReParsing['global_sequence_offset'][chainId]) == 0:
+                self.reasonsForReParsing['global_sequence_offset'][chainId] = None
+                return False
+            return True
+
+        self.reasonsForReParsing['global_sequence_offset'][chainId] = offsets
+
+        return True
 
     def intersectionFactor_expressions(self, atomSelection=None):
         self.consumeFactor_expressions(cifCheck=False)

@@ -3412,19 +3412,19 @@ class CharmmMRParserListener(ParseTreeListener):
             return False
 
         compIds = ps['comp_id']
-        compIdsCan = []
+        candidates = []
 
         for _compId in set(compIds):
             if compId == _compId:
                 continue
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(_compId, origAtomId[0])
             if len(_atomId) > 0 and details is None:
-                compIdsCan.append(_compId)
+                candidates.append(_compId)
 
-        if len(compIdsCan) > 1:
+        if len(candidates) != 1:
             return False
 
-        compId = compIdsCan[0]
+        compId = candidates[0]
 
         idx_list = [idx for idx, _compId in enumerate(compIds) if _compId == compId]
 

@@ -1987,6 +1987,8 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                             return atomId[:-1] + '%'
                     if atomId[:-1] + '2' in _refAtomIdList:
                         return atomId[:-1] + '%'
+                    if atomId[:-1] in _refAtomIdList:
+                        return atomId[:-1]
 
                 elif atomId[0] == 'M':
                     if atomId[-1] in ('X', 'Y'):
@@ -2002,8 +2004,20 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
 
                 elif refAtomIdList is not None and atomId + '2' in refAtomIdList:
                     return atomId + '%'
+
                 elif atomId + '2' in _refAtomIdList:
                     return atomId + '%'
+
+            else:
+
+                if atomId[-1] in ('-', '+'):
+                    if refAtomIdList is not None:
+                        if atomId[:-1] + ('2' if atomId[-1] == '-' else '3') in refAtomIdList:
+                            return atomId[:-1] + ('2' if atomId[-1] == '-' else '3')
+                    if atomId[:-1] + ('2' if atomId[-1] == '-' else '3') in _refAtomIdList:
+                        return atomId[:-1] + ('2' if atomId[-1] == '-' else '3')
+                    if atomId[:-1] in _refAtomIdList:
+                        return atomId[:-1]
 
     if refCompId is not None:
 

@@ -7615,9 +7615,9 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, hint='.'):
     atom_id_1_ = atom_id_1[0]
     atom_id_2_ = atom_id_2[0]
 
-    if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_BND or ambig:
+    if upperLimit <= DIST_AMBIG_LOW or upperLimit > DIST_AMBIG_BND or ambig:
 
-        if upperLimit >= DIST_AMBIG_BND:
+        if upperLimit > DIST_AMBIG_BND:
 
             if (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _hint:
                 return 'general distance'

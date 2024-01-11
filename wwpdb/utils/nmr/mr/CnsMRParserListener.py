@@ -738,6 +738,22 @@ class CnsMRParserListener(ParseTreeListener):
                                 if 'branched_remap' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['branched_remap'] = branchedMapping
 
+                    # DAOTHER-9063
+                    if self.__reasons is None and 'np_seq_id_remap' in self.reasonsForReParsing:
+
+                        seqIdRemap = []
+
+                        for test_chain_id, np_seq_id_mapping in self.reasonsForReParsing['np_seq_id_remap'].items():
+                            _np_seq_id_mapping = {k: v for k, v in np_seq_id_mapping.items() if v is not None}
+                            if len(_np_seq_id_mapping) == 0:
+                                continue
+                            seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': _np_seq_id_mapping})
+
+                        if len(seqIdRemap) == 0:
+                            del self.reasonsForReParsing['np_seq_id_remap']
+                        else:
+                            self.reasonsForReParsing['np_seq_id_remap'] = seqIdRemap
+
             # """
             # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
             #     if 'non_poly_remap' in self.reasonsForReParsing:
@@ -4855,14 +4871,37 @@ class CnsMRParserListener(ParseTreeListener):
                             self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {__factor}.")
                             if not foundCompId:
-                                self.__preferAuthSeq = not self.__preferAuthSeq
-                                self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
-                                self.__setLocalSeqScheme()
-                                # """
-                                # if 'atom_id' in __factor and __factor['atom_id'][0] is None:
-                                #     if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                #         self.reasonsForReParsing['label_seq_scheme'] = True
-                                # """
+                                # DAOTHER-9063
+                                ligands = 0
+                                if self.__hasNonPolySeq and self.__cur_subtype == 'dist':
+                                    for np in self.__nonPoly:
+                                        ligands += len(np['seq_id'])
+                                if ligands == 1 and len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1:
+                                    if 'np_seq_id_remap' not in self.reasonsForReParsing:
+                                        self.reasonsForReParsing['np_seq_id_remap'] = {}
+                                    chainId = _factor['chain_id'][0]
+                                    srcSeqId = _factor['seq_id'][0]
+                                    dstSeqId = self.__nonPoly[0]['auth_seq_id'][0]
+                                    if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
+                                        self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
+                                    if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
+                                        if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] is not None:
+                                            if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
+                                                self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = None
+                                                ligands = 0
+                                        else:
+                                            ligands = 0
+                                    else:
+                                        self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
+                                if ligands == 0:
+                                    self.__preferAuthSeq = not self.__preferAuthSeq
+                                    self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
+                                    self.__setLocalSeqScheme()
+                                    # """
+                                    # if 'atom_id' in __factor and __factor['atom_id'][0] is None:
+                                    #     if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                    #         self.reasonsForReParsing['label_seq_scheme'] = True
+                                    # """
                     else:
                         self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                         f"The {clauseName} has no effect for a factor {__factor}. "
@@ -4945,6 +4984,8 @@ class CnsMRParserListener(ParseTreeListener):
                                 continue
                         elif 'seq_id_remap' in self.__reasons:
                             _, seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                        elif not isPolySeq and 'np_seq_id_remap' in self.__reasons:
+                            _, seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
 
                     if ps is not None and seqId in ps['auth_seq_id']:
                         compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]

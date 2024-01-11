@@ -4061,15 +4061,15 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.__hasNonPolySeq and useDefault:
 
-            total_ions = 0
+            ligands = 0
             for np in self.__nonPolySeq:
-                total_ions += np['comp_id'].count(authCompId)
+                ligands += np['comp_id'].count(authCompId)
 
             for np in self.__nonPolySeq:
                 chainId = np['auth_chain_id']
 
-                if factor['auth_seq_id'] in np['auth_seq_id'] or (total_ions == 1 and authCompId in np['comp_id']):
-                    if total_ions == 1 and authCompId in np['comp_id']:
+                if factor['auth_seq_id'] in np['auth_seq_id'] or (ligands == 1 and authCompId in np['comp_id']):
+                    if ligands == 1 and authCompId in np['comp_id']:
                         idx = np['comp_id'].index(authCompId)
                         seqId = np['seq_id'][idx]
                         compId = authCompId

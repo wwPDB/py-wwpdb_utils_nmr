@@ -178,6 +178,7 @@
 # 02-Oct-2023  M. Yokochi - do not reorganize _Gen_dist_constraint.ID of native combined NMR data (DAOTHER-8855)
 # 10-Nov-2023  M. Yokochi - raise a content mismatch error properly for NMR spectral peak list when the file is irrelevant (DAOTHER-8949)
 # 13-Dec-2023  M. Yokochi - add 'hydrogen_non_instantiated' warning (DAOTHER-8945)
+# 11-Jan-2024  M. Yokochi - convert RTF to ASCII file if necessary (DAOTHER-9063)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -200,6 +201,7 @@ import numpy
 from packaging import version
 from munkres import Munkres
 from operator import itemgetter
+from striprtf.striprtf import rtf_to_text
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
@@ -531,6 +533,16 @@ def convert_codec(inPath, outPath, in_codec='utf-8', out_codec='utf-8'):
         ofh.write(contents.decode(in_codec).encode(out_codec))
 
 
+def convert_rtf_to_ascii(inPath, outPath):
+    """ Convert RDF file to ASCII file.
+    """
+
+    with open(inPath, 'r') as ifh, \
+            open(outPath, 'w+') as ofh:
+        contents = ifh.read()
+        ofh.write(rtf_to_text(contents, encoding='ascii', errors='ignore'))
+
+
 def is_binary_file(fPath):
     """ Check if there are non-ascii or non-printable characters in a file.
     """
@@ -538,6 +550,18 @@ def is_binary_file(fPath):
     with open(fPath, 'rb') as ifh:
         chunk = ifh.read(1024)
         if b'\0' in chunk:
+            return True
+
+    return False
+
+
+def is_rtf_file(fPath):
+    """ Check if there are RTF header characters in a file.
+    """
+
+    with open(fPath, 'rb') as ifh:
+        chunk = ifh.read(1024)
+        if b'\x7b\x5c\x72\x74\x66\x31' in chunk:
             return True
 
     return False
@@ -561,12 +585,17 @@ def get_type_of_star_file(fPath):
 
     codec = detect_bom(fPath, 'utf-8')
 
-    _fPath = None
+    _fPath = __fPath = None
 
     if codec != 'utf-8':
         _fPath = fPath + '~'
         convert_codec(fPath, _fPath, codec, 'utf-8')
         fPath = _fPath
+
+    if is_rtf_file(fPath):
+        __fPath = fPath + '.rtf2txt'
+        convert_rtf_to_ascii(fPath, __fPath)
+        fPath = __fPath
 
     try:
 
@@ -605,6 +634,12 @@ def get_type_of_star_file(fPath):
         if _fPath is not None:
             try:
                 os.remove(_fPath)
+            except OSError:
+                pass
+
+        if __fPath is not None:
+            try:
+                os.remove(__fPath)
             except OSError:
                 pass
 
@@ -6964,6 +6999,11 @@ class NmrDpUtility:
                     convert_codec(srcPath, _srcPath, codec, 'utf-8')
                     srcPath = _srcPath
 
+                if is_rtf_file(srcPath):
+                    _srcPath = srcPath + '.rtf2txt'
+                    convert_rtf_to_ascii(srcPath, _srcPath)
+                    srcPath = _srcPath
+
             is_valid, message = self.__nefT.validate_file(srcPath, 'A')  # 'A' for NMR unified data
 
             if not is_valid:
@@ -7098,6 +7138,11 @@ class NmrDpUtility:
                 if codec != 'utf-8':
                     _csPath = csPath + '~'
                     convert_codec(csPath, _csPath, codec, 'utf-8')
+                    csPath = _csPath
+
+                if is_rtf_file(csPath):
+                    _csPath = csPath + '.rtf2txt'
+                    convert_rtf_to_ascii(csPath, _csPath)
                     csPath = _csPath
 
                 if self.__op == 'nmr-cs-mr-merge':
@@ -7240,6 +7285,11 @@ class NmrDpUtility:
                         convert_codec(mrPath, _mrPath, codec, 'utf-8')
                         mrPath = _mrPath
 
+                    if is_rtf_file(mrPath):
+                        _mrPath = mrPath + '.rtf2txt'
+                        convert_rtf_to_ascii(mrPath, _mrPath)
+                        mrPath = _mrPath
+
                     is_valid, message = self.__nefT.validate_file(mrPath, 'R')  # 'R' for restraints
 
                     if is_valid:
@@ -7282,6 +7332,11 @@ class NmrDpUtility:
                     if codec != 'utf-8':
                         _mrPath = mrPath + '~'
                         convert_codec(mrPath, _mrPath, codec, 'utf-8')
+                        mrPath = _mrPath
+
+                    if is_rtf_file(mrPath):
+                        _mrPath = mrPath + '.rtf2txt'
+                        convert_rtf_to_ascii(mrPath, _mrPath)
                         mrPath = _mrPath
 
                     is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
@@ -7392,18 +7447,17 @@ class NmrDpUtility:
 
                     codec = detect_bom(arPath, 'utf-8')
 
-                    arPath_ = None
-
                     if codec != 'utf-8':
                         arPath_ = arPath + '~'
                         convert_codec(arPath, arPath_, codec, 'utf-8')
                         arPath = arPath_
 
-                    if arPath_ is not None:
-                        try:
-                            os.remove(arPath_)
-                        except OSError:
-                            pass
+                    if is_rtf_file(arPath):
+                        arPath_ = arPath + '.rtf2txt'
+                        convert_rtf_to_ascii(arPath, arPath_)
+                        arPath = arPath_
+
+                    ar['file_name'] = arPath
 
             if self.__bmrb_only and self.__internal_mode and len(self.__inputParamDict[cs_file_path_list]) > 1:
                 for csListId, cs in enumerate(self.__inputParamDict[cs_file_path_list]):
@@ -14251,6 +14305,11 @@ class NmrDpUtility:
                             convert_codec(mrPath, _mrPath, codec, 'utf-8')
                             mrPath = _mrPath
 
+                        if is_rtf_file(mrPath):
+                            _mrPath = mrPath + '.rtf2txt'
+                            convert_rtf_to_ascii(mrPath, _mrPath)
+                            mrPath = _mrPath
+
                         file_subtype = 'O'
 
                         is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
@@ -14419,6 +14478,11 @@ class NmrDpUtility:
                         if codec != 'utf-8':
                             _mrPath = mrPath + '~'
                             convert_codec(mrPath, _mrPath, codec, 'utf-8')
+                            mrPath = _mrPath
+
+                        if is_rtf_file(mrPath):
+                            _mrPath = mrPath + '.rtf2txt'
+                            convert_rtf_to_ascii(mrPath, _mrPath)
                             mrPath = _mrPath
 
                         file_subtype = 'O'
@@ -15048,6 +15112,11 @@ class NmrDpUtility:
                                 convert_codec(mrPath, _mrPath, codec, 'utf-8')
                                 mrPath = _mrPath
 
+                            if is_rtf_file(mrPath):
+                                _mrPath = mrPath + '.rtf2txt'
+                                convert_rtf_to_ascii(mrPath, _mrPath)
+                                mrPath = _mrPath
+
                             file_subtype = 'O'
 
                             is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
@@ -15170,6 +15239,11 @@ class NmrDpUtility:
                             if codec != 'utf-8':
                                 _mrPath = mrPath + '~'
                                 convert_codec(mrPath, _mrPath, codec, 'utf-8')
+                                mrPath = _mrPath
+
+                            if is_rtf_file(mrPath):
+                                _mrPath = mrPath + '.rtf2txt'
+                                convert_rtf_to_ascii(mrPath, _mrPath)
                                 mrPath = _mrPath
 
                             file_subtype = 'O'

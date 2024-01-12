@@ -14,6 +14,7 @@
 	- scikit-learn
 	- antlr4-python3-runtime
 	- typing_extensions
+	- striprtf
 
 - If your Python version is less than 3.10, downgrade urllib3 from v2 to v1. Otherwise, [the urllib3 v2 requires OpenSSL 1.1.1+](https://github.com/urllib3/urllib3/issues/2168).
 ```bash

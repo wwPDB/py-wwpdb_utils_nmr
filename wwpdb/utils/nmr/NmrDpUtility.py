@@ -178,6 +178,9 @@
 # 02-Oct-2023  M. Yokochi - do not reorganize _Gen_dist_constraint.ID of native combined NMR data (DAOTHER-8855)
 # 10-Nov-2023  M. Yokochi - raise a content mismatch error properly for NMR spectral peak list when the file is irrelevant (DAOTHER-8949)
 # 13-Dec-2023  M. Yokochi - add 'hydrogen_non_instantiated' warning (DAOTHER-8945)
+# 11-Jan-2024  M. Yokochi - convert RTF to ASCII file if necessary (DAOTHER-9063)
+# 12-Jan-2024  M. Yokochi - preserve the original sequence offset of CS loop of UNMAPPED residue (DAOTHER-9065)
+# 12-Jan-2024  M. Yokochi - fix sequence merge of entity loop and CS loop (DAOTHER-9065)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -200,6 +203,7 @@ import numpy
 from packaging import version
 from munkres import Munkres
 from operator import itemgetter
+from striprtf.striprtf import rtf_to_text
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
@@ -531,6 +535,16 @@ def convert_codec(inPath, outPath, in_codec='utf-8', out_codec='utf-8'):
         ofh.write(contents.decode(in_codec).encode(out_codec))
 
 
+def convert_rtf_to_ascii(inPath, outPath):
+    """ Convert RDF file to ASCII file.
+    """
+
+    with open(inPath, 'r') as ifh, \
+            open(outPath, 'w+') as ofh:
+        contents = ifh.read()
+        ofh.write(rtf_to_text(contents, encoding='ascii', errors='ignore'))
+
+
 def is_binary_file(fPath):
     """ Check if there are non-ascii or non-printable characters in a file.
     """
@@ -538,6 +552,18 @@ def is_binary_file(fPath):
     with open(fPath, 'rb') as ifh:
         chunk = ifh.read(1024)
         if b'\0' in chunk:
+            return True
+
+    return False
+
+
+def is_rtf_file(fPath):
+    """ Check if there are RTF header characters in a file.
+    """
+
+    with open(fPath, 'rb') as ifh:
+        chunk = ifh.read(1024)
+        if b'\x7b\x5c\x72\x74\x66\x31' in chunk:
             return True
 
     return False
@@ -561,12 +587,17 @@ def get_type_of_star_file(fPath):
 
     codec = detect_bom(fPath, 'utf-8')
 
-    _fPath = None
+    _fPath = __fPath = None
 
     if codec != 'utf-8':
         _fPath = fPath + '~'
         convert_codec(fPath, _fPath, codec, 'utf-8')
         fPath = _fPath
+
+    if is_rtf_file(fPath):
+        __fPath = fPath + '.rtf2txt'
+        convert_rtf_to_ascii(fPath, __fPath)
+        fPath = __fPath
 
     try:
 
@@ -605,6 +636,12 @@ def get_type_of_star_file(fPath):
         if _fPath is not None:
             try:
                 os.remove(_fPath)
+            except OSError:
+                pass
+
+        if __fPath is not None:
+            try:
+                os.remove(__fPath)
             except OSError:
                 pass
 
@@ -6964,6 +7001,11 @@ class NmrDpUtility:
                     convert_codec(srcPath, _srcPath, codec, 'utf-8')
                     srcPath = _srcPath
 
+                if is_rtf_file(srcPath):
+                    _srcPath = srcPath + '.rtf2txt'
+                    convert_rtf_to_ascii(srcPath, _srcPath)
+                    srcPath = _srcPath
+
             is_valid, message = self.__nefT.validate_file(srcPath, 'A')  # 'A' for NMR unified data
 
             if not is_valid:
@@ -7098,6 +7140,11 @@ class NmrDpUtility:
                 if codec != 'utf-8':
                     _csPath = csPath + '~'
                     convert_codec(csPath, _csPath, codec, 'utf-8')
+                    csPath = _csPath
+
+                if is_rtf_file(csPath):
+                    _csPath = csPath + '.rtf2txt'
+                    convert_rtf_to_ascii(csPath, _csPath)
                     csPath = _csPath
 
                 if self.__op == 'nmr-cs-mr-merge':
@@ -7240,6 +7287,11 @@ class NmrDpUtility:
                         convert_codec(mrPath, _mrPath, codec, 'utf-8')
                         mrPath = _mrPath
 
+                    if is_rtf_file(mrPath):
+                        _mrPath = mrPath + '.rtf2txt'
+                        convert_rtf_to_ascii(mrPath, _mrPath)
+                        mrPath = _mrPath
+
                     is_valid, message = self.__nefT.validate_file(mrPath, 'R')  # 'R' for restraints
 
                     if is_valid:
@@ -7282,6 +7334,11 @@ class NmrDpUtility:
                     if codec != 'utf-8':
                         _mrPath = mrPath + '~'
                         convert_codec(mrPath, _mrPath, codec, 'utf-8')
+                        mrPath = _mrPath
+
+                    if is_rtf_file(mrPath):
+                        _mrPath = mrPath + '.rtf2txt'
+                        convert_rtf_to_ascii(mrPath, _mrPath)
                         mrPath = _mrPath
 
                     is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
@@ -7392,18 +7449,17 @@ class NmrDpUtility:
 
                     codec = detect_bom(arPath, 'utf-8')
 
-                    arPath_ = None
-
                     if codec != 'utf-8':
                         arPath_ = arPath + '~'
                         convert_codec(arPath, arPath_, codec, 'utf-8')
                         arPath = arPath_
 
-                    if arPath_ is not None:
-                        try:
-                            os.remove(arPath_)
-                        except OSError:
-                            pass
+                    if is_rtf_file(arPath):
+                        arPath_ = arPath + '.rtf2txt'
+                        convert_rtf_to_ascii(arPath, arPath_)
+                        arPath = arPath_
+
+                    ar['file_name'] = arPath
 
             if self.__bmrb_only and self.__internal_mode and len(self.__inputParamDict[cs_file_path_list]) > 1:
                 for csListId, cs in enumerate(self.__inputParamDict[cs_file_path_list]):
@@ -14251,6 +14307,11 @@ class NmrDpUtility:
                             convert_codec(mrPath, _mrPath, codec, 'utf-8')
                             mrPath = _mrPath
 
+                        if is_rtf_file(mrPath):
+                            _mrPath = mrPath + '.rtf2txt'
+                            convert_rtf_to_ascii(mrPath, _mrPath)
+                            mrPath = _mrPath
+
                         file_subtype = 'O'
 
                         is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
@@ -14419,6 +14480,11 @@ class NmrDpUtility:
                         if codec != 'utf-8':
                             _mrPath = mrPath + '~'
                             convert_codec(mrPath, _mrPath, codec, 'utf-8')
+                            mrPath = _mrPath
+
+                        if is_rtf_file(mrPath):
+                            _mrPath = mrPath + '.rtf2txt'
+                            convert_rtf_to_ascii(mrPath, _mrPath)
                             mrPath = _mrPath
 
                         file_subtype = 'O'
@@ -15048,6 +15114,11 @@ class NmrDpUtility:
                                 convert_codec(mrPath, _mrPath, codec, 'utf-8')
                                 mrPath = _mrPath
 
+                            if is_rtf_file(mrPath):
+                                _mrPath = mrPath + '.rtf2txt'
+                                convert_rtf_to_ascii(mrPath, _mrPath)
+                                mrPath = _mrPath
+
                             file_subtype = 'O'
 
                             is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
@@ -15170,6 +15241,11 @@ class NmrDpUtility:
                             if codec != 'utf-8':
                                 _mrPath = mrPath + '~'
                                 convert_codec(mrPath, _mrPath, codec, 'utf-8')
+                                mrPath = _mrPath
+
+                            if is_rtf_file(mrPath):
+                                _mrPath = mrPath + '.rtf2txt'
+                                convert_rtf_to_ascii(mrPath, _mrPath)
                                 mrPath = _mrPath
 
                             file_subtype = 'O'
@@ -16954,7 +17030,7 @@ class NmrDpUtility:
                     pos = len(ps['seq_id'])
                 else:
                     for idx, _seq_id in enumerate(ps['seq_id']):
-                        if _seq_id is None or seq_id < _seq_id:
+                        if _seq_id is None or seq_id > _seq_id:
                             continue
                         pos = idx
                         break
@@ -24394,319 +24470,158 @@ class NmrDpUtility:
             has_genuine_ambig_code = False
 
             can_auth_asym_id_mapping = {}  # DAOTHER-8751
+            seq_id_offset_for_unmapped = {}  # DAOTHER-9065
 
-            index = 1
+            trial = 0
 
-            for idx, row in enumerate(loop):
+            while True:
 
-                _row = [None] * len(tags)
+                regenerate_request = False  # DAOTHER-9065
 
-                _row[0] = index
+                lp.clear_data()
 
-                comp_id = row[comp_id_col].upper()
-                _orig_atom_id = row[atom_id_col]
-                atom_id = _orig_atom_id.upper()
+                index = 1
 
-                _row[9] = row[val_col]
+                for idx, row in enumerate(loop):
 
-                try:
-                    float(_row[9])
-                except ValueError:
-                    continue
+                    _row = [None] * len(tags)
 
-                if val_err_col != -1:
-                    val_err = row[val_err_col]
-                    _row[10] = val_err
+                    _row[0] = index
 
-                    if val_err not in emptyValue:
-                        try:
-                            _val_err = float(val_err)
-                            if _val_err < 0.0:
-                                _row[10] = abs(_val_err)
-                        except ValueError:
-                            pass
+                    comp_id = row[comp_id_col].upper()
+                    _orig_atom_id = row[atom_id_col]
+                    atom_id = _orig_atom_id.upper()
 
-                if fig_of_merit_col != -1:
-                    _row[11] = row[fig_of_merit_col]
+                    _row[9] = row[val_col]
 
-                if ambig_code_col != -1:
-                    ambig_code = row[ambig_code_col]
-                    if ambig_code not in emptyValue:
-                        try:
-                            ambig_code = int(ambig_code) if isinstance(ambig_code, str) else ambig_code
-                            if ambig_code in ALLOWED_AMBIGUITY_CODES:
-                                _row[12] = ambig_code
-                            else:
-                                _row[12] = None
-                        except ValueError:
-                            _row[12] = None
-
-                if ambig_set_id_col != -1:
-                    ambig_set_id = row[ambig_set_id_col]
-                    if ambig_set_id not in emptyValue:
-                        try:
-                            ambig_set_id = int(ambig_set_id)
-                            if ambig_set_id > 0:
-                                _row[13] = ambig_set_id
-                        except ValueError:
-                            _row[13] = None
-
-                if occupancy_col != -1:
-                    occupancy = row[occupancy_col]
-                    if occupancy not in emptyValue:
-                        try:
-                            occupancy = float(occupancy)
-                            if occupancy >= 0.0:
-                                _row[14] = occupancy
-                        except ValueError:
-                            pass
-
-                if reson_id_col != -1:
-                    reson_id = row[reson_id_col]
-                    if reson_id not in emptyValue:
-                        try:
-                            reson_id = int(reson_id)
-                            if reson_id > 0:
-                                _row[15] = reson_id
-                        except ValueError:
-                            pass
-
-                if has_auth_seq:
-
-                    if row[auth_asym_id_col] in copied_auth_chain_ids:
+                    try:
+                        float(_row[9])
+                    except ValueError:
                         continue
 
-                    _row[16], _row[17], _row[18], _row[19] =\
-                        row[auth_asym_id_col], row[auth_seq_id_col], \
-                        row[auth_comp_id_col], row[auth_atom_id_col]
+                    if val_err_col != -1:
+                        val_err = row[val_err_col]
+                        _row[10] = val_err
 
-                if has_orig_seq:
-                    _row[20], _row[21], _row[22], _row[23] =\
-                        row[orig_asym_id_col], row[orig_seq_id_col], \
-                        row[orig_comp_id_col], row[orig_atom_id_col]
+                        if val_err not in emptyValue:
+                            try:
+                                _val_err = float(val_err)
+                                if _val_err < 0.0:
+                                    _row[10] = abs(_val_err)
+                            except ValueError:
+                                pass
 
-                if details_col != -1:
-                    _row[24] = row[details_col]
+                    if fig_of_merit_col != -1:
+                        _row[11] = row[fig_of_merit_col]
 
-                _row[25], _row[26] = self.__entry_id, list_id
-
-                resolved = True
-
-                if has_auth_seq:
-                    auth_asym_id = row[auth_asym_id_col]
-                    auth_seq_id = row[auth_seq_id_col]
-                    auth_comp_id = row[auth_comp_id_col]
-
-                    if valid_auth_seq:
-                        auth_seq_id_ = int(auth_seq_id)
-                        seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
-                        _seq_key = (seq_key[0], seq_key[1])
-                        try:
-                            entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
-                        except KeyError:
-                            if self.__annotation_mode:
-                                auth_asym_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                     if _auth_seq_id == auth_seq_id_ and _auth_comp_id == auth_comp_id), auth_asym_id)
-                                seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
-                                if seq_key in auth_to_star_seq:
-                                    _row[16] = row[auth_asym_id_col] = auth_asym_id
-                                    _row[20] = row[orig_asym_id_col] = auth_asym_id
-                                    _seq_key = (seq_key[0], seq_key[1])
-                                    entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                    if ambig_code_col != -1:
+                        ambig_code = row[ambig_code_col]
+                        if ambig_code not in emptyValue:
+                            try:
+                                ambig_code = int(ambig_code) if isinstance(ambig_code, str) else ambig_code
+                                if ambig_code in ALLOWED_AMBIGUITY_CODES:
+                                    _row[12] = ambig_code
                                 else:
-                                    auth_asym_id, auth_comp_id = next(((_auth_asym_id, _auth_comp_id)
-                                                                       for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                                       if _auth_seq_id == auth_seq_id_), (auth_asym_id, auth_comp_id))
+                                    _row[12] = None
+                            except ValueError:
+                                _row[12] = None
+
+                    if ambig_set_id_col != -1:
+                        ambig_set_id = row[ambig_set_id_col]
+                        if ambig_set_id not in emptyValue:
+                            try:
+                                ambig_set_id = int(ambig_set_id)
+                                if ambig_set_id > 0:
+                                    _row[13] = ambig_set_id
+                            except ValueError:
+                                _row[13] = None
+
+                    if occupancy_col != -1:
+                        occupancy = row[occupancy_col]
+                        if occupancy not in emptyValue:
+                            try:
+                                occupancy = float(occupancy)
+                                if occupancy >= 0.0:
+                                    _row[14] = occupancy
+                            except ValueError:
+                                pass
+
+                    if reson_id_col != -1:
+                        reson_id = row[reson_id_col]
+                        if reson_id not in emptyValue:
+                            try:
+                                reson_id = int(reson_id)
+                                if reson_id > 0:
+                                    _row[15] = reson_id
+                            except ValueError:
+                                pass
+
+                    if has_auth_seq:
+
+                        if row[auth_asym_id_col] in copied_auth_chain_ids:
+                            continue
+
+                        _row[16], _row[17], _row[18], _row[19] =\
+                            row[auth_asym_id_col], row[auth_seq_id_col], \
+                            row[auth_comp_id_col], row[auth_atom_id_col]
+
+                    if has_orig_seq:
+                        _row[20], _row[21], _row[22], _row[23] =\
+                            row[orig_asym_id_col], row[orig_seq_id_col], \
+                            row[orig_comp_id_col], row[orig_atom_id_col]
+
+                    if details_col != -1:
+                        _row[24] = row[details_col]
+
+                    _row[25], _row[26] = self.__entry_id, list_id
+
+                    resolved = True
+
+                    if has_auth_seq:
+                        auth_asym_id = row[auth_asym_id_col]
+                        auth_seq_id = row[auth_seq_id_col]
+                        auth_comp_id = row[auth_comp_id_col]
+
+                        if valid_auth_seq:
+                            auth_seq_id_ = int(auth_seq_id)
+                            seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
+                            _seq_key = (seq_key[0], seq_key[1])
+                            try:
+                                entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                            except KeyError:
+                                if self.__annotation_mode:
+                                    auth_asym_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                         if _auth_seq_id == auth_seq_id_ and _auth_comp_id == auth_comp_id), auth_asym_id)
                                     seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                                     if seq_key in auth_to_star_seq:
                                         _row[16] = row[auth_asym_id_col] = auth_asym_id
                                         _row[20] = row[orig_asym_id_col] = auth_asym_id
-                                        _row[5] = row[comp_id_col] = auth_comp_id
-                                        _row[18] = row[auth_comp_id_col] = auth_comp_id
-                                        comp_id = auth_comp_id
                                         _seq_key = (seq_key[0], seq_key[1])
                                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
-                            if seq_key not in auth_to_star_seq:
-                                auth_comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                     if _auth_asym_id == auth_asym_id and _auth_seq_id == auth_seq_id_), auth_comp_id)
-                                comp_id = _row[18] = auth_comp_id
-                                seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
-                                entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
-                        if prefer_pdbx_auth_atom_name and comp_id in auth_atom_name_to_id and atom_id in auth_atom_name_to_id[comp_id]:
-                            atom_id = auth_atom_name_to_id[comp_id][atom_id]
-                        self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
-                        _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
-
-                        if has_ins_code and seq_key in auth_to_ins_code:
-                            _row[27] = auth_to_ins_code[seq_key]
-
-                        if seq_key in auth_to_orig_seq:
-                            if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
-                                orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
-                            if not has_orig_seq:
-                                orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                if orig_seq_id in emptyValue:
-                                    orig_seq_id = auth_seq_id
-                                if orig_comp_id in emptyValue:
-                                    orig_comp_id = comp_id
-                                _row[20], _row[21], _row[22], _row[23] =\
-                                    auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
-                            elif any(d in emptyValue for d in orig_dat[idx]):
-                                if seq_key in _auth_to_orig_seq:
-                                    _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
-                                if _row[23] in emptyValue:
-                                    _row[23] = atom_id
-                                ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
-                                if ambig_code > 0:
-                                    orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                    if orig_seq_id in emptyValue:
-                                        orig_seq_id = auth_seq_id
-                                    if orig_comp_id in emptyValue:
-                                        orig_comp_id = comp_id
-                                    _row[20], _row[21], _row[22] =\
-                                        auth_asym_id, orig_seq_id, orig_comp_id
-                                    if atom_id[0] not in protonBeginCode:
-                                        _row[23] = atom_id
                                     else:
-                                        len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
-                                        if len_in_grp == 2:
-                                            _row[23] = (atom_id[0:-1] + '1')\
-                                                if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
-                                        elif len_in_grp == 3:
-                                            _row[23] = (atom_id[-1] + atom_id[0:-1])\
-                                                if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
-                                        elif _row[23] in emptyValue:
-                                            _row[23] = atom_id
-
-                        else:
-                            seq_key = next((k for k, v in auth_to_star_seq.items()
-                                            if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
-                            if seq_key is not None:
-                                _seq_key = (seq_key[0], seq_key[1])
-                                _row[16], _row[17], _row[18], _row[19] =\
-                                    seq_key[0], seq_key[1], seq_key[2], atom_id
-
-                                if has_ins_code and seq_key in auth_to_ins_code:
-                                    _row[27] = auth_to_ins_code[seq_key]
-
-                            _row[20], _row[21], _row[22], _row[23] =\
-                                row[auth_asym_id_col], row[auth_seq_id_col], \
-                                row[auth_comp_id_col], row[auth_atom_id_col]
-
-                        index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
-
-                    elif auth_asym_id not in emptyValue and auth_seq_id not in emptyValue and auth_comp_id not in emptyValue:
-
-                        try:
-                            _auth_seq_id = int(auth_seq_id)
-                            seq_key = (auth_asym_id, _auth_seq_id, auth_comp_id)
-                            _seq_key = (seq_key[0], seq_key[1])
-                            if seq_key in auth_to_star_seq:
-                                entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
-                                self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
-                                _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
-
-                                if has_ins_code and seq_key in auth_to_ins_code:
-                                    _row[27] = auth_to_ins_code[seq_key]
-
-                                if seq_key in auth_to_orig_seq:
-                                    if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
-                                        orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                        _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
-                                    if not has_orig_seq:
-                                        orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                        if orig_seq_id in emptyValue:
-                                            orig_seq_id = auth_seq_id
-                                        if orig_comp_id in emptyValue:
-                                            orig_comp_id = comp_id
-                                        _row[20], _row[21], _row[22], _row[23] =\
-                                            auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
-                                    elif any(d in emptyValue for d in orig_dat[idx]):
-                                        if seq_key in _auth_to_orig_seq:
-                                            _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
-                                        if _row[23] in emptyValue:
-                                            _row[23] = atom_id
-                                        ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
-                                        if ambig_code > 0:
-                                            orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
-                                            if orig_seq_id in emptyValue:
-                                                orig_seq_id = auth_seq_id
-                                            if orig_comp_id in emptyValue:
-                                                orig_comp_id = comp_id
-                                            _row[20], _row[21], _row[22] =\
-                                                auth_asym_id, orig_seq_id, orig_comp_id
-                                            if atom_id[0] not in protonBeginCode:
-                                                _row[23] = atom_id
-                                            else:
-                                                len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
-                                                if len_in_grp == 2:
-                                                    _row[23] = (atom_id[0:-1] + '1')\
-                                                        if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
-                                                elif len_in_grp == 3:
-                                                    _row[23] = (atom_id[-1] + atom_id[0:-1])\
-                                                        if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
-                                                elif _row[23] in emptyValue:
-                                                    _row[23] = atom_id
-
-                                else:
-                                    seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                    if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
-                                    if seq_key is not None:
-                                        _seq_key = (seq_key[0], seq_key[1])
-                                        _row[16], _row[17], _row[18], _row[19] =\
-                                            seq_key[0], seq_key[1], seq_key[2], atom_id
-
-                                        if has_ins_code and seq_key in auth_to_ins_code:
-                                            _row[27] = auth_to_ins_code[seq_key]
-
-                                    _row[20], _row[21], _row[22], _row[23] =\
-                                        row[auth_asym_id_col], row[auth_seq_id_col], \
-                                        row[auth_comp_id_col], row[auth_atom_id_col]
-
-                                index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
-
-                            else:
-                                resolved = False
-
-                        except ValueError:
-                            resolved = False
-
-                    else:
-                        resolved = False
-
-                else:
-                    resolved = False
-
-                if not resolved:
-
-                    chain_id = row[chain_id_col]
-                    if chain_id in emptyValue:
-                        chain_id = 'A'
-
-                    if chain_id in copied_chain_ids:
-                        continue
-
-                    try:
-                        seq_id = int(row[seq_id_col])
-                    except (ValueError, TypeError):
-                        seq_id = None
-
-                    auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
-
-                    resolved = True
-
-                    if auth_asym_id is not None and auth_seq_id is not None:
-                        seq_key = (auth_asym_id, auth_seq_id, comp_id)
-                        _seq_key = (seq_key[0], seq_key[1])
-                        if seq_key in auth_to_star_seq:
-                            entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                        auth_asym_id, auth_comp_id = next(((_auth_asym_id, _auth_comp_id)
+                                                                           for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                                           if _auth_seq_id == auth_seq_id_), (auth_asym_id, auth_comp_id))
+                                        seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
+                                        if seq_key in auth_to_star_seq:
+                                            _row[16] = row[auth_asym_id_col] = auth_asym_id
+                                            _row[20] = row[orig_asym_id_col] = auth_asym_id
+                                            _row[5] = row[comp_id_col] = auth_comp_id
+                                            _row[18] = row[auth_comp_id_col] = auth_comp_id
+                                            comp_id = auth_comp_id
+                                            _seq_key = (seq_key[0], seq_key[1])
+                                            entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                if seq_key not in auth_to_star_seq:
+                                    auth_comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                         if _auth_asym_id == auth_asym_id and _auth_seq_id == auth_seq_id_), auth_comp_id)
+                                    comp_id = _row[18] = auth_comp_id
+                                    seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
+                                    entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                            if prefer_pdbx_auth_atom_name and comp_id in auth_atom_name_to_id and atom_id in auth_atom_name_to_id[comp_id]:
+                                atom_id = auth_atom_name_to_id[comp_id][atom_id]
                             self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
-                            _row[1], _row[2], _row[3], _row[4] =\
-                                entity_assembly_id, entity_id, seq_id, seq_id
+                            _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
-                            _row[16], _row[17], _row[18], _row[19] =\
-                                auth_asym_id, auth_seq_id, comp_id, atom_id
                             if has_ins_code and seq_key in auth_to_ins_code:
                                 _row[27] = auth_to_ins_code[seq_key]
 
@@ -24756,114 +24671,27 @@ class NmrDpUtility:
                                     _seq_key = (seq_key[0], seq_key[1])
                                     _row[16], _row[17], _row[18], _row[19] =\
                                         seq_key[0], seq_key[1], seq_key[2], atom_id
+
                                     if has_ins_code and seq_key in auth_to_ins_code:
                                         _row[27] = auth_to_ins_code[seq_key]
 
-                                if has_auth_seq:
-                                    _row[20], _row[21], _row[22], _row[23] =\
-                                        row[auth_asym_id_col], row[auth_seq_id_col], \
-                                        row[auth_comp_id_col], row[auth_atom_id_col]
+                                _row[20], _row[21], _row[22], _row[23] =\
+                                    row[auth_asym_id_col], row[auth_seq_id_col], \
+                                    row[auth_comp_id_col], row[auth_atom_id_col]
 
                             index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
-                            if chain_id not in can_auth_asym_id_mapping:
-                                can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
-                                                                      'ref_auth_seq_id': auth_seq_id
-                                                                      }
-
-                        else:
-
-                            item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
-
-                            if item is not None and ps is not None and any(_ps for _ps in ps if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
-                                entity_assembly_id = item['entity_assembly_id']
-                                entity_id = item['entity_id']
-
-                                _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
-
-                                seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
-                                if seq_key is not None:
-                                    _seq_key = (seq_key[0], seq_key[1])
-                                    _row[16], _row[17], _row[18], _row[19] =\
-                                        seq_key[0], seq_key[1], seq_key[2], atom_id
-                                    if has_ins_code and seq_key in auth_to_ins_code:
-                                        _row[27] = auth_to_ins_code[seq_key]
-
-                                if has_auth_seq:
-                                    _row[20], _row[21], _row[22], _row[23] =\
-                                        row[auth_asym_id_col], row[auth_seq_id_col], \
-                                        row[auth_comp_id_col], row[auth_atom_id_col]
-
-                                index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
-
-                                if chain_id not in can_auth_asym_id_mapping:
-                                    can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
-                                                                          'ref_auth_seq_id': auth_seq_id
-                                                                          }
-
-                            else:
-                                resolved = False
-
-                    else:
-
-                        if has_auth_seq:
+                        elif auth_asym_id not in emptyValue and auth_seq_id not in emptyValue and auth_comp_id not in emptyValue:
 
                             try:
-
-                                auth_asym_id = row[auth_asym_id_col]
-                                auth_seq_id = int(row[auth_seq_id_col])
-
-                                item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
-
-                                if item is not None and ps is not None and any(_ps for _ps in ps if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
-                                    entity_assembly_id = item['entity_assembly_id']
-                                    entity_id = item['entity_id']
-
-                                    _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
-
-                                    seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                    if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
-                                    if seq_key is not None:
-                                        _seq_key = (seq_key[0], seq_key[1])
-                                        _row[16], _row[17], _row[18], _row[19] =\
-                                            seq_key[0], seq_key[1], seq_key[2], atom_id
-                                        if has_ins_code and seq_key in auth_to_ins_code:
-                                            _row[27] = auth_to_ins_code[seq_key]
-
-                                    _row[20], _row[21], _row[22], _row[23] =\
-                                        row[auth_asym_id_col], row[auth_seq_id_col], \
-                                        row[auth_comp_id_col], row[auth_atom_id_col]
-
-                                    index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
-
-                                else:
-                                    resolved = False
-
-                            except (ValueError, TypeError):
-                                resolved = False
-
-                        else:
-
-                            can_auth_asym_id = [_auth_asym_id for _auth_asym_id, _auth_seq_id, _comp_id in auth_to_star_seq
-                                                if _auth_seq_id == seq_id and _comp_id == comp_id]
-
-                            if len(can_auth_asym_id) != 1:
-                                resolved = False
-
-                            else:
-                                auth_asym_id, auth_seq_id = can_auth_asym_id[0], seq_id
-
-                                seq_key = (auth_asym_id, auth_seq_id, comp_id)
+                                _auth_seq_id = int(auth_seq_id)
+                                seq_key = (auth_asym_id, _auth_seq_id, auth_comp_id)
                                 _seq_key = (seq_key[0], seq_key[1])
                                 if seq_key in auth_to_star_seq:
                                     entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                                     self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
-                                    _row[1], _row[2], _row[3], _row[4] =\
-                                        entity_assembly_id, entity_id, seq_id, seq_id
+                                    _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
-                                    _row[16], _row[17], _row[18], _row[19] =\
-                                        auth_asym_id, auth_seq_id, comp_id, atom_id
                                     if has_ins_code and seq_key in auth_to_ins_code:
                                         _row[27] = auth_to_ins_code[seq_key]
 
@@ -24913,13 +24741,144 @@ class NmrDpUtility:
                                             _seq_key = (seq_key[0], seq_key[1])
                                             _row[16], _row[17], _row[18], _row[19] =\
                                                 seq_key[0], seq_key[1], seq_key[2], atom_id
+
                                             if has_ins_code and seq_key in auth_to_ins_code:
                                                 _row[27] = auth_to_ins_code[seq_key]
 
-                                        if has_auth_seq:
-                                            _row[20], _row[21], _row[22], _row[23] =\
-                                                row[auth_asym_id_col], row[auth_seq_id_col], \
-                                                row[auth_comp_id_col], row[auth_atom_id_col]
+                                        _row[20], _row[21], _row[22], _row[23] =\
+                                            row[auth_asym_id_col], row[auth_seq_id_col], \
+                                            row[auth_comp_id_col], row[auth_atom_id_col]
+
+                                    index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
+
+                                else:
+                                    resolved = False
+
+                            except ValueError:
+                                resolved = False
+
+                        else:
+                            resolved = False
+
+                    else:
+                        resolved = False
+
+                    if not resolved:
+
+                        chain_id = row[chain_id_col]
+                        if chain_id in emptyValue:
+                            chain_id = 'A'
+
+                        if chain_id in copied_chain_ids:
+                            continue
+
+                        try:
+                            seq_id = int(row[seq_id_col])
+                        except (ValueError, TypeError):
+                            seq_id = None
+
+                        auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
+
+                        resolved = True
+
+                        if auth_asym_id is not None and auth_seq_id is not None:
+                            seq_key = (auth_asym_id, auth_seq_id, comp_id)
+                            _seq_key = (seq_key[0], seq_key[1])
+                            if seq_key in auth_to_star_seq:
+                                entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
+                                _row[1], _row[2], _row[3], _row[4] =\
+                                    entity_assembly_id, entity_id, seq_id, seq_id
+
+                                _row[16], _row[17], _row[18], _row[19] =\
+                                    auth_asym_id, auth_seq_id, comp_id, atom_id
+                                if has_ins_code and seq_key in auth_to_ins_code:
+                                    _row[27] = auth_to_ins_code[seq_key]
+
+                                if seq_key in auth_to_orig_seq:
+                                    if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
+                                        orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                        _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
+                                    if not has_orig_seq:
+                                        orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                        if orig_seq_id in emptyValue:
+                                            orig_seq_id = auth_seq_id
+                                        if orig_comp_id in emptyValue:
+                                            orig_comp_id = comp_id
+                                        _row[20], _row[21], _row[22], _row[23] =\
+                                            auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
+                                    elif any(d in emptyValue for d in orig_dat[idx]):
+                                        if seq_key in _auth_to_orig_seq:
+                                            _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
+                                        if _row[23] in emptyValue:
+                                            _row[23] = atom_id
+                                        ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                        if ambig_code > 0:
+                                            orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                            if orig_seq_id in emptyValue:
+                                                orig_seq_id = auth_seq_id
+                                            if orig_comp_id in emptyValue:
+                                                orig_comp_id = comp_id
+                                            _row[20], _row[21], _row[22] =\
+                                                auth_asym_id, orig_seq_id, orig_comp_id
+                                            if atom_id[0] not in protonBeginCode:
+                                                _row[23] = atom_id
+                                            else:
+                                                len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
+                                                if len_in_grp == 2:
+                                                    _row[23] = (atom_id[0:-1] + '1')\
+                                                        if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
+                                                elif len_in_grp == 3:
+                                                    _row[23] = (atom_id[-1] + atom_id[0:-1])\
+                                                        if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
+                                                elif _row[23] in emptyValue:
+                                                    _row[23] = atom_id
+
+                                else:
+                                    seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                    if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                    if seq_key is not None:
+                                        _seq_key = (seq_key[0], seq_key[1])
+                                        _row[16], _row[17], _row[18], _row[19] =\
+                                            seq_key[0], seq_key[1], seq_key[2], atom_id
+                                        if has_ins_code and seq_key in auth_to_ins_code:
+                                            _row[27] = auth_to_ins_code[seq_key]
+
+                                    if has_auth_seq:
+                                        _row[20], _row[21], _row[22], _row[23] =\
+                                            row[auth_asym_id_col], row[auth_seq_id_col], \
+                                            row[auth_comp_id_col], row[auth_atom_id_col]
+
+                                index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
+
+                                if chain_id not in can_auth_asym_id_mapping:
+                                    can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
+                                                                          'ref_auth_seq_id': auth_seq_id
+                                                                          }
+
+                            else:
+
+                                item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
+
+                                if item is not None and ps is not None and any(_ps for _ps in ps if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
+                                    entity_assembly_id = item['entity_assembly_id']
+                                    entity_id = item['entity_id']
+
+                                    _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
+
+                                    seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                    if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                    if seq_key is not None:
+                                        _seq_key = (seq_key[0], seq_key[1])
+                                        _row[16], _row[17], _row[18], _row[19] =\
+                                            seq_key[0], seq_key[1], seq_key[2], atom_id
+                                        if has_ins_code and seq_key in auth_to_ins_code:
+                                            _row[27] = auth_to_ins_code[seq_key]
+
+                                    if has_auth_seq:
+                                        _row[20], _row[21], _row[22], _row[23] =\
+                                            row[auth_asym_id_col], row[auth_seq_id_col], \
+                                            row[auth_comp_id_col], row[auth_atom_id_col]
 
                                     index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
@@ -24929,6 +24888,16 @@ class NmrDpUtility:
                                                                               }
 
                                 else:
+                                    resolved = False
+
+                        else:
+
+                            if has_auth_seq:
+
+                                try:
+
+                                    auth_asym_id = row[auth_asym_id_col]
+                                    auth_seq_id = int(row[auth_seq_id_col])
 
                                     item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
@@ -24947,109 +24916,279 @@ class NmrDpUtility:
                                             if has_ins_code and seq_key in auth_to_ins_code:
                                                 _row[27] = auth_to_ins_code[seq_key]
 
-                                        if has_auth_seq:
-                                            _row[20], _row[21], _row[22], _row[23] =\
-                                                row[auth_asym_id_col], row[auth_seq_id_col], \
-                                                row[auth_comp_id_col], row[auth_atom_id_col]
+                                        _row[20], _row[21], _row[22], _row[23] =\
+                                            row[auth_asym_id_col], row[auth_seq_id_col], \
+                                            row[auth_comp_id_col], row[auth_atom_id_col]
+
+                                        index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
+
+                                    else:
+                                        resolved = False
+
+                                except (ValueError, TypeError):
+                                    resolved = False
+
+                            else:
+
+                                can_auth_asym_id = [_auth_asym_id for _auth_asym_id, _auth_seq_id, _comp_id in auth_to_star_seq
+                                                    if _auth_seq_id == seq_id and _comp_id == comp_id]
+
+                                if len(can_auth_asym_id) != 1:
+                                    resolved = False
+
+                                else:
+                                    auth_asym_id, auth_seq_id = can_auth_asym_id[0], seq_id
+
+                                    seq_key = (auth_asym_id, auth_seq_id, comp_id)
+                                    _seq_key = (seq_key[0], seq_key[1])
+                                    if seq_key in auth_to_star_seq:
+                                        entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                        self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
+                                        _row[1], _row[2], _row[3], _row[4] =\
+                                            entity_assembly_id, entity_id, seq_id, seq_id
+
+                                        _row[16], _row[17], _row[18], _row[19] =\
+                                            auth_asym_id, auth_seq_id, comp_id, atom_id
+                                        if has_ins_code and seq_key in auth_to_ins_code:
+                                            _row[27] = auth_to_ins_code[seq_key]
+
+                                        if seq_key in auth_to_orig_seq:
+                                            if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
+                                                orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                                _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
+                                            if not has_orig_seq:
+                                                orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                                if orig_seq_id in emptyValue:
+                                                    orig_seq_id = auth_seq_id
+                                                if orig_comp_id in emptyValue:
+                                                    orig_comp_id = comp_id
+                                                _row[20], _row[21], _row[22], _row[23] =\
+                                                    auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
+                                            elif any(d in emptyValue for d in orig_dat[idx]):
+                                                if seq_key in _auth_to_orig_seq:
+                                                    _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
+                                                if _row[23] in emptyValue:
+                                                    _row[23] = atom_id
+                                                ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                                if ambig_code > 0:
+                                                    orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                                    if orig_seq_id in emptyValue:
+                                                        orig_seq_id = auth_seq_id
+                                                    if orig_comp_id in emptyValue:
+                                                        orig_comp_id = comp_id
+                                                    _row[20], _row[21], _row[22] =\
+                                                        auth_asym_id, orig_seq_id, orig_comp_id
+                                                    if atom_id[0] not in protonBeginCode:
+                                                        _row[23] = atom_id
+                                                    else:
+                                                        len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
+                                                        if len_in_grp == 2:
+                                                            _row[23] = (atom_id[0:-1] + '1')\
+                                                                if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
+                                                        elif len_in_grp == 3:
+                                                            _row[23] = (atom_id[-1] + atom_id[0:-1])\
+                                                                if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
+                                                        elif _row[23] in emptyValue:
+                                                            _row[23] = atom_id
+
+                                        else:
+                                            seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                            if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                            if seq_key is not None:
+                                                _seq_key = (seq_key[0], seq_key[1])
+                                                _row[16], _row[17], _row[18], _row[19] =\
+                                                    seq_key[0], seq_key[1], seq_key[2], atom_id
+                                                if has_ins_code and seq_key in auth_to_ins_code:
+                                                    _row[27] = auth_to_ins_code[seq_key]
+
+                                            if has_auth_seq:
+                                                _row[20], _row[21], _row[22], _row[23] =\
+                                                    row[auth_asym_id_col], row[auth_seq_id_col], \
+                                                    row[auth_comp_id_col], row[auth_atom_id_col]
 
                                         index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
 
                                         if chain_id not in can_auth_asym_id_mapping:
                                             can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
-                                                                                  'ref_auth_seq_id': seq_key[1]
+                                                                                  'ref_auth_seq_id': auth_seq_id
                                                                                   }
 
                                     else:
-                                        resolved = False
 
-                    is_valid, cc_name, _ = self.__getChemCompNameAndStatusOf(comp_id)
-                    comp_id_bmrb_only = not is_valid and cc_name is not None and 'processing site' in cc_name
+                                        item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
-                    if not resolved and has_auth_seq and not comp_id_bmrb_only:
-                        try:
-                            seq_id = int(row[auth_seq_id_col])
-                        except (ValueError, TypeError):
-                            seq_id = None
+                                        if item is not None and ps is not None and any(_ps for _ps in ps if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
+                                            entity_assembly_id = item['entity_assembly_id']
+                                            entity_id = item['entity_id']
 
-                    if not resolved and seq_id is not None and has_coordinate:
+                                            _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
-                        def test_seq_id_offset(lp, index, row, _row, _idx, chain_id, seq_id, comp_id, offset):
-                            _found = _resolved = False
-                            _index = index
+                                            seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                            if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                            if seq_key is not None:
+                                                _seq_key = (seq_key[0], seq_key[1])
+                                                _row[16], _row[17], _row[18], _row[19] =\
+                                                    seq_key[0], seq_key[1], seq_key[2], atom_id
+                                                if has_ins_code and seq_key in auth_to_ins_code:
+                                                    _row[27] = auth_to_ins_code[seq_key]
 
-                            auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id + offset)
-                            if auth_asym_id is not None and auth_seq_id is not None:
-                                _found = _resolved = True
+                                            if has_auth_seq:
+                                                _row[20], _row[21], _row[22], _row[23] =\
+                                                    row[auth_asym_id_col], row[auth_seq_id_col], \
+                                                    row[auth_comp_id_col], row[auth_atom_id_col]
+
+                                            index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
+
+                                            if chain_id not in can_auth_asym_id_mapping:
+                                                can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
+                                                                                      'ref_auth_seq_id': seq_key[1]
+                                                                                      }
+
+                                        else:
+                                            resolved = False
+
+                        is_valid, cc_name, _ = self.__getChemCompNameAndStatusOf(comp_id)
+                        comp_id_bmrb_only = not is_valid and cc_name is not None and 'processing site' in cc_name
+
+                        if not resolved and has_auth_seq and not comp_id_bmrb_only:
+                            try:
+                                seq_id = int(row[auth_seq_id_col])
+                            except (ValueError, TypeError):
+                                seq_id = None
+
+                        if not resolved and seq_id is not None and has_coordinate:
+
+                            def test_seq_id_offset(lp, index, row, _row, _idx, chain_id, seq_id, comp_id, offset):
+                                _found = _resolved = False
+                                _index = index
+
+                                auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id + offset)
+                                if auth_asym_id is not None and auth_seq_id is not None:
+                                    _found = _resolved = True
+
+                                    item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
+
+                                    if item is not None and ps is not None and any(_ps for _ps in ps_common
+                                                                                   if _ps['chain_id'] == auth_asym_id
+                                                                                   and auth_seq_id in _ps['seq_id']):
+                                        entity_assembly_id = item['entity_assembly_id']
+                                        entity_id = item['entity_id']
+
+                                        _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
+
+                                        seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                        if v[0] == entity_assembly_id and v[1] == seq_id + offset and v[2] == entity_id), None)
+                                        if seq_key is not None and comp_id == seq_key[2]:
+                                            _seq_key = (seq_key[0], seq_key[1])
+                                            _row[16], _row[17], _row[18], _row[19] =\
+                                                seq_key[0], seq_key[1] - offset, comp_id, atom_id
+                                            if has_ins_code and seq_key in auth_to_ins_code:
+                                                _row[27] = auth_to_ins_code[seq_key]
+                                        else:
+                                            if has_orig_seq:  # DAOTHER-8758
+                                                try:
+                                                    orig_asym_id = row[orig_asym_id_col]
+                                                    orig_seq_id = int(row[orig_seq_id_col])
+                                                    _item = next((item for item in entity_assembly if item['auth_asym_id'] == orig_asym_id), None)
+                                                    if _item is not None:
+                                                        _entity_assembly_id = _item['entity_assembly_id']
+                                                        _entity_id = _item['entity_id']
+                                                        __seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                                          if v[0] == _entity_assembly_id and v[1] in (seq_id, orig_seq_id) and v[2] == _entity_id), None)
+                                                        if __seq_key is not None:
+                                                            comp_id = __seq_key[2]
+                                                            _row[1], _row[2], _row[3], _row[4] = _entity_assembly_id, _entity_id, __seq_key[1], __seq_key[1]
+                                                            _seq_key = (__seq_key[0], __seq_key[1])
+                                                            _row[16], _row[17], _row[18], _row[19] =\
+                                                                __seq_key[0], __seq_key[1], comp_id, atom_id
+                                                            if has_ins_code and __seq_key in auth_to_ins_code:
+                                                                _row[27] = auth_to_ins_code[__seq_key]
+                                                        else:
+                                                            _seq_key = (auth_asym_id, auth_seq_id + offset)
+                                                    else:
+                                                        _seq_key = (auth_asym_id, auth_seq_id + offset)
+                                                except ValueError:
+                                                    _seq_key = (auth_asym_id, auth_seq_id + offset)
+                                            else:
+                                                _item = next((item for item in entity_assembly if item['auth_asym_id'] == chain_id), None)
+                                                if _item is not None:
+                                                    _entity_assembly_id = _item['entity_assembly_id']
+                                                    _entity_id = _item['entity_id']
+                                                    __seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                                      if v[0] == _entity_assembly_id and v[1] == seq_id + offset and v[2] == _entity_id), None)
+                                                    if __seq_key is not None:
+                                                        _offset = __seq_key[1] - (seq_id + offset)
+                                                        _seq_id = seq_id - _offset
+                                                        __seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                                          if v[0] == _entity_assembly_id and v[1] == _seq_id and v[2] == _entity_id), None)
+                                                        if __seq_key is not None and comp_id == __seq_key[2]:
+                                                            comp_id = __seq_key[2]
+                                                            _row[1], _row[2], _row[3], _row[4] = _entity_assembly_id, _entity_id, _seq_id, _seq_id
+                                                            _seq_key = (__seq_key[0], __seq_key[1])
+                                                            _row[16], _row[17], _row[18], _row[19] =\
+                                                                __seq_key[0], __seq_key[1], comp_id, atom_id
+                                                            if has_ins_code and __seq_key in auth_to_ins_code:
+                                                                _row[27] = auth_to_ins_code[__seq_key]
+                                                        else:
+                                                            _resolved = False
+                                                    else:
+                                                        _resolved = False
+                                                else:
+                                                    _resolved = False
+
+                                        if has_auth_seq:
+                                            _row[20], _row[21], _row[22], _row[23] =\
+                                                row[auth_asym_id_col], row[auth_seq_id_col], \
+                                                row[auth_comp_id_col], row[auth_atom_id_col]
+                                        else:
+                                            _row[20], _row[21], _row[22], _row[23] =\
+                                                _row[16], _row[17], _row[18], _row[19]
+
+                                        if _resolved:
+                                            _index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, _idx)
+
+                                    else:
+                                        _resolved = False
+
+                                return _found, _resolved, _index, _row
+
+                            found = False
+                            for offset in range(1, 1000):
+                                found, resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, comp_id, offset)
+
+                                if found:
+                                    if resolved:
+                                        index, _row = _index, __row
+                                    break
+
+                                found, resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, comp_id, -offset)
+
+                                if found:
+                                    if resolved:
+                                        index, _row = _index, __row
+                                    break
+
+                            if not resolved and chain_id in can_auth_asym_id_mapping:  # DAOTHER-8751, 8755
+                                mapping = can_auth_asym_id_mapping[chain_id]
+
+                                auth_asym_id = mapping['auth_asym_id']
+                                ref_auth_seq_id = mapping['ref_auth_seq_id']
 
                                 item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
                                 if item is not None and ps is not None and any(_ps for _ps in ps_common
-                                                                               if _ps['chain_id'] == auth_asym_id
-                                                                               and auth_seq_id in _ps['seq_id']):
+                                                                               if _ps['chain_id'] in (auth_asym_id, str(letterToDigit(auth_asym_id)))
+                                                                               and ref_auth_seq_id in _ps['seq_id']):
+                                    resolved = True
+                                    found = False
+
                                     entity_assembly_id = item['entity_assembly_id']
                                     entity_id = item['entity_id']
 
                                     _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
-                                    seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                    if v[0] == entity_assembly_id and v[1] == seq_id + offset and v[2] == entity_id), None)
-                                    if seq_key is not None and comp_id == seq_key[2]:
-                                        _seq_key = (seq_key[0], seq_key[1])
-                                        _row[16], _row[17], _row[18], _row[19] =\
-                                            seq_key[0], seq_key[1] - offset, comp_id, atom_id
-                                        if has_ins_code and seq_key in auth_to_ins_code:
-                                            _row[27] = auth_to_ins_code[seq_key]
-                                    else:
-                                        if has_orig_seq:  # DAOTHER-8758
-                                            try:
-                                                orig_asym_id = row[orig_asym_id_col]
-                                                orig_seq_id = int(row[orig_seq_id_col])
-                                                _item = next((item for item in entity_assembly if item['auth_asym_id'] == orig_asym_id), None)
-                                                if _item is not None:
-                                                    _entity_assembly_id = _item['entity_assembly_id']
-                                                    _entity_id = _item['entity_id']
-                                                    __seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                                      if v[0] == _entity_assembly_id and v[1] in (seq_id, orig_seq_id) and v[2] == _entity_id), None)
-                                                    if __seq_key is not None:
-                                                        comp_id = __seq_key[2]
-                                                        _row[1], _row[2], _row[3], _row[4] = _entity_assembly_id, _entity_id, __seq_key[1], __seq_key[1]
-                                                        _seq_key = (__seq_key[0], __seq_key[1])
-                                                        _row[16], _row[17], _row[18], _row[19] =\
-                                                            __seq_key[0], __seq_key[1], comp_id, atom_id
-                                                        if has_ins_code and __seq_key in auth_to_ins_code:
-                                                            _row[27] = auth_to_ins_code[__seq_key]
-                                                    else:
-                                                        _seq_key = (auth_asym_id, auth_seq_id + offset)
-                                                else:
-                                                    _seq_key = (auth_asym_id, auth_seq_id + offset)
-                                            except ValueError:
-                                                _seq_key = (auth_asym_id, auth_seq_id + offset)
-                                        else:
-                                            _item = next((item for item in entity_assembly if item['auth_asym_id'] == chain_id), None)
-                                            if _item is not None:
-                                                _entity_assembly_id = _item['entity_assembly_id']
-                                                _entity_id = _item['entity_id']
-                                                __seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                                  if v[0] == _entity_assembly_id and v[1] == seq_id + offset and v[2] == _entity_id), None)
-                                                if __seq_key is not None:
-                                                    _offset = __seq_key[1] - (seq_id + offset)
-                                                    _seq_id = seq_id - _offset
-                                                    __seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                                      if v[0] == _entity_assembly_id and v[1] == _seq_id and v[2] == _entity_id), None)
-                                                    if __seq_key is not None and comp_id == __seq_key[2]:
-                                                        comp_id = __seq_key[2]
-                                                        _row[1], _row[2], _row[3], _row[4] = _entity_assembly_id, _entity_id, _seq_id, _seq_id
-                                                        _seq_key = (__seq_key[0], __seq_key[1])
-                                                        _row[16], _row[17], _row[18], _row[19] =\
-                                                            __seq_key[0], __seq_key[1], comp_id, atom_id
-                                                        if has_ins_code and __seq_key in auth_to_ins_code:
-                                                            _row[27] = auth_to_ins_code[__seq_key]
-                                                    else:
-                                                        _resolved = False
-                                                else:
-                                                    _resolved = False
-                                            else:
-                                                _resolved = False
+                                    _row[16], _row[17], _row[18], _row[19] =\
+                                        auth_asym_id, seq_id, comp_id, atom_id
 
                                     if has_auth_seq:
                                         _row[20], _row[21], _row[22], _row[23] =\
@@ -25059,185 +25198,190 @@ class NmrDpUtility:
                                         _row[20], _row[21], _row[22], _row[23] =\
                                             _row[16], _row[17], _row[18], _row[19]
 
-                                    if _resolved:
-                                        _index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, _idx)
+                                    if comp_id not in monDict3:
+                                        for item in entity_assembly:
+                                            if 'comp_id' in item and comp_id == item['comp_id']:
+                                                _entity_assembly_id = item['entity_assembly_id']
+                                                _entity_id = item['entity_id']
 
-                                else:
-                                    _resolved = False
+                                                __seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                                  if v[0] == _entity_assembly_id and v[1] == seq_id and v[2] == _entity_id), None)
+                                                if __seq_key is not None:
+                                                    found = True
+                                                    comp_id = __seq_key[2]
+                                                    _row[1], _row[2], _row[3], _row[4] = _entity_assembly_id, _entity_id, __seq_key[1], __seq_key[1]
+                                                    _seq_key = (__seq_key[0], __seq_key[1])
+                                                    _row[16], _row[17], _row[18], _row[19] =\
+                                                        __seq_key[0], __seq_key[1], comp_id, atom_id
+                                                    if has_ins_code and __seq_key in auth_to_ins_code:
+                                                        _row[27] = auth_to_ins_code[__seq_key]
 
-                            return _found, _resolved, _index, _row
+                                                    _seq_key = (__seq_key[0], __seq_key[1])
 
-                        found = False
-                        for offset in range(1, 1000):
-                            found, resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, comp_id, offset)
+                                    if not found:
+                                        _row[24] = 'UNMAPPED'
+                                        # DAOTHER-9065
+                                        if isinstance(_row[1], int) and str(_row[1]) in seq_id_offset_for_unmapped:
+                                            _row[3] += seq_id_offset_for_unmapped[str(_row[1])]
+                                            _row[4] = _row[3]
+                                        elif isinstance(_row[1], str) and _row[1] in seq_id_offset_for_unmapped:
+                                            _row[3] += seq_id_offset_for_unmapped[_row[1]]
+                                            _row[4] = _row[3]
+                                        elif trial == 0:
+                                            regenerate_request = True
 
-                            if found:
-                                if resolved:
-                                    index, _row = _index, __row
-                                break
+                                        _seq_key = (auth_asym_id, seq_id)
 
-                            found, resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, comp_id, -offset)
+                                    _index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, index)
 
-                            if found:
-                                if resolved:
-                                    index, _row = _index, __row
-                                break
+                        if not resolved:
 
-                        if not resolved and chain_id in can_auth_asym_id_mapping:  # DAOTHER-8751, 8755
-                            mapping = can_auth_asym_id_mapping[chain_id]
+                            entity_id = None
+                            if (self.__combined_mode or (self.__bmrb_only and self.__internal_mode)) and entity_id_col != -1:
+                                try:
+                                    entity_id = int(row[entity_id_col])
+                                except (ValueError, TypeError):
+                                    entity_id = None
 
-                            auth_asym_id = mapping['auth_asym_id']
-                            ref_auth_seq_id = mapping['ref_auth_seq_id']
+                            if not has_coordinate:
+                                seq_id = int(row[seq_id_col])
 
-                            item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
+                            _row[1], _row[2], _row[3], _row[4], _row[5] = chain_id, entity_id, seq_id, seq_id, comp_id
 
-                            if item is not None and ps is not None and any(_ps for _ps in ps_common
-                                                                           if _ps['chain_id'] in (auth_asym_id, str(letterToDigit(auth_asym_id)))
-                                                                           and ref_auth_seq_id in _ps['seq_id']):
-                                resolved = True
-                                found = False
+                            # DAOTHER-9065
+                            if details_col != -1 and row[details_col] == 'UNMAPPED':
+                                if isinstance(_row[1], int) and str(_row[1]) in seq_id_offset_for_unmapped:
+                                    offset = None
+                                    if isinstance(_row[17], int):
+                                        offset = _row[3] - _row[17]
+                                    elif isinstance(_row[17], str) and _row[17].isdigit():
+                                        offset = _row[3] - int(_row[17])
+                                    if offset is not None and offset != seq_id_offset_for_unmapped[str(_row[1])]:
+                                        if isinstance(_row[17], int):
+                                            _row[3] = _row[17] + seq_id_offset_for_unmapped[str(_row[1])]
+                                            _row[4] = _row[3]
+                                        else:
+                                            _row[3] = int(_row[17]) + seq_id_offset_for_unmapped[str(_row[1])]
+                                            _row[4] = _row[3]
+                                elif isinstance(_row[1], str) and _row[1] in seq_id_offset_for_unmapped:
+                                    offset = None
+                                    if isinstance(_row[17], int):
+                                        offset = _row[3] - _row[17]
+                                    elif isinstance(_row[17], str) and _row[17].isdigit():
+                                        offset = _row[3] - int(_row[17])
+                                    if offset is not None and offset != seq_id_offset_for_unmapped[_row[1]]:
+                                        if isinstance(_row[17], int):
+                                            _row[3] = _row[17] + seq_id_offset_for_unmapped[_row[1]]
+                                            _row[4] = _row[3]
+                                        else:
+                                            _row[3] = int(_row[17]) + seq_id_offset_for_unmapped[_row[1]]
+                                            _row[4] = _row[3]
+                                elif trial == 0:
+                                    regenerate_request = True
 
-                                entity_assembly_id = item['entity_assembly_id']
-                                entity_id = item['entity_id']
-
-                                _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
-
-                                _row[16], _row[17], _row[18], _row[19] =\
-                                    auth_asym_id, seq_id, comp_id, atom_id
-
-                                if has_auth_seq:
-                                    _row[20], _row[21], _row[22], _row[23] =\
-                                        row[auth_asym_id_col], row[auth_seq_id_col], \
-                                        row[auth_comp_id_col], row[auth_atom_id_col]
-                                else:
-                                    _row[20], _row[21], _row[22], _row[23] =\
-                                        _row[16], _row[17], _row[18], _row[19]
-
-                                if comp_id not in monDict3:
-                                    for item in entity_assembly:
-                                        if 'comp_id' in item and comp_id == item['comp_id']:
-                                            _entity_assembly_id = item['entity_assembly_id']
-                                            _entity_id = item['entity_id']
-
-                                            __seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                              if v[0] == _entity_assembly_id and v[1] == seq_id and v[2] == _entity_id), None)
-                                            if __seq_key is not None:
-                                                found = True
-                                                comp_id = __seq_key[2]
-                                                _row[1], _row[2], _row[3], _row[4] = _entity_assembly_id, _entity_id, __seq_key[1], __seq_key[1]
-                                                _seq_key = (__seq_key[0], __seq_key[1])
-                                                _row[16], _row[17], _row[18], _row[19] =\
-                                                    __seq_key[0], __seq_key[1], comp_id, atom_id
-                                                if has_ins_code and __seq_key in auth_to_ins_code:
-                                                    _row[27] = auth_to_ins_code[__seq_key]
-
-                                                _seq_key = (__seq_key[0], __seq_key[1])
-
-                                if not found:
-                                    _row[24] = 'UNMAPPED'
-
-                                    _seq_key = (auth_asym_id, seq_id)
-
-                                _index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, index)
-
-                    if not resolved:
-
-                        entity_id = None
-                        if (self.__combined_mode or (self.__bmrb_only and self.__internal_mode)) and entity_id_col != -1:
-                            try:
-                                entity_id = int(row[entity_id_col])
-                            except (ValueError, TypeError):
-                                entity_id = None
-
-                        if not has_coordinate:
-                            seq_id = int(row[seq_id_col])
-
-                        _row[1], _row[2], _row[3], _row[4], _row[5] = chain_id, entity_id, seq_id, seq_id, comp_id
-
-                        atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
-                        if len(atom_ids) == 0 or atom_ids[0] not in self.__csStat.getAllAtoms(comp_id):
-                            atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
-                        len_atom_ids = len(atom_ids)
-                        if len_atom_ids == 0 or comp_id_bmrb_only:
-                            _row[6] = atom_id
-                            _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
-                            if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                        else:
-                            _row[6] = atom_ids[0]
-                            _row[19] = None
-                            fill_auth_atom_id = _row[18] not in emptyValue
-                            if self.__ccU.updateChemCompDict(comp_id):
-                                cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
-                                if cca is not None:
-                                    _row[7] = cca[self.__ccU.ccaTypeSymbol]
-                                    if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                        _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                                else:
-                                    _row[7] = 'H' if _row[6][0] in protonBeginCode else atom_id[0]
-                                    if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                        _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                            else:
+                            atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
+                            if len(atom_ids) == 0 or atom_ids[0] not in self.__csStat.getAllAtoms(comp_id):
+                                atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
+                            len_atom_ids = len(atom_ids)
+                            if len_atom_ids == 0 or comp_id_bmrb_only:
+                                _row[6] = atom_id
                                 _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                            else:
+                                _row[6] = atom_ids[0]
+                                _row[19] = None
+                                fill_auth_atom_id = _row[18] not in emptyValue
+                                if self.__ccU.updateChemCompDict(comp_id):
+                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
+                                    if cca is not None:
+                                        _row[7] = cca[self.__ccU.ccaTypeSymbol]
+                                        if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                            _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                                    else:
+                                        _row[7] = 'H' if _row[6][0] in protonBeginCode else atom_id[0]
+                                        if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                            _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                                else:
+                                    _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
+                                    if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                        _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
-                            if len_atom_ids > 1:
-                                __row = copy.copy(_row)
-                                lp.add_data(__row)
-
-                                for _atom_id in atom_ids[1:-1]:
+                                if len_atom_ids > 1:
                                     __row = copy.copy(_row)
+                                    lp.add_data(__row)
+
+                                    for _atom_id in atom_ids[1:-1]:
+                                        __row = copy.copy(_row)
+
+                                        index += 1
+
+                                        __row[0] = index
+                                        __row[6] = _atom_id
+
+                                        lp.add_data(__row)
 
                                     index += 1
 
-                                    __row[0] = index
-                                    __row[6] = _atom_id
+                                    _row[0] = index
+                                    _row[6] = atom_ids[-1]
 
-                                    lp.add_data(__row)
+                                if fill_auth_atom_id:
+                                    _row[19] = _row[6]
 
-                                index += 1
+                    # DAOTHER-9065
+                    if isinstance(_row[1], int) and str(_row[1]) not in seq_id_offset_for_unmapped and _row[24] in emptyValue:
+                        if isinstance(_row[3], int):
+                            if isinstance(_row[17], int):
+                                seq_id_offset_for_unmapped[str(_row[1])] = _row[3] - _row[17]
+                            elif isinstance(_row[17], str) and _row[17].isdigit():
+                                seq_id_offset_for_unmapped[str(_row[1])] = _row[3] - int(_row[17])
+                    elif isinstance(_row[1], str) and _row[1] not in seq_id_offset_for_unmapped and _row[24] in emptyValue:
+                        if isinstance(_row[3], int):
+                            if isinstance(_row[17], int):
+                                seq_id_offset_for_unmapped[_row[1]] = _row[3] - _row[17]
+                            elif isinstance(_row[17], str) and _row[17].isdigit():
+                                seq_id_offset_for_unmapped[_row[1]] = _row[3] - int(_row[17])
 
-                                _row[0] = index
-                                _row[6] = atom_ids[-1]
+                    if isinstance(_row[12], int):
+                        comp_id = _row[5]
+                        atom_id = _row[6]
+                        ambig_id = _row[12]
 
-                            if fill_auth_atom_id:
-                                _row[19] = _row[6]
+                        if ambig_id == 0:
+                            _row[12] = None
 
-                if isinstance(_row[12], int):
-                    comp_id = _row[5]
-                    atom_id = _row[6]
-                    ambig_id = _row[12]
+                        elif ambig_id in (2, 3):
+                            _ambig_id = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                            if _ambig_id not in (0, ambig_id):
+                                if _ambig_id != 1:
+                                    _row[12] = _ambig_id
+                                else:
+                                    _row[12] = ambig_id = 4
 
-                    if ambig_id == 0:
-                        _row[12] = None
+                        elif ambig_id == 6:
+                            if len([item for item in entity_assembly
+                                    if item['entity_type'] != 'non-polymer']) == 1\
+                               and len(entity_assembly[0]['label_asym_id'].split(',')) == 1:
+                                _row[12] = ambig_id = 5
 
-                    elif ambig_id in (2, 3):
-                        _ambig_id = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
-                        if _ambig_id not in (0, ambig_id):
-                            if _ambig_id != 1:
-                                _row[12] = _ambig_id
-                            else:
-                                _row[12] = ambig_id = 4
+                        if ambig_id in (1, 2, 3):
+                            if _row[13] is not None:
+                                _row[13] = None
 
-                    elif ambig_id == 6:
-                        if len([item for item in entity_assembly
-                                if item['entity_type'] != 'non-polymer']) == 1\
-                           and len(entity_assembly[0]['label_asym_id'].split(',')) == 1:
-                            _row[12] = ambig_id = 5
+                        elif ambig_id in (4, 5, 6, 9):
+                            has_genuine_ambig_code = True
 
-                    if ambig_id in (1, 2, 3):
-                        if _row[13] is not None:
-                            _row[13] = None
+                    chain_id = row[chain_id_col]
 
-                    elif ambig_id in (4, 5, 6, 9):
-                        has_genuine_ambig_code = True
+                    lp.add_data(_row)
 
-                chain_id = row[chain_id_col]
+                    index += 1
 
-                lp.add_data(_row)
+                if not regenerate_request:
+                    break
 
-                index += 1
+                trial += 1
 
             key_items = self.key_items[file_type][content_subtype]
 

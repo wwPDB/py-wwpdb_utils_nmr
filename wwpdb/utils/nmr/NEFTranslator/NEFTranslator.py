@@ -4583,7 +4583,7 @@ class NEFTranslator:
 
         key = (comp_id, atom_id, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForValidStarAtomInXplor:
-            return copy.copy(self.__cachedDictForValidStarAtomInXplor[key])
+            return copy.deepcopy(self.__cachedDictForValidStarAtomInXplor[key])
 
         atom_list = []
         ambiguity_code = None
@@ -4660,7 +4660,7 @@ class NEFTranslator:
 
         key = (comp_id, atom_id, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForValidStarAtom:
-            return copy.copy(self.__cachedDictForValidStarAtom[key])
+            return copy.deepcopy(self.__cachedDictForValidStarAtom[key])
 
         atom_list = []
         ambiguity_code = None
@@ -4756,7 +4756,7 @@ class NEFTranslator:
 
         key = (comp_id, nef_atom, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForStarAtom:
-            return copy.copy(self.__cachedDictForStarAtom[key])
+            return copy.deepcopy(self.__cachedDictForStarAtom[key])
 
         comp_id = comp_id.upper()
         is_std_comp_id = comp_id in monDict3
@@ -5052,7 +5052,7 @@ class NEFTranslator:
 
         key = (comp_id, str(star_atom_list), str(details), leave_unmatched)
         if key in self.__cachedDictForNefAtom:
-            return copy.copy(self.__cachedDictForNefAtom[key])
+            return copy.deepcopy(self.__cachedDictForNefAtom[key])
 
         atom_list = []
         atom_id_map = {}

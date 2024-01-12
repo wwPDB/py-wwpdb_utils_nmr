@@ -211,14 +211,22 @@ if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/2ju4/2ju4-trimmed.mr',
-                     '../../tests-nmr/mock-data-remediation/2ju4/2ju4.cif')
+        reader.parse('../../tests-nmr/mock-data-daother-9063/4_mercaptophenol_a3c_NOE_restaints.txt',
+                     '../../tests-nmr/mock-data-daother-9063/D_800642_model_P1.cif.V15')
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-daother-9063/4_mercaptophenol_a3c_NOE_restaints.txt',
+                 '../../tests-nmr/mock-data-daother-9063/D_800642_model_P1.cif.V15')
 
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
-    reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/2k4l/2k4l-corrected.mr',
-                     '../../tests-nmr/mock-data-remediation/2k4l/2k4l.cif')
+    reader.parse('../../tests-nmr/mock-data-remediation/2ju4/2ju4-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2ju4/2ju4.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2k4l/2k4l-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2k4l/2k4l.cif')
 
     reader = CnsMRReader(True)
     reader.setDebugMode(True)

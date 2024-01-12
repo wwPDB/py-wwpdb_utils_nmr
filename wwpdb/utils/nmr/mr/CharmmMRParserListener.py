@@ -2692,7 +2692,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             if not foundCompId:
                                 # DAOTHER-9063
                                 ligands = 0
-                                if self.__hasNonPolySeq and self.__cur_subtype == 'dist':
+                                if self.__hasNonPoly and self.__cur_subtype == 'dist':
                                     for np in self.__nonPoly:
                                         ligands += len(np['seq_id'])
                                 if ligands == 1 and len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1:

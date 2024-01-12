@@ -78,6 +78,7 @@
 # 24-Jan-2023  M. Yokochi - add support for heteronuclear relaxation data (NOE, T1, T2, T1rho, Order parameter) (NMR restraint remediation)
 # 27-Feb-2023  M. Yokochi - add getLabelSeqSchemOf(), which convert author sequence scheme to label sequence scheme of the coordinates (NMR restraint remediation)
 # 13-Dec-2023  M. Yokochi - add 'hydrogen_non_instantiated' warning (DAOTHER-8945)
+# 12-Jan-2024  M. Yokochi - getNmrSeq1LetterCodeOf() returns '.' for missing residue, instead of whitespace (DAOTHER-9065) 
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1072,7 +1073,7 @@ class NmrDpReport:
             if comp_id in monDict3:
                 f.append(monDict3[comp_id])
             elif comp_id in emptyValue:
-                f.append(' ')
+                f.append('.')
             else:
                 f.append(f'({comp_id})')
 
@@ -1100,7 +1101,7 @@ class NmrDpReport:
             if comp_id in monDict3:
                 f.append(monDict3[comp_id])
             elif comp_id in emptyValue:
-                f.append(' ')
+                f.append('.')
             else:
                 f.append(f'({comp_id})')
 

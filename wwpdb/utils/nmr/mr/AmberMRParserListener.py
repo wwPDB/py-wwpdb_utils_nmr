@@ -4062,8 +4062,9 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__hasNonPolySeq and useDefault:
 
             ligands = 0
-            for np in self.__nonPolySeq:
-                ligands += np['comp_id'].count(authCompId)
+            if self.__hasNonPoly and self.__cur_subtype == 'dist':
+                for np in self.__nonPoly:
+                    ligands += np['comp_id'].count(authCompId)
 
             for np in self.__nonPolySeq:
                 chainId = np['auth_chain_id']

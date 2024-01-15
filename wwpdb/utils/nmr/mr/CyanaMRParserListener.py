@@ -282,6 +282,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # polymer sequence of MR file
     __polySeqRst = None
+    __polySeqRstFailed = None
 
     __seqAlign = None
     __chainAssign = None
@@ -487,6 +488,7 @@ class CyanaMRParserListener(ParseTreeListener):
     def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
         self.__chainNumberDict = {}
         self.__polySeqRst = []
+        self.__polySeqRstFailed = []
         self.__f = []
 
     # Exit a parse tree produced by CyanaMRParser#cyana_mr.
@@ -629,6 +631,47 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if 'branched_remap' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['branched_remap'] = branchedMapping
 
+                        if len(self.__polySeqRstFailed) > 0:
+                            sortPolySeqRst(self.__polySeqRstFailed)
+
+                            seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
+                            chainAssignFailed, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type,
+                                                                               self.__polySeq, self.__polySeqRstFailed, seqAlignFailed)
+                            if chainAssignFailed is not None:
+                                seqIdRemapFailed = []
+
+                                for ca in chainAssignFailed:
+                                    if ca['conflict'] > 0:
+                                        continue
+                                    ref_chain_id = ca['ref_chain_id']
+                                    test_chain_id = ca['test_chain_id']
+                                    sa = next(sa for sa in seqAlignFailed
+                                              if sa['ref_chain_id'] == ref_chain_id
+                                              and sa['test_chain_id'] == test_chain_id)
+
+                                    poly_seq_model = next(ps for ps in self.__polySeq
+                                                          if ps['auth_chain_id'] == ref_chain_id)
+
+                                    seq_id_mapping = {}
+                                    for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                        if mid_code == '|':
+                                            try:
+                                                seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
+                                                                                   in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                                                                   if seq_id == ref_seq_id)
+                                            except StopIteration:
+                                                pass
+
+                                    if any(k for k, v in seq_id_mapping.items() if k != v)\
+                                       and not any(k for k, v in seq_id_mapping.items()
+                                                   if v in poly_seq_model['seq_id']
+                                                   and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
+                                        seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping})
+
+                                if len(seqIdRemapFailed) > 0:
+                                    if 'chain_seq_id_remap' not in self.reasonsForReParsing:
+                                        self.reasonsForReParsing['chain_seq_id_remap'] = seqIdRemapFailed
+
                 if self.__reasons is None and any(f for f in self.__f if 'Atom not found' in f):
                     if len(self.unambigAtomNameMapping) > 0:
                         if 'unambig_atom_id_remap' not in self.reasonsForReParsing:
@@ -646,8 +689,10 @@ class CyanaMRParserListener(ParseTreeListener):
             if 'local_seq_scheme' in self.reasonsForReParsing:
                 if 'non_poly_remap' in self.reasonsForReParsing or 'branched_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
-                if 'seq_id_remap' in self.reasonsForReParsing:
-                    del self.reasonsForReParsing['seq_id_remap']
+                elif 'seq_id_remap' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['local_seq_scheme']
+                elif 'chain_seq_id_remap' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['local_seq_scheme']
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['seq_id_remap']
@@ -2009,8 +2054,11 @@ class CyanaMRParserListener(ParseTreeListener):
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
             elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
-            elif 'seq_id_remap' in self.__reasons:
-                fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
+            elif 'seq_id_remap' in self.__reasons or 'chain_seq_id_remap' in self.__reasons:
+                if 'seq_id_remap' in self.__reasons:
+                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
+                if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], None, seqId)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
@@ -2259,6 +2307,8 @@ class CyanaMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                 f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
+                updatePolySeqRst(self.__polySeqRstFailed, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId,
+                                 _seqId, compId, _compId)
 
         return list(chainAssign)
 
@@ -2302,8 +2352,11 @@ class CyanaMRParserListener(ParseTreeListener):
             elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
                 refChainId = fixedChainId
-            elif 'seq_id_remap' in self.__reasons:
-                _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
+            elif 'seq_id_remap' in self.__reasons or 'chain_seq_id_remap' in self.__reasons:
+                if 'seq_id_remap' in self.__reasons:
+                    _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
+                if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], str(refChainId), seqId)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
@@ -2610,6 +2663,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
+                    updatePolySeqRst(self.__polySeqRstFailed, str(refChainId), _seqId, compId, _compId)
 
         elif any(ca for ca in chainAssign if ca[0] == refChainId) and any(ca for ca in chainAssign if ca[0] != refChainId):
             _chainAssign = copy.copy(chainAssign)
@@ -2636,20 +2690,27 @@ class CyanaMRParserListener(ParseTreeListener):
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
             elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
-            if 'seq_id_remap' not in self.__reasons:
+            if 'seq_id_remap' not in self.__reasons and 'chain_seq_id_remap' not in self.__reasons:
                 if fixedSeqId is not None:
                     seqId = _seqId = fixedSeqId
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId, None)
             if self.__reasons is not None:
-                if 'seq_id_remap' not in self.__reasons:
+                if 'seq_id_remap' not in self.__reasons and 'chain_seq_id_remap' not in self.__reasons:
                     if fixedChainId != chainId:
                         continue
                 else:
-                    _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
-                    if fixedSeqId is not None:
-                        seqId = _seqId = fixedSeqId
+                    if 'seq_id_remap' in self.__reasons:
+                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                        if fixedSeqId is not None:
+                            seqId = _seqId = fixedSeqId
+                    if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                        fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId)
+                        if fixedChainId is not None and fixedChainId != chainId:
+                            continue
+                        if fixedSeqId is not None:
+                            seqId = _seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
@@ -2696,13 +2757,20 @@ class CyanaMRParserListener(ParseTreeListener):
             for np in self.__nonPolySeq:
                 chainId, seqId = self.getRealChainSeqId(np, _seqId, None, False)
                 if self.__reasons is not None:
-                    if 'seq_id_remap' not in self.__reasons:
+                    if 'seq_id_remap' not in self.__reasons and 'chain_seq_id_remap' not in self.__reasons:
                         if fixedChainId != chainId:
                             continue
                     else:
-                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
-                        if fixedSeqId is not None:
-                            seqId = _seqId = fixedSeqId
+                        if 'seq_id_remap' in self.__reasons:
+                            _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                            if fixedSeqId is not None:
+                                seqId = _seqId = fixedSeqId
+                        if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                            fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId)
+                            if fixedChainId is not None and fixedChainId != chainId:
+                                continue
+                            if fixedSeqId is not None:
+                                seqId = _seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
@@ -2810,7 +2878,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
             elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
-            if 'seq_id_remap' not in self.__reasons:
+            if 'seq_id_remap' not in self.__reasons and 'chain_seq_id_remap' not in self.__reasons:
                 if fixedSeqId is not None:
                     seqId = _seqId = fixedSeqId
 
@@ -2819,13 +2887,20 @@ class CyanaMRParserListener(ParseTreeListener):
             if chainId != fixedChainId:
                 continue
             if self.__reasons is not None:
-                if 'seq_id_remap' not in self.__reasons:
+                if 'seq_id_remap' not in self.__reasons and 'chain_seq_id_remap' not in self.__reasons:
                     if fixedChainId != chainId:
                         continue
                 else:
-                    _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
-                    if fixedSeqId is not None:
-                        seqId = _seqId = fixedSeqId
+                    if 'seq_id_remap' in self.__reasons:
+                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                        if fixedSeqId is not None:
+                            seqId = _seqId = fixedSeqId
+                    if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                        fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId)
+                        if fixedChainId is not None and fixedChainId != chainId:
+                            continue
+                        if fixedSeqId is not None:
+                            seqId = _seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
@@ -2874,13 +2949,20 @@ class CyanaMRParserListener(ParseTreeListener):
                 if chainId != fixedChainId:
                     continue
                 if self.__reasons is not None:
-                    if 'seq_id_remap' not in self.__reasons:
+                    if 'seq_id_remap' not in self.__reasons and 'chain_seq_id_remap' not in self.__reasons:
                         if fixedChainId != chainId:
                             continue
                     else:
-                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
-                        if fixedSeqId is not None:
-                            seqId = _seqId = fixedSeqId
+                        if 'seq_id_remap' in self.__reasons:
+                            _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
+                            if fixedSeqId is not None:
+                                seqId = _seqId = fixedSeqId
+                        if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                            fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId)
+                            if fixedChainId is not None and fixedChainId != chainId:
+                                continue
+                            if fixedSeqId is not None:
+                                seqId = _seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
@@ -7969,32 +8051,60 @@ class CyanaMRParserListener(ParseTreeListener):
                 return
 
             # circular shift
-            if self.__reasons is not None and 'seq_id_remap' in self.__reasons and len(chainAssign1) == 1 and len(chainAssign2) == 1 and {atomId1, atomId2} == {'N', 'C'}:
-                chainId1 = chainAssign1[0][0]
-                chainId2 = chainAssign2[0][0]
-                if chainId1 == chainId2:
-                    seqIdDict = next((remap['seq_id_dict'] for remap in self.__reasons['seq_id_remap'] if remap['chain_id'] == chainId1), None)
-                    if seqIdDict is not None:
-                        seqIdDictKeys = seqIdDict.keys()
-                        seqIdDictVals = seqIdDict.values()
-                        minSeqId = min(seqIdDictKeys)
-                        maxSeqId = max(seqIdDictKeys)
-                        if {seqId1, seqId2} == {minSeqId, maxSeqId}:
-                            _minSeqId = min(seqIdDictVals)
-                            _maxSeqId = max(seqIdDictVals)
-                            if seqId1 == minSeqId and atomId1 == 'N' and seqId2 == maxSeqId and atomId2 == 'C':
-                                seqId1 = next(k for k, v in seqIdDict.items() if v == _minSeqId)
-                                seqId2 = next(k for k, v in seqIdDict.items() if v == _maxSeqId)
+            if self.__reasons is not None and len(chainAssign1) == 1 and len(chainAssign2) == 1 and {atomId1, atomId2} == {'N', 'C'}:
+                if 'seq_id_remap' in self.__reasons:
+                    chainId1 = chainAssign1[0][0]
+                    chainId2 = chainAssign2[0][0]
+                    if chainId1 == chainId2:
+                        seqIdDict = next((remap['seq_id_dict'] for remap in self.__reasons['seq_id_remap'] if remap['chain_id'] == chainId1), None)
+                        if seqIdDict is not None:
+                            seqIdDictKeys = seqIdDict.keys()
+                            seqIdDictVals = seqIdDict.values()
+                            minSeqId = min(seqIdDictKeys)
+                            maxSeqId = max(seqIdDictKeys)
+                            if {seqId1, seqId2} == {minSeqId, maxSeqId}:
+                                _minSeqId = min(seqIdDictVals)
+                                _maxSeqId = max(seqIdDictVals)
+                                if seqId1 == minSeqId and atomId1 == 'N' and seqId2 == maxSeqId and atomId2 == 'C':
+                                    seqId1 = next(k for k, v in seqIdDict.items() if v == _minSeqId)
+                                    seqId2 = next(k for k, v in seqIdDict.items() if v == _maxSeqId)
 
-                                chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
-                                chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
+                                    chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
+                                    chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
 
-                            elif seqId2 == minSeqId and atomId2 == 'N' and seqId1 == maxSeqId and atomId1 == 'C':
-                                seqId2 = next(k for k, v in seqIdDict.items() if v == _minSeqId)
-                                seqId1 = next(k for k, v in seqIdDict.items() if v == _maxSeqId)
+                                elif seqId2 == minSeqId and atomId2 == 'N' and seqId1 == maxSeqId and atomId1 == 'C':
+                                    seqId2 = next(k for k, v in seqIdDict.items() if v == _minSeqId)
+                                    seqId1 = next(k for k, v in seqIdDict.items() if v == _maxSeqId)
 
-                                chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
-                                chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
+                                    chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
+                                    chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
+
+                if 'chain_seq_id_remap' in self.__reasons:
+                    chainId1 = chainAssign1[0][0]
+                    chainId2 = chainAssign2[0][0]
+                    if chainId1 == chainId2:
+                        seqIdDict = next((remap['seq_id_dict'] for remap in self.__reasons['chain_seq_id_remap'] if remap['chain_id'] == chainId1), None)
+                        if seqIdDict is not None:
+                            seqIdDictKeys = seqIdDict.keys()
+                            seqIdDictVals = seqIdDict.values()
+                            minSeqId = min(seqIdDictKeys)
+                            maxSeqId = max(seqIdDictKeys)
+                            if {seqId1, seqId2} == {minSeqId, maxSeqId}:
+                                _minSeqId = min(seqIdDictVals)
+                                _maxSeqId = max(seqIdDictVals)
+                                if seqId1 == minSeqId and atomId1 == 'N' and seqId2 == maxSeqId and atomId2 == 'C':
+                                    seqId1 = next(k for k, v in seqIdDict.items() if v == _minSeqId)
+                                    seqId2 = next(k for k, v in seqIdDict.items() if v == _maxSeqId)
+
+                                    chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
+                                    chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
+
+                                elif seqId2 == minSeqId and atomId2 == 'N' and seqId1 == maxSeqId and atomId1 == 'C':
+                                    seqId2 = next(k for k, v in seqIdDict.items() if v == _minSeqId)
+                                    seqId1 = next(k for k, v in seqIdDict.items() if v == _maxSeqId)
+
+                                    chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
+                                    chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
 
             self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
             self.selectCoordAtoms(chainAssign2, seqId2, None, atomId2)

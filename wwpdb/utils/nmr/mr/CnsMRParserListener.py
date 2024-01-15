@@ -747,6 +747,9 @@ class CnsMRParserListener(ParseTreeListener):
                             _np_seq_id_mapping = {k: v for k, v in np_seq_id_mapping.items() if v is not None}
                             if len(_np_seq_id_mapping) == 0:
                                 continue
+                            _np_seq_id_mapping_ = {v: k for k, v in np_seq_id_mapping.items() if v is not None}
+                            if len(_np_seq_id_mapping) != len(_np_seq_id_mapping_):
+                                continue
                             seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': _np_seq_id_mapping})
 
                         if len(seqIdRemap) == 0:
@@ -766,6 +769,8 @@ class CnsMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['local_seq_scheme']
                 if 'seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['seq_id_remap']
+                if 'np_seq_id_remap' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['np_seq_id_remap']
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['seq_id_remap']

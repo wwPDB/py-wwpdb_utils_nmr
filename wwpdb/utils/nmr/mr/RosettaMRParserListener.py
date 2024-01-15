@@ -556,8 +556,8 @@ class RosettaMRParserListener(ParseTreeListener):
             if 'local_seq_scheme' in self.reasonsForReParsing:
                 if 'non_poly_remap' in self.reasonsForReParsing or 'branched_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
-                elif 'seq_id_remap' in self.reasonsForReParsing:
-                    del self.reasonsForReParsing['local_seq_scheme']
+                if 'seq_id_remap' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['seq_id_remap']
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['seq_id_remap']

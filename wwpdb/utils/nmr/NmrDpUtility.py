@@ -17437,15 +17437,29 @@ class NmrDpUtility:
                     else:
                         ent['chem_comp_name'].append(cc_name)
 
-                        warn = f"Non standard residue ({s['chain_id']}:{seq_id}:{comp_id}) did not match with chemical component dictionary (CCD)."
+                        if comp_id != '.':
+                            warn = f"Non standard residue ({s['chain_id']}:{seq_id}:{comp_id}) did not match with chemical component dictionary (CCD)."
 
-                        self.report.warning.appendDescription('ccd_mismatch',
-                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                               'description': warn})
-                        self.report.setWarning()
+                            self.report.warning.appendDescription('ccd_mismatch',
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                   'description': warn})
+                            self.report.setWarning()
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - {warn}\n")
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - {warn}\n")
+
+                        # DAOTHER-9065
+                        else:
+                            warn = f"Residue ({s['chain_id']}:{seq_id}:{comp_id}) was not specified. "\
+                                   "Please update the sequence in the Macromolecules page."
+
+                            self.report.warning.appendDescription('sequence_mismatch',
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                   'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - {warn}\n")
 
                     ent['exptl_data'].append({'chem_shift': False, 'dist_restraint': False, 'dihed_restraint': False,
                                               'rdc_restraint': False, 'spectral_peak': False, 'coordinate': False})
@@ -29355,7 +29369,7 @@ class NmrDpUtility:
 
                     sf_item['loop'] = lp
 
-            else:  # nothing to do because of missing polimer sequence for this loop
+            else:  # nothing to do because of missing polymer sequence for this loop
 
                 lp = loop
 

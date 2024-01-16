@@ -7729,7 +7729,7 @@ def getPdbxNmrSoftwareName(name):
         return 'X-PLOR NIH'
     if name == 'XPLOR-NIH/CNS':
         return 'X-PLOR NIH/CNS'
-    return name  # 'CHARMM', 'CNS', 'CYANA', 'DYNAMO', 'PALES', 'TALOS', 'GROMACS', 'SYBYL'
+    return name  # 'ARIA', 'CHARMM', 'CNS', 'CYANA', 'DYNAMO', 'PALES', 'TALOS', 'GROMACS', 'SYBYL'
 
 
 def hasKeyValue(d=None, key=None):

@@ -8859,7 +8859,8 @@ class XplorMRParserListener(ParseTreeListener):
                and self.__cur_subtype in self.__reasons['inhibit_label_seq_scheme'][chainId]\
                and self.__reasons['inhibit_label_seq_scheme'][chainId][self.__cur_subtype]\
                and 'segment_id_mismatch' not in self.__reasons:
-                continue
+                if not isChainSpecified:
+                    continue
 
             psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == chainId]
 
@@ -9009,6 +9010,8 @@ class XplorMRParserListener(ParseTreeListener):
                                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, atomId, coordAtomSite)
 
                         atomIds = self.getAtomIdList(_factor, compId, atomId)
+                        if atomSiteAtomId is not None and not any(_atomId in atomSiteAtomId for _atomId in atomIds):
+                            atomId = translateToStdAtomName(atomId, compId, atomSiteAtomId, self.__ccU, False)
 
                         # @see: https://bmrb.io/ref_info/atom_nom.tbl
                         if self.__trust_bmrb_ref_info:

@@ -182,7 +182,7 @@
 # 12-Jan-2024  M. Yokochi - preserve the original sequence offset of CS loop of UNMAPPED residue (DAOTHER-9065)
 # 12-Jan-2024  M. Yokochi - fix sequence merge of entity loop and CS loop (DAOTHER-9065)
 # 16-Jan-2024  M. Yokochi - add 'nm-res-ari' file type for ARIA restraint format (DAOTHER-9079, NMR restraint remediation)
-
+# 17-Jan-2024  M. Yokochi - detect coordinate issue (DAOTHER-9084, type_symbol mismatches label_atom_id)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -540,7 +540,7 @@ def convert_codec(inPath, outPath, in_codec='utf-8', out_codec='utf-8'):
 
 
 def convert_rtf_to_ascii(inPath, outPath):
-    """ Convert RDF file to ASCII file.
+    """ Convert RTF file to ASCII text file.
     """
 
     with open(inPath, 'r') as ifh, \
@@ -40276,6 +40276,8 @@ class NmrDpUtility:
         input_source = self.report.input_sources[src_id]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
+
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
 
         polymer_sequence = input_source_dic['polymer_sequence'] if has_poly_seq else []
@@ -40293,7 +40295,8 @@ class NmrDpUtility:
                           {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                           {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
                           {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                          {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                          {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                          {'name': 'type_symbol', 'type': 'str'}  # DAOTHER-9084
                           ]
 
             if has_pdbx_auth_atom_name:  # DAOTHER-7665
@@ -40345,6 +40348,45 @@ class NmrDpUtility:
                     else:
                         self.__auth_to_label_seq[seq_key] = seq_key
             self.__label_to_auth_seq = {v: k for k, v in self.__auth_to_label_seq.items()}
+
+            # DAOTHER-9084
+            for c in coord:
+                comp_id = c['comp_id']
+                atom_id = c['atom_id']
+                type_symbol = c['type_symbol']
+
+                if atom_id == type_symbol and atom_id[0] not in protonBeginCode:
+
+                    is_valid, cc_name, cc_rel_status = self.__getChemCompNameAndStatusOf(comp_id)
+
+                    if is_valid and cc_rel_status == 'REL' or cc_name is not None:
+                        self.__ccU.updateChemCompDict(comp_id)
+
+                        try:
+                            next(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaTypeSymbol] == type_symbol)
+                        except StopIteration:
+
+                            err = f'Type symbol {type_symbol!r} for a specified atom {c} is not valid. Please re-upload the model file.'
+
+                            self.report.error.appendDescription('coordinate_issue',
+                                                                {'file_name': file_name, 'category': 'atom_site',
+                                                                 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__extractCoordAtomSite() ++ Error  - {err}\n")
+
+                elif type_symbol[0] not in protonBeginCode and atom_id[0] in protonBeginCode:
+
+                    err = f'Type symbol {type_symbol!r} for a specified atom {c} is not valid. Please re-upload the model file.'
+
+                    self.report.error.appendDescription('coordinate_issue',
+                                                        {'file_name': file_name, 'category': 'atom_site',
+                                                         'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__extractCoordAtomSite() ++ Error  - {err}\n")
 
             # DAOTHER-7665
             self.__coord_unobs_res = []

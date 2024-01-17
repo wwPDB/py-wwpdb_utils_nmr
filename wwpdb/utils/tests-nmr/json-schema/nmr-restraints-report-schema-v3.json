@@ -4228,6 +4228,9 @@
         "format_issue": {
           "$ref": "#/definitions/common_message"
         },
+        "coordinate_issue": {
+          "$ref": "#/definitions/common_message"
+        },
         "missing_mandatory_content": {
           "$ref": "#/definitions/common_message"
         },

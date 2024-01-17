@@ -625,6 +625,8 @@ def getRestraintFormatName(fileType, ambig=False):
         return 'ISD restraint'
     if fileType == 'nm-res-cha':
         return 'CHARMM restraint'
+    if fileType == 'nm-res-ari':
+        return 'ARIA restraint'
     if fileType == 'nmr-star':
         return 'NMR-STAR data'
     if fileType == 'nm-res-mr':

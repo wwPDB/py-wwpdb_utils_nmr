@@ -1,28 +1,26 @@
 ##
-# File: IsdMRParserListener.py
-# Date: 13-Sep-2022
+# File: AriaMRParserListener.py
+# Date: 16-Jan-2024
 #
 # Updates:
-""" ParserLister class for ISD MR files.
+""" ParserLister class for ARIA MR files.
     @author: Masashi Yokochi
 """
 import sys
-import re
-import copy
 import itertools
+import copy
 import collections
 
 from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
-    from wwpdb.utils.nmr.mr.IsdMRParser import IsdMRParser
+    from wwpdb.utils.nmr.mr.AriaMRParser import AriaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        isIdenticalRestraint,
-                                                       hasIntraChainRestraint,
                                                        hasInterChainRestraint,
                                                        isAmbigAtomSelection,
                                                        isCyclicPolymer,
@@ -51,6 +49,7 @@ try:
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
+                                           # trueValue,
                                            monDict3,
                                            protonBeginCode,
                                            pseProBeginCode,
@@ -70,16 +69,15 @@ try:
                                            retrieveRemappedNonPoly,
                                            splitPolySeqRstForBranched,
                                            retrieveOriginalSeqIdFromMRMap)
-    from wwpdb.utils.nmr.NmrVrptUtility import to_np_array, distance, dist_error
+    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
-    from nmr.mr.IsdMRParser import IsdMRParser
+    from nmr.mr.AriaMRParser import AriaMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            isIdenticalRestraint,
-                                           hasIntraChainRestraint,
                                            hasInterChainRestraint,
                                            isAmbigAtomSelection,
                                            isCyclicPolymer,
@@ -108,6 +106,7 @@ except ImportError:
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LARGE_ASYM_ID,
+                               # trueValue,
                                monDict3,
                                protonBeginCode,
                                pseProBeginCode,
@@ -127,7 +126,7 @@ except ImportError:
                                retrieveRemappedNonPoly,
                                splitPolySeqRstForBranched,
                                retrieveOriginalSeqIdFromMRMap)
-    from nmr.NmrVrptUtility import to_np_array, distance, dist_error
+    from nmr.NmrVrptUtility import (to_np_array, distance, dist_error)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']
@@ -137,10 +136,10 @@ DIST_ERROR_MIN = DIST_RESTRAINT_ERROR['min_exclusive']
 DIST_ERROR_MAX = DIST_RESTRAINT_ERROR['max_exclusive']
 
 
-# This class defines a complete listener for a parse tree produced by IsdMRParser.
-class IsdMRParserListener(ParseTreeListener):
+# This class defines a complete listener for a parse tree produced by AriaMRParser.
+class AriaMRParserListener(ParseTreeListener):
 
-    __file_type = 'nm-res-isd'
+    __file_type = 'nm-res-ari'
 
     __verbose = None
     __lfh = None
@@ -149,6 +148,7 @@ class IsdMRParserListener(ParseTreeListener):
     __createSfDict = False
     __omitDistLimitOutlier = True
     __allowZeroUpperLimit = False
+    __correctCircularShift = True
 
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
@@ -202,6 +202,9 @@ class IsdMRParserListener(ParseTreeListener):
     __hasNonPolySeq = False
     __preferAuthSeq = True
 
+    # chain number dictionary
+    __chainNumberDict = None
+
     # polymer sequence of MR file
     __polySeqRst = None
     __polySeqRstFailed = None
@@ -212,11 +215,26 @@ class IsdMRParserListener(ParseTreeListener):
     # current restraint subtype
     __cur_subtype = ''
 
-    # current distance upper limit
-    __cur_dist_upper_limit = None
+    # current contributions
+    __cur_contrib = []
+
+    # current weight value
+    __cur_weight = 1.0
+
+    # current combination
+    __cur_comb_id = None
+
+    # current atom pair
+    __cur_atom_pair = []
 
     # collection of atom selection
     atomSelectionSet = []
+
+    # collection of number selection
+    numberSelection = []
+
+    # collection of number selection in contributions
+    numberCSelection = []
 
     __f = None
     warningMessage = None
@@ -309,9 +327,7 @@ class IsdMRParserListener(ParseTreeListener):
 
         self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
 
-        self.distRestraints = 0      # ISD: Distance restraints
-
-        self.atom_sele_pat = re.compile(r'([A-Z][0-9A-Z]{2})(\d+)([A-Z][A-Z0-9]*)')
+        self.distRestraints = 0      # ARIA: Distance restraints
 
         self.sfDict = {}
 
@@ -330,14 +346,15 @@ class IsdMRParserListener(ParseTreeListener):
     def setEntryId(self, entryId):
         self.__entryId = entryId
 
-    # Enter a parse tree produced by IsdMRParser#biosym_mr.
-    def enterIsd_mr(self, ctx: IsdMRParser.Isd_mrContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by AriaMRParser#aria_mr.
+    def enterAria_mr(self, ctx: AriaMRParser.Aria_mrContext):  # pylint: disable=unused-argument
+        self.__chainNumberDict = {}
         self.__polySeqRst = []
         self.__polySeqRstFailed = []
         self.__f = []
 
-    # Exit a parse tree produced by IsdMRParser#biosym_mr.
-    def exitIsd_mr(self, ctx: IsdMRParser.Isd_mrContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by AriaMRParser#aria_mr.
+    def exitAria_mr(self, ctx: AriaMRParser.Aria_mrContext):  # pylint: disable=unused-argument
 
         try:
 
@@ -538,160 +555,181 @@ class IsdMRParserListener(ParseTreeListener):
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 
-    # Enter a parse tree produced by IsdMRParser#distance_restraints.
-    def enterDistance_restraints(self, ctx: IsdMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by AriaMRParser#distance_restraints.
+    def enterDistance_restraints(self, ctx: AriaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dist'
 
-        if ctx.Distance():
-            self.distRestraints += 1
-
-            self.__cur_dist_upper_limit = float(str(ctx.Distance()).split('=')[1])
-
-    # Exit a parse tree produced by IsdMRParser#distance_restraints.
-    def exitDistance_restraints(self, ctx: IsdMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by AriaMRParser#distance_restraints.
+    def exitDistance_restraints(self, ctx: AriaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by IsdMRParser#distance_restraint.
-    def enterDistance_restraint(self, ctx: IsdMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by AriaMRParser#distance_restraint.
+    def enterDistance_restraint(self, ctx: AriaMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
+        self.distRestraints += 1
+
+        self.__cur_comb_id = 0
+        self.__cur_contrib.clear()
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by IsdMRParser#distance_restraint.
-    def exitDistance_restraint(self, ctx: IsdMRParser.Distance_restraintContext):
-        seqId1, compId1, atomId1 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(0)))
-        seqId2, compId2, atomId2 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
+    # Exit a parse tree produced by AriaMRParser#distance_restraint.
+    def exitDistance_restraint(self, ctx: AriaMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
 
-        if atomId1 is None or atomId2 is None:  # syntax error
-            return
+        try:
 
-        target_value = None
-        lower_limit = None
-        upper_limit = self.__cur_dist_upper_limit
+            # ref_spec = str(ctx.RefSpecName()).rstrip(',')
+            # ref_peak = int(str(ctx.Integer(0)).rstrip(','))
+            # id = int(str(ctx.Integer(1)).rstrip(','))
+            # dist = self.numberSelection[0]
+            upper_limit = self.numberSelection[1]
+            # u_viol = self.numberSelection[2]
+            # p_viol = self.numberSelection[3]
+            # viol = str(ctx.ViolFlag()).rstrip(',') in trueValue
+            # reliable = str(ctx.ReliableFlag()).rstrip(',') in trueValue
+            # a_type = str(ctx.ATypeFlag())[0]
 
-        if not self.__hasPolySeq and not self.__hasNonPolySeq:
-            return
+            if len(self.__cur_contrib) == 0:
+                return
 
-        self.__retrieveLocalSeqScheme()
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                return
 
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+            self.__retrieveLocalSeqScheme()
 
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
-            return
+            total = 0
 
-        self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
-        self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+            for contlib in self.__cur_contrib:
 
-        if len(self.atomSelectionSet) < 2:
-            return
+                atom_pair = contlib['atom_pair']
+                weight = contlib['weight']
 
-        self.__allowZeroUpperLimit = False
-        if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
-           and len(self.atomSelectionSet[0]) > 0\
-           and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
-            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
-            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
-            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+                chainId1 = atom_pair[0]['chain_id'] if 'chain_id' in atom_pair[0] else None
+                seqId1 = atom_pair[0]['seq_id']
+                compId1 = atom_pair[0]['comp_id']
+                atomId1 = atom_pair[0]['atom_id']
 
-            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
-            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
-            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+                chainAssign1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)\
+                    if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
 
-            if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
-               and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
-                    or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
-                self.__allowZeroUpperLimit = True
-        self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+                chainId2 = atom_pair[1]['chain_id'] if 'chain_id' in atom_pair[1] else None
+                seqId2 = atom_pair[1]['seq_id']
+                compId2 = atom_pair[1]['comp_id']
+                atomId2 = atom_pair[1]['atom_id']
 
-        dstFunc = self.validateDistanceRange(1.0, target_value, lower_limit, upper_limit, self.__omitDistLimitOutlier)
+                chainAssign2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)\
+                    if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-        if dstFunc is None:
-            return
+                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    continue
 
-        if self.__createSfDict:
-            sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
-                                                                   self.__csStat, self.__originalFileName),
-                              potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
-            sf['id'] += 1
-            memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
+                self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
 
-        has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
+                if len(self.atomSelectionSet) < (total + 1) * 2:
+                    continue
 
-        if self.__createSfDict:
-            if memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
-                memberLogicCode = '.'
+                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    continue
 
-            memberId = '.'
-            if memberLogicCode == 'OR':
+                self.__allowZeroUpperLimit = False
+                if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+                   and len(self.atomSelectionSet[0]) > 0\
+                   and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                    chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                    seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                    atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                    chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                    seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                    atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                    if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                       and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                            or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                        self.__allowZeroUpperLimit = True
+                self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+
+                dstFunc = self.validateDistanceRange(weight, None, None, upper_limit, self.__omitDistLimitOutlier)
+
+                if dstFunc is None:
+                    return
+
+                total += 1
+
+            if total == 0:
+                return
+
+            combinationId = memberId = '.'
+            if self.__createSfDict:
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
+                                                                       self.__csStat, self.__originalFileName),
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                sf['id'] += 1
+                if self.__cur_comb_id > 1:
+                    combinationId = 0
                 if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
                    and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                         or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                     memberId = 0
-                    _atom1 = _atom2 = None
 
-        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                              self.atomSelectionSet[1]):
-            if isIdenticalRestraint([atom1, atom2], self.__nefT):
-                continue
-            if self.__createSfDict and isinstance(memberId, int):
-                star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
-                star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
-                if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
-                    continue
-            if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
-                continue
-            if self.__createSfDict and memberLogicCode == '.':
-                altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
-                if altAtomId1 is not None or altAtomId2 is not None:
-                    atom1, atom2 =\
-                        self.selectRealisticBondConstraint(atom1, atom2,
-                                                           altAtomId1, altAtomId2,
-                                                           dstFunc)
-            if self.__debug:
-                print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
-                      f"atom1={atom1} atom2={atom2} {dstFunc}")
-            if self.__createSfDict and sf is not None:
+            for i in range(0, len(self.atomSelectionSet), 2):
+                if isinstance(combinationId, int):
+                    combinationId += 1
                 if isinstance(memberId, int):
-                    if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
-                       or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
-                        memberId += 1
-                        _atom1, _atom2 = atom1, atom2
-                sf['index_id'] += 1
-                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                             '.', memberId, memberLogicCode,
-                             sf['list_id'], self.__entryId, dstFunc,
-                             self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
-                             atom1, atom2)
-                sf['loop'].add_data(row)
+                    memberId = 0
+                    _atom1 = _atom2 = None
+                if self.__createSfDict:
+                    memberLogicCode = 'OR' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else '.'
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
+                                                      self.atomSelectionSet[i + 1]):
+                    if isIdenticalRestraint([atom1, atom2], self.__nefT):
+                        continue
+                    if self.__createSfDict and isinstance(memberId, int):
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                            continue
+                    if self.__createSfDict and memberLogicCode == '.':
+                        altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
+                        if altAtomId1 is not None or altAtomId2 is not None:
+                            atom1, atom2 =\
+                                self.selectRealisticBondConstraint(atom1, atom2,
+                                                                   altAtomId1, altAtomId2,
+                                                                   dstFunc)
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                              f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        if isinstance(memberId, int):
+                            if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                               or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                memberId += 1
+                                _atom1, _atom2 = atom1, atom2
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     combinationId, memberId, memberLogicCode,
+                                     sf['list_id'], self.__entryId, dstFunc,
+                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     atom1, atom2)
+                        sf['loop'].add_data(row)
 
-                if sf['constraint_subsubtype'] == 'ambi':
-                    continue
+                        if sf['constraint_subsubtype'] == 'ambi':
+                            continue
 
-                if memberLogicCode == 'OR'\
-                   and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
-                        or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
-                    sf['constraint_subsubtype'] = 'ambi'
-                if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
-                    upperLimit = float(dstFunc['upper_limit'])
-                    if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
-                        sf['constraint_subsubtype'] = 'ambi'
+                        if isinstance(combinationId, int)\
+                           or (memberLogicCode == 'OR'
+                               and (isAmbigAtomSelection(self.atomSelectionSet[i], self.__csStat)
+                                    or isAmbigAtomSelection(self.atomSelectionSet[i + 1], self.__csStat))):
+                            sf['constraint_subsubtype'] = 'ambi'
+                        if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
+                            upperLimit = float(dstFunc['upper_limit'])
+                            if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
+                                sf['constraint_subsubtype'] = 'ambi'
 
-        if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
-            sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
+            if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
-    def splitAtomSelectionExpr(self, atomSelection):  # pylint: disable=no-self-use
-        """ Split ISD atom selection expression.
-        """
-
-        try:
-
-            g = self.atom_sele_pat.search(atomSelection.upper()).groups()
-
-            return int(g[1]), g[0], g[2]
-
-        except ValueError:
-            return None, None, None
-        except AttributeError:
-            return None, None, None
+        finally:
+            self.numberSelection.clear()
 
     def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier):
         """ Validate distance value range.
@@ -875,7 +913,7 @@ class IsdMRParserListener(ParseTreeListener):
                         cifCompId = compId
                         origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                           if _seqId == seqId and _compId == compId)
-                if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
+                if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
@@ -917,14 +955,14 @@ class IsdMRParserListener(ParseTreeListener):
                                         cifCompId = compId
                                         origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                                           if _seqId == seqId and _compId == compId)
-                                if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
+                                if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, self.__hasCoord)
                                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
-                                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                    chainAssign.add((chainId, seqId_, cifCompId, True))
+                                    elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                        chainAssign.add((chainId, seqId_, cifCompId, True))
                             except IndexError:
                                 pass
 
@@ -939,13 +977,11 @@ class IsdMRParserListener(ParseTreeListener):
                             seqId = fixedSeqId
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
-                if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
-                    seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                 if seqId in np['auth_seq_id']:
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
-                    if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
+                    if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
                         atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                     if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
@@ -976,7 +1012,7 @@ class IsdMRParserListener(ParseTreeListener):
                                 cifCompId = compId
                                 origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                                   if _seqId == seqId and _compId == compId)
-                        if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
+                        if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
@@ -1004,7 +1040,7 @@ class IsdMRParserListener(ParseTreeListener):
                             idx = np['seq_id'].index(seqId)
                             cifCompId = np['comp_id'][idx]
                             origCompId = np['auth_comp_id'][idx]
-                            if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
+                            if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                                 _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
                                 atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
@@ -1046,7 +1082,7 @@ class IsdMRParserListener(ParseTreeListener):
                 if seqKey in self.__labelToAuthSeq:
                     _, seqId = self.__labelToAuthSeq[seqKey]
                     if seqId in ps['auth_seq_id']:
-                        idx = ps['aut_seq_id'].index(seqId)
+                        idx = ps['auth_seq_id'].index(seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
                         if cifCompId != compId:
@@ -1055,13 +1091,13 @@ class IsdMRParserListener(ParseTreeListener):
                                 cifCompId = compId
                                 origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                                   if _seqId == seqId and _compId == compId)
-                        if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
+                        if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
                                 if compId in (cifCompId, origCompId):
-                                    chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
                                     self.__authSeqId = 'label_seq_id'
                                     self.__setLocalSeqScheme()
                                     # if 'label_seq_scheme' not in self.reasonsForReParsing:
@@ -1088,7 +1124,356 @@ class IsdMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                 f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
-                updatePolySeqRst(self.__polySeqRstFailed, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
+                updatePolySeqRst(self.__polySeqRstFailed, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId,
+                                 _seqId, compId, _compId)
+
+        return list(chainAssign)
+
+    def assignCoordPolymerSequenceWithChainId(self, refChainId, seqId, compId, atomId):
+        """ Assign polymer sequences of the coordinates.
+        """
+
+        _refChainId = refChainId
+
+        chainAssign = set()
+        _seqId = seqId
+        _compId = compId
+
+        fixedChainId = None
+        fixedSeqId = None
+
+        preferNonPoly = False
+
+        if self.__mrAtomNameMapping is not None and compId not in monDict3:
+            seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+
+        if self.__reasons is not None:
+            if 'non_poly_remap' in self.__reasons and compId in self.__reasons['non_poly_remap']\
+               and seqId in self.__reasons['non_poly_remap'][compId]:
+                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], str(refChainId), seqId, compId)
+                refChainId = fixedChainId
+                preferNonPoly = True
+            if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
+                refChainId = fixedChainId
+                preferNonPoly = True
+            if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                refChainId = fixedChainId
+            elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                refChainId = fixedChainId
+            elif 'seq_id_remap' in self.__reasons or 'chain_seq_id_remap' in self.__reasons:
+                if 'seq_id_remap' in self.__reasons:
+                    _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
+                if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], str(refChainId), seqId)
+            if fixedSeqId is not None:
+                _seqId = fixedSeqId
+
+        compId = translateToStdResName(_compId, self.__ccU)
+        updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId, _compId)
+
+        if refChainId is not None or refChainId != _refChainId:
+            if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _refChainId):
+                fixedChainId = _refChainId
+            elif self.__hasNonPolySeq:
+                if any(np for np in self.__nonPolySeq if np['auth_chain_id'] == _refChainId):
+                    fixedChainId = _refChainId
+
+        for ps in self.__polySeq:
+            if preferNonPoly:
+                continue
+            chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
+            if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                if chainId != self.__chainNumberDict[refChainId]:
+                    continue
+            if self.__reasons is not None:
+                if fixedChainId is not None:
+                    if fixedChainId != chainId:
+                        continue
+                    if fixedSeqId is not None:
+                        seqId = fixedSeqId
+                elif fixedSeqId is not None:
+                    seqId = fixedSeqId
+            if seqId in ps['auth_seq_id']:
+                idx = ps['auth_seq_id'].index(seqId)
+                cifCompId = ps['comp_id'][idx]
+                origCompId = ps['auth_comp_id'][idx]
+                if cifCompId != compId:
+                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                    if compId in compIds:
+                        cifCompId = compId
+                        origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                          if _seqId == seqId and _compId == compId)
+                if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
+                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                    if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        chainAssign.add((chainId, seqId, cifCompId, True))
+                        if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                            self.__chainNumberDict[refChainId] = chainId
+                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                    chainAssign.add((chainId, seqId, cifCompId, True))
+                    if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                        self.__chainNumberDict[refChainId] = chainId
+                    # """ defer to sequence alignment error
+                    # if cifCompId != translateToStdResName(compId, self.__ccU):
+                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
+                    # """
+            elif 'gap_in_auth_seq' in ps:
+                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                if len(auth_seq_id_list) > 0:
+                    min_auth_seq_id = min(auth_seq_id_list)
+                    max_auth_seq_id = max(auth_seq_id_list)
+                    if min_auth_seq_id <= seqId <= max_auth_seq_id:
+                        _seqId_ = seqId + 1
+                        while _seqId_ <= max_auth_seq_id:
+                            if _seqId_ in ps['auth_seq_id']:
+                                break
+                            _seqId_ += 1
+                        if _seqId_ not in ps['auth_seq_id']:
+                            _seqId_ = seqId - 1
+                            while _seqId_ >= min_auth_seq_id:
+                                if _seqId_ in ps['auth_seq_id']:
+                                    break
+                                _seqId_ -= 1
+                        if _seqId_ in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(_seqId_) - (_seqId_ - seqId)
+                            try:
+                                seqId_ = ps['auth_seq_id'][idx]
+                                cifCompId = ps['comp_id'][idx]
+                                origCompId = ps['auth_comp_id'][idx]
+                                if cifCompId != compId:
+                                    compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                                    if compId in compIds:
+                                        cifCompId = compId
+                                        origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                                          if _seqId == seqId and _compId == compId)
+                                if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, self.__hasCoord)
+                                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                                if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                                    if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                        chainAssign.add((chainId, seqId_, cifCompId, True))
+                                    elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                        chainAssign.add((chainId, seqId_, cifCompId, True))
+                            except IndexError:
+                                pass
+
+        if self.__hasNonPolySeq:
+            for np in self.__nonPolySeq:
+                chainId, seqId = self.getRealChainSeqId(np, _seqId, compId, False)
+                if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                    if chainId != self.__chainNumberDict[refChainId]:
+                        continue
+                if self.__reasons is not None:
+                    if fixedChainId is not None:
+                        if fixedChainId != chainId:
+                            continue
+                        if fixedSeqId is not None:
+                            seqId = fixedSeqId
+                    elif fixedSeqId is not None:
+                        seqId = fixedSeqId
+                if seqId in np['auth_seq_id']:
+                    idx = np['auth_seq_id'].index(seqId)
+                    cifCompId = np['comp_id'][idx]
+                    origCompId = np['auth_comp_id'][idx]
+                    if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                        _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
+                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                    if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
+                        seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
+                    if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                        if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            chainAssign.add((chainId, seqId, cifCompId, False))
+                            if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                self.__chainNumberDict[refChainId] = chainId
+                    elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        chainAssign.add((chainId, seqId, cifCompId, False))
+                        if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                            self.__chainNumberDict[refChainId] = chainId
+
+        if len(chainAssign) == 0:
+            for ps in self.__polySeq:
+                if preferNonPoly:
+                    continue
+                chainId = ps['chain_id']
+                if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                    if chainId != self.__chainNumberDict[refChainId]:
+                        continue
+                if fixedChainId is not None:
+                    if fixedChainId != chainId:
+                        continue
+                seqKey = (chainId, _seqId)
+                if seqKey in self.__authToLabelSeq:
+                    _, seqId = self.__authToLabelSeq[seqKey]
+                    if seqId in ps['seq_id']:
+                        idx = ps['seq_id'].index(seqId)
+                        cifCompId = ps['comp_id'][idx]
+                        origCompId = ps['auth_comp_id'][idx]
+                        if cifCompId != compId:
+                            compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                            if compId in compIds:
+                                cifCompId = compId
+                                origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                                  if _seqId == seqId and _compId == compId)
+                        if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
+                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                        if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                            if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
+                                if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                    self.__chainNumberDict[refChainId] = chainId
+                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                #     self.reasonsForReParsing['label_seq_scheme'] = True
+                        elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
+                            if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                self.__chainNumberDict[refChainId] = chainId
+                            # """ defer to sequence alignment error
+                            # if cifCompId != translateToStdResName(compId, self.__ccU):
+                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                            #             f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
+                            # """
+
+            if self.__hasNonPolySeq:
+                for np in self.__nonPolySeq:
+                    chainId = np['auth_chain_id']
+                    if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                        if chainId != self.__chainNumberDict[refChainId]:
+                            continue
+                    if fixedChainId is not None:
+                        if fixedChainId != chainId:
+                            continue
+                    seqKey = (chainId, _seqId)
+                    if seqKey in self.__authToLabelSeq:
+                        _, seqId = self.__authToLabelSeq[seqKey]
+                        if seqId in np['seq_id']:
+                            idx = np['seq_id'].index(seqId)
+                            cifCompId = np['comp_id'][idx]
+                            origCompId = np['auth_comp_id'][idx]
+                            if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                                _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
+                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                            if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                                if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                    chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
+                                    if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                        self.__chainNumberDict[refChainId] = chainId
+                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
+                            elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
+                                if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                    self.__chainNumberDict[refChainId] = chainId
+
+        if len(chainAssign) == 0 and self.__altPolySeq is not None:
+            for ps in self.__altPolySeq:
+                if preferNonPoly:
+                    continue
+                chainId = ps['auth_chain_id']
+                if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                    if chainId != self.__chainNumberDict[refChainId]:
+                        continue
+                if fixedChainId is not None:
+                    if fixedChainId != chainId:
+                        continue
+                    if fixedSeqId is not None:
+                        _seqId = fixedSeqId
+                elif fixedSeqId is not None:
+                    _seqId = fixedSeqId
+                if _seqId in ps['auth_seq_id']:
+                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                    if cifCompId != compId:
+                        compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                        if compId in compIds:
+                            cifCompId = compId
+                    chainAssign.add((chainId, _seqId, cifCompId, True))
+                    if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                        self.__chainNumberDict[refChainId] = chainId
+                    # """ defer to sequence alignment error
+                    # if cifCompId != translateToStdResName(compId, self.__ccU):
+                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
+                    # """
+
+        if len(chainAssign) == 0:
+            for ps in self.__polySeq:
+                if preferNonPoly:
+                    continue
+                chainId = ps['chain_id']
+                if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
+                    if chainId != self.__chainNumberDict[refChainId]:
+                        continue
+                if fixedChainId is not None:
+                    if fixedChainId != chainId:
+                        continue
+                seqKey = (chainId, _seqId)
+                if seqKey in self.__labelToAuthSeq:
+                    _, seqId = self.__labelToAuthSeq[seqKey]
+                    if seqId in ps['auth_seq_id']:
+                        idx = ps['auth_seq_id'].index(seqId)
+                        cifCompId = ps['comp_id'][idx]
+                        origCompId = ps['auth_comp_id'][idx]
+                        if cifCompId != compId:
+                            compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
+                            if compId in compIds:
+                                cifCompId = compId
+                                origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
+                                                  if _seqId == seqId and _compId == compId)
+                        if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
+                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
+                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                        if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
+                            if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
+                                if compId in (cifCompId, origCompId):
+                                    self.__authSeqId = 'label_seq_id'
+                                    self.__setLocalSeqScheme()
+                                    if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                        self.__chainNumberDict[refChainId] = chainId
+                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
+                        elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
+                            self.__authSeqId = 'label_seq_id'
+                            self.__setLocalSeqScheme()
+                            if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                self.__chainNumberDict[refChainId] = chainId
+                            # """ defer to sequence alignment error
+                            # if cifCompId != translateToStdResName(compId, self.__ccU):
+                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
+                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
+                            # """
+
+        if len(chainAssign) == 0:
+            if seqId == 1 or (refChainId, seqId - 1) in self.__coordUnobsRes:
+                if atomId in aminoProtonCode and atomId != 'H1':
+                    return self.assignCoordPolymerSequenceWithChainId(refChainId, seqId, compId, 'H1')
+            if compId == 'AMB' and (('-' in atomId and ':' in atomId) or '.' in atomId):
+                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
+                                "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the CYANA restraint file.")
+            else:
+                if seqId < 1 and len(self.__polySeq) == 1:
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
+                else:
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
+                    updatePolySeqRst(self.__polySeqRstFailed, str(refChainId), _seqId, compId, _compId)
+
+        elif any(ca for ca in chainAssign if ca[0] == refChainId) and any(ca for ca in chainAssign if ca[0] != refChainId):
+            _chainAssign = copy.copy(chainAssign)
+            for _ca in _chainAssign:
+                if _ca[0] != refChainId:
+                    chainAssign.remove(_ca)
 
         return list(chainAssign)
 
@@ -1147,6 +1532,10 @@ class IsdMRParserListener(ParseTreeListener):
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, cifSeqId)
                     if _seqId != cifSeqId:
                         _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, coordAtomSite)
+
+            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+            if atomId != _atomId and coordAtomSite is not None and _atomId in coordAtomSite['atom_id']:
+                atomId = _atomId
 
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
             if details is not None and len(atomId) > 1 and not atomId[-1].isalpha() and (atomId[0] in pseProBeginCode or atomId[0] in ('C', 'N', 'P', 'F')):
@@ -1351,45 +1740,46 @@ class IsdMRParserListener(ParseTreeListener):
         if found:
             return
 
-        if self.__preferAuthSeq:
-            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
-            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
-                if atomId in _coordAtomSite['atom_id']:
-                    found = True
-                    self.__preferAuthSeq = False
-                    self.__authSeqId = 'label_seq_id'
-                    seqKey = _seqKey
-                    self.__setLocalSeqScheme()
-                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
-                    found = True
-                    self.__preferAuthSeq = False
-                    self.__authSeqId = 'label_seq_id'
-                    # self.__authAtomId = 'auth_atom_id'
-                    seqKey = _seqKey
-                    self.__setLocalSeqScheme()
+        if chainId in self.__chainNumberDict.values():
 
-        else:
-            self.__preferAuthSeq = True
-            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
-            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
-                if atomId in _coordAtomSite['atom_id']:
-                    found = True
-                    self.__authSeqId = 'auth_seq_id'
-                    seqKey = _seqKey
-                    self.__setLocalSeqScheme()
-                elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
-                    found = True
-                    self.__authSeqId = 'auth_seq_id'
-                    # self.__authAtomId = 'auth_atom_id'
-                    seqKey = _seqKey
-                    self.__setLocalSeqScheme()
+            if self.__preferAuthSeq:
+                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
+                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+                    if atomId in _coordAtomSite['atom_id']:
+                        found = True
+                        self.__preferAuthSeq = False
+                        self.__authSeqId = 'label_seq_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                        found = True
+                        self.__preferAuthSeq = False
+                        self.__authSeqId = 'label_seq_id'
+                        # self.__authAtomId = 'auth_atom_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+            else:
+                self.__preferAuthSeq = True
+                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
+                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+                    if atomId in _coordAtomSite['atom_id']:
+                        found = True
+                        self.__authSeqId = 'auth_seq_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
+                        found = True
+                        self.__authSeqId = 'auth_seq_id'
+                        # self.__authAtomId = 'auth_atom_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    else:
+                        self.__preferAuthSeq = False
                 else:
                     self.__preferAuthSeq = False
-            else:
-                self.__preferAuthSeq = False
 
-        if found:
-            return
+            if found:
+                return
 
         if self.__ccU.updateChemCompDict(compId):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
@@ -1526,7 +1916,7 @@ class IsdMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+IsdMRParserListener.selectRealisticBondConstraint() ++ Error  - {str(e)}")
+                self.__lfh.write(f"+AriaMRParserListener.selectRealisticBondConstraint() ++ Error  - {str(e)}")
 
         return atom1, atom2
 
@@ -1544,6 +1934,102 @@ class IsdMRParserListener(ParseTreeListener):
                     if seqKey in self.__coordAtomSite:
                         coordAtomSite = self.__coordAtomSite[seqKey]
         return seqKey, coordAtomSite
+
+    # Enter a parse tree produced by AriaMRParser#contribution.
+    def enterContribution(self, ctx: AriaMRParser.ContributionContext):
+        pass
+
+    # Exit a parse tree produced by AriaMRParser#contribution.
+    def exitContribution(self, ctx: AriaMRParser.ContributionContext):  # pylint: disable=unused-argument
+
+        try:
+
+            len_num_c_sel = len(self.numberCSelection)
+
+            if len_num_c_sel == 0:
+                pass
+
+            elif len_num_c_sel != 3:
+                return
+
+            elif self.numberCSelection[2] is not None:
+                # dist = self.numberCSelection[0]
+                # dist_err = self.numberCSelection[1]
+                self.__cur_weight = self.numberCSelection[2]
+                self.__cur_comb_id += 1
+
+            if len(self.__cur_atom_pair) != 2:
+                return
+
+            self.__cur_contrib.append({'atom_pair': copy.copy(self.__cur_atom_pair),
+                                       'weight': self.__cur_weight,
+                                       'combination_id': self.__cur_comb_id})
+
+        finally:
+            self.numberCSelection.clear()
+
+    # Enter a parse tree produced by AriaMRParser#atom_pair.
+    def enterAtom_pair(self, ctx: AriaMRParser.Atom_pairContext):  # pylint: disable=unused-argument
+        self.__cur_atom_pair.clear()
+
+    # Exit a parse tree produced by AriaMRParser#atom_pair.
+    def exitAtom_pair(self, ctx: AriaMRParser.Atom_pairContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by AriaMRParser#atom_selection.
+    def enterAtom_selection(self, ctx: AriaMRParser.Atom_selectionContext):
+        try:
+
+            atom_sel = {'atom_id': str(ctx.Simple_name(1)).upper()}
+
+            res_name = str(ctx.Simple_name(0)).upper()
+
+            if len(res_name) > 1 and not res_name[0].isdigit() and res_name[-1].isdigit():
+                col = len(res_name) - 1
+                while res_name[col - 1].isdigit():
+                    col -= 1
+                atom_sel['seq_id'] = int(res_name[col:])
+                atom_sel['comp_id'] = res_name[:col]
+
+            if ctx.Simple_name(2):
+                atom_sel['chain_id'] = str(ctx.Simple_name(2))
+
+        finally:
+            self.__cur_atom_pair.append(atom_sel)
+
+    # Exit a parse tree produced by AriaMRParser#atom_selection.
+    def exitAtom_selection(self, ctx: AriaMRParser.Atom_selectionContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by AriaMRParser#number.
+    def enterNumber(self, ctx: AriaMRParser.NumberContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AriaMRParser#number.
+    def exitNumber(self, ctx: AriaMRParser.NumberContext):
+        if ctx.Float():
+            self.numberSelection.append(float(str(ctx.Float()).rstrip(',')))
+
+        elif ctx.Integer():
+            self.numberSelection.append(float(str(ctx.Integer()).rstrip(',')))
+
+        else:
+            self.numberSelection.append(None)
+
+    # Enter a parse tree produced by AriaMRParser#number_c.
+    def enterNumber_c(self, ctx: AriaMRParser.Number_cContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by AriaMRParser#number_c.
+    def exitNumber_c(self, ctx: AriaMRParser.Number_cContext):
+        if ctx.Float():
+            self.numberCSelection.append(float(str(ctx.Float()).rstrip(',')))
+
+        elif ctx.Integer():
+            self.numberCSelection.append(float(str(ctx.Integer()).rstrip(',')))
+
+        else:
+            self.numberCSelection.append(None)
 
     def __getCurrentRestraint(self):
         if self.__cur_subtype == 'dist':
@@ -1593,20 +2079,26 @@ class IsdMRParserListener(ParseTreeListener):
 
         restraint_name = getRestraintName(self.__cur_subtype)
 
-        sf_framecode = 'ISD_' + restraint_name.replace(' ', '_') + f'_{list_id}'
+        sf_framecode = 'ARIA_' + restraint_name.replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.__cur_subtype, sf_framecode, list_id, self.__entryId, self.__originalFileName,
                           constraintType=constraintType, potentialType=potentialType)
 
+        not_valid = True
+
         lp = getLoop(self.__cur_subtype, hasInsCode=self.__authToInsCode is not None)
         if not isinstance(lp, dict):
             sf.add_loop(lp)
+            not_valid = False
 
         _restraint_name = restraint_name.split()
 
         item = {'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
                 'id': 0, 'index_id': 0,
                 'constraint_type': ' '.join(_restraint_name[:-1])}
+
+        if not_valid:
+            item['tags'] = []
 
         if self.__cur_subtype == 'dist':
             item['constraint_subsubtype'] = 'simple'
@@ -1637,7 +2129,7 @@ class IsdMRParserListener(ParseTreeListener):
         return self.sfDict[key][-1]
 
     def getContentSubtype(self):
-        """ Return content subtype of ISD MR file.
+        """ Return content subtype of ARIA MR file.
         """
 
         contentSubtype = {'dist_restraint': self.distRestraints
@@ -1646,22 +2138,22 @@ class IsdMRParserListener(ParseTreeListener):
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
     def getPolymerSequence(self):
-        """ Return polymer sequence of ISD MR file.
+        """ Return polymer sequence of ARIA MR file.
         """
         return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
     def getSequenceAlignment(self):
-        """ Return sequence alignment between coordinates and ISD MR.
+        """ Return sequence alignment between coordinates and ARIA MR.
         """
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
     def getChainAssignment(self):
-        """ Return chain assignment between coordinates and ISD MR.
+        """ Return chain assignment between coordinates and ARIA MR.
         """
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
     def getReasonsForReparsing(self):
-        """ Return reasons for re-parsing ISD MR file.
+        """ Return reasons for re-parsing ARIA MR file.
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
@@ -1682,4 +2174,4 @@ class IsdMRParserListener(ParseTreeListener):
             del self.sfDict[k]
         return self.__listIdCounter, None if len(self.sfDict) == 0 else self.sfDict
 
-# del IsdMRParser
+# del AriaMRParser

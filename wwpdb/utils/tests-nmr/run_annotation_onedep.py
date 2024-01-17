@@ -157,6 +157,10 @@ def is_combined_nmr_data(file_path):
                             if 'nm-res-amb' not in original_file_name:
                                 original_file_name['nm-res-amb'] = []
                             original_file_name['nm-res-amb'].append(row[1])
+                        elif row[2] == 'ARIA':
+                            if 'nm-res-ari' not in original_file_name:
+                                original_file_name['nm-res-ari'] = []
+                            original_file_name['nm-res-ari'].append(row[1])
                         elif row[2] == 'CYANA':
                             if 'nm-res-cya' not in original_file_name:
                                 original_file_name['nm-res-cya'] = []
@@ -553,6 +557,8 @@ class gen_auth_view_onedep:
                 content_type = d['content_type']
                 if content_type == 'amber':
                     self.__ar_file_type.append('nm-res-amb')
+                elif content_type == 'aria':
+                    self.__ar_file_type.append('nm-res-ari')
                 elif content_type == 'cns':
                     self.__ar_file_type.append('nm-res-cns')
                 elif content_type == 'cyana':
@@ -593,6 +599,8 @@ class gen_auth_view_onedep:
                     content_type = d['content_type']
                     if content_type == 'amber':
                         self.__ar_file_type.append('nm-res-amb')
+                    elif content_type == 'aria':
+                        self.__ar_file_type.append('nm-res-ari')
                     elif content_type == 'cns':
                         self.__ar_file_type.append('nm-res-cns')
                     elif content_type == 'cyana':
@@ -628,6 +636,8 @@ class gen_auth_view_onedep:
                     content_type = d['content_type']
                     if content_type == 'gromacs':
                         self.__ar_file_type.append('nm-res-amb')
+                    elif content_type == 'aria':
+                        self.__ar_file_type.append('nm-res-ari')
                     elif content_type == 'cns':
                         self.__ar_file_type.append('nm-res-cns')
                     elif content_type == 'cyana':

@@ -1,0 +1,1 @@
+../antlr-grammars-v4.10/AriaMRParser.g4

@@ -1,9 +1,9 @@
 ##
-# RosettaMRReader.py
+# AriaMRReader.py
 #
 # Update:
 ##
-""" A collection of classes for parsing ROSETTA MR files.
+""" A collection of classes for parsing ARIA MR files.
 """
 import sys
 import os
@@ -13,9 +13,9 @@ from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMo
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-    from wwpdb.utils.nmr.mr.RosettaMRLexer import RosettaMRLexer
-    from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
-    from wwpdb.utils.nmr.mr.RosettaMRParserListener import RosettaMRParserListener
+    from wwpdb.utils.nmr.mr.AriaMRLexer import AriaMRLexer
+    from wwpdb.utils.nmr.mr.AriaMRParser import AriaMRParser
+    from wwpdb.utils.nmr.mr.AriaMRParserListener import AriaMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID)
@@ -26,9 +26,9 @@ try:
 except ImportError:
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
-    from nmr.mr.RosettaMRLexer import RosettaMRLexer
-    from nmr.mr.RosettaMRParser import RosettaMRParser
-    from nmr.mr.RosettaMRParserListener import RosettaMRParserListener
+    from nmr.mr.AriaMRLexer import AriaMRLexer
+    from nmr.mr.AriaMRParser import AriaMRParser
+    from nmr.mr.AriaMRParserListener import AriaMRParserListener
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID)
@@ -38,8 +38,8 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
-class RosettaMRReader:
-    """ Accessor methods for parsing ROSETTA MR files.
+class AriaMRReader:
+    """ Accessor methods for parsing ARIA MR files.
     """
 
     def __init__(self, verbose=True, log=sys.stdout,
@@ -50,7 +50,6 @@ class RosettaMRReader:
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
-        self.__remediate = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
         self.__maxParserErrorReport = MAX_ERROR_REPORT
@@ -81,9 +80,6 @@ class RosettaMRReader:
     def setDebugMode(self, debug):
         self.__debug = debug
 
-    def setRemediateMode(self, remediate):
-        self.__remediate = remediate
-
     def setLexerMaxErrorReport(self, maxErrReport):
         self.__maxLexerErrorReport = maxErrReport
 
@@ -92,8 +88,8 @@ class RosettaMRReader:
 
     def parse(self, mrFilePath, cifFilePath=None, isFilePath=True,
               createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
-        """ Parse ROSETTA MR file.
-            @return: RosettaMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
+        """ Parse ARIA MR file.
+            @return: AriaMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
         ifh = None
@@ -105,7 +101,7 @@ class RosettaMRReader:
 
                 if not os.access(mrFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"RosettaMRReader.parse() {mrFilePath} is not accessible.\n")
+                        self.__lfh.write(f"AriaMRReader.parse() {mrFilePath} is not accessible.\n")
                     return None, None, None
 
                 ifh = open(mrFilePath, 'r')  # pylint: disable=consider-using-with
@@ -116,7 +112,7 @@ class RosettaMRReader:
 
                 if mrString is None or len(mrString) == 0:
                     if self.__verbose:
-                        self.__lfh.write("RosettaMRReader.parse() Empty string.\n")
+                        self.__lfh.write("AriaMRReader.parse() Empty string.\n")
                     return None, None, None
 
                 input = InputStream(mrString)
@@ -124,7 +120,7 @@ class RosettaMRReader:
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"RosettaMRReader.parse() {cifFilePath} is not accessible.\n")
+                        self.__lfh.write(f"AriaMRReader.parse() {cifFilePath} is not accessible.\n")
                     return None, None, None
 
                 if self.__cR is None:
@@ -132,7 +128,7 @@ class RosettaMRReader:
                     if not self.__cR.parse(cifFilePath):
                         return None, None, None
 
-            lexer = RosettaMRLexer(input)
+            lexer = AriaMRLexer(input)
             lexer.removeErrorListeners()
 
             lexer_error_listener = LexerErrorListener(mrFilePath, maxErrorReport=self.__maxLexerErrorReport)
@@ -148,23 +144,22 @@ class RosettaMRReader:
                         self.__lfh.write(f"{description['marker']}\n")
 
             stream = CommonTokenStream(lexer)
-            parser = RosettaMRParser(stream)
+            parser = AriaMRParser(stream)
             # try with simpler/faster SLL prediction mode
             parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)
-            tree = parser.rosetta_mr()
+            tree = parser.aria_mr()
 
             walker = ParseTreeWalker()
-            listener = RosettaMRParserListener(self.__verbose, self.__lfh,
-                                               self.__representativeModelId,
-                                               self.__mrAtomNameMapping,
-                                               self.__cR, self.__caC,
-                                               self.__ccU, self.__csStat, self.__nefT,
-                                               self.__reasons)
+            listener = AriaMRParserListener(self.__verbose, self.__lfh,
+                                            self.__representativeModelId,
+                                            self.__mrAtomNameMapping,
+                                            self.__cR, self.__caC,
+                                            self.__ccU, self.__csStat, self.__nefT,
+                                            self.__reasons)
             listener.setDebugMode(self.__debug)
-            listener.setRemediateMode(self.__remediate)
             listener.createSfDict(createSfDict)
             if createSfDict:
                 if originalFileName is not None:
@@ -194,13 +189,13 @@ class RosettaMRReader:
 
         except IOError as e:
             if self.__verbose:
-                self.__lfh.write(f"+RosettaMRReader.parse() ++ Error - {str(e)}\n")
+                self.__lfh.write(f"+AriaMRReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
             # pylint: disable=unreachable
             """ debug code
         except Exception as e:
             if self.__verbose and isFilePath:
-                self.__lfh.write(f"+RosettaMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
+                self.__lfh.write(f"+AriaMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
             return None, None, None
             """
         finally:
@@ -209,46 +204,7 @@ class RosettaMRReader:
 
 
 if __name__ == "__main__":
-    reader = RosettaMRReader(True)
+    reader = AriaMRReader(True)
     reader.setDebugMode(True)
-    reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/8f4v/a7IVM_NMR_PRE_NOE_HB_ESR_110722.cst',
-                     '../../tests-nmr/mock-data-remediation/8f4v/8f4v.cif')
-    reader = RosettaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
-    reader.parse('../../tests-nmr/mock-data-remediation/8f4v/a7IVM_NMR_PRE_NOE_HB_ESR_110722.cst',
-                 '../../tests-nmr/mock-data-remediation/8f4v/8f4v.cif')
-
-    reader = RosettaMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-D_80002121177/D_1300034625_mr-upload_P1.rosetta.V1',
-                 '../../tests-nmr/mock-data-D_80002121177/D_800517_model_P1.cif.V3')
-
-    reader = RosettaMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2m9v/2m9v-trimmed-div_dst.mr',
-                 '../../tests-nmr/mock-data-remediation/2m9v/2m9v.cif')
-
-    reader = RosettaMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2mme/2mme-trimmed.mr',
-                 '../../tests-nmr/mock-data-remediation/2mme/2mme.cif')
-
-    reader = RosettaMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6u3s/NOES_PRES.cst',
-                 '../../tests-nmr/mock-data-remediation/6u3s/6u3s.cif')
-
-    reader = RosettaMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-daother-7690/rosetta_rdc.test',
-                 '../../tests-nmr/mock-data-daother-7690/D_800470_model_P1.cif.V4')
-
-    reader = RosettaMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-daother-7690/rosetta_angle.test',
-                 '../../tests-nmr/mock-data-daother-7690/D_800470_model_P1.cif.V4')
-
-    reader = RosettaMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-daother-7690/rosetta_dist.test',
-                 '../../tests-nmr/mock-data-daother-7690/D_800470_model_P1.cif.V4')
+    reader.parse('../../tests-nmr/mock-data-daother-9079/noe_restraints.assignments',
+                 '../../tests-nmr/mock-data-daother-9079/D_800644_model_P1.cif.V4')

@@ -33,6 +33,7 @@
             "nm-res-syb",
             "nm-res-isd",
             "nm-res-cha",
+            "nm-res-ari",
             "nm-res-sax",
             "nm-res-mr",
             "nm-pea-any"
@@ -4225,6 +4226,9 @@
           }
         },
         "format_issue": {
+          "$ref": "#/definitions/common_message"
+        },
+        "coordinate_issue": {
           "$ref": "#/definitions/common_message"
         },
         "missing_mandatory_content": {

@@ -577,8 +577,8 @@ class gen_auth_view_onedep:
                     self.__ar_file_type.append('nm-res-syb')
                 elif content_type == 'isd':
                     self.__ar_file_type.append('nm-res-isd')
-                elif content_type == 'cya':
-                    self.__ar_file_type.append('nm-res-cya')
+                elif content_type == 'charmm':
+                    self.__ar_file_type.append('nm-res-cha')
                 elif content_type == 'dat':
                     if has_amber:
                         self.__ar_file_type.append('nm-aux-amb')
@@ -619,8 +619,8 @@ class gen_auth_view_onedep:
                         self.__ar_file_type.append('nm-res-syb')
                     elif content_type == 'isd':
                         self.__ar_file_type.append('nm-res-isd')
-                    elif content_type == 'cya':
-                        self.__ar_file_type.append('nm-res-cya')
+                    elif content_type == 'charmm':
+                        self.__ar_file_type.append('nm-res-cha')
                     elif content_type == 'dat':
                         self.__ar_file_type.append('nm-aux-amb')
 
@@ -634,7 +634,7 @@ class gen_auth_view_onedep:
             for d in ax_dic.values():
                 if not d['is_star_file']:
                     content_type = d['content_type']
-                    if content_type == 'gromacs':
+                    if content_type == 'amber':
                         self.__ar_file_type.append('nm-res-amb')
                     elif content_type == 'aria':
                         self.__ar_file_type.append('nm-res-ari')
@@ -656,8 +656,8 @@ class gen_auth_view_onedep:
                         self.__ar_file_type.append('nm-res-syb')
                     elif content_type == 'isd':
                         self.__ar_file_type.append('nm-res-isd')
-                    elif content_type == 'cya':
-                        self.__ar_file_type.append('nm-res-cya')
+                    elif content_type == 'charmm':
+                        self.__ar_file_type.append('nm-res-cha')
                     elif content_type == 'dat':
                         self.__ar_file_type.append('nm-aux-gro')
 

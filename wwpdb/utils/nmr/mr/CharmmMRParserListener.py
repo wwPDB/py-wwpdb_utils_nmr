@@ -2776,8 +2776,7 @@ class CharmmMRParserListener(ParseTreeListener):
                and self.__cur_subtype in self.__reasons['inhibit_label_seq_scheme'][chainId]\
                and self.__reasons['inhibit_label_seq_scheme'][chainId][self.__cur_subtype]\
                and 'segment_id_mismatch' not in self.__reasons:
-                if not isChainSpecified:
-                    continue
+                continue
 
             psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == chainId]
 
@@ -3235,11 +3234,12 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                                     self.reasonsForReParsing['label_seq_scheme'] = {}
                                                                                 if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
                                                                                     self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
-                                                                                if 'inhibit_labe_seq_scheme' not in self.reasonsForReParsing:
-                                                                                    self.reasonsForReParsing['inhibit_label_seq_scheme'] = {}
-                                                                                if chainId not in self.reasonsForReParsing['inhibit_label_seq_scheme']:
-                                                                                    self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId] = {}
-                                                                                self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId][self.__cur_subtype] = True
+                                                                                if isChainSpecified:
+                                                                                    if 'inhibit_labe_seq_scheme' not in self.reasonsForReParsing:
+                                                                                        self.reasonsForReParsing['inhibit_label_seq_scheme'] = {}
+                                                                                    if chainId not in self.reasonsForReParsing['inhibit_label_seq_scheme']:
+                                                                                        self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId] = {}
+                                                                                    self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId][self.__cur_subtype] = True
                                                                                 break
                                                                 self.__preferAuthSeq = __preferAuthSeq
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -3292,11 +3292,12 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                             self.reasonsForReParsing['label_seq_scheme'] = {}
                                                                         if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
                                                                             self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
-                                                                        if 'inhibit_labe_seq_scheme' not in self.reasonsForReParsing:
-                                                                            self.reasonsForReParsing['inhibit_label_seq_scheme'] = {}
-                                                                        if chainId not in self.reasonsForReParsing['inhibit_label_seq_scheme']:
-                                                                            self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId] = {}
-                                                                        self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId][self.__cur_subtype] = True
+                                                                        if isChainSpecified:
+                                                                            if 'inhibit_labe_seq_scheme' not in self.reasonsForReParsing:
+                                                                                self.reasonsForReParsing['inhibit_label_seq_scheme'] = {}
+                                                                            if chainId not in self.reasonsForReParsing['inhibit_label_seq_scheme']:
+                                                                                self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId] = {}
+                                                                            self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId][self.__cur_subtype] = True
                                                                         break
                                                         self.__preferAuthSeq = __preferAuthSeq
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"

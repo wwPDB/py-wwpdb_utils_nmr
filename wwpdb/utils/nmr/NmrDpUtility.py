@@ -18883,7 +18883,8 @@ class NmrDpUtility:
 
                             if len(_atom_id) == 0:
 
-                                if self.__nonblk_bad_nterm and atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
+                                if self.__nonblk_bad_nterm and self.__csStat.peptideLike(comp_id)\
+                                   and atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                     continue
 
                                 if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
@@ -18958,7 +18959,8 @@ class NmrDpUtility:
                                 # self.__fixAtomNomenclature(comp_id, {_atom_id_1: _atom_id_2, _atom_id_2: _atom_id_3})
                                 self.__fixAtomNomenclature(comp_id, {_atom_id_1: _atom_id_3})
 
-                            elif self.__nonblk_bad_nterm and atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
+                            elif self.__nonblk_bad_nterm and self.__csStat.peptideLike(comp_id)\
+                                    and atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                 pass
 
                             elif self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
@@ -19095,7 +19097,8 @@ class NmrDpUtility:
 
                                 else:
 
-                                    if self.__nonblk_bad_nterm and _auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
+                                    if self.__nonblk_bad_nterm and self.__csStat.peptideLike(comp_id)\
+                                       and _auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                         continue
 
                                     if self.__remediation_mode and _auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
@@ -19125,7 +19128,8 @@ class NmrDpUtility:
                                 if not self.__nefT.validate_comp_atom(comp_id,
                                                                       translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids)):
 
-                                    if self.__nonblk_bad_nterm and auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
+                                    if self.__nonblk_bad_nterm and self.__csStat.peptideLike(comp_id)\
+                                       and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                         continue
 
                                     if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
@@ -19158,7 +19162,8 @@ class NmrDpUtility:
 
                                     for auth_atom_id in (set(auth_atom_ids) | set(atom_ids)) - set(atom_ids):
 
-                                        if self.__nonblk_bad_nterm and auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
+                                        if self.__nonblk_bad_nterm and self.__csStat.peptideLike(comp_id)\
+                                           and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                             continue
 
                                         if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
@@ -19180,7 +19185,8 @@ class NmrDpUtility:
 
                                 for auth_atom_id in auth_atom_ids:
 
-                                    if self.__nonblk_bad_nterm and auth_atom_id in ('H1', 'HT1'):  # and comp_id in first_comp_ids:
+                                    if self.__nonblk_bad_nterm and self.__csStat.peptideLike(comp_id)\
+                                       and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                         continue
 
                                     if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751

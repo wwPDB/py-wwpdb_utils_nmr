@@ -11591,7 +11591,7 @@ class NmrDpUtility:
                              if _err_desc['file_path'] == err_desc['file_path']
                              and _err_desc['line_number'] == err_desc['line_number']
                              and _err_desc['message'] == err_desc['message'])
-            return None if 'previous_input' not in _err_desc else _err_desc['previous_input']
+            return _err_desc.get('previous_input')
         except StopIteration:
             return None
 
@@ -16514,11 +16514,13 @@ class NmrDpUtility:
 
                                 chain_id = to_entity_id.get(chain_id, chain_id)
 
-                            if chain_id not in ref_chain_ids and not chain_id.isdigit():
+                            if chain_id not in ref_chain_ids and not chain_id.isdigit() and self.__combined_mode:
+
                                 if self.__caC is None:
                                     self.__retrieveCoordAssemblyChecker()
+
                                 chain_id = next((str(item['entity_assembly_id']) for item in self.__caC['entity_assembly']
-                                                        if chain_id in item['auth_asym_id'].split(',')), chain_id)
+                                                 if chain_id in item['auth_asym_id'].split(',')), chain_id)
 
                             if chain_id not in ref_chain_ids and not ('identical_chain_id' in s2 and chain_id not in s2['identical_chain_id']):
 
@@ -17787,7 +17789,7 @@ class NmrDpUtility:
                                     if comp_mismatch:
                                         _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
                                                                             chain_id, _s1, _s2, myAlign,
-                                                                            None if sf_framecode2 not in map_chain_ids else map_chain_ids[sf_framecode2],
+                                                                            map_chain_ids.get(sf_framecode2),
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _s2['seq_id'] = _seq_align['test_seq_id']
                                         if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
@@ -17828,7 +17830,7 @@ class NmrDpUtility:
                                     if seq_mismatch:
                                         _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
                                                                             chain_id, _s1, _s2, myAlign,
-                                                                            None if sf_framecode2 not in map_chain_ids else map_chain_ids[sf_framecode2],
+                                                                            map_chain_ids.get(sf_framecode2),
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _s2['seq_id'] = _seq_align['test_seq_id']
                                         if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
@@ -21384,10 +21386,10 @@ class NmrDpUtility:
                             if sp_dim['dimension_id'] != i:
                                 continue
 
-                            first_point = None if 'value_first_point' not in sp_dim else sp_dim['value_first_point']
-                            sp_width = None if 'spectral_width' not in sp_dim else sp_dim['spectral_width']
+                            first_point = sp_dim.get('value_first_point')
+                            sp_width = sp_dim.get('spectral_width')
                             # acq = sp_dim['is_acquisition']
-                            sp_freq = None if 'spectrometer_frequency' not in sp_dim else sp_dim['spectrometer_frequency']
+                            sp_freq = sp_dim.get('spectrometer_frequency')
                             abs_positions[i - 1] = False if 'absolute_peak_positions' not in sp_dim else sp_dim['absolute_peak_positions']
 
                             if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz'\
@@ -21400,10 +21402,10 @@ class NmrDpUtility:
                             if sp_dim['ID'] != i:
                                 continue
 
-                            first_point = None if 'Value_first_point' not in sp_dim else sp_dim['Value_first_point']
-                            sp_width = None if 'Sweep_width' not in sp_dim else sp_dim['Sweep_width']
+                            first_point = sp_dim.get('Value_first_point')
+                            sp_width = sp_dim.get('Sweep_width')
                             # acq = sp_dim['Acquisition']
-                            sp_freq = None if 'Spectrometer_frequency' not in sp_dim else sp_dim['Spectrometer_frequency']
+                            sp_freq = sp_dim.get('Spectrometer_frequency')
                             abs_positions[i - 1] = False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions']
 
                             if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
@@ -21561,9 +21563,9 @@ class NmrDpUtility:
                         if sp_dim['ID'] != i:
                             continue
 
-                        first_point = None if 'Value_first_point' not in sp_dim else sp_dim['Value_first_point']
-                        sp_width = None if 'Sweep_width' not in sp_dim else sp_dim['Sweep_width']
-                        sp_freq = None if 'Spectrometer_frequency' not in sp_dim else sp_dim['Spectrometer_frequency']
+                        first_point = sp_dim.get('Value_first_point')
+                        sp_width = sp_dim.get('Sweep_width')
+                        sp_freq = sp_dim.get('Spectrometer_frequency')
                         # acq = sp_dim['Acquisition']
                         abs_positions[i - 1] = False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions']
 
@@ -26457,7 +26459,7 @@ class NmrDpUtility:
                                     continue
                                 axis_codes.append(sp_dim['axis_code'])
                                 abs_pk_pos.append(False if 'absolute_peak_poistions' not in sp_dim else sp_dim['absolute_peak_positions'])
-                                sp_width = None if 'spectral_width' not in sp_dim or 'axis_unit' not in sp_dim else sp_dim['spectral_width']
+                                sp_width = None if 'axis_unit' not in sp_dim else sp_dim.get('spectral_width')
                                 if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz'\
                                    and 'spectrometer_frequency' in sp_dim and sp_width is not None:
                                     sp_freq = sp_dim['spectrometer_frequency']
@@ -26468,7 +26470,7 @@ class NmrDpUtility:
                                     continue
                                 axis_codes.append(sp_dim['Axis_code'])
                                 abs_pk_pos.append(False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions'])
-                                sp_width = None if 'Sweep_width' not in sp_dim or 'Sweep_width_units' not in sp_dim else sp_dim['Sweep_width']
+                                sp_width = None if 'Sweep_width_units' not in sp_dim else sp_dim.get('Sweep_width')
                                 if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
                                    and 'Spectrometer_frequency' in sp_dim and sp_width is not None:
                                     sp_freq = sp_dim['Spectrometer_frequency']
@@ -26980,7 +26982,7 @@ class NmrDpUtility:
                                 continue
                             axis_codes.append(sp_dim['Axis_code'])
                             abs_pk_pos.append(False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions'])
-                            sp_width = None if 'Sweep_width' not in sp_dim or 'Sweep_width_units' not in sp_dim else sp_dim['Sweep_width']
+                            sp_width = None if 'Sweep_width_units' not in sp_dim else sp_dim.get('Sweep_width')
                             if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and sp_width is not None:
                                 sp_freq = sp_dim['Spectrometer_frequency']
                                 sp_width /= sp_freq
@@ -27989,7 +27991,7 @@ class NmrDpUtility:
                     if seq_key in self.__coord_unobs_res:  # DAOTHER-7665
                         continue
 
-                    coord_atom_site_ = None if seq_key not in self.__coord_atom_site else self.__coord_atom_site[seq_key]
+                    coord_atom_site_ = self.__coord_atom_site.get(seq_key)
 
                     self.__ccU.updateChemCompDict(comp_id)
 
@@ -30845,6 +30847,7 @@ class NmrDpUtility:
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
+            file_type = input_source_dic['file_type']
             content_subtype = input_source_dic['content_subtype']
 
             if fileListId == self.__file_path_list_len and file_type == 'nm-res-mr':
@@ -30941,7 +30944,7 @@ class NmrDpUtility:
 
             self.__cur_original_ar_file_name = original_file_name
 
-            reasons = None if file_type not in reasons_dict or 'dist_restraint' not in content_subtype else reasons_dict[file_type]
+            reasons = None if 'dist_restraint' not in content_subtype else reasons_dict.get(file_type)
 
             if file_type == 'nm-res-xpl':
                 reader = XplorMRReader(self.__verbose, self.__lfh,
@@ -39081,8 +39084,8 @@ class NmrDpUtility:
                             atom_type = ''.join(j for j in axis_code if not j.isdigit())
                             atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
                             axis_unit = 'Hz' if 'axis_unit' not in sp_dim else sp_dim['axis_unit']
-                            first_point = None if 'value_first_point' not in sp_dim else sp_dim['value_first_point']
-                            sp_width = None if 'spectral_width' not in sp_dim else sp_dim['spectral_width']
+                            first_point = sp_dim.get('value_first_point')
+                            sp_width = sp_dim.get('spectral_width')
                             if 'spectrometer_frequency' in sp_dim:
                                 sp_freq = sp_dim['spectrometer_frequency']
                             if 'folding' in sp_dim:
@@ -39094,8 +39097,8 @@ class NmrDpUtility:
                             atom_type = ''.join(j for j in axis_code if not j.isdigit())
                             atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
                             axis_unit = 'Hz' if 'Sweep_width_units' not in sp_dim else sp_dim['Sweep_width_units']
-                            first_point = None if 'Value_first_point' not in sp_dim else sp_dim['Value_first_point']
-                            sp_width = None if 'Sweep_width' not in sp_dim else sp_dim['Sweep_width']
+                            first_point = sp_dim.get('Value_first_point')
+                            sp_width = sp_dim.get('Sweep_width')
                             if 'Spectrometer_frequency' in sp_dim:
                                 sp_freq = sp_dim['Spectrometer_frequency']
                             if 'Under_sampling_type' in sp_dim:
@@ -39178,15 +39181,15 @@ class NmrDpUtility:
                                     if _atom_type == 'C':
                                         _center_point = None
                                         if file_type == 'nef':
-                                            _axis_unit = 'Hz' if 'axis_unit' not in _sp_dim else _sp_dim['axis_unit']
-                                            _first_point = None if 'value_first_point' not in _sp_dim else _sp_dim['value_first_point']
-                                            _sp_width = None if 'spectral_width' not in _sp_dim or 'axis_unit' not in _sp_dim else _sp_dim['spectral_width']
+                                            _axis_unit = _sp_dim.get('axis_unit', 'Hz')
+                                            _first_point = _sp_dim.get('value_first_point')
+                                            _sp_width = None if 'axis_unit' not in _sp_dim else _sp_dim.get('spectral_width')
                                             if 'spectrometer_frequency' in _sp_dim:
                                                 _sp_freq = _sp_dim['spectrometer_frequency']
                                         else:
-                                            _axis_unit = 'Hz' if 'Sweep_width_units' not in _sp_dim else _sp_dim['Sweep_width_units']
-                                            _first_point = None if 'Value_first_point' not in _sp_dim else _sp_dim['Value_first_point']
-                                            _sp_width = None if 'Sweep_width' not in _sp_dim or 'Sweep_width_units' not in _sp_dim else _sp_dim['Sweep_width']
+                                            _axis_unit = _sp_dim.get('Sweep_width_units', 'Hz')
+                                            _first_point = _sp_dim.get('Value_first_point')
+                                            _sp_width = None if 'Sweep_width_units' not in _sp_dim else _sp_dim.get('Sweep_width')
                                             if 'Spectrometer_frequency' in _sp_dim:
                                                 _sp_freq = _sp_dim['Spectrometer_frequency']
                                             if 'Center_frequency_offset' in _sp_dim:
@@ -39348,8 +39351,8 @@ class NmrDpUtility:
                         atom_type = ''.join(j for j in axis_code if not j.isdigit())
                         atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
                         axis_unit = 'Hz' if 'Sweep_width_units' not in sp_dim else sp_dim['Sweep_width_units']
-                        first_point = None if 'Value_first_point' not in sp_dim else sp_dim['Value_first_point']
-                        sp_width = None if 'Sweep_width' not in sp_dim else sp_dim['Sweep_width']
+                        first_point = sp_dim.get('Value_first_point')
+                        sp_width = sp_dim.get('Sweep_width')
                         if 'Spectrometer_frequency' in sp_dim:
                             sp_freq = sp_dim['Spectrometer_frequency']
                         if 'Under_sampling_type' in sp_dim:
@@ -39424,9 +39427,9 @@ class NmrDpUtility:
 
                                     if _atom_type == 'C':
                                         _center_point = None
-                                        _axis_unit = 'Hz' if 'Sweep_width_units' not in _sp_dim else _sp_dim['Sweep_width_units']
-                                        _first_point = None if 'Value_first_point' not in _sp_dim else _sp_dim['Value_first_point']
-                                        _sp_width = None if 'Sweep_width' not in _sp_dim or 'Sweep_width_units' not in _sp_dim else _sp_dim['Sweep_width']
+                                        _axis_unit = _sp_dim.get('Sweep_width_units', 'Hz')
+                                        _first_point = _sp_dim.get('Value_first_point')
+                                        _sp_width = None if 'Sweep_width_units' not in _sp_dim else _sp_dim.get('Sweep_width')
                                         if 'Spectrometer_frequency' in _sp_dim:
                                             _sp_freq = _sp_dim['Spectrometer_frequency']
                                         if 'Center_frequency_offset' in _sp_dim:
@@ -41920,7 +41923,7 @@ class NmrDpUtility:
                                     continue
 
                                 _chain_id = ca['test_chain_id']
-                                _auth_chain_id = None if 'test_auth_chain_id' not in ca else ca['test_auth_chain_id']
+                                _auth_chain_id = ca.get('test_auth_chain_id')
 
                                 try:
                                     identity = next(s['identical_chain_id'] for s in cif_polymer_sequence
@@ -42378,7 +42381,7 @@ class NmrDpUtility:
                                     continue
 
                                 chain_id = ca['ref_chain_id']
-                                auth_chain_id = None if 'ref_auth_chain_id' not in ca else ca['ref_auth_chain_id']
+                                auth_chain_id = ca.get('ref_auth_chain_id')
 
                                 try:
                                     identity = next(s['identical_chain_id'] for s in cif_polymer_sequence
@@ -42883,7 +42886,7 @@ class NmrDpUtility:
                     if seq_key in self.__coord_unobs_res:  # DAOTHER-7665
                         continue
 
-                    coord_atom_site_ = None if seq_key not in self.__coord_atom_site else self.__coord_atom_site[seq_key]
+                    coord_atom_site_ = self.__coord_atom_site.get(seq_key)
 
                     if file_type == 'nmr-star' and seq_id != alt_seq_id:
 
@@ -42913,7 +42916,7 @@ class NmrDpUtility:
                             if seq_key in self.__coord_unobs_res:  # DAOTHER-7665
                                 continue
 
-                            coord_atom_site_ = None if seq_key not in self.__coord_atom_site else self.__coord_atom_site[seq_key]
+                            coord_atom_site_ = self.__coord_atom_site.get(seq_key)
 
                 if coord_atom_site_ is None or coord_atom_site_['comp_id'] != cif_comp_id\
                    or (atom_id_ not in coord_atom_site_['atom_id']
@@ -53880,7 +53883,8 @@ class NmrDpUtility:
         try:
 
             is_valid, message = self.__nefT.nef_to_nmrstar(self.__dstPath, fPath,
-                                                           report=self.report, leave_unmatched=self.__leave_intl_note)  # (None if self.__alt_chain else self.report))
+                                                           report=self.report,
+                                                           leave_unmatched=self.__leave_intl_note)  # (None if self.__alt_chain else self.report))
 
             if self.__release_mode and self.__tmpPath is not None:
                 os.remove(self.__tmpPath)
@@ -53974,7 +53978,7 @@ class NmrDpUtility:
 
             self.__srcPath = self.__outputParamDict['nmr-star_file_path']
             self.__dstPath = self.__srcPath
-            self.__logPath = None if 'report_file_path' not in self.__outputParamDict else self.__outputParamDict['report_file_path']
+            self.__logPath = self.__outputParamDict.get('report_file_path')
             if self.__logPath is not None:
                 self.addInput('report_file_path', self.__logPath, type='file')
             self.__op = 'nmr-str-consistency-check'
@@ -54082,7 +54086,7 @@ class NmrDpUtility:
 
             self.__srcPath = self.__outputParamDict['nef_file_path']
             self.__dstPath = self.__srcPath
-            self.__logPath = None if 'report_file_path' not in self.__outputParamDict else self.__outputParamDict['report_file_path']
+            self.__logPath = self.__outputParamDict.get('report_file_path')
             if self.__logPath is not None:
                 self.addInput('report_file_path', self.__logPath, type='file')
             self.__op = 'nmr-nef-consistency-check'

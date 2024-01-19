@@ -615,7 +615,7 @@ class CnsMRParserListener(ParseTreeListener):
 
             if self.__hasPolySeq and self.__polySeqRst is not None:
                 sortPolySeqRst(self.__polySeqRst,
-                               None if self.__reasons is None or 'non_poly_remap' not in self.__reasons else self.__reasons['non_poly_remap'])
+                               None if self.__reasons is None else self.__reasons.get('non_poly_remap'))
 
                 self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
                                                           resolvedMultimer=self.__reasons is not None)
@@ -4339,7 +4339,7 @@ class CnsMRParserListener(ParseTreeListener):
         if self.depth == 1 or not self.__top_union_expr:
             while self.stackFactors:
                 _factor = self.__consumeFactor_expressions(self.stackFactors.pop(), cifCheck=True)
-                self.factor = self.__intersectionFactor_expressions(self.factor, None if 'atom_selection' not in _factor else _factor['atom_selection'])
+                self.factor = self.__intersectionFactor_expressions(self.factor, _factor.get('atom_selection'))
 
         if self.unionFactor is not None and len(self.unionFactor) > 0:
             if 'atom_selection' not in self.unionFactor:

@@ -6504,7 +6504,7 @@ class NEFTranslator:
         for star_chain in self.authChainId:
 
             _star_chain = int(star_chain)
-            _cif_chain = None if star_chain not in self.star2CifChainMapping else self.star2CifChainMapping[star_chain]
+            _cif_chain = self.star2CifChainMapping.get(star_chain)
 
             mapped_seq_id = [s for c, s in self.authSeqMap if c == _star_chain]
             unmapped_seq_id = set(int(row[seq_index]) for row in loop_data
@@ -9779,7 +9779,7 @@ class NEFTranslator:
                                 self.authSeqMap = {}
                                 self.selfSeqMap = {}
                             rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report,
-                                                         None if entity_del_atom_loop is None else entity_del_atom_loop)
+                                                         entity_del_atom_loop)
                             for d in rows:
                                 lp.add_data(d)
 
@@ -9982,7 +9982,7 @@ class NEFTranslator:
                             self.authSeqMap = {}
                             self.selfSeqMap = {}
                         rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report,
-                                                     None if entity_del_atom_loop is None else entity_del_atom_loop)
+                                                     entity_del_atom_loop)
                         for d in rows:
                             lp.add_data(d)
 

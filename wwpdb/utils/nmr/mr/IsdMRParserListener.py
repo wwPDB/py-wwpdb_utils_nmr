@@ -343,7 +343,7 @@ class IsdMRParserListener(ParseTreeListener):
 
             if self.__hasPolySeq and self.__polySeqRst is not None:
                 sortPolySeqRst(self.__polySeqRst,
-                               None if self.__reasons is None or 'non_poly_remap' not in self.__reasons else self.__reasons['non_poly_remap'])
+                               None if self.__reasons is None else self.__reasons.get('non_poly_remap'))
 
                 self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
                                                           resolvedMultimer=self.__reasons is not None)

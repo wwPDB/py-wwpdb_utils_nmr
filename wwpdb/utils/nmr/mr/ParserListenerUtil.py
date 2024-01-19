@@ -2941,11 +2941,11 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
     changed = has_nonpoly_only = gen_ent_asm_from_nonpoly = False
 
-    polySeq = None if prevResult is None or 'polymer_sequence' not in prevResult else prevResult['polymer_sequence']
-    altPolySeq = None if prevResult is None or 'alt_polymer_sequence' not in prevResult else prevResult['alt_polymer_sequence']
-    nonPoly = None if prevResult is None or 'non_polymer' not in prevResult else prevResult['non_polymer']
-    branched = None if prevResult is None or 'branched' not in prevResult else prevResult['branched']
-    nmrExtPolySeq = None if prevResult is None or 'nmr_ext_poly_seq' not in prevResult else prevResult['nmr_ext_poly_seq']
+    polySeq = None if prevResult is None else prevResult.get('polymer_sequence')
+    altPolySeq = None if prevResult is None else prevResult.get('alt_polymer_sequence')
+    nonPoly = None if prevResult is None else prevResult.get('non_polymer')
+    branched = None if prevResult is None else prevResult.get('branched')
+    nmrExtPolySeq = None if prevResult is None else prevResult.get('nmr_ext_poly_seq')
 
     if polySeq is None or nmrExtPolySeq is None:
         changed = True
@@ -3219,10 +3219,10 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                 nonPoly = None
 
         elif has_nonpoly_only:
-            modelNumName = None if prevResult is None or 'model_num_name' not in prevResult else prevResult['model_num_name']
-            authAsymId = None if prevResult is None or 'auth_asym_id' not in prevResult else prevResult['auth_asym_id']
-            authSeqId = None if prevResult is None or 'auth_seq_id' not in prevResult else prevResult['auth_seq_id']
-            authAtomId = None if prevResult is None or 'auth_atom_id' not in prevResult else prevResult['auth_atom_id']
+            modelNumName = None if prevResult is None else prevResult.get('model_num_name')
+            authAsymId = None if prevResult is None else prevResult.get('auth_asym_id')
+            authSeqId = None if prevResult is None else prevResult.get('auth_seq_id')
+            authAtomId = None if prevResult is None else prevResult.get('auth_atom_id')
 
             tags = cR.getItemTags('atom_site')
 
@@ -3408,28 +3408,28 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                 'branched': branched,
                 'nmr_ext_poly_seq': nmrExtPolySeq}
 
-    modelNumName = None if prevResult is None or 'model_num_name' not in prevResult else prevResult['model_num_name']
-    authAsymId = None if prevResult is None or 'auth_asym_id' not in prevResult else prevResult['auth_asym_id']
-    authSeqId = None if prevResult is None or 'auth_seq_id' not in prevResult else prevResult['auth_seq_id']
-    authAtomId = None if prevResult is None or 'auth_atom_id' not in prevResult else prevResult['auth_atom_id']
+    modelNumName = None if prevResult is None else prevResult.get('model_num_name')
+    authAsymId = None if prevResult is None else prevResult.get('auth_asym_id')
+    authSeqId = None if prevResult is None else prevResult.get('auth_seq_id')
+    authAtomId = None if prevResult is None else prevResult.get('auth_atom_id')
 
-    coordAtomSite = None if prevResult is None or 'coord_atom_site' not in prevResult else prevResult['coord_atom_site']
-    coordUnobsRes = None if prevResult is None or 'coord_unobs_res' not in prevResult else prevResult['coord_unobs_res']
-    labelToAuthSeq = None if prevResult is None or 'label_to_auth_seq' not in prevResult else prevResult['label_to_auth_seq']
-    authToLabelSeq = None if prevResult is None or 'auth_to_label_seq' not in prevResult else prevResult['auth_to_label_seq']
-    authToStarSeq = None if prevResult is None or 'auth_to_star_seq' not in prevResult else prevResult['auth_to_star_seq']
-    authToOrigSeq = None if prevResult is None or 'auth_to_orig_seq' not in prevResult else prevResult['auth_to_orig_seq']
-    authToInsCode = None if prevResult is None or 'auth_to_ins_code' not in prevResult else prevResult['auth_to_ins_code']
-    authToEntityType = None if prevResult is None or 'auth_to_entity_type' not in prevResult else prevResult['auth_to_entity_type']
-    labelToAuthChain = None if prevResult is None or 'label_to_auth_chain' not in prevResult else prevResult['label_to_auth_chain']
-    authToLabelChain = None if prevResult is None or 'auth_to_label_chain' not in prevResult else prevResult['auth_to_label_chain']
-    entityAssembly = None if prevResult is None or 'entity_assembly' not in prevResult else prevResult['entity_assembly']
+    coordAtomSite = None if prevResult is None else prevResult.get('coord_atom_site')
+    coordUnobsRes = None if prevResult is None else prevResult.get('coord_unobs_res')
+    labelToAuthSeq = None if prevResult is None else prevResult.get('label_to_auth_seq')
+    authToLabelSeq = None if prevResult is None else prevResult.get('auth_to_label_seq')
+    authToStarSeq = None if prevResult is None else prevResult.get('auth_to_star_seq')
+    authToOrigSeq = None if prevResult is None else prevResult.get('auth_to_orig_seq')
+    authToInsCode = None if prevResult is None else prevResult.get('auth_to_ins_code')
+    authToEntityType = None if prevResult is None else prevResult.get('auth_to_entity_type')
+    labelToAuthChain = None if prevResult is None else prevResult.get('label_to_auth_chain')
+    authToLabelChain = None if prevResult is None else prevResult.get('auth_to_label_chain')
+    entityAssembly = None if prevResult is None else prevResult.get('entity_assembly')
 
     # DAOTHER-8817
-    chemCompAtom = None if prevResult is None or 'chem_comp_atom' not in prevResult else prevResult['chem_comp_atom']
-    chemCompBond = None if prevResult is None or 'chem_comp_bond' not in prevResult else prevResult['chem_comp_bond']
-    chemCompTopo = None if prevResult is None or 'chem_comp_topo' not in prevResult else prevResult['chem_comp_topo']
-    authAtomNameToId = None if prevResult is None or 'auth_atom_name_to_id' not in prevResult else prevResult['auth_atom_name_to_id']
+    chemCompAtom = None if prevResult is None else prevResult.get('chem_comp_atom')
+    chemCompBond = None if prevResult is None else prevResult.get('chem_comp_bond')
+    chemCompTopo = None if prevResult is None else prevResult.get('chem_comp_topo')
+    authAtomNameToId = None if prevResult is None else prevResult.get('auth_atom_name_to_id')
 
     try:
 

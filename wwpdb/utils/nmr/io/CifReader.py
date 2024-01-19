@@ -627,7 +627,7 @@ class CifReader:
                     for dataItem in dataItems:
                         val = row[colDict[dataItem['name']]]
                         if val in self.emptyValue:
-                            val = None if 'default' not in dataItem else dataItem['default']
+                            val = dataItem.get('default')
                         dataItemType = dataItem['type']
                         if dataItemType in ('str', 'enum'):
                             pass

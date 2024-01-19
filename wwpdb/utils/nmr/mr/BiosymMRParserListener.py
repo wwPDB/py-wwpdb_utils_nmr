@@ -502,8 +502,9 @@ class BiosymMRParserListener(ParseTreeListener):
                             sortPolySeqRst(self.__polySeqRstFailed)
 
                             seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
-                            chainAssignFailed, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type,
-                                                                               self.__polySeq, self.__polySeqRstFailed, seqAlignFailed)
+                            chainAssignFailed, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type,
+                                                                         self.__polySeq, self.__polySeqRstFailed, seqAlignFailed)
+
                             if chainAssignFailed is not None:
                                 seqIdRemapFailed = []
 

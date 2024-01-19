@@ -8811,14 +8811,20 @@ class XplorMRParserListener(ParseTreeListener):
         self.__with_axis = self.__cur_subtype in ('rdc', 'diff', 'csa', 'pcs', 'pre', 'prdc')
 
         if _factor['atom_id'][0] is not None:
-            foundCompId = self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=True, isChainSpecified=True)
+            foundCompId = self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
+                                                             isPolySeq=True, isChainSpecified=True)
             if self.__hasNonPolySeq:
-                foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=False, isChainSpecified=True, altPolySeq=self.__nonPolySeq)
+                foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
+                                                                  isPolySeq=False, isChainSpecified=True,
+                                                                  altPolySeq=self.__nonPolySeq, resolved=foundCompId)
 
             if not foundCompId and len(_factor['chain_id']) == 1 and len(self.__polySeq) > 1:
-                self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=True, isChainSpecified=False)
+                foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
+                                                                  isPolySeq=True, isChainSpecified=False)
                 if self.__hasNonPolySeq:
-                    self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection, isPolySeq=False, isChainSpecified=False, altPolySeq=self.__nonPolySeq)
+                    self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
+                                                       isPolySeq=False, isChainSpecified=False,
+                                                       altPolySeq=self.__nonPolySeq, resolved=foundCompId)
 
         if 'atom_ids' in _factor:
             del _factor['atom_ids']
@@ -8937,7 +8943,9 @@ class XplorMRParserListener(ParseTreeListener):
 
         return _factor
 
-    def __consumeFactor_expressions__(self, _factor, cifCheck, _atomSelection, isPolySeq=True, isChainSpecified=True, altPolySeq=None):
+    def __consumeFactor_expressions__(self, _factor, cifCheck, _atomSelection,
+                                      isPolySeq=True, isChainSpecified=True,
+                                      altPolySeq=None, resolved=False):
         atomSpecified = True
         if 'atom_not_specified' in _factor:
             atomSpecified = not _factor['atom_not_specified']
@@ -9497,6 +9505,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                                     f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
                                                                     "Please update the sequence in the Macromolecules page.")
                                                 elif seqSpecified:
+                                                    if resolved and altPolySeq is not None:
+                                                        continue
                                                     if len(chainIds) > 1 and isPolySeq:
                                                         __preferAuthSeq = self.__preferAuthSeq
                                                         self.__preferAuthSeq = False

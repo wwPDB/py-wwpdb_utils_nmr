@@ -210,6 +210,11 @@ class CnsMRReader:
 if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6pts/run6_unambig.tbl-corrected',
+                 '../../tests-nmr/mock-data-remediation/6pts/6pts.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/6feg/03_NOEs_ambig.tbl',
                      '../../tests-nmr/mock-data-remediation/6feg/6feg.cif')

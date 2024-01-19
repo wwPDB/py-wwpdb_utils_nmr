@@ -991,6 +991,9 @@ class XplorMRParserListener(ParseTreeListener):
                     if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
                         del self.reasonsForReParsing['global_sequence_offset']
 
+            if 'global_sequence_offset' in self.reasonsForReParsing and 'local_seq_scheme' in self.reasonsForReParsing:
+                del self.reasonsForReParsing['local_seq_scheme']
+
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 

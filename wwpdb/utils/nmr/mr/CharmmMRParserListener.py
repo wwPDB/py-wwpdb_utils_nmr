@@ -740,6 +740,9 @@ class CharmmMRParserListener(ParseTreeListener):
             if 'global_sequence_offset' in self.reasonsForReParsing and 'local_seq_scheme' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['local_seq_scheme']
 
+            if len(self.reasonsForReParsing) > 0 and not any(f for f in self.__f if 'Atom not found' in f):
+                self.reasonsForReParsing = {}
+
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 

@@ -30,6 +30,7 @@ try:
                                                        isAmbigAtomSelection,
                                                        isCyclicPolymer,
                                                        getAltProtonIdInBondConstraint,
+                                                       guessCompIdFromAtomId,
                                                        isLikePheOrTyr,
                                                        getRestraintName,
                                                        contentSubtypeOf,
@@ -77,6 +78,8 @@ try:
                                            aminoProtonCode,
                                            rdcBbPairCode,
                                            updatePolySeqRst,
+                                           updatePolySeqRstAmbig,
+                                           mergePolySeqRstAmbig,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
@@ -108,6 +111,7 @@ except ImportError:
                                            isAmbigAtomSelection,
                                            isCyclicPolymer,
                                            getAltProtonIdInBondConstraint,
+                                           guessCompIdFromAtomId,
                                            isLikePheOrTyr,
                                            getRestraintName,
                                            contentSubtypeOf,
@@ -155,6 +159,8 @@ except ImportError:
                                aminoProtonCode,
                                rdcBbPairCode,
                                updatePolySeqRst,
+                               updatePolySeqRstAmbig,
+                               mergePolySeqRstAmbig,
                                sortPolySeqRst,
                                alignPolymerSequence,
                                assignPolymerSequence,
@@ -283,6 +289,7 @@ class CyanaMRParserListener(ParseTreeListener):
     # polymer sequence of MR file
     __polySeqRst = None
     __polySeqRstFailed = None
+    __polySeqRstFailedAmbig = None
 
     __seqAlign = None
     __chainAssign = None
@@ -489,6 +496,7 @@ class CyanaMRParserListener(ParseTreeListener):
         self.__chainNumberDict = {}
         self.__polySeqRst = []
         self.__polySeqRstFailed = []
+        self.__polySeqRstFailedAmbig = []
         self.__f = []
 
     # Exit a parse tree produced by CyanaMRParser#cyana_mr.
@@ -632,11 +640,35 @@ class CyanaMRParserListener(ParseTreeListener):
                                     self.reasonsForReParsing['branched_remap'] = branchedMapping
 
                         if len(self.__polySeqRstFailed) > 0:
+                            if len(self.__polySeqRstFailedAmbig) > 0:
+                                mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                             sortPolySeqRst(self.__polySeqRstFailed)
 
                             seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
+
+                            for sa in seqAlignFailed:
+                                if sa['conflict'] == 0:
+                                    chainId = sa['test_chain_id']
+                                    _ps = next((_ps for _ps in self.__polySeqRstFailedAmbig if _ps['chain_id'] == chainId), None)
+                                    if _ps is None:
+                                        continue
+                                    for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
+                                        for compId in list(compIds):
+                                            _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
+                                            updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
+                                            sortPolySeqRst(_polySeqRstFailed)
+                                            _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, _polySeqRstFailed)
+                                            _sa = next((_sa for _sa in _seqAlignFailed if _sa['test_chain_id'] == chainId), None)
+                                            if _sa is None or _sa['conflict'] > 0:
+                                                continue
+                                            updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
+                                            sortPolySeqRst(self.__polySeqRstFailed)
+
+                            seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
+
                             chainAssignFailed, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type,
                                                                                self.__polySeq, self.__polySeqRstFailed, seqAlignFailed)
+
                             if chainAssignFailed is not None:
                                 seqIdRemapFailed = []
 
@@ -2859,6 +2891,16 @@ class CyanaMRParserListener(ParseTreeListener):
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:{atomId} is not present in the coordinates.")
+                    compIds = guessCompIdFromAtomId(atomId, self.__polySeq, self.__nefT)
+                    if compIds is not None:
+                        chainId = fixedChainId
+                        if chainId is None and len(self.__polySeq) == 1:
+                            chainId = self.__polySeq[0]['chain_id']
+                        if chainId is not None:
+                            if len(compIds) == 1:
+                                updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compIds[0])
+                            else:
+                                updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, seqId, compIds)
 
         return list(chainAssign)
 
@@ -3047,6 +3089,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates.")
+                    compIds = guessCompIdFromAtomId(atomId, self.__polySeq, self.__nefT)
+                    if compIds is not None:
+                        if len(compIds) == 1:
+                            updatePolySeqRst(self.__polySeqRstFailed, fixedChainId, seqId, compIds[0])
+                        else:
+                            updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, fixedChainId, seqId, compIds)
 
         return list(chainAssign)
 

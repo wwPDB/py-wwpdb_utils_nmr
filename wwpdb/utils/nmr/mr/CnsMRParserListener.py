@@ -777,6 +777,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                             chainAssignFailed, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type,
                                                                                self.__polySeq, self.__polySeqRstFailed, seqAlignFailed)
+
                             if chainAssignFailed is not None:
 
                                 for ca in chainAssignFailed:

@@ -4548,6 +4548,27 @@ def isAsymmetricRangeRestraint(atoms, chainIdSet, symmetric):
     return False
 
 
+def guessCompIdFromAtomId(atoms, polySeq, nefT):
+    """ Try to find candidate comp_id that matches with a given atom_id.
+    """
+
+    candidates = set()
+
+    for ps in polySeq:
+        compIds = ps['comp_id']
+
+        for _compId in set(compIds):
+            if _compId in monDict3:
+                _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, atoms[0])
+                if len(_atomId) > 0 and details is None:
+                    candidates.add(_compId)
+
+    if len(candidates) > 2:
+        return None
+
+    return list(candidates)
+
+
 def hasIntraChainRestraint(atomSelectionSet):
     """ Return whether intra-chain distance restraints in the atom selection.
     """

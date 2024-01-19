@@ -30,6 +30,7 @@ try:
                                                        isAsymmetricRangeRestraint,
                                                        isAmbigAtomSelection,
                                                        getAltProtonIdInBondConstraint,
+                                                       guessCompIdFromAtomId,
                                                        getTypeOfDihedralRestraint,
                                                        isLikePheOrTyr,
                                                        getRdcCode,
@@ -86,6 +87,8 @@ try:
                                            jcoupBbPairCode,
                                            rdcBbPairCode,
                                            updatePolySeqRst,
+                                           updatePolySeqRstAmbig,
+                                           mergePolySeqRstAmbig,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
@@ -116,6 +119,7 @@ except ImportError:
                                            isAsymmetricRangeRestraint,
                                            isAmbigAtomSelection,
                                            getAltProtonIdInBondConstraint,
+                                           guessCompIdFromAtomId,
                                            getTypeOfDihedralRestraint,
                                            isLikePheOrTyr,
                                            getRdcCode,
@@ -172,6 +176,8 @@ except ImportError:
                                jcoupBbPairCode,
                                rdcBbPairCode,
                                updatePolySeqRst,
+                               updatePolySeqRstAmbig,
+                               mergePolySeqRstAmbig,
                                sortPolySeqRst,
                                alignPolymerSequence,
                                assignPolymerSequence,
@@ -311,6 +317,8 @@ class CnsMRParserListener(ParseTreeListener):
 
     # polymer sequence of MR file
     __polySeqRst = None
+    __polySeqRstFailed = None
+    __polySeqRstFailedAmbig = None
 
     __seqAlign = None
     __chainAssign = None
@@ -595,6 +603,8 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#cns_mr.
     def enterCns_mr(self, ctx: CnsMRParser.Cns_mrContext):  # pylint: disable=unused-argument
         self.__polySeqRst = []
+        self.__polySeqRstFailed = []
+        self.__polySeqRstFailedAmbig = []
         self.__f = []
         self.__g = []
 
@@ -737,6 +747,82 @@ class CnsMRParserListener(ParseTreeListener):
                                 self.__polySeqRst = polySeqRst
                                 if 'branched_remap' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['branched_remap'] = branchedMapping
+
+                        if len(self.__polySeqRstFailed) > 0:
+                            if len(self.__polySeqRstFailedAmbig) > 0:
+                                mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
+                            sortPolySeqRst(self.__polySeqRstFailed)
+
+                            seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
+
+                            for sa in seqAlignFailed:
+                                if sa['conflict'] == 0:
+                                    chainId = sa['test_chain_id']
+                                    _ps = next((_ps for _ps in self.__polySeqRstFailedAmbig if _ps['chain_id'] == chainId), None)
+                                    if _ps is None:
+                                        continue
+                                    for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
+                                        for compId in list(compIds):
+                                            _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
+                                            updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
+                                            sortPolySeqRst(_polySeqRstFailed)
+                                            _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, _polySeqRstFailed)
+                                            _sa = next((_sa for _sa in _seqAlignFailed if _sa['test_chain_id'] == chainId), None)
+                                            if _sa is None or _sa['conflict'] > 0:
+                                                continue
+                                            updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
+                                            sortPolySeqRst(self.__polySeqRstFailed)
+
+                            seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
+
+                            chainAssignFailed, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type,
+                                                                               self.__polySeq, self.__polySeqRstFailed, seqAlignFailed)
+                            if chainAssignFailed is not None:
+
+                                for ca in chainAssignFailed:
+                                    if ca['conflict'] > 0:
+                                        continue
+                                    ref_chain_id = ca['ref_chain_id']
+                                    test_chain_id = ca['test_chain_id']
+                                    sa = next(sa for sa in seqAlignFailed
+                                              if sa['ref_chain_id'] == ref_chain_id
+                                              and sa['test_chain_id'] == test_chain_id)
+
+                                    poly_seq_model = next(ps for ps in self.__polySeq
+                                                          if ps['auth_chain_id'] == ref_chain_id)
+
+                                    seq_id_mapping = {}
+                                    for ref_auth_seq_id, mid_code, test_seq_id in zip(sa['ref_auth_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                        if mid_code == '|':
+                                            seq_id_mapping[test_seq_id] = ref_auth_seq_id
+
+                                    if len(seq_id_mapping) > 1:
+                                        for k, v in seq_id_mapping.items():
+                                            offset = v - k
+                                            break
+
+                                        if any(k for k, v in seq_id_mapping.items() if k != v):
+                                            if not any(v - k != offset for k, v in seq_id_mapping.items()):
+                                                if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
+                                                    self.reasonsForReParsing['global_auth_sequence_offset'] = {}
+                                                self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offset
+                                            else:
+                                                seq_id_mapping = {}
+                                                for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                                    if mid_code == '|':
+                                                        seq_id_mapping[test_seq_id] = ref_seq_id
+
+                                                for k, v in seq_id_mapping.items():
+                                                    offset = v - k
+                                                    break
+
+                                                if not any(v - k != offset for k, v in seq_id_mapping.items()):
+                                                    offsets = {}
+                                                    for ref_auth_seq_id, auth_seq_id in zip(sa['ref_auth_seq_id'], sa['ref_seq_id']):
+                                                        offsets[auth_seq_id - offset] = ref_auth_seq_id - auth_seq_id
+                                                    if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
+                                                        self.reasonsForReParsing['global_auth_sequence_offset'] = {}
+                                                        self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offsets
 
                     # DAOTHER-9063
                     if self.__reasons is None and 'np_seq_id_remap' in self.reasonsForReParsing:
@@ -4881,23 +4967,32 @@ class CnsMRParserListener(ParseTreeListener):
                                 if self.__hasNonPoly and self.__cur_subtype == 'dist':
                                     for np in self.__nonPoly:
                                         ligands += len(np['seq_id'])
-                                if ligands == 1 and len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1:
-                                    if 'np_seq_id_remap' not in self.reasonsForReParsing:
-                                        self.reasonsForReParsing['np_seq_id_remap'] = {}
-                                    chainId = _factor['chain_id'][0]
-                                    srcSeqId = _factor['seq_id'][0]
-                                    dstSeqId = self.__nonPoly[0]['auth_seq_id'][0]
-                                    if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
-                                        self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
-                                    if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
-                                        if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] is not None:
-                                            if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
-                                                self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = None
+                                if len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1:
+                                    if ligands == 1:
+                                        if 'np_seq_id_remap' not in self.reasonsForReParsing:
+                                            self.reasonsForReParsing['np_seq_id_remap'] = {}
+                                        chainId = _factor['chain_id'][0]
+                                        srcSeqId = _factor['seq_id'][0]
+                                        dstSeqId = self.__nonPoly[0]['auth_seq_id'][0]
+                                        if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
+                                            self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
+                                        if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
+                                            if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] is not None:
+                                                if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
+                                                    self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = None
+                                                    ligands = 0
+                                            else:
                                                 ligands = 0
                                         else:
-                                            ligands = 0
-                                    else:
-                                        self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
+                                            self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
+                                    if len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
+                                        compIds = guessCompIdFromAtomId(_factor['atom_id'], self.__polySeq, self.__nefT)
+                                        if compIds is not None:
+                                            if len(compIds) == 1:
+                                                updatePolySeqRst(self.__polySeqRstFailed, _factor['chain_id'][0], _factor['seq_id'][0], compIds[0])
+                                            else:
+                                                updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, _factor['chain_id'][0], _factor['seq_id'][0], compIds)
+
                                 if ligands == 0:
                                     self.__preferAuthSeq = not self.__preferAuthSeq
                                     self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
@@ -4973,6 +5068,9 @@ class CnsMRParserListener(ParseTreeListener):
 
                     _seqId_ = seqId
                     seqId = self.getRealSeqId(ps, seqId, isPolySeq)
+
+                    if seqId is None:
+                        continue
 
                     if self.__reasons is not None:
                         if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
@@ -5523,9 +5621,9 @@ class CnsMRParserListener(ParseTreeListener):
 
     def getOrigSeqId(self, ps, seqId, isPolySeq=True):
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
+        offset = 0
         if not self.__preferAuthSeq:
             chainId = ps['chain_id']
-            offset = 0
             if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
                 offset = self.__reasons['label_seq_offset'][chainId]
             if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
@@ -5536,17 +5634,34 @@ class CnsMRParserListener(ParseTreeListener):
                 _chainId, _seqId = self.__authToLabelSeq[seqKey]
                 if _seqId in ps['seq_id']:
                     return _seqId + offset
-        if seqId in ps['auth_seq_id']:
-            return seqId
+        else:
+            if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
+               and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
+                offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                if isinstance(offset, dict):
+                    if seqId in offset:
+                        offset = offset[seqId]
+                    else:
+                        for shift in range(1, 100):
+                            if seqId + shift in offset:
+                                offset = offset[seqId + shift]
+                                break
+                            if seqId - shift in offset:
+                                offset = offset[seqId - shift]
+                                break
+                        if isinstance(offset, dict):
+                            return None
+        if seqId + offset in ps['auth_seq_id']:
+            return seqId + offset
         # if seqId in ps['seq_id']:
         #     return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
         return seqId
 
     def getRealSeqId(self, ps, seqId, isPolySeq=True):
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
+        offset = 0
         if not self.__preferAuthSeq:
             chainId = ps['chain_id']
-            offset = 0
             if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
                 offset = self.__reasons['label_seq_offset'][chainId]
             if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
@@ -5557,8 +5672,25 @@ class CnsMRParserListener(ParseTreeListener):
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
                     return _seqId
-        if seqId in ps['auth_seq_id']:
-            return seqId
+        else:
+            if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
+               and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
+                offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                if isinstance(offset, dict):
+                    if seqId in offset:
+                        offset = offset[seqId]
+                    else:
+                        for shift in range(1, 100):
+                            if seqId + shift in offset:
+                                offset = offset[seqId + shift]
+                                break
+                            if seqId - shift in offset:
+                                offset = offset[seqId - shift]
+                                break
+                        if isinstance(offset, dict):
+                            return None
+        if seqId + offset in ps['auth_seq_id']:
+            return seqId + offset
         # if seqId in ps['seq_id']:
         #     return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
         return seqId

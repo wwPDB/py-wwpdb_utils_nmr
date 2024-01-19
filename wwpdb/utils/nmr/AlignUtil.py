@@ -648,7 +648,7 @@ def getRestraintFormatNames(fileTypes, ambig=False):
     return ', or '.join(nameList)
 
 
-def updatePolySeqRst(polySeqRst, chainId, seqId, compId, authCompId=None):
+def updatePolySeqRst(polySeqRst, chainId, seqId, compId: str, authCompId=None):
     """ Update polymer sequence of the current MR file.
     """
 
@@ -664,6 +664,51 @@ def updatePolySeqRst(polySeqRst, chainId, seqId, compId, authCompId=None):
         ps['seq_id'].append(seqId)
         ps['comp_id'].append(compId)
         ps['auth_comp_id'].append(compId if authCompId in emptyValue else authCompId)
+
+
+def updatePolySeqRstAmbig(polySeqRstAmb, chainId, seqId, compIds: list):
+    """ Update polymer sequence of the current MR file.
+    """
+
+    if seqId is None or len(compIds) == 0:
+        return
+
+    ps = next((ps for ps in polySeqRstAmb if ps['chain_id'] == chainId), None)
+    if ps is None:
+        polySeqRstAmb.append({'chain_id': chainId, 'seq_id': [], 'comp_ids': []})
+        ps = polySeqRstAmb[-1]
+
+    _compIds = set(compIds)
+
+    if seqId not in ps['seq_id']:
+        ps['seq_id'].append(seqId)
+        ps['comp_ids'].append(_compIds)
+    else:
+        ps['comp_ids'][ps['seq_id'].index(seqId)] &= _compIds
+
+
+def mergePolySeqRstAmbig(polySeqRst, polySeqRstAmb):
+    """ Merge polymer sequence and ambiguous polymer sequence of the curent MR file.
+    """
+
+    if len(polySeqRstAmb) == 0:
+        return
+
+    for ps in polySeqRst:
+        chainId = ps['chain_id']
+
+        _ps = next((_ps for _ps in polySeqRstAmb if _ps['chain_id'] == chainId), None)
+
+        if _ps is None:
+            continue
+
+        __ps = copy.copy(_ps)
+
+        for idx, (seqId, compIds) in enumerate(zip(__ps['seq_id'], __ps['comp_ids'])):
+            if len(compIds) == 1:
+                updatePolySeqRst(polySeqRst, chainId, seqId, list(compIds)[0])
+                del _ps['seq_id'][idx]
+                del _ps['comp_ids'][idx]
 
 
 def updatePolySeqRstFromAtomSelectionSet(polySeqRst, atomSelectionSet):

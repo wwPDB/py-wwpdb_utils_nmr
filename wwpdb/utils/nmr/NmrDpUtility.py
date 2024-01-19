@@ -30819,9 +30819,45 @@ class NmrDpUtility:
                     if ar['dist_type'] in ('lol', 'both'):
                         cyanaLolDistRest += 1
 
-        poly_seq_set = []
-
         fileListId = self.__file_path_list_len
+
+        ar_file_order = []
+        ar_file_wo_dist = []
+
+        derived_from_public_mr = False
+
+        for ar in self.__inputParamDict[ar_file_path_list]:
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            content_subtype = input_source_dic['content_subtype']
+
+            if fileListId == self.__file_path_list_len and file_type == 'nm-res-mr':
+                derived_from_public_mr = True
+
+            fileListId += 1
+
+            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax', 'nm-pea-any'):
+                continue
+
+            if self.__remediation_mode and os.path.exists(file_path + '-ignored'):
+                continue
+
+            if content_subtype is None or len(content_subtype) == 0:
+                continue
+
+            if 'is_valid' not in ar or not ar['is_valid']:
+                continue
+
+            if 'dist_restraint' in content_subtype.keys():
+                ar_file_order.append((input_source, ar))
+            else:
+                ar_file_wo_dist.append((input_source, ar))
+
+        ar_file_order.extend(ar_file_wo_dist)
+
+        poly_seq_set = []
 
         create_sf_dict = self.__remediation_mode
 
@@ -30830,22 +30866,16 @@ class NmrDpUtility:
         if self.__mr_sf_dict_holder is None:
             self.__mr_sf_dict_holder = {}
 
-        derived_from_public_mr = False
+        reasons_dict = {}
 
-        for ar in self.__inputParamDict[ar_file_path_list]:
+        for input_source, ar in ar_file_order:
 
             file_path = ar['file_name']
 
-            input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
             content_subtype = input_source_dic['content_subtype']
-
-            if fileListId == self.__file_path_list_len and file_type == 'nm-res-mr':
-                derived_from_public_mr = True
-
-            fileListId += 1
 
             if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax', 'nm-pea-any'):
                 continue
@@ -30897,12 +30927,15 @@ class NmrDpUtility:
 
             self.__cur_original_ar_file_name = original_file_name
 
+            reasons = None if file_type not in reasons_dict or 'dist_restraint' not in content_subtype else reasons_dict[file_type]
+
             if file_type == 'nm-res-xpl':
                 reader = XplorMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
                                        self.__mr_atom_name_mapping,
                                        self.__cR, self.__caC,
-                                       self.__ccU, self.__csStat, self.__nefT)
+                                       self.__ccU, self.__csStat, self.__nefT,
+                                       reasons)
                 reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
@@ -30915,6 +30948,9 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+
+                        if 'dist_restraint' in content_subtype.keys():
+                            reasons_dict[file_type] = reasons
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -31078,7 +31114,8 @@ class NmrDpUtility:
                                      self.__representative_model_id,
                                      self.__mr_atom_name_mapping,
                                      self.__cR, self.__caC,
-                                     self.__ccU, self.__csStat, self.__nefT)
+                                     self.__ccU, self.__csStat, self.__nefT,
+                                     reasons)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -31090,6 +31127,9 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+
+                        if 'dist_restraint' in content_subtype.keys():
+                            reasons_dict[file_type] = reasons
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -31412,7 +31452,7 @@ class NmrDpUtility:
                                        self.__mr_atom_name_mapping,
                                        self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT,
-                                       None, upl_or_lol, cya_file_ext)
+                                       reasons, upl_or_lol, cya_file_ext)
                 reader.setRemediateMode(self.__remediation_mode)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
@@ -31425,6 +31465,9 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+
+                        if 'dist_restraint' in content_subtype.keys():
+                            reasons_dict[file_type] = reasons
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -31588,7 +31631,8 @@ class NmrDpUtility:
                                          self.__representative_model_id,
                                          self.__mr_atom_name_mapping,
                                          self.__cR, self.__caC,
-                                         self.__ccU, self.__csStat, self.__nefT)
+                                         self.__ccU, self.__csStat, self.__nefT,
+                                         reasons)
                 reader.setRemediateMode(self.__remediation_mode)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
@@ -31601,6 +31645,9 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+
+                        if 'dist_restraint' in content_subtype.keys():
+                            reasons_dict[file_type] = reasons
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -32540,7 +32587,8 @@ class NmrDpUtility:
                                         self.__representative_model_id,
                                         self.__mr_atom_name_mapping,
                                         self.__cR, self.__caC,
-                                        self.__ccU, self.__csStat, self.__nefT)
+                                        self.__ccU, self.__csStat, self.__nefT,
+                                        reasons)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -32552,6 +32600,9 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+
+                        if 'dist_restraint' in content_subtype.keys():
+                            reasons_dict[file_type] = reasons
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])

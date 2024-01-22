@@ -658,7 +658,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                           if ps['auth_chain_id'] == ref_chain_id)
 
                                     seq_id_mapping = {}
-                                    for ref_auth_seq_id, mid_code, test_seq_id in zip(sa['ref_auth_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                    for ref_auth_seq_id, mid_code, test_seq_id in zip(sa.get('ref_auth_seq_id', 'ref_seq_id'),
+                                                                                      sa['mid_code'], sa['test_seq_id']):
                                         if mid_code == '|':
                                             seq_id_mapping[test_seq_id] = ref_auth_seq_id
 
@@ -682,7 +683,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                                     offset = v - k
                                                     break
 
-                                                if not any(v - k != offset for k, v in seq_id_mapping.items()):
+                                                if offset != 0 and not any(v - k != offset for k, v in seq_id_mapping.items()):
                                                     offsets = {}
                                                     for ref_auth_seq_id, auth_seq_id in zip(sa['ref_auth_seq_id'], sa['ref_seq_id']):
                                                         offsets[auth_seq_id - offset] = ref_auth_seq_id - auth_seq_id
@@ -3135,20 +3136,24 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                 self.__authSeqId = 'auth_seq_id'
+                                                """
                                                 seqKey = _seqKey
                                                 chainId, seqId = seqKey
                                                 if len(self.atomSelectionSet) > 0:
                                                     self.__setLocalSeqScheme()
+                                                """
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
                                                 self.__authSeqId = 'auth_seq_id'
                                                 self.__authAtomId = 'auth_atom_id'
+                                                """
                                                 seqKey = _seqKey
                                                 chainId, seqId = seqKey
                                                 if len(self.atomSelectionSet) > 0:
                                                     self.__setLocalSeqScheme()
+                                                """
                                             else:
                                                 self.__preferAuthSeq = False
                                         else:

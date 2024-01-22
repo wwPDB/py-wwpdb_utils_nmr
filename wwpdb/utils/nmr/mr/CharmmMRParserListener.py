@@ -5459,7 +5459,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
     def __retrieveLocalSeqScheme(self):
         if self.__reasons is None\
-           or ('local_seq_scheme' not in self.__reasons and 'inhibit_label_seq_scheme' not in self.__reasons):
+           or ('label_seq_scheme' not in self.__reasons and 'local_seq_scheme' not in self.__reasons and 'inhibit_label_seq_scheme' not in self.__reasons):
             return
         if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']\
            and self.__cur_subtype in self.__reasons['label_seq_scheme']\

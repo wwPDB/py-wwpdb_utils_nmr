@@ -40435,7 +40435,7 @@ class NmrDpUtility:
                 atom_id = c['atom_id']
                 type_symbol = c['type_symbol']
 
-                if atom_id == type_symbol and atom_id[0] not in protonBeginCode:
+                if atom_id == type_symbol and atom_id[0] not in protonBeginCode and comp_id in monDict3:
 
                     is_valid, cc_name, cc_rel_status = self.__getChemCompNameAndStatusOf(comp_id)
 

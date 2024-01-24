@@ -33160,7 +33160,7 @@ class NmrDpUtility:
                             sf_item['index_id'] += 1
 
                             row = getRow('saxs', sf_item['id'], sf_item['index_id'], None, None, _line[0].replace('E', 'e'),
-                                         sf_item['list_id'], self.__entry_id, dstFunc, None, None, None, None)
+                                         sf_item['list_id'], self.__entry_id, dstFunc, None, None, None, None, None)
                             sf_item['loop'].add_data(row)
 
                             _q_value = q_value
@@ -33168,7 +33168,7 @@ class NmrDpUtility:
                         else:
 
                             _row = getRow('saxs', 1, 1, None, None, _line[0].replace('E', 'e'),
-                                          sf_item['list_id'] + 1, self.__entry_id, dstFunc, None, None, None, None)
+                                          sf_item['list_id'] + 1, self.__entry_id, dstFunc, None, None, None, None, None)
 
                             _q_value = 0.0
 

@@ -4439,10 +4439,14 @@ def isIdenticalRestraint(atoms, nefT=None):
                     return True
                 if nefT is not None:
                     compId = a1['comp_id']
-                    atomId1_ = nefT.get_valid_star_atom(compId, atomId1)[0]
-                    atomId2_ = nefT.get_valid_star_atom(compId, atomId2)[0]
-                    if atomId1_ == atomId2_:
-                        return True
+                    _atomId1, _, _ = nefT.get_valid_star_atom(compId, atomId1)
+                    _atomId2, _, _ = nefT.get_valid_star_atom(compId, atomId2)
+                    for atomId1 in _atomId1:
+                        if atomId1 in _atomId2:
+                            return True
+                    for atomId2 in _atomId2:
+                        if atomId2 in _atomId1:
+                            return True
 
     except KeyError:
         pass

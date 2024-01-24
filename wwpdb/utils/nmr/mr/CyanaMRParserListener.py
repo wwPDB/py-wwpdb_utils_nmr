@@ -383,7 +383,7 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
             self.__authToStarSeq = ret['auth_to_star_seq']
-            self.__authToORigSeq = ret['auth_to_orig_seq']
+            self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
             self.__authToEntityType = ret['auth_to_entity_type']
 

@@ -270,6 +270,7 @@ class CyanaMRParserListener(ParseTreeListener):
     __labelToAuthSeq = None
     __authToLabelSeq = None
     __authToStarSeq = None
+    __authToOrigSeq = None
     __authToInsCode = None
     __authToEntityType = None
 
@@ -382,6 +383,7 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
             self.__authToStarSeq = ret['auth_to_star_seq']
+            self.__authToORigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
             self.__authToEntityType = ret['auth_to_entity_type']
 
@@ -419,11 +421,11 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if reasons is not None and 'model_chain_id_ext' in reasons:
             self.__polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes, \
-                self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq =\
+                self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq, self.__authToOrigSeq =\
                 extendCoordChainsForExactNoes(reasons['model_chain_id_ext'],
                                               self.__polySeq, self.__altPolySeq,
                                               self.__coordAtomSite, self.__coordUnobsRes,
-                                              self.__authToLabelSeq, self.__authToStarSeq)
+                                              self.__authToLabelSeq, self.__authToStarSeq, self.__authToOrigSeq)
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -1092,7 +1094,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                                  '.', None, None,
                                                  sf['list_id'], self.__entryId, dstFunc,
-                                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                                  atom1, atom2)
                                     sf['loop'].add_data(row)
 
@@ -1151,8 +1153,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
                     if self.__createSfDict and isinstance(memberId, int):
-                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
-                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
                         if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                             continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
@@ -1177,7 +1179,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberId, memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
                         sf['loop'].add_data(row)
 
@@ -1338,7 +1340,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
@@ -1618,7 +1620,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                                  '.', None, None,
                                                  sf['list_id'], self.__entryId, dstFunc,
-                                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                                  atom1, atom2)
                                     sf['loop'].add_data(row)
 
@@ -1677,8 +1679,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
                     if self.__createSfDict and isinstance(memberId, int):
-                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
-                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
                         if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                             continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
@@ -1703,7 +1705,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberId, memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
                         sf['loop'].add_data(row)
 
@@ -1864,7 +1866,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
@@ -4080,7 +4082,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', None, angleName,
                                          sf['list_id'], self.__entryId, dstFunc,
-                                         self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                         self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          atom1, atom2, atom3, atom4)
                             sf['loop'].add_data(row)
 
@@ -4180,7 +4182,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', None, angleName,
                                          sf['list_id'], self.__entryId, dstFunc,
-                                         self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                         self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          None, None, None, None, atom5)
                             sf['loop'].add_data(row)
 
@@ -4482,7 +4484,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  combinationId, None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -4706,7 +4708,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom)
                     sf['loop'].add_data(row)
 
@@ -4988,8 +4990,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
                     if self.__createSfDict and isinstance(memberId, int):
-                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
-                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
                         if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                             continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
@@ -5014,7 +5016,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberId, memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
                         sf['loop'].add_data(row)
 
@@ -5332,8 +5334,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
                     if self.__createSfDict and isinstance(memberId, int):
-                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
-                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
                         if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                             continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
@@ -5358,7 +5360,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberId, memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
                         sf['loop'].add_data(row)
 
@@ -5582,8 +5584,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
                     if self.__createSfDict and isinstance(memberId, int):
-                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
-                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
                         if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                             continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
@@ -5608,7 +5610,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberId, memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
                         sf['loop'].add_data(row)
 
@@ -5848,8 +5850,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
                     if self.__createSfDict and isinstance(memberId, int):
-                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
-                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
                         if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                             continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
@@ -5874,7 +5876,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberId, memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
                         sf['loop'].add_data(row)
 
@@ -6192,8 +6194,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
                     if self.__createSfDict and isinstance(memberId, int):
-                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
-                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
                         if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                             continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
@@ -6218,7 +6220,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberId, memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
                         sf['loop'].add_data(row)
 
@@ -6442,8 +6444,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
                     if self.__createSfDict and isinstance(memberId, int):
-                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
-                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
                         if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                             continue
                     if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
@@ -6468,7 +6470,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', memberId, memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
                         sf['loop'].add_data(row)
 
@@ -6623,8 +6625,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if self.__createSfDict and isinstance(memberId, int):
-                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
-                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
                     if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                         continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
@@ -6649,7 +6651,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberId, memberLogicCode,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -7078,7 +7080,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                              '.', None, None,
                                              sf['list_id'], self.__entryId, dstFunc,
-                                             self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                             self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                              atom1, atom2)
                                 sf['loop'].add_data(row)
 
@@ -7147,8 +7149,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if self.__createSfDict and isinstance(memberId, int):
-                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
-                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
                     if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                         continue
                 if self.__createSfDict and memberLogicCode == '.':
@@ -7171,7 +7173,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberId, memberLogicCode,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -7533,7 +7535,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', None, angleName,
                                          sf['list_id'], self.__entryId, dstFunc,
-                                         self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                         self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          atom1, atom2, atom3, atom4)
                             sf['loop'].add_data(row)
 
@@ -7633,7 +7635,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', None, angleName,
                                          sf['list_id'], self.__entryId, dstFunc,
-                                         self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                         self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          None, None, None, None, atom5)
                             sf['loop'].add_data(row)
 
@@ -7820,7 +7822,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 
@@ -7949,7 +7951,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, None,
                                  sf['list_id'], self.__entryId, getDstFuncForSsBond(atom1, atom2),
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -8060,7 +8062,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, None,
                                  sf['list_id'], self.__entryId, getDstFuncForHBond(atom1, atom2),
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -8321,7 +8323,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None, None,
                                      sf['list_id'], self.__entryId, None,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
                         sf['loop'].add_data(row)
                         break
@@ -8355,7 +8357,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', None, None,
                                          sf['list_id'], self.__entryId, None,
-                                         self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                         self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          atom1, atom2)
                             sf['loop'].add_data(row)
                             break
@@ -8404,7 +8406,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None, None,
                                      sf['list_id'], self.__entryId, None,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
                         sf['loop'].add_data(row)
                         break
@@ -8454,7 +8456,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                          '.', None, None,
                                          sf['list_id'], self.__entryId, None,
-                                         self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                         self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          atom1, atom2)
                             sf['loop'].add_data(row)
                             break

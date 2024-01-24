@@ -209,6 +209,7 @@ class BiosymMRParserListener(ParseTreeListener):
     __labelToAuthSeq = None
     __authToLabelSeq = None
     __authToStarSeq = None
+    __authToOrigSeq = None
     __authToInsCode = None
 
     __offsetHolder = None
@@ -285,6 +286,7 @@ class BiosymMRParserListener(ParseTreeListener):
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
             self.__authToStarSeq = ret['auth_to_star_seq']
+            self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
 
         self.__offsetHolder = {}
@@ -318,11 +320,11 @@ class BiosymMRParserListener(ParseTreeListener):
 
         if reasons is not None and 'model_chain_id_ext' in reasons:
             self.__polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes, \
-                self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq =\
+                self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq, self.__authToOrigSeq =\
                 extendCoordChainsForExactNoes(reasons['model_chain_id_ext'],
                                               self.__polySeq, self.__altPolySeq,
                                               self.__coordAtomSite, self.__coordUnobsRes,
-                                              self.__authToLabelSeq, self.__authToStarSeq)
+                                              self.__authToLabelSeq, self.__authToStarSeq, self.__authToOrigSeq)
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -654,8 +656,8 @@ class BiosymMRParserListener(ParseTreeListener):
                 if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if self.__createSfDict and isinstance(memberId, int):
-                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
-                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
                     if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                         continue
                 if self.__createSfDict and memberLogicCode == '.':
@@ -678,7 +680,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberId, memberLogicCode,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -792,8 +794,8 @@ class BiosymMRParserListener(ParseTreeListener):
                 if isIdenticalRestraint([atom1, atom2], self.__nefT):
                     continue
                 if self.__createSfDict and isinstance(memberId, int):
-                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
-                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
                     if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                         continue
                 if self.__createSfDict and memberLogicCode == '.':
@@ -816,7 +818,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', memberId, memberLogicCode,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -2083,7 +2085,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.' if dstFunc2 is None else 1, None, angleName,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
                     if dstFunc2 is not None:
@@ -2094,7 +2096,7 @@ class BiosymMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      2, None, angleName,
                                      sf['list_id'], self.__entryId, dstFunc2,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
                     if dstFunc3 is not None:
@@ -2105,7 +2107,7 @@ class BiosymMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      3, None, angleName,
                                      sf['list_id'], self.__entryId, dstFunc3,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
                     if dstFunc4 is not None:
@@ -2116,7 +2118,7 @@ class BiosymMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      4, None, angleName,
                                      sf['list_id'], self.__entryId, dstFunc4,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
@@ -2225,7 +2227,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, angleName,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 

@@ -354,6 +354,7 @@ class XplorMRParserListener(ParseTreeListener):
     __labelToAuthSeq = None
     __authToLabelSeq = None
     __authToStarSeq = None
+    __authToOrigSeq = None
     __authToInsCode = None
 
     __offsetHolder = None
@@ -582,6 +583,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
             self.__authToStarSeq = ret['auth_to_star_seq']
+            self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
 
             exptl = cR.getDictList('exptl')
@@ -641,11 +643,11 @@ class XplorMRParserListener(ParseTreeListener):
 
         if reasons is not None and 'model_chain_id_ext' in reasons:
             self.__polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes, \
-                self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq =\
+                self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq, self.__authToOrigSeq =\
                 extendCoordChainsForExactNoes(reasons['model_chain_id_ext'],
                                               self.__polySeq, self.__altPolySeq,
                                               self.__coordAtomSite, self.__coordUnobsRes,
-                                              self.__authToLabelSeq, self.__authToStarSeq)
+                                              self.__authToLabelSeq, self.__authToStarSeq, self.__authToOrigSeq)
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -912,7 +914,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                           if ps['auth_chain_id'] == ref_chain_id)
 
                                     seq_id_mapping = {}
-                                    for ref_auth_seq_id, mid_code, test_seq_id in zip(sa.get('ref_auth_seq_id', 'ref_seq_id'),
+                                    for ref_auth_seq_id, mid_code, test_seq_id in zip(sa['ref_auth_seq_id'] if 'ref_auth_seq_id' in sa else sa['ref_seq_id'],
                                                                                       sa['mid_code'], sa['test_seq_id']):
                                         if mid_code == '|':
                                             seq_id_mapping[test_seq_id] = ref_auth_seq_id
@@ -1997,8 +1999,8 @@ class XplorMRParserListener(ParseTreeListener):
                     if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
                     if self.__createSfDict and isinstance(memberId, int):
-                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
-                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
                         if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                             continue
                     if self.__createSfDict and memberLogicCode == '.':
@@ -2026,7 +2028,7 @@ class XplorMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      combinationId, memberId, memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
                         sf['loop'].add_data(row)
 
@@ -2378,7 +2380,7 @@ class XplorMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, angleName,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 
@@ -2787,7 +2789,7 @@ class XplorMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  combinationId, None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -3181,7 +3183,7 @@ class XplorMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  combinationId, None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -3458,14 +3460,14 @@ class XplorMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  1, None, 'VEANgle',
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  2, None, 'VEANgle',
                                  sf['list_id'], self.__entryId, dstFunc2,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
                     self.__cur_subtype = 'rdc'
@@ -3733,7 +3735,7 @@ class XplorMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  combinationId, None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -3904,7 +3906,7 @@ class XplorMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, 'ANISotropy',
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
                     self.__cur_subtype = 'rdc'
@@ -4365,7 +4367,7 @@ class XplorMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
@@ -4385,7 +4387,7 @@ class XplorMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
@@ -4408,7 +4410,7 @@ class XplorMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc if dstFunc2 is None else dstFunc2,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
@@ -4548,7 +4550,7 @@ class XplorMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4, atom5)
                     sf['loop'].add_data(row)
 
@@ -4698,7 +4700,7 @@ class XplorMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1)
                         sf['loop'].add_data(row)
 
@@ -4713,7 +4715,7 @@ class XplorMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      1, None, '.',
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1)
                         sf['loop'].add_data(row)
                         #
@@ -4721,7 +4723,7 @@ class XplorMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      2, None, '.',
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      None, atom2)
                         sf['loop'].add_data(row)
 
@@ -6092,7 +6094,7 @@ class XplorMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom2)
                     sf['loop'].add_data(row)
 
@@ -6468,7 +6470,7 @@ class XplorMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1)
                     sf['loop'].add_data(row)
 
@@ -6747,7 +6749,7 @@ class XplorMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1)
                     sf['loop'].add_data(row)
 
@@ -7059,7 +7061,7 @@ class XplorMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  combinationId, None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -7367,7 +7369,7 @@ class XplorMRParserListener(ParseTreeListener):
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
-                                 self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom_id_0, None, atom1, atom2)
                     sf['loop'].add_data(row)
 
@@ -7697,7 +7699,7 @@ class XplorMRParserListener(ParseTreeListener):
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                              1, None, memberLogicCode,
                              sf['list_id'], self.__entryId, getDstFuncForHBond(atom1, atom3),
-                             self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                             self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                              atom1, atom3)
                 sf['loop'].add_data(row)
                 #
@@ -7706,7 +7708,7 @@ class XplorMRParserListener(ParseTreeListener):
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                              2, None, memberLogicCode,
                              sf['list_id'], self.__entryId, getDstFuncForHBond(atom2, atom3),
-                             self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                             self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                              atom2, atom3)
                 sf['loop'].add_data(row)
 
@@ -7839,7 +7841,7 @@ class XplorMRParserListener(ParseTreeListener):
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                              '.', None, None,
                              sf['list_id'], self.__entryId, getDstFuncForHBond(atom1, atom2),
-                             self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                             self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                              atom1, atom2)
                 sf['loop'].add_data(row)
 

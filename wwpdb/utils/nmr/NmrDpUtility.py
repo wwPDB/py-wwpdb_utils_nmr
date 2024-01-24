@@ -40601,7 +40601,7 @@ class NmrDpUtility:
             lp_category = self.lp_categories[file_type][content_subtype]
             key_items = self.key_items[file_type][content_subtype]
 
-            if content_subtype == 'poly_seq' and self.__cR.hasItem(lp_category, 'pdb_mon_id'):
+            if content_subtype in ('poly_seq', 'non_poly') and self.__cR.hasItem(lp_category, 'pdb_mon_id'):
                 _key_items = copy.copy(key_items)
                 _key_items.append({'name': 'pdb_mon_id', 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'})
                 key_items = _key_items

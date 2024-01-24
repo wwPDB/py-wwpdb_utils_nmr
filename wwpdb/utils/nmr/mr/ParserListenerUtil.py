@@ -3769,7 +3769,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'seq_id', 'type': 'int'},
                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                     {'name': 'pdb_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
+                                     {'name': polySeqAuthMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
                                      ]
 
                         if has_ins_code:
@@ -4114,7 +4114,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                     {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}
+                                     {'name': nonPolyAuthMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
                                      ]
 
                         if has_ins_code:
@@ -4391,6 +4391,8 @@ def extendCoordChainsForExactNoes(modelChainIdExt,
                             _seqKey = (dstChainId, seqId, compId)
                             if _seqKey not in _authToStarSeq:
                                 _authToStarSeq[_seqKey] = (dstAsmEntityId, seqVal[1], seqVal[2], seqVal[3])
+
+    _authToOrigSeq = None
 
     if authToOrigSeq is not None:
         _authToOrigSeq = copy.copy(authToOrigSeq)

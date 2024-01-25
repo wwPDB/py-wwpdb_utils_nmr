@@ -28335,7 +28335,7 @@ class NmrDpUtility:
         if self.__mr_sf_dict_holder is None:
             self.__mr_sf_dict_holder = {}
 
-        if self.__combined_mode and not self.__remediation_mode:  # DAOTHER-8751
+        if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode):  # DAOTHER-8751, 8817 (D_130004306)
 
             if len(self.__star_data) == 0:
                 return True
@@ -28895,7 +28895,7 @@ class NmrDpUtility:
                                 if not rescued:
                                     atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
                                                                           allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
-                                                                          preferPdbxAuthAtomName=prefer_pdbx_auth_name)
+                                                                          preferPdbxAuthAtomName=prefer_pdbx_auth_name, annotationMode=self.__annotation_mode)
 
                                 if warn is not None:
 
@@ -29256,7 +29256,7 @@ class NmrDpUtility:
 
                                 atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
                                                                       allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
-                                                                      preferPdbxAuthAtomName=prefer_pdbx_auth_name)
+                                                                      preferPdbxAuthAtomName=prefer_pdbx_auth_name, annotationMode=self.__annotation_mode)
 
                                 if warn is not None:
 
@@ -33298,7 +33298,7 @@ class NmrDpUtility:
 
         # self.__pk_sf_holder = []
 
-        if self.__combined_mode and not self.__remediation_mode:  # DAOTHER-8751
+        if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode):  # DAOTHER-8751, 8817 (D_130004306)
 
             if len(self.__star_data) == 0:
                 return True

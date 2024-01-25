@@ -7402,7 +7402,8 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
     return list(chainAssign), warningMessage
 
 
-def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId, authAtomId, allowAmbig=True, enableWarning=True, preferPdbxAuthAtomName=False, offset=1):
+def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId, authAtomId,
+                     allowAmbig=True, enableWarning=True, preferPdbxAuthAtomName=False, annotationMode=False, offset=1):
     """ Select atoms of the coordinates.
         @return atom selection, warning mesage (None for valid case)
     """
@@ -7415,6 +7416,9 @@ def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
         atomId = caC['auth_atom_name_to_id'][compId][atomId]
 
     for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
+
+        if annotationMode and compId != cifCompId:
+            continue
 
         seqKey, coordAtomSite = getCoordAtomSiteOf(caC, authChainId, chainId, cifSeqId, True)
         _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
@@ -7491,7 +7495,8 @@ def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
 
         if lenAtomId == 0:
             if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
-                return selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId, allowAmbig, enableWarning, preferPdbxAuthAtomName, offset=1)
+                return selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
+                                        allowAmbig, enableWarning, preferPdbxAuthAtomName, annotationMode, offset=1)
             if enableWarning:
                 warningMessage = f"[Invalid atom nomenclature] "\
                     f"{seqId}:{compId}:{atomId} is invalid atom nomenclature."

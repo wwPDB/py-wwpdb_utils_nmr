@@ -32196,8 +32196,7 @@ class NmrDpUtility:
                                         self.__representative_model_id,
                                         self.__mr_atom_name_mapping,
                                         self.__cR, self.__caC,
-                                        self.__ccU, self.__csStat, self.__nefT,
-                                        reasons)
+                                        self.__ccU, self.__csStat, self.__nefT)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -32368,8 +32367,7 @@ class NmrDpUtility:
                                        self.__representative_model_id,
                                        self.__mr_atom_name_mapping,
                                        self.__cR, self.__caC,
-                                       self.__ccU, self.__csStat, self.__nefT,
-                                       reasons)
+                                       self.__ccU, self.__csStat, self.__nefT)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -32532,8 +32530,7 @@ class NmrDpUtility:
                                      self.__representative_model_id,
                                      self.__mr_atom_name_mapping,
                                      self.__cR, self.__caC,
-                                     self.__ccU, self.__csStat, self.__nefT,
-                                     reasons)
+                                     self.__ccU, self.__csStat, self.__nefT)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -32887,8 +32884,7 @@ class NmrDpUtility:
                                       self.__representative_model_id,
                                       self.__mr_atom_name_mapping,
                                       self.__cR, self.__caC,
-                                      self.__ccU, self.__csStat, self.__nefT,
-                                      reasons)
+                                      self.__ccU, self.__csStat, self.__nefT)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -40684,7 +40680,7 @@ class NmrDpUtility:
 
         for content_subtype in self.cif_content_subtypes:
 
-            if content_subtype in ('entry_info', 'poly_seq', 'branched') or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
+            if content_subtype in ('entry_info', 'poly_seq', 'branched', 'non_poly') or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -40692,11 +40688,6 @@ class NmrDpUtility:
             alias = False
             lp_category = self.lp_categories[file_type][content_subtype]
             key_items = self.key_items[file_type][content_subtype]
-
-            if content_subtype == 'non_poly' and self.__cR.hasItem(lp_category, 'pdb_mon_id'):
-                _key_items = copy.copy(key_items)
-                _key_items.append({'name': 'pdb_mon_id', 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'})
-                key_items = _key_items
 
             if not self.__cR.hasCategory(lp_category):
                 alias = True

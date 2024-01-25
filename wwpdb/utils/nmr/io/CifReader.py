@@ -26,8 +26,9 @@
 # 10-Feb-2023   my  - add 'fetch_first_match' filter to process large assembly avoiding forced timeout (NMR restraint remediation)
 # 14-Apr-2023   my  - enable to use cache datablock (NMR restraint remediation)
 # 19-Apr-2023   my  - support multiple datablock (NMR restraint validation)
-# 24-Apr-2023   my  - add 'default' attribute for data items (NMR restraint validation)
+# 24-Apr-2023   my  - add 'default' attribute for key items (NMR restraint validation)
 # 18-Dec-2023   my  - add calculate_uninstanced_coord() (DAOTHER-8945)
+# 24-Jan-2024   my  - add 'default-from' attribute for key/data items (D_1300043061)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -627,7 +628,10 @@ class CifReader:
                     for dataItem in dataItems:
                         val = row[colDict[dataItem['name']]]
                         if val in self.emptyValue:
-                            val = None if 'default' not in dataItem else dataItem['default']
+                            if 'default-from' in dataItem and dataItem['default-from'] in colDict:
+                                val = row[colDict[dataItem['default-from']]]
+                            else:
+                                val = dataItem.get('default')
                         dataItemType = dataItem['type']
                         if dataItemType in ('str', 'enum'):
                             pass
@@ -688,6 +692,9 @@ class CifReader:
                 for j in range(len_key):
                     itCol = itDict[keyNames[j]]
                     if itCol < len(row) and row[itCol] in self.emptyValue:
+                        if 'default-from' in keyItems[j] and keyItems[j]['default-from'] in keyNames:
+                            row[itCol] = row[itDict[keyItems[j]['default-from']]]
+                            continue
                         if 'default' not in keyItems[j] or keyItems[j]['default'] not in self.emptyValue:
                             raise ValueError(f"{keyNames[j]} must not be empty.")
 

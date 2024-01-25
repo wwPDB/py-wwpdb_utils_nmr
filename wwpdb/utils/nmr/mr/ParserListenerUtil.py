@@ -5,6 +5,7 @@
 # Updates:
 # 13-Sep-2023  M. Yokochi - construct pseudo CCD from the coordinates (DAOTHER-8817)
 # 29-Sep-2023  M. Yokochi - add atom name mapping dictionary (DAOTHER-8817, 8828)
+# 24-Jan-2024  M. Yokochi - reconstruct polymer/non-polymer sequence based on pdb_mon_id, instead of auth_mon_id (D_1300043061)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -2941,18 +2942,18 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
     changed = has_nonpoly_only = gen_ent_asm_from_nonpoly = False
 
-    polySeq = None if prevResult is None or 'polymer_sequence' not in prevResult else prevResult['polymer_sequence']
-    altPolySeq = None if prevResult is None or 'alt_polymer_sequence' not in prevResult else prevResult['alt_polymer_sequence']
-    nonPoly = None if prevResult is None or 'non_polymer' not in prevResult else prevResult['non_polymer']
-    branched = None if prevResult is None or 'branched' not in prevResult else prevResult['branched']
-    nmrExtPolySeq = None if prevResult is None or 'nmr_ext_poly_seq' not in prevResult else prevResult['nmr_ext_poly_seq']
+    polySeq = None if prevResult is None else prevResult.get('polymer_sequence')
+    altPolySeq = None if prevResult is None else prevResult.get('alt_polymer_sequence')
+    nonPoly = None if prevResult is None else prevResult.get('non_polymer')
+    branched = None if prevResult is None else prevResult.get('branched')
+    nmrExtPolySeq = None if prevResult is None else prevResult.get('nmr_ext_poly_seq')
 
     if polySeq is None or nmrExtPolySeq is None:
         changed = True
 
-        polySeqAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_poly_seq_scheme', 'auth_mon_id') else 'mon_id'
-        nonPolyAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'auth_mon_id') else 'mon_id'
-        branchedAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_branch_scheme', 'auth_mon_id') else 'mon_id'
+        polySeqPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_poly_seq_scheme', 'pdb_mon_id') else 'mon_id'
+        nonPolyPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'pdb_mon_id') else 'mon_id'
+        branchedPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_branch_scheme', 'pdb_mon_id') else 'mon_id'
 
         # loop categories
         _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',
@@ -2967,21 +2968,21 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                  {'name': polySeqAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default': '.'}
+                                  {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
                      'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                  {'name': nonPolyAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default': '.'}
+                                  {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
                      'branched': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
                                   {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                  {'name': branchedAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default': '.'}
+                                  {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
                      'coordinate': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                     {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
@@ -3219,10 +3220,10 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                 nonPoly = None
 
         elif has_nonpoly_only:
-            modelNumName = None if prevResult is None or 'model_num_name' not in prevResult else prevResult['model_num_name']
-            authAsymId = None if prevResult is None or 'auth_asym_id' not in prevResult else prevResult['auth_asym_id']
-            authSeqId = None if prevResult is None or 'auth_seq_id' not in prevResult else prevResult['auth_seq_id']
-            authAtomId = None if prevResult is None or 'auth_atom_id' not in prevResult else prevResult['auth_atom_id']
+            modelNumName = None if prevResult is None else prevResult.get('model_num_name')
+            authAsymId = None if prevResult is None else prevResult.get('auth_asym_id')
+            authSeqId = None if prevResult is None else prevResult.get('auth_seq_id')
+            authAtomId = None if prevResult is None else prevResult.get('auth_atom_id')
 
             tags = cR.getItemTags('atom_site')
 
@@ -3408,28 +3409,28 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                 'branched': branched,
                 'nmr_ext_poly_seq': nmrExtPolySeq}
 
-    modelNumName = None if prevResult is None or 'model_num_name' not in prevResult else prevResult['model_num_name']
-    authAsymId = None if prevResult is None or 'auth_asym_id' not in prevResult else prevResult['auth_asym_id']
-    authSeqId = None if prevResult is None or 'auth_seq_id' not in prevResult else prevResult['auth_seq_id']
-    authAtomId = None if prevResult is None or 'auth_atom_id' not in prevResult else prevResult['auth_atom_id']
+    modelNumName = None if prevResult is None else prevResult.get('model_num_name')
+    authAsymId = None if prevResult is None else prevResult.get('auth_asym_id')
+    authSeqId = None if prevResult is None else prevResult.get('auth_seq_id')
+    authAtomId = None if prevResult is None else prevResult.get('auth_atom_id')
 
-    coordAtomSite = None if prevResult is None or 'coord_atom_site' not in prevResult else prevResult['coord_atom_site']
-    coordUnobsRes = None if prevResult is None or 'coord_unobs_res' not in prevResult else prevResult['coord_unobs_res']
-    labelToAuthSeq = None if prevResult is None or 'label_to_auth_seq' not in prevResult else prevResult['label_to_auth_seq']
-    authToLabelSeq = None if prevResult is None or 'auth_to_label_seq' not in prevResult else prevResult['auth_to_label_seq']
-    authToStarSeq = None if prevResult is None or 'auth_to_star_seq' not in prevResult else prevResult['auth_to_star_seq']
-    authToOrigSeq = None if prevResult is None or 'auth_to_orig_seq' not in prevResult else prevResult['auth_to_orig_seq']
-    authToInsCode = None if prevResult is None or 'auth_to_ins_code' not in prevResult else prevResult['auth_to_ins_code']
-    authToEntityType = None if prevResult is None or 'auth_to_entity_type' not in prevResult else prevResult['auth_to_entity_type']
-    labelToAuthChain = None if prevResult is None or 'label_to_auth_chain' not in prevResult else prevResult['label_to_auth_chain']
-    authToLabelChain = None if prevResult is None or 'auth_to_label_chain' not in prevResult else prevResult['auth_to_label_chain']
-    entityAssembly = None if prevResult is None or 'entity_assembly' not in prevResult else prevResult['entity_assembly']
+    coordAtomSite = None if prevResult is None else prevResult.get('coord_atom_site')
+    coordUnobsRes = None if prevResult is None else prevResult.get('coord_unobs_res')
+    labelToAuthSeq = None if prevResult is None else prevResult.get('label_to_auth_seq')
+    authToLabelSeq = None if prevResult is None else prevResult.get('auth_to_label_seq')
+    authToStarSeq = None if prevResult is None else prevResult.get('auth_to_star_seq')
+    authToOrigSeq = None if prevResult is None else prevResult.get('auth_to_orig_seq')
+    authToInsCode = None if prevResult is None else prevResult.get('auth_to_ins_code')
+    authToEntityType = None if prevResult is None else prevResult.get('auth_to_entity_type')
+    labelToAuthChain = None if prevResult is None else prevResult.get('label_to_auth_chain')
+    authToLabelChain = None if prevResult is None else prevResult.get('auth_to_label_chain')
+    entityAssembly = None if prevResult is None else prevResult.get('entity_assembly')
 
     # DAOTHER-8817
-    chemCompAtom = None if prevResult is None or 'chem_comp_atom' not in prevResult else prevResult['chem_comp_atom']
-    chemCompBond = None if prevResult is None or 'chem_comp_bond' not in prevResult else prevResult['chem_comp_bond']
-    chemCompTopo = None if prevResult is None or 'chem_comp_topo' not in prevResult else prevResult['chem_comp_topo']
-    authAtomNameToId = None if prevResult is None or 'auth_atom_name_to_id' not in prevResult else prevResult['auth_atom_name_to_id']
+    chemCompAtom = None if prevResult is None else prevResult.get('chem_comp_atom')
+    chemCompBond = None if prevResult is None else prevResult.get('chem_comp_bond')
+    chemCompTopo = None if prevResult is None else prevResult.get('chem_comp_topo')
+    authAtomNameToId = None if prevResult is None else prevResult.get('auth_atom_name_to_id')
 
     try:
 
@@ -3768,7 +3769,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'seq_id', 'type': 'int'},
                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                     {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}
+                                     {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
                                      ]
 
                         if has_ins_code:
@@ -4021,7 +4022,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                     {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}
+                                     {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id'}
                                      ]
 
                         if has_ins_code:
@@ -4113,7 +4114,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                     {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}
+                                     {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
                                      ]
 
                         if has_ins_code:
@@ -4281,7 +4282,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
 def extendCoordChainsForExactNoes(modelChainIdExt,
                                   polySeq, altPolySeq, coordAtomSite, coordUnobsRes,
-                                  authToLabelSeq, authToStarSeq):
+                                  authToLabelSeq, authToStarSeq, authToOrigSeq):
     """ Extend coordinate chains for eNOEs-guided multiple conformers.
     """
 
@@ -4391,7 +4392,37 @@ def extendCoordChainsForExactNoes(modelChainIdExt,
                             if _seqKey not in _authToStarSeq:
                                 _authToStarSeq[_seqKey] = (dstAsmEntityId, seqVal[1], seqVal[2], seqVal[3])
 
-    return _polySeq, _altPolySeq, _coordAtomSite, _coordUnobsRes, _labelToAuthSeq, _authToLabelSeq, _authToStarSeq
+    _authToOrigSeq = None
+
+    if authToOrigSeq is not None:
+        _authToOrigSeq = copy.copy(authToOrigSeq)
+
+        maxAsmEntityId = max(item[0] for item in authToOrigSeq.values()) + 1
+        asmEntityIdExt = {}
+
+        for ps in polySeq:
+            srcChainId = ps['auth_chain_id']
+            if srcChainId in modelChainIdExt:
+                for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
+                    if dstChainId in asmEntityIdExt:
+                        continue
+                    asmEntityIdExt[dstChainId] = maxAsmEntityId
+                    maxAsmEntityId += 1
+
+        for ps in polySeq:
+            srcChainId = ps['auth_chain_id']
+            if srcChainId in modelChainIdExt:
+                for dstChainId in modelChainIdExt[ps['auth_chain_id']]:
+                    dstAsmEntityId = asmEntityIdExt[dstChainId]
+                    for seqId, compId in zip(ps['auth_seq_id'], ps['comp_id']):
+                        seqKey = (srcChainId, seqId, compId)
+                        if seqKey in authToOrigSeq:
+                            seqVal = authToOrigSeq[seqKey]
+                            _seqKey = (dstChainId, seqId, compId)
+                            if _seqKey not in _authToOrigSeq:
+                                _authToOrigSeq[_seqKey] = seqVal
+
+    return _polySeq, _altPolySeq, _coordAtomSite, _coordUnobsRes, _labelToAuthSeq, _authToLabelSeq, _authToStarSeq, _authToOrigSeq
 
 
 def isIdenticalRestraint(atoms, nefT=None):
@@ -4408,10 +4439,14 @@ def isIdenticalRestraint(atoms, nefT=None):
                     return True
                 if nefT is not None:
                     compId = a1['comp_id']
-                    atomId1_ = nefT.get_valid_star_atom(compId, atomId1)[0]
-                    atomId2_ = nefT.get_valid_star_atom(compId, atomId2)[0]
-                    if atomId1_ == atomId2_:
-                        return True
+                    _atomId1, _, _ = nefT.get_valid_star_atom(compId, atomId1)
+                    _atomId2, _, _ = nefT.get_valid_star_atom(compId, atomId2)
+                    for atomId1 in _atomId1:
+                        if atomId1 in _atomId2:
+                            return True
+                    for atomId2 in _atomId2:
+                        if atomId2 in _atomId1:
+                            return True
 
     except KeyError:
         pass
@@ -4546,6 +4581,27 @@ def isAsymmetricRangeRestraint(atoms, chainIdSet, symmetric):
             return True
 
     return False
+
+
+def guessCompIdFromAtomId(atoms, polySeq, nefT):
+    """ Try to find candidate comp_id that matches with a given atom_id.
+    """
+
+    candidates = set()
+
+    for ps in polySeq:
+        compIds = ps['comp_id']
+
+        for _compId in set(compIds):
+            if _compId in monDict3:
+                _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, atoms[0])
+                if len(_atomId) > 0 and details is None:
+                    candidates.add(_compId)
+
+    if len(candidates) > 2:
+        return None
+
+    return list(candidates)
 
 
 def hasIntraChainRestraint(atomSelectionSet):
@@ -5524,10 +5580,18 @@ def getAuxLoops(mrSubtype):
     return aux_lps
 
 
-def getStarAtom(authToStarSeq, offsetHolder, atom, aux_atom=None):
+def getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom, aux_atom=None):
     """ Return NMR-STAR sequence including entity ID for a given auth atom of the cooridnates.
         @return: a dictionary of NMR-STAR sequence/entity, None otherwise
     """
+
+    def retrieve_label_comp_id(_seqId, _compId):
+        if authToOrigSeq is not None:
+            for _seqKey in authToStarSeq.keys():
+                if _seqKey[1] == _seqId and _seqKey in authToOrigSeq:
+                    if _compId == authToOrigSeq[_seqKey][1]:
+                        return _seqKey[2]
+        return _compId
 
     starAtom = copy.copy(atom)
 
@@ -5537,6 +5601,18 @@ def getStarAtom(authToStarSeq, offsetHolder, atom, aux_atom=None):
         atom['comp_id'] = starAtom['comp_id'] = None
     compId = atom['comp_id']
     seqKey = (chainId, seqId, compId)
+
+    if authToOrigSeq is not None:
+        if seqKey in authToOrigSeq:
+            _compId = authToOrigSeq[seqKey][1]
+            if compId != _compId:
+                starAtom['comp_id'] = _compId
+        else:
+            _compId = retrieve_label_comp_id(seqId, compId)
+            if compId != _compId:
+                compId = _compId
+                seqKey = (chainId, seqId, _compId)
+
     if 'atom_id' not in atom:
         starAtom['atom_id'] = None
 
@@ -5547,6 +5623,18 @@ def getStarAtom(authToStarSeq, offsetHolder, atom, aux_atom=None):
         auxCompId = aux_atom.get('comp_id')
         if chainId == auxChainId and seqId != auxSeqId:
             auxSeqKey = (auxChainId, auxSeqId, auxCompId)
+
+            if authToOrigSeq is not None:
+                if auxSeqKey in authToOrigSeq:
+                    _auxCompId = authToOrigSeq[auxSeqKey][1]
+                    if auxCompId != _auxCompId:
+                        auxCompId = _auxCompId
+                else:
+                    _auxCompId = retrieve_label_comp_id(auxSeqId, auxCompId)
+                    if auxCompId != _auxCompId:
+                        auxCompId = _auxCompId
+                        auxSeqKey = (auxChainId, auxSeqId, auxCompId)
+
             has_aux_atom = True
 
     if seqKey in authToStarSeq and chainId not in offsetHolder:
@@ -5654,7 +5742,7 @@ def getInsCode(authToInsCode, offsetHolder, atom):
 
 
 def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryId, dstFunc,
-           authToStarSeq, authToInsCode, offsetHolder,
+           authToStarSeq, authToOrigSeq, authToInsCode, offsetHolder,
            atom1, atom2=None, atom3=None, atom4=None, atom5=None):
     """ Return row data for a given internal restraint subtype.
         @return: data array
@@ -5692,45 +5780,45 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
     ins_code1, ins_code2, ins_code3, ins_code4, ins_code5 = None, None, None, None, None
 
     if atom1 is not None:
-        star_atom1 = getStarAtom(authToStarSeq, offsetHolder, atom1, atom2)
+        star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, atom2)
         if star_atom1 is None:
-            star_atom1 = getStarAtom(authToStarSeq, offsetHolder, atom1)
+            star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1)
         if 'atom_id' not in atom1:
             atom1['atom_id'] = None
         if has_ins_code:
             ins_code1 = getInsCode(authToInsCode, offsetHolder, atom1)
 
     if atom2 is not None:
-        star_atom2 = getStarAtom(authToStarSeq, offsetHolder, atom2, atom1)
+        star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, atom1)
         if star_atom2 is None:
-            star_atom2 = getStarAtom(authToStarSeq, offsetHolder, atom2)
+            star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2)
         if 'atom_id' not in atom2:
             atom2['atom_id'] = None
         if has_ins_code:
             ins_code2 = getInsCode(authToInsCode, offsetHolder, atom2)
 
     if atom3 is not None:
-        star_atom3 = getStarAtom(authToStarSeq, offsetHolder, atom3, atom1)
+        star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, atom1)
         if star_atom3 is None:
-            star_atom3 = getStarAtom(authToStarSeq, offsetHolder, atom3)
+            star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3)
         if 'atom_id' not in atom3:
             atom3['atom_id'] = None
         if has_ins_code:
             ins_code3 = getInsCode(authToInsCode, offsetHolder, atom3)
 
     if atom4 is not None:
-        star_atom4 = getStarAtom(authToStarSeq, offsetHolder, atom4, atom1)
+        star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, atom1)
         if star_atom4 is None:
-            star_atom4 = getStarAtom(authToStarSeq, offsetHolder, atom4)
+            star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4)
         if 'atom_id' not in atom4:
             atom4['atom_id'] = None
         if has_ins_code:
             ins_code4 = getInsCode(authToInsCode, offsetHolder, atom4)
 
     if atom5 is not None:
-        star_atom5 = getStarAtom(authToStarSeq, offsetHolder, atom5, atom1)
+        star_atom5 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom5, atom1)
         if star_atom5 is None:
-            star_atom5 = getStarAtom(authToStarSeq, offsetHolder, atom5)
+            star_atom5 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom5)
         if 'atom_id' not in atom5:
             atom5['atom_id'] = None
         if has_ins_code:
@@ -6222,7 +6310,7 @@ def getDstFuncForSsBond(atom1, atom2):
 
 def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
                    originalTagNames, originalRow,
-                   authToStarSeq, authToInsCode, offsetHolder,
+                   authToStarSeq, authToOrigSeq, authToInsCode, offsetHolder,
                    atoms):
     """ Return row data for a given constraint subtype and corresponding NMR-STAR row.
         @return: data array
@@ -6274,41 +6362,41 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
     ins_code1, ins_code2, ins_code3, ins_code4 = None, None, None, None
 
     if atom1 is not None:
-        star_atom1 = getStarAtom(authToStarSeq, offsetHolder, atom1, atom2)
+        star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, atom2)
         if star_atom1 is None:
-            star_atom1 = getStarAtom(authToStarSeq, offsetHolder, atom1)
+            star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1)
         if 'atom_id' not in atom1:
             atom1['atom_id'] = None
         ins_code1 = getInsCode(authToInsCode, offsetHolder, atom1)
 
     if atom2 is not None:
-        star_atom2 = getStarAtom(authToStarSeq, offsetHolder, atom2, atom1)
+        star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, atom1)
         if star_atom2 is None:
-            star_atom2 = getStarAtom(authToStarSeq, offsetHolder, atom2)
+            star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2)
         if 'atom_id' not in atom2:
             atom2['atom_id'] = None
         ins_code2 = getInsCode(authToInsCode, offsetHolder, atom2)
 
     if atom3 is not None:
-        star_atom3 = getStarAtom(authToStarSeq, offsetHolder, atom3, atom1)
+        star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, atom1)
         if star_atom3 is None:
-            star_atom3 = getStarAtom(authToStarSeq, offsetHolder, atom3)
+            star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3)
         if 'atom_id' not in atom3:
             atom3['atom_id'] = None
         ins_code3 = getInsCode(authToInsCode, offsetHolder, atom3)
 
     if atom4 is not None:
-        star_atom4 = getStarAtom(authToStarSeq, offsetHolder, atom4, atom1)
+        star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, atom1)
         if star_atom4 is None:
-            star_atom4 = getStarAtom(authToStarSeq, offsetHolder, atom4)
+            star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4)
         if 'atom_id' not in atom4:
             atom4['atom_id'] = None
         ins_code4 = getInsCode(authToInsCode, offsetHolder, atom4)
 
     if atom5 is not None:
-        star_atom5 = getStarAtom(authToStarSeq, offsetHolder, atom5, atom1)
+        star_atom5 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom5, atom1)
         if star_atom5 is None:
-            star_atom5 = getStarAtom(authToStarSeq, offsetHolder, atom5)
+            star_atom5 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom5)
         if 'atom_id' not in atom5:
             atom5['atom_id'] = None
 
@@ -7314,7 +7402,8 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
     return list(chainAssign), warningMessage
 
 
-def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId, authAtomId, allowAmbig=True, enableWarning=True, preferPdbxAuthAtomName=False, offset=1):
+def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId, authAtomId,
+                     allowAmbig=True, enableWarning=True, preferPdbxAuthAtomName=False, annotationMode=False, offset=1):
     """ Select atoms of the coordinates.
         @return atom selection, warning mesage (None for valid case)
     """
@@ -7327,6 +7416,9 @@ def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
         atomId = caC['auth_atom_name_to_id'][compId][atomId]
 
     for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
+
+        if annotationMode and compId != cifCompId:
+            continue
 
         seqKey, coordAtomSite = getCoordAtomSiteOf(caC, authChainId, chainId, cifSeqId, True)
         _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
@@ -7403,7 +7495,8 @@ def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
 
         if lenAtomId == 0:
             if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
-                return selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId, allowAmbig, enableWarning, preferPdbxAuthAtomName, offset=1)
+                return selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
+                                        allowAmbig, enableWarning, preferPdbxAuthAtomName, annotationMode, offset=1)
             if enableWarning:
                 warningMessage = f"[Invalid atom nomenclature] "\
                     f"{seqId}:{compId}:{atomId} is invalid atom nomenclature."

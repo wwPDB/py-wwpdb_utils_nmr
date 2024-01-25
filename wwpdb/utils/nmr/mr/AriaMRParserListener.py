@@ -191,6 +191,7 @@ class AriaMRParserListener(ParseTreeListener):
     __labelToAuthSeq = None
     __authToLabelSeq = None
     __authToStarSeq = None
+    __authToOrigSeq = None
     __authToInsCode = None
 
     __offsetHolder = None
@@ -282,6 +283,7 @@ class AriaMRParserListener(ParseTreeListener):
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
             self.__authToStarSeq = ret['auth_to_star_seq']
+            self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
 
         self.__offsetHolder = {}
@@ -315,11 +317,11 @@ class AriaMRParserListener(ParseTreeListener):
 
         if reasons is not None and 'model_chain_id_ext' in reasons:
             self.__polySeq, self.__altPolySeq, self.__coordAtomSite, self.__coordUnobsRes, \
-                self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq =\
+                self.__labelToAuthSeq, self.__authToLabelSeq, self.__authToStarSeq, self.__authToOrigSeq =\
                 extendCoordChainsForExactNoes(reasons['model_chain_id_ext'],
                                               self.__polySeq, self.__altPolySeq,
                                               self.__coordAtomSite, self.__coordUnobsRes,
-                                              self.__authToLabelSeq, self.__authToStarSeq)
+                                              self.__authToLabelSeq, self.__authToStarSeq, self.__authToOrigSeq)
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -360,7 +362,7 @@ class AriaMRParserListener(ParseTreeListener):
 
             if self.__hasPolySeq and self.__polySeqRst is not None:
                 sortPolySeqRst(self.__polySeqRst,
-                               None if self.__reasons is None or 'non_poly_remap' not in self.__reasons else self.__reasons['non_poly_remap'])
+                               None if self.__reasons is None else self.__reasons.get('non_poly_remap'))
 
                 self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
                                                           resolvedMultimer=self.__reasons is not None)
@@ -497,8 +499,9 @@ class AriaMRParserListener(ParseTreeListener):
                             sortPolySeqRst(self.__polySeqRstFailed)
 
                             seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
-                            chainAssignFailed, message = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type,
-                                                                               self.__polySeq, self.__polySeqRstFailed, seqAlignFailed)
+                            chainAssignFailed, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type,
+                                                                         self.__polySeq, self.__polySeqRstFailed, seqAlignFailed)
+
                             if chainAssignFailed is not None:
                                 seqIdRemapFailed = []
 
@@ -684,8 +687,8 @@ class AriaMRParserListener(ParseTreeListener):
                     if isIdenticalRestraint([atom1, atom2], self.__nefT):
                         continue
                     if self.__createSfDict and isinstance(memberId, int):
-                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom1))
-                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__offsetHolder, copy.copy(atom2))
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
                         if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                             continue
                     if self.__createSfDict and memberLogicCode == '.':
@@ -708,7 +711,7 @@ class AriaMRParserListener(ParseTreeListener):
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      combinationId, memberId, memberLogicCode,
                                      sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToInsCode, self.__offsetHolder,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
                         sf['loop'].add_data(row)
 

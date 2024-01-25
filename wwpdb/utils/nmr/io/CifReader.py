@@ -28,7 +28,7 @@
 # 19-Apr-2023   my  - support multiple datablock (NMR restraint validation)
 # 24-Apr-2023   my  - add 'default' attribute for key items (NMR restraint validation)
 # 18-Dec-2023   my  - add calculate_uninstanced_coord() (DAOTHER-8945)
-# 24-Jan-2023   my  - add 'default-from' attribute for key/data items (D_1300043061)
+# 24-Jan-2024   my  - add 'default-from' attribute for key/data items (D_1300043061)
 ##
 """ A collection of classes for parsing CIF files.
 """

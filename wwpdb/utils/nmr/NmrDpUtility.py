@@ -30863,6 +30863,7 @@ class NmrDpUtility:
         for ar in self.__inputParamDict[ar_file_path_list]:
 
             file_path = ar['file_name']
+            file_size = os.path.getsize(file_path)
 
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
@@ -30888,10 +30889,11 @@ class NmrDpUtility:
                 continue
 
             if 'dist_restraint' in content_subtype.keys():
-                ar_file_order.append((input_source, ar))
+                ar_file_order.append((input_source, ar, file_size))
             else:
-                ar_file_wo_dist.append((input_source, ar))
+                ar_file_wo_dist.append((input_source, ar, file_size))
 
+        ar_file_order = sorted(ar_file_order, key=itemgetter(2), reverse=True)
         ar_file_order.extend(ar_file_wo_dist)
 
         poly_seq_set = []
@@ -30905,7 +30907,7 @@ class NmrDpUtility:
 
         reasons_dict = {}
 
-        for input_source, ar in ar_file_order:
+        for input_source, ar, _ in ar_file_order:
 
             file_path = ar['file_name']
 
@@ -30964,7 +30966,7 @@ class NmrDpUtility:
 
             self.__cur_original_ar_file_name = original_file_name
 
-            reasons = None if 'dist_restraint' not in content_subtype else reasons_dict.get(file_type)
+            reasons = _reasons = None if 'dist_restraint' not in content_subtype else reasons_dict.get(file_type)
 
             if file_type == 'nm-res-xpl':
                 reader = XplorMRReader(self.__verbose, self.__lfh,
@@ -30983,6 +30985,23 @@ class NmrDpUtility:
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None and _reasons is not None:
+
+                        reader = XplorMRReader(self.__verbose, self.__lfh,
+                                               self.__representative_model_id,
+                                               self.__mr_atom_name_mapping,
+                                               self.__cR, self.__caC,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               None)
+                        reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                        if listener is not None:
+                            reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
 
@@ -31162,6 +31181,22 @@ class NmrDpUtility:
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None and _reasons is not None:
+
+                        reader = CnsMRReader(self.__verbose, self.__lfh,
+                                             self.__representative_model_id,
+                                             self.__mr_atom_name_mapping,
+                                             self.__cR, self.__caC,
+                                             self.__ccU, self.__csStat, self.__nefT,
+                                             None)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                        if listener is not None:
+                            reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
 
@@ -31501,6 +31536,23 @@ class NmrDpUtility:
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
 
+                    if reasons is not None and _reasons is not None:
+
+                        reader = CyanaMRReader(self.__verbose, self.__lfh,
+                                               self.__representative_model_id,
+                                               self.__mr_atom_name_mapping,
+                                               self.__cR, self.__caC,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               None, upl_or_lol, cya_file_ext)
+                        reader.setRemediateMode(self.__remediation_mode)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                        if listener is not None:
+                            reasons = listener.getReasonsForReparsing()
+
                     if reasons is not None:
 
                         if 'dist_restraint' in content_subtype.keys():
@@ -31680,6 +31732,23 @@ class NmrDpUtility:
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None and _reasons is not None:
+
+                        reader = RosettaMRReader(self.__verbose, self.__lfh,
+                                                 self.__representative_model_id,
+                                                 self.__mr_atom_name_mapping,
+                                                 self.__cR, self.__caC,
+                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                 None)
+                        reader.setRemediateMode(self.__remediation_mode)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                        if listener is not None:
+                            reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
 
@@ -32127,7 +32196,8 @@ class NmrDpUtility:
                                         self.__representative_model_id,
                                         self.__mr_atom_name_mapping,
                                         self.__cR, self.__caC,
-                                        self.__ccU, self.__csStat, self.__nefT)
+                                        self.__ccU, self.__csStat, self.__nefT,
+                                        reasons)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -32298,7 +32368,8 @@ class NmrDpUtility:
                                        self.__representative_model_id,
                                        self.__mr_atom_name_mapping,
                                        self.__cR, self.__caC,
-                                       self.__ccU, self.__csStat, self.__nefT)
+                                       self.__ccU, self.__csStat, self.__nefT,
+                                       reasons)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -32461,7 +32532,8 @@ class NmrDpUtility:
                                      self.__representative_model_id,
                                      self.__mr_atom_name_mapping,
                                      self.__cR, self.__caC,
-                                     self.__ccU, self.__csStat, self.__nefT)
+                                     self.__ccU, self.__csStat, self.__nefT,
+                                     reasons)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -32636,6 +32708,22 @@ class NmrDpUtility:
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
 
+                    if reasons is not None and _reasons is not None:
+
+                        reader = CharmmMRReader(self.__verbose, self.__lfh,
+                                                self.__representative_model_id,
+                                                self.__mr_atom_name_mapping,
+                                                self.__cR, self.__caC,
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                None)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                        if listener is not None:
+                            reasons = listener.getReasonsForReparsing()
+
                     if reasons is not None:
 
                         if 'dist_restraint' in content_subtype.keys():
@@ -32799,7 +32887,8 @@ class NmrDpUtility:
                                       self.__representative_model_id,
                                       self.__mr_atom_name_mapping,
                                       self.__cR, self.__caC,
-                                      self.__ccU, self.__csStat, self.__nefT)
+                                      self.__ccU, self.__csStat, self.__nefT,
+                                      reasons)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -40604,7 +40693,7 @@ class NmrDpUtility:
             lp_category = self.lp_categories[file_type][content_subtype]
             key_items = self.key_items[file_type][content_subtype]
 
-            if content_subtype in ('poly_seq', 'non_poly') and self.__cR.hasItem(lp_category, 'pdb_mon_id'):
+            if content_subtype == 'non_poly' and self.__cR.hasItem(lp_category, 'pdb_mon_id'):
                 _key_items = copy.copy(key_items)
                 _key_items.append({'name': 'pdb_mon_id', 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'})
                 key_items = _key_items

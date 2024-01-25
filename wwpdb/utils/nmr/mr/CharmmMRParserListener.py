@@ -3438,6 +3438,24 @@ class CharmmMRParserListener(ParseTreeListener):
             if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
                 offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+            if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
+               and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
+                offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                if isinstance(offset, dict):
+                    if seqId in offset:
+                        offset = offset[seqId]
+                    else:
+                        for shift in range(1, 100):
+                            if seqId + shift in offset:
+                                offset = offset[seqId + shift]
+                                break
+                            if seqId - shift in offset:
+                                offset = offset[seqId - shift]
+                                break
+                        if isinstance(offset, dict):
+                            return None
+                if seqId + offset in ps['auth_seq_id']:
+                    return seqId + offset
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
             if seqKey in self.__authToLabelSeq:
                 _chainId, _seqId = self.__authToLabelSeq[seqKey]
@@ -3476,6 +3494,24 @@ class CharmmMRParserListener(ParseTreeListener):
             if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
                 offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+            if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
+               and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
+                offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                if isinstance(offset, dict):
+                    if seqId in offset:
+                        offset = offset[seqId]
+                    else:
+                        for shift in range(1, 100):
+                            if seqId + shift in offset:
+                                offset = offset[seqId + shift]
+                                break
+                            if seqId - shift in offset:
+                                offset = offset[seqId - shift]
+                                break
+                        if isinstance(offset, dict):
+                            return None
+                if seqId + offset in ps['auth_seq_id']:
+                    return seqId + offset
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]

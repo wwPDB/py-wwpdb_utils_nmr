@@ -2951,9 +2951,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     if polySeq is None or nmrExtPolySeq is None:
         changed = True
 
-        polySeqAuthMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_poly_seq_scheme', 'pdb_mon_id') else 'mon_id'
-        nonPolyAuthMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'pdb_mon_id') else 'mon_id'
-        branchedAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_branch_scheme', 'auth_mon_id') else 'mon_id'
+        polySeqPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_poly_seq_scheme', 'pdb_mon_id') else 'mon_id'
+        nonPolyPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'pdb_mon_id') else 'mon_id'
+        branchedPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_branch_scheme', 'pdb_mon_id') else 'mon_id'
 
         # loop categories
         _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',
@@ -2968,21 +2968,21 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                  {'name': polySeqAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
+                                  {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
                      'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                  {'name': nonPolyAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
+                                  {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
                      'branched': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
                                   {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                  {'name': branchedAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
+                                  {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
                      'coordinate': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                     {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
@@ -3769,7 +3769,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'seq_id', 'type': 'int'},
                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                     {'name': polySeqAuthMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
+                                     {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
                                      ]
 
                         if has_ins_code:
@@ -4022,7 +4022,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                     {'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id'}
+                                     {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id'}
                                      ]
 
                         if has_ins_code:
@@ -4114,7 +4114,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                     {'name': nonPolyAuthMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
+                                     {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
                                      ]
 
                         if has_ins_code:

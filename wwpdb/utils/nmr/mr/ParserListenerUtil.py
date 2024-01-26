@@ -3625,15 +3625,14 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         authAtomNameToIdExt[_compId][c['alt_atom_id']] = c['atom_id']
 
                         # DAOTHER-8751, 8817 (D_130004306)
-                        elif len(atomIds) != len(authAtomNameToId[compId]):
-                            if altAuthAtomId is not None:
-                                for c in coord:
-                                    if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId:
-                                        _compId = c['comp_id']
-                                        if _compId not in authAtomNameToIdExt:
-                                            authAtomNameToIdExt[_compId] = {}
-                                        if c['alt_atom_id'] not in authAtomNameToIdExt[_compId]:
-                                            authAtomNameToIdExt[_compId][c['alt_atom_id']] = c['atom_id']
+                        elif altAuthAtomId is not None and compId in authAtomNameToId and len(atomIds) != len(authAtomNameToId[compId]):
+                            for c in coord:
+                                if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId:
+                                    _compId = c['comp_id']
+                                    if _compId not in authAtomNameToIdExt:
+                                        authAtomNameToIdExt[_compId] = {}
+                                    if c['alt_atom_id'] not in authAtomNameToIdExt[_compId]:
+                                        authAtomNameToIdExt[_compId][c['alt_atom_id']] = c['atom_id']
 
             authToLabelSeq = {v: k for k, v in labelToAuthSeq.items()}
 

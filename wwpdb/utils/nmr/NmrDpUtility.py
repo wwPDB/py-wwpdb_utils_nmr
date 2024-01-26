@@ -1447,6 +1447,8 @@ class NmrDpUtility:
         self.__mr_sf_dict_holder = None
         self.__pk_sf_holder = None
 
+        self.__cca_dat = None
+
         # combined nmr cif file path (used only for BMRB internal annotation)
         self.__srcNmrCifPath = None
         # saveframe category list of combined nmr cif file (used only for BMRB internal annotation)
@@ -23869,7 +23871,7 @@ class NmrDpUtility:
 
             return auth_asym_id, auth_seq_id
 
-        def fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
+        def fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
             fill_auth_atom_id = self.__annotation_mode or (_row[19] in emptyValue and _row[18] not in emptyValue)
             fill_orig_atom_id = _row[23] not in emptyValue
 
@@ -23937,9 +23939,12 @@ class NmrDpUtility:
                         missing_ch3 = []
                     if not valid and len(missing_ch3) > 0:
                         atom_id = atom_id[:-1]
-                    atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
-                    if len(atom_ids) == 0 or atom_ids[0] not in _coord_atom_site['atom_id']:
-                        atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
+                    if atom_id in _coord_atom_site['atom_id'] or prefer_auth_atom_name:
+                        atom_ids = [atom_id]
+                    else:
+                        atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
+                        if len(atom_ids) == 0 or atom_ids[0] not in _coord_atom_site['atom_id']:
+                            atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                     if valid and len(missing_ch3) > 0:
                         if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23]):
                             atom_ids = [atom_id]
@@ -24334,6 +24339,7 @@ class NmrDpUtility:
             auth_to_ins_code = self.__caC['auth_to_ins_code'] if self.__caC is not None else {}
             coord_atom_site = self.__caC['coord_atom_site'] if self.__caC is not None else {}
             auth_atom_name_to_id = self.__caC['auth_atom_name_to_id'] if self.__caC is not None else {}
+            auth_atom_name_to_id_ext = self.__caC['auth_atom_name_to_id_ext'] if self.__caC is not None else {}
 
             _auth_to_orig_seq = {}
 
@@ -24497,7 +24503,7 @@ class NmrDpUtility:
             for tag in tags:
                 lp.add_tag(tag)
 
-            prefer_pdbx_auth_atom_name = False
+            prefer_auth_atom_name = False
 
             if self.__annotation_mode and len(auth_atom_name_to_id) > 0:
 
@@ -24527,7 +24533,7 @@ class NmrDpUtility:
                         if auth_atom_id in auth_atom_name_to_id[auth_comp_id].values():
                             count_auth_id += 1
 
-                prefer_pdbx_auth_atom_name = count_auth_name > count_auth_id
+                prefer_auth_atom_name = count_auth_name > count_auth_id
 
             has_genuine_ambig_code = False
 
@@ -24679,10 +24685,29 @@ class NmrDpUtility:
                                     comp_id = _row[18] = auth_comp_id
                                     seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                                     entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
-                            if prefer_pdbx_auth_atom_name and comp_id in auth_atom_name_to_id and atom_id in auth_atom_name_to_id[comp_id]:
-                                atom_id = auth_atom_name_to_id[comp_id][atom_id]
+
                             self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
                             _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
+
+                            if prefer_auth_atom_name:
+                                _atom_id = atom_id
+                                if comp_id in auth_atom_name_to_id and _atom_id in auth_atom_name_to_id[comp_id]:
+                                    _row[19] = atom_id = auth_atom_name_to_id[comp_id][_atom_id]
+                                if _seq_key in coord_atom_site:
+                                    _coord_atom_site = coord_atom_site[_seq_key]
+                                    # DAOTHER-8751, 8817 (D_130004306)
+                                    if 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
+                                       and _atom_id in _coord_atom_site['alt_atom_id']:
+                                        comp_id = _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                        _row[18] = comp_id
+                                        # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
+                                        cca_row = next((cca_row for cca_row in self.__cca_dat
+                                                        if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                        if cca_row is not None:
+                                            _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
+                                        if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
+                                           and len(set(_coord_atom_site['alt_comp_id'])) > 1:
+                                            _row[19] = atom_id = auth_atom_name_to_id_ext[comp_id][_atom_id]
 
                             if has_ins_code and seq_key in auth_to_ins_code:
                                 _row[27] = auth_to_ins_code[seq_key]
@@ -24744,7 +24769,8 @@ class NmrDpUtility:
                                     row[auth_asym_id_col], row[auth_seq_id_col], \
                                     row[auth_comp_id_col], row[auth_atom_id_col]
 
-                            index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
+                            index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key,
+                                                      comp_id, atom_id, loop, idx)
 
                         elif auth_asym_id not in emptyValue and auth_seq_id not in emptyValue and auth_comp_id not in emptyValue:
 
@@ -24814,7 +24840,9 @@ class NmrDpUtility:
                                             row[auth_asym_id_col], row[auth_seq_id_col], \
                                             row[auth_comp_id_col], row[auth_atom_id_col]
 
-                                    index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
+                                    index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
+                                                              coord_atom_site, _seq_key,
+                                                              comp_id, atom_id, loop, idx)
 
                                 else:
                                     resolved = False
@@ -24915,7 +24943,9 @@ class NmrDpUtility:
                                             row[auth_asym_id_col], row[auth_seq_id_col], \
                                             row[auth_comp_id_col], row[auth_atom_id_col]
 
-                                index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
+                                index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
+                                                          coord_atom_site, _seq_key,
+                                                          comp_id, atom_id, loop, idx)
 
                                 if chain_id not in can_auth_asym_id_mapping:
                                     can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
@@ -24946,7 +24976,9 @@ class NmrDpUtility:
                                             row[auth_asym_id_col], row[auth_seq_id_col], \
                                             row[auth_comp_id_col], row[auth_atom_id_col]
 
-                                    index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
+                                    index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
+                                                              coord_atom_site, _seq_key,
+                                                              comp_id, atom_id, loop, idx)
 
                                     if chain_id not in can_auth_asym_id_mapping:
                                         can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
@@ -24986,7 +25018,9 @@ class NmrDpUtility:
                                             row[auth_asym_id_col], row[auth_seq_id_col], \
                                             row[auth_comp_id_col], row[auth_atom_id_col]
 
-                                        index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
+                                        index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
+                                                                  coord_atom_site, _seq_key,
+                                                                  comp_id, atom_id, loop, idx)
 
                                     else:
                                         resolved = False
@@ -25086,7 +25120,9 @@ class NmrDpUtility:
                                                     row[auth_asym_id_col], row[auth_seq_id_col], \
                                                     row[auth_comp_id_col], row[auth_atom_id_col]
 
-                                        index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
+                                        index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
+                                                                  coord_atom_site, _seq_key,
+                                                                  comp_id, atom_id, loop, idx)
 
                                         if chain_id not in can_auth_asym_id_mapping:
                                             can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
@@ -25117,7 +25153,9 @@ class NmrDpUtility:
                                                     row[auth_asym_id_col], row[auth_seq_id_col], \
                                                     row[auth_comp_id_col], row[auth_atom_id_col]
 
-                                            index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, idx)
+                                            index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
+                                                                      coord_atom_site, _seq_key,
+                                                                      comp_id, atom_id, loop, idx)
 
                                             if chain_id not in can_auth_asym_id_mapping:
                                                 can_auth_asym_id_mapping[chain_id] = {'auth_asym_id': auth_asym_id,
@@ -25225,7 +25263,9 @@ class NmrDpUtility:
                                                 _row[16], _row[17], _row[18], _row[19]
 
                                         if _resolved:
-                                            _index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, _idx)
+                                            _index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
+                                                                       coord_atom_site, _seq_key,
+                                                                       comp_id, atom_id, loop, _idx)
 
                                     else:
                                         _resolved = False
@@ -25312,7 +25352,9 @@ class NmrDpUtility:
 
                                         _seq_key = (auth_asym_id, seq_id)
 
-                                    _index, _row = fill_cs_row(lp, index, _row, coord_atom_site, _seq_key, comp_id, atom_id, loop, index)
+                                    _index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
+                                                               coord_atom_site, _seq_key,
+                                                               comp_id, atom_id, loop, index)
 
                         if not resolved:
 
@@ -28289,7 +28331,9 @@ class NmrDpUtility:
             self.__caC = load_from_pickle(asm_chk_cache_path)
 
             # DAOTHER-8817
-            if self.__caC is not None and 'chem_comp_atom' in self.__caC and 'auth_atom_name_to_id' in self.__caC:
+            if self.__caC is not None and 'chem_comp_atom' in self.__caC\
+               and 'auth_atom_name_to_id' in self.__caC\
+               and 'auth_atom_name_to_id_ext' in self.__caC:
                 self.__nefT.set_chem_comp_dict(self.__caC['chem_comp_atom'],
                                                self.__caC['chem_comp_bond'],
                                                self.__caC['chem_comp_topo'])
@@ -28754,7 +28798,7 @@ class NmrDpUtility:
 
                         dat = get_lp_tag(loop, auth_pdb_tags)
 
-                        prefer_pdbx_auth_name = False
+                        prefer_auth_atom_name = False
 
                         if self.__annotation_mode and len(auth_atom_name_to_id) > 0:
 
@@ -28782,7 +28826,7 @@ class NmrDpUtility:
                                         if atom_id in auth_atom_name_to_id[comp_id].values():
                                             count_auth_id += 1
 
-                            prefer_pdbx_auth_name = count_auth_name > count_auth_id
+                            prefer_auth_atom_name = count_auth_name > count_auth_id
 
                         for idx, row_ in enumerate(dat):
                             atom_sels = [None] * atom_dim_num
@@ -28895,7 +28939,7 @@ class NmrDpUtility:
                                 if not rescued:
                                     atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
                                                                           allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
-                                                                          preferPdbxAuthAtomName=prefer_pdbx_auth_name, annotationMode=self.__annotation_mode)
+                                                                          preferAuthAtomName=prefer_auth_atom_name)
 
                                 if warn is not None:
 
@@ -29079,7 +29123,7 @@ class NmrDpUtility:
 
                         dat = get_lp_tag(loop, key_tags)
 
-                        prefer_pdbx_auth_name = False
+                        prefer_auth_atom_name = False
 
                         if self.__annotation_mode and len(auth_atom_name_to_id) > 0:
 
@@ -29122,7 +29166,7 @@ class NmrDpUtility:
                                         if atom_id in auth_atom_name_to_id[comp_id].values():
                                             count_auth_id += 1
 
-                            prefer_pdbx_auth_name = count_auth_name > count_auth_id
+                            prefer_auth_atom_name = count_auth_name > count_auth_id
 
                         for idx, row_ in enumerate(dat):
                             atom_sels = [None] * atom_dim_num
@@ -29256,7 +29300,7 @@ class NmrDpUtility:
 
                                 atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
                                                                       allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
-                                                                      preferPdbxAuthAtomName=prefer_pdbx_auth_name, annotationMode=self.__annotation_mode)
+                                                                      preferAuthAtomName=prefer_auth_atom_name)
 
                                 if warn is not None:
 
@@ -33467,8 +33511,10 @@ class NmrDpUtility:
         # if self.__caC is None:
         #     self.__retrieveCoordAssemblyChecker()
 
+        coord_atom_site = self.__caC['coord_atom_site']
         auth_to_star_seq = self.__caC['auth_to_star_seq']
         auth_atom_name_to_id = self.__caC['auth_atom_name_to_id']
+        auth_atom_name_to_id_ext = self.__caC['auth_atom_name_to_id_ext']
 
         polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
@@ -33603,7 +33649,7 @@ class NmrDpUtility:
         for tag in tags:
             lp.add_tag(tag)
 
-        prefer_pdbx_auth_atom_name = False
+        prefer_auth_atom_name = False
 
         if self.__annotation_mode and len(auth_atom_name_to_id) > 0:
 
@@ -33770,7 +33816,7 @@ class NmrDpUtility:
                                         if atom_id in auth_atom_name_to_id[comp_id].values():
                                             count_auth_id += 1
 
-            prefer_pdbx_auth_atom_name = count_auth_name > count_auth_id
+            prefer_auth_atom_name = count_auth_name > count_auth_id
 
         index = 1
 
@@ -33833,8 +33879,25 @@ class NmrDpUtility:
                                         row[loop.tags.index(auth_assign_item_temps[0] % dim)] = auth_asym_id
                                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
 
-                        if prefer_pdbx_auth_atom_name and comp_id in auth_atom_name_to_id and atom_id in auth_atom_name_to_id[comp_id]:
-                            atom_id = auth_atom_name_to_id[comp_id][atom_id]
+                        if prefer_auth_atom_name:
+                            _atom_id = atom_id
+                            if comp_id in auth_atom_name_to_id and _atom_id in auth_atom_name_to_id[comp_id]:
+                                atom_id = auth_atom_name_to_id[comp_id][_atom_id]
+                            _seq_key = (seq_key[0], seq_key[1])
+                            if _seq_key in coord_atom_site:
+                                _coord_atom_site = coord_atom_site[_seq_key]
+                                # DAOTHER-8751, 8817 (D_130004306)
+                                if 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
+                                   and _atom_id in _coord_atom_site['alt_atom_id']:
+                                    comp_id = _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                    # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
+                                    cca_row = next((cca_row for cca_row in self.__cca_dat
+                                                    if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                    if cca_row is not None:
+                                        entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
+                                    if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
+                                       and len(set(_coord_atom_site['alt_comp_id'])) > 1:
+                                        atom_id = auth_atom_name_to_id_ext[comp_id][_atom_id]
 
                         for col, assign_item_temp in enumerate(assign_item_temps):
                             assign_item = assign_item_temp % dim
@@ -33888,8 +33951,25 @@ class NmrDpUtility:
                             if seq_key in auth_to_star_seq:
                                 entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
 
-                                if prefer_pdbx_auth_atom_name and comp_id in auth_atom_name_to_id and atom_id in auth_atom_name_to_id[comp_id]:
-                                    atom_id = auth_atom_name_to_id[comp_id][atom_id]
+                                if prefer_auth_atom_name:
+                                    _atom_id = atom_id
+                                    if comp_id in auth_atom_name_to_id and _atom_id in auth_atom_name_to_id[comp_id]:
+                                        atom_id = auth_atom_name_to_id[comp_id][_atom_id]
+                                    _seq_key = (seq_key[0], seq_key[1])
+                                    if _seq_key in coord_atom_site:
+                                        _coord_atom_site = coord_atom_site[_seq_key]
+                                        # DAOTHER-8751, 8817 (D_130004306)
+                                        if 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
+                                           and _atom_id in _coord_atom_site['alt_atom_id']:
+                                            comp_id = _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                            # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
+                                            cca_row = next((cca_row for cca_row in self.__cca_dat
+                                                            if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                            if cca_row is not None:
+                                                entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
+                                            if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
+                                               and len(set(_coord_atom_site['alt_comp_id'])) > 1:
+                                                atom_id = auth_atom_name_to_id_ext[comp_id][_atom_id]
 
                                 for col, assign_item_temp in enumerate(assign_item_temps):
                                     assign_item = assign_item_temp % dim
@@ -33962,8 +34042,25 @@ class NmrDpUtility:
                                     row[loop.tags.index(auth_assign_items[0])] = auth_asym_id_
                                     entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
 
-                    if prefer_pdbx_auth_atom_name and comp_id in auth_atom_name_to_id and atom_id in auth_atom_name_to_id[comp_id]:
-                        atom_id = auth_atom_name_to_id[comp_id][atom_id]
+                    if prefer_auth_atom_name:
+                        _atom_id = atom_id
+                        if comp_id in auth_atom_name_to_id and _atom_id in auth_atom_name_to_id[comp_id]:
+                            atom_id = auth_atom_name_to_id[comp_id][_atom_id]
+                        _seq_key = (seq_key[0], seq_key[1])
+                        if _seq_key in coord_atom_site:
+                            _coord_atom_site = coord_atom_site[_seq_key]
+                            # DAOTHER-8751, 8817 (D_130004306)
+                            if 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
+                               and _atom_id in _coord_atom_site['alt_atom_id']:
+                                comp_id = _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
+                                cca_row = next((cca_row for cca_row in self.__cca_dat
+                                                if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                if cca_row is not None:
+                                    entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
+                                if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
+                                   and len(set(_coord_atom_site['alt_comp_id'])) > 1:
+                                    atom_id = auth_atom_name_to_id_ext[comp_id][_atom_id]
 
                     for col, assign_item in enumerate(assign_items):
                         if col == 0:
@@ -34009,8 +34106,25 @@ class NmrDpUtility:
                         if seq_key in auth_to_star_seq:
                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
 
-                            if prefer_pdbx_auth_atom_name and comp_id in auth_atom_name_to_id and atom_id in auth_atom_name_to_id[comp_id]:
-                                atom_id = auth_atom_name_to_id[comp_id][atom_id]
+                            if prefer_auth_atom_name:
+                                _atom_id = atom_id
+                                if comp_id in auth_atom_name_to_id and _atom_id in auth_atom_name_to_id[comp_id]:
+                                    atom_id = auth_atom_name_to_id[comp_id][_atom_id]
+                                _seq_key = (seq_key[0], seq_key[1])
+                                if _seq_key in coord_atom_site:
+                                    _coord_atom_site = coord_atom_site[_seq_key]
+                                    # DAOTHER-8751, 8817 (D_130004306)
+                                    if 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
+                                       and _atom_id in _coord_atom_site['alt_atom_id']:
+                                        comp_id = _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                        # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
+                                        cca_row = next((cca_row for cca_row in self.__cca_dat
+                                                        if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                        if cca_row is not None:
+                                            entity_assembly_id, entity_id, seq_id = cca_row[0], cca_row[1], cca_row[2]
+                                        if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
+                                           and len(set(_coord_atom_site['alt_comp_id'])) > 1:
+                                            atom_id = auth_atom_name_to_id_ext[comp_id][_atom_id]
 
                             for col, assign_item in enumerate(assign_items):
                                 if col == 0:
@@ -44587,6 +44701,8 @@ class NmrDpUtility:
                                     nef_index += 1
 
             asm_sf.add_loop(loop)
+
+            self.__cca_dat = get_lp_tag(loop, ['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'])
 
             # Refresh _Bond loop
 

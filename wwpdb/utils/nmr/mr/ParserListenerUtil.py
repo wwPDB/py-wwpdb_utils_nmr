@@ -3431,6 +3431,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     chemCompBond = None if prevResult is None else prevResult.get('chem_comp_bond')
     chemCompTopo = None if prevResult is None else prevResult.get('chem_comp_topo')
     authAtomNameToId = None if prevResult is None else prevResult.get('auth_atom_name_to_id')
+    authAtomNameToIdExt = None if prevResult is None else prevResult.get('auth_atom_name_to_id_ext')
 
     try:
 
@@ -3444,9 +3445,11 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             authSeqId = 'pdbx_auth_seq_id' if 'pdbx_auth_seq_id' in tags else 'auth_seq_id'
         if authAtomId is None:
             authAtomId = 'auth_atom_id'
+        altAuthCompId = 'pdbx_auth_comp_id' if 'pdbx_auth_comp_id' in tags else None
         altAuthAtomId = 'pdbx_auth_atom_name' if 'pdbx_auth_atom_name' in tags else None
 
-        if coordAtomSite is None or labelToAuthSeq is None or authToLabelSeq is None or chemCompAtom is None or authAtomNameToId is None:
+        if coordAtomSite is None or labelToAuthSeq is None or authToLabelSeq is None or chemCompAtom is None\
+           or authAtomNameToId is None or authAtomNameToIdExt is None:
             changed = True
 
             dataItems = [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
@@ -3458,6 +3461,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                          {'name': 'type_symbol', 'type': 'str'}
                          ]
 
+            if altAuthCompId is not None:
+                dataItems.append({'name': altAuthCompId, 'type': 'str', 'alt_name': 'alt_comp_id'})
             if altAuthAtomId is not None:
                 dataItems.append({'name': altAuthAtomId, 'type': 'str', 'alt_name': 'alt_atom_id'})
 
@@ -3520,6 +3525,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
             # DAOTHER-8828
             authAtomNameToId = {}
+            authAtomNameToIdExt = {}
 
             chainIds = set(c['chain_id'] for c in coord)
             for chainId in chainIds:
@@ -3533,6 +3539,10 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                     typeSymbols = [c['type_symbol'] for c in coord
                                    if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId]
                     coordAtomSite[seqKey] = {'comp_id': compId, 'atom_id': atomIds, 'type_symbol': typeSymbols}
+                    if altAuthCompId is not None:
+                        altCompIds = [c['comp_id'] for c in coord
+                                      if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId]
+                        coordAtomSite[seqKey]['alt_comp_id'] = altCompIds
                     if altAuthAtomId is not None:
                         altAtomIds = [c['alt_atom_id'] for c in coord
                                       if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId]
@@ -3544,65 +3554,85 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         labelToAuthSeq[seqKey] = seqKey
 
                     # DAOTHER-8817
-                    if compId not in chemCompAtom and compId not in monDict3:
-                        chemCompAtom[compId] = atomIds
+                    if compId not in monDict3:
 
-                        def to_np_array(a):
-                            """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
-                            """
-                            return numpy.asarray([a['x'], a['y'], a['z']], dtype=float)
+                        if compId not in chemCompAtom:
+                            chemCompAtom[compId] = atomIds
 
-                        dataItems = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                     {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'}
-                                     ]
+                            def to_np_array(a):
+                                """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
+                                """
+                                return numpy.asarray([a['x'], a['y'], a['z']], dtype=float)
 
-                        filterItems = [{'name': modelNumName, 'type': 'int',
-                                        'value': representativeModelId},
-                                       {'name': authAsymId, 'type': 'str', 'value': chainId},
-                                       {'name': authSeqId, 'type': 'int', 'value': seqId},
-                                       {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
-                                       ]
+                            dataItems = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                         {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'}
+                                         ]
 
-                        resCoordDict = {c['atom_id']: to_np_array(c) for c in cR.getDictListWithFilter('atom_site', dataItems, filterItems)}
+                            filterItems = [{'name': modelNumName, 'type': 'int',
+                                            'value': representativeModelId},
+                                           {'name': authAsymId, 'type': 'str', 'value': chainId},
+                                           {'name': authSeqId, 'type': 'int', 'value': seqId},
+                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                           ]
 
-                        chemCompBond[compId] = {}
-                        chemCompTopo[compId] = {}
+                            resCoordDict = {c['atom_id']: to_np_array(c) for c in cR.getDictListWithFilter('atom_site', dataItems, filterItems)}
 
-                        for proton in atomIds:
-                            if proton[0] in protonBeginCode:
+                            chemCompBond[compId] = {}
+                            chemCompTopo[compId] = {}
 
-                                bonded = None
-                                distance = 1.5
+                            for proton in atomIds:
+                                if proton[0] in protonBeginCode:
 
-                                for heavy in atomIds:
-                                    if heavy[0] not in protonBeginCode and proton in resCoordDict and heavy in resCoordDict:
-                                        _distance = numpy.linalg.norm(resCoordDict[proton] - resCoordDict[heavy])
+                                    bonded = None
+                                    distance = 1.5
 
-                                        if _distance < distance:
-                                            distance = _distance
-                                            bonded = heavy
+                                    for heavy in atomIds:
+                                        if heavy[0] not in protonBeginCode and proton in resCoordDict and heavy in resCoordDict:
+                                            _distance = numpy.linalg.norm(resCoordDict[proton] - resCoordDict[heavy])
 
-                                if bonded is not None:
-                                    if bonded not in chemCompBond[compId]:
-                                        chemCompBond[compId][bonded] = []
-                                    chemCompBond[compId][bonded].append(proton)
+                                            if _distance < distance:
+                                                distance = _distance
+                                                bonded = heavy
 
-                        for heavy in atomIds:
-                            if heavy[0] not in protonBeginCode:
-                                for heavy2 in atomIds:
-                                    if heavy2[0] not in protonBeginCode and heavy2 != heavy and heavy in resCoordDict and heavy2 in resCoordDict:
-                                        _distance = numpy.linalg.norm(resCoordDict[heavy] - resCoordDict[heavy2])
+                                    if bonded is not None:
+                                        if bonded not in chemCompBond[compId]:
+                                            chemCompBond[compId][bonded] = []
+                                        chemCompBond[compId][bonded].append(proton)
 
-                                        if _distance < 2.5:
-                                            if heavy not in chemCompTopo[compId]:
-                                                chemCompTopo[compId][heavy] = []
-                                            chemCompTopo[compId][heavy].append(heavy2)
+                            for heavy in atomIds:
+                                if heavy[0] not in protonBeginCode:
+                                    for heavy2 in atomIds:
+                                        if heavy2[0] not in protonBeginCode and heavy2 != heavy and heavy in resCoordDict and heavy2 in resCoordDict:
+                                            _distance = numpy.linalg.norm(resCoordDict[heavy] - resCoordDict[heavy2])
 
-                        if altAuthAtomId is not None:
-                            authAtomNameToId[compId] = {c['alt_atom_id']: c['atom_id'] for c in coord
-                                                        if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId}
+                                            if _distance < 2.5:
+                                                if heavy not in chemCompTopo[compId]:
+                                                    chemCompTopo[compId][heavy] = []
+                                                chemCompTopo[compId][heavy].append(heavy2)
+
+                            if altAuthAtomId is not None:
+                                for c in coord:
+                                    if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId:
+                                        _compId = c['comp_id']
+                                        if compId == _compId:
+                                            if compId not in authAtomNameToId:
+                                                authAtomNameToId[compId] = {}
+                                            authAtomNameToId[compId][c['alt_atom_id']] = c['atom_id']
+                                        if _compId not in authAtomNameToIdExt:
+                                            authAtomNameToIdExt[_compId] = {}
+                                        authAtomNameToIdExt[_compId][c['alt_atom_id']] = c['atom_id']
+
+                        # DAOTHER-8751, 8817 (D_130004306)
+                        elif altAuthAtomId is not None and compId in authAtomNameToId and len(atomIds) != len(authAtomNameToId[compId]):
+                            for c in coord:
+                                if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId:
+                                    _compId = c['comp_id']
+                                    if _compId not in authAtomNameToIdExt:
+                                        authAtomNameToIdExt[_compId] = {}
+                                    if c['alt_atom_id'] not in authAtomNameToIdExt[_compId]:
+                                        authAtomNameToIdExt[_compId][c['alt_atom_id']] = c['atom_id']
 
             authToLabelSeq = {v: k for k, v in labelToAuthSeq.items()}
 
@@ -4277,7 +4307,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'chem_comp_atom': chemCompAtom,
             'chem_comp_bond': chemCompBond,
             'chem_comp_topo': chemCompTopo,
-            'auth_atom_name_to_id': authAtomNameToId}
+            'auth_atom_name_to_id': authAtomNameToId,
+            'auth_atom_name_to_id_ext': authAtomNameToIdExt}
 
 
 def extendCoordChainsForExactNoes(modelChainIdExt,
@@ -7403,46 +7434,58 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
 
 
 def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId, authAtomId,
-                     allowAmbig=True, enableWarning=True, preferPdbxAuthAtomName=False, annotationMode=False, offset=1):
+                     allowAmbig=True, enableWarning=True, preferAuthAtomName=False, offset=1):
     """ Select atoms of the coordinates.
         @return atom selection, warning mesage (None for valid case)
     """
 
     atomSelection = []
+    warningMessage = None
 
-    _atomId = atomId
-
-    if preferPdbxAuthAtomName and compId in caC['auth_atom_name_to_id'] and atomId in caC['auth_atom_name_to_id'][compId]:
-        atomId = caC['auth_atom_name_to_id'][compId][atomId]
+    origAtomId = atomId
 
     for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
-
-        if annotationMode and compId != cifCompId:
-            continue
-
         seqKey, coordAtomSite = getCoordAtomSiteOf(caC, authChainId, chainId, cifSeqId, True)
-        _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
-        if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
-            _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
-            if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
-                _atomId = [_atomId[int(atomId[-1]) - 1]]
 
-        if details is not None:
-            ccU = nefT.get_ccu()
-            _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=ccU)
-            if _atomId_ != atomId:
-                if atomId.startswith('HT') and len(_atomId_) == 2:
-                    _atomId_ = 'H'
-                __atomId = nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
-                if coordAtomSite is not None:
-                    if any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
-                        _atomId = __atomId
-                    elif __atomId[0][0] in protonBeginCode:
-                        __bondedTo = ccU.getBondedAtoms(cifCompId, __atomId[0])
-                        if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
+        if preferAuthAtomName:
+            if compId in caC['auth_atom_name_to_id'] and origAtomId in caC['auth_atom_name_to_id'][compId]:
+                atomId = caC['auth_atom_name_to_id'][compId][origAtomId]
+            if coordAtomSite is not None:
+                # DAOTHER-8751, 8817 (D_130004306)
+                if 'alt_comp_id' in coordAtomSite and 'alt_atom_id' in coordAtomSite\
+                   and authAtomId in coordAtomSite['alt_atom_id']:
+                    _compId = coordAtomSite['alt_comp_id'][coordAtomSite['alt_atom_id'].index(authAtomId)]
+                    if _compId != cifCompId:
+                        continue
+                    if _compId in caC['auth_atom_name_to_id_ext'] and authAtomId in caC['auth_atom_name_to_id_ext'][_compId]\
+                       and len(set(coordAtomSite['alt_comp_id'])) > 1:
+                        atomId = caC['auth_atom_name_to_id_ext'][_compId][authAtomId]
+
+        if atomId in coordAtomSite['atom_id'] or preferAuthAtomName:
+            _atomId = [atomId]
+        else:
+            _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
+            if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
+                if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                    _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+            if details is not None:
+                ccU = nefT.get_ccu()
+                _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=ccU)
+                if _atomId_ != atomId:
+                    if atomId.startswith('HT') and len(_atomId_) == 2:
+                        _atomId_ = 'H'
+                    __atomId = nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
+                    if coordAtomSite is not None:
+                        if any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
                             _atomId = __atomId
-            elif coordAtomSite is not None:
-                _atomId = []
+                        elif __atomId[0][0] in protonBeginCode:
+                            __bondedTo = ccU.getBondedAtoms(cifCompId, __atomId[0])
+                            if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
+                                _atomId = __atomId
+                elif coordAtomSite is not None:
+                    _atomId = []
 
         if coordAtomSite is not None\
            and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
@@ -7496,7 +7539,7 @@ def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
         if lenAtomId == 0:
             if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
                 return selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
-                                        allowAmbig, enableWarning, preferPdbxAuthAtomName, annotationMode, offset=1)
+                                        allowAmbig, enableWarning, preferAuthAtomName, offset=1)
             if enableWarning:
                 warningMessage = f"[Invalid atom nomenclature] "\
                     f"{seqId}:{compId}:{atomId} is invalid atom nomenclature."

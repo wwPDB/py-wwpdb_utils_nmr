@@ -6256,6 +6256,26 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
     return row
 
 
+def resetCombinationId(mrSubtype, row):
+    """ Reset Combination_ID.
+        @return: data array
+    """
+
+    if mrSubtype not in ('dist', 'dihed', 'rdc'):
+        return row
+
+    contentSubtype = contentSubtypeOf(mrSubtype)
+
+    if contentSubtype is None or contentSubtype == 'other_restraint':
+        return row
+
+    key_size = len(NMR_STAR_LP_KEY_ITEMS[contentSubtype])
+
+    row[key_size + 1] = '.'
+
+    return row
+
+
 def resetMemberId(mrSubtype, row):
     """ Reset Member_ID and Member_logic_code.
         @return: data array

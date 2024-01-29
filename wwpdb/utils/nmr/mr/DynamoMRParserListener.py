@@ -39,6 +39,7 @@ try:
                                                        getLoop,
                                                        getRow,
                                                        getStarAtom,
+                                                       resetCombinationId,
                                                        resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
@@ -110,6 +111,7 @@ except ImportError:
                                            getLoop,
                                            getRow,
                                            getStarAtom,
+                                           resetCombinationId,
                                            resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
@@ -2450,6 +2452,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
         except ValueError:
             self.dihedRestraints -= 1
         finally:
@@ -2576,6 +2581,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
         except ValueError:
             self.dihedRestraints -= 1
         finally:
@@ -2701,6 +2709,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         except ValueError:
             self.dihedRestraints -= 1
@@ -2959,6 +2970,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
         except ValueError:
             self.rdcRestraints -= 1
         finally:
@@ -3135,11 +3149,14 @@ class DynamoMRParserListener(ParseTreeListener):
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None, None,
+                                 combinationId, None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         except ValueError:
             self.rdcRestraints -= 1
@@ -3322,6 +3339,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         except ValueError:
             self.rdcRestraints -= 1
@@ -3513,6 +3533,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         except ValueError:
             self.rdcRestraints -= 1
@@ -4303,6 +4326,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                          atom1, atom2, atom3, atom4)
                             sf['loop'].add_data(row)
 
+                    if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                        sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
                     self.atomSelectionSet.clear()
 
         except ValueError:
@@ -4491,6 +4517,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                          self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          atom1, atom2, atom3, atom4)
                             sf['loop'].add_data(row)
+
+                    if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                        sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
                     self.atomSelectionSet.clear()
 

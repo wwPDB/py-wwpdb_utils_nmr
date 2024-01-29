@@ -45,6 +45,7 @@ try:
                                                        getRow,
                                                        getAuxRow,
                                                        getStarAtom,
+                                                       resetCombinationId,
                                                        resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
@@ -147,6 +148,7 @@ except ImportError:
                                            getRow,
                                            getAuxRow,
                                            getStarAtom,
+                                           resetCombinationId,
                                            resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
@@ -2045,8 +2047,12 @@ class XplorMRParserListener(ParseTreeListener):
                             if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
 
-            if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
-                sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
+            if self.__createSfDict and sf is not None:
+                if isinstance(memberId, int) and memberId == 1:
+                    sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
+                    memberId = '.'
+                if isinstance(memberId, str) and isinstance(combinationId, int) and combinationId == 1:
+                    sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.numberSelection.clear()
@@ -2390,6 +2396,9 @@ class XplorMRParserListener(ParseTreeListener):
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.numberSelection.clear()
@@ -2800,6 +2809,9 @@ class XplorMRParserListener(ParseTreeListener):
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
         finally:
             self.numberSelection.clear()
 
@@ -3193,6 +3205,9 @@ class XplorMRParserListener(ParseTreeListener):
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.numberSelection.clear()
@@ -3745,6 +3760,9 @@ class XplorMRParserListener(ParseTreeListener):
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.numberSelection.clear()
@@ -7071,6 +7089,9 @@ class XplorMRParserListener(ParseTreeListener):
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.numberSelection.clear()

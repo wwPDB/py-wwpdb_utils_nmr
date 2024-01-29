@@ -40,6 +40,7 @@ try:
                                                        getLoop,
                                                        getRow,
                                                        getStarAtom,
+                                                       resetCombinationId,
                                                        resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
@@ -121,6 +122,7 @@ except ImportError:
                                            getLoop,
                                            getRow,
                                            getStarAtom,
+                                           resetCombinationId,
                                            resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
@@ -4093,6 +4095,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                          atom1, atom2, atom3, atom4)
                             sf['loop'].add_data(row)
 
+                    if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                        sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
             # phase angle of pseudorotation
             else:
 
@@ -4199,6 +4204,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                          self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          None, None, None, None, atom5)
                             sf['loop'].add_data(row)
+
+                    if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                        sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         except ValueError:
             self.dihedRestraints -= 1
@@ -4501,6 +4509,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         except ValueError:
             self.rdcRestraints -= 1
@@ -7569,6 +7580,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                          atom1, atom2, atom3, atom4)
                             sf['loop'].add_data(row)
 
+                    if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                        sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
             # phase angle of pseudorotation
             else:
 
@@ -7675,6 +7689,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                          self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          None, None, None, None, atom5)
                             sf['loop'].add_data(row)
+
+                    if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                        sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         except ValueError:
             self.dihedRestraints -= 1

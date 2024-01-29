@@ -2980,7 +2980,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                      'branched': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                  {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                  {'name': 'pdb_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
@@ -4047,7 +4047,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         has_ins_code = cR.hasItem('pdbx_branch_scheme', 'pdb_ins_code')
 
                         dataItems = [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                     {'name': 'auth_asym_id', 'type': 'str'},
+                                     {'name': 'pdb_asym_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
                                      {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'},

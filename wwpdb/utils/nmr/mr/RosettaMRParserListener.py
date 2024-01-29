@@ -1960,7 +1960,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 3:
             return
 
-        if not self.areUniqueCoordAtoms('an Angle'):
+        if not self.areUniqueCoordAtoms('an angle'):
             return
 
         isNested = len(self.stackNest) > 0
@@ -2230,9 +2230,14 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if len(self.atomSelectionSet) < 4:
             return
-
-        if not self.areUniqueCoordAtoms('a Dihedral angle'):
+        """
+        if not self.areUniqueCoordAtoms('a dihedral angle'):
             return
+        """
+        len_f = len(self.__f)
+        self.areUniqueCoordAtoms('a torsion angle',
+                                 allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
+        combinationId = '.' if len_f == len(self.__f) else 0
 
         if self.__createSfDict:
             sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
@@ -2262,13 +2267,15 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                       f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+            if isinstance(combinationId, int):
+                combinationId += 1
             if self.__createSfDict and sf is not None:
                 if first_item and (not isNested or self.__is_first_nest):
                     sf['id'] += 1
                     first_item = False
                 sf['index_id'] += 1
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                             '.', None, angleName,
+                             combinationId, None, angleName,
                              sf['list_id'], self.__entryId, dstFunc,
                              self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                              atom1, atom2, atom3, atom4)
@@ -2346,7 +2353,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 8:
             return
 
-        if not self.areUniqueCoordAtoms('a Dihedral angle pair'):
+        if not self.areUniqueCoordAtoms('a dihedral angle pair'):
             return
 
         if self.__createSfDict:
@@ -4117,13 +4124,17 @@ class RosettaMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def areUniqueCoordAtoms(self, subtype_name):
+    def areUniqueCoordAtoms(self, subtype_name, allow_ambig=False, allow_ambig_warn_title=''):
         """ Check whether atom selection sets are uniquely assigned.
         """
 
         for _atomSelectionSet in self.atomSelectionSet:
+            _lenAtomSelectionSet = len(_atomSelectionSet)
 
-            if len(_atomSelectionSet) < 2:
+            if _lenAtomSelectionSet == 0:
+                return False  # raised error already
+
+            if _lenAtomSelectionSet == 1:
                 continue
 
             for (atom1, atom2) in itertools.combinations(_atomSelectionSet, 2):
@@ -4131,7 +4142,12 @@ class RosettaMRParserListener(ParseTreeListener):
                     continue
                 if atom1['seq_id'] != atom2['seq_id']:
                     continue
-                self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
+                if allow_ambig:
+                    self.__f.append(f"[{allow_ambig_warn_title}] {self.__getCurrentRestraint()}"
+                                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                    f"{atom2['atom_id']}' found in {subtype_name} restraint.")
+                    continue
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                 f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
                                 f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.")
                 return False

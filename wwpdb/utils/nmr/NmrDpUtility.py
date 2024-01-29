@@ -31154,6 +31154,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
+                            elif warn.startswith('[Ambiguous dihedral angle]'):
+                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
                             elif warn.startswith('[Anomalous RDC vector]'):
                                 self.report.warning.appendDescription('anomalous_rdc_vector',
                                                                       {'file_name': file_name, 'description': warn})
@@ -31342,6 +31350,14 @@ class NmrDpUtility:
 
                             elif warn.startswith('[Insufficient atom selection]'):
                                 self.report.warning.appendDescription('insufficient_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Ambiguous dihedral angle]'):
+                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 
@@ -31720,6 +31736,13 @@ class NmrDpUtility:
                             #     if self.__verbose:
                             #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
                             #     """
+                            elif warn.startswith('[Ambiguous dihedral angle]'):
+                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
                                 self.report.setError()
@@ -31901,6 +31924,14 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
+                            elif warn.startswith('[Ambiguous dihedral angle]'):
+                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
                             elif warn.startswith('[Unsupported data]'):
                                 self.report.warning.appendDescription('unsupported_mr_data',
                                                                       {'file_name': file_name, 'description': warn})
@@ -32072,6 +32103,13 @@ class NmrDpUtility:
                             #     if self.__verbose:
                             #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
                             #     """
+                            elif warn.startswith('[Ambiguous dihedral angle]'):
+                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
                                 self.report.setError()
@@ -32370,6 +32408,13 @@ class NmrDpUtility:
                             #     if self.__verbose:
                             #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
                             #     """
+                            elif warn.startswith('[Ambiguous dihedral angle]'):
+                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
                             else:
                                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
                                 self.report.setError()
@@ -32865,6 +32910,14 @@ class NmrDpUtility:
 
                             elif warn.startswith('[Insufficient atom selection]'):
                                 self.report.warning.appendDescription('insufficient_mr_data',
+                                                                      {'file_name': file_name, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                            elif warn.startswith('[Ambiguous dihedral angle]'):
+                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
                                                                       {'file_name': file_name, 'description': warn})
                                 self.report.setWarning()
 

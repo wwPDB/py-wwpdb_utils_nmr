@@ -2344,11 +2344,16 @@ class XplorMRParserListener(ParseTreeListener):
 
             if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
-
+            """
             if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
                 if len(self.__g) > 0:
                     self.__f.extend(self.__g)
                 return
+            """
+            len_f = len(self.__f)
+            self.areUniqueCoordAtoms('a dihedral angle (DIHE)',
+                                     allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
+            combinationId = '.' if len_f == len(self.__f) else 0
 
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
@@ -2372,13 +2377,15 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (DIHE) id={self.dihedRestraints} angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                if isinstance(combinationId, int):
+                    combinationId += 1
                 if self.__createSfDict and sf is not None:
                     if first_item:
                         sf['id'] += 1
                         first_item = False
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None, angleName,
+                                 combinationId, None, angleName,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)

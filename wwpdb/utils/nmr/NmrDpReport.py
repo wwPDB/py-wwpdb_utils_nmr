@@ -81,6 +81,7 @@
 # 12-Jan-2024  M. Yokochi - getNmrSeq1LetterCodeOf() returns '.' for missing residue, instead of whitespace (DAOTHER-9065)
 # 16-Jan-2024  M. Yokochi - add 'nm-res-ari' file type for ARIA restraint format (DAOTHER-9079, NMR restraint remediation)
 # 17-Jan-2024  M. Yokochi - add 'coordinate_issue' error (DAOTHER-9084)
+# 29-Jan-2024  M. Yokochi - add 'ambiguous_dihedral_angle' warning type (NMR restraint remediation, 6sy2)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -2265,7 +2266,7 @@ class NmrDpReportWarning:
                       'disordered_index', 'sequence_mismatch',
                       'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
                       'skipped_saveframe_category', 'skipped_loop_category',
-                      'anomalous_bond_length', 'anomalous_rdc_vector',
+                      'anomalous_bond_length', 'ambiguous_dihedral_angle', 'anomalous_rdc_vector',
                       'anomalous_chemical_shift', 'unusual_chemical_shift',
                       'complemented_chemical_shift', 'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                       'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data',
@@ -2276,7 +2277,7 @@ class NmrDpReportWarning:
 
         self.group_items = ('sequence_mismatch',
                             'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
-                            'anomalous_bond_length', 'anomalous_rdc_vector',
+                            'anomalous_bond_length', 'ambiguous_dihedral_angle', 'anomalous_rdc_vector',
                             'complemented_chemical_shift', 'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                             'unusual/rare_data', 'insufficient_data',
                             'conflicted_data', 'inconsistent_data', 'redundant_data',

@@ -4059,10 +4059,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     if len(self.atomSelectionSet) < 4:
                         return
-                    """
-                    if not self.areUniqueCoordAtoms('a torsion angle'):
+
+                    try:
+                        self.atomSelectionSet[0][0]['comp_id']
+                    except IndexError:
+                        self.areUniqueCoordAtoms('a torsion angle')
                         return
-                    """
+
                     len_f = len(self.__f)
                     self.areUniqueCoordAtoms('a torsion angle',
                                              allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
@@ -4171,10 +4174,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     if len(self.atomSelectionSet) < 5:
                         return
-                    """
-                    if not self.areUniqueCoordAtoms('a torsion angle'):
+
+                    try:
+                        self.atomSelectionSet[0][0]['comp_id']
+                    except IndexError:
+                        self.areUniqueCoordAtoms('a torsion angle')
                         return
-                    """
+
                     len_f = len(self.__f)
                     self.areUniqueCoordAtoms('a torsion angle',
                                              allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
@@ -7544,10 +7550,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     if len(self.atomSelectionSet) < 4:
                         return
-                    """
-                    if not self.areUniqueCoordAtoms('a torsion angle'):
+
+                    try:
+                        self.atomSelectionSet[0][0]['comp_id']
+                    except IndexError:
+                        self.areUniqueCoordAtoms('a torsion angle')
                         return
-                    """
+
                     len_f = len(self.__f)
                     self.areUniqueCoordAtoms('a torsion angle',
                                              allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
@@ -7656,10 +7665,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     if len(self.atomSelectionSet) < 5:
                         return
-                    """
-                    if not self.areUniqueCoordAtoms('a torsion angle'):
+
+                    try:
+                        self.atomSelectionSet[0][0]['comp_id']
+                    except IndexError:
+                        self.areUniqueCoordAtoms('a torsion angle')
                         return
-                    """
+
                     len_f = len(self.__f)
                     self.areUniqueCoordAtoms('a torsion angle',
                                              allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')

@@ -2046,10 +2046,14 @@ class BiosymMRParserListener(ParseTreeListener):
 
             if len(self.atomSelectionSet) < 4:
                 return
-            """
-            if not self.areUniqueCoordAtoms('a dihedral angle'):
+
+            try:
+                compId = self.atomSelectionSet[0][0]['comp_id']
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+            except IndexError:
+                self.areUniqueCoordAtoms('a dihedral angle')
                 return
-            """
+
             len_f = len(self.__f)
             self.areUniqueCoordAtoms('a dihedral angle',
                                      allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
@@ -2057,9 +2061,6 @@ class BiosymMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
-
-            compId = self.atomSelectionSet[0][0]['comp_id']
-            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
             first_item = True
 
@@ -2205,10 +2206,14 @@ class BiosymMRParserListener(ParseTreeListener):
 
             if len(self.atomSelectionSet) < 4:
                 return
-            """
-            if not self.areUniqueCoordAtoms('a dihedral angle'):
+
+            try:
+                compId = self.atomSelectionSet[0][0]['comp_id']
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+            except IndexError:
+                self.areUniqueCoordAtoms('a dihedral angle')
                 return
-            """
+
             len_f = len(self.__f)
             self.areUniqueCoordAtoms('a dihedral angle',
                                      allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
@@ -2216,9 +2221,6 @@ class BiosymMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
-
-            compId = self.atomSelectionSet[0][0]['comp_id']
-            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
             first_item = True
 

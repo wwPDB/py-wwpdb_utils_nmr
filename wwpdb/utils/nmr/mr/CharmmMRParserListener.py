@@ -941,12 +941,16 @@ class CharmmMRParserListener(ParseTreeListener):
 
             if len(self.atomSelectionSet) != 4:
                 return
-            """
-            if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
-                if len(self.__g) > 0:
-                    self.__f.extend(self.__g)
+
+            try:
+                compId = self.atomSelectionSet[0][0]['comp_id']
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+            except IndexError:
+                if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
+                    if len(self.__g) > 0:
+                        self.__f.extend(self.__g)
                 return
-            """
+
             len_f = len(self.__f)
             self.areUniqueCoordAtoms('a dihedral angle (DIHE)',
                                      allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
@@ -954,9 +958,6 @@ class CharmmMRParserListener(ParseTreeListener):
 
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
-
-            compId = self.atomSelectionSet[0][0]['comp_id']
-            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
             first_item = True
 

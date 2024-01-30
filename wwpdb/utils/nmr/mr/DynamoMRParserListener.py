@@ -2405,10 +2405,14 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if len(self.atomSelectionSet) < 4:
                 return
-            """
-            if not self.areUniqueCoordAtoms('a torsion angle'):
+
+            try:
+                compId = self.atomSelectionSet[0][0]['comp_id']
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+            except IndexError:
+                self.areUniqueCoordAtoms('a torsion angle')
                 return
-            """
+
             len_f = len(self.__f)
             self.areUniqueCoordAtoms('a torsion angle',
                                      allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
@@ -2418,9 +2422,6 @@ class DynamoMRParserListener(ParseTreeListener):
                 sf = self.__getSf(constraintType='backbone chemical shifts',
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   softwareName='DYNAMO/TALOS')
-
-            compId = self.atomSelectionSet[0][0]['comp_id']
-            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
             first_item = True
 
@@ -2534,10 +2535,14 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if len(self.atomSelectionSet) < 4:
                 return
-            """
-            if not self.areUniqueCoordAtoms('a torsion angle'):
+
+            try:
+                compId = self.atomSelectionSet[0][0]['comp_id']
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+            except IndexError:
+                self.areUniqueCoordAtoms('a torsion angle')
                 return
-            """
+
             len_f = len(self.__f)
             self.areUniqueCoordAtoms('a torsion angle',
                                      allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
@@ -2547,9 +2552,6 @@ class DynamoMRParserListener(ParseTreeListener):
                 sf = self.__getSf(constraintType='backbone chemical shifts',
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   softwareName='DYNAMO/TALOS')
-
-            compId = self.atomSelectionSet[0][0]['comp_id']
-            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
             first_item = True
 
@@ -2663,10 +2665,14 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if len(self.atomSelectionSet) < 4:
                 return
-            """
-            if not self.areUniqueCoordAtoms('a torsion angle'):
+
+            try:
+                compId = self.atomSelectionSet[0][0]['comp_id']
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+            except IndexError:
+                self.areUniqueCoordAtoms('a torsion angle')
                 return
-            """
+
             len_f = len(self.__f)
             self.areUniqueCoordAtoms('a torsion angle',
                                      allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
@@ -2676,9 +2682,6 @@ class DynamoMRParserListener(ParseTreeListener):
                 sf = self.__getSf(constraintType='backbone chemical shifts',
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   softwareName='DYNAMO/TALOS')
-
-            compId = self.atomSelectionSet[0][0]['comp_id']
-            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
             first_item = True
 
@@ -4291,10 +4294,13 @@ class DynamoMRParserListener(ParseTreeListener):
 
                     if len(self.atomSelectionSet) < 4:
                         return
-                    """
-                    if not self.areUniqueCoordAtoms('a torsion angle (TALOS)'):
+
+                    try:
+                        self.atomSelectionSet[0][0]['comp_id']
+                    except IndexError:
+                        self.areUniqueCoordAtoms('a torsion angle (TALOS)')
                         return
-                    """
+
                     len_f = len(self.__f)
                     self.areUniqueCoordAtoms('a torsion angle (TALOS)',
                                              allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
@@ -4483,10 +4489,13 @@ class DynamoMRParserListener(ParseTreeListener):
 
                     if len(self.atomSelectionSet) < 4:
                         return
-                    """
-                    if not self.areUniqueCoordAtoms('a torsion angle (TALOS)'):
+
+                    try:
+                        self.atomSelectionSet[0][0]['comp_id']
+                    except IndexError:
+                        self.areUniqueCoordAtoms('a torsion angle (TALOS)')
                         return
-                    """
+
                     len_f = len(self.__f)
                     self.areUniqueCoordAtoms('a torsion angle (TALOS)',
                                              allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')

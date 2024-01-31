@@ -23871,6 +23871,55 @@ class NmrDpUtility:
 
             return auth_asym_id, auth_seq_id
 
+        def get_label_seq_scheme(chain_id, seq_id):
+            auth_asym_id = auth_seq_id = label_seq_id = None
+
+            if seq_id is not None:
+
+                if chain_assign is not None:
+                    auth_asym_id = next((ca['ref_chain_id'] for ca in chain_assign if ca['test_chain_id'] == chain_id), None)
+                    if auth_asym_id is not None:
+                        sa = next((sa for sa in seq_align
+                                   if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id
+                                   and seq_id in sa['ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id']
+                                   and sa['sequence_coverage'] >= LOW_SEQ_COVERAGE), None)
+                        if sa is not None:
+                            _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                            auth_seq_id, label_seq_id = next(((ref_seq_id, test_seq_id)
+                                                              for ref_seq_id, test_seq_id
+                                                              in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                                              if ref_seq_id == seq_id), (None, None))
+
+                if (auth_asym_id is None or auth_seq_id is None) and br_seq_align is not None:
+                    auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
+                    if auth_asym_id is not None:
+                        sa = next((sa for sa in br_seq_align
+                                   if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id
+                                   and seq_id in sa['ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id']
+                                   and sa['sequence_coverage'] >= LOW_SEQ_COVERAGE), None)
+                        if sa is not None:
+                            _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                            auth_seq_id, label_seq_id = next(((ref_seq_id, test_seq_id)
+                                                              for ref_seq_id, test_seq_id
+                                                              in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                                              if ref_seq_id == seq_id), (None, None))
+
+                if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
+                    auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
+                    if auth_asym_id is not None:
+                        sa = next((sa for sa in np_seq_align
+                                   if sa['ref_chain_id'] == auth_asym_id and sa['test_chain_id'] == chain_id
+                                   and seq_id in sa['ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id']
+                                   and sa['sequence_coverage'] >= LOW_SEQ_COVERAGE), None)
+                        if sa is not None:
+                            _ref_seq_id_name = 'ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'
+                            auth_seq_id, label_seq_id = next(((ref_seq_id, test_seq_id)
+                                                              for ref_seq_id, test_seq_id
+                                                              in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
+                                                              if ref_seq_id == seq_id), (None, None))
+
+            return auth_asym_id, auth_seq_id, label_seq_id
+
         def fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
             fill_auth_atom_id = self.__annotation_mode or (_row[19] in emptyValue and _row[18] not in emptyValue)
             fill_orig_atom_id = _row[23] not in emptyValue
@@ -24539,6 +24588,7 @@ class NmrDpUtility:
 
             can_auth_asym_id_mapping = {}  # DAOTHER-8751
             seq_id_offset_for_unmapped = {}  # DAOTHER-9065
+            label_seq_id_offset_for_extended = {}  # D_1300044764
 
             trial = 0
 
@@ -25287,6 +25337,78 @@ class NmrDpUtility:
                                     if resolved:
                                         index, _row = _index, __row
                                     break
+
+                            if not resolved and seq_id is not None and has_coordinate:
+
+                                def test_seq_id_offset(lp, index, row, _row, _idx, chain_id, seq_id, comp_id, offset):
+                                    _resolved = False
+                                    _index = index
+
+                                    auth_asym_id, auth_seq_id, label_seq_id = get_label_seq_scheme(chain_id, seq_id + offset)
+                                    if auth_asym_id is not None and auth_seq_id is not None:
+                                        _resolved = True
+
+                                        item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
+
+                                        if item is not None and ps is not None and any(_ps for _ps in ps_common
+                                                                                       if _ps['chain_id'] == chain_id
+                                                                                       and label_seq_id in _ps['seq_id']):
+                                            entity_assembly_id = item['entity_assembly_id']
+                                            entity_id = item['entity_id']
+
+                                            seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                            if k[0] == auth_asym_id and k[1] == auth_seq_id
+                                                            and v[0] == entity_assembly_id and v[2] == entity_id), None)
+
+                                            if seq_key is not None:
+                                                _, _label_seq_id, _, _ = auth_to_star_seq[seq_key]
+
+                                                if entity_id not in label_seq_id_offset_for_extended or _label_seq_id - label_seq_id == label_seq_id_offset_for_extended[entity_id]:
+                                                    seq_id += (label_seq_id - auth_seq_id)
+                                                    seq_id += (_label_seq_id - label_seq_id)
+
+                                                    if entity_id not in label_seq_id_offset_for_extended:
+                                                        label_seq_id_offset_for_extended[entity_id] = _label_seq_id - label_seq_id
+
+                                                    _row[1], _row[2], _row[3], _row[4] =\
+                                                        entity_assembly_id, entity_id, seq_id, seq_id
+
+                                                    _row[16] = _row[20] = auth_asym_id
+                                                    if _row[21] in emptyValue:
+                                                        _row[21] = _row[17]
+                                                    if _row[22] in emptyValue:
+                                                        _row[22] = _row[18]
+                                                    if _row[23] in emptyValue:
+                                                        _row[23] = _row[19]
+
+                                                    _index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
+                                                                               coord_atom_site, None,
+                                                                               comp_id, atom_id, loop, _idx)
+
+                                                else:
+                                                    _resolved = False
+
+                                            else:
+                                                _resolved = False
+
+                                        else:
+                                            _resolved = False
+
+                                    return _resolved, _index, _row
+
+                                found = False
+                                for offset in range(1, 1000):
+                                    resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, comp_id, offset)
+
+                                    if resolved:
+                                        index, _row = _index, __row
+                                        break
+
+                                    resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, comp_id, -offset)
+
+                                    if resolved:
+                                        index, _row = _index, __row
+                                        break
 
                             if not resolved and chain_id in can_auth_asym_id_mapping:  # DAOTHER-8751, 8755
                                 mapping = can_auth_asym_id_mapping[chain_id]

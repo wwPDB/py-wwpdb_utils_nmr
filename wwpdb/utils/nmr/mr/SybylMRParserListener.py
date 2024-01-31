@@ -1089,10 +1089,14 @@ class SybylMRParserListener(ParseTreeListener):
             if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequence(seqId, compId, 'H1')
-            if seqId < 1 and len(self.__polySeq) == 1:
+            if len(self.__polySeq) == 1\
+               and (seqId < 1
+                    or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
+                    or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
+                refChainId = self.__polySeq[0]['auth_chain_id']
                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                 f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
-                                f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "
+                                f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                 "Please update the sequence in the Macromolecules page.")
             else:
                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"

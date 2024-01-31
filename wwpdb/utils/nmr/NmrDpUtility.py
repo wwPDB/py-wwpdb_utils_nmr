@@ -31097,6 +31097,13 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                                else:
+                                    self.report.warning.appendDescription('sequence_mismatch',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
                                 if self.__remediation_mode:
@@ -31299,6 +31306,13 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                                else:
+                                    self.report.warning.appendDescription('sequence_mismatch',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
                                 if self.__remediation_mode:
@@ -31458,6 +31472,13 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                                else:
+                                    self.report.warning.appendDescription('sequence_mismatch',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
                                 if self.__remediation_mode:
@@ -31663,6 +31684,13 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                                else:
+                                    self.report.warning.appendDescription('sequence_mismatch',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
                                 if self.__remediation_mode:
@@ -31867,6 +31895,13 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                                else:
+                                    self.report.warning.appendDescription('sequence_mismatch',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
                                 if self.__remediation_mode:
@@ -32038,6 +32073,13 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                                else:
+                                    self.report.warning.appendDescription('sequence_mismatch',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
                                 if self.__remediation_mode:
@@ -32188,6 +32230,13 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                                else:
+                                    self.report.warning.appendDescription('sequence_mismatch',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
                                 if self.__remediation_mode:
@@ -32335,6 +32384,13 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                                else:
+                                    self.report.warning.appendDescription('sequence_mismatch',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
                                 if self.__remediation_mode:
@@ -32513,6 +32569,13 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                                else:
+                                    self.report.warning.appendDescription('sequence_mismatch',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
                                 if self.__remediation_mode:
@@ -32676,6 +32739,13 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                                else:
+                                    self.report.warning.appendDescription('sequence_mismatch',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
                                 if self.__remediation_mode:
@@ -32859,6 +32929,13 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                                else:
+                                    self.report.warning.appendDescription('sequence_mismatch',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
                                 if self.__remediation_mode:
@@ -33038,6 +33115,13 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                                else:
+                                    self.report.warning.appendDescription('sequence_mismatch',
+                                                                          {'file_name': file_name, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                             elif warn.startswith('[Hydrogen not instantiated]'):
                                 if self.__remediation_mode:

@@ -5559,7 +5559,10 @@ class CnsMRParserListener(ParseTreeListener):
                                                                     self.reasonsForReParsing['label_seq_scheme'] = {}
                                                                 if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
                                                                     self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
-                                                        if seqId < 1 and len(self.__polySeq) == 1:
+                                                        if len(self.__polySeq) == 1\
+                                                           and (seqId < 1
+                                                                or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
+                                                                or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "
                                                                             f"The residue number '{seqId}' is not present "
@@ -5618,7 +5621,10 @@ class CnsMRParserListener(ParseTreeListener):
                                            and (self.__reasons is None or 'non_poly_remap' not in self.__reasons)\
                                            and not self.__cur_union_expr:
                                             if chainId in LARGE_ASYM_ID:
-                                                if seqId < 1 and len(self.__polySeq) == 1:
+                                                if len(self.__polySeq) == 1\
+                                                   and (seqId < 1
+                                                        or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
+                                                        or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "
                                                                     f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "

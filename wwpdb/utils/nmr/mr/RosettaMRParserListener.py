@@ -1316,10 +1316,11 @@ class RosettaMRParserListener(ParseTreeListener):
                 if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
                     if atomId in aminoProtonCode and atomId != 'H1':
                         return self.assignCoordPolymerSequence(seqId, 'H1', fixedChainId)
-                if seqId < 1 and len(self.__polySeq) == 1:
+                if len(self.__polySeq) == 1 and seqId < 1:
+                    refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"{_seqId}:{atomId} is not present in the coordinates. "
-                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "
+                                    f"{_seqId}:?:{atomId} is not present in the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -1336,9 +1337,10 @@ class RosettaMRParserListener(ParseTreeListener):
                                 updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, seqId, compIds)
 
             else:
-                if seqId < 1 and len(self.__polySeq) == 1:
+                if len(self.__polySeq) == 1 and seqId < 1:
+                    refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"

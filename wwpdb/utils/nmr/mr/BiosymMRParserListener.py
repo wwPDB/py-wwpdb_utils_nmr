@@ -57,6 +57,7 @@ try:
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
+                                           emptyValue,
                                            protonBeginCode,
                                            pseProBeginCode,
                                            aminoProtonCode,
@@ -120,6 +121,7 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
+                               emptyValue,
                                protonBeginCode,
                                pseProBeginCode,
                                aminoProtonCode,
@@ -2063,6 +2065,19 @@ class BiosymMRParserListener(ParseTreeListener):
                                      allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
             combinationId = '.' if len_f == len(self.__f) else 0
 
+            if isinstance(combinationId, int):
+                fixedAngleName = '.'
+                for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                    self.atomSelectionSet[1],
+                                                                    self.atomSelectionSet[2],
+                                                                    self.atomSelectionSet[3]):
+                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                           [atom1, atom2, atom3, atom4])
+                    if angleName in emptyValue:
+                        continue
+                    fixedAngleName = angleName
+                    break
+
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
 
@@ -2076,6 +2091,10 @@ class BiosymMRParserListener(ParseTreeListener):
                                                        [atom1, atom2, atom3, atom4])
                 if angleName is None:
                     continue
+                if isinstance(combinationId, int):
+                    if angleName != fixedAngleName:
+                        continue
+                    combinationId += 1
                 if self.__debug:
                     _dstFunc = f"{dstFunc}"
                     if dstFunc2 is not None:
@@ -2086,8 +2105,6 @@ class BiosymMRParserListener(ParseTreeListener):
                         _dstFunc += f" {dstFunc4}"
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {_dstFunc}")
-                if isinstance(combinationId, int):
-                    combinationId += 1
                 if self.__createSfDict and sf is not None:
                     if first_item:
                         sf['id'] += 1
@@ -2223,6 +2240,19 @@ class BiosymMRParserListener(ParseTreeListener):
                                      allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
             combinationId = '.' if len_f == len(self.__f) else 0
 
+            if isinstance(combinationId, int):
+                fixedAngleName = '.'
+                for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                    self.atomSelectionSet[1],
+                                                                    self.atomSelectionSet[2],
+                                                                    self.atomSelectionSet[3]):
+                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                           [atom1, atom2, atom3, atom4])
+                    if angleName in emptyValue:
+                        continue
+                    fixedAngleName = angleName
+                    break
+
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
 
@@ -2236,14 +2266,16 @@ class BiosymMRParserListener(ParseTreeListener):
                                                        [atom1, atom2, atom3, atom4])
                 if angleName is None:
                     continue
+                if isinstance(combinationId, int):
+                    if angleName != fixedAngleName:
+                        continue
+                    combinationId += 1
                 if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
                     dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                       dstFunc)
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
-                if isinstance(combinationId, int):
-                    combinationId += 1
                 if self.__createSfDict and sf is not None:
                     if first_item:
                         sf['id'] += 1

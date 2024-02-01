@@ -24049,7 +24049,8 @@ class NmrDpUtility:
                                 __row[6] = _atom_id
                                 if fill_auth_atom_id:
                                     __row[19] = __row[6]
-                                if fill_orig_atom_id and len(missing_ch3) > 0 and __row[23] in emptyValue:
+                                if fill_orig_atom_id and len(missing_ch3) > 0\
+                                   and (__row[23] in emptyValue or (__row[23] != __row[6] and len(self.__getAtomIdListInXplor(comp_id, __row[23])) == 1)):
                                     if _atom_id in methyl_atoms:
                                         if ch3_name_in_xplor and _atom_id[0] in protonBeginCode:
                                             __row[23] = __row[6][-1] + __row[6][:-1]
@@ -24065,7 +24066,8 @@ class NmrDpUtility:
 
                         if fill_auth_atom_id:
                             _row[19] = _row[6]
-                        if fill_orig_atom_id and len(missing_ch3) > 0 and _row[23] in emptyValue:
+                        if fill_orig_atom_id and len(missing_ch3) > 0\
+                           and (_row[23] in emptyValue or (_row[23] != _row[6] and len(self.__getAtomIdListInXplor(comp_id, _row[23])) == 1)):
                             if _row[6] in methyl_atoms:
                                 if ch3_name_in_xplor and _row[6][0] in protonBeginCode:
                                     _row[23] = _row[6][-1] + _row[6][:-1]
@@ -24161,7 +24163,8 @@ class NmrDpUtility:
                             __row[6] = _atom_id
                             if fill_auth_atom_id:
                                 __row[19] = __row[6]
-                            if fill_orig_atom_id and len(missing_ch3) > 0 and __row[23] in emptyValue:
+                            if fill_orig_atom_id and len(missing_ch3) > 0\
+                               and (__row[23] in emptyValue or (__row[23] != __row[6] and len(self.__getAtomIdListInXplor(comp_id, __row[23])) == 1)):
                                 if _atom_id in methyl_atoms:
                                     if ch3_name_in_xplor and _atom_id[0] in protonBeginCode:
                                         __row[23] = __row[6][-1] + __row[6][:-1]
@@ -24177,7 +24180,8 @@ class NmrDpUtility:
 
                     if fill_auth_atom_id:
                         _row[19] = _row[6]
-                    if fill_orig_atom_id and len(missing_ch3) > 0 and _row[23] in emptyValue:
+                    if fill_orig_atom_id and len(missing_ch3) > 0\
+                       and (_row[23] in emptyValue or (_row[23] != _row[6] and len(self.__getAtomIdListInXplor(comp_id, _row[23])) == 1)):
                         if _row[6] in methyl_atoms:
                             if ch3_name_in_xplor and _row[6][0] in protonBeginCode:
                                 _row[23] = _row[6][-1] + _row[6][:-1]

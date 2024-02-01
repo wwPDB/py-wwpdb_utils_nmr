@@ -25338,6 +25338,74 @@ class NmrDpUtility:
                                         index, _row = _index, __row
                                     break
 
+                            if not resolved and chain_id in can_auth_asym_id_mapping:  # DAOTHER-8751, 8755
+                                mapping = can_auth_asym_id_mapping[chain_id]
+
+                                auth_asym_id = mapping['auth_asym_id']
+                                ref_auth_seq_id = mapping['ref_auth_seq_id']
+
+                                item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
+
+                                if item is not None and ps is not None and any(_ps for _ps in ps_common
+                                                                               if _ps['chain_id'] in (auth_asym_id, str(letterToDigit(auth_asym_id)))
+                                                                               and ref_auth_seq_id in _ps['seq_id']):
+                                    resolved = True
+                                    found = False
+
+                                    entity_assembly_id = item['entity_assembly_id']
+                                    entity_id = item['entity_id']
+
+                                    _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
+
+                                    _row[16], _row[17], _row[18], _row[19] =\
+                                        auth_asym_id, seq_id, comp_id, atom_id
+
+                                    if has_auth_seq:
+                                        _row[20], _row[21], _row[22], _row[23] =\
+                                            row[auth_asym_id_col], row[auth_seq_id_col], \
+                                            row[auth_comp_id_col], row[auth_atom_id_col]
+                                    else:
+                                        _row[20], _row[21], _row[22], _row[23] =\
+                                            _row[16], _row[17], _row[18], _row[19]
+
+                                    if comp_id not in monDict3:
+                                        for item in entity_assembly:
+                                            if 'comp_id' in item and comp_id == item['comp_id']:
+                                                _entity_assembly_id = item['entity_assembly_id']
+                                                _entity_id = item['entity_id']
+
+                                                __seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                                  if v[0] == _entity_assembly_id and v[1] == seq_id and v[2] == _entity_id), None)
+                                                if __seq_key is not None:
+                                                    found = True
+                                                    comp_id = __seq_key[2]
+                                                    _row[1], _row[2], _row[3], _row[4] = _entity_assembly_id, _entity_id, __seq_key[1], __seq_key[1]
+                                                    _seq_key = (__seq_key[0], __seq_key[1])
+                                                    _row[16], _row[17], _row[18], _row[19] =\
+                                                        __seq_key[0], __seq_key[1], comp_id, atom_id
+                                                    if has_ins_code and __seq_key in auth_to_ins_code:
+                                                        _row[27] = auth_to_ins_code[__seq_key]
+
+                                                    _seq_key = (__seq_key[0], __seq_key[1])
+
+                                    if not found:
+                                        _row[24] = 'UNMAPPED'
+                                        # DAOTHER-9065
+                                        if isinstance(_row[1], int) and str(_row[1]) in seq_id_offset_for_unmapped:
+                                            _row[3] += seq_id_offset_for_unmapped[str(_row[1])]
+                                            _row[4] = _row[3]
+                                        elif isinstance(_row[1], str) and _row[1] in seq_id_offset_for_unmapped:
+                                            _row[3] += seq_id_offset_for_unmapped[_row[1]]
+                                            _row[4] = _row[3]
+                                        elif trial == 0:
+                                            regenerate_request = True
+
+                                        _seq_key = (auth_asym_id, seq_id)
+
+                                    _index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
+                                                               coord_atom_site, _seq_key,
+                                                               comp_id, atom_id, loop, index)
+
                             if not resolved and seq_id is not None and has_coordinate:
 
                                 def test_seq_id_offset(lp, index, row, _row, _idx, chain_id, seq_id, comp_id, offset):
@@ -25409,74 +25477,6 @@ class NmrDpUtility:
                                     if resolved:
                                         index, _row = _index, __row
                                         break
-
-                            if not resolved and chain_id in can_auth_asym_id_mapping:  # DAOTHER-8751, 8755
-                                mapping = can_auth_asym_id_mapping[chain_id]
-
-                                auth_asym_id = mapping['auth_asym_id']
-                                ref_auth_seq_id = mapping['ref_auth_seq_id']
-
-                                item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
-
-                                if item is not None and ps is not None and any(_ps for _ps in ps_common
-                                                                               if _ps['chain_id'] in (auth_asym_id, str(letterToDigit(auth_asym_id)))
-                                                                               and ref_auth_seq_id in _ps['seq_id']):
-                                    resolved = True
-                                    found = False
-
-                                    entity_assembly_id = item['entity_assembly_id']
-                                    entity_id = item['entity_id']
-
-                                    _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
-
-                                    _row[16], _row[17], _row[18], _row[19] =\
-                                        auth_asym_id, seq_id, comp_id, atom_id
-
-                                    if has_auth_seq:
-                                        _row[20], _row[21], _row[22], _row[23] =\
-                                            row[auth_asym_id_col], row[auth_seq_id_col], \
-                                            row[auth_comp_id_col], row[auth_atom_id_col]
-                                    else:
-                                        _row[20], _row[21], _row[22], _row[23] =\
-                                            _row[16], _row[17], _row[18], _row[19]
-
-                                    if comp_id not in monDict3:
-                                        for item in entity_assembly:
-                                            if 'comp_id' in item and comp_id == item['comp_id']:
-                                                _entity_assembly_id = item['entity_assembly_id']
-                                                _entity_id = item['entity_id']
-
-                                                __seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                                  if v[0] == _entity_assembly_id and v[1] == seq_id and v[2] == _entity_id), None)
-                                                if __seq_key is not None:
-                                                    found = True
-                                                    comp_id = __seq_key[2]
-                                                    _row[1], _row[2], _row[3], _row[4] = _entity_assembly_id, _entity_id, __seq_key[1], __seq_key[1]
-                                                    _seq_key = (__seq_key[0], __seq_key[1])
-                                                    _row[16], _row[17], _row[18], _row[19] =\
-                                                        __seq_key[0], __seq_key[1], comp_id, atom_id
-                                                    if has_ins_code and __seq_key in auth_to_ins_code:
-                                                        _row[27] = auth_to_ins_code[__seq_key]
-
-                                                    _seq_key = (__seq_key[0], __seq_key[1])
-
-                                    if not found:
-                                        _row[24] = 'UNMAPPED'
-                                        # DAOTHER-9065
-                                        if isinstance(_row[1], int) and str(_row[1]) in seq_id_offset_for_unmapped:
-                                            _row[3] += seq_id_offset_for_unmapped[str(_row[1])]
-                                            _row[4] = _row[3]
-                                        elif isinstance(_row[1], str) and _row[1] in seq_id_offset_for_unmapped:
-                                            _row[3] += seq_id_offset_for_unmapped[_row[1]]
-                                            _row[4] = _row[3]
-                                        elif trial == 0:
-                                            regenerate_request = True
-
-                                        _seq_key = (auth_asym_id, seq_id)
-
-                                    _index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
-                                                               coord_atom_site, _seq_key,
-                                                               comp_id, atom_id, loop, index)
 
                         if not resolved:
 

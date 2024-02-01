@@ -7717,7 +7717,7 @@ class XplorMRParserListener(ParseTreeListener):
         for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
                                                      self.atomSelectionSet[1],
                                                      self.atomSelectionSet[2]):
-            if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
+            if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
                 continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (HBDA) id={self.hbondRestraints} "

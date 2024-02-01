@@ -25408,7 +25408,7 @@ class NmrDpUtility:
 
                             if not resolved and seq_id is not None and has_coordinate:
 
-                                def test_seq_id_offset(lp, index, row, _row, _idx, chain_id, seq_id, comp_id, offset):
+                                def test_seq_id_offset_as_is(lp, index, _row, _idx, chain_id, seq_id, comp_id, offset):
                                     _resolved = False
                                     _index = index
 
@@ -25448,6 +25448,8 @@ class NmrDpUtility:
                                                         _row[22] = _row[18]
                                                     if _row[23] in emptyValue:
                                                         _row[23] = _row[19]
+                                                    if _row[24] in emptyValue:
+                                                        _row[24] = 'UNMAPPED'
 
                                                     _index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
                                                                                coord_atom_site, None,
@@ -25466,13 +25468,13 @@ class NmrDpUtility:
 
                                 found = False
                                 for offset in range(1, 1000):
-                                    resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, comp_id, offset)
+                                    resolved, _index, __row = test_seq_id_offset_as_is(lp, index, _row, idx, chain_id, seq_id, comp_id, offset)
 
                                     if resolved:
                                         index, _row = _index, __row
                                         break
 
-                                    resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, comp_id, -offset)
+                                    resolved, _index, __row = test_seq_id_offset_as_is(lp, index, _row, idx, chain_id, seq_id, comp_id, -offset)
 
                                     if resolved:
                                         index, _row = _index, __row

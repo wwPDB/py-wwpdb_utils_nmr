@@ -4344,6 +4344,9 @@
         "anomalous_bond_length": {
           "$ref": "#/definitions/common_message"
         },
+        "ambiguous_dihedral_angle": {
+          "$ref": "#/definitions/common_message"
+        },
         "anomalous_rdc_vector": {
           "$ref": "#/definitions/common_message"
         },

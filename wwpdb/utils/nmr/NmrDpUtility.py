@@ -23920,276 +23920,6 @@ class NmrDpUtility:
 
             return auth_asym_id, auth_seq_id, label_seq_id
 
-        def fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
-            fill_auth_atom_id = self.__annotation_mode or (_row[19] in emptyValue and _row[18] not in emptyValue)
-            fill_orig_atom_id = _row[23] not in emptyValue
-
-            if _seq_key in coord_atom_site:
-                _coord_atom_site = coord_atom_site[_seq_key]
-                _row[5] = comp_id
-                valid = True
-                missing_ch3 = []
-                if not self.__annotation_mode and atom_id in self.__csStat.getRepMethylProtons(comp_id):
-                    missing_ch3 = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
-                    valid = self.__sail_flag
-                    for offset in range(1, 10):
-                        row_src = src_lp.data[src_idx]
-                        if src_idx + offset < len(src_lp.data):
-                            row = src_lp.data[src_idx + offset]
-                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
-                               and row[comp_id_col].upper() == comp_id\
-                               and row[atom_id_col] in missing_ch3:
-                                valid = True
-                                missing_ch3.remove(row[atom_id_col])
-                                if len(missing_ch3) == 0:
-                                    break
-                        if src_idx - offset >= 0:
-                            row = src_lp.data[src_idx - offset]
-                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
-                               and row[comp_id_col].upper() == comp_id\
-                               and row[atom_id_col] in missing_ch3:
-                                valid = True
-                                missing_ch3.remove(row[atom_id_col])
-                                if len(missing_ch3) == 0:
-                                    break
-                if atom_id in _coord_atom_site['atom_id'] and valid and len(missing_ch3) == 0:
-                    _row[6] = atom_id
-                    if fill_auth_atom_id:
-                        _row[19] = _row[6]
-                    _row[7] = _coord_atom_site['type_symbol'][_coord_atom_site['atom_id'].index(atom_id)]
-                    if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                        _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                else:
-                    if atom_id in ('H1', 'HT1') and 'H' in _coord_atom_site['atom_id']\
-                       and atom_id not in _coord_atom_site['atom_id']:
-                        if self.__ccU.updateChemCompDict(comp_id):
-                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
-                            if cca is None:
-                                atom_id = 'H'
-                                if fill_auth_atom_id:
-                                    _row[19] = atom_id
-                        else:
-                            atom_id = 'H'
-                            if fill_auth_atom_id:
-                                _row[19] = atom_id
-                    elif atom_id in ('H', 'HT1') and 'H1' in _coord_atom_site['atom_id']\
-                            and atom_id not in _coord_atom_site['atom_id']:
-                        if self.__ccU.updateChemCompDict(comp_id):
-                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
-                            if cca is None:
-                                atom_id = 'H1'
-                                if fill_auth_atom_id:
-                                    _row[19] = atom_id
-                        else:
-                            atom_id = 'H1'
-                            if fill_auth_atom_id:
-                                _row[19] = atom_id
-                    if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 3.0):
-                        missing_ch3 = []
-                    if not valid and len(missing_ch3) > 0:
-                        atom_id = atom_id[:-1]
-                    if atom_id in _coord_atom_site['atom_id'] or prefer_auth_atom_name:
-                        atom_ids = [atom_id]
-                    else:
-                        atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
-                        if len(atom_ids) == 0 or atom_ids[0] not in _coord_atom_site['atom_id']:
-                            atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
-                    if valid and len(missing_ch3) > 0:
-                        if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23]):
-                            atom_ids = [atom_id]
-                            atom_ids.extend(missing_ch3)
-                        else:
-                            missing_ch3.clear()
-                    len_atom_ids = len(atom_ids)
-                    if len_atom_ids == 0:
-                        _row[6] = atom_id
-                        if fill_auth_atom_id:
-                            _row[19] = _row[6]
-                        _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
-                        if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                            _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                    else:
-                        methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
-                        _row[6] = atom_ids[0]
-                        _row[19] = None
-                        fill_auth_atom_id = _row[18] not in emptyValue
-                        if self.__ccU.updateChemCompDict(comp_id):
-                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
-                            if cca is not None:
-                                _row[7] = cca[self.__ccU.ccaTypeSymbol]
-                                if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                    _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                            else:
-                                _row[7] = 'H' if _row[6][0] in protonBeginCode else atom_id[0]
-                                if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                    _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                        else:
-                            _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
-                            if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-
-                        if len_atom_ids > 1:
-                            if _row[12] == 1 or _row[12] in emptyValue:
-                                if _row[6] not in methyl_atoms\
-                                   or (_row[6] in methyl_atoms
-                                       and ((_row[7][0] == 'H' and len_atom_ids == 6)
-                                            or (_row[7][0] == 'C' and len_atom_ids == 2))):
-                                    _row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
-                            __row = copy.copy(_row)
-                            if fill_auth_atom_id:
-                                __row[19] = __row[6]
-                            lp.add_data(__row)
-
-                            for _atom_id in atom_ids[1:-1]:
-                                __row = copy.copy(_row)
-
-                                index += 1
-
-                                __row[0] = index
-                                __row[6] = _atom_id
-                                if fill_auth_atom_id:
-                                    __row[19] = __row[6]
-                                if fill_orig_atom_id and len(missing_ch3) > 0\
-                                   and (__row[23] in emptyValue or (__row[23] != __row[6] and len(self.__getAtomIdListInXplor(comp_id, __row[23])) == 1)):
-                                    if _atom_id in methyl_atoms:
-                                        if ch3_name_in_xplor and _atom_id[0] in protonBeginCode:
-                                            __row[23] = __row[6][-1] + __row[6][:-1]
-                                        else:
-                                            __row[23] = __row[6]
-
-                                lp.add_data(__row)
-
-                            index += 1
-
-                            _row[0] = index
-                            _row[6] = atom_ids[-1]
-
-                        if fill_auth_atom_id:
-                            _row[19] = _row[6]
-                        if fill_orig_atom_id and len(missing_ch3) > 0\
-                           and (_row[23] in emptyValue or (_row[23] != _row[6] and len(self.__getAtomIdListInXplor(comp_id, _row[23])) == 1)):
-                            if _row[6] in methyl_atoms:
-                                if ch3_name_in_xplor and _row[6][0] in protonBeginCode:
-                                    _row[23] = _row[6][-1] + _row[6][:-1]
-                                else:
-                                    _row[23] = _row[6]
-
-            else:
-
-                _row[5] = comp_id
-                valid = True
-                missing_ch3 = []
-                if atom_id in self.__csStat.getRepMethylProtons(comp_id):
-                    missing_ch3 = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
-                    valid = self.__sail_flag
-                    for offset in range(1, 10):
-                        row_src = src_lp.data[src_idx]
-                        if src_idx + offset < len(src_lp.data):
-                            row = src_lp.data[src_idx + offset]
-                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
-                                or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
-                               and row[comp_id_col].upper() == comp_id\
-                               and row[6] in missing_ch3:
-                                valid = True
-                                missing_ch3.remove(row[6])
-                                if len(missing_ch3) == 0:
-                                    break
-                        if src_idx - offset >= 0:
-                            row = src_lp.data[src_idx - offset]
-                            if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
-                                or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
-                               and row[comp_id_col].upper() == comp_id\
-                               and row[6] in missing_ch3:
-                                valid = True
-                                missing_ch3.remove(row[6])
-                                if len(missing_ch3) == 0:
-                                    break
-                if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 3.0):
-                    missing_ch3 = []
-                if not valid and len(missing_ch3) > 0:
-                    atom_id = atom_id[:-1]
-                atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
-                if len(atom_ids) == 0 or atom_ids[0] not in self.__csStat.getAllAtoms(comp_id):
-                    atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
-                if valid and len(missing_ch3) > 0:
-                    atom_ids = [atom_id]
-                    atom_ids.extend(missing_ch3)
-                len_atom_ids = len(atom_ids)
-                if len_atom_ids == 0:
-                    _row[6] = atom_id
-                    if fill_auth_atom_id:
-                        _row[19] = _row[6]
-                    _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
-                    if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                        _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                else:
-                    methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
-                    _row[6] = atom_ids[0]
-                    _row[19] = None
-                    fill_auth_atom_id = _row[18] not in emptyValue
-                    if self.__ccU.updateChemCompDict(comp_id):
-                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
-                        if cca is not None:
-                            _row[7] = cca[self.__ccU.ccaTypeSymbol]
-                            if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                        else:
-                            _row[7] = 'H' if _row[6][0] in protonBeginCode else atom_id[0]
-                            if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                    else:
-                        _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
-                        if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                            _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-
-                    if len_atom_ids > 1:
-                        if _row[12] == 1 or _row[12] in emptyValue:
-                            if _row[6] not in methyl_atoms\
-                               or (_row[6] in methyl_atoms
-                                   and ((_row[7][0] == 'H' and len_atom_ids == 6)
-                                        or (_row[7][0] == 'C' and len_atom_ids == 2))):
-                                _row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
-                        __row = copy.copy(_row)
-                        if fill_auth_atom_id:
-                            __row[19] = __row[6]
-                        lp.add_data(__row)
-
-                        for _atom_id in atom_ids[1:-1]:
-                            __row = copy.copy(_row)
-
-                            index += 1
-
-                            __row[0] = index
-                            __row[6] = _atom_id
-                            if fill_auth_atom_id:
-                                __row[19] = __row[6]
-                            if fill_orig_atom_id and len(missing_ch3) > 0\
-                               and (__row[23] in emptyValue or (__row[23] != __row[6] and len(self.__getAtomIdListInXplor(comp_id, __row[23])) == 1)):
-                                if _atom_id in methyl_atoms:
-                                    if ch3_name_in_xplor and _atom_id[0] in protonBeginCode:
-                                        __row[23] = __row[6][-1] + __row[6][:-1]
-                                    else:
-                                        __row[23] = __row[6]
-
-                            lp.add_data(__row)
-
-                        index += 1
-
-                        _row[0] = index
-                        _row[6] = atom_ids[-1]
-
-                    if fill_auth_atom_id:
-                        _row[19] = _row[6]
-                    if fill_orig_atom_id and len(missing_ch3) > 0\
-                       and (_row[23] in emptyValue or (_row[23] != _row[6] and len(self.__getAtomIdListInXplor(comp_id, _row[23])) == 1)):
-                        if _row[6] in methyl_atoms:
-                            if ch3_name_in_xplor and _row[6][0] in protonBeginCode:
-                                _row[23] = _row[6][-1] + _row[6][:-1]
-                            else:
-                                _row[23] = _row[6]
-
-            return index, _row
-
         has_ins_code = False
 
         if ps is not None:
@@ -24467,6 +24197,278 @@ class NmrDpUtility:
             occupancy_col = loop.tags.index('Occupancy') if 'Occupancy' in loop.tags else -1
             reson_id_col = loop.tags.index('Resonance_ID') if 'Resonance_ID' in loop.tags else -1
             details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
+
+            def fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
+                src_idx -= 1
+                fill_auth_atom_id = self.__annotation_mode or (_row[19] in emptyValue and _row[18] not in emptyValue)
+                fill_orig_atom_id = _row[23] not in emptyValue
+
+                if _seq_key in coord_atom_site:
+                    _coord_atom_site = coord_atom_site[_seq_key]
+                    _row[5] = comp_id
+                    valid = True
+                    missing_ch3 = []
+                    if not self.__annotation_mode and atom_id in self.__csStat.getRepMethylProtons(comp_id):
+                        missing_ch3 = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
+                        valid = self.__sail_flag
+                        for offset in range(1, 10):
+                            row_src = src_lp.data[src_idx]
+                            if src_idx + offset < len(src_lp.data):
+                                row = src_lp.data[src_idx + offset]
+                                if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                                   and row[comp_id_col].upper() == comp_id\
+                                   and row[atom_id_col] in missing_ch3:
+                                    valid = True
+                                    missing_ch3.remove(row[atom_id_col])
+                                    if len(missing_ch3) == 0:
+                                        break
+                            if src_idx - offset >= 0:
+                                row = src_lp.data[src_idx - offset]
+                                if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                                   and row[comp_id_col].upper() == comp_id\
+                                   and row[atom_id_col] in missing_ch3:
+                                    valid = True
+                                    missing_ch3.remove(row[atom_id_col])
+                                    if len(missing_ch3) == 0:
+                                        break
+                    if atom_id in _coord_atom_site['atom_id'] and valid and len(missing_ch3) == 0:
+                        _row[6] = atom_id
+                        if fill_auth_atom_id:
+                            _row[19] = _row[6]
+                        _row[7] = _coord_atom_site['type_symbol'][_coord_atom_site['atom_id'].index(atom_id)]
+                        if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                            _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                        if fill_orig_atom_id and _row[6] != _row[23] and _row[23] in _coord_atom_site['atom_id']:
+                            if _row[23] in self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True):
+                                _row[23] = copy.copy(atom_id)
+                    else:
+                        if atom_id in ('H1', 'HT1') and 'H' in _coord_atom_site['atom_id']\
+                           and atom_id not in _coord_atom_site['atom_id']:
+                            if self.__ccU.updateChemCompDict(comp_id):
+                                cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
+                                if cca is None:
+                                    atom_id = 'H'
+                                    if fill_auth_atom_id:
+                                        _row[19] = atom_id
+                            else:
+                                atom_id = 'H'
+                                if fill_auth_atom_id:
+                                    _row[19] = atom_id
+                        elif atom_id in ('H', 'HT1') and 'H1' in _coord_atom_site['atom_id']\
+                                and atom_id not in _coord_atom_site['atom_id']:
+                            if self.__ccU.updateChemCompDict(comp_id):
+                                cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
+                                if cca is None:
+                                    atom_id = 'H1'
+                                    if fill_auth_atom_id:
+                                        _row[19] = atom_id
+                            else:
+                                atom_id = 'H1'
+                                if fill_auth_atom_id:
+                                    _row[19] = atom_id
+                        if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 3.0):
+                            missing_ch3 = []
+                        if not valid and len(missing_ch3) > 0:
+                            atom_id = atom_id[:-1]
+                        if atom_id in _coord_atom_site['atom_id'] or prefer_auth_atom_name:
+                            atom_ids = [atom_id]
+                        else:
+                            atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
+                            if len(atom_ids) == 0 or atom_ids[0] not in _coord_atom_site['atom_id']:
+                                atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
+                        if valid and len(missing_ch3) > 0:
+                            if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23])\
+                               and len(self.__getAtomIdListInXplor(comp_id, _row[23])) > 1 and _row[24] != 'UNMAPPED':
+                                atom_ids = self.__getAtomIdListInXplor(comp_id, _row[23])[0]
+                            else:
+                                missing_ch3.clear()
+                        len_atom_ids = len(atom_ids)
+                        if len_atom_ids == 0:
+                            _row[6] = atom_id
+                            if fill_auth_atom_id:
+                                _row[19] = _row[6]
+                            _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
+                            if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                        else:
+                            methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+                            _row[6] = atom_ids[0]
+                            _row[19] = None
+                            fill_auth_atom_id = _row[18] not in emptyValue
+                            if self.__ccU.updateChemCompDict(comp_id):
+                                cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
+                                if cca is not None:
+                                    _row[7] = cca[self.__ccU.ccaTypeSymbol]
+                                    if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                        _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                                else:
+                                    _row[7] = 'H' if _row[6][0] in protonBeginCode else atom_id[0]
+                                    if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                        _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                            else:
+                                _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
+                                if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                    _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+
+                            if len_atom_ids > 1:
+                                if _row[12] == 1 or _row[12] in emptyValue:
+                                    if _row[6] not in methyl_atoms\
+                                       or (_row[6] in methyl_atoms
+                                           and ((_row[7][0] == 'H' and len_atom_ids == 6)
+                                                or (_row[7][0] == 'C' and len_atom_ids == 2))):
+                                        _row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
+                                __row = copy.copy(_row)
+                                if fill_auth_atom_id:
+                                    __row[19] = __row[6]
+                                lp.add_data(__row)
+
+                                for _atom_id in atom_ids[1:-1]:
+                                    __row = copy.copy(_row)
+
+                                    index += 1
+
+                                    __row[0] = index
+                                    __row[6] = _atom_id
+                                    if fill_auth_atom_id:
+                                        __row[19] = __row[6]
+                                    if fill_orig_atom_id and len(missing_ch3) > 0 and __row[23] in emptyValue:
+                                        if _atom_id in methyl_atoms:
+                                            if ch3_name_in_xplor and _atom_id[0] in protonBeginCode:
+                                                __row[23] = __row[6][-1] + __row[6][:-1]
+                                            else:
+                                                __row[23] = copy.copy(__row[6])
+
+                                    lp.add_data(__row)
+
+                                index += 1
+
+                                _row[0] = index
+                                _row[6] = atom_ids[-1]
+
+                            if fill_auth_atom_id:
+                                _row[19] = _row[6]
+                            if fill_orig_atom_id and len(missing_ch3) > 0 and _row[23] in emptyValue:
+                                if _row[6] in methyl_atoms:
+                                    if ch3_name_in_xplor and _row[6][0] in protonBeginCode:
+                                        _row[23] = _row[6][-1] + _row[6][:-1]
+                                    else:
+                                        _row[23] = copy.copy(_row[6])
+
+                else:
+
+                    _row[5] = comp_id
+                    valid = True
+                    missing_ch3 = []
+                    if atom_id in self.__csStat.getRepMethylProtons(comp_id):
+                        missing_ch3 = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
+                        valid = self.__sail_flag
+                        for offset in range(1, 10):
+                            row_src = src_lp.data[src_idx]
+                            if src_idx + offset < len(src_lp.data):
+                                row = src_lp.data[src_idx + offset]
+                                if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
+                                    or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
+                                   and row[comp_id_col].upper() == comp_id\
+                                   and row[atom_id_col] in missing_ch3:
+                                    valid = True
+                                    missing_ch3.remove(row[atom_id_col])
+                                    if len(missing_ch3) == 0:
+                                        break
+                            if src_idx - offset >= 0:
+                                row = src_lp.data[src_idx - offset]
+                                if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
+                                    or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
+                                   and row[comp_id_col].upper() == comp_id\
+                                   and row[atom_id_col] in missing_ch3:
+                                    valid = True
+                                    missing_ch3.remove(row[atom_id_col])
+                                    if len(missing_ch3) == 0:
+                                        break
+                    if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 3.0):
+                        missing_ch3 = []
+                    if not valid and len(missing_ch3) > 0:
+                        atom_id = atom_id[:-1]
+                    atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
+                    if len(atom_ids) == 0 or atom_ids[0] not in self.__csStat.getAllAtoms(comp_id):
+                        atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
+                    if valid and len(missing_ch3) > 0:
+                        atom_ids = [atom_id]
+                        atom_ids.extend(missing_ch3)
+                    len_atom_ids = len(atom_ids)
+                    if len_atom_ids == 0:
+                        _row[6] = atom_id
+                        if fill_auth_atom_id:
+                            _row[19] = _row[6]
+                        _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
+                        if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                            _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                    else:
+                        methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+                        _row[6] = atom_ids[0]
+                        _row[19] = None
+                        fill_auth_atom_id = _row[18] not in emptyValue
+                        if self.__ccU.updateChemCompDict(comp_id):
+                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
+                            if cca is not None:
+                                _row[7] = cca[self.__ccU.ccaTypeSymbol]
+                                if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                    _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                            else:
+                                _row[7] = 'H' if _row[6][0] in protonBeginCode else atom_id[0]
+                                if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                    _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                        else:
+                            _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
+                            if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+
+                        if len_atom_ids > 1:
+                            if _row[12] == 1 or _row[12] in emptyValue:
+                                if _row[6] not in methyl_atoms\
+                                   or (_row[6] in methyl_atoms
+                                       and ((_row[7][0] == 'H' and len_atom_ids == 6)
+                                            or (_row[7][0] == 'C' and len_atom_ids == 2))):
+                                    _row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
+                            __row = copy.copy(_row)
+                            if fill_auth_atom_id:
+                                __row[19] = __row[6]
+                            lp.add_data(__row)
+
+                            for _atom_id in atom_ids[1:-1]:
+                                __row = copy.copy(_row)
+
+                                index += 1
+
+                                __row[0] = index
+                                __row[6] = _atom_id
+                                if fill_auth_atom_id:
+                                    __row[19] = __row[6]
+                                if fill_orig_atom_id and len(missing_ch3) > 0\
+                                   and __row[23] in emptyValue:
+                                    if _atom_id in methyl_atoms:
+                                        if ch3_name_in_xplor and _atom_id[0] in protonBeginCode:
+                                            __row[23] = __row[6][-1] + __row[6][:-1]
+                                        else:
+                                            __row[23] = copy.copy(__row[6])
+
+                                lp.add_data(__row)
+
+                            index += 1
+
+                            _row[0] = index
+                            _row[6] = atom_ids[-1]
+
+                        if fill_auth_atom_id:
+                            _row[19] = _row[6]
+                        if fill_orig_atom_id and len(missing_ch3) > 0\
+                           and _row[23] in emptyValue:
+                            if _row[6] in methyl_atoms:
+                                if ch3_name_in_xplor and _row[6][0] in protonBeginCode:
+                                    _row[23] = _row[6][-1] + _row[6][:-1]
+                                else:
+                                    _row[23] = copy.copy(_row[6])
+
+                return index, _row
 
             copied_auth_chain_ids = set()
             copied_chain_ids = set()
@@ -29735,7 +29737,8 @@ class NmrDpUtility:
                                      'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in emptyValue else None,
                                      'comp_id': row[comp_id_2_col],
                                      'atom_id': row[atom_id_2_col]}
-                            if isAmbigAtomSelection([_atom1, atom1], self.__csStat) or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                            if isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                               or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
                                 sf_item['constraint_subsubtype'] = 'ambi'
                                 break
                             _atom1, _atom2 = atom1, atom2
@@ -30217,7 +30220,8 @@ class NmrDpUtility:
 
                     if member_id in emptyValue or member_logic_code == 'OR':
 
-                        if (values == _values and not isAmbigAtomSelection([atom1, _atom1], self.__csStat) and not isAmbigAtomSelection([atom2, _atom2], self.__csStat))\
+                        if (values == _values and not isAmbigAtomSelection([atom1, _atom1], self.__csStat)
+                            and not isAmbigAtomSelection([atom2, _atom2], self.__csStat))\
                            or (values == _values and atom1['ref_chain_id'] != atom2['ref_chain_id']
                                and ((not isAmbigAtomSelection([atom1, _atom1], self.__csStat)
                                      and atom1['ref_chain_id'] != _atom2['ref_chain_id'] and atom2['comp_id'] == _atom2['comp_id'])
@@ -30236,6 +30240,7 @@ class NmrDpUtility:
 
                     if not isAmbigAtomSelection([atom1, _atom1], self.__csStat)\
                        and not isAmbigAtomSelection([atom2, _atom2], self.__csStat):
+
                         if member_logic_code in emptyValue:
                             modified = True
 
@@ -36515,7 +36520,8 @@ class NmrDpUtility:
                              'comp_id': comp_id_2,
                              'atom_id': atom_id_2}
                     if _atom1 is not None and _atom2 is not None:
-                        if not isAmbigAtomSelection([_atom1, atom1], self.__csStat) and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                        if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                           and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
                             _rest_id, _atom1, _atom2 = rest_id, atom1, atom2
                             continue
                     _atom1, _atom2 = atom1, atom2
@@ -51305,7 +51311,8 @@ class NmrDpUtility:
                                          'seq_id': seq_id_2,
                                          'comp_id': comp_id_2,
                                          'atom_id': atom_id_2}
-                                if not isAmbigAtomSelection([_atom1, atom1], self.__csStat) and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                   and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
                                     prev_id, _atom1, _atom2 = _id, atom1, atom2
                                     continue
                                 _atom1, _atom2 = atom1, atom2
@@ -51459,7 +51466,8 @@ class NmrDpUtility:
                                          'seq_id': seq_id_2,
                                          'comp_id': comp_id_2,
                                          'atom_id': atom_id_2}
-                                if not isAmbigAtomSelection([_atom1, atom1], self.__csStat) and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                   and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
                                     prev_id, _atom1, _atom2 = _id, atom1, atom2
                                     continue
                                 _atom1, _atom2 = atom1, atom2
@@ -53064,7 +53072,8 @@ class NmrDpUtility:
                                              'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in emptyValue else None,
                                              'comp_id': row[comp_id_2_col],
                                              'atom_id': row[atom_id_2_col]}
-                                    if isAmbigAtomSelection([_atom1, atom1], self.__csStat) or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                    if isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                       or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
                                         sf_item[sf_framecode]['constraint_subsubtype'] = 'ambi'
                                         break
                                     _atom1, _atom2 = atom1, atom2
@@ -53228,7 +53237,8 @@ class NmrDpUtility:
                                              'seq_id': seq_id_2,
                                              'comp_id': comp_id_2,
                                              'atom_id': atom_id_2}
-                                    if not isAmbigAtomSelection([_atom1, atom1], self.__csStat) and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                    if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                       and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
                                         prev_id, _atom1, _atom2 = _id, atom1, atom2
                                         continue
                                     _atom1, _atom2 = atom1, atom2
@@ -53386,7 +53396,8 @@ class NmrDpUtility:
                                              'seq_id': seq_id_2,
                                              'comp_id': comp_id_2,
                                              'atom_id': atom_id_2}
-                                    if not isAmbigAtomSelection([_atom1, atom1], self.__csStat) and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                    if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                       and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
                                         prev_id, _atom1, _atom2 = _id, atom1, atom2
                                         continue
                                     _atom1, _atom2 = atom1, atom2
@@ -54337,7 +54348,8 @@ class NmrDpUtility:
                                          'seq_id': int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in emptyValue else None,
                                          'comp_id': row[comp_id_2_col],
                                          'atom_id': row[atom_id_2_col]}
-                                if not isAmbigAtomSelection([_atom1, atom1], self.__csStat) and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                   and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
                                     return True
                                 _atom1, _atom2 = atom1, atom2
 

@@ -124,13 +124,13 @@ class BMRBChemShiftStat:
             return False
 
         if comp_id in self.__cachedDictForPeptideLike:
-            return copy.copy(self.__cachedDictForPeptideLike[comp_id])
+            return copy.deepcopy(self.__cachedDictForPeptideLike[comp_id])
 
         result = self.__ccU.peptideLike(comp_id)
 
         self.__cachedDictForPeptideLike[comp_id] = result
 
-        return result
+        return copy.deepcopy(result)
 
     def getTypeOfCompId(self, comp_id):
         """ Return type of a given comp_id.
@@ -147,13 +147,13 @@ class BMRBChemShiftStat:
             return False, True, False
 
         if comp_id in self.__cachedDictForTypeOfCompId:
-            return copy.copy(self.__cachedDictForTypeOfCompId[comp_id])
+            return copy.deepcopy(self.__cachedDictForTypeOfCompId[comp_id])
 
         results = self.__ccU.getTypeOfCompId(comp_id)
 
         self.__cachedDictForTypeOfCompId[comp_id] = results
 
-        return results
+        return copy.deepcopy(results)
 
     def getSimilarCompIdFromAtomIds(self, atom_ids):
         """ Return the most similar comp_id including atom_ids.
@@ -162,7 +162,7 @@ class BMRBChemShiftStat:
 
         key = str(atom_ids)
         if key in self.__cachedDictForSimilarCompId:
-            return copy.copy(self.__cachedDictForSimilarCompId[key])
+            return copy.deepcopy(self.__cachedDictForSimilarCompId[key])
 
         aa_bb = {"C", "CA", "CB", "H", "HA", "HA2", "HA3", "N"}
         dn_bb = {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "H5'1", "H5'2", "H2'1", "H2'2", 'P'}
@@ -575,13 +575,13 @@ class BMRBChemShiftStat:
             return []
 
         if comp_id in self.__cachedDictForMethylProtons:
-            return copy.copy(self.__cachedDictForMethylProtons[comp_id])
+            return copy.deepcopy(self.__cachedDictForMethylProtons[comp_id])
 
         result = self.__ccU.getMethylAtoms(comp_id)
 
         self.__cachedDictForMethylProtons[comp_id] = result
 
-        return result
+        return copy.deepcopy(result)
 
     def getRepMethylProtons(self, comp_id):
         """ Return representative protons in methyl group of a given comp_id.
@@ -591,13 +591,13 @@ class BMRBChemShiftStat:
             return []
 
         if comp_id in self.__cachedDictForRepMethylProtons:
-            return copy.copy(self.__cachedDictForRepMethylProtons[comp_id])
+            return copy.deepcopy(self.__cachedDictForRepMethylProtons[comp_id])
 
         result = self.__ccU.getRepMethylProtons(comp_id)
 
-        self.__cachedDictForProtonInSameGroup[comp_id] = result
+        self.__cachedDictForRepMethylProtons[comp_id] = result
 
-        return result
+        return copy.deepcopy(result)
 
     def getNonRepMethylProtons(self, comp_id):
         """ Return non-representative protons in methyl group of a given comp_id.
@@ -607,13 +607,13 @@ class BMRBChemShiftStat:
             return []
 
         if comp_id in self.__cachedDictForNonRepMethylProtons:
-            return copy.copy(self.__cachedDictForNonRepMethylProtons[comp_id])
+            return copy.deepcopy(self.__cachedDictForNonRepMethylProtons[comp_id])
 
         result = self.__ccU.getNonRepMethylProtons(comp_id)
 
         self.__cachedDictForNonRepMethylProtons[comp_id] = result
 
-        return result
+        return copy.deepcopy(result)
 
     def getProtonsInSameGroup(self, comp_id, atom_id, excl_self=False):
         """ Return protons in the same group of a given comp_id and atom_id.
@@ -624,13 +624,13 @@ class BMRBChemShiftStat:
 
         key = (comp_id, atom_id, excl_self)
         if key in self.__cachedDictForProtonInSameGroup:
-            return copy.copy(self.__cachedDictForProtonInSameGroup[key])
+            return copy.deepcopy(self.__cachedDictForProtonInSameGroup[key])
 
         result = self.__ccU.getProtonsInSameGroup(comp_id, atom_id, excl_self)
 
         self.__cachedDictForProtonInSameGroup[key] = result
 
-        return result
+        return copy.deepcopy(result)
 
     def getSideChainAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False, carbohydrates_like=False):
         """ Return sidechain atoms of a given comp_id.

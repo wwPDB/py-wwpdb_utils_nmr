@@ -405,7 +405,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-                    if self.__reasons is None and any(f for f in self.__f if 'Atom not found' in f):
+                    if self.__reasons is None and any(f for f in self.__f if 'Atom not found' in f or 'Sequence mismatch' in f):
 
                         seqIdRemap = []
 
@@ -562,7 +562,8 @@ class BiosymMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['local_seq_scheme']
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-                del self.reasonsForReParsing['seq_id_remap']
+                if self.__reasons is None and not any(f for f in self.__f if 'Sequence mismatch' in f):
+                    del self.reasonsForReParsing['seq_id_remap']
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)

@@ -521,7 +521,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-                    if self.__reasons is None and any(f for f in self.__f if 'Atom not found' in f):
+                    if self.__reasons is None and any(f for f in self.__f if 'Atom not found' in f or 'Sequence mismatch' in f):
 
                         seqIdRemap = []
 
@@ -732,7 +732,8 @@ class CharmmMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['np_seq_id_remap']
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-                del self.reasonsForReParsing['seq_id_remap']
+                if self.__reasons is None and not any(f for f in self.__f if 'Sequence mismatch' in f):
+                    del self.reasonsForReParsing['seq_id_remap']
 
             if 'global_sequence_offset' in self.reasonsForReParsing:
                 globalSequenceOffset = copy.copy(self.reasonsForReParsing['global_sequence_offset'])

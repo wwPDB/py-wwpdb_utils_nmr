@@ -43367,7 +43367,7 @@ class NmrDpUtility:
                     atom_id_ = atom_id
                     atom_name = atom_id
 
-                found, seq_key, coord_atom_site_ = get_coord_atom_site_of(chain_id, seq_id, comp_id)
+                found, seq_key, coord_atom_site_ = get_coord_atom_site_of(cif_chain_id, seq_id, comp_id)
 
                 if found:
 

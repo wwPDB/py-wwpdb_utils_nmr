@@ -867,6 +867,8 @@ class AmberMRParserListener(ParseTreeListener):
                 text = str(ctx.Any_name(col))
                 if text[0] in ('#', '!'):
                     break
+                if text[0] in ('>', '<'):
+                    continue
                 comment.append(str(ctx.Any_name(col)))
             else:
                 break

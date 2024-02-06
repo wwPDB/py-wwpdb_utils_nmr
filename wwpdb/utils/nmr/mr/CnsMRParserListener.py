@@ -5624,7 +5624,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                                     self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId][self.__cur_subtype] = True
                                                                                 break
                                                                 self.__preferAuthSeq = __preferAuthSeq
-                                                            if isPolySeq and isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
+                                                            if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
                                                                and _factor['chain_id'][0] != chainId and compId in monDict3:
                                                                 continue
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -5690,7 +5690,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                             self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId][self.__cur_subtype] = True
                                                                         break
                                                         self.__preferAuthSeq = __preferAuthSeq
-                                                    if isPolySeq and isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
+                                                    if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
                                                        and _factor['chain_id'][0] != chainId and compId in monDict3:
                                                         continue
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"

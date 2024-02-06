@@ -24199,6 +24199,8 @@ class NmrDpUtility:
             details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
 
             def fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
+                if src_idx > 0:
+                    src_idx -= 1
                 fill_auth_atom_id = self.__annotation_mode or (_row[19] in emptyValue and _row[18] not in emptyValue)
                 fill_orig_atom_id = _row[23] not in emptyValue
 

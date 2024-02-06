@@ -24199,7 +24199,6 @@ class NmrDpUtility:
             details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
 
             def fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
-                src_idx -= 1
                 fill_auth_atom_id = self.__annotation_mode or (_row[19] in emptyValue and _row[18] not in emptyValue)
                 fill_orig_atom_id = _row[23] not in emptyValue
 
@@ -24211,8 +24210,8 @@ class NmrDpUtility:
                     if not self.__annotation_mode and atom_id in self.__csStat.getRepMethylProtons(comp_id):
                         missing_ch3 = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
                         valid = self.__sail_flag
+                        row_src = src_lp.data[src_idx]
                         for offset in range(1, 10):
-                            row_src = src_lp.data[src_idx]
                             if src_idx + offset < len(src_lp.data):
                                 row = src_lp.data[src_idx + offset]
                                 if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\

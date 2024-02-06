@@ -25065,19 +25065,25 @@ class NmrDpUtility:
                                         seq_key = next((k for k, v in auth_to_star_seq.items()
                                                         if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
                                         if seq_key is not None:
-                                            _seq_key = (seq_key[0], seq_key[1])
-                                            _row[16], _row[17], _row[18], _row[19] =\
-                                                seq_key[0], seq_key[1], seq_key[2], atom_id
-                                            if has_ins_code and seq_key in auth_to_ins_code:
-                                                _row[27] = auth_to_ins_code[seq_key]
 
-                                        _row[20], _row[21], _row[22], _row[23] =\
-                                            row[auth_asym_id_col], row[auth_seq_id_col], \
-                                            row[auth_comp_id_col], row[auth_atom_id_col]
+                                            if comp_id != seq_key[2] and comp_id in monDict3 and seq_key[2] in monDict3:
+                                                resolved = False
 
-                                        index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
-                                                                  coord_atom_site, _seq_key,
-                                                                  comp_id, atom_id, loop, idx)
+                                            else:
+                                                _seq_key = (seq_key[0], seq_key[1])
+                                                _row[16], _row[17], _row[18], _row[19] =\
+                                                    seq_key[0], seq_key[1], seq_key[2], atom_id
+                                                if has_ins_code and seq_key in auth_to_ins_code:
+                                                    _row[27] = auth_to_ins_code[seq_key]
+
+                                        if resolved:
+                                            _row[20], _row[21], _row[22], _row[23] =\
+                                                row[auth_asym_id_col], row[auth_seq_id_col], \
+                                                row[auth_comp_id_col], row[auth_atom_id_col]
+
+                                            index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
+                                                                      coord_atom_site, _seq_key,
+                                                                      comp_id, atom_id, loop, idx)
 
                                     else:
                                         resolved = False

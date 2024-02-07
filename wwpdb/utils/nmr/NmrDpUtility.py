@@ -24285,7 +24285,7 @@ class NmrDpUtility:
                         if valid and len(missing_ch3) > 0:
                             if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23])\
                                and len(self.__getAtomIdListInXplor(comp_id, _row[23])) > 1 and _row[24] != 'UNMAPPED':
-                                atom_ids = self.__getAtomIdListInXplor(comp_id, _row[23])[0]
+                                atom_ids = self.__getAtomIdListInXplor(comp_id, _row[23])
                             else:
                                 missing_ch3.clear()
                         if not valid and len(missing_ch3) > 0 and atom_id in _coord_atom_site['atom_id']:
@@ -24410,7 +24410,7 @@ class NmrDpUtility:
                     if valid and len(missing_ch3) > 0:
                         if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23])\
                            and len(self.__getAtomIdListInXplor(comp_id, _row[23])) > 1 and _row[24] != 'UNMAPPED':
-                            atom_ids = self.__getAtomIdListInXplor(comp_id, _row[23])[0]
+                            atom_ids = self.__getAtomIdListInXplor(comp_id, _row[23])
                         else:
                             missing_ch3.clear()
                     if not valid and len(missing_ch3) > 0:

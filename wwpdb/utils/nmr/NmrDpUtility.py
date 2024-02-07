@@ -24268,10 +24268,15 @@ class NmrDpUtility:
                                 if fill_auth_atom_id:
                                     _row[19] = atom_id
                         if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 3.0):
-                            missing_ch3 = []
-                        if not valid and len(missing_ch3) > 0:
+                            heme = False
+                            if _row[9] not in emptyValue:
+                                if self.__ccU.updateChemCompDict(comp_id):
+                                    heme = comp_id == 'HEM' or 'HEME' in self.__ccU.lastChemCompDict['_chem_comp.name']
+                            if not heme:
+                                missing_ch3 = []
+                        if not valid and len(missing_ch3) > 0 and atom_id not in _coord_atom_site['atom_id']:
                             atom_id = atom_id[:-1]
-                        if atom_id in _coord_atom_site['atom_id'] or prefer_auth_atom_name:
+                        if (valid and atom_id in _coord_atom_site['atom_id']) or prefer_auth_atom_name:
                             atom_ids = [atom_id]
                         else:
                             atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
@@ -24283,6 +24288,8 @@ class NmrDpUtility:
                                 atom_ids = self.__getAtomIdListInXplor(comp_id, _row[23])[0]
                             else:
                                 missing_ch3.clear()
+                        if not valid and len(missing_ch3) > 0 and atom_id in _coord_atom_site['atom_id']:
+                            atom_ids.extend(missing_ch3)
                         len_atom_ids = len(atom_ids)
                         if len_atom_ids == 0:
                             _row[6] = atom_id
@@ -24386,14 +24393,27 @@ class NmrDpUtility:
                                     if len(missing_ch3) == 0:
                                         break
                     if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 3.0):
-                        missing_ch3 = []
+                        heme = False
+                        if _row[9] not in emptyValue:
+                            if self.__ccU.updateChemCompDict(comp_id):
+                                heme = comp_id == 'HEM' or 'HEME' in self.__ccU.lastChemCompDict['_chem_comp.name']
+                        if not heme:
+                            missing_ch3 = []
                     if not valid and len(missing_ch3) > 0:
                         atom_id = atom_id[:-1]
-                    atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
-                    if len(atom_ids) == 0 or atom_ids[0] not in self.__csStat.getAllAtoms(comp_id):
-                        atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
-                    if valid and len(missing_ch3) > 0:
+                    if valid or prefer_auth_atom_name:
                         atom_ids = [atom_id]
+                    else:
+                        atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
+                        if len(atom_ids) == 0:
+                            atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
+                    if valid and len(missing_ch3) > 0:
+                        if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23])\
+                           and len(self.__getAtomIdListInXplor(comp_id, _row[23])) > 1 and _row[24] != 'UNMAPPED':
+                            atom_ids = self.__getAtomIdListInXplor(comp_id, _row[23])[0]
+                        else:
+                            missing_ch3.clear()
+                    if not valid and len(missing_ch3) > 0:
                         atom_ids.extend(missing_ch3)
                     len_atom_ids = len(atom_ids)
                     if len_atom_ids == 0:

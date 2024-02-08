@@ -14883,6 +14883,9 @@ class NmrDpUtility:
                                 ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
                             ofh.write(line)
 
+                        elif ofh is not None:
+                            ofh.write(line)
+
                 if ofh is not None:
                     ofh.close()
                     if j == 0:

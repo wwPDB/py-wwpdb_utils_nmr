@@ -24267,7 +24267,7 @@ class NmrDpUtility:
                                 atom_id = 'H1'
                                 if fill_auth_atom_id:
                                     _row[19] = atom_id
-                        if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 3.0):
+                        if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 4.0):
                             heme = False
                             if _row[9] not in emptyValue:
                                 if self.__ccU.updateChemCompDict(comp_id):
@@ -24392,7 +24392,7 @@ class NmrDpUtility:
                                     missing_ch3.remove(row[atom_id_col])
                                     if len(missing_ch3) == 0:
                                         break
-                    if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 3.0):
+                    if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 4.0):
                         heme = False
                         if _row[9] not in emptyValue:
                             if self.__ccU.updateChemCompDict(comp_id):

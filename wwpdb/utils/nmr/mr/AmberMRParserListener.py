@@ -3496,7 +3496,7 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__concatHetero and not hasAuthSeqScheme:
             useDefault = False
 
-        for ps in (self.__polySeq if useDefault else self.__altPolySeq):
+        for ps in (self.__polySeq if useDefault or self.__altPolySeq is None else self.__altPolySeq):
             chainId = ps['auth_chain_id']
 
             if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
@@ -3821,7 +3821,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
                                     return None
 
-        if not useDefault or self.__altPolySeq is None:
+        if not useDefault:  # or self.__altPolySeq is None:
             return None
 
         return self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, order, False)
@@ -3869,7 +3869,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         found = False
 
-        for ps in (self.__polySeq if useDefault else self.__altPolySeq):
+        for ps in (self.__polySeq if useDefault or self.__altPolySeq is None else self.__altPolySeq):
             chainId = ps['auth_chain_id']
             seqId = factor['auth_seq_id']
 
@@ -4371,7 +4371,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if found:
                             return True
 
-        if not useDefault or self.__altPolySeq is None:
+        if not useDefault:  # or self.__altPolySeq is None:
             return False
 
         return self.updateSanderAtomNumberDict(factor, cifCheck, False)
@@ -4418,7 +4418,7 @@ class AmberMRParserListener(ParseTreeListener):
 
             found = False
 
-            for ps in (self.__polySeq if useDefault else self.__altPolySeq):
+            for ps in (self.__polySeq if useDefault or self.__altPolySeq is None else self.__altPolySeq):
 
                 if ps['auth_chain_id'] != chainId:
                     continue
@@ -4875,7 +4875,7 @@ class AmberMRParserListener(ParseTreeListener):
         if allFound:
             return True
 
-        if not useDefault or self.__altPolySeq is None:
+        if not useDefault:  # or self.__altPolySeq is None:
             return False
 
         return self.updateSanderAtomNumberDictWithAmbigCode(factor, cifCheck, False)

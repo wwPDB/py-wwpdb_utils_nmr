@@ -5690,6 +5690,10 @@ def getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom, aux_atom=None)
             atom['seq_id'] = seqId + offset
             return starAtom
 
+    if seqKey in authToStarSeq:
+        starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
+        return starAtom
+
     for offset in range(1, 1000):
         seqKey = (chainId, seqId + offset, compId)
         if has_aux_atom:

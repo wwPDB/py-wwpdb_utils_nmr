@@ -314,6 +314,12 @@ class AmberMRReader:
 
 
 if __name__ == "__main__":
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/7nwj/CEP164_191201.rst',
+                 '../../tests-nmr/mock-data-remediation/7nwj/7nwj.cif',
+                 None)
+
     _reasons_ = {'auth_seq_scheme': {'B': True, 'A': True},
                  'global_sequence_offset': {'B': 252}}
     reader = AmberMRReader(True, reasons=_reasons_)

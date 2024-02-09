@@ -676,62 +676,68 @@ class AmberMRParserListener(ParseTreeListener):
         self.taumet = None
         self.id2o = None
 
-        self.dist_sander_pat = re.compile(r'(\d+) (\S+) (\S+) '
-                                          r'(\d+) (\S+) (\S+) '
-                                          r'([-+]?\d*\.?\d+).*')
+        self.dist_sander_pat = re.compile(r'(-?\d+) (\S+) (\S+) '
+                                          r'(-?\d+) (\S+) (\S+) ?'
+                                          r'([-+]?\d*\.?\d+)?.*')
 
-        self.dist_sander_pat2 = re.compile(r'(\d+) (\S+) (\S+) '
-                                           r'(\d+) (\S+) (\S+) '
-                                           r'([-+]?\d*\.?\d+) '
-                                           r'([-+]?\d*\.?\d+).*')
+        self.dist_sander_pat2 = re.compile(r'(-?\d+) (\S+) (\S+) '
+                                           r'(-?\d+) (\S+) (\S+) ?'
+                                           r'([-+]?\d*\.?\d+)? ?'
+                                           r'([-+]?\d*\.?\d+)?.*')
 
-        self.dist_expand_sander_pat = re.compile(r'(\d+) (\S+) ([\S ]+ )'
-                                                 r'(\d+) (\S+) ([\S ]+ )'
-                                                 r'([-+]?\d*\.?\d+).*')
+        self.dist_expand_sander_pat = re.compile(r'(-?\d+) (\S+) ([\S ]+ )'
+                                                 r'(-?\d+) (\S+) ([\S ]+) ?'
+                                                 r'([-+]?\d*\.?\d+)?.*')
 
-        self.ang_sander_pat = re.compile(r'(\d+) (\S+) (\S+): '
-                                         r'\(\s*(\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                         r'\(\s*(\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                         r'\(\s*(\d+) (\S+) (\S+)\s*\).*')  # r'([-+]?\d*\.?\d+) [-+]?\d*\.?\d+).*')
+        self.ang_sander_pat = re.compile(r'(-?\d+) (\S+) (\S+): '
+                                         r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                         r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                         r'\(\s*(-?\d+) (\S+) (\S+)\s*\).*')  # r'([-+]?\d*\.?\d+) [-+]?\d*\.?\d+).*')
 
         self.ang_sander_pat2 = re.compile(r'angle (\S+) '
-                                          r'(\S+), (\d+) '
-                                          r'(\S+), (\d+) '
-                                          r'(\S+), (\d+) '
-                                          r'([-+]?\d*\.?\d+).*')
+                                          r'(\S+), (-?\d+) '
+                                          r'(\S+), (-?\d+) '
+                                          r'(\S+), (-?\d+) ?'
+                                          r'([-+]?\d*\.?\d+)?.*')
 
-        self.ang_nang_sander_pat = re.compile(r'N angles for residue (\d+).*')
+        self.ang_nang_sander_pat = re.compile(r'N angles for residue (-?\d+).*')
 
         self.ang_nang_atoms = [['H', 'N', 'C'],
                                ['H', 'N', 'CA']
                                ]
 
-        self.dihed_sander_pat = re.compile(r'(\d+) (\S+) (\S+): '
-                                           r'\(\s*(\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                           r'\(\s*(\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                           r'\(\s*(\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                           r'\(\s*(\d+) (\S+) (\S+)\s*\) '
-                                           r'([-+]?\d*\.?\d+) '
-                                           r'([-+]?\d*\.?\d+).*')
+        self.dihed_sander_pat = re.compile(r'(-?\d+) (\S+) (\S+): '
+                                           r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                           r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                           r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                           r'\(\s*(-?\d+) (\S+) (\S+)\s*\) ?'
+                                           r'([-+]?\d*\.?\d+)? ?'
+                                           r'([-+]?\d*\.?\d+)?.*')
 
-        self.dihed_sander_pat2 = re.compile(r'\(\s*(\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                            r'\(\s*(\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                            r'\(\s*(\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                            r'\(\s*(\d+) (\S+) (\S+)\s*\) '
-                                            r'([-+]?\d*\.?\d+) '
-                                            r'([-+]?\d*\.?\d+).*')
+        self.dihed_sander_pat2 = re.compile(r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                            r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                            r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                            r'\(\s*(-?\d+) (\S+) (\S+)\s*\) ?'
+                                            r'([-+]?\d*\.?\d+)? ?'
+                                            r'([-+]?\d*\.?\d+)?.*')
 
-        self.dihed_sander_pat3 = re.compile(r'\(\s*(\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                            r'\(\s*(\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                            r'\(\s*(\d+) (\S+) (\S+)\s*\)\s*-\s*'
-                                            r'\(\s*(\d+) (\S+) (\S+)\s*\) '
-                                            r'(\S+).*')
+        self.dihed_sander_pat3 = re.compile(r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                            r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                            r'\(\s*(-?\d+) (\S+) (\S+)\s*\)\s*-\s*'
+                                            r'\(\s*(-?\d+) (\S+) (\S+)\s*\)'
+                                            r'(\S+)?.*')
 
-        self.dihed_chiral_sander_pat = re.compile(r'chirality for residue (\d+) atoms: '
+        self.dihed_sander_pat4 = re.compile(r'\s*(-?\d+) (\S+) (\S+)\s* '
+                                            r'\s*(-?\d+) (\S+) (\S+)\s* '
+                                            r'\s*(-?\d+) (\S+) (\S+)\s* '
+                                            r'\s*(-?\d+) (\S+) (\S+)\s*'
+                                            r'(\S+)?.*')
+
+        self.dihed_chiral_sander_pat = re.compile(r'chirality for residue (-?\d+) atoms: '
                                                   r'(\S+) (\S+) (\S+) (\S+).*')
-        self.dihed_omega_sander_pat = re.compile(r'trans-omega constraint for residue (\d+).*')
+        self.dihed_omega_sander_pat = re.compile(r'trans-omega constraint for residue (-?\d+).*')
 
-        self.dihed_plane_residue_pat = re.compile(r'PLANAR RESTRAINTS FOR RESIDUE (\d+).*')
+        self.dihed_plane_residue_pat = re.compile(r'PLANAR RESTRAINTS FOR RESIDUE (-?\d+).*')
         self.dihed_plane_sander_pat = re.compile(r'ANGLE (\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s*-\s*(\S+) -> '
                                                  r'([-+]?\d*\.?\d+).*')
 
@@ -2072,6 +2078,10 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.lastComment is None or not self.dihed_sander_pat3.match(self.lastComment)\
                             else self.dihed_sander_pat3.search(self.lastComment).groups()
 
+                        g4 = None\
+                            if self.lastComment is None or not self.dihed_sander_pat4.match(self.lastComment)\
+                            else self.dihed_sander_pat4.search(self.lastComment).groups()
+
                         gc = None\
                             if self.lastComment is None or not self.dihed_chiral_sander_pat.match(self.lastComment)\
                             else self.dihed_chiral_sander_pat.search(self.lastComment).groups()
@@ -2161,7 +2171,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     if iat in self.__sanderAtomNumberDict:
                                         pass
                                     else:
-                                        if g is None and g2 is None and g3 is None:
+                                        if g is None and g2 is None and g3 is None and g4 is None:
                                             self.reportSanderCommentIssue(subtype_name)
                                             return
                                         if g is not None:
@@ -2185,7 +2195,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                 f"based on Sander comment {' '.join(g2[offset2:offset2+3])!r}.")
 
-                                        else:
+                                        elif g3 is not None:
                                             factor = {'auth_seq_id': int(g3[offset2]),
                                                       'auth_comp_id': g3[offset2 + 1],
                                                       'auth_atom_id': g3[offset2 + 2],
@@ -2195,6 +2205,17 @@ class AmberMRParserListener(ParseTreeListener):
                                                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                 f"based on Sander comment {' '.join(g3[offset2:offset2+3])!r}.")
+
+                                        else:
+                                            factor = {'auth_seq_id': int(g4[offset2]),
+                                                      'auth_comp_id': g4[offset2 + 1],
+                                                      'auth_atom_id': g4[offset2 + 2],
+                                                      'iat': iat
+                                                      }
+                                            if not self.updateSanderAtomNumberDict(factor):
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {' '.join(g4[offset2:offset2+3])!r}.")
 
                 elif self.lastComment is not None:
                     if not self.__hasComments:
@@ -2998,6 +3019,10 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.lastComment is None or not self.dihed_sander_pat3.match(self.lastComment)\
                             else self.dihed_sander_pat3.search(self.lastComment).groups()
 
+                        g4 = None\
+                            if self.lastComment is None or not self.dihed_sander_pat4.match(self.lastComment)\
+                            else self.dihed_sander_pat4.search(self.lastComment).groups()
+
                         gc = None\
                             if self.lastComment is None or not self.dihed_chiral_sander_pat.match(self.lastComment)\
                             else self.dihed_chiral_sander_pat.search(self.lastComment).groups()
@@ -3073,7 +3098,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         if iat in self.__sanderAtomNumberDict:
                                             pass
                                         else:
-                                            if g is None and g2 is not None and g3 is not None:
+                                            if g is None and g2 is not None and g3 is not None and g4 is not None:
                                                 self.reportSanderCommentIssue(subtype_name)
                                                 return
                                             if g is not None:
@@ -3097,7 +3122,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                     f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                     f"based on Sander comment {' '.join(g2[offset2:offset2+3])!r}.")
 
-                                            else:
+                                            elif g3 is not None:
                                                 factor = {'auth_seq_id': int(g3[offset2]),
                                                           'auth_comp_id': g3[offset2 + 1],
                                                           'auth_atom_id': g3[offset2 + 2],
@@ -3107,6 +3132,17 @@ class AmberMRParserListener(ParseTreeListener):
                                                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                                     f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                     f"based on Sander comment {' '.join(g3[offset2:offset2+3])!r}.")
+
+                                            else:
+                                                factor = {'auth_seq_id': int(g4[offset2]),
+                                                          'auth_comp_id': g4[offset2 + 1],
+                                                          'auth_atom_id': g4[offset2 + 2],
+                                                          'iat': iat
+                                                          }
+                                                if not self.updateSanderAtomNumberDict(factor):
+                                                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                    f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                    f"based on Sander comment {' '.join(g4[offset2:offset2+3])!r}.")
 
         finally:
 
@@ -3663,19 +3699,19 @@ class AmberMRParserListener(ParseTreeListener):
                                     if not checked:
                                         if chainId in LARGE_ASYM_ID:
                                             if enableWarning:
-                                                self.__f.append(f"[Atom not found] 13 {self.__getCurrentRestraint()}"
+                                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
-                                                if 'auth_seq_scheme' not in self.reasonsForReParsing:
-                                                    self.reasonsForReParsing['auth_seq_scheme'] = {}
-                                                self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
+                                            if 'auth_seq_scheme' not in self.reasonsForReParsing:
+                                                self.reasonsForReParsing['auth_seq_scheme'] = {}
+                                            self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
                                 return factor
                             if chainId in LARGE_ASYM_ID:
                                 if enableWarning:
-                                    self.__f.append(f"[Atom not found] 14 {self.__getCurrentRestraint()}"
+                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
-                                    if 'auth_seq_scheme' not in self.reasonsForReParsing:
-                                        self.reasonsForReParsing['auth_seq_scheme'] = {}
-                                    self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
+                                if 'auth_seq_scheme' not in self.reasonsForReParsing:
+                                    self.reasonsForReParsing['auth_seq_scheme'] = {}
+                                self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
                             return None
 
         if not useDefault:
@@ -3818,19 +3854,19 @@ class AmberMRParserListener(ParseTreeListener):
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
                                                     if enableWarning:
-                                                        self.__f.append(f"[Atom not found] 15 {self.__getCurrentRestraint()}"
+                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
-                                                        if 'auth_seq_scheme' not in self.reasonsForReParsing:
-                                                            self.reasonsForReParsing['auth_seq_scheme'] = {}
-                                                        self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
+                                                    if 'auth_seq_scheme' not in self.reasonsForReParsing:
+                                                        self.reasonsForReParsing['auth_seq_scheme'] = {}
+                                                    self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
                                         return factor
                                     if chainId in LARGE_ASYM_ID:
                                         if enableWarning:
-                                            self.__f.append(f"[Atom not found] 16 {self.__getCurrentRestraint()}"
+                                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
-                                            if 'auth_seq_scheme' not in self.reasonsForReParsing:
-                                                self.reasonsForReParsing['auth_seq_scheme'] = {}
-                                            self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
+                                        if 'auth_seq_scheme' not in self.reasonsForReParsing:
+                                            self.reasonsForReParsing['auth_seq_scheme'] = {}
+                                        self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
                                     return None
 
         if not useDefault:  # or self.__altPolySeq is None:
@@ -4061,7 +4097,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                             "Please re-upload the model file.")
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
-                                                    self.__f.append(f"[Atom not found] 1 {self.__getCurrentRestraint()}"
+                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                         return True
 
@@ -4158,7 +4194,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                             "Please re-upload the model file.")
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
-                                                    self.__f.append(f"[Atom not found] 2 {self.__getCurrentRestraint()}"
+                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
 
                         if found:
@@ -4295,7 +4331,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                             "Please re-upload the model file.")
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
-                                                    self.__f.append(f"[Atom not found] 3 {self.__getCurrentRestraint()}"
+                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                         return True
 
@@ -4382,7 +4418,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                             "Please re-upload the model file.")
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
-                                                    self.__f.append(f"[Atom not found] 4 {self.__getCurrentRestraint()}"
+                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
 
                         if found:
@@ -4603,7 +4639,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                 "Please re-upload the model file.")
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
-                                                        self.__f.append(f"[Atom not found] 5 {self.__getCurrentRestraint()}"
+                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                             break
 
@@ -4691,7 +4727,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                 "Please re-upload the model file.")
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
-                                                        self.__f.append(f"[Atom not found] 6 {self.__getCurrentRestraint()}"
+                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
 
             if not found and self.__hasNonPolySeq and useDefault:
@@ -4801,7 +4837,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                 "Please re-upload the model file.")
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
-                                                        self.__f.append(f"[Atom not found] 7 {self.__getCurrentRestraint()}"
+                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                             break
 
@@ -4888,7 +4924,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                                 "Please re-upload the model file.")
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
-                                                        self.__f.append(f"[Atom not found] 8 {self.__getCurrentRestraint()}"
+                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
 
             if not found:
@@ -4938,6 +4974,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == _chainId)
         offset = ps['auth_seq_id'][_idx1] - seqId1
+        print(f'{seqId1=} {compId1=} {seqId2=} {compId2=} {offset=}')
 
         if 'global_sequence_offset' not in self.reasonsForReParsing:
             self.reasonsForReParsing['global_sequence_offset'] = {}
@@ -8674,18 +8711,18 @@ class AmberMRParserListener(ParseTreeListener):
                 if atomId is not None and atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1')
             if atomId is not None and (('-' in atomId and ':' in atomId) or '.' in atomId):
-                self.__f.append(f"[Atom not found] 9 "
+                self.__f.append(f"[Atom not found] "
                                 f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                 "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the AMBER restraint file.")
             else:
                 if len(self.__polySeq) == 1 and seqId < 1:
                     refChainId = self.__polySeq[0]['auth_chain_id']
-                    self.__f.append(f"[Atom not found] 10 {self.__getCurrentRestraint()}"
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                     f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                 else:
-                    self.__f.append(f"[Atom not found] 11 "
+                    self.__f.append(f"[Atom not found] "
                                     f"{_seqId}:{atomId} is not present in the coordinates.")
 
         return list(chainAssign)
@@ -8846,7 +8883,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         return
                     if enableWarning:
                         if chainId in LARGE_ASYM_ID:
-                            self.__f.append(f"[Atom not found] 12 "
+                            self.__f.append(f"[Atom not found] "
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
 
     def __getCurrentRestraint(self, dataset=None, n=None):

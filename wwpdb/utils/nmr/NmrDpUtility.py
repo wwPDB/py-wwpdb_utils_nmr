@@ -14971,8 +14971,8 @@ class NmrDpUtility:
                                     is_seq = False
                                     break
                                 if len_seq == 2:
-                                    if (translateToStdResName(seq[0], self.__ccU) in monDict3 and seq[1].isdigit())\
-                                       or (translateToStdResName(seq[1], self.__ccU) in monDict3 and seq[0].isdigit()):
+                                    if (translateToStdResName(seq[0], ccU=self.__ccU) in monDict3 and seq[1].isdigit())\
+                                       or (translateToStdResName(seq[1], ccU=self.__ccU) in monDict3 and seq[0].isdigit()):
                                         is_seq = True
                                     else:
                                         is_seq = False
@@ -19091,7 +19091,7 @@ class NmrDpUtility:
                             comp_id = next((k for k, v in monDict3.items() if v == auth_comp_id), auth_comp_id)
                         else:
                             comp_id = auth_comp_id
-                        comp_id = translateToStdResName(comp_id, self.__ccU)
+                        comp_id = translateToStdResName(comp_id, ccU=self.__ccU)
                         auth_atom_ids = auth_pair['atom_id']
 
                         # standard residue
@@ -31173,7 +31173,7 @@ class NmrDpUtility:
 
             self.__cur_original_ar_file_name = original_file_name
 
-            reasons = _reasons = None if 'dist_restraint' not in content_subtype else reasons_dict.get(file_type)
+            reasons = _reasons = None if 'dist_restraint' not in content_subtype and file_type != 'nm-res-amb' else reasons_dict.get(file_type)
 
             if file_type == 'nm-res-xpl':
                 reader = XplorMRReader(self.__verbose, self.__lfh,
@@ -31599,13 +31599,39 @@ class NmrDpUtility:
                                        self.__mr_atom_name_mapping,
                                        self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT,
-                                       amberAtomNumberDict, _amberAtomNumberDict)
+                                       amberAtomNumberDict, _amberAtomNumberDict,
+                                       reasons)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
                                               listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
+                    reasons = reader.getReasons()
+
+                    if reasons is not None and _reasons is not None:
+
+                        reader = AmberMRReader(self.__verbose, self.__lfh,
+                                               self.__representative_model_id,
+                                               self.__mr_atom_name_mapping,
+                                               self.__cR, self.__caC,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               amberAtomNumberDict, _amberAtomNumberDict,
+                                               None)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                        if listener is not None:
+                            reasons = reader.getReasons()
+
+                    if reasons is not None:
+
+                        if 'dist_restraint' in content_subtype.keys():
+                            reasons_dict[file_type] = reasons
 
                     if listener.warningMessage is not None:
 

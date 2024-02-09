@@ -807,7 +807,7 @@ class SybylMRParserListener(ParseTreeListener):
         return dstFunc
 
     def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
-        compId = translateToStdResName(compId, self.__ccU)
+        compId = translateToStdResName(compId, ccU=self.__ccU)
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
         if not self.__preferAuthSeq:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
@@ -873,7 +873,7 @@ class SybylMRParserListener(ParseTreeListener):
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
-        compId = translateToStdResName(_compId, self.__ccU)
+        compId = translateToStdResName(_compId, ccU=self.__ccU)
         updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
 
         for ps in self.__polySeq:
@@ -907,7 +907,7 @@ class SybylMRParserListener(ParseTreeListener):
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.add((chainId, seqId, cifCompId, True))
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, self.__ccU):
+                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                     #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                     #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
@@ -1010,7 +1010,7 @@ class SybylMRParserListener(ParseTreeListener):
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                             # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, self.__ccU):
+                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                             #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                             #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
@@ -1053,7 +1053,7 @@ class SybylMRParserListener(ParseTreeListener):
                             cifCompId = compId
                     chainAssign.add((chainId, _seqId, cifCompId, True))
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, self.__ccU):
+                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                     #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                     #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
@@ -1094,7 +1094,7 @@ class SybylMRParserListener(ParseTreeListener):
                             self.__authSeqId = 'label_seq_id'
                             self.__setLocalSeqScheme()
                             # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, self.__ccU):
+                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                             #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                             #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
@@ -1144,7 +1144,7 @@ class SybylMRParserListener(ParseTreeListener):
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
-        compId = translateToStdResName(_compId, self.__ccU)
+        compId = translateToStdResName(_compId, ccU=self.__ccU)
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 

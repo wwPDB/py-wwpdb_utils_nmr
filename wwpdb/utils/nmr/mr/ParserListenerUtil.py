@@ -1795,7 +1795,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
             return atomId
 
     if refCompId is not None and ccU is not None:
-        refCompId = translateToStdResName(refCompId, ccU)
+        refCompId = translateToStdResName(refCompId, ccU=ccU)
         if ccU.updateChemCompDict(refCompId):
             if refAtomIdList is not None:
                 if atomId in refAtomIdList:
@@ -2863,7 +2863,7 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
     return atomId
 
 
-def translateToStdResName(compId, ccU=None):
+def translateToStdResName(compId, refCompId=None, ccU=None):
     """ Translate software specific residue name for standard residues to the CCD one.
     """
 
@@ -2873,7 +2873,7 @@ def translateToStdResName(compId, ccU=None):
         if compId3 in monDict3:
             return compId3
 
-    if compId.endswith('5') or compId.endswith('3'):
+    if compId[-1] in ('5', '3'):
         _compId = compId[:-1]
 
         if _compId in monDict3:
@@ -2884,13 +2884,13 @@ def translateToStdResName(compId, ccU=None):
 
         if _compId in monDict3:
             return _compId
-        # """ do not use
-        # if _compId.endswith('5') or _compId.endswith('3'):
-        #     _compId = _compId[:-1]
-        #
-        #     if _compId in monDict3:
-        #         return _compId
-        # """
+
+        if refCompId is not None and len(refCompId) == 1 and _compId[-1] in ('5', '3'):
+            _compId = _compId[:-1]
+
+            if _compId in monDict3:
+                return _compId
+
     if compId in ('HIE', 'HIP', 'HID', 'HIZ'):
         return 'HIS'
 
@@ -4489,12 +4489,15 @@ def isLongRangeRestraint(atoms, polySeq=None):
     """ Return whether restraint is neither an intra residue nor sequential residue restraint.
     """
 
+    seqIds = [a['seq_id'] for a in atoms]
+
+    if any(seqId is None for seqId in seqIds):
+        return False
+
     chainIds = [a['chain_id'] for a in atoms]
 
     if len(collections.Counter(chainIds).most_common()) > 1:
         return True
-
-    seqIds = [a['seq_id'] for a in atoms]
 
     commonSeqId = collections.Counter(seqIds).most_common()
 
@@ -4602,6 +4605,9 @@ def isAsymmetricRangeRestraint(atoms, chainIdSet, symmetric):
 
     seqIds = [a['seq_id'] for a in atoms]
 
+    if any(seqId is None for seqId in seqIds):
+        return False
+
     commonSeqId = collections.Counter(seqIds).most_common()
 
     if len(commonSeqId) == 1:
@@ -4704,6 +4710,9 @@ def isAmbigAtomSelection(atoms, csStat):
 
     seqIds = [a['seq_id'] for a in atoms]
 
+    if any(seqId is None for seqId in seqIds):
+        return False
+
     commonSeqId = collections.Counter(seqIds).most_common()
 
     if len(commonSeqId) > 1:
@@ -4751,12 +4760,12 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
     """ Return type of dihedral angle restraint.
     """
 
-    chainIds = [a['chain_id'] for a in atoms]
     seqIds = [a['seq_id'] for a in atoms]
 
-    if any('atom_id' not in a for a in atoms):
+    if any(seqId is None for seqId in seqIds) or any('atom_id' not in a for a in atoms):
         return None
 
+    chainIds = [a['chain_id'] for a in atoms]
     atomIds = [a['atom_id'] for a in atoms]
 
     if len(collections.Counter(chainIds).most_common()) > 1:
@@ -7591,7 +7600,7 @@ def getRealChainSeqId(ccU, polySeq, seqId, compId=None, isPolySeq=True):
     """
 
     if compId is not None:
-        compId = translateToStdResName(compId, ccU)
+        compId = translateToStdResName(compId, ccU=ccU)
     if seqId in polySeq['auth_seq_id']:
         if compId is None:
             return polySeq['auth_chain_id'], seqId

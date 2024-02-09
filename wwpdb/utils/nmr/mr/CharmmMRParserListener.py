@@ -2330,13 +2330,13 @@ class CharmmMRParserListener(ParseTreeListener):
                             realCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
                             if (lenCompIds == 1
-                                and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], self.__ccU)), realCompId)
-                                     or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], self.__ccU)), origCompId)))\
+                                and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU)), realCompId)
+                                     or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU)), origCompId)))\
                                or (lenCompIds == 2
-                                   and (translateToStdResName(_factor['comp_ids'][0], self.__ccU) <= realCompId
-                                        <= translateToStdResName(_factor['comp_ids'][1], self.__ccU)
-                                        or translateToStdResName(_factor['comp_ids'][0], self.__ccU) <= origCompId
-                                        <= translateToStdResName(_factor['comp_ids'][1], self.__ccU))):
+                                   and (translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU) <= realCompId
+                                        <= translateToStdResName(_factor['comp_ids'][1], realCompId, self.__ccU)
+                                        or translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU) <= origCompId
+                                        <= translateToStdResName(_factor['comp_ids'][1], realCompId, self.__ccU))):
                                 _compIdSelect.add(realCompId)
                 if self.__hasNonPolySeq:
                     for chainId in _factor['chain_id']:
@@ -2347,13 +2347,13 @@ class CharmmMRParserListener(ParseTreeListener):
                                 realCompId = np['comp_id'][idx]
                                 origCompId = np['auth_comp_id'][idx]
                                 if (lenCompIds == 1
-                                    and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], self.__ccU)), realCompId)
-                                         or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], self.__ccU)), origCompId)))\
+                                    and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU)), realCompId)
+                                         or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU)), origCompId)))\
                                    or (lenCompIds == 2
-                                       and (translateToStdResName(_factor['comp_ids'][0], self.__ccU) <= realCompId
-                                            <= translateToStdResName(_factor['comp_ids'][1], self.__ccU)
-                                            or translateToStdResName(_factor['comp_ids'][0], self.__ccU) <= origCompId
-                                            <= translateToStdResName(_factor['comp_ids'][1], self.__ccU))):
+                                       and (translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU) <= realCompId
+                                            <= translateToStdResName(_factor['comp_ids'][1], realCompId, self.__ccU)
+                                            or translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU) <= origCompId
+                                            <= translateToStdResName(_factor['comp_ids'][1], realCompId, self.__ccU))):
                                     _compIdSelect.add(realCompId)
                 _factor['comp_id'] = list(_compIdSelect)
                 del _factor['comp_ids']
@@ -2372,7 +2372,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
-                            _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                            _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         if re.match(_seqId, str(realSeqId)):
@@ -2384,7 +2384,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                 idx = ps['auth_seq_id'].index(realSeqId)
                                 realCompId = ps['comp_id'][idx]
                                 origCompId = ps['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             seqKey = (chainId, realSeqId)
@@ -2402,7 +2402,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = np['comp_id'][idx]
                                 origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             if re.match(_seqId, str(realSeqId)):
@@ -2414,7 +2414,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                     idx = np['auth_seq_id'].index(realSeqId)
                                     realCompId = np['comp_id'][idx]
                                     origCompId = np['auth_comp_id'][idx]
-                                    _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                    _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                     if realCompId not in _compIdList and origCompId not in _compIdList:
                                         continue
                                 seqKey = (chainId, realSeqId)
@@ -2435,7 +2435,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
-                            _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                            _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         seqIds.append(realSeqId)
@@ -2448,7 +2448,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = np['comp_id'][idx]
                                 origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             seqIds.append(realSeqId)
@@ -2518,7 +2518,7 @@ class CharmmMRParserListener(ParseTreeListener):
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             origCompId = ps['auth_comp_id'][idx]
-                            _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                            _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         _compIdSelect.add(realCompId)
@@ -2534,7 +2534,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             realCompId = np['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _compIdSelect.add(realCompId)
@@ -2593,7 +2593,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             realCompId = ps['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = ps['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _compIdSelect.add(realCompId)
@@ -2609,7 +2609,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                 realCompId = np['comp_id'][idx]
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                     origCompId = np['auth_comp_id'][idx]
-                                    _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                    _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                     if realCompId not in _compIdList and origCompId not in _compIdList:
                                         continue
                                 _compIdSelect.add(realCompId)
@@ -2679,7 +2679,7 @@ class CharmmMRParserListener(ParseTreeListener):
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             origCompId = ps['auth_comp_id'][idx]
-                            _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                            _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         _compIdSelect.add(realCompId)
@@ -2695,7 +2695,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             realCompId = np['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _nonPolyCompIdSelect.append({'chain_id': chainId,
@@ -2734,7 +2734,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             realCompId = ps['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = ps['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _compIdSelect.add(realCompId)
@@ -2750,7 +2750,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                 realCompId = np['comp_id'][idx]
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                     origCompId = np['auth_comp_id'][idx]
-                                    _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                    _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                     if realCompId not in _compIdList and origCompId not in _compIdList:
                                         continue
                                 _nonPolyCompIdSelect.append({'chain_id': chainId,
@@ -3281,7 +3281,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                             self.__preferAuthSeq = False
 
                                 if _atom is not None:
-                                    _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                    _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, ccU=self.__ccU) for _compId in _factor['comp_id']]
                                     if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
                                        and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId}
@@ -3309,7 +3309,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                 continue
 
                             if ccdCheck and compId is not None:
-                                _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, ccU=self.__ccU) for _compId in _factor['comp_id']]
                                 if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
                                     if len(origAtomId) > 1:
                                         typeSymbols = set()

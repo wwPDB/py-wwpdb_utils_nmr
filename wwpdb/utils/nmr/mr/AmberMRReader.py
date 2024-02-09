@@ -48,7 +48,8 @@ class AmberMRReader:
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 atomNumberDict=None, auxAtomNumberDict=None):
+                 atomNumberDict=None, auxAtomNumberDict=None,
+                 reasons=None):
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
@@ -80,6 +81,9 @@ class AmberMRReader:
         self.__atomNumberDict = atomNumberDict
         self.__auxAtomNumberDict = auxAtomNumberDict
 
+        # reasons for re-parsing request from the previous trial
+        self.__reasons = reasons
+
     def setDebugMode(self, debug):
         self.__debug = debug
 
@@ -88,6 +92,9 @@ class AmberMRReader:
 
     def setParserMaxErrorReport(self, maxErrReport):
         self.__maxParserErrorReport = maxErrReport
+
+    def getReasons(self):
+        return self.__reasons
 
     def parse(self, mrFilePath, cifFilePath=None, ptFilePath=None, isFilePath=True,
               createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
@@ -174,7 +181,7 @@ class AmberMRReader:
                                                  self.__mrAtomNameMapping,
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
-                                                 self.__atomNumberDict, None)
+                                                 self.__atomNumberDict, self.__reasons)
                 listener.setDebugMode(self.__debug)
                 listener.createSfDict(createSfDict)
                 if createSfDict:
@@ -205,7 +212,7 @@ class AmberMRReader:
                             print(listener.getContentSubtype())
                     break
 
-                reasons = listener.getReasonsForReparsing()
+                reasons = self.__reasons = listener.getReasonsForReparsing()
 
                 if reasons is not None:
 
@@ -307,6 +314,26 @@ class AmberMRReader:
 
 
 if __name__ == "__main__":
+    _reasons_ = {'auth_seq_scheme': {'B': True, 'A': True},
+                 'global_sequence_offset': {'B': 252}}
+    reader = AmberMRReader(True, reasons=_reasons_)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6gbm/aco.rst',
+                 '../../tests-nmr/mock-data-remediation/6gbm/6gbm.cif',
+                 None)
+
+    reader = AmberMRReader(True, reasons=_reasons_)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6gbm/chir.rst',
+                 '../../tests-nmr/mock-data-remediation/6gbm/6gbm.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6gbm/ac.rst',
+                 '../../tests-nmr/mock-data-remediation/6gbm/6gbm.cif',
+                 None)
+
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mke/2mke-trimmed.mr',

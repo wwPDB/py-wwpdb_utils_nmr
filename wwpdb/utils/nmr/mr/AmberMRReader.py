@@ -82,7 +82,7 @@ class AmberMRReader:
         self.__auxAtomNumberDict = auxAtomNumberDict
 
         # reasons for re-parsing request from the previous trial
-        self.__reasons = reasons
+        self.__reasons = self.__reasons__ = reasons
 
     def setDebugMode(self, debug):
         self.__debug = debug
@@ -248,14 +248,14 @@ class AmberMRReader:
                     parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
                     parser.addErrorListener(parser_error_listener)
                     tree = parser.amber_mr()
-
                     walker = ParseTreeWalker()
                     listener = AmberMRParserListener(self.__verbose, self.__lfh,
                                                      self.__representativeModelId,
                                                      self.__mrAtomNameMapping,
                                                      self.__cR, self.__caC,
                                                      self.__ccU, self.__csStat, self.__nefT,
-                                                     self.__atomNumberDict if 'global_sequence_offset' not in reasons else None, reasons)
+                                                     self.__atomNumberDict if 'global_sequence_offset' not in reasons else None,
+                                                     reasons if self.__reasons__ is None or 'global_sequence_offset' not in self.__reasons__ else self.__reasons__)
                     listener.setDebugMode(self.__debug)
                     listener.createSfDict(createSfDict)
                     if createSfDict:
@@ -322,6 +322,7 @@ if __name__ == "__main__":
 
     _reasons_ = {'auth_seq_scheme': {'B': True, 'A': True},
                  'global_sequence_offset': {'B': 252}}
+
     reader = AmberMRReader(True, reasons=_reasons_)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6gbm/aco.rst',

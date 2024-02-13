@@ -31611,7 +31611,7 @@ class NmrDpUtility:
                 if listener is not None:
                     reasons = reader.getReasons()
 
-                    if reasons is not None and _reasons is not None:
+                    if reasons is not None and _reasons is not None and listener.warningMessage is not None and len(listener.warningMessage) > 0:
 
                         reader = AmberMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,

@@ -681,9 +681,9 @@ class AmberMRParserListener(ParseTreeListener):
                                           r'([-+]?\d*\.?\d+)?.*')
 
         self.dist_sander_pat2 = re.compile(r'(-?\d+) (\S+) (\S+) '
-                                           r'(-?\d+) (\S+) (\S+) ?'
-                                           r'([-+]?\d*\.?\d+)? ?'
-                                           r'([-+]?\d*\.?\d+)?.*')
+                                           r'(-?\d+) (\S+) (\S+) '
+                                           r'([-+]?\d*\.?\d+) '
+                                           r'([-+]?\d*\.?\d+).*')
 
         self.dist_expand_sander_pat = re.compile(r'(-?\d+) (\S+) ([\S ]+ )'
                                                  r'(-?\d+) (\S+) ([\S ]+) ?'
@@ -4974,7 +4974,6 @@ class AmberMRParserListener(ParseTreeListener):
 
         ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == _chainId)
         offset = ps['auth_seq_id'][_idx1] - seqId1
-        print(f'{seqId1=} {compId1=} {seqId2=} {compId2=} {offset=}')
 
         if 'global_sequence_offset' not in self.reasonsForReParsing:
             self.reasonsForReParsing['global_sequence_offset'] = {}

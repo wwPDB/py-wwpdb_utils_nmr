@@ -686,7 +686,7 @@ class AmberMRParserListener(ParseTreeListener):
                                            r'([-+]?\d*\.?\d+).*')
 
         self.dist_expand_sander_pat = re.compile(r'(-?\d+) (\S+) ([\S ]+ )'
-                                                 r'(-?\d+) (\S+) ([\S ]+) ?'
+                                                 r'(-?\d+) (\S+) ([\S ]+ ) ?'
                                                  r'([-+]?\d*\.?\d+)?.*')
 
         self.ang_sander_pat = re.compile(r'(-?\d+) (\S+) (\S+): '

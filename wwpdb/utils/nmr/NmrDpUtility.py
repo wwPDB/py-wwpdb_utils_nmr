@@ -11637,25 +11637,25 @@ class NmrDpUtility:
         """
 
         if file_type == 'nm-res-xpl':
-            reader = XplorMRReader(verbose, self.__lfh, None, None, None, None,
+            reader = XplorMRReader(verbose, self.__lfh, None, None, None, None, None,
                                    self.__ccU, self.__csStat, self.__nefT,
                                    reasons)
             reader.setSllPredMode(sll_pred)
             return reader
         if file_type == 'nm-res-cns':
-            reader = CnsMRReader(verbose, self.__lfh, None, None, None, None,
+            reader = CnsMRReader(verbose, self.__lfh, None, None, None, None, None,
                                  self.__ccU, self.__csStat, self.__nefT,
                                  reasons)
             reader.setSllPredMode(sll_pred)
             return reader
         if file_type == 'nm-res-amb':
-            return AmberMRReader(verbose, self.__lfh, None, None, None, None,
+            return AmberMRReader(verbose, self.__lfh, None, None, None, None, None,
                                  self.__ccU, self.__csStat, self.__nefT)
         if file_type == 'nm-aux-amb':
-            return AmberPTReader(verbose, self.__lfh, None, None, None, None,
+            return AmberPTReader(verbose, self.__lfh, None, None, None, None, None,
                                  self.__ccU, self.__csStat, self.__nefT)
         if file_type == 'nm-res-cya':
-            reader = CyanaMRReader(verbose, self.__lfh, None, None, None, None,
+            reader = CyanaMRReader(verbose, self.__lfh, None, None, None, None, None,
                                    self.__ccU, self.__csStat, self.__nefT,
                                    reasons,
                                    file_ext=self.__retrieveOriginalFileExtensionOfCyanaMrFile())
@@ -11664,41 +11664,41 @@ class NmrDpUtility:
             # reader.setSllPredMode(sll_pred)
             return reader
         if file_type == 'nm-res-ros':
-            reader = RosettaMRReader(verbose, self.__lfh, None, None, None, None,
+            reader = RosettaMRReader(verbose, self.__lfh, None, None, None, None, None,
                                      self.__ccU, self.__csStat, self.__nefT,
                                      reasons)
             reader.setRemediateMode(self.__remediation_mode)
             return reader
         if file_type == 'nm-res-bio':
-            return BiosymMRReader(verbose, self.__lfh, None, None, None, None,
+            return BiosymMRReader(verbose, self.__lfh, None, None, None, None, None,
                                   self.__ccU, self.__csStat, self.__nefT,
                                   reasons)
         if file_type == 'nm-res-gro':
-            return GromacsMRReader(verbose, self.__lfh, None, None, None, None,
+            return GromacsMRReader(verbose, self.__lfh, None, None, None, None, None,
                                    self.__ccU, self.__csStat, self.__nefT)
         if file_type == 'nm-aux-gro':
-            return GromacsPTReader(verbose, self.__lfh, None, None, None, None,
+            return GromacsPTReader(verbose, self.__lfh, None, None, None, None, None,
                                    self.__ccU, self.__csStat, self.__nefT)
         if file_type == 'nm-res-dyn':
-            return DynamoMRReader(verbose, self.__lfh, None, None, None, None,
+            return DynamoMRReader(verbose, self.__lfh, None, None, None, None, None,
                                   self.__ccU, self.__csStat, self.__nefT,
                                   reasons)
         if file_type == 'nm-res-syb':
-            return SybylMRReader(verbose, self.__lfh, None, None, None, None,
+            return SybylMRReader(verbose, self.__lfh, None, None, None, None, None,
                                  self.__ccU, self.__csStat, self.__nefT,
                                  reasons)
         if file_type == 'nm-res-isd':
-            return IsdMRReader(verbose, self.__lfh, None, None, None, None,
+            return IsdMRReader(verbose, self.__lfh, None, None, None, None, None,
                                self.__ccU, self.__csStat, self.__nefT,
                                reasons)
         if file_type == 'nm-res-cha':
-            reader = CharmmMRReader(verbose, self.__lfh, None, None, None, None,
+            reader = CharmmMRReader(verbose, self.__lfh, None, None, None, None, None,
                                     self.__ccU, self.__csStat, self.__nefT,
                                     reasons)
             reader.setSllPredMode(sll_pred)
             return reader
         if file_type == 'nm-res-ari':
-            reader = AriaMRReader(verbose, self.__lfh, None, None, None, None,
+            reader = AriaMRReader(verbose, self.__lfh, None, None, None, None, None,
                                   self.__ccU, self.__csStat, self.__nefT,
                                   reasons)
             return reader

@@ -85,6 +85,9 @@ WELL_KNOWN_ISOTOPE_NUMBERS.extend(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P'])
 REPRESENTATIVE_MODEL_ID = 1
 
 
+REPRESENTATIVE_ALT_ID = 'A'
+
+
 MAX_PREF_LABEL_SCHEME_COUNT = 100
 
 
@@ -2935,6 +2938,7 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
 
 def coordAssemblyChecker(verbose=True, log=sys.stdout,
                          representativeModelId=REPRESENTATIVE_MODEL_ID,
+                         representativeAltId=REPRESENTATIVE_ALT_ID,
                          cR=None, prevResult=None, nmrPolySeq=None,
                          fullCheck=True):
     """ Check assembly of the coordinates for MR/PT parser listener.
@@ -3256,7 +3260,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
             filterItems = [{'name': modelNumName, 'type': 'int',
                             'value': representativeModelId},
-                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')},
+                           {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)},
                            {'name': 'group_PDB', 'type': 'str', 'value': 'HETATM'}
                            ]
 
@@ -3468,7 +3472,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
             filterItems = [{'name': modelNumName, 'type': 'int',
                             'value': representativeModelId},
-                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                           {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                            ]
 
             if len(polySeq) > LEN_LARGE_ASYM_ID:
@@ -3574,7 +3578,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                             'value': representativeModelId},
                                            {'name': authAsymId, 'type': 'str', 'value': chainId},
                                            {'name': authSeqId, 'type': 'int', 'value': seqId},
-                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                            ]
 
                             resCoordDict = {c['atom_id']: to_np_array(c) for c in cR.getDictListWithFilter('atom_site', dataItems, filterItems)}
@@ -5150,7 +5154,7 @@ def startsWithPdbRecord(line):
     return any(line[:-1] == pdb_record[:-1] for pdb_record in LEGACY_PDB_RECORDS if pdb_record.endswith(' '))
 
 
-def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=1, modelNumName='PDB_model_num'):
+def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID, modelNumName='PDB_model_num'):
     """ Return whether a given chain is cyclic polymer based on coordinate annotation.
     """
 
@@ -5209,7 +5213,8 @@ def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=1, modelNumNa
 
         if len(close_contact) == 0:
 
-            bond = getCoordBondLength(cR, labelAsymId, begLabelSeqId, 'N', labelAsymId, endLabelSeqId, 'C', modelNumName)
+            bond = getCoordBondLength(cR, labelAsymId, begLabelSeqId, 'N', labelAsymId, endLabelSeqId, 'C',
+                                      representativeAltId, modelNumName)
 
             if bond is None:
                 return False
@@ -5226,7 +5231,8 @@ def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=1, modelNumNa
     return struct_conn[0]['conn_type_id'] == 'covale'
 
 
-def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2, labelSeqId2, labelAtomId2, modelNumName='PDB_model_num'):
+def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2, labelSeqId2, labelAtomId2,
+                       representativeAltId=REPRESENTATIVE_ALT_ID, modelNumName='PDB_model_num'):
     """ Return the bond length of given two CIF atoms.
         @return: the bond length
     """
@@ -5249,7 +5255,7 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
                                                [{'name': 'label_asym_id', 'type': 'str', 'value': labelAsymId1},
                                                 {'name': 'label_seq_id', 'type': 'int', 'value': labelSeqId1},
                                                 {'name': 'label_atom_id', 'type': 'str', 'value': labelAtomId1},
-                                                {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                 ])
 
         atom_site_2 = cR.getDictListWithFilter('atom_site',
@@ -5257,7 +5263,7 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
                                                [{'name': 'label_asym_id', 'type': 'str', 'value': labelAsymId2},
                                                 {'name': 'label_seq_id', 'type': 'int', 'value': labelSeqId2},
                                                 {'name': 'label_atom_id', 'type': 'str', 'value': labelAtomId2},
-                                                {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                 ])
 
     except Exception:

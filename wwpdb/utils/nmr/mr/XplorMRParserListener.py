@@ -52,6 +52,7 @@ try:
                                                        getDstFuncForHBond,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
+                                                       REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                                        DIST_RESTRAINT_RANGE,
@@ -156,6 +157,7 @@ except ImportError:
                                            getDstFuncForHBond,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
+                                           REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                            DIST_RESTRAINT_RANGE,
@@ -364,6 +366,7 @@ class XplorMRParserListener(ParseTreeListener):
     __offsetHolder = None
 
     __representativeModelId = REPRESENTATIVE_MODEL_ID
+    __representativeAltId = REPRESENTATIVE_ALT_ID
     __hasPolySeq = False
     __hasNonPoly = False
     __hasBranched = False
@@ -560,6 +563,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None):
@@ -567,13 +571,15 @@ class XplorMRParserListener(ParseTreeListener):
         self.__lfh = log
 
         self.__representativeModelId = representativeModelId
+        self.__representativeAltId = representativeAltId
         self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
         self.__cR = cR
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC)
+            ret = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
+                                       cR, caC)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
             self.__authSeqId = ret['auth_seq_id']
@@ -807,7 +813,8 @@ class XplorMRParserListener(ParseTreeListener):
 
                             if ref_chain_id not in cyclicPolymer:
                                 cyclicPolymer[ref_chain_id] =\
-                                    isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName)
+                                    isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id,
+                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                             if cyclicPolymer[ref_chain_id]:
 
@@ -2713,7 +2720,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                  {'name': self.__modelNumName, 'type': 'int',
                                                                   'value': self.__representativeModelId},
                                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                                  'enum': ('A')}
+                                                                  'enum': (self.__representativeAltId,)}
                                                                  ])
 
                             _tail =\
@@ -2725,7 +2732,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                  {'name': self.__modelNumName, 'type': 'int',
                                                                   'value': self.__representativeModelId},
                                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                                  'enum': ('A')}
+                                                                  'enum': (self.__representativeAltId,)}
                                                                  ])
 
                             if len(_head) == 1 and len(_tail) == 1:
@@ -7693,7 +7700,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             _hydrogen =\
@@ -7705,7 +7712,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             _acceptor =\
@@ -7717,7 +7724,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_donor) == 1 and len(_hydrogen) == 1 and len(_acceptor) == 1:
@@ -7855,7 +7862,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             _hydrogen =\
@@ -7867,7 +7874,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_hydrogen) == 1 and len(_acceptor) == 1:
@@ -10046,7 +10053,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                         [{'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     self.intersectionFactor_expressions(atomSelection)
@@ -10112,7 +10119,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                  {'name': self.__modelNumName, 'type': 'int',
                                                                   'value': self.__representativeModelId},
                                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                                  'enum': ('A')}
+                                                                  'enum': (self.__representativeAltId,)}
                                                                  ])
 
                             if len(_origin) != 1:
@@ -10135,7 +10142,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                  {'name': self.__modelNumName, 'type': 'int',
                                                                   'value': self.__representativeModelId},
                                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                                  'enum': ('A')}
+                                                                  'enum': (self.__representativeAltId,)}
                                                                  ])
 
                             if len(_neighbor) == 0:
@@ -10183,7 +10190,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                              {'name': self.__modelNumName, 'type': 'int',
                                                                               'value': self.__representativeModelId},
                                                                              {'name': 'label_alt_id', 'type': 'enum',
-                                                                              'enum': ('A')}
+                                                                              'enum': (self.__representativeAltId,)}
                                                                              ])
 
                                         if len(_origin) != 1:
@@ -10206,7 +10213,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                              {'name': self.__modelNumName, 'type': 'int',
                                                                               'value': self.__representativeModelId},
                                                                              {'name': 'label_alt_id', 'type': 'enum',
-                                                                              'enum': ('A')}
+                                                                              'enum': (self.__representativeAltId,)}
                                                                              ])
 
                                         if len(_neighbor) == 0:
@@ -10435,7 +10442,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                          {'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     self.intersectionFactor_expressions(atomSelection)
@@ -10478,7 +10485,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                          {'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     self.intersectionFactor_expressions(atomSelection)
@@ -10522,7 +10529,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                          {'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     self.intersectionFactor_expressions(atomSelection)
@@ -10554,7 +10561,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                          {'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     self.intersectionFactor_expressions(atomSelection)
@@ -10600,7 +10607,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                          {'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     self.intersectionFactor_expressions(atomSelection)
@@ -10692,7 +10699,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                      {'name': self.__modelNumName, 'type': 'int',
                                                                       'value': self.__representativeModelId},
                                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                                      'enum': ('A')}
+                                                                      'enum': (self.__representativeAltId,)}
                                                                      ])
 
                                 if len(_origin) == 1:
@@ -10728,7 +10735,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                                              {'name': self.__modelNumName, 'type': 'int',
                                                                                               'value': self.__representativeModelId},
                                                                                              {'name': 'label_alt_id', 'type': 'enum',
-                                                                                              'enum': ('A')}
+                                                                                              'enum': (self.__representativeAltId,)}
                                                                                              ])
 
                                                         if len(_neighbor) != 1:
@@ -10768,7 +10775,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                                                  {'name': self.__modelNumName, 'type': 'int',
                                                                                                   'value': self.__representativeModelId},
                                                                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                                                                  'enum': ('A')}
+                                                                                                  'enum': (self.__representativeAltId,)}
                                                                                                  ])
 
                                                             if len(_neighbor) != 1:
@@ -10863,7 +10870,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                      {'name': self.__modelNumName, 'type': 'int',
                                                                       'value': self.__representativeModelId},
                                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                                      'enum': ('A')}
+                                                                      'enum': (self.__representativeAltId,)}
                                                                      ])
 
                                 if len(_origin) == 1:
@@ -10879,7 +10886,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                              {'name': self.__modelNumName, 'type': 'int',
                                                                               'value': self.__representativeModelId},
                                                                              {'name': 'label_alt_id', 'type': 'enum',
-                                                                              'enum': ('A')}
+                                                                              'enum': (self.__representativeAltId,)}
                                                                              ])
 
                                         if len(_neighbor) != 1:
@@ -10944,7 +10951,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                              {'name': self.__modelNumName, 'type': 'int',
                                                               'value': self.__representativeModelId},
                                                              {'name': 'label_alt_id', 'type': 'enum',
-                                                              'enum': ('A')}
+                                                              'enum': (self.__representativeAltId,)}
                                                              ])
 
                         if len(_atomByRes) > 0 and _atomByRes[0]['comp_id'] == compId:
@@ -11152,7 +11159,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                             [{'name': self.__modelNumName, 'type': 'int',
                                                               'value': self.__representativeModelId},
                                                              {'name': 'label_alt_id', 'type': 'enum',
-                                                              'enum': ('A')}
+                                                              'enum': (self.__representativeAltId,)}
                                                              ])
 
                     except Exception as e:
@@ -11187,7 +11194,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                  {'name': self.__modelNumName, 'type': 'int',
                                                                   'value': self.__representativeModelId},
                                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                                  'enum': ('A')}
+                                                                  'enum': (self.__representativeAltId,)}
                                                                  ])
 
                             if len(_tail) == 1:
@@ -11207,7 +11214,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                                          {'name': self.__modelNumName, 'type': 'int',
                                                                           'value': self.__representativeModelId},
                                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                                          'enum': ('A')}
+                                                                          'enum': (self.__representativeAltId,)}
                                                                          ])
 
                                     if len(_head) == 1:
@@ -11254,7 +11261,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                              {'name': self.__modelNumName, 'type': 'int',
                                                               'value': self.__representativeModelId},
                                                              {'name': 'label_alt_id', 'type': 'enum',
-                                                              'enum': ('A')}
+                                                              'enum': (self.__representativeAltId,)}
                                                              ])
 
                         if len(_neighbor) > 0:
@@ -11303,7 +11310,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                         [{'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     lastCompId = None
@@ -11615,7 +11622,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                         [{'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     for _atom in _atomSelection:
@@ -11669,7 +11676,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p1) != 1:
@@ -11686,7 +11693,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p2) != 1:
@@ -11714,7 +11721,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_p1) != 1:
@@ -11740,7 +11747,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_p2) != 1:
@@ -11778,7 +11785,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p1) != 1:
@@ -11795,7 +11802,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p2) != 1:
@@ -11812,7 +11819,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p3) != 1:
@@ -11829,7 +11836,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p4) != 1:
@@ -11848,7 +11855,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p4) != 1:
@@ -11946,7 +11953,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p1) != 1:
@@ -11963,7 +11970,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p2) != 1:

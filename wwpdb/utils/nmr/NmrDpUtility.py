@@ -293,6 +293,7 @@ try:
                                                        WEIGHT_RANGE,
                                                        SCALE_RANGE,
                                                        REPRESENTATIVE_MODEL_ID,
+                                                       REPRESENTATIVE_ALT_ID,
                                                        CYANA_MR_FILE_EXTS,
                                                        NMR_STAR_LP_KEY_ITEMS,
                                                        NMR_STAR_LP_DATA_ITEMS)
@@ -394,6 +395,7 @@ except ImportError:
                                            WEIGHT_RANGE,
                                            SCALE_RANGE,
                                            REPRESENTATIVE_MODEL_ID,
+                                           REPRESENTATIVE_ALT_ID,
                                            CYANA_MR_FILE_EXTS,
                                            NMR_STAR_LP_KEY_ITEMS,
                                            NMR_STAR_LP_DATA_ITEMS)
@@ -6134,6 +6136,8 @@ class NmrDpUtility:
         self.__symmetric = None
         # representative model id
         self.__representative_model_id = REPRESENTATIVE_MODEL_ID
+        # representative_alt_id
+        self.__representative_alt_id = REPRESENTATIVE_ALT_ID
         # total number of models
         self.__total_models = 0
         # item tag names of 'atom_site' category of the coordinates
@@ -28011,7 +28015,7 @@ class NmrDpUtility:
                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_1},
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_1},
                                                            {'name': 'label_atom_id', 'type': 'str', 'value': cif_atom_id_1},
-                                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                            ])
 
             atom_site_2 = self.__cR.getDictListWithFilter('atom_site',
@@ -28019,7 +28023,7 @@ class NmrDpUtility:
                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_2},
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_2},
                                                            {'name': 'label_atom_id', 'type': 'str', 'value': cif_atom_id_2},
-                                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                            ])
 
         except Exception as e:
@@ -28501,6 +28505,7 @@ class NmrDpUtility:
 
         self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
                                           self.__representative_model_id,
+                                          self.__representative_alt_id,
                                           self.__cR, None, nmrPolySeq)
 
         if self.__caC is not None and asm_chk_cache_path:
@@ -30915,6 +30920,7 @@ class NmrDpUtility:
 
                     reader = AmberPTReader(self.__verbose, self.__lfh,
                                            self.__representative_model_id,
+                                           self.__representative_alt_id,
                                            self.__mr_atom_name_mapping,
                                            self.__cR, self.__caC,
                                            self.__ccU, self.__csStat, self.__nefT)
@@ -30993,6 +30999,7 @@ class NmrDpUtility:
 
                     reader = GromacsPTReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
+                                             self.__representative_alt_id,
                                              self.__mr_atom_name_mapping,
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT)
@@ -31178,6 +31185,7 @@ class NmrDpUtility:
             if file_type == 'nm-res-xpl':
                 reader = XplorMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
+                                       self.__representative_alt_id,
                                        self.__mr_atom_name_mapping,
                                        self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT,
@@ -31197,6 +31205,7 @@ class NmrDpUtility:
 
                         reader = XplorMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
+                                               self.__representative_alt_id,
                                                self.__mr_atom_name_mapping,
                                                self.__cR, self.__caC,
                                                self.__ccU, self.__csStat, self.__nefT,
@@ -31222,6 +31231,7 @@ class NmrDpUtility:
 
                         reader = XplorMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
+                                               self.__representative_alt_id,
                                                self.__mr_atom_name_mapping,
                                                self.__cR, self.__caC,
                                                self.__ccU, self.__csStat, self.__nefT,
@@ -31390,6 +31400,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-cns':
                 reader = CnsMRReader(self.__verbose, self.__lfh,
                                      self.__representative_model_id,
+                                     self.__representative_alt_id,
                                      self.__mr_atom_name_mapping,
                                      self.__cR, self.__caC,
                                      self.__ccU, self.__csStat, self.__nefT,
@@ -31408,6 +31419,7 @@ class NmrDpUtility:
 
                         reader = CnsMRReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
+                                             self.__representative_alt_id,
                                              self.__mr_atom_name_mapping,
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
@@ -31432,6 +31444,7 @@ class NmrDpUtility:
 
                         reader = CnsMRReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
+                                             self.__representative_alt_id,
                                              self.__mr_atom_name_mapping,
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
@@ -31596,6 +31609,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-amb':
                 reader = AmberMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
+                                       self.__representative_alt_id,
                                        self.__mr_atom_name_mapping,
                                        self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT,
@@ -31615,6 +31629,7 @@ class NmrDpUtility:
 
                         reader = AmberMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
+                                               self.__representative_alt_id,
                                                self.__mr_atom_name_mapping,
                                                self.__cR, self.__caC,
                                                self.__ccU, self.__csStat, self.__nefT,
@@ -31791,6 +31806,7 @@ class NmrDpUtility:
 
                 reader = CyanaMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
+                                       self.__representative_alt_id,
                                        self.__mr_atom_name_mapping,
                                        self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT,
@@ -31810,6 +31826,7 @@ class NmrDpUtility:
 
                         reader = CyanaMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
+                                               self.__representative_alt_id,
                                                self.__mr_atom_name_mapping,
                                                self.__cR, self.__caC,
                                                self.__ccU, self.__csStat, self.__nefT,
@@ -31835,6 +31852,7 @@ class NmrDpUtility:
 
                         reader = CyanaMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
+                                               self.__representative_alt_id,
                                                self.__mr_atom_name_mapping,
                                                self.__cR, self.__caC,
                                                self.__ccU, self.__csStat, self.__nefT,
@@ -32002,6 +32020,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-ros':
                 reader = RosettaMRReader(self.__verbose, self.__lfh,
                                          self.__representative_model_id,
+                                         self.__representative_alt_id,
                                          self.__mr_atom_name_mapping,
                                          self.__cR, self.__caC,
                                          self.__ccU, self.__csStat, self.__nefT,
@@ -32021,6 +32040,7 @@ class NmrDpUtility:
 
                         reader = RosettaMRReader(self.__verbose, self.__lfh,
                                                  self.__representative_model_id,
+                                                 self.__representative_alt_id,
                                                  self.__mr_atom_name_mapping,
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
@@ -32046,6 +32066,7 @@ class NmrDpUtility:
 
                         reader = RosettaMRReader(self.__verbose, self.__lfh,
                                                  self.__representative_model_id,
+                                                 self.__representative_alt_id,
                                                  self.__mr_atom_name_mapping,
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
@@ -32203,6 +32224,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-bio':
                 reader = BiosymMRReader(self.__verbose, self.__lfh,
                                         self.__representative_model_id,
+                                        self.__representative_alt_id,
                                         self.__mr_atom_name_mapping,
                                         self.__cR, self.__caC,
                                         self.__ccU, self.__csStat, self.__nefT)
@@ -32225,6 +32247,7 @@ class NmrDpUtility:
 
                         reader = BiosymMRReader(self.__verbose, self.__lfh,
                                                 self.__representative_model_id,
+                                                self.__representative_alt_id,
                                                 self.__mr_atom_name_mapping,
                                                 self.__cR, self.__caC,
                                                 self.__ccU, self.__csStat, self.__nefT,
@@ -32380,6 +32403,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-gro':
                 reader = GromacsMRReader(self.__verbose, self.__lfh,
                                          self.__representative_model_id,
+                                         self.__representative_alt_id,
                                          self.__mr_atom_name_mapping,
                                          self.__cR, self.__caC,
                                          self.__ccU, self.__csStat, self.__nefT,
@@ -32514,6 +32538,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-dyn':
                 reader = DynamoMRReader(self.__verbose, self.__lfh,
                                         self.__representative_model_id,
+                                        self.__representative_alt_id,
                                         self.__mr_atom_name_mapping,
                                         self.__cR, self.__caC,
                                         self.__ccU, self.__csStat, self.__nefT)
@@ -32536,6 +32561,7 @@ class NmrDpUtility:
 
                         reader = DynamoMRReader(self.__verbose, self.__lfh,
                                                 self.__representative_model_id,
+                                                self.__representative_alt_id,
                                                 self.__mr_atom_name_mapping,
                                                 self.__cR, self.__caC,
                                                 self.__ccU, self.__csStat, self.__nefT,
@@ -32699,6 +32725,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-syb':
                 reader = SybylMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
+                                       self.__representative_alt_id,
                                        self.__mr_atom_name_mapping,
                                        self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT)
@@ -32721,6 +32748,7 @@ class NmrDpUtility:
 
                         reader = SybylMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
+                                               self.__representative_alt_id,
                                                self.__mr_atom_name_mapping,
                                                self.__cR, self.__caC,
                                                self.__ccU, self.__csStat, self.__nefT,
@@ -32869,6 +32897,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-isd':
                 reader = IsdMRReader(self.__verbose, self.__lfh,
                                      self.__representative_model_id,
+                                     self.__representative_alt_id,
                                      self.__mr_atom_name_mapping,
                                      self.__cR, self.__caC,
                                      self.__ccU, self.__csStat, self.__nefT)
@@ -32891,6 +32920,7 @@ class NmrDpUtility:
 
                         reader = IsdMRReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
+                                             self.__representative_alt_id,
                                              self.__mr_atom_name_mapping,
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
@@ -33039,6 +33069,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-cha':
                 reader = CharmmMRReader(self.__verbose, self.__lfh,
                                         self.__representative_model_id,
+                                        self.__representative_alt_id,
                                         self.__mr_atom_name_mapping,
                                         self.__cR, self.__caC,
                                         self.__ccU, self.__csStat, self.__nefT,
@@ -33057,6 +33088,7 @@ class NmrDpUtility:
 
                         reader = CharmmMRReader(self.__verbose, self.__lfh,
                                                 self.__representative_model_id,
+                                                self.__representative_alt_id,
                                                 self.__mr_atom_name_mapping,
                                                 self.__cR, self.__caC,
                                                 self.__ccU, self.__csStat, self.__nefT,
@@ -33081,6 +33113,7 @@ class NmrDpUtility:
 
                         reader = CharmmMRReader(self.__verbose, self.__lfh,
                                                 self.__representative_model_id,
+                                                self.__representative_alt_id,
                                                 self.__mr_atom_name_mapping,
                                                 self.__cR, self.__caC,
                                                 self.__ccU, self.__csStat, self.__nefT,
@@ -33245,6 +33278,7 @@ class NmrDpUtility:
             elif file_type == 'nm-res-ari':
                 reader = AriaMRReader(self.__verbose, self.__lfh,
                                       self.__representative_model_id,
+                                      self.__representative_alt_id,
                                       self.__mr_atom_name_mapping,
                                       self.__cR, self.__caC,
                                       self.__ccU, self.__csStat, self.__nefT)
@@ -33267,6 +33301,7 @@ class NmrDpUtility:
 
                         reader = AriaMRReader(self.__verbose, self.__lfh,
                                               self.__representative_model_id,
+                                              self.__representative_alt_id,
                                               self.__mr_atom_name_mapping,
                                               self.__cR, self.__caC,
                                               self.__ccU, self.__csStat, self.__nefT,
@@ -40342,6 +40377,17 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"+NmrDpUtility.__parseCoordinate() ++ Warning  - {warn}\n")
 
+            if self.__cR.hasItem('atom_site', 'label_alt_id'):
+                alt_ids = self.__cR.getDictListWithFilter('atom_site',
+                                                          [{'name': 'label_alt_id', 'type': 'str'}
+                                                           ])
+
+                if len(alt_ids) > 0:
+                    for a in alt_ids:
+                        if a['label_alt_id'] not in emptyValue:
+                            self.__representative_alt_id = a['label_alt_id']
+                            break
+
             self.__recvd_nmr_constraints = False
             if self.__cR.hasItem('pdbx_database_status', 'recvd_nmr_constraints'):
                 pdbx_database_status = self.__cR.getDictList('pdbx_database_status')
@@ -40931,7 +40977,7 @@ class NmrDpUtility:
                 data_items.append({'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'})
 
             filter_items = [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                            {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                            {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                             ]
 
             if len(polymer_sequence) >= LEN_MAJOR_ASYM_ID:
@@ -46407,7 +46453,7 @@ class NmrDpUtility:
                                                            {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
                                                            {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
                                                            {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                            ])
 
             except Exception as e:
@@ -46497,7 +46543,7 @@ class NmrDpUtility:
                                                         [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                          {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                          {'name': 'label_comp_id', 'type': 'str', 'value': 'VAL'},
-                                                         {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                         {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                          ])
 
             except Exception as e:
@@ -46606,7 +46652,7 @@ class NmrDpUtility:
                                                         [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                          {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                          {'name': 'label_comp_id', 'type': 'str', 'value': 'LEU'},
-                                                         {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                         {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                          ])
 
             except Exception as e:
@@ -46736,7 +46782,7 @@ class NmrDpUtility:
                                                         [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                          {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                          {'name': 'label_comp_id', 'type': 'str', 'value': 'ILE'},
-                                                         {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                         {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                          ])
 
             except Exception as e:
@@ -47644,7 +47690,7 @@ class NmrDpUtility:
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                            {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
                                                            {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                            ])
 
             except Exception as e:
@@ -47682,7 +47728,7 @@ class NmrDpUtility:
                                                              {'name': 'Cartn_z', 'type': 'range-float',
                                                               'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
                                                              {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                              ])
 
             except Exception as e:
@@ -47864,7 +47910,7 @@ class NmrDpUtility:
                                                        {'name': 'label_seq_id', 'type': 'int', 'value': na['cif_seq_id']},
                                                        {'name': 'label_comp_id', 'type': 'str', 'value': na['comp_id']},
                                                        {'name': 'label_atom_id', 'type': 'enum', 'enum': ring_atoms},
-                                                       {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                       {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                        ])
 
             except Exception as e:
@@ -47989,7 +48035,7 @@ class NmrDpUtility:
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                            {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
                                                            {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                            ])
 
             except Exception as e:
@@ -48027,7 +48073,7 @@ class NmrDpUtility:
                                                              {'name': 'Cartn_z', 'type': 'range-float',
                                                               'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
                                                              {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                              ])
 
             except Exception as e:
@@ -48076,7 +48122,7 @@ class NmrDpUtility:
                                                       {'name': 'auth_seq_id', 'type': 'int', 'value': p['seq_id']},  # non-polymer
                                                       {'name': 'label_comp_id', 'type': 'str', 'value': p['comp_id']},
                                                       {'name': 'label_atom_id', 'type': 'str', 'value': p['atom_id']},
-                                                      {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                      {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                       ])
 
             except Exception as e:

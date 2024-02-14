@@ -21,7 +21,8 @@ try:
                                                        translateToStdAtomName,
                                                        translateToStdAtomNameOfDmpc,
                                                        translateToStdResName,
-                                                       REPRESENTATIVE_MODEL_ID)
+                                                       REPRESENTATIVE_MODEL_ID,
+                                                       REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -43,7 +44,8 @@ except ImportError:
                                            translateToStdAtomName,
                                            translateToStdAtomNameOfDmpc,
                                            translateToStdResName,
-                                           REPRESENTATIVE_MODEL_ID)
+                                           REPRESENTATIVE_MODEL_ID,
+                                           REPRESENTATIVE_ALT_ID)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -143,13 +145,15 @@ class AmberPTParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None):
 
         self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
         if cR is not None:
-            ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC, None, fullCheck=True)
+            ret = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
+                                       cR, caC, None, fullCheck=True)
             self.__polySeqModel = ret['polymer_sequence']
             self.__nonPolyModel = ret['non_polymer']
             self.__branchedModel = ret['branched']

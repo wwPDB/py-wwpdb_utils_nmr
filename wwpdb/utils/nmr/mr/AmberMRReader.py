@@ -19,7 +19,8 @@ try:
     from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        MAX_ERROR_REPORT,
-                                                       REPRESENTATIVE_MODEL_ID)
+                                                       REPRESENTATIVE_MODEL_ID,
+                                                       REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -33,7 +34,8 @@ except ImportError:
     from nmr.mr.AmberPTReader import AmberPTReader
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            MAX_ERROR_REPORT,
-                                           REPRESENTATIVE_MODEL_ID)
+                                           REPRESENTATIVE_MODEL_ID,
+                                           REPRESENTATIVE_ALT_ID)
     from nmr.io.CifReader import CifReader
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -46,6 +48,7 @@ class AmberMRReader:
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  atomNumberDict=None, auxAtomNumberDict=None,
@@ -58,10 +61,12 @@ class AmberMRReader:
         self.__maxParserErrorReport = MAX_ERROR_REPORT
 
         self.__representativeModelId = representativeModelId
+        self.__representativeAltId = representativeAltId
         self.__mrAtomNameMapping = mrAtomNameMapping
 
         if cR is not None and caC is None:
-            caC = coordAssemblyChecker(verbose, log, representativeModelId, cR, None, None, fullCheck=False)
+            caC = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
+                                       cR, None, None, fullCheck=False)
 
         self.__cR = cR
         self.__caC = caC
@@ -136,6 +141,7 @@ class AmberMRReader:
             if ptFilePath is not None and self.__atomNumberDict is None:
                 ptR = AmberPTReader(self.__verbose, self.__lfh,
                                     self.__representativeModelId,
+                                    self.__representativeAltId,
                                     self.__mrAtomNameMapping,
                                     self.__cR, self.__caC,
                                     self.__ccU, self.__csStat, self.__nefT)
@@ -178,6 +184,7 @@ class AmberMRReader:
                 walker = ParseTreeWalker()
                 listener = AmberMRParserListener(self.__verbose, self.__lfh,
                                                  self.__representativeModelId,
+                                                 self.__representativeAltId,
                                                  self.__mrAtomNameMapping,
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
@@ -251,6 +258,7 @@ class AmberMRReader:
                     walker = ParseTreeWalker()
                     listener = AmberMRParserListener(self.__verbose, self.__lfh,
                                                      self.__representativeModelId,
+                                                     self.__representativeAltId,
                                                      self.__mrAtomNameMapping,
                                                      self.__cR, self.__caC,
                                                      self.__ccU, self.__csStat, self.__nefT,

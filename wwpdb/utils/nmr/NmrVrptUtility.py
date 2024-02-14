@@ -30,12 +30,14 @@ try:
                                               LEN_MAJOR_ASYM_ID,
                                               calculate_uninstanced_coord)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
+                                                       REPRESENTATIVE_ALT_ID,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_ERROR,
                                                        RDC_RESTRAINT_ERROR,
                                                        coordAssemblyChecker,
                                                        getDistConstraintType)
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
+                                           emptyValue,
                                            monDict3,
                                            protonBeginCode)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -45,12 +47,14 @@ except ImportError:
                                   LEN_MAJOR_ASYM_ID,
                                   calculate_uninstanced_coord)
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
+                                           REPRESENTATIVE_ALT_ID,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_ERROR,
                                            RDC_RESTRAINT_ERROR,
                                            coordAssemblyChecker,
                                            getDistConstraintType)
     from nmr.AlignUtil import (LARGE_ASYM_ID,
+                               emptyValue,
                                monDict3,
                                protonBeginCode)
     from nmr.ChemCompUtil import ChemCompUtil
@@ -531,6 +535,8 @@ class NmrVrptUtility:
 
         # representative model id
         self.__representative_model_id = REPRESENTATIVE_MODEL_ID
+        # representative_alt_id
+        self.__representative_alt_id = REPRESENTATIVE_ALT_ID
         # total number of models
         self.__total_models = 0
 
@@ -809,6 +815,17 @@ class NmrVrptUtility:
 
                 except ValueError:
                     pass
+
+            if self.__cR.hasItem('atom_site', 'label_alt_id'):
+                alt_ids = self.__cR.getDictListWithFilter('atom_site',
+                                                          [{'name': 'label_alt_id', 'type': 'str'}
+                                                           ])
+
+                if len(alt_ids) > 0:
+                    for a in alt_ids:
+                        if a['label_alt_id'] not in emptyValue:
+                            self.__representative_alt_id = a['label_alt_id']
+                            break
 
             return True
 
@@ -1094,6 +1111,7 @@ class NmrVrptUtility:
 
             self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
                                               self.__representative_model_id,
+                                              self.__representative_alt_id,
                                               self.__cR, None, None)
 
             if self.__caC is not None and cache_path:
@@ -1102,6 +1120,7 @@ class NmrVrptUtility:
         else:
             self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
                                               self.__representative_model_id,
+                                              self.__representative_alt_id,
                                               self.__cR, None, None, False)
 
         return True
@@ -1157,7 +1176,7 @@ class NmrVrptUtility:
             data_items.append({'name': 'auth_atom_id', 'type': 'str', 'alt_name': 'alt_auth_atom_id'})
             data_items.append({'name': 'pdbx_auth_comp_id', 'type': 'str', 'alt_name': 'alt_auth_comp_id'})
 
-        _filter_items = []  # {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}]
+        _filter_items = []  # {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representativeAltId,)}]
 
         if len(self.__caC['polymer_sequence']) >= LEN_MAJOR_ASYM_ID:
             _filter_items.append({'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID,

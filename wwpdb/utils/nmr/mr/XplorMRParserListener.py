@@ -9175,7 +9175,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 if self.__reasons is not None and 'branched_remap' in self.__reasons:
                                     _seqId_ = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, seqId)
                                     if _seqId_ != seqId:
-                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId_, authCompId, atomId, coordAtomSite)
+                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId_, authCompId, atomId, compId, coordAtomSite)
                                 elif seqId != _seqId:
                                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, atomId, coordAtomSite)
 

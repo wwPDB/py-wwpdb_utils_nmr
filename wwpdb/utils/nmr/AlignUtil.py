@@ -1898,7 +1898,8 @@ def trimSequenceAlignment(seqAlign, chainAssign):
             del seqAlign[idx]
 
 
-def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAtomSite=None, ignoreSeqId=False):
+def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId,
+                               cifCompId=None, coordAtomSite=None, ignoreSeqId=False):
     """ Retrieve atom identifiers from atom name mapping of public MR file.
     """
 
@@ -1906,7 +1907,8 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId, coordAt
 
     mapping = [item for item in mrAtomNameMapping
                if (item['original_seq_id'] == seqId or ignoreSeqId)
-               and compId in (item['original_comp_id'], item['auth_comp_id'])]
+               and (compId in (item['original_comp_id'], item['auth_comp_id'])
+                    or cifCompId is not None and cifCompId == item['auth_comp_id'])]
 
     if len(mapping) == 0:
         return seqId, compId, atomId

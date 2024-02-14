@@ -3599,10 +3599,9 @@ class AmberMRParserListener(ParseTreeListener):
                     origCompId = ps['auth_comp_id'][idx]
                     _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
 
-                if compId in monDict3 or coordAtomSite is None:
-                    atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
-                else:
-                    atomId = translateToStdAtomName(atomId, compId, coordAtomSite['atom_id'], ccU=self.__ccU)
+                atomId = translateToStdAtomName(atomId, compId,
+                                                None if coordAtomSite is None else coordAtomSite['atom_id'],
+                                                ccU=self.__ccU)
 
                 atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)[0]
 
@@ -3755,10 +3754,9 @@ class AmberMRParserListener(ParseTreeListener):
                             origCompId = ps['auth_comp_id'][idx]
                             _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
 
-                        if compId in monDict3 or coordAtomSite is None:
-                            atomId = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
-                        else:
-                            atomId = translateToStdAtomName(atomId, compId, coordAtomSite['atom_id'], ccU=self.__ccU)
+                        atomId = translateToStdAtomName(atomId, compId,
+                                                        None if coordAtomSite is None else coordAtomSite['atom_id'],
+                                                        ccU=self.__ccU)
 
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)[0]
 
@@ -4004,7 +4002,9 @@ class AmberMRParserListener(ParseTreeListener):
                             atomIds = self.unambigAtomNameMapping[authCompId][authAtomId]
                             fixed = True
                     if not fixed:
-                        authAtomId = translateToStdAtomName(authAtomId, compId, ccU=self.__ccU, unambig='iat' in factor)
+                        authAtomId = translateToStdAtomName(authAtomId, compId,
+                                                            None if coordAtomSite is None else coordAtomSite['atom_id'],
+                                                            ccU=self.__ccU, unambig='iat' in factor)
 
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
 

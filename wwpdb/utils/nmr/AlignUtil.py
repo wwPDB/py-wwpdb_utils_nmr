@@ -2006,6 +2006,12 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId,
                 return mapping[0]['auth_seq_id'], mapping[0]['auth_comp_id'], \
                     next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(atomId))
 
+        item = next((item for item in mapping
+                     if item['original_atom_id'] == atomId + '2'), None)
+
+        if item is not None and item['auth_atom_id'][-1] == '2':
+            return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id'][:-1]
+
         return seqId, compId, atomId
 
     _atomId = 'H' + atomId[1:]
@@ -2206,6 +2212,12 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
 
             if total == 1:
                 return next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(atomId))
+
+        item = next((item for item in mapping
+                     if item['original_atom_id'] == atomId + '2'), None)
+
+        if item is not None and item['auth_atom_id'][-1] == '2':
+            return item['auth_seq_id'][:-1]
 
         return atomId
 

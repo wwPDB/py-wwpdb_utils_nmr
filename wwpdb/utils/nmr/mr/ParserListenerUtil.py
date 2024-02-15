@@ -1931,6 +1931,14 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return atomId[:-1] if atomId.endswith('1') else atomId
             elif refCompId in ('DT', 'T') and atomId.startswith('Q5'):
                 return 'H7'
+            elif refCompId in ('DA', 'A') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
+                return 'H6' + atomId[-1]
+            elif refCompId in ('DG', 'G') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):  # 6g99
+                return 'H2' + atomId[-1]
+            elif refCompId in ('DC', 'C') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
+                return 'H4' + atomId[-1]
+            elif refCompId == 'U' and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] == '1':  # 6g99
+                return 'H3'
             elif refAtomIdList is not None and ((atomId[0] + 'N' + atomId[1:] in refAtomIdList) or (atomId[0] + 'N' + atomId[1:] + '1' in refAtomIdList)):  # 5CM
                 return atomId[0] + 'N' + atomId[1:]
             elif (atomId[0] + 'N' + atomId[1:] in _refAtomIdList) or (atomId[0] + 'N' + atomId[1:] + '1' in _refAtomIdList):  # 5CM
@@ -2897,8 +2905,10 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
     if compId in ('HIE', 'HIP', 'HID', 'HIZ'):
         return 'HIS'
 
-    if compId.startswith('CY') and ccU is not None:
-        if ccU.updateChemCompDict(compId):
+    if compId.startswith('CY'):
+        if refCompId == 'CYS':  # 6xyv
+            return 'CYS'
+        if ccU is not None and ccU.updateChemCompDict(compId):
             if ccU.lastChemCompDict['_chem_comp.type'] == 'L-PEPTIDE LINKING'\
                and 'CYSTEINE' in ccU.lastChemCompDict['_chem_comp.name']:
                 return 'CYS'

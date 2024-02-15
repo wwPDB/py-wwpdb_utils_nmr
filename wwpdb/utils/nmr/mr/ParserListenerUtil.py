@@ -2046,6 +2046,8 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'OXT'
             if atomId.startswith('HT') and len(atomId) > 2:
                 return 'H' + atomId[2:]
+            if atomId == 'NH':  # 2jwu
+                return 'N'
 
         # BIOSYM atom nomenclature
         if (atomId[-1] in ('R', 'S', 'Z', 'E') or (len(atomId) > 2 and atomId[-1] in ('*', '%') and atomId[-2] in ('R', 'S'))):

@@ -4645,6 +4645,10 @@ def guessCompIdFromAtomId(atoms, polySeq, nefT):
     for ps in polySeq:
         compIds = ps['comp_id']
 
+        if 'PRO' in compIds and atoms[0].upper() in ('H', 'HN'):
+            condidates.add('PRO')
+            break
+
         for _compId in set(compIds):
             if _compId in monDict3:
                 _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, atoms[0])

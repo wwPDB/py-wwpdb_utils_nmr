@@ -4150,7 +4150,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                        'label_asym_id': ','.join(labelAsymIds)})
                                 entityAssemblyId += 1
 
-                elif entityType == 'non-polymer':
+                elif entityType in ('non-polymer', 'water'):
                     if cR.hasCategory('pdbx_nonpoly_scheme'):
                         has_ins_code = cR.hasItem('pdbx_nonpoly_scheme', 'pdb_ins_code')
 
@@ -4178,7 +4178,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
                             if has_ins_code and item['ins_code'] not in emptyValue:
                                 authToInsCode[seqKey] = item['ins_code']
-                            authToEntityType[seqKey] = 'non-polymer'
+                            authToEntityType[seqKey] = entityType
                             if item['auth_asym_id'] not in authAsymIds:
                                 authAsymIds.append(item['auth_asym_id'])
                             if compId is None:
@@ -4190,7 +4190,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 authToStarSeq[altKey] = (entityAssemblyId, idx + 1, entityId, False)
                                 if has_ins_code and item['ins_code'] not in emptyValue:
                                     authToInsCode[altKey] = item['ins_code']
-                                authToEntityType[altKey] = 'non-polymer'
+                                authToEntityType[altKey] = entityType
 
                         labelAsymIds = []
                         for item in mappings:
@@ -4225,7 +4225,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         for entity in entities:
                             entityId = int(entity['id'])
                             entityType = entity.get('type', 'polymer')
-                            if entityType != 'non-polymer':
+                            if entityType not in ('non-polymer', 'water'):
                                 continue
                             entitySrcMethod = entity.get('src_method', '.')
                             entityDesc = entity.get('pdbx_description', '.')
@@ -4263,7 +4263,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             authToOrigSeq[seqKey] = (item['seq_id'][idx], compId)
                             if 'ins_code' in item and item['ins_code'][idx] not in emptyValue:
                                 authToInsCode[seqKey] = item['ins_code'][idx]
-                            authToEntityType[seqKey] = 'non-polymer'
+                            authToEntityType[seqKey] = entityType
 
                             authAsymIds = labelAsymIds = []
                             for _item in nonPoly:

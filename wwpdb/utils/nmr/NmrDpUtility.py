@@ -24533,7 +24533,7 @@ class NmrDpUtility:
                         if _seq_key_1 not in auth_to_entity_type or _seq_key_2 not in auth_to_entity_type:
                             continue
 
-                        if auth_to_entity_type[_seq_key_1] != auth_to_entity_type[_seq_key_2] or auth_to_entity_type[_seq_key_1] == 'non-polymer':
+                        if auth_to_entity_type[_seq_key_1] != auth_to_entity_type[_seq_key_2] or auth_to_entity_type[_seq_key_1] in ('non-polymer', 'water'):
                             continue
 
                         _auth_cs_1 = [row[1:] for row in get_lp_tag(loop, auth_cs_tags) if row[0] == _auth_chain_id_1]
@@ -25647,7 +25647,7 @@ class NmrDpUtility:
 
                         elif ambig_id == 6:
                             if len([item for item in entity_assembly
-                                    if item['entity_type'] != 'non-polymer']) == 1\
+                                    if item['entity_type'] not in ('non-polymer', 'water')]) == 1\
                                and len(entity_assembly[0]['label_asym_id'].split(',')) == 1:
                                 _row[12] = ambig_id = 5
 
@@ -44611,10 +44611,10 @@ class NmrDpUtility:
 
                 row[0] = item['entity_assembly_id']
                 row[1] = (f'entity_{entity_id}' + ('' if entity_total[entity_id] == 1 else f'_{entity_count[entity_id]}'))\
-                    if entity_type != 'non-polymer' else f"entity_{item['comp_id']}"
+                    if entity_type not in ('non-polymer', 'water') else f"entity_{item['comp_id']}"
                 item['entity_assembly_name'] = row[1]
                 row[2] = item['entity_id']
-                row[3] = f'$entity_{entity_id}' if entity_type != 'non-polymer' else f"$entity_{item['comp_id']}"
+                row[3] = f'$entity_{entity_id}' if entity_type not in ('non-polymer', 'water') else f"$entity_{item['comp_id']}"
                 _label_asym_id = 'label_asym_id' if 'fixed_label_asym_id' not in item else 'fixed_label_asym_id'
                 _auth_asym_id = 'auth_asym_id' if 'fixed_auth_asym_id' not in item else 'fixed_auth_asym_id'
                 row[4] = item[_label_asym_id]
@@ -44659,7 +44659,7 @@ class NmrDpUtility:
                 _entity_assembly_id = ea_loop.data[-1][0]
                 for idx, item in enumerate(self.__caC['entity_assembly']):
                     entity_type = item['entity_type']
-                    if entity_type == 'non-polymer':
+                    if entity_type in ('non-polymer', 'water'):
                         continue
                     auth_asym_id = item['auth_asym_id']
                     if auth_asym_id in self.__auth_asym_ids_with_chem_exch.keys():
@@ -44762,7 +44762,7 @@ class NmrDpUtility:
                 #     except IndexError:
                 #         comp_id = None
 
-                # elif entity_type == 'non-polymer':
+                # elif entity_type in ('non-polymer', 'water'):
                 #     np = next(np for np in self.__caC['non_polymer']
                 #               if np['auth_chain_id'] == auth_asym_id
                 #               and auth_seq_id in (np['seq_id'][0], np['auth_seq_id'][0]))
@@ -44826,7 +44826,7 @@ class NmrDpUtility:
             if len(self.__auth_asym_ids_with_chem_exch) > 0:
                 for item in entity_assembly:
                     entity_type = item['entity_type']
-                    if entity_type == 'non-polymer':
+                    if entity_type in ('non-polymer', 'water'):
                         continue
                     auth_asym_id = item['auth_asym_id']
                     if auth_asym_id in self.__auth_asym_ids_with_chem_exch.keys():
@@ -44978,7 +44978,7 @@ class NmrDpUtility:
                 #     except IndexError:
                 #         comp_id = None
 
-                # elif entity_type == 'non-polymer':
+                # elif entity_type in ('non-polymer', 'water'):
                 #     np = next(np for np in self.__caC['non_polymer']
                 #               if np['auth_chain_id'] == auth_asym_id
                 #               and auth_seq_id in (np['seq_id'][0], np['auth_seq_id'][0]))
@@ -45053,7 +45053,7 @@ class NmrDpUtility:
                 _entity_assembly_id = loop.data[-1][chain_id_col]
                 for item in entity_assembly:
                     entity_type = item['entity_type']
-                    if entity_type == 'non-polymer':
+                    if entity_type in ('non-polymer', 'water'):
                         continue
                     entity_id = item['entity_id']
                     auth_asym_id = item['auth_asym_id']
@@ -45664,7 +45664,7 @@ class NmrDpUtility:
 
             entity_type = item['entity_type']
 
-            sf_framecode = f'entity_{entity_id}' if entity_type != 'non-polymer' else f"entity_{item['comp_id']}"
+            sf_framecode = f'entity_{entity_id}' if entity_type not in ('non-polymer', 'water') else f"entity_{item['comp_id']}"
 
             ent_sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
             ent_sf.set_tag_prefix(self.sf_tag_prefixes[file_type][content_subtype])
@@ -45672,7 +45672,7 @@ class NmrDpUtility:
             ent_sf.add_tag('Sf_framecode', sf_framecode)
             ent_sf.add_tag('Entry_ID', self.__entry_id)
             ent_sf.add_tag('ID', entity_id)
-            ent_sf.add_tag('BMRB_code', None if entity_type != 'non-polymer' else item['comp_id'])
+            ent_sf.add_tag('BMRB_code', None if entity_type not in ('non-polymer', 'water') else item['comp_id'])
             ent_sf.add_tag('Name', item['entity_desc'])
             ent_sf.add_tag('Type', entity_type)
 
@@ -45764,11 +45764,11 @@ class NmrDpUtility:
             ent_sf.add_tag('Nstd_monomer', None if entity_type != 'polymer' else item['nstd_monomer'])
             ent_sf.add_tag('Nstd_chirality', None if entity_type != 'polymer' else item['nstd_chirality'])
             ent_sf.add_tag('Nstd_linkage', None if entity_type != 'polymer' else item['nstd_linkage'])
-            ent_sf.add_tag('Nonpolymer_comp_ID', None if entity_type != 'non-polymer' else item['comp_id'])
+            ent_sf.add_tag('Nonpolymer_comp_ID', None if entity_type not in ('non-polymer', 'water') else item['comp_id'])
             ent_sf.add_tag('Nonpolymer_comp_label', None if entity_type != 'non-polymer' else f"$chem_comp_{item['comp_id']}")
-            ent_sf.add_tag('Number_of_monomers', None if entity_type == 'non-polymer' else item['num_of_monomers'])
-            ent_sf.add_tag('Number_of_nonpolymer_components', None if entity_type != 'non-polymer' else 1)
-            ent_sf.add_tag('Paramagnetic', 'no' if not paramag or entity_type != 'non-polymer' or item['comp_id'] not in PARAMAGNETIC_ELEMENTS else 'yes')
+            ent_sf.add_tag('Number_of_monomers', None if entity_type in ('non-polymer', 'water') else item['num_of_monomers'])
+            ent_sf.add_tag('Number_of_nonpolymer_components', None if entity_type not in ('non-polymer', 'water') else 1)
+            ent_sf.add_tag('Paramagnetic', 'no' if not paramag or entity_type not in ('non-polymer', 'water') or item['comp_id'] not in PARAMAGNETIC_ELEMENTS else 'yes')
 
             _label_asym_id = 'label_asym_id' if 'fixed_label_asym_id' not in item else 'fixed_label_asym_id'
 
@@ -45981,7 +45981,7 @@ class NmrDpUtility:
                     # if seq_id in seq_ids:
                     #     continue
 
-                    if entity_type == 'non-polymer':
+                    if entity_type in ('non-polymer', 'water'):
                         if comp_id != item['comp_id']:
                             continue
                         auth_seq_id = seq_id
@@ -45995,7 +45995,7 @@ class NmrDpUtility:
 
                     row[0], row[1], row[2] = index, auth_seq_id, comp_id
 
-                    if comp_id not in monDict3:
+                    if comp_id not in monDict3 and comp_id != 'HOH':
                         row[3] = f"$chem_comp_{comp_id}"
 
                     row[4], row[5] = entity_id, self.__entry_id
@@ -46008,7 +46008,7 @@ class NmrDpUtility:
 
             # Refresh _Entity_poly_seq loop
 
-            if entity_type != 'non-polymer':
+            if entity_type not in ('non-polymer', 'water'):
                 lp_category = '_Entity_poly_seq'
                 eps_loop = pynmrstar.Loop.from_scratch(lp_category)
 
@@ -46043,7 +46043,7 @@ class NmrDpUtility:
                         if seq_id in seq_ids:
                             continue
 
-                        if entity_type == 'non-polymer':
+                        if entity_type in ('non-polymer', 'water'):
                             if comp_id != item['comp_id']:
                                 continue
 

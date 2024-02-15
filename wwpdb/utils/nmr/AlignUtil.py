@@ -2010,7 +2010,13 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId,
                      if item['original_atom_id'] == atomId + '2'), None)
 
         if item is not None and item['auth_atom_id'][-1] == '2':
-            return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id'][:-1]
+            return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id'][:-1] + '%'
+
+        item = next((item for item in mapping
+                     if item['original_atom_id'] == '2' + atomId), None)
+
+        if item is not None and item['auth_atom_id'][-1] == '2':
+            return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id'][:-1] + '%'
 
         return seqId, compId, atomId
 
@@ -2217,7 +2223,13 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
                      if item['original_atom_id'] == atomId + '2'), None)
 
         if item is not None and item['auth_atom_id'][-1] == '2':
-            return item['auth_atom_id'][:-1]
+            return item['auth_atom_id'][:-1] + '%'
+
+        item = next((item for item in mapping
+                     if item['original_atom_id'] == '2' + atomId), None)
+
+        if item is not None and item['auth_atom_id'][-1] == '2':
+            return item['auth_atom_id'][:-1] + '%'
 
         return atomId
 

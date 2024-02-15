@@ -2217,7 +2217,7 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
                      if item['original_atom_id'] == atomId + '2'), None)
 
         if item is not None and item['auth_atom_id'][-1] == '2':
-            return item['auth_seq_id'][:-1]
+            return item['auth_atom_id'][:-1]
 
         return atomId
 

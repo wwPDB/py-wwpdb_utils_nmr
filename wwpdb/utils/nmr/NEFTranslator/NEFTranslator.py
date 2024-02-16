@@ -4646,6 +4646,9 @@ class NEFTranslator:
 
         finally:
             self.__cachedDictForValidStarAtomInXplor[key] = (atom_list, ambiguity_code, details)
+            if leave_unmatched:
+                key = (comp_id, atom_id, details, False, methyl_only)
+                self.__cachedDictForValidStarAtomInXplor[key] = (atom_list, ambiguity_code, details)
 
     def get_valid_star_atom(self, comp_id, atom_id, details=None, leave_unmatched=True, methyl_only=False):
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
@@ -4679,7 +4682,8 @@ class NEFTranslator:
 
                 if atom_id.startswith('QQ'):
                     atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[2:] + '*', details, leave_unmatched, methyl_only)
-                    if details is not None and self.__csStat.peptideLike(comp_id) and atom_id[2] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
+                    if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id)\
+                       and atom_id[2] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
                         grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[2])
                         if len(grk_atoms) > 0:
                             atom_list = []
@@ -4705,7 +4709,8 @@ class NEFTranslator:
                 if atom_id.startswith('Q') or atom_id.startswith('M'):
                     if atom_id[-1].isalnum():
                         atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched, methyl_only)
-                        if details is not None and self.__csStat.peptideLike(comp_id) and len(atom_id) > 1 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
+                        if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and len(atom_id) > 1\
+                           and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
                             grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[1])
                             if len(grk_atoms) > 0:
                                 atom_list = []
@@ -4729,8 +4734,9 @@ class NEFTranslator:
                 if _details is None:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
 
-            if details is not None and self.__csStat.peptideLike(comp_id) and atom_id[0] in ('C', 'N', 'O', 'P')\
-               and len(atom_id) > 1 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
+            if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and atom_id[0] in ('H', 'C', 'N', 'O', 'P')\
+               and len(atom_id) > 1 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H')\
+               and (atom_id[0] != 'H' or (atom_id[0] == 'H' and atom_id[-1] not in ('%', '#'))):
                 grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, atom_id)
                 if len(grk_atoms) > 0:
                     atom_list = []
@@ -4743,6 +4749,9 @@ class NEFTranslator:
 
         finally:
             self.__cachedDictForValidStarAtom[key] = (atom_list, ambiguity_code, details)
+            if leave_unmatched:
+                key = (comp_id, atom_id, details, False, methyl_only)
+                self.__cachedDictForValidStarAtom[key] = (atom_list, ambiguity_code, details)
 
     def get_star_atom(self, comp_id, nef_atom, details=None, leave_unmatched=True, methyl_only=False):
         """ Return list of instanced atom_id of a given NEF atom (including wildcard codes) and its ambiguity code.
@@ -5038,6 +5047,9 @@ class NEFTranslator:
 
         finally:
             self.__cachedDictForStarAtom[key] = (atom_list, ambiguity_code, details)
+            if leave_unmatched:
+                key = (comp_id, nef_atom, details, False, methyl_only)
+                self.__cachedDictForStarAtom[key] = (atom_list, ambiguity_code, details)
 
     def get_nef_atom(self, comp_id, star_atom_list, details=None, leave_unmatched=True):
         """ Return list of all instanced atom_id of given NMR-STAR atoms with ambiguity code and CS value in a given comp_id.
@@ -5465,6 +5477,9 @@ class NEFTranslator:
 
         finally:
             self.__cachedDictForNefAtom[key] = (atom_list, details, atom_id_map)
+            if leave_unmatched:
+                key = (comp_id, str(star_atom_list), str(details), False)
+                self.__cachedDictForNefAtom[key] = (atom_list, details, atom_id_map)
 
     def get_group(self, comp_id, atom_id):
         """ Return heavy atom name and list of proton names bonded to the heavy atom.

@@ -4646,7 +4646,7 @@ def guessCompIdFromAtomId(atoms, polySeq, nefT):
         compIds = ps['comp_id']
 
         if 'PRO' in compIds and atoms[0].upper() in ('H', 'HN'):
-            condidates.add('PRO')
+            candidates.add('PRO')
             break
 
         for _compId in set(compIds):

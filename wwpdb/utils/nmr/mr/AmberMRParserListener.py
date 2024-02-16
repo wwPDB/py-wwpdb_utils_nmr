@@ -4209,7 +4209,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if found:
                             return True
 
-        if self.__hasNonPolySeq and useDefault:
+        if self.__hasNonPolySeq and (useDefault or (self.__concatHetero and not hasAuthSeqScheme)):
 
             ligands = 0
             if self.__hasNonPoly and self.__cur_subtype == 'dist':
@@ -4743,7 +4743,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
 
-            if not found and self.__hasNonPolySeq and useDefault:
+            if not found and self.__hasNonPolySeq and (useDefault or (self.__concatHetero and not hasAuthSeqScheme)):
 
                 for np in self.__nonPolySeq:
                     if np['auth_chain_id'] != chainId:

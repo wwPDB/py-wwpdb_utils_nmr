@@ -36,10 +36,12 @@ try:
                                                        getLoop,
                                                        getRow,
                                                        getStarAtom,
+                                                       resetCombinationId,
                                                        resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        REPRESENTATIVE_MODEL_ID,
+                                                       REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                                        DIST_RESTRAINT_RANGE,
@@ -56,6 +58,7 @@ try:
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
+                                           emptyValue,
                                            protonBeginCode,
                                            pseProBeginCode,
                                            aminoProtonCode,
@@ -98,10 +101,12 @@ except ImportError:
                                            getLoop,
                                            getRow,
                                            getStarAtom,
+                                           resetCombinationId,
                                            resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
                                            REPRESENTATIVE_MODEL_ID,
+                                           REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                            DIST_RESTRAINT_RANGE,
@@ -118,6 +123,7 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
+                               emptyValue,
                                protonBeginCode,
                                pseProBeginCode,
                                aminoProtonCode,
@@ -215,6 +221,7 @@ class BiosymMRParserListener(ParseTreeListener):
     __offsetHolder = None
 
     __representativeModelId = REPRESENTATIVE_MODEL_ID
+    __representativeAltId = REPRESENTATIVE_ALT_ID
     __hasPolySeq = False
     __hasNonPoly = False
     __hasBranched = False
@@ -259,6 +266,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None):
@@ -266,13 +274,15 @@ class BiosymMRParserListener(ParseTreeListener):
         self.__lfh = log
 
         self.__representativeModelId = representativeModelId
+        self.__representativeAltId = representativeAltId
         self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
         self.__cR = cR
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC)
+            ret = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
+                                       cR, caC)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
             self.__authSeqId = ret['auth_seq_id']
@@ -401,7 +411,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-                    if self.__reasons is None and any(f for f in self.__f if 'Atom not found' in f):
+                    if self.__reasons is None and any(f for f in self.__f
+                                                      if '[Atom not found]' in f or '[Sequence mismatch]' in f):
 
                         seqIdRemap = []
 
@@ -432,7 +443,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
                             if ref_chain_id not in cyclicPolymer:
                                 cyclicPolymer[ref_chain_id] =\
-                                    isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName)
+                                    isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id,
+                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                             if cyclicPolymer[ref_chain_id]:
 
@@ -558,7 +570,8 @@ class BiosymMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['local_seq_scheme']
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-                del self.reasonsForReParsing['seq_id_remap']
+                if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
+                    del self.reasonsForReParsing['seq_id_remap']
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
@@ -965,7 +978,7 @@ class BiosymMRParserListener(ParseTreeListener):
         return dstFunc
 
     def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
-        compId = translateToStdResName(compId, self.__ccU)
+        compId = translateToStdResName(compId, ccU=self.__ccU)
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
         if not self.__preferAuthSeq:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
@@ -997,6 +1010,18 @@ class BiosymMRParserListener(ParseTreeListener):
         fixedSeqId = None
 
         preferNonPoly = False
+
+        if compId == 'CYSZ' and atomId == 'ZN' and self.__hasNonPoly:
+            znCount = 0
+            znSeqId = None
+            for np in self.__nonPoly:
+                if np['comp_id'][0] == 'ZN':
+                    znSeqId = np['auth_seq_id'][0]
+                    znCount += 1
+            if znCount == 1:
+                compId = _compId = 'ZN'
+                seqId = _seqId = znSeqId
+                preferNonPoly = True
 
         if refChainId is not None:
             if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == refChainId):
@@ -1030,7 +1055,7 @@ class BiosymMRParserListener(ParseTreeListener):
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
-        compId = translateToStdResName(_compId, self.__ccU)
+        compId = translateToStdResName(_compId, ccU=self.__ccU)
         updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId, _compId)
 
         if refChainId is not None or refChainId != _refChainId:
@@ -1078,7 +1103,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, self.__ccU):
+                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                     #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                     #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
@@ -1197,7 +1222,7 @@ class BiosymMRParserListener(ParseTreeListener):
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
                             # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, self.__ccU):
+                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                             #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                             #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
@@ -1252,7 +1277,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, self.__ccU):
+                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                     #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                     #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
@@ -1300,7 +1325,7 @@ class BiosymMRParserListener(ParseTreeListener):
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
                             # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, self.__ccU):
+                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                             #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                             #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
@@ -1309,7 +1334,11 @@ class BiosymMRParserListener(ParseTreeListener):
             if seqId == 1 or (refChainId, seqId - 1) in self.__coordUnobsRes:
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequence(refChainId, seqId, compId, 'H1')
-            if seqId < 1 and len(self.__polySeq) == 1:
+            if len(self.__polySeq) == 1\
+               and (seqId < 1
+                    or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
+                    or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
+                refChainId = self.__polySeq[0]['auth_chain_id']
                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                 f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                 f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
@@ -1338,10 +1367,21 @@ class BiosymMRParserListener(ParseTreeListener):
         _compId = compId
         _atomId = atomId
 
+        if compId == 'CYSZ' and atomId == 'ZN' and self.__hasNonPoly:
+            znCount = 0
+            znSeqId = None
+            for np in self.__nonPoly:
+                if np['comp_id'][0] == 'ZN':
+                    znSeqId = np['auth_seq_id'][0]
+                    znCount += 1
+            if znCount == 1:
+                compId = _compId = 'ZN'
+                seqId = znSeqId
+
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
-        compId = translateToStdResName(_compId, self.__ccU)
+        compId = translateToStdResName(_compId, ccU=self.__ccU)
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 
@@ -1376,12 +1416,13 @@ class BiosymMRParserListener(ParseTreeListener):
 
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
                 _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
-                if atomId != _atomId and coordAtomSite is not None and _atomId in coordAtomSite['atom_id']:
+                if atomId != _atomId and coordAtomSite is not None\
+                   and (_atomId in coordAtomSite['atom_id'] or (_atomId.endswith('%') and _atomId[:-1] + '2' in coordAtomSite['atom_id'])):
                     atomId = _atomId
                 elif self.__reasons is not None and 'branched_remap' in self.__reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, cifSeqId)
                     if _seqId != cifSeqId:
-                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, coordAtomSite)
+                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
 
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
             if atomId != _atomId and coordAtomSite is not None and _atomId in coordAtomSite['atom_id']:
@@ -1678,7 +1719,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p1) != 1:
@@ -1695,7 +1736,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p2) != 1:
@@ -1723,7 +1764,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_p1) != 1:
@@ -1749,7 +1790,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_p2) != 1:
@@ -1787,7 +1828,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p1) != 1:
@@ -1804,7 +1845,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p2) != 1:
@@ -1821,7 +1862,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p3) != 1:
@@ -1838,7 +1879,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p4) != 1:
@@ -1857,7 +1898,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p4) != 1:
@@ -2045,14 +2086,33 @@ class BiosymMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 4:
                 return
 
-            if not self.areUniqueCoordAtoms('a Dihedral angle'):
+            try:
+                compId = self.atomSelectionSet[0][0]['comp_id']
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+            except IndexError:
+                self.areUniqueCoordAtoms('a dihedral angle')
                 return
+
+            len_f = len(self.__f)
+            self.areUniqueCoordAtoms('a dihedral angle',
+                                     allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
+            combinationId = '.' if len_f == len(self.__f) else 0
+
+            if isinstance(combinationId, int):
+                fixedAngleName = '.'
+                for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                    self.atomSelectionSet[1],
+                                                                    self.atomSelectionSet[2],
+                                                                    self.atomSelectionSet[3]):
+                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                           [atom1, atom2, atom3, atom4])
+                    if angleName in emptyValue:
+                        continue
+                    fixedAngleName = angleName
+                    break
 
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
-
-            compId = self.atomSelectionSet[0][0]['comp_id']
-            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
             first_item = True
 
@@ -2064,6 +2124,10 @@ class BiosymMRParserListener(ParseTreeListener):
                                                        [atom1, atom2, atom3, atom4])
                 if angleName is None:
                     continue
+                if isinstance(combinationId, int):
+                    if angleName != fixedAngleName:
+                        continue
+                    combinationId += 1
                 if self.__debug:
                     _dstFunc = f"{dstFunc}"
                     if dstFunc2 is not None:
@@ -2083,7 +2147,7 @@ class BiosymMRParserListener(ParseTreeListener):
                         dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                           dstFunc)
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.' if dstFunc2 is None else 1, None, angleName,
+                                 combinationId if dstFunc2 is None else 1, None, angleName,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
@@ -2121,6 +2185,9 @@ class BiosymMRParserListener(ParseTreeListener):
                                      self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1 and dstFunc2 is None:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.numberSelection.clear()
@@ -2194,14 +2261,33 @@ class BiosymMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 4:
                 return
 
-            if not self.areUniqueCoordAtoms('a Dihedral angle'):
+            try:
+                compId = self.atomSelectionSet[0][0]['comp_id']
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+            except IndexError:
+                self.areUniqueCoordAtoms('a dihedral angle')
                 return
+
+            len_f = len(self.__f)
+            self.areUniqueCoordAtoms('a dihedral angle',
+                                     allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
+            combinationId = '.' if len_f == len(self.__f) else 0
+
+            if isinstance(combinationId, int):
+                fixedAngleName = '.'
+                for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                    self.atomSelectionSet[1],
+                                                                    self.atomSelectionSet[2],
+                                                                    self.atomSelectionSet[3]):
+                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                           [atom1, atom2, atom3, atom4])
+                    if angleName in emptyValue:
+                        continue
+                    fixedAngleName = angleName
+                    break
 
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
-
-            compId = self.atomSelectionSet[0][0]['comp_id']
-            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
             first_item = True
 
@@ -2213,6 +2299,10 @@ class BiosymMRParserListener(ParseTreeListener):
                                                        [atom1, atom2, atom3, atom4])
                 if angleName is None:
                     continue
+                if isinstance(combinationId, int):
+                    if angleName != fixedAngleName:
+                        continue
+                    combinationId += 1
                 if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
                     dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                       dstFunc)
@@ -2225,11 +2315,14 @@ class BiosymMRParserListener(ParseTreeListener):
                         first_item = False
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None, angleName,
+                                 combinationId, None, angleName,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.numberSelection.clear()
@@ -2346,7 +2439,7 @@ class BiosymMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 2:
             return
 
-        if not self.areUniqueCoordAtoms('a Chirality'):
+        if not self.areUniqueCoordAtoms('a chirality'):
             return
 
         if self.__createSfDict:
@@ -2446,13 +2539,17 @@ class BiosymMRParserListener(ParseTreeListener):
                                            atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
                                            sf['list_id']])
 
-    def areUniqueCoordAtoms(self, subtype_name):
+    def areUniqueCoordAtoms(self, subtype_name, allow_ambig=False, allow_ambig_warn_title=''):
         """ Check whether atom selection sets are uniquely assigned.
         """
 
         for _atomSelectionSet in self.atomSelectionSet:
+            _lenAtomSelectionSet = len(_atomSelectionSet)
 
-            if len(_atomSelectionSet) < 2:
+            if _lenAtomSelectionSet == 0:
+                return False  # raised error already
+
+            if _lenAtomSelectionSet == 1:
                 continue
 
             for (atom1, atom2) in itertools.combinations(_atomSelectionSet, 2):
@@ -2460,7 +2557,12 @@ class BiosymMRParserListener(ParseTreeListener):
                     continue
                 if atom1['seq_id'] != atom2['seq_id']:
                     continue
-                self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
+                if allow_ambig:
+                    self.__f.append(f"[{allow_ambig_warn_title}] {self.__getCurrentRestraint()}"
+                                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                    f"{atom2['atom_id']}' found in {subtype_name} restraint.")
+                    continue
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                 f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
                                 f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.")
                 return False

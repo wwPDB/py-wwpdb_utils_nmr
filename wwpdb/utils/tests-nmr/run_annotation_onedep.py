@@ -112,7 +112,7 @@ def is_combined_nmr_data(file_path):
 
     mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
     proc_mr_file_name_pattern = re.compile(r'^D_[0-9]{6,10}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
-                                           r'_P\d+\.(amber|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|sybyl|xplor-nih)\.V\d+$')
+                                           r'_P\d+\.(amber|aria|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|sybyl|xplor-nih)\.V\d+$')
     pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}$')
     dep_id_pattern = re.compile(r'^D_[0-9]{6,10}$')
     bmrb_id_pattern = re.compile(r'^(bmr)?[0-9]{5,}$')

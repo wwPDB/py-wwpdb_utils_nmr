@@ -45,11 +45,13 @@ try:
                                                        getRow,
                                                        getAuxRow,
                                                        getStarAtom,
+                                                       resetCombinationId,
                                                        resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
+                                                       REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                                        DIST_RESTRAINT_RANGE,
@@ -82,6 +84,7 @@ try:
                                            LARGE_ASYM_ID,
                                            MAX_MAG_IDENT_ASYM_ID,
                                            monDict3,
+                                           emptyValue,
                                            protonBeginCode,
                                            aminoProtonCode,
                                            jcoupBbPairCode,
@@ -134,11 +137,13 @@ except ImportError:
                                            getRow,
                                            getAuxRow,
                                            getStarAtom,
+                                           resetCombinationId,
                                            resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
+                                           REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                            DIST_RESTRAINT_RANGE,
@@ -171,6 +176,7 @@ except ImportError:
                                LARGE_ASYM_ID,
                                MAX_MAG_IDENT_ASYM_ID,
                                monDict3,
+                               emptyValue,
                                protonBeginCode,
                                aminoProtonCode,
                                jcoupBbPairCode,
@@ -305,6 +311,7 @@ class CnsMRParserListener(ParseTreeListener):
     __offsetHolder = None
 
     __representativeModelId = REPRESENTATIVE_MODEL_ID
+    __representativeAltId = REPRESENTATIVE_ALT_ID
     __hasPolySeq = False
     __hasNonPoly = False
     __hasBranched = False
@@ -459,6 +466,7 @@ class CnsMRParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None):
@@ -466,13 +474,15 @@ class CnsMRParserListener(ParseTreeListener):
         self.__lfh = log
 
         self.__representativeModelId = representativeModelId
+        self.__representativeAltId = representativeAltId
         self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
         self.__cR = cR
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC)
+            ret = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
+                                       cR, caC)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
             self.__authSeqId = ret['auth_seq_id']
@@ -651,7 +661,8 @@ class CnsMRParserListener(ParseTreeListener):
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-                    if self.__reasons is None and any(f for f in self.__f if 'Atom not found' in f):
+                    if self.__reasons is None and any(f for f in self.__f
+                                                      if '[Atom not found]' in f or '[Sequence mismatch]' in f):
 
                         seqIdRemap = []
 
@@ -682,7 +693,8 @@ class CnsMRParserListener(ParseTreeListener):
 
                             if ref_chain_id not in cyclicPolymer:
                                 cyclicPolymer[ref_chain_id] =\
-                                    isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName)
+                                    isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id,
+                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                             if cyclicPolymer[ref_chain_id]:
 
@@ -862,7 +874,8 @@ class CnsMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['np_seq_id_remap']
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-                del self.reasonsForReParsing['seq_id_remap']
+                if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
+                    del self.reasonsForReParsing['seq_id_remap']
 
             if 'global_sequence_offset' in self.reasonsForReParsing:
                 globalSequenceOffset = copy.copy(self.reasonsForReParsing['global_sequence_offset'])
@@ -877,8 +890,16 @@ class CnsMRParserListener(ParseTreeListener):
             if 'global_sequence_offset' in self.reasonsForReParsing and 'local_seq_scheme' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['local_seq_scheme']
 
-            if len(self.reasonsForReParsing) > 0 and not any(f for f in self.__f if 'Atom not found' in f):
-                self.reasonsForReParsing = {}
+            if not any(f for f in self.__f if '[Atom not found]' in f):
+
+                if len(self.reasonsForReParsing) > 0:
+                    self.reasonsForReParsing = {}
+
+                if any(f for f in self.__f if '[Sequence mismatch]' in f):
+                    __f = copy.copy(self.__f)
+                    for f in __f:
+                        if '[Sequence mismatch]' in f:
+                            self.__f.remove(f)
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
@@ -1526,12 +1547,6 @@ class CnsMRParserListener(ParseTreeListener):
                     combinationId += 1
                 if isinstance(memberId, int):
                     memberId = 0
-
-            for i in range(0, len(self.atomSelectionSet), 2):
-                if isinstance(combinationId, int):
-                    combinationId += 1
-                if isinstance(memberId, int):
-                    memberId = 0
                     _atom1 = _atom2 = None
                 if self.__createSfDict:
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else '.'
@@ -1586,8 +1601,12 @@ class CnsMRParserListener(ParseTreeListener):
                             if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                                 sf['constraint_subsubtype'] = 'ambi'
 
-            if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
-                sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
+            if self.__createSfDict and sf is not None:
+                if isinstance(memberId, int) and memberId == 1:
+                    sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
+                    memberId = '.'
+                if isinstance(memberId, str) and isinstance(combinationId, int) and combinationId == 1:
+                    sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.numberSelection.clear()
@@ -1886,16 +1905,35 @@ class CnsMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
-            if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
-                if len(self.__g) > 0:
-                    self.__f.extend(self.__g)
+            try:
+                compId = self.atomSelectionSet[0][0]['comp_id']
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+            except IndexError:
+                if not self.areUniqueCoordAtoms('a dihedral angle (DIHE)'):
+                    if len(self.__g) > 0:
+                        self.__f.extend(self.__g)
                 return
+
+            len_f = len(self.__f)
+            self.areUniqueCoordAtoms('a dihedral angle (DIHE)',
+                                     allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
+            combinationId = '.' if len_f == len(self.__f) else 0
+
+            if isinstance(combinationId, int):
+                fixedAngleName = '.'
+                for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                    self.atomSelectionSet[1],
+                                                                    self.atomSelectionSet[2],
+                                                                    self.atomSelectionSet[3]):
+                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                           [atom1, atom2, atom3, atom4])
+                    if angleName in emptyValue:
+                        continue
+                    fixedAngleName = angleName
+                    break
 
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
-
-            compId = self.atomSelectionSet[0][0]['comp_id']
-            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
             first_item = True
 
@@ -1907,6 +1945,10 @@ class CnsMRParserListener(ParseTreeListener):
                                                        [atom1, atom2, atom3, atom4])
                 if angleName is None:
                     continue
+                if isinstance(combinationId, int):
+                    if angleName != fixedAngleName:
+                        continue
+                    combinationId += 1
                 if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
                     dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                       dstFunc)
@@ -1919,11 +1961,14 @@ class CnsMRParserListener(ParseTreeListener):
                         first_item = False
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                 '.', None, angleName,
+                                 combinationId, None, angleName,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.numberSelection.clear()
@@ -2057,7 +2102,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def areUniqueCoordAtoms(self, subtype_name, skip_col=None):
+    def areUniqueCoordAtoms(self, subtype_name, skip_col=None, allow_ambig=False, allow_ambig_warn_title=''):
         """ Check whether atom selection sets are uniquely assigned.
         """
 
@@ -2076,6 +2121,11 @@ class CnsMRParserListener(ParseTreeListener):
                 if atom1['chain_id'] != atom2['chain_id']:
                     continue
                 if atom1['seq_id'] != atom2['seq_id']:
+                    continue
+                if allow_ambig:
+                    self.__f.append(f"[{allow_ambig_warn_title}] {self.__getCurrentRestraint()}"
+                                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                    f"{atom2['atom_id']}' found in {subtype_name} restraint.")
                     continue
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                 f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
@@ -2351,7 +2401,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                  {'name': self.__modelNumName, 'type': 'int',
                                                                   'value': self.__representativeModelId},
                                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                                  'enum': ('A')}
+                                                                  'enum': (self.__representativeAltId,)}
                                                                  ])
 
                             _tail =\
@@ -2363,7 +2413,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                  {'name': self.__modelNumName, 'type': 'int',
                                                                   'value': self.__representativeModelId},
                                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                                  'enum': ('A')}
+                                                                  'enum': (self.__representativeAltId,)}
                                                                  ])
 
                             if len(_head) == 1 and len(_tail) == 1:
@@ -2474,6 +2524,9 @@ class CnsMRParserListener(ParseTreeListener):
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.numberSelection.clear()
@@ -4461,13 +4514,13 @@ class CnsMRParserListener(ParseTreeListener):
                             realCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
                             if (lenCompIds == 1
-                                and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], self.__ccU)), realCompId)
-                                     or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], self.__ccU)), origCompId)))\
+                                and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU)), realCompId)
+                                     or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU)), origCompId)))\
                                or (lenCompIds == 2
-                                   and (translateToStdResName(_factor['comp_ids'][0], self.__ccU) <= realCompId
-                                        <= translateToStdResName(_factor['comp_ids'][1], self.__ccU)
-                                        or translateToStdResName(_factor['comp_ids'][0], self.__ccU) <= origCompId
-                                        <= translateToStdResName(_factor['comp_ids'][1], self.__ccU))):
+                                   and (translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU) <= realCompId
+                                        <= translateToStdResName(_factor['comp_ids'][1], realCompId, self.__ccU)
+                                        or translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU) <= origCompId
+                                        <= translateToStdResName(_factor['comp_ids'][1], realCompId, self.__ccU))):
                                 _compIdSelect.add(realCompId)
                 if self.__hasNonPolySeq:
                     for chainId in _factor['chain_id']:
@@ -4478,13 +4531,13 @@ class CnsMRParserListener(ParseTreeListener):
                                 realCompId = np['comp_id'][idx]
                                 origCompId = np['auth_comp_id'][idx]
                                 if (lenCompIds == 1
-                                    and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], self.__ccU)), realCompId)
-                                         or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], self.__ccU)), origCompId)))\
+                                    and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU)), realCompId)
+                                         or re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU)), origCompId)))\
                                    or (lenCompIds == 2
-                                       and (translateToStdResName(_factor['comp_ids'][0], self.__ccU) <= realCompId
-                                            <= translateToStdResName(_factor['comp_ids'][1], self.__ccU)
-                                            or translateToStdResName(_factor['comp_ids'][0], self.__ccU) <= origCompId
-                                            <= translateToStdResName(_factor['comp_ids'][1], self.__ccU))):
+                                       and (translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU) <= realCompId
+                                            <= translateToStdResName(_factor['comp_ids'][1], realCompId, self.__ccU)
+                                            or translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU) <= origCompId
+                                            <= translateToStdResName(_factor['comp_ids'][1], realCompId, self.__ccU))):
                                     _compIdSelect.add(realCompId)
                 _factor['comp_id'] = list(_compIdSelect)
                 del _factor['comp_ids']
@@ -4503,7 +4556,7 @@ class CnsMRParserListener(ParseTreeListener):
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
-                            _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                            _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         if re.match(_seqId, str(realSeqId)):
@@ -4515,7 +4568,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 idx = ps['auth_seq_id'].index(realSeqId)
                                 realCompId = ps['comp_id'][idx]
                                 origCompId = ps['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             seqKey = (chainId, realSeqId)
@@ -4533,7 +4586,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = np['comp_id'][idx]
                                 origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             if re.match(_seqId, str(realSeqId)):
@@ -4545,7 +4598,7 @@ class CnsMRParserListener(ParseTreeListener):
                                     idx = np['auth_seq_id'].index(realSeqId)
                                     realCompId = np['comp_id'][idx]
                                     origCompId = np['auth_comp_id'][idx]
-                                    _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                    _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                     if realCompId not in _compIdList and origCompId not in _compIdList:
                                         continue
                                 seqKey = (chainId, realSeqId)
@@ -4566,7 +4619,7 @@ class CnsMRParserListener(ParseTreeListener):
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
-                            _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                            _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         seqIds.append(realSeqId)
@@ -4579,7 +4632,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = np['comp_id'][idx]
                                 origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             seqIds.append(realSeqId)
@@ -4649,7 +4702,7 @@ class CnsMRParserListener(ParseTreeListener):
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             origCompId = ps['auth_comp_id'][idx]
-                            _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                            _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         _compIdSelect.add(realCompId)
@@ -4665,7 +4718,7 @@ class CnsMRParserListener(ParseTreeListener):
                             realCompId = np['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _compIdSelect.add(realCompId)
@@ -4724,7 +4777,7 @@ class CnsMRParserListener(ParseTreeListener):
                             realCompId = ps['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = ps['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _compIdSelect.add(realCompId)
@@ -4740,7 +4793,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 realCompId = np['comp_id'][idx]
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                     origCompId = np['auth_comp_id'][idx]
-                                    _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                    _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                     if realCompId not in _compIdList and origCompId not in _compIdList:
                                         continue
                                 _compIdSelect.add(realCompId)
@@ -4810,7 +4863,7 @@ class CnsMRParserListener(ParseTreeListener):
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             origCompId = ps['auth_comp_id'][idx]
-                            _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                            _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         _compIdSelect.add(realCompId)
@@ -4826,7 +4879,7 @@ class CnsMRParserListener(ParseTreeListener):
                             realCompId = np['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = np['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _nonPolyCompIdSelect.append({'chain_id': chainId,
@@ -4865,7 +4918,7 @@ class CnsMRParserListener(ParseTreeListener):
                             realCompId = ps['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = ps['auth_comp_id'][idx]
-                                _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _compIdSelect.add(realCompId)
@@ -4881,7 +4934,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 realCompId = np['comp_id'][idx]
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                     origCompId = np['auth_comp_id'][idx]
-                                    _compIdList = [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                    _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                     if realCompId not in _compIdList and origCompId not in _compIdList:
                                         continue
                                 _nonPolyCompIdSelect.append({'chain_id': chainId,
@@ -5213,7 +5266,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 if self.__reasons is not None and 'branched_remap' in self.__reasons:
                                     _seqId_ = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, seqId)
                                     if _seqId_ != seqId:
-                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId_, authCompId, atomId, coordAtomSite)
+                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId_, authCompId, atomId, compId, coordAtomSite)
                                 elif seqId != _seqId:
                                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, atomId, coordAtomSite)
 
@@ -5452,7 +5505,7 @@ class CnsMRParserListener(ParseTreeListener):
                                             self.__preferAuthSeq = False
 
                                 if _atom is not None:
-                                    _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                    _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, ccU=self.__ccU) for _compId in _factor['comp_id']]
                                     if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
                                        and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId}
@@ -5480,7 +5533,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 continue
 
                             if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES and _atomId not in XPLOR_NITROXIDE_NAMES:
-                                _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, self.__ccU) for _compId in _factor['comp_id']]
+                                _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, ccU=self.__ccU) for _compId in _factor['comp_id']]
                                 if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
                                     if len(origAtomId) > 1:
                                         typeSymbols = set()
@@ -5540,7 +5593,10 @@ class CnsMRParserListener(ParseTreeListener):
                                                                     self.reasonsForReParsing['label_seq_scheme'] = {}
                                                                 if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
                                                                     self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
-                                                        if seqId < 1 and len(self.__polySeq) == 1:
+                                                        if len(self.__polySeq) == 1\
+                                                           and (seqId < 1
+                                                                or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
+                                                                or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "
                                                                             f"The residue number '{seqId}' is not present "
@@ -5575,6 +5631,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                                                     self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId][self.__cur_subtype] = True
                                                                                 break
                                                                 self.__preferAuthSeq = __preferAuthSeq
+                                                            if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
+                                                               and _factor['chain_id'][0] != chainId and compId in monDict3:
+                                                                continue
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
@@ -5599,7 +5658,10 @@ class CnsMRParserListener(ParseTreeListener):
                                            and (self.__reasons is None or 'non_poly_remap' not in self.__reasons)\
                                            and not self.__cur_union_expr:
                                             if chainId in LARGE_ASYM_ID:
-                                                if seqId < 1 and len(self.__polySeq) == 1:
+                                                if len(self.__polySeq) == 1\
+                                                   and (seqId < 1
+                                                        or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
+                                                        or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "
                                                                     f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
@@ -5635,6 +5697,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                                             self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId][self.__cur_subtype] = True
                                                                         break
                                                         self.__preferAuthSeq = __preferAuthSeq
+                                                    if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
+                                                       and _factor['chain_id'][0] != chainId and compId in monDict3:
+                                                        continue
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
                                                     if self.__cur_subtype == 'dist' and isPolySeq and isChainSpecified and compId in monDict3 and self.__csStat.peptideLike(compId):
@@ -6071,7 +6136,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                         [{'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     self.intersectionFactor_expressions(atomSelection)
@@ -6137,7 +6202,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                  {'name': self.__modelNumName, 'type': 'int',
                                                                   'value': self.__representativeModelId},
                                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                                  'enum': ('A')}
+                                                                  'enum': (self.__representativeAltId,)}
                                                                  ])
 
                             if len(_origin) != 1:
@@ -6160,7 +6225,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                  {'name': self.__modelNumName, 'type': 'int',
                                                                   'value': self.__representativeModelId},
                                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                                  'enum': ('A')}
+                                                                  'enum': (self.__representativeAltId,)}
                                                                  ])
 
                             if len(_neighbor) == 0:
@@ -6208,7 +6273,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                              {'name': self.__modelNumName, 'type': 'int',
                                                                               'value': self.__representativeModelId},
                                                                              {'name': 'label_alt_id', 'type': 'enum',
-                                                                              'enum': ('A')}
+                                                                              'enum': (self.__representativeAltId,)}
                                                                              ])
 
                                         if len(_origin) != 1:
@@ -6231,7 +6296,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                              {'name': self.__modelNumName, 'type': 'int',
                                                                               'value': self.__representativeModelId},
                                                                              {'name': 'label_alt_id', 'type': 'enum',
-                                                                              'enum': ('A')}
+                                                                              'enum': (self.__representativeAltId,)}
                                                                              ])
 
                                         if len(_neighbor) == 0:
@@ -6460,7 +6525,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                          {'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     self.intersectionFactor_expressions(atomSelection)
@@ -6503,7 +6568,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                          {'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     self.intersectionFactor_expressions(atomSelection)
@@ -6547,7 +6612,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                          {'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     self.intersectionFactor_expressions(atomSelection)
@@ -6579,7 +6644,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                          {'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     self.intersectionFactor_expressions(atomSelection)
@@ -6631,7 +6696,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                          {'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     self.intersectionFactor_expressions(atomSelection)
@@ -6723,7 +6788,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                      {'name': self.__modelNumName, 'type': 'int',
                                                                       'value': self.__representativeModelId},
                                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                                      'enum': ('A')}
+                                                                      'enum': (self.__representativeAltId,)}
                                                                      ])
 
                                 if len(_origin) == 1:
@@ -6759,7 +6824,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                                              {'name': self.__modelNumName, 'type': 'int',
                                                                                               'value': self.__representativeModelId},
                                                                                              {'name': 'label_alt_id', 'type': 'enum',
-                                                                                              'enum': ('A')}
+                                                                                              'enum': (self.__representativeAltId,)}
                                                                                              ])
 
                                                         if len(_neighbor) != 1:
@@ -6799,7 +6864,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                                                  {'name': self.__modelNumName, 'type': 'int',
                                                                                                   'value': self.__representativeModelId},
                                                                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                                                                  'enum': ('A')}
+                                                                                                  'enum': (self.__representativeAltId,)}
                                                                                                  ])
 
                                                             if len(_neighbor) != 1:
@@ -6894,7 +6959,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                      {'name': self.__modelNumName, 'type': 'int',
                                                                       'value': self.__representativeModelId},
                                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                                      'enum': ('A')}
+                                                                      'enum': (self.__representativeAltId,)}
                                                                      ])
 
                                 if len(_origin) == 1:
@@ -6910,7 +6975,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                              {'name': self.__modelNumName, 'type': 'int',
                                                                               'value': self.__representativeModelId},
                                                                              {'name': 'label_alt_id', 'type': 'enum',
-                                                                              'enum': ('A')}
+                                                                              'enum': (self.__representativeAltId,)}
                                                                              ])
 
                                         if len(_neighbor) != 1:
@@ -6975,7 +7040,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                              {'name': self.__modelNumName, 'type': 'int',
                                                               'value': self.__representativeModelId},
                                                              {'name': 'label_alt_id', 'type': 'enum',
-                                                              'enum': ('A')}
+                                                              'enum': (self.__representativeAltId,)}
                                                              ])
 
                         if len(_atomByRes) > 0 and _atomByRes[0]['comp_id'] == compId:
@@ -7095,7 +7160,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                          {'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                 except Exception as e:
@@ -7125,7 +7190,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                     [{'name': self.__modelNumName, 'type': 'int',
                                                                       'value': self.__representativeModelId},
                                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                                      'enum': ('A')}
+                                                                      'enum': (self.__representativeAltId,)}
                                                                      ])
 
                                 for atom in __atomSelection:
@@ -7273,7 +7338,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                             [{'name': self.__modelNumName, 'type': 'int',
                                                               'value': self.__representativeModelId},
                                                              {'name': 'label_alt_id', 'type': 'enum',
-                                                              'enum': ('A')}
+                                                              'enum': (self.__representativeAltId,)}
                                                              ])
 
                     except Exception as e:
@@ -7308,7 +7373,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                  {'name': self.__modelNumName, 'type': 'int',
                                                                   'value': self.__representativeModelId},
                                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                                  'enum': ('A')}
+                                                                  'enum': (self.__representativeAltId,)}
                                                                  ])
 
                             if len(_tail) == 1:
@@ -7328,7 +7393,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                          {'name': self.__modelNumName, 'type': 'int',
                                                                           'value': self.__representativeModelId},
                                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                                          'enum': ('A')}
+                                                                          'enum': (self.__representativeAltId,)}
                                                                          ])
 
                                     if len(_head) == 1:
@@ -7375,7 +7440,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                              {'name': self.__modelNumName, 'type': 'int',
                                                               'value': self.__representativeModelId},
                                                              {'name': 'label_alt_id', 'type': 'enum',
-                                                              'enum': ('A')}
+                                                              'enum': (self.__representativeAltId,)}
                                                              ])
 
                         if len(_neighbor) > 0:
@@ -7424,7 +7489,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                         [{'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     lastCompId = None
@@ -7730,7 +7795,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                         [{'name': self.__modelNumName, 'type': 'int',
                                                           'value': self.__representativeModelId},
                                                          {'name': 'label_alt_id', 'type': 'enum',
-                                                          'enum': ('A')}
+                                                          'enum': (self.__representativeAltId,)}
                                                          ])
 
                     for _atom in _atomSelection:
@@ -7778,7 +7843,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p1) != 1:
@@ -7795,7 +7860,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p2) != 1:
@@ -7823,7 +7888,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_p1) != 1:
@@ -7849,7 +7914,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_p2) != 1:
@@ -7887,7 +7952,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p1) != 1:
@@ -7904,7 +7969,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p2) != 1:
@@ -7921,7 +7986,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p3) != 1:
@@ -7938,7 +8003,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p4) != 1:
@@ -7957,7 +8022,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p4) != 1:
@@ -8055,7 +8120,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p1) != 1:
@@ -8072,7 +8137,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p2) != 1:

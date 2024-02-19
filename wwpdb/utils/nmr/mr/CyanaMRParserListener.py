@@ -31,6 +31,7 @@ try:
                                                        isCyclicPolymer,
                                                        getAltProtonIdInBondConstraint,
                                                        guessCompIdFromAtomId,
+                                                       getTypeOfDihedralRestraint,
                                                        isLikePheOrTyr,
                                                        getRestraintName,
                                                        contentSubtypeOf,
@@ -40,6 +41,7 @@ try:
                                                        getLoop,
                                                        getRow,
                                                        getStarAtom,
+                                                       resetCombinationId,
                                                        resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
@@ -47,6 +49,7 @@ try:
                                                        getDstFuncForSsBond,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
+                                                       REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                                        DIST_RESTRAINT_RANGE,
@@ -73,6 +76,7 @@ try:
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
+                                           emptyValue,
                                            protonBeginCode,
                                            pseProBeginCode,
                                            aminoProtonCode,
@@ -112,6 +116,7 @@ except ImportError:
                                            isCyclicPolymer,
                                            getAltProtonIdInBondConstraint,
                                            guessCompIdFromAtomId,
+                                           getTypeOfDihedralRestraint,
                                            isLikePheOrTyr,
                                            getRestraintName,
                                            contentSubtypeOf,
@@ -121,6 +126,7 @@ except ImportError:
                                            getLoop,
                                            getRow,
                                            getStarAtom,
+                                           resetCombinationId,
                                            resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
@@ -128,6 +134,7 @@ except ImportError:
                                            getDstFuncForSsBond,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
+                                           REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                            DIST_RESTRAINT_RANGE,
@@ -154,6 +161,7 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
+                               emptyValue,
                                protonBeginCode,
                                pseProBeginCode,
                                aminoProtonCode,
@@ -277,6 +285,7 @@ class CyanaMRParserListener(ParseTreeListener):
     __offsetHolder = None
 
     __representativeModelId = REPRESENTATIVE_MODEL_ID
+    __representativeAltId = REPRESENTATIVE_ALT_ID
     __hasPolySeq = False
     __hasNonPoly = False
     __hasBranched = False
@@ -356,6 +365,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None, upl_or_lol=None, file_ext=None):
@@ -363,13 +373,15 @@ class CyanaMRParserListener(ParseTreeListener):
         self.__lfh = log
 
         self.__representativeModelId = representativeModelId
+        self.__representativeAltId = representativeAltId
         self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
         self.__cR = cR
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC)
+            ret = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
+                                       cR, caC)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
             self.__authSeqId = ret['auth_seq_id']
@@ -542,7 +554,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-                    if self.__reasons is None and any(f for f in self.__f if 'Atom not found' in f):
+                    if self.__reasons is None and any(f for f in self.__f
+                                                      if '[Atom not found]' in f or '[Sequence mismatch]' in f):
 
                         seqIdRemap = []
 
@@ -573,7 +586,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             if ref_chain_id not in cyclicPolymer:
                                 cyclicPolymer[ref_chain_id] =\
-                                    isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName)
+                                    isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id,
+                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                             if cyclicPolymer[ref_chain_id]:
 
@@ -705,7 +719,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                     if 'chain_seq_id_remap' not in self.reasonsForReParsing:
                                         self.reasonsForReParsing['chain_seq_id_remap'] = seqIdRemapFailed
 
-                if self.__reasons is None and any(f for f in self.__f if 'Atom not found' in f):
+                if self.__reasons is None and any(f for f in self.__f if '[Atom not found]' in f):
                     if len(self.unambigAtomNameMapping) > 0:
                         if 'unambig_atom_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['unambig_atom_id_remap'] = self.unambigAtomNameMapping
@@ -728,7 +742,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['local_seq_scheme']
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-                del self.reasonsForReParsing['seq_id_remap']
+                if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
+                    del self.reasonsForReParsing['seq_id_remap']
 
             if self.__remediate:
                 if self.__dihed_lb_greater_than_ub and self.__dihed_ub_always_positive:
@@ -1245,7 +1260,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
-                if not self.areUniqueCoordAtoms('a Scalar coupling'):
+                if not self.areUniqueCoordAtoms('a scalar coupling'):
                     return
 
                 chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
@@ -1771,7 +1786,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
-                if not self.areUniqueCoordAtoms('a Scalar coupling'):
+                if not self.areUniqueCoordAtoms('a scalar coupling'):
                     return
 
                 chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
@@ -2031,7 +2046,7 @@ class CyanaMRParserListener(ParseTreeListener):
         if compId in ('MTS', 'ORI'):
             compId = None
         if compId is not None:
-            compId = translateToStdResName(compId, self.__ccU)
+            compId = translateToStdResName(compId, ccU=self.__ccU)
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
         if not self.__preferAuthSeq:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
@@ -2065,6 +2080,18 @@ class CyanaMRParserListener(ParseTreeListener):
         fixedSeqId = None
 
         preferNonPoly = False
+
+        if compId == 'CYSZ' and atomId == 'ZN' and self.__hasNonPoly:
+            znCount = 0
+            znSeqId = None
+            for np in self.__nonPoly:
+                if np['comp_id'][0] == 'ZN':
+                    znSeqId = np['auth_seq_id'][0]
+                    znCount += 1
+            if znCount == 1:
+                compId = _compId = 'ZN'
+                seqId = _seqId = znSeqId
+                preferNonPoly = True
 
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
@@ -2104,7 +2131,7 @@ class CyanaMRParserListener(ParseTreeListener):
                and atomId in self.unambigAtomNameMapping[compId]:
                 atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
 
-        compId = translateToStdResName(_compId, self.__ccU)
+        compId = translateToStdResName(_compId, ccU=self.__ccU)
         updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
 
         for ps in self.__polySeq:
@@ -2138,7 +2165,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.add((chainId, seqId, cifCompId, True))
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, self.__ccU):
+                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                     #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                     #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
@@ -2239,7 +2266,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                             # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, self.__ccU):
+                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                             #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                             #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
@@ -2282,7 +2309,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             cifCompId = compId
                     chainAssign.add((chainId, _seqId, cifCompId, True))
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, self.__ccU):
+                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                     #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                     #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
@@ -2323,7 +2350,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             self.__authSeqId = 'label_seq_id'
                             self.__setLocalSeqScheme()
                             # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, self.__ccU):
+                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                             #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                             #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
@@ -2332,10 +2359,14 @@ class CyanaMRParserListener(ParseTreeListener):
             if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequence(seqId, compId, 'H1')
-            if seqId < 1 and len(self.__polySeq) == 1:
+            if len(self.__polySeq) == 1\
+               and (seqId < 1
+                    or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
+                    or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
+                refChainId = self.__polySeq[0]['auth_chain_id']
                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                 f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
-                                f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "
+                                f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                 "Please update the sequence in the Macromolecules page.")
             else:
                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -2359,6 +2390,18 @@ class CyanaMRParserListener(ParseTreeListener):
         fixedSeqId = None
 
         preferNonPoly = False
+
+        if compId == 'CYSZ' and atomId == 'ZN' and self.__hasNonPoly:
+            znCount = 0
+            znSeqId = None
+            for np in self.__nonPoly:
+                if np['comp_id'][0] == 'ZN':
+                    znSeqId = np['auth_seq_id'][0]
+                    znCount += 1
+            if znCount == 1:
+                compId = _compId = 'ZN'
+                seqId = _seqId = znSeqId
+                preferNonPoly = True
 
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
@@ -2400,7 +2443,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if compId in self.unambigAtomNameMapping and atomId in self.unambigAtomNameMapping[compId]:
                 atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
 
-        compId = translateToStdResName(_compId, self.__ccU)
+        compId = translateToStdResName(_compId, ccU=self.__ccU)
         updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId, _compId)
 
         if refChainId is not None or refChainId != _refChainId:
@@ -2448,7 +2491,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, self.__ccU):
+                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                     #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                     #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
@@ -2564,7 +2607,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
                             # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, self.__ccU):
+                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                             #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                             #             f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
@@ -2625,7 +2668,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, self.__ccU):
+                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                     #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                     #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
@@ -2674,7 +2717,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
                             # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, self.__ccU):
+                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                             #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                             #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
@@ -2688,7 +2731,11 @@ class CyanaMRParserListener(ParseTreeListener):
                                 f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                 "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the CYANA restraint file.")
             else:
-                if seqId < 1 and len(self.__polySeq) == 1:
+                if len(self.__polySeq) == 1\
+                   and (seqId < 1
+                        or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
+                        or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
+                    refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                     f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
@@ -2881,13 +2928,14 @@ class CyanaMRParserListener(ParseTreeListener):
                     return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1')
             if atomId is not None and (('-' in atomId and ':' in atomId) or '.' in atomId):
                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                f"{_seqId}:{atomId} is not present in the coordinates. "
+                                f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                 "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the CYANA restraint file.")
             else:
-                if seqId < 1 and len(self.__polySeq) == 1:
+                if len(self.__polySeq) == 1 and seqId < 1:
+                    refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"{_seqId}:{atomId} is not present in the coordinates. "
-                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "
+                                    f"{_seqId}:?:{atomId} is not present in the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -3079,13 +3127,14 @@ class CyanaMRParserListener(ParseTreeListener):
                     return self.assignCoordPolymerSequenceWithChainIdWithoutCompId(fixedChainId, seqId, 'H1')
             if (('-' in atomId and ':' in atomId) or '.' in atomId):
                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates. "
+                                f"{fixedChainId}:{_seqId}:?:{atomId} is not present in the coordinates. "
                                 "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the CYANA restraint file.")
             else:
-                if seqId < 1 and len(self.__polySeq) == 1:
+                if len(self.__polySeq) == 1 and seqId < 1:
+                    refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates. "
-                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {fixedChainId} of the coordinates. "
+                                    f"{_seqId}:?:{atomId} is not present in the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -3111,6 +3160,17 @@ class CyanaMRParserListener(ParseTreeListener):
         _atomId = atomId
 
         if compId is not None:
+
+            if compId == 'CYSZ' and atomId == 'ZN' and self.__hasNonPoly:
+                znCount = 0
+                znSeqId = None
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == 'ZN':
+                        znSeqId = np['auth_seq_id'][0]
+                        znCount += 1
+                if znCount == 1:
+                    compId = _compId = 'ZN'
+                    seqId = znSeqId
 
             if self.__mrAtomNameMapping is not None and compId not in monDict3:
                 _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
@@ -3166,7 +3226,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.atomSelectionSet.append(atomSelection)
                     return
 
-            compId = translateToStdResName(_compId, self.__ccU)
+            compId = translateToStdResName(_compId, ccU=self.__ccU)
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 
@@ -3201,12 +3261,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
                 _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
-                if atomId != _atomId and coordAtomSite is not None and _atomId in coordAtomSite['atom_id']:
+                if atomId != _atomId and coordAtomSite is not None\
+                   and (_atomId in coordAtomSite['atom_id'] or (_atomId.endswith('%') and _atomId[:-1] + '2' in coordAtomSite['atom_id'])):
                     atomId = _atomId
                 elif self.__reasons is not None and 'branched_remap' in self.__reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, cifSeqId)
                     if _seqId != cifSeqId:
-                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, coordAtomSite)
+                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
 
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
             if details is not None and len(atomId) > 1 and not atomId[-1].isalpha() and (atomId[0] in pseProBeginCode or atomId[0] in ('C', 'N', 'P', 'F')):
@@ -3502,7 +3563,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p1) != 1:
@@ -3519,7 +3580,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p2) != 1:
@@ -3547,7 +3608,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_p1) != 1:
@@ -3573,7 +3634,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_p2) != 1:
@@ -3611,7 +3672,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p1) != 1:
@@ -3628,7 +3689,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p2) != 1:
@@ -3645,7 +3706,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p3) != 1:
@@ -3662,7 +3723,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p4) != 1:
@@ -3681,7 +3742,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p4) != 1:
@@ -3800,7 +3861,7 @@ class CyanaMRParserListener(ParseTreeListener):
         try:
 
             _compId = str(ctx.Simple_name(0)).upper()
-            compId = translateToStdResName(_compId, self.__ccU)
+            compId = translateToStdResName(_compId, ccU=self.__ccU)
             if self.__cur_subtype_altered:  # invoked from exitCco_restraint()
                 seqId = int(str(ctx.Integer()))
                 chainId = str(ctx.Simple_name(1)).upper()
@@ -4058,8 +4119,29 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.atomSelectionSet) < 4:
                         return
 
-                    if not self.areUniqueCoordAtoms('a Torsion angle'):
+                    try:
+                        self.atomSelectionSet[0][0]['comp_id']
+                    except IndexError:
+                        self.areUniqueCoordAtoms('a torsion angle')
                         return
+
+                    len_f = len(self.__f)
+                    self.areUniqueCoordAtoms('a torsion angle',
+                                             allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
+                    combinationId = '.' if len_f == len(self.__f) else 0
+
+                    if isinstance(combinationId, int):
+                        fixedAngleName = '.'
+                        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                            self.atomSelectionSet[1],
+                                                                            self.atomSelectionSet[2],
+                                                                            self.atomSelectionSet[3]):
+                            _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                    [atom1, atom2, atom3, atom4])
+                            if _angleName in emptyValue:
+                                continue
+                            fixedAngleName = _angleName
+                            break
 
                     if self.__createSfDict:
                         sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
@@ -4071,6 +4153,12 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                         self.atomSelectionSet[3]):
                         if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                             continue
+                        _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                [atom1, atom2, atom3, atom4])
+                        if isinstance(combinationId, int):
+                            if _angleName != fixedAngleName:
+                                continue
+                            combinationId += 1
                         if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
                             dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                               dstFunc)
@@ -4080,11 +4168,14 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__createSfDict and sf is not None:
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                         '.', None, angleName,
+                                         combinationId, None, angleName,
                                          sf['list_id'], self.__entryId, dstFunc,
                                          self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          atom1, atom2, atom3, atom4)
                             sf['loop'].add_data(row)
+
+                    if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                        sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
             # phase angle of pseudorotation
             else:
@@ -4160,8 +4251,29 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.atomSelectionSet) < 5:
                         return
 
-                    if not self.areUniqueCoordAtoms('a Torsion angle'):
+                    try:
+                        self.atomSelectionSet[0][0]['comp_id']
+                    except IndexError:
+                        self.areUniqueCoordAtoms('a torsion angle')
                         return
+
+                    len_f = len(self.__f)
+                    self.areUniqueCoordAtoms('a torsion angle',
+                                             allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
+                    combinationId = '.' if len_f == len(self.__f) else 0
+
+                    if isinstance(combinationId, int):
+                        fixedAngleName = '.'
+                        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                            self.atomSelectionSet[1],
+                                                                            self.atomSelectionSet[2],
+                                                                            self.atomSelectionSet[3]):
+                            _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                    [atom1, atom2, atom3, atom4])
+                            if _angleName in emptyValue:
+                                continue
+                            fixedAngleName = _angleName
+                            break
 
                     if self.__createSfDict:
                         sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
@@ -4174,17 +4286,26 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                                self.atomSelectionSet[4]):
                         if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5], self.__polySeq if self.__gapInAuthSeq else None):
                             continue
+                        _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                [atom1, atom2, atom3, atom4])
+                        if isinstance(combinationId, int):
+                            if _angleName != fixedAngleName:
+                                continue
+                            combinationId += 1
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                                   f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} {dstFunc}")
                         if self.__createSfDict and sf is not None:
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                         '.', None, angleName,
+                                         combinationId, None, angleName,
                                          sf['list_id'], self.__entryId, dstFunc,
                                          self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          None, None, None, None, atom5)
                             sf['loop'].add_data(row)
+
+                    if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                        sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         except ValueError:
             self.dihedRestraints -= 1
@@ -4488,6 +4609,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
         except ValueError:
             self.rdcRestraints -= 1
         finally:
@@ -4567,13 +4691,17 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def areUniqueCoordAtoms(self, subtype_name):
+    def areUniqueCoordAtoms(self, subtype_name, allow_ambig=False, allow_ambig_warn_title=''):
         """ Check whether atom selection sets are uniquely assigned.
         """
 
         for _atomSelectionSet in self.atomSelectionSet:
+            _lenAtomSelectionSet = len(_atomSelectionSet)
 
-            if len(_atomSelectionSet) < 2:
+            if _lenAtomSelectionSet == 0:
+                return False  # raised error already
+
+            if _lenAtomSelectionSet == 1:
                 continue
 
             for (atom1, atom2) in itertools.combinations(_atomSelectionSet, 2):
@@ -4581,7 +4709,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     continue
                 if atom1['seq_id'] != atom2['seq_id']:
                     continue
-                self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
+                if allow_ambig:
+                    self.__f.append(f"[{allow_ambig_warn_title}] {self.__getCurrentRestraint()}"
+                                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                    f"{atom2['atom_id']}' found in {subtype_name} restraint.")
+                    continue
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                 f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
                                 f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.")
                 return False
@@ -6704,8 +6837,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             if len(self.__col_order_of_dist_w_chain) == 0:
                 for j in range(3):
-                    if len(jVal[j]) > 2 and translateToStdResName(jVal[j], self.__ccU) in monDict3:
-                        compId = translateToStdResName(jVal[j], self.__ccU)
+                    if len(jVal[j]) > 2 and translateToStdResName(jVal[j], ccU=self.__ccU) in monDict3:
+                        compId = translateToStdResName(jVal[j], ccU=self.__ccU)
                         if self.__ccU.updateChemCompDict(compId):
                             for k in range(3):
                                 if k == j:
@@ -6730,8 +6863,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                         self.__col_order_of_dist_w_chain['atom_id_1'] = k
                                         self.__col_order_of_dist_w_chain['chain_id_1'] = 3 - (j + k)
                                         break
-                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], self.__ccU) not in monDict3:
-                        compId = translateToStdResName(jVal[j], self.__ccU)
+                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.__ccU) not in monDict3:
+                        compId = translateToStdResName(jVal[j], ccU=self.__ccU)
                         if self.__ccU.updateChemCompDict(compId):
                             for k in range(3):
                                 if k == j:
@@ -6757,8 +6890,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                         self.__col_order_of_dist_w_chain['chain_id_1'] = 3 - (j + k)
                                         break
                 for j in range(3, 6):
-                    if len(jVal[j]) > 2 and translateToStdResName(jVal[j], self.__ccU) in monDict3:
-                        compId = translateToStdResName(jVal[j], self.__ccU)
+                    if len(jVal[j]) > 2 and translateToStdResName(jVal[j], ccU=self.__ccU) in monDict3:
+                        compId = translateToStdResName(jVal[j], ccU=self.__ccU)
                         if self.__ccU.updateChemCompDict(compId):
                             for k in range(3, 6):
                                 if k == j:
@@ -6783,8 +6916,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                         self.__col_order_of_dist_w_chain['atom_id_2'] = k
                                         self.__col_order_of_dist_w_chain['chain_id_2'] = 12 - (j + k)
                                         break
-                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], self.__ccU) not in monDict3:
-                        compId = translateToStdResName(jVal[j], self.__ccU)
+                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.__ccU) not in monDict3:
+                        compId = translateToStdResName(jVal[j], ccU=self.__ccU)
                         if self.__ccU.updateChemCompDict(compId):
                             for k in range(3, 6):
                                 if k == j:
@@ -7262,7 +7395,7 @@ class CyanaMRParserListener(ParseTreeListener):
             chainId = str(ctx.Simple_name(0))
             seqId = int(str(ctx.Integer()))
             compId = str(ctx.Simple_name(1)).upper()
-            _compId = translateToStdResName(compId, self.__ccU)
+            _compId = translateToStdResName(compId, ccU=self.__ccU)
             angleName = str(ctx.Simple_name(2)).upper()
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
@@ -7511,8 +7644,29 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.atomSelectionSet) < 4:
                         return
 
-                    if not self.areUniqueCoordAtoms('a Torsion angle'):
+                    try:
+                        self.atomSelectionSet[0][0]['comp_id']
+                    except IndexError:
+                        self.areUniqueCoordAtoms('a torsion angle')
                         return
+
+                    len_f = len(self.__f)
+                    self.areUniqueCoordAtoms('a torsion angle',
+                                             allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
+                    combinationId = '.' if len_f == len(self.__f) else 0
+
+                    if isinstance(combinationId, int):
+                        fixedAngleName = '.'
+                        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                            self.atomSelectionSet[1],
+                                                                            self.atomSelectionSet[2],
+                                                                            self.atomSelectionSet[3]):
+                            _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                    [atom1, atom2, atom3, atom4])
+                            if _angleName in emptyValue:
+                                continue
+                            fixedAngleName = _angleName
+                            break
 
                     if self.__createSfDict:
                         sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
@@ -7524,6 +7678,12 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                         self.atomSelectionSet[3]):
                         if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                             continue
+                        _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                [atom1, atom2, atom3, atom4])
+                        if isinstance(combinationId, int):
+                            if _angleName != fixedAngleName:
+                                continue
+                            combinationId += 1
                         if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
                             dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                               dstFunc)
@@ -7533,11 +7693,14 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__createSfDict and sf is not None:
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                         '.', None, angleName,
+                                         combinationId, None, angleName,
                                          sf['list_id'], self.__entryId, dstFunc,
                                          self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          atom1, atom2, atom3, atom4)
                             sf['loop'].add_data(row)
+
+                    if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                        sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
             # phase angle of pseudorotation
             else:
@@ -7613,8 +7776,29 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.atomSelectionSet) < 5:
                         return
 
-                    if not self.areUniqueCoordAtoms('a Torsion angle'):
+                    try:
+                        self.atomSelectionSet[0][0]['comp_id']
+                    except IndexError:
+                        self.areUniqueCoordAtoms('a torsion angle')
                         return
+
+                    len_f = len(self.__f)
+                    self.areUniqueCoordAtoms('a torsion angle',
+                                             allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
+                    combinationId = '.' if len_f == len(self.__f) else 0
+
+                    if isinstance(combinationId, int):
+                        fixedAngleName = '.'
+                        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                            self.atomSelectionSet[1],
+                                                                            self.atomSelectionSet[2],
+                                                                            self.atomSelectionSet[3]):
+                            _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                    [atom1, atom2, atom3, atom4])
+                            if _angleName in emptyValue:
+                                continue
+                            fixedAngleName = _angleName
+                            break
 
                     if self.__createSfDict:
                         sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
@@ -7627,17 +7811,26 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                                self.atomSelectionSet[4]):
                         if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5], self.__polySeq if self.__gapInAuthSeq else None):
                             continue
+                        _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                [atom1, atom2, atom3, atom4])
+                        if isinstance(combinationId, int):
+                            if _angleName != fixedAngleName:
+                                continue
+                            combinationId += 1
                         if self.__debug:
                             print(f"subtype={self.__cur_subtype} id={self.dihedRestraints} angleName={angleName} "
                                   f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} atom5={atom5} {dstFunc}")
                         if self.__createSfDict and sf is not None:
                             sf['index_id'] += 1
                             row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                         '.', None, angleName,
+                                         combinationId, None, angleName,
                                          sf['list_id'], self.__entryId, dstFunc,
                                          self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          None, None, None, None, atom5)
                             sf['loop'].add_data(row)
+
+                    if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                        sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         except ValueError:
             self.dihedRestraints -= 1
@@ -7727,7 +7920,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 2:
                 return
 
-            if not self.areUniqueCoordAtoms('a Scalar coupling'):
+            if not self.areUniqueCoordAtoms('a scalar coupling'):
                 return
 
             chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
@@ -7905,7 +8098,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 _tail =\
@@ -7917,7 +8110,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_head) == 1 and len(_tail) == 1:
@@ -8016,7 +8209,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 _tail =\
@@ -8028,7 +8221,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_head) == 1 and len(_tail) == 1:
@@ -8183,7 +8376,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 _tail =\
@@ -8195,7 +8388,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_head) == 1 and len(_tail) == 1:
@@ -8568,7 +8761,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         unambigResidues = None
         if len(self.unambigAtomNameMapping) > 0:
-            unambigResidues = [translateToStdResName(residue, self.__ccU) for residue in self.unambigAtomNameMapping.keys()]
+            unambigResidues = [translateToStdResName(residue, ccU=self.__ccU) for residue in self.unambigAtomNameMapping.keys()]
 
         for ambigDict in self.ambigAtomNameMapping.values():
             for ambigList in ambigDict.values():
@@ -8594,7 +8787,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         if unambigResidues is not None and cifCompId in unambigResidues:
 
                             unambigMap = next(v for k, v in self.unambigAtomNameMapping.items()
-                                              if translateToStdResName(k, self.__ccU) == cifCompId)
+                                              if translateToStdResName(k, ccU=self.__ccU) == cifCompId)
 
                             if atomName in unambigMap:
 

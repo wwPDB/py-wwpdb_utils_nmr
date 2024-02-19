@@ -39,6 +39,7 @@ try:
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        REPRESENTATIVE_MODEL_ID,
+                                                       REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
@@ -96,6 +97,7 @@ except ImportError:
                                            getDistConstraintType,
                                            getPotentialType,
                                            REPRESENTATIVE_MODEL_ID,
+                                           REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
@@ -197,6 +199,7 @@ class IsdMRParserListener(ParseTreeListener):
     __offsetHolder = None
 
     __representativeModelId = REPRESENTATIVE_MODEL_ID
+    __representativeAltId = REPRESENTATIVE_ALT_ID
     __hasPolySeq = False
     __hasNonPoly = False
     __hasBranched = False
@@ -238,6 +241,7 @@ class IsdMRParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None):
@@ -245,13 +249,15 @@ class IsdMRParserListener(ParseTreeListener):
         self.__lfh = log
 
         self.__representativeModelId = representativeModelId
+        self.__representativeAltId = representativeAltId
         self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
         self.__cR = cR
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC)
+            ret = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
+                                       cR, caC)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
             self.__authSeqId = ret['auth_seq_id']
@@ -379,7 +385,8 @@ class IsdMRParserListener(ParseTreeListener):
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-                    if self.__reasons is None and any(f for f in self.__f if 'Atom not found' in f):
+                    if self.__reasons is None and any(f for f in self.__f
+                                                      if '[Atom not found]' in f or '[Sequence mismatch]' in f):
 
                         seqIdRemap = []
 
@@ -410,7 +417,8 @@ class IsdMRParserListener(ParseTreeListener):
 
                             if ref_chain_id not in cyclicPolymer:
                                 cyclicPolymer[ref_chain_id] =\
-                                    isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName)
+                                    isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id,
+                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                             if cyclicPolymer[ref_chain_id]:
 
@@ -536,7 +544,8 @@ class IsdMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['local_seq_scheme']
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-                del self.reasonsForReParsing['seq_id_remap']
+                if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
+                    del self.reasonsForReParsing['seq_id_remap']
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
@@ -799,7 +808,7 @@ class IsdMRParserListener(ParseTreeListener):
         return dstFunc
 
     def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
-        compId = translateToStdResName(compId, self.__ccU)
+        compId = translateToStdResName(compId, ccU=self.__ccU)
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
         if not self.__preferAuthSeq:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
@@ -830,6 +839,18 @@ class IsdMRParserListener(ParseTreeListener):
 
         preferNonPoly = False
 
+        if compId == 'CYSZ' and atomId == 'ZN' and self.__hasNonPoly:
+            znCount = 0
+            znSeqId = None
+            for np in self.__nonPoly:
+                if np['comp_id'][0] == 'ZN':
+                    znSeqId = np['auth_seq_id'][0]
+                    znCount += 1
+            if znCount == 1:
+                compId = _compId = 'ZN'
+                seqId = _seqId = znSeqId
+                preferNonPoly = True
+
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
@@ -853,7 +874,7 @@ class IsdMRParserListener(ParseTreeListener):
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
-        compId = translateToStdResName(_compId, self.__ccU)
+        compId = translateToStdResName(_compId, ccU=self.__ccU)
         updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
 
         for ps in self.__polySeq:
@@ -887,7 +908,7 @@ class IsdMRParserListener(ParseTreeListener):
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.add((chainId, seqId, cifCompId, True))
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, self.__ccU):
+                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                     #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                     #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
@@ -990,7 +1011,7 @@ class IsdMRParserListener(ParseTreeListener):
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                             # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, self.__ccU):
+                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                             #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                             #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
@@ -1033,7 +1054,7 @@ class IsdMRParserListener(ParseTreeListener):
                             cifCompId = compId
                     chainAssign.add((chainId, _seqId, cifCompId, True))
                     # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, self.__ccU):
+                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                     #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                     #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
@@ -1074,7 +1095,7 @@ class IsdMRParserListener(ParseTreeListener):
                             self.__authSeqId = 'label_seq_id'
                             self.__setLocalSeqScheme()
                             # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, self.__ccU):
+                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
                             #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                             #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                             # """
@@ -1083,10 +1104,14 @@ class IsdMRParserListener(ParseTreeListener):
             if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequence(seqId, compId, 'H1')
-            if seqId < 1 and len(self.__polySeq) == 1:
+            if len(self.__polySeq) == 1\
+               and (seqId < 1
+                    or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
+                    or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
+                refChainId = self.__polySeq[0]['auth_chain_id']
                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                 f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
-                                f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "
+                                f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                 "Please update the sequence in the Macromolecules page.")
             else:
                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -1106,10 +1131,21 @@ class IsdMRParserListener(ParseTreeListener):
         _compId = compId
         _atomId = atomId
 
+        if compId == 'CYSZ' and atomId == 'ZN' and self.__hasNonPoly:
+            znCount = 0
+            znSeqId = None
+            for np in self.__nonPoly:
+                if np['comp_id'][0] == 'ZN':
+                    znSeqId = np['auth_seq_id'][0]
+                    znCount += 1
+            if znCount == 1:
+                compId = _compId = 'ZN'
+                seqId = znSeqId
+
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
-        compId = translateToStdResName(_compId, self.__ccU)
+        compId = translateToStdResName(_compId, ccU=self.__ccU)
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 
@@ -1144,12 +1180,13 @@ class IsdMRParserListener(ParseTreeListener):
 
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
                 _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
-                if atomId != _atomId and coordAtomSite is not None and _atomId in coordAtomSite['atom_id']:
+                if atomId != _atomId and coordAtomSite is not None\
+                   and (_atomId in coordAtomSite['atom_id'] or (_atomId.endswith('%') and _atomId[:-1] + '2' in coordAtomSite['atom_id'])):
                     atomId = _atomId
                 elif self.__reasons is not None and 'branched_remap' in self.__reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, cifSeqId)
                     if _seqId != cifSeqId:
-                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, coordAtomSite)
+                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
 
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
             if details is not None and len(atomId) > 1 and not atomId[-1].isalpha() and (atomId[0] in pseProBeginCode or atomId[0] in ('C', 'N', 'P', 'F')):
@@ -1441,7 +1478,7 @@ class IsdMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p1) != 1:
@@ -1458,7 +1495,7 @@ class IsdMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p2) != 1:
@@ -1486,7 +1523,7 @@ class IsdMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_p1) != 1:
@@ -1512,7 +1549,7 @@ class IsdMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_p2) != 1:

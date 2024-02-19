@@ -21,7 +21,8 @@ try:
                                                        translateToStdAtomName,
                                                        translateToStdAtomNameOfDmpc,
                                                        translateToStdResName,
-                                                       REPRESENTATIVE_MODEL_ID)
+                                                       REPRESENTATIVE_MODEL_ID,
+                                                       REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -43,7 +44,8 @@ except ImportError:
                                            translateToStdAtomName,
                                            translateToStdAtomNameOfDmpc,
                                            translateToStdResName,
-                                           REPRESENTATIVE_MODEL_ID)
+                                           REPRESENTATIVE_MODEL_ID,
+                                           REPRESENTATIVE_ALT_ID)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -143,13 +145,15 @@ class AmberPTParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None):
 
         self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
         if cR is not None:
-            ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC, None, fullCheck=True)
+            ret = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
+                                       cR, caC, None, fullCheck=True)
             self.__polySeqModel = ret['polymer_sequence']
             self.__nonPolyModel = ret['non_polymer']
             self.__branchedModel = ret['branched']
@@ -282,7 +286,7 @@ class AmberPTParserListener(ParseTreeListener):
                     return True
                 return comp_id.endswith('5')\
                     and (is_prev_3_prime_comp
-                         or self.__csStat.peptideLike(translateToStdResName(prev_comp_id, self.__ccU)))
+                         or self.__csStat.peptideLike(translateToStdResName(prev_comp_id, ccU=self.__ccU)))
 
             def is_metal_ion(comp_id, atom_name):
                 if comp_id is None:
@@ -364,7 +368,7 @@ class AmberPTParserListener(ParseTreeListener):
                                    if atomNum['chain_id'] == chainId
                                    and atomNum['seq_id'] == seqId
                                    and atomNum['auth_atom_id'][0] not in protonBeginCode]
-                    authCompId = translateToStdResName(authCompId, self.__ccU)
+                    authCompId = translateToStdResName(authCompId, ccU=self.__ccU)
                     if self.__ccU.updateChemCompDict(authCompId):
                         chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                         valid = True
@@ -382,7 +386,7 @@ class AmberPTParserListener(ParseTreeListener):
 
                                     if authCompId in nonPolyCompIdList and self.__mrAtomNameMapping is not None\
                                        and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
-                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, True)
+                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
@@ -417,7 +421,7 @@ class AmberPTParserListener(ParseTreeListener):
 
                                         if compId in nonPolyCompIdList and self.__mrAtomNameMapping is not None\
                                            and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
-                                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, True)
+                                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, None, True)
                                         else:
                                             atomId = atomNum['auth_atom_id']
 
@@ -454,7 +458,7 @@ class AmberPTParserListener(ParseTreeListener):
 
                                     if compId in nonPolyCompIdList and self.__mrAtomNameMapping is not None\
                                        and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
-                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, True)
+                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, None, True)
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
@@ -489,7 +493,7 @@ class AmberPTParserListener(ParseTreeListener):
 
                         if compId in nonPolyCompIdList and self.__mrAtomNameMapping is not None\
                            and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, True)
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
 
@@ -500,13 +504,13 @@ class AmberPTParserListener(ParseTreeListener):
                             if 'atom_type' in atomNum:
                                 del atomNum['atom_type']
                         elif atomNum['comp_id'] != atomNum['auth_comp_id']:
-                            authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
+                            authCompId = translateToStdResName(atomNum['auth_comp_id'], ccU=self.__ccU)
                             if self.__ccU.updateChemCompDict(authCompId):
                                 chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
 
                                 if authCompId in nonPolyCompIdList and self.__mrAtomNameMapping is not None\
                                    and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
-                                    _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, True)
+                                    _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
                                 else:
                                     atomId = atomNum['auth_atom_id']
 
@@ -517,12 +521,12 @@ class AmberPTParserListener(ParseTreeListener):
                                     if 'atom_type' in atomNum:
                                         del atomNum['atom_type']
                 else:
-                    authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
+                    authCompId = translateToStdResName(atomNum['auth_comp_id'], ccU=self.__ccU)
                     if self.__ccU.updateChemCompDict(authCompId):
 
                         if authCompId in nonPolyCompIdList and self.__mrAtomNameMapping is not None\
                            and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, True)
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
 
@@ -630,7 +634,7 @@ class AmberPTParserListener(ParseTreeListener):
 
                                     if authCompId in nonPolyCompIdList and self.__mrAtomNameMapping is not None\
                                        and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
-                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, True)
+                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
@@ -642,11 +646,11 @@ class AmberPTParserListener(ParseTreeListener):
                     continue
                 if 'atom_id' not in atomNum:
                     if 'comp_id' not in atomNum or atomNum['comp_id'] == atomNum['auth_comp_id']:
-                        authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
+                        authCompId = translateToStdResName(atomNum['auth_comp_id'], ccU=self.__ccU)
 
                         if self.__mrAtomNameMapping is not None\
                            and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, True)
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
 
@@ -678,11 +682,11 @@ class AmberPTParserListener(ParseTreeListener):
                                     continue
 
                     else:
-                        authCompId = translateToStdResName(atomNum['auth_comp_id'], self.__ccU)
+                        authCompId = translateToStdResName(atomNum['auth_comp_id'], ccU=self.__ccU)
 
                         if self.__mrAtomNameMapping is not None\
                            and atomNum['auth_atom_id'][0] in protonBeginCode and k not in retrievedAtomNumList:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, True)
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
 
@@ -791,7 +795,7 @@ class AmberPTParserListener(ParseTreeListener):
                             atomNum['comp_id'] = ps_cif['comp_id'][idx]
 
                         if orphan and test_seq_id == first_seq_id\
-                           and self.__csStat.peptideLike(translateToStdResName(atomNum['comp_id'])):
+                           and self.__csStat.peptideLike(translateToStdResName(atomNum['comp_id'], ccU=self.__ccU)):
                             if self.__ccU.updateChemCompDict(atomNum['comp_id']):
                                 chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                                 leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
@@ -1054,7 +1058,7 @@ class AmberPTParserListener(ParseTreeListener):
                         if atomId in chemCompAtomIds:
                             atomNum['atom_id'] = atomId
                         else:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, compId, authAtomId, None, True)
+                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, None, compId, authAtomId, None, None, True)
 
                             if atomId in chemCompAtomIds:
                                 atomNum['atom_id'] = atomId

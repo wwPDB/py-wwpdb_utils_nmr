@@ -85,6 +85,9 @@ WELL_KNOWN_ISOTOPE_NUMBERS.extend(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P'])
 REPRESENTATIVE_MODEL_ID = 1
 
 
+REPRESENTATIVE_ALT_ID = 'A'
+
+
 MAX_PREF_LABEL_SCHEME_COUNT = 100
 
 
@@ -153,7 +156,7 @@ KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           'OMEGA': ['CA', 'C', 'N', 'CA'],  # i, i, i+1, i+1; modified CYANA definition [O C N (H or CD for Proline residue)]
                           'CHI1': ['N', 'CA', 'CB', re.compile(r'^[COS]G1?$')],
                           'CHI2': ['CA', 'CB', re.compile(r'^CG1?$'), re.compile(r'^[CNOS]D1?$')],
-                          'CHI3': ['CB', 'CG', re.compile(r'^[CS]D$'), re.compile(r'^[CNO]E1?$')],
+                          'CHI3': ['CB', 'CG', re.compile(r'^[CS]D$'), re.compile(r'^[CNO]E1?|N$')],
                           'CHI4': ['CG', 'CD', re.compile(r'^[CN]E$'), re.compile(r'^[CN]Z$')],
                           'CHI5': ['CD', 'NE', 'CZ', 'NH1'],
                           'CHI21': ['CA', 'CB', re.compile(r'^[CO]G1$'), re.compile(r'^CD1|HG11?$')],  # ILE: (CG1, CD1), THR: (OG1, HG1), VAL: (CD1, HG11)
@@ -1795,7 +1798,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
             return atomId
 
     if refCompId is not None and ccU is not None:
-        refCompId = translateToStdResName(refCompId, ccU)
+        refCompId = translateToStdResName(refCompId, ccU=ccU)
         if ccU.updateChemCompDict(refCompId):
             if refAtomIdList is not None:
                 if atomId in refAtomIdList:
@@ -1928,6 +1931,14 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return atomId[:-1] if atomId.endswith('1') else atomId
             elif refCompId in ('DT', 'T') and atomId.startswith('Q5'):
                 return 'H7'
+            elif refCompId in ('DA', 'A') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
+                return 'H6' + atomId[-1]
+            elif refCompId in ('DG', 'G') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):  # 6g99
+                return 'H2' + atomId[-1]
+            elif refCompId in ('DC', 'C') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
+                return 'H4' + atomId[-1]
+            elif refCompId == 'U' and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] == '1':  # 6g99
+                return 'H3'
             elif refAtomIdList is not None and ((atomId[0] + 'N' + atomId[1:] in refAtomIdList) or (atomId[0] + 'N' + atomId[1:] + '1' in refAtomIdList)):  # 5CM
                 return atomId[0] + 'N' + atomId[1:]
             elif (atomId[0] + 'N' + atomId[1:] in _refAtomIdList) or (atomId[0] + 'N' + atomId[1:] + '1' in _refAtomIdList):  # 5CM
@@ -2031,10 +2042,12 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
         if len(refCompId) == 3 and refCompId in monDict3:
             if atomId == 'O1':
                 return 'O'
-            if atomId == 'O2':
+            if atomId == 'O2' or atomId.startswith('OT'):
                 return 'OXT'
             if atomId.startswith('HT') and len(atomId) > 2:
                 return 'H' + atomId[2:]
+            if atomId == 'NH':  # 2jwu
+                return 'N'
 
         # BIOSYM atom nomenclature
         if (atomId[-1] in ('R', 'S', 'Z', 'E') or (len(atomId) > 2 and atomId[-1] in ('*', '%') and atomId[-2] in ('R', 'S'))):
@@ -2180,7 +2193,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'HN2'
 
         if refCompId == 'ACE':
-            if atomId in ('HA*', 'HA%', 'QH', 'MH', 'QA', 'MA') and not unambig:
+            if atomId in ('HA*', 'HA%', 'HA1', 'HA2', 'HA3', 'QH', 'MH', 'QA', 'MA') and not unambig:
                 return 'H%'
             if atomId == 'CA':
                 return 'CH3'
@@ -2863,7 +2876,7 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
     return atomId
 
 
-def translateToStdResName(compId, ccU=None):
+def translateToStdResName(compId, refCompId=None, ccU=None):
     """ Translate software specific residue name for standard residues to the CCD one.
     """
 
@@ -2873,7 +2886,7 @@ def translateToStdResName(compId, ccU=None):
         if compId3 in monDict3:
             return compId3
 
-    if compId.endswith('5') or compId.endswith('3'):
+    if compId[-1] in ('5', '3'):
         _compId = compId[:-1]
 
         if _compId in monDict3:
@@ -2884,18 +2897,20 @@ def translateToStdResName(compId, ccU=None):
 
         if _compId in monDict3:
             return _compId
-        # """ do not use
-        # if _compId.endswith('5') or _compId.endswith('3'):
-        #     _compId = _compId[:-1]
-        #
-        #     if _compId in monDict3:
-        #         return _compId
-        # """
+
+        if refCompId is not None and len(refCompId) == 1 and _compId[-1] in ('5', '3'):
+            _compId = _compId[:-1]
+
+            if _compId in monDict3:
+                return _compId
+
     if compId in ('HIE', 'HIP', 'HID', 'HIZ'):
         return 'HIS'
 
-    if compId.startswith('CY') and ccU is not None:
-        if ccU.updateChemCompDict(compId):
+    if compId.startswith('CY'):
+        if refCompId == 'CYS':  # 6xyv
+            return 'CYS'
+        if ccU is not None and ccU.updateChemCompDict(compId):
             if ccU.lastChemCompDict['_chem_comp.type'] == 'L-PEPTIDE LINKING'\
                and 'CYSTEINE' in ccU.lastChemCompDict['_chem_comp.name']:
                 return 'CYS'
@@ -2935,6 +2950,7 @@ def translateToStdResName(compId, ccU=None):
 
 def coordAssemblyChecker(verbose=True, log=sys.stdout,
                          representativeModelId=REPRESENTATIVE_MODEL_ID,
+                         representativeAltId=REPRESENTATIVE_ALT_ID,
                          cR=None, prevResult=None, nmrPolySeq=None,
                          fullCheck=True):
     """ Check assembly of the coordinates for MR/PT parser listener.
@@ -2980,7 +2996,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                      'branched': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                   {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                  {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                  {'name': 'pdb_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
@@ -3256,7 +3272,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
             filterItems = [{'name': modelNumName, 'type': 'int',
                             'value': representativeModelId},
-                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')},
+                           {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)},
                            {'name': 'group_PDB', 'type': 'str', 'value': 'HETATM'}
                            ]
 
@@ -3468,7 +3484,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
             filterItems = [{'name': modelNumName, 'type': 'int',
                             'value': representativeModelId},
-                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                           {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                            ]
 
             if len(polySeq) > LEN_LARGE_ASYM_ID:
@@ -3574,7 +3590,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                             'value': representativeModelId},
                                            {'name': authAsymId, 'type': 'str', 'value': chainId},
                                            {'name': authSeqId, 'type': 'int', 'value': seqId},
-                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                           {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                            ]
 
                             resCoordDict = {c['atom_id']: to_np_array(c) for c in cR.getDictListWithFilter('atom_site', dataItems, filterItems)}
@@ -4047,7 +4063,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         has_ins_code = cR.hasItem('pdbx_branch_scheme', 'pdb_ins_code')
 
                         dataItems = [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                     {'name': 'auth_asym_id', 'type': 'str'},
+                                     {'name': 'pdb_asym_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
                                      {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'},
@@ -4134,7 +4150,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                        'label_asym_id': ','.join(labelAsymIds)})
                                 entityAssemblyId += 1
 
-                elif entityType == 'non-polymer':
+                elif entityType in ('non-polymer', 'water'):
                     if cR.hasCategory('pdbx_nonpoly_scheme'):
                         has_ins_code = cR.hasItem('pdbx_nonpoly_scheme', 'pdb_ins_code')
 
@@ -4162,7 +4178,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
                             if has_ins_code and item['ins_code'] not in emptyValue:
                                 authToInsCode[seqKey] = item['ins_code']
-                            authToEntityType[seqKey] = 'non-polymer'
+                            authToEntityType[seqKey] = entityType
                             if item['auth_asym_id'] not in authAsymIds:
                                 authAsymIds.append(item['auth_asym_id'])
                             if compId is None:
@@ -4174,7 +4190,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 authToStarSeq[altKey] = (entityAssemblyId, idx + 1, entityId, False)
                                 if has_ins_code and item['ins_code'] not in emptyValue:
                                     authToInsCode[altKey] = item['ins_code']
-                                authToEntityType[altKey] = 'non-polymer'
+                                authToEntityType[altKey] = entityType
 
                         labelAsymIds = []
                         for item in mappings:
@@ -4209,7 +4225,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         for entity in entities:
                             entityId = int(entity['id'])
                             entityType = entity.get('type', 'polymer')
-                            if entityType != 'non-polymer':
+                            if entityType not in ('non-polymer', 'water'):
                                 continue
                             entitySrcMethod = entity.get('src_method', '.')
                             entityDesc = entity.get('pdbx_description', '.')
@@ -4247,7 +4263,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             authToOrigSeq[seqKey] = (item['seq_id'][idx], compId)
                             if 'ins_code' in item and item['ins_code'][idx] not in emptyValue:
                                 authToInsCode[seqKey] = item['ins_code'][idx]
-                            authToEntityType[seqKey] = 'non-polymer'
+                            authToEntityType[seqKey] = entityType
 
                             authAsymIds = labelAsymIds = []
                             for _item in nonPoly:
@@ -4489,12 +4505,15 @@ def isLongRangeRestraint(atoms, polySeq=None):
     """ Return whether restraint is neither an intra residue nor sequential residue restraint.
     """
 
+    seqIds = [a['seq_id'] for a in atoms]
+
+    if any(seqId is None for seqId in seqIds):
+        return False
+
     chainIds = [a['chain_id'] for a in atoms]
 
     if len(collections.Counter(chainIds).most_common()) > 1:
         return True
-
-    seqIds = [a['seq_id'] for a in atoms]
 
     commonSeqId = collections.Counter(seqIds).most_common()
 
@@ -4602,6 +4621,9 @@ def isAsymmetricRangeRestraint(atoms, chainIdSet, symmetric):
 
     seqIds = [a['seq_id'] for a in atoms]
 
+    if any(seqId is None for seqId in seqIds):
+        return False
+
     commonSeqId = collections.Counter(seqIds).most_common()
 
     if len(commonSeqId) == 1:
@@ -4704,6 +4726,9 @@ def isAmbigAtomSelection(atoms, csStat):
 
     seqIds = [a['seq_id'] for a in atoms]
 
+    if any(seqId is None for seqId in seqIds):
+        return False
+
     commonSeqId = collections.Counter(seqIds).most_common()
 
     if len(commonSeqId) > 1:
@@ -4751,12 +4776,12 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
     """ Return type of dihedral angle restraint.
     """
 
-    chainIds = [a['chain_id'] for a in atoms]
     seqIds = [a['seq_id'] for a in atoms]
 
-    if any('atom_id' not in a for a in atoms):
+    if any(seqId is None for seqId in seqIds) or any('atom_id' not in a for a in atoms):
         return None
 
+    chainIds = [a['chain_id'] for a in atoms]
     atomIds = [a['atom_id'] for a in atoms]
 
     if len(collections.Counter(chainIds).most_common()) > 1:
@@ -5141,7 +5166,7 @@ def startsWithPdbRecord(line):
     return any(line[:-1] == pdb_record[:-1] for pdb_record in LEGACY_PDB_RECORDS if pdb_record.endswith(' '))
 
 
-def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=1, modelNumName='PDB_model_num'):
+def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID, modelNumName='PDB_model_num'):
     """ Return whether a given chain is cyclic polymer based on coordinate annotation.
     """
 
@@ -5200,7 +5225,8 @@ def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=1, modelNumNa
 
         if len(close_contact) == 0:
 
-            bond = getCoordBondLength(cR, labelAsymId, begLabelSeqId, 'N', labelAsymId, endLabelSeqId, 'C', modelNumName)
+            bond = getCoordBondLength(cR, labelAsymId, begLabelSeqId, 'N', labelAsymId, endLabelSeqId, 'C',
+                                      representativeAltId, modelNumName)
 
             if bond is None:
                 return False
@@ -5217,7 +5243,8 @@ def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=1, modelNumNa
     return struct_conn[0]['conn_type_id'] == 'covale'
 
 
-def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2, labelSeqId2, labelAtomId2, modelNumName='PDB_model_num'):
+def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2, labelSeqId2, labelAtomId2,
+                       representativeAltId=REPRESENTATIVE_ALT_ID, modelNumName='PDB_model_num'):
     """ Return the bond length of given two CIF atoms.
         @return: the bond length
     """
@@ -5240,7 +5267,7 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
                                                [{'name': 'label_asym_id', 'type': 'str', 'value': labelAsymId1},
                                                 {'name': 'label_seq_id', 'type': 'int', 'value': labelSeqId1},
                                                 {'name': 'label_atom_id', 'type': 'str', 'value': labelAtomId1},
-                                                {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                 ])
 
         atom_site_2 = cR.getDictListWithFilter('atom_site',
@@ -5248,7 +5275,7 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
                                                [{'name': 'label_asym_id', 'type': 'str', 'value': labelAsymId2},
                                                 {'name': 'label_seq_id', 'type': 'int', 'value': labelSeqId2},
                                                 {'name': 'label_atom_id', 'type': 'str', 'value': labelAtomId2},
-                                                {'name': 'label_alt_id', 'type': 'enum', 'enum': ('A')}
+                                                {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                 ])
 
     except Exception:
@@ -5689,6 +5716,10 @@ def getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom, aux_atom=None)
             starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
             atom['seq_id'] = seqId + offset
             return starAtom
+
+    if seqKey in authToStarSeq:
+        starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
+        return starAtom
 
     for offset in range(1, 1000):
         seqKey = (chainId, seqId + offset, compId)
@@ -6252,6 +6283,26 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
                     row[idx] = row[idx][0:first_digit + max_eff_digits]
                 else:
                     row[idx] = row[idx][0:first_digit + 1]
+
+    return row
+
+
+def resetCombinationId(mrSubtype, row):
+    """ Reset Combination_ID.
+        @return: data array
+    """
+
+    if mrSubtype not in ('dist', 'dihed', 'rdc'):
+        return row
+
+    contentSubtype = contentSubtypeOf(mrSubtype)
+
+    if contentSubtype is None or contentSubtype == 'other_restraint':
+        return row
+
+    key_size = len(NMR_STAR_LP_KEY_ITEMS[contentSubtype])
+
+    row[key_size + 1] = '.'
 
     return row
 
@@ -7567,7 +7618,7 @@ def getRealChainSeqId(ccU, polySeq, seqId, compId=None, isPolySeq=True):
     """
 
     if compId is not None:
-        compId = translateToStdResName(compId, ccU)
+        compId = translateToStdResName(compId, ccU=ccU)
     if seqId in polySeq['auth_seq_id']:
         if compId is None:
             return polySeq['auth_chain_id'], seqId

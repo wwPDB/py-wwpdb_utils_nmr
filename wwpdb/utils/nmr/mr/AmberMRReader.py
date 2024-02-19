@@ -19,7 +19,8 @@ try:
     from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        MAX_ERROR_REPORT,
-                                                       REPRESENTATIVE_MODEL_ID)
+                                                       REPRESENTATIVE_MODEL_ID,
+                                                       REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -33,7 +34,8 @@ except ImportError:
     from nmr.mr.AmberPTReader import AmberPTReader
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            MAX_ERROR_REPORT,
-                                           REPRESENTATIVE_MODEL_ID)
+                                           REPRESENTATIVE_MODEL_ID,
+                                           REPRESENTATIVE_ALT_ID)
     from nmr.io.CifReader import CifReader
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -46,9 +48,11 @@ class AmberMRReader:
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 atomNumberDict=None, auxAtomNumberDict=None):
+                 atomNumberDict=None, auxAtomNumberDict=None,
+                 reasons=None):
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
@@ -57,10 +61,12 @@ class AmberMRReader:
         self.__maxParserErrorReport = MAX_ERROR_REPORT
 
         self.__representativeModelId = representativeModelId
+        self.__representativeAltId = representativeAltId
         self.__mrAtomNameMapping = mrAtomNameMapping
 
         if cR is not None and caC is None:
-            caC = coordAssemblyChecker(verbose, log, representativeModelId, cR, None, None, fullCheck=False)
+            caC = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
+                                       cR, None, None, fullCheck=False)
 
         self.__cR = cR
         self.__caC = caC
@@ -80,6 +86,9 @@ class AmberMRReader:
         self.__atomNumberDict = atomNumberDict
         self.__auxAtomNumberDict = auxAtomNumberDict
 
+        # reasons for re-parsing request from the previous trial
+        self.__reasons = self.__reasons__ = reasons
+
     def setDebugMode(self, debug):
         self.__debug = debug
 
@@ -88,6 +97,9 @@ class AmberMRReader:
 
     def setParserMaxErrorReport(self, maxErrReport):
         self.__maxParserErrorReport = maxErrReport
+
+    def getReasons(self):
+        return self.__reasons
 
     def parse(self, mrFilePath, cifFilePath=None, ptFilePath=None, isFilePath=True,
               createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
@@ -129,6 +141,7 @@ class AmberMRReader:
             if ptFilePath is not None and self.__atomNumberDict is None:
                 ptR = AmberPTReader(self.__verbose, self.__lfh,
                                     self.__representativeModelId,
+                                    self.__representativeAltId,
                                     self.__mrAtomNameMapping,
                                     self.__cR, self.__caC,
                                     self.__ccU, self.__csStat, self.__nefT)
@@ -171,10 +184,11 @@ class AmberMRReader:
                 walker = ParseTreeWalker()
                 listener = AmberMRParserListener(self.__verbose, self.__lfh,
                                                  self.__representativeModelId,
+                                                 self.__representativeAltId,
                                                  self.__mrAtomNameMapping,
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
-                                                 self.__atomNumberDict, None)
+                                                 self.__atomNumberDict, self.__reasons)
                 listener.setDebugMode(self.__debug)
                 listener.createSfDict(createSfDict)
                 if createSfDict:
@@ -205,7 +219,7 @@ class AmberMRReader:
                             print(listener.getContentSubtype())
                     break
 
-                reasons = listener.getReasonsForReparsing()
+                reasons = self.__reasons = listener.getReasonsForReparsing()
 
                 if reasons is not None:
 
@@ -241,14 +255,15 @@ class AmberMRReader:
                     parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
                     parser.addErrorListener(parser_error_listener)
                     tree = parser.amber_mr()
-
                     walker = ParseTreeWalker()
                     listener = AmberMRParserListener(self.__verbose, self.__lfh,
                                                      self.__representativeModelId,
+                                                     self.__representativeAltId,
                                                      self.__mrAtomNameMapping,
                                                      self.__cR, self.__caC,
                                                      self.__ccU, self.__csStat, self.__nefT,
-                                                     self.__atomNumberDict if 'global_sequence_offset' not in reasons else None, reasons)
+                                                     self.__atomNumberDict if 'global_sequence_offset' not in reasons else None,
+                                                     reasons if self.__reasons__ is None or 'global_sequence_offset' not in self.__reasons__ else self.__reasons__)
                     listener.setDebugMode(self.__debug)
                     listener.createSfDict(createSfDict)
                     if createSfDict:
@@ -307,6 +322,51 @@ class AmberMRReader:
 
 
 if __name__ == "__main__":
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6g99/man_noe2.rst',
+                 '../../tests-nmr/mock-data-remediation/6g99/6g99.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2n3o/2n3o-corrected-div_src.mr',
+                 '../../tests-nmr/mock-data-remediation/2n3o/2n3o.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/7nwj/CEP164_191201.rst',
+                 '../../tests-nmr/mock-data-remediation/7nwj/7nwj.cif',
+                 None)
+
+    _reasons_ = {'auth_seq_scheme': {'B': True, 'A': True},
+                 'global_sequence_offset': {'B': 252}}
+
+    reader = AmberMRReader(True, reasons=_reasons_)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6gbm/aco.rst',
+                 '../../tests-nmr/mock-data-remediation/6gbm/6gbm.cif',
+                 None)
+
+    reader = AmberMRReader(True, reasons=_reasons_)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6gbm/chir.rst',
+                 '../../tests-nmr/mock-data-remediation/6gbm/6gbm.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6gbm/ac.rst',
+                 '../../tests-nmr/mock-data-remediation/6gbm/6gbm.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2mke/2mke-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2mke/2mke.cif',
+                 None)
+
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2rv1/2rv1-trimmed.mr',

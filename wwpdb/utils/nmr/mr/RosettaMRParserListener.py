@@ -39,12 +39,14 @@ try:
                                                        getLoop,
                                                        getRow,
                                                        getStarAtom,
+                                                       resetCombinationId,
                                                        resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        getDstFuncForSsBond,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
+                                                       REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                                        DIST_RESTRAINT_RANGE,
@@ -63,6 +65,7 @@ try:
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
+                                           emptyValue,
                                            protonBeginCode,
                                            aminoProtonCode,
                                            rdcBbPairCode,
@@ -110,12 +113,14 @@ except ImportError:
                                            getLoop,
                                            getRow,
                                            getStarAtom,
+                                           resetCombinationId,
                                            resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
                                            getDstFuncForSsBond,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
+                                           REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                            DIST_RESTRAINT_RANGE,
@@ -134,6 +139,7 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
+                               emptyValue,
                                protonBeginCode,
                                aminoProtonCode,
                                rdcBbPairCode,
@@ -241,6 +247,7 @@ class RosettaMRParserListener(ParseTreeListener):
     __offsetHolder = None
 
     __representativeModelId = REPRESENTATIVE_MODEL_ID
+    __representativeAltId = REPRESENTATIVE_ALT_ID
     __hasPolySeq = False
     __hasNonPoly = False
     __hasBranched = False
@@ -301,6 +308,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None):
@@ -308,13 +316,15 @@ class RosettaMRParserListener(ParseTreeListener):
         self.__lfh = log
 
         self.__representativeModelId = representativeModelId
+        self.__representativeAltId = representativeAltId
         self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
         self.__cR = cR
         self.__hasCoord = cR is not None
 
         if self.__hasCoord:
-            ret = coordAssemblyChecker(verbose, log, representativeModelId, cR, caC)
+            ret = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
+                                       cR, caC)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
             self.__authSeqId = ret['auth_seq_id']
@@ -459,7 +469,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-                    if self.__reasons is None and any(f for f in self.__f if 'Atom not found' in f):
+                    if self.__reasons is None and any(f for f in self.__f
+                                                      if '[Atom not found]' in f or '[Sequence mismatch]' in f):
 
                         seqIdRemap = []
 
@@ -490,7 +501,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
                             if ref_chain_id not in cyclicPolymer:
                                 cyclicPolymer[ref_chain_id] =\
-                                    isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id, self.__representativeModelId, self.__modelNumName)
+                                    isCyclicPolymer(self.__cR, self.__polySeq, ref_chain_id,
+                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                             if cyclicPolymer[ref_chain_id]:
 
@@ -638,7 +650,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['local_seq_scheme']
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-                del self.reasonsForReParsing['seq_id_remap']
+                if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
+                    del self.reasonsForReParsing['seq_id_remap']
 
             if self.__remediate:
                 if self.__dist_lb_greater_than_ub and self.__dist_ub_always_positive:
@@ -848,8 +861,12 @@ class RosettaMRParserListener(ParseTreeListener):
                         if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
 
-            if self.__createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1 and not isNested:
-                sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
+            if self.__createSfDict and sf is not None:
+                if isinstance(memberId, int) and memberId == 1:
+                    sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
+                    memberId = '.'
+                if isinstance(memberId, str) and isinstance(combinationId, int) and combinationId == 1:
+                    sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.atomSelectionInComment.clear()
@@ -1310,10 +1327,11 @@ class RosettaMRParserListener(ParseTreeListener):
                 if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
                     if atomId in aminoProtonCode and atomId != 'H1':
                         return self.assignCoordPolymerSequence(seqId, 'H1', fixedChainId)
-                if seqId < 1 and len(self.__polySeq) == 1:
+                if len(self.__polySeq) == 1 and seqId < 1:
+                    refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"{_seqId}:{atomId} is not present in the coordinates. "
-                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "
+                                    f"{_seqId}:?:{atomId} is not present in the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -1330,9 +1348,10 @@ class RosettaMRParserListener(ParseTreeListener):
                                 updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, seqId, compIds)
 
             else:
-                if seqId < 1 and len(self.__polySeq) == 1:
+                if len(self.__polySeq) == 1 and seqId < 1:
+                    refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {self.__polySeq[0]['chain_id']} of the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -1354,12 +1373,13 @@ class RosettaMRParserListener(ParseTreeListener):
 
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
                 _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
-                if atomId != _atomId and coordAtomSite is not None and _atomId in coordAtomSite['atom_id']:
+                if atomId != _atomId and coordAtomSite is not None\
+                   and (_atomId in coordAtomSite['atom_id'] or (_atomId.endswith('%') and _atomId[:-1] + '2' in coordAtomSite['atom_id'])):
                     atomId = _atomId
                 elif self.__reasons is not None and 'branched_remap' in self.__reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, cifSeqId)
                     if _seqId != cifSeqId:
-                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, coordAtomSite)
+                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
 
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
             if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
@@ -1637,7 +1657,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p1) != 1:
@@ -1654,7 +1674,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p2) != 1:
@@ -1682,7 +1702,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_p1) != 1:
@@ -1708,7 +1728,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_p2) != 1:
@@ -1746,7 +1766,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p1) != 1:
@@ -1763,7 +1783,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p2) != 1:
@@ -1780,7 +1800,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p3) != 1:
@@ -1797,7 +1817,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p4) != 1:
@@ -1816,7 +1836,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                  {'name': self.__modelNumName, 'type': 'int',
                                                   'value': self.__representativeModelId},
                                                  {'name': 'label_alt_id', 'type': 'enum',
-                                                  'enum': ('A')}
+                                                  'enum': (self.__representativeAltId,)}
                                                  ])
 
             if len(_p4) != 1:
@@ -1960,7 +1980,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 3:
             return
 
-        if not self.areUniqueCoordAtoms('an Angle'):
+        if not self.areUniqueCoordAtoms('an angle'):
             return
 
         isNested = len(self.stackNest) > 0
@@ -2231,14 +2251,33 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 4:
             return
 
-        if not self.areUniqueCoordAtoms('a Dihedral angle'):
+        try:
+            compId = self.atomSelectionSet[0][0]['comp_id']
+            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+        except IndexError:
+            self.areUniqueCoordAtoms('a dihedral angle')
             return
+
+        len_f = len(self.__f)
+        self.areUniqueCoordAtoms('a dihedral angle',
+                                 allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
+        combinationId = '.' if len_f == len(self.__f) else 0
+
+        if isinstance(combinationId, int):
+            fixedAngleName = '.'
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                self.atomSelectionSet[1],
+                                                                self.atomSelectionSet[2],
+                                                                self.atomSelectionSet[3]):
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4])
+                if angleName in emptyValue:
+                    continue
+                fixedAngleName = angleName
+                break
 
         if self.__createSfDict:
             sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
-
-        compId = self.atomSelectionSet[0][0]['comp_id']
-        peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
         isNested = len(self.stackNest) > 0
 
@@ -2256,6 +2295,10 @@ class RosettaMRParserListener(ParseTreeListener):
                                                    [atom1, atom2, atom3, atom4])
             if angleName is None:
                 continue
+            if isinstance(combinationId, int):
+                if angleName != fixedAngleName:
+                    continue
+                combinationId += 1
             if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
                 dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                   dstFunc)
@@ -2268,11 +2311,14 @@ class RosettaMRParserListener(ParseTreeListener):
                     first_item = False
                 sf['index_id'] += 1
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                             '.', None, angleName,
+                             combinationId, None, angleName,
                              sf['list_id'], self.__entryId, dstFunc,
                              self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                              atom1, atom2, atom3, atom4)
                 sf['loop'].add_data(row)
+
+        if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+            sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
     # Enter a parse tree produced by RosettaMRParser#dihedral_pair_restraints.
     def enterDihedral_pair_restraints(self, ctx: RosettaMRParser.Dihedral_pair_restraintsContext):  # pylint: disable=unused-argument
@@ -2346,7 +2392,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(self.atomSelectionSet) < 8:
             return
 
-        if not self.areUniqueCoordAtoms('a Dihedral angle pair'):
+        if not self.areUniqueCoordAtoms('a dihedral angle pair'):
             return
 
         if self.__createSfDict:
@@ -4110,6 +4156,9 @@ class RosettaMRParserListener(ParseTreeListener):
                                  atom1, atom2)
                     sf['loop'].add_data(row)
 
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
         except ValueError:
             self.rdcRestraints -= 1
         except IndexError:
@@ -4117,13 +4166,17 @@ class RosettaMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def areUniqueCoordAtoms(self, subtype_name):
+    def areUniqueCoordAtoms(self, subtype_name, allow_ambig=False, allow_ambig_warn_title=''):
         """ Check whether atom selection sets are uniquely assigned.
         """
 
         for _atomSelectionSet in self.atomSelectionSet:
+            _lenAtomSelectionSet = len(_atomSelectionSet)
 
-            if len(_atomSelectionSet) < 2:
+            if _lenAtomSelectionSet == 0:
+                return False  # raised error already
+
+            if _lenAtomSelectionSet == 1:
                 continue
 
             for (atom1, atom2) in itertools.combinations(_atomSelectionSet, 2):
@@ -4131,7 +4184,12 @@ class RosettaMRParserListener(ParseTreeListener):
                     continue
                 if atom1['seq_id'] != atom2['seq_id']:
                     continue
-                self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
+                if allow_ambig:
+                    self.__f.append(f"[{allow_ambig_warn_title}] {self.__getCurrentRestraint()}"
+                                    f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
+                                    f"{atom2['atom_id']}' found in {subtype_name} restraint.")
+                    continue
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                 f"Ambiguous atom selection '{atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']} or "
                                 f"{atom2['atom_id']}' is not allowed as {subtype_name} restraint.")
                 return False
@@ -4212,7 +4270,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 _tail =\
@@ -4224,7 +4282,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                      {'name': self.__modelNumName, 'type': 'int',
                                                       'value': self.__representativeModelId},
                                                      {'name': 'label_alt_id', 'type': 'enum',
-                                                      'enum': ('A')}
+                                                      'enum': (self.__representativeAltId,)}
                                                      ])
 
                 if len(_head) == 1 and len(_tail) == 1:

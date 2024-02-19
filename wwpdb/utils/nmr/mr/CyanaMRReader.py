@@ -18,7 +18,8 @@ try:
     from wwpdb.utils.nmr.mr.CyanaMRParserListener import CyanaMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        MAX_ERROR_REPORT,
-                                                       REPRESENTATIVE_MODEL_ID)
+                                                       REPRESENTATIVE_MODEL_ID,
+                                                       REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -31,7 +32,8 @@ except ImportError:
     from nmr.mr.CyanaMRParserListener import CyanaMRParserListener
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            MAX_ERROR_REPORT,
-                                           REPRESENTATIVE_MODEL_ID)
+                                           REPRESENTATIVE_MODEL_ID,
+                                           REPRESENTATIVE_ALT_ID)
     from nmr.io.CifReader import CifReader
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -44,6 +46,7 @@ class CyanaMRReader:
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
+                 representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None, upl_or_lol=None, file_ext=None):
@@ -57,10 +60,12 @@ class CyanaMRReader:
         self.__maxParserErrorReport = MAX_ERROR_REPORT
 
         self.__representativeModelId = representativeModelId
+        self.__representativeAltId = representativeAltId
         self.__mrAtomNameMapping = mrAtomNameMapping
 
         if cR is not None and caC is None:
-            caC = coordAssemblyChecker(verbose, log, representativeModelId, cR, None, None, fullCheck=False)
+            caC = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
+                                       cR, None, None, fullCheck=False)
 
         self.__cR = cR
         self.__caC = caC
@@ -167,6 +172,7 @@ class CyanaMRReader:
             walker = ParseTreeWalker()
             listener = CyanaMRParserListener(self.__verbose, self.__lfh,
                                              self.__representativeModelId,
+                                             self.__representativeAltId,
                                              self.__mrAtomNameMapping,
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
@@ -217,6 +223,12 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2nam/2nam-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2nam/2nam.cif')
+
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-daother-8191/D_1292126851_mr_P1.cyana.V7',

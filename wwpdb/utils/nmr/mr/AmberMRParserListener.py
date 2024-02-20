@@ -4187,7 +4187,8 @@ class AmberMRParserListener(ParseTreeListener):
 
             if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                 _compId = translateToStdResName(authCompId, ccU=self.__ccU)
-                __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
+                __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId,
+                                                           _compId if _compId in monDict3 else None)
                 if __chainId is not None and __chainId != chainId:
                     continue
                 if __seqId is not None:
@@ -4760,7 +4761,8 @@ class AmberMRParserListener(ParseTreeListener):
 
                 if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                     _compId = translateToStdResName(authCompId, ccU=self.__ccU)
-                    __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
+                    __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId,
+                                                               _compId if _compId in monDict3 else None)
                     if __chainId is not None and __chainId != chainId:
                         continue
                     if __seqId is not None:

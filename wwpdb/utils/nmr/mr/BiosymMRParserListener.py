@@ -1054,7 +1054,8 @@ class BiosymMRParserListener(ParseTreeListener):
                 if 'seq_id_remap' in self.__reasons:
                     _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
                 if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
-                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], str(refChainId), seqId, compId)
+                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], str(refChainId), seqId,
+                                                                     compId if compId in monDict3 else None)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 

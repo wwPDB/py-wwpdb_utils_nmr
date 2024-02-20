@@ -1371,7 +1371,8 @@ class DynamoMRParserListener(ParseTreeListener):
                     fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], refChainId, seqId)
                     refChainId = fixedChainId
                 if fixedSeqId is not None and 'chain_seq_id_remap' in self.__reasons:
-                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], refChainId, seqId, compId)
+                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], refChainId, seqId,
+                                                                     compId if compId in monDict3 else None)
                     refChainId = fixedChainId
             if fixedSeqId is not None:
                 _seqId = fixedSeqId

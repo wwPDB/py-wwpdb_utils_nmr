@@ -713,7 +713,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                        and not any(k for k, v in seq_id_mapping.items()
                                                    if v in poly_seq_model['seq_id']
                                                    and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
-                                        seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping})
+                                        seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
+                                                                 'comp_id_set': list(set(poly_seq_model['comp_id']))})
 
                                 if len(seqIdRemapFailed) > 0:
                                     if 'chain_seq_id_remap' not in self.reasonsForReParsing:
@@ -2096,6 +2097,8 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
+        compId = translateToStdResName(_compId, ccU=self.__ccU)
+
         if self.__reasons is not None:
             if 'ambig_atom_id_remap' in self.__reasons and compId in self.__reasons['ambig_atom_id_remap']\
                and atomId in self.__reasons['ambig_atom_id_remap'][compId]:
@@ -2118,7 +2121,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if 'seq_id_remap' in self.__reasons:
                     fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
                 if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
-                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], None, seqId)
+                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], None, seqId, compId)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
@@ -2131,7 +2134,6 @@ class CyanaMRParserListener(ParseTreeListener):
                and atomId in self.unambigAtomNameMapping[compId]:
                 atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
 
-        compId = translateToStdResName(_compId, ccU=self.__ccU)
         updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
 
         for ps in self.__polySeq:
@@ -2406,6 +2408,8 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
+        compId = translateToStdResName(_compId, ccU=self.__ccU)
+
         if self.__reasons is not None:
             if 'ambig_atom_id_remap' in self.__reasons and compId in self.__reasons['ambig_atom_id_remap']\
                and atomId in self.__reasons['ambig_atom_id_remap'][compId]:
@@ -2432,7 +2436,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if 'seq_id_remap' in self.__reasons:
                     _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
                 if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
-                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], str(refChainId), seqId)
+                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], str(refChainId), seqId, compId)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
@@ -2443,7 +2447,6 @@ class CyanaMRParserListener(ParseTreeListener):
             if compId in self.unambigAtomNameMapping and atomId in self.unambigAtomNameMapping[compId]:
                 atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
 
-        compId = translateToStdResName(_compId, ccU=self.__ccU)
         updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId, _compId)
 
         if refChainId is not None or refChainId != _refChainId:

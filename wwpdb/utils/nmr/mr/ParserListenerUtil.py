@@ -4657,6 +4657,30 @@ def guessCompIdFromAtomId(atoms, polySeq, nefT):
     return list(candidates)
 
 
+def guessCompIdFromAtomIdWoLimit(atoms, polySeq, nefT):
+    """ Try to find candidate comp_id that matches with a given atom_id.
+    """
+
+    candidates = set()
+
+    for ps in polySeq:
+        compIds = ps['comp_id']
+
+        for _compId in set(compIds):
+            if _compId in monDict3:
+                failed = False
+                for atom in atoms:
+                    _atom = translateToStdAtomName(atom, _compId, ccU=nefT.get_ccu())
+                    _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, _atom)
+                    if len(_atomId) == 0 or details is not None:
+                        failed = True
+                        break
+                if not failed:
+                    candidates.add(_compId)
+
+    return list(candidates)
+
+
 def hasIntraChainRestraint(atomSelectionSet):
     """ Return whether intra-chain distance restraints in the atom selection.
     """

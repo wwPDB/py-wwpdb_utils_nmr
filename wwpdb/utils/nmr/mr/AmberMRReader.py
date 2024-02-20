@@ -262,8 +262,12 @@ class AmberMRReader:
                                                      self.__mrAtomNameMapping,
                                                      self.__cR, self.__caC,
                                                      self.__ccU, self.__csStat, self.__nefT,
-                                                     self.__atomNumberDict if 'global_sequence_offset' not in reasons else None,
-                                                     reasons if self.__reasons__ is None or 'global_sequence_offset' not in self.__reasons__ else self.__reasons__)
+                                                     self.__atomNumberDict
+                                                     if 'global_sequence_offset' not in reasons
+                                                     and 'chain_seq_id_remap' not in reasons else None,
+                                                     reasons
+                                                     if self.__reasons__ is None or 'global_sequence_offset' not in self.__reasons__
+                                                     or 'chain_seq_id_remap' not in self.__reasons__ else self.__reasons__)
                     listener.setDebugMode(self.__debug)
                     listener.createSfDict(createSfDict)
                     if createSfDict:

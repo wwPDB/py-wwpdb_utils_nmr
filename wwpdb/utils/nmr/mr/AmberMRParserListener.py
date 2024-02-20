@@ -2145,13 +2145,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                   'auth_atom_id': g[offset + 2],
                                                   'iat': iat
                                                   }
-                                        compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
-                                        chainIds = self.guessChainIdFromCompId(seqId, compId)
-                                        if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
-                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
-                                                            f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
-                                        elif not self.updateSanderAtomNumberDict(factor):
+                                        if not self.updateSanderAtomNumberDict(factor):
                                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                             f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                             f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
@@ -2185,13 +2179,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                   'auth_atom_id': atomId,
                                                   'iat': iat
                                                   }
-                                        compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
-                                        chainIds = self.guessChainIdFromCompId(seqId, compId)
-                                        if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
-                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
-                                                            f"based on Sander comment {', '.join(g[offset:offset+2])!r}.")
-                                        elif not self.updateSanderAtomNumberDict(factor):
+                                        if not self.updateSanderAtomNumberDict(factor):
                                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                             f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                             f"based on Sander comment {', '.join(g[offset:offset+2])!r}.")
@@ -2353,13 +2341,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                       'auth_atom_id': g[offset + 2],
                                                       'iat': iat
                                                       }
-                                            compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
-                                            chainIds = self.guessChainIdFromCompId(seqId, compId)
-                                            if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
-                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
-                                                                f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
-                                            elif not self.updateSanderAtomNumberDict(factor):
+                                            if not self.updateSanderAtomNumberDict(factor):
                                                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                 f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
@@ -2371,13 +2353,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                       'auth_atom_id': g2[offset2 + 2],
                                                       'iat': iat
                                                       }
-                                            compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
-                                            chainIds = self.guessChainIdFromCompId(seqId, compId)
-                                            if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
-                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
-                                                                f"based on Sander comment {' '.join(g2[offset2:offset2+3])!r}.")
-                                            elif not self.updateSanderAtomNumberDict(factor):
+                                            if not self.updateSanderAtomNumberDict(factor):
                                                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                 f"based on Sander comment {' '.join(g2[offset2:offset2+3])!r}.")
@@ -2389,13 +2365,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                       'auth_atom_id': g3[offset2 + 2],
                                                       'iat': iat
                                                       }
-                                            compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
-                                            chainIds = self.guessChainIdFromCompId(seqId, compId)
-                                            if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
-                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
-                                                                f"based on Sander comment {' '.join(g3[offset2:offset2+3])!r}.")
-                                            elif not self.updateSanderAtomNumberDict(factor):
+                                            if not self.updateSanderAtomNumberDict(factor):
                                                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                 f"based on Sander comment {' '.join(g3[offset2:offset2+3])!r}.")
@@ -2407,12 +2377,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                       'auth_atom_id': g4[offset2 + 2],
                                                       'iat': iat
                                                       }
-                                            compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
-                                            chainIds = self.guessChainIdFromCompId(seqId, compId)
-                                            if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
-                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
-                                                                f"based on Sander comment {' '.join(g4[offset2:offset2+3])!r}.")
                                             if not self.updateSanderAtomNumberDict(factor):
                                                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "

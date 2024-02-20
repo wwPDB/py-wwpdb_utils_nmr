@@ -2100,15 +2100,15 @@ class CyanaMRParserListener(ParseTreeListener):
         compId = translateToStdResName(_compId, ccU=self.__ccU)
 
         if self.__reasons is not None:
-            if 'ambig_atom_id_remap' in self.__reasons and compId in self.__reasons['ambig_atom_id_remap']\
-               and atomId in self.__reasons['ambig_atom_id_remap'][compId]:
-                return self.atomIdListToChainAssign(self.__reasons['ambig_atom_id_remap'][compId][atomId])
-            if 'unambig_atom_id_remap' in self.__reasons and compId in self.__reasons['unambig_atom_id_remap']\
-               and atomId in self.__reasons['unambig_atom_id_remap'][compId]:
-                atomId = self.__reasons['unambig_atom_id_remap'][compId][atomId][0]  # select representative one
-            if 'non_poly_remap' in self.__reasons and compId in self.__reasons['non_poly_remap']\
-               and seqId in self.__reasons['non_poly_remap'][compId]:
-                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, seqId, compId)
+            if 'ambig_atom_id_remap' in self.__reasons and _compId in self.__reasons['ambig_atom_id_remap']\
+               and atomId in self.__reasons['ambig_atom_id_remap'][_compId]:
+                return self.atomIdListToChainAssign(self.__reasons['ambig_atom_id_remap'][_compId][atomId])
+            if 'unambig_atom_id_remap' in self.__reasons and _compId in self.__reasons['unambig_atom_id_remap']\
+               and atomId in self.__reasons['unambig_atom_id_remap'][_compId]:
+                atomId = self.__reasons['unambig_atom_id_remap'][_compId][atomId][0]  # select representative one
+            if 'non_poly_remap' in self.__reasons and _compId in self.__reasons['non_poly_remap']\
+               and seqId in self.__reasons['non_poly_remap'][_compId]:
+                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, seqId, _compId)
                 preferNonPoly = True
             if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
@@ -2412,15 +2412,15 @@ class CyanaMRParserListener(ParseTreeListener):
         compId = translateToStdResName(_compId, ccU=self.__ccU)
 
         if self.__reasons is not None:
-            if 'ambig_atom_id_remap' in self.__reasons and compId in self.__reasons['ambig_atom_id_remap']\
-               and atomId in self.__reasons['ambig_atom_id_remap'][compId]:
-                return self.atomIdListToChainAssign(self.__reasons['ambig_atom_id_remap'][compId][atomId])
-            if 'unambig_atom_id_remap' in self.__reasons and compId in self.__reasons['unambig_atom_id_remap']\
-               and atomId in self.__reasons['unambig_atom_id_remap'][compId]:
-                atomId = self.__reasons['unambig_atom_id_remap'][compId][atomId][0]  # select representative one
-            if 'non_poly_remap' in self.__reasons and compId in self.__reasons['non_poly_remap']\
-               and seqId in self.__reasons['non_poly_remap'][compId]:
-                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], str(refChainId), seqId, compId)
+            if 'ambig_atom_id_remap' in self.__reasons and _compId in self.__reasons['ambig_atom_id_remap']\
+               and atomId in self.__reasons['ambig_atom_id_remap'][_compId]:
+                return self.atomIdListToChainAssign(self.__reasons['ambig_atom_id_remap'][_compId][atomId])
+            if 'unambig_atom_id_remap' in self.__reasons and _compId in self.__reasons['unambig_atom_id_remap']\
+               and atomId in self.__reasons['unambig_atom_id_remap'][_compId]:
+                atomId = self.__reasons['unambig_atom_id_remap'][_compId][atomId][0]  # select representative one
+            if 'non_poly_remap' in self.__reasons and _compId in self.__reasons['non_poly_remap']\
+               and seqId in self.__reasons['non_poly_remap'][_compId]:
+                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], str(refChainId), seqId, _compId)
                 refChainId = fixedChainId
                 preferNonPoly = True
             if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:

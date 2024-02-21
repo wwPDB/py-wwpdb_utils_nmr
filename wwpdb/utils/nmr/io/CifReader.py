@@ -654,7 +654,7 @@ class CifReader:
         return dList
 
     def getPolymerSequence(self, catName, keyItems, withStructConf=False, withRmsd=False, alias=False,
-                           totalModels=1, effModelIds: list=None, repAltId='A'):
+                           totalModels=1, effModelIds: list = None, repAltId='A'):
         """ Extracts sequence from a given loop in a CIF file
         """
 
@@ -1046,7 +1046,7 @@ class CifReader:
 
         return ret
 
-    def __calculateRmsd(self, chain_ids, lengths, total_models=1, eff_model_ids: list=None,
+    def __calculateRmsd(self, chain_ids, lengths, total_models=1, eff_model_ids: list = None,
                         atom_sites=None, bb_atom_sites=None, randomM=None):
         """ Calculate RMSD of alpha carbons/phosphates in the ensemble.
         """

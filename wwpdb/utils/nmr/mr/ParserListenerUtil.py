@@ -7536,7 +7536,7 @@ def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
                        and len(set(coordAtomSite['alt_comp_id'])) > 1:
                         atomId = caC['auth_atom_name_to_id_ext'][_compId][authAtomId]
 
-        if atomId in coordAtomSite['atom_id'] or preferAuthAtomName:
+        if (coordAtomSite is not None and atomId in coordAtomSite['atom_id']) or preferAuthAtomName:
             _atomId = [atomId]
         else:
             _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)

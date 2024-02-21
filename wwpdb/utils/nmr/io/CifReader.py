@@ -29,6 +29,7 @@
 # 24-Apr-2023   my  - add 'default' attribute for key items (NMR restraint validation)
 # 18-Dec-2023   my  - add calculate_uninstanced_coord() (DAOTHER-8945)
 # 24-Jan-2024   my  - add 'default-from' attribute for key/data items (D_1300043061)
+# 21-Feb-2024   my  - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -652,7 +653,8 @@ class CifReader:
 
         return dList
 
-    def getPolymerSequence(self, catName, keyItems, withStructConf=False, withRmsd=False, alias=False, total_models=1):
+    def getPolymerSequence(self, catName, keyItems, withStructConf=False, withRmsd=False, alias=False,
+                           totalModels=1, effModelIds: list=None, repAltId='A'):
         """ Extracts sequence from a given loop in a CIF file
         """
 
@@ -852,13 +854,13 @@ class CifReader:
 
                     etype = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
 
-                    if withRmsd and etype is not None and total_models > 1 and i < LEN_MAJOR_ASYM_ID:  # to process large assembly avoiding forced timeout
+                    if withRmsd and etype is not None and totalModels > 1 and i < LEN_MAJOR_ASYM_ID:  # to process large assembly avoiding forced timeout
                         ent['type'] = etype
 
                         randomM = None
                         if self.__random_rotaion_test:
                             randomM = {}
-                            for model_id in range(1, total_models + 1):
+                            for model_id in effModelIds:
                                 axis = [random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0)]
                                 if self.__single_model_rotation_test:
                                     theta = 0.0 if model_id > 1 else np.pi / 4.0
@@ -897,7 +899,7 @@ class CifReader:
                                                                              'enum': polypeptide_chains},
                                                                             {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'},
                                                                             {'name': 'label_alt_id', 'type': 'enum',
-                                                                             'enum': ('A')},
+                                                                             'enum': (repAltId,)},
                                                                             {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
 
                                 co_atom_sites = self.getDictListWithFilter('atom_site',
@@ -913,7 +915,7 @@ class CifReader:
                                                                              'enum': polypeptide_chains},
                                                                             {'name': 'label_atom_id', 'type': 'str', 'value': 'C'},
                                                                             {'name': 'label_alt_id', 'type': 'enum',
-                                                                             'enum': ('A')},
+                                                                             'enum': (repAltId,)},
                                                                             {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
 
                                 bb_atom_sites = self.getDictListWithFilter('atom_site',
@@ -929,13 +931,14 @@ class CifReader:
                                                                              'enum': polypeptide_chains},
                                                                             {'name': 'label_atom_id', 'type': 'str', 'value': 'N'},
                                                                             {'name': 'label_alt_id', 'type': 'enum',
-                                                                             'enum': ('A')},
+                                                                             'enum': (repAltId,)},
                                                                             {'name': 'type_symbol', 'type': 'str', 'value': 'N'}])
 
                                 bb_atom_sites.extend(ca_atom_sites)
                                 bb_atom_sites.extend(co_atom_sites)
 
-                                ca_rmsd, ca_well_defined_region = self.__calculateRmsd(polypeptide_chains, polypeptide_lengths, total_models,
+                                ca_rmsd, ca_well_defined_region = self.__calculateRmsd(polypeptide_chains, polypeptide_lengths,
+                                                                                       totalModels, effModelIds,
                                                                                        ca_atom_sites, bb_atom_sites, randomM)
 
                             if ca_rmsd is not None:
@@ -957,7 +960,7 @@ class CifReader:
                                                                       [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                                        {'name': 'label_atom_id', 'type': 'str', 'value': 'P'},
                                                                        {'name': 'label_alt_id', 'type': 'enum',
-                                                                        'enum': ('A')},
+                                                                        'enum': (repAltId,)},
                                                                        {'name': 'type_symbol', 'type': 'str', 'value': 'P'}])
 
                             bb_atom_sites = self.getDictListWithFilter('atom_site',
@@ -973,12 +976,13 @@ class CifReader:
                                                                         {'name': 'label_atom_id', 'type': 'enum',
                                                                          'enum': ("C5'", "C4'", "C3'")},
                                                                         {'name': 'label_alt_id', 'type': 'enum',
-                                                                         'enum': ('A')},
+                                                                         'enum': (repAltId,)},
                                                                         {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
 
                             bb_atom_sites.extend(p_atom_sites)
 
-                            p_rmsd, p_well_defined_region = self.__calculateRmsd([c], [len(seqDict[c])], total_models,
+                            p_rmsd, p_well_defined_region = self.__calculateRmsd([c], [len(seqDict[c])],
+                                                                                 totalModels, effModelIds,
                                                                                  p_atom_sites, bb_atom_sites, randomM)
 
                             if p_rmsd is not None:
@@ -1042,7 +1046,8 @@ class CifReader:
 
         return ret
 
-    def __calculateRmsd(self, chain_ids, lengths, total_models=1, atom_sites=None, bb_atom_sites=None, randomM=None):
+    def __calculateRmsd(self, chain_ids, lengths, total_models=1, eff_model_ids: list=None,
+                        atom_sites=None, bb_atom_sites=None, randomM=None):
         """ Calculate RMSD of alpha carbons/phosphates in the ensemble.
         """
 
@@ -1050,11 +1055,11 @@ class CifReader:
             return None, None
 
         _atom_site_dict = {}
-        for model_id in range(1, total_models + 1):
+        for model_id in eff_model_ids:
             _atom_site_dict[model_id] = [a for a in atom_sites if a['model_id'] == model_id]
 
         _bb_atom_site_dict = {}
-        for model_id in range(1, total_models + 1):
+        for model_id in eff_model_ids:
             _bb_atom_site_dict[model_id] = [a for a in bb_atom_sites if a['model_id'] == model_id]
 
         size = len(_atom_site_dict[1])
@@ -1068,7 +1073,7 @@ class CifReader:
 
         _total_models = 0
 
-        for model_id in range(1, total_models + 1):
+        for model_id in eff_model_ids:
 
             _atom_site = _atom_site_dict[model_id]
 
@@ -1098,7 +1103,7 @@ class CifReader:
 
         d_var = np.zeros(matrix_size, dtype=float)
 
-        for model_id in range(1, total_models + 1):
+        for model_id in eff_model_ids:
 
             _atom_site = _atom_site_dict[model_id]
 
@@ -1225,6 +1230,9 @@ class CifReader:
 
                         for model_id in range(2, total_models + 1):
 
+                            if model_id not in eff_model_ids:
+                                continue
+
                             _atom_site_test = _atom_site_dict[model_id]
 
                             if len(_atom_site_test) == 0:
@@ -1303,7 +1311,7 @@ class CifReader:
         for chain_id in chain_ids:
             rlist.append([])
 
-        for ref_model_id in range(1, _total_models + 1):
+        for ref_model_id in eff_model_ids:
 
             item = {'model_id': ref_model_id}
             _atom_site_ref = _atom_site_dict[ref_model_id]
@@ -1331,7 +1339,7 @@ class CifReader:
                 align_rmsd = []
                 exact_overlaid_model_ids = []
 
-                for test_model_id in range(1, _total_models + 1):
+                for test_model_id in eff_model_ids:
 
                     if ref_model_id == test_model_id:
                         continue
@@ -1394,11 +1402,14 @@ class CifReader:
 
             item = {}
 
-            r = np.zeros((_total_models, _total_models), dtype=float)
+            r = np.full((_total_models, _total_models), 1000.0, dtype=float)
 
             _rmsd = []
 
             for ref_model_id in range(1, _total_models):
+
+                if ref_model_id not in eff_domain_id:
+                    continue
 
                 _atom_site_ref = _atom_site_dict[ref_model_id]
                 _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
@@ -1410,7 +1421,7 @@ class CifReader:
 
                 for test_model_id in range(2, _total_models + 1):
 
-                    if ref_model_id >= test_model_id:
+                    if ref_model_id >= test_model_id or test_model_id not in eff_model_ids:
                         continue
 
                     # _atom_site_test = _atom_site_dict[test_model_id]
@@ -1442,7 +1453,7 @@ class CifReader:
 
             _rmsd = []
 
-            for test_model_id in range(1, _total_models + 1):
+            for test_model_id in eff_model_ids:
 
                 if ref_model_id == test_model_id:
                     continue

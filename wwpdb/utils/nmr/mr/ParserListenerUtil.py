@@ -2039,6 +2039,9 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'HD1' + atomId[-1]
             if atomId == 'CD':
                 return 'CD1'
+        if refCompId in ('SER', 'THR', 'TYR'):
+            if atomId.startswith('HO') and len(atomId) > 2:  # 2n6j
+                return 'H' + atomId[2:]
         if len(refCompId) == 3 and refCompId in monDict3:
             if atomId == 'O1':
                 return 'O'

@@ -82,6 +82,7 @@
 # 16-Jan-2024  M. Yokochi - add 'nm-res-ari' file type for ARIA restraint format (DAOTHER-9079, NMR restraint remediation)
 # 17-Jan-2024  M. Yokochi - add 'coordinate_issue' error (DAOTHER-9084)
 # 29-Jan-2024  M. Yokochi - add 'ambiguous_dihedral_angle' warning type (NMR restraint remediation, 6sy2)
+# 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1343,7 +1344,7 @@ class NmrDpReport:
         if len(total_models) == 0:
             return None
 
-        return max(total_models)
+        return len(total_models)
 
     def getLabelSeqSchemeOf(self, auth_asym_id, auth_seq_id):
         """ Convert author sequence scheme to label sequence scheme of the coordinates.

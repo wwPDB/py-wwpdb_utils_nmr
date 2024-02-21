@@ -24811,7 +24811,7 @@ class NmrDpUtility:
                                 elif any(d in emptyValue for d in orig_dat[idx]):
                                     if seq_key in _auth_to_orig_seq:
                                         _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
-                                    elif comp_id != auth_comp_id and translateToStdResName(comp_id, self.__ccU) == auth_comp_id:
+                                    elif comp_id != auth_comp_id and translateToStdResName(comp_id, ccU=self.__ccU) == auth_comp_id:
                                         _row[20], _row[21], _row[22] = auth_asym_id, auth_seq_id, comp_id
                                         _row[5] = comp_id = auth_comp_id
                                     if _row[23] in emptyValue:

@@ -428,7 +428,7 @@ class AriaMRParserListener(ParseTreeListener):
                                     try:
                                         seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
                                                                            in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
-                                                                           if seq_id == ref_seq_id)
+                                                                           if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                     except StopIteration:
                                         pass
 
@@ -531,7 +531,7 @@ class AriaMRParserListener(ParseTreeListener):
                                             try:
                                                 seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
                                                                                    in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
-                                                                                   if seq_id == ref_seq_id)
+                                                                                   if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                             except StopIteration:
                                                 pass
 

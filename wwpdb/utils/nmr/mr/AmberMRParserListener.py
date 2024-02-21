@@ -885,7 +885,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 try:
                                                     seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
                                                                                        in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
-                                                                                       if seq_id == ref_seq_id)
+                                                                                       if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                                 except StopIteration:
                                                     pass
 
@@ -899,7 +899,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     break
                                                 if not any(v - k != offset for k, v in seq_id_mapping.items()):
                                                     for auth_seq_id in poly_seq_model['auth_seq_id']:
-                                                        if auth_seq_id - offset not in seq_id_mapping:
+                                                        if isinstance(auth_seq_id, int) and auth_seq_id - offset not in seq_id_mapping:
                                                             seq_id_mapping[auth_seq_id - offset] = auth_seq_id
                                                 seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
                                                                          'comp_id_set': list(set(poly_seq_model['comp_id']))})
@@ -1833,20 +1833,21 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    'iat': self.iat[_col]
                                                                    }
                                                         if self.updateSanderAtomNumberDict(_factor):
-                                                            around = float(g[6]) + 1.0
+                                                            if g[6] is not None:
+                                                                around = float(g[6]) + 1.0
 
-                                                            g2 = None\
-                                                                if self.lastComment is None or not self.dist_sander_pat2.match(self.lastComment)\
-                                                                else self.dist_sander_pat2.search(self.lastComment).groups()
+                                                                g2 = None\
+                                                                    if self.lastComment is None or not self.dist_sander_pat2.match(self.lastComment)\
+                                                                    else self.dist_sander_pat2.search(self.lastComment).groups()
 
-                                                            if g2 is not None:
-                                                                _around = max(float(g2[6]), float(g2[7]))
-                                                                around = max(around, _around)
+                                                                if g2 is not None:
+                                                                    _around = max(float(g2[6]), float(g2[7]))
+                                                                    around = max(around, _around)
 
-                                                            __factor = self.getNeighborCandidateAtom(_factor, self.__sanderAtomNumberDict[self.iat[_col]], around)
-                                                            if __factor is not None:
-                                                                if self.updateSanderAtomNumberDict(__factor):
-                                                                    continue
+                                                                __factor = self.getNeighborCandidateAtom(_factor, self.__sanderAtomNumberDict[self.iat[_col]], around)
+                                                                if __factor is not None:
+                                                                    if self.updateSanderAtomNumberDict(__factor):
+                                                                        continue
                                                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                                     f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                     f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
@@ -2182,7 +2183,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         if not self.updateSanderAtomNumberDict(factor):
                                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                             f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
-                                                            f"based on Sander comment {', '.join(g[offset:offset+2])!r}.")
+                                                            f"based on Sander comment {', '.join(g2[offset:offset+2])!r}.")
 
                     if self.__cur_subtype == 'dihed':
                         subtype_name = 'torsional angle restraint'
@@ -3167,7 +3168,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             if not self.updateSanderAtomNumberDict(factor):
                                                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
-                                                                f"based on Sander comment {', '.join(g[offset:offset+2])!r}.")
+                                                                f"based on Sander comment {', '.join(g2[offset:offset+2])!r}.")
 
                     elif self.__cur_subtype == 'dihed':
                         subtype_name = 'torsional angle restraint'

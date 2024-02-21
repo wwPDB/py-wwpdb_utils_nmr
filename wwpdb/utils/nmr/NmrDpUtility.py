@@ -184,6 +184,7 @@
 # 16-Jan-2024  M. Yokochi - add 'nm-res-ari' file type for ARIA restraint format (DAOTHER-9079, NMR restraint remediation)
 # 17-Jan-2024  M. Yokochi - detect coordinate issue (DAOTHER-9084, type_symbol mismatches label_atom_id)
 # 24-Jan-2024  M. Yokochi - reconstruct polymer/non-polymer sequence based on pdb_mon_id, instead of auth_mon_id (D_1300043061)
+# 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -6140,6 +6141,8 @@ class NmrDpUtility:
         self.__representative_alt_id = REPRESENTATIVE_ALT_ID
         # total number of models
         self.__total_models = 0
+        # list of effective model_id
+        self.__eff_model_ids = None
         # item tag names of 'atom_site' category of the coordinates
         self.__coord_atom_site_tags = None
         # atom id list in model
@@ -24811,7 +24814,7 @@ class NmrDpUtility:
                                 elif any(d in emptyValue for d in orig_dat[idx]):
                                     if seq_key in _auth_to_orig_seq:
                                         _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
-                                    elif comp_id != auth_comp_id and translateToStdResName(comp_id, self.__ccU) == auth_comp_id:
+                                    elif comp_id != auth_comp_id and translateToStdResName(comp_id, ccU=self.__ccU) == auth_comp_id:
                                         _row[20], _row[21], _row[22] = auth_asym_id, auth_seq_id, comp_id
                                         _row[5] = comp_id = auth_comp_id
                                     if _row[23] in emptyValue:
@@ -40296,6 +40299,7 @@ class NmrDpUtility:
                 self.__exptl_method = exptl[0]['method']
 
             self.__total_models = 0
+            self.__eff_model_ids = []
 
             ensemble = self.__cR.getDictList('pdbx_nmr_ensemble')
 
@@ -40332,6 +40336,7 @@ class NmrDpUtility:
 
                             self.__representative_model_id = min(model_ids)
                             self.__total_models = len(model_ids)
+                            self.__eff_model_ids = sorted(model_ids)
 
                     except Exception as e:
 
@@ -40349,6 +40354,27 @@ class NmrDpUtility:
 
                 except ValueError:
                     pass
+
+            if len(self.__eff_model_ids) == 0:
+
+                try:
+
+                    model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
+
+                    model_ids = self.__cR.getDictListWithFilter('atom_site',
+                                                                [{'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                                 ])
+
+                    if len(model_ids) > 0:
+                        model_ids = set(c['model_id'] for c in model_ids)
+
+                        self.__total_models = len(model_ids)
+                        self.__eff_model_ids = sorted(model_ids)
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - " + str(e))
+                    self.report.setError()
 
             if self.__total_models < 2:
 
@@ -40663,12 +40689,18 @@ class NmrDpUtility:
 
                 try:
                     poly_seq = self.__cR.getPolymerSequence(lp_category, key_items,
-                                                            withStructConf=True, withRmsd=True, alias=alias, total_models=self.__total_models)
+                                                            withStructConf=True, withRmsd=True, alias=alias,
+                                                            totalModels=self.__total_models,
+                                                            effModelIds=self.__eff_model_ids,
+                                                            repAltId=self.__representative_alt_id)
                 except KeyError:  # pdbx_PDB_ins_code throws KeyError
                     if content_subtype + ('_ins_alias' if alias else '_ins') in self.key_items[file_type]:
                         key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
                         poly_seq = self.__cR.getPolymerSequence(lp_category, key_items,
-                                                                withStructConf=True, withRmsd=True, alias=alias, total_models=self.__total_models)
+                                                                withStructConf=True, withRmsd=True, alias=alias,
+                                                                totalModels=self.__total_models,
+                                                                effModelIds=self.__eff_model_ids,
+                                                                repAltId=self.__representative_alt_id)
                     else:
                         poly_seq = []
 
@@ -40685,7 +40717,10 @@ class NmrDpUtility:
 
                     try:
                         branched_seq = self.__cR.getPolymerSequence(lp_category, key_items,
-                                                                    withStructConf=False, withRmsd=False, alias=False, total_models=self.__total_models)
+                                                                    withStructConf=False, withRmsd=False, alias=False,
+                                                                    totalModels=self.__total_models,
+                                                                    effModelIds=self.__eff_model_ids,
+                                                                    repAltId=self.__representative_alt_id)
                         if len(branched_seq) > 0:
                             poly_seq.extend(branched_seq)
                     except Exception:

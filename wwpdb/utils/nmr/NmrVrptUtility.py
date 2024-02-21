@@ -7,6 +7,7 @@
 # 19-Jul-2023  M. Yokochi - fix distance/dihedral angle/RDC averaging when lower/upper bounds are different in a restraint (DAOTER-8705)
 # 18-Dec-2023  M. Yokochi - retrieve non-leaving hydrogens independent of MolProbity (DAOTHER-8945)
 # 20-Dec-2023  M. Yokochi - add support for case 'Member_logic_code' value equals 'AND'
+# 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
 ##
 """ Wrapper class for NMR restraint validation.
     @author: Masashi Yokochi
@@ -436,11 +437,11 @@ def get_violated_model_ids(viol_per_model):
     return [m for m, err in viol_per_model.items() if err is not None and err > 0.0]
 
 
-def get_violation_statistics_for_each_bin(beg_err_bin, end_err_bin, total_models, viol_dict):
+def get_violation_statistics_for_each_bin(beg_err_bin, end_err_bin, total_models, eff_model_ids, viol_dict):
     viol_stat_per_model = []
 
     all_err_list = []
-    for m in range(1, total_models + 1):
+    for m in eff_model_ids:
         err_list = []
 
         for viol_per_model in viol_dict.values():
@@ -539,6 +540,8 @@ class NmrVrptUtility:
         self.__representative_alt_id = REPRESENTATIVE_ALT_ID
         # total number of models
         self.__total_models = 0
+        # list of effective model_id
+        self.__eff_model_ids = None
 
         # atom id list for each model_id and atom key (auth_asym_id, auth_seq_id, auth_comp_id, auth_atom_id, PDB_ins_code)
         self.__atomIdList = None
@@ -762,6 +765,7 @@ class NmrVrptUtility:
                 return False
 
             self.__total_models = 0
+            self.__eff_model_ids = []
 
             ensemble = self.__cR.getDictList('pdbx_nmr_ensemble')
 
@@ -798,6 +802,7 @@ class NmrVrptUtility:
 
                             self.__representative_model_id = min(model_ids)
                             self.__total_models = len(model_ids)
+                            self.__eff_model_ids = sorted(model_ids)
 
                     except Exception as e:
 
@@ -815,6 +820,27 @@ class NmrVrptUtility:
 
                 except ValueError:
                     pass
+
+            if len(self.__eff_model_ids) == 0:
+
+                try:
+
+                    model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+
+                    model_ids = self.__cR.getDictListWithFilter('atom_site',
+                                                                [{'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                                 ])
+
+                    if len(model_ids) > 0:
+                        model_ids = set(c['model_id'] for c in model_ids)
+
+                        self.__total_models = len(model_ids)
+                        self.__eff_model_ids = sorted(model_ids)
+
+                except Exception as e:
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrVrptUtility.__parseCoordinate() ++ Error  - {str(e)}\n")
 
             if self.__cR.hasItem('atom_site', 'label_alt_id'):
                 alt_ids = self.__cR.getDictListWithFilter('atom_site',
@@ -1190,7 +1216,7 @@ class NmrVrptUtility:
 
         try:
 
-            for model_id in range(1, self.__total_models + 1):
+            for model_id in self.__eff_model_ids:
                 filter_items = copy.copy(_filter_items)
                 filter_items.append({'name': 'pdbx_PDB_model_num', 'type': 'int',
                                      'value': model_id})
@@ -2031,7 +2057,7 @@ class NmrVrptUtility:
 
             def fill_smaller_error_for_each_model(error_per_model, min_error_per_model,
                                                   combination_id, member_id, min_comb_key_per_model):
-                for model_id in range(1, self.__total_models + 1):
+                for model_id in self.__eff_model_ids:
                     error = error_per_model[model_id]
 
                     if error is not None and error < min_error_per_model[model_id]:
@@ -2043,7 +2069,7 @@ class NmrVrptUtility:
                 viol_per_model = {}
                 comb_key_per_model = {}
 
-                for model_id in range(1, self.__total_models + 1):
+                for model_id in self.__eff_model_ids:
                     error = min_error_per_model[model_id]
                     comb_key = min_comb_key_per_model[model_id]
 
@@ -2063,9 +2089,9 @@ class NmrVrptUtility:
 
                 self.__distRestDictWithCombKey[rest_key] = {}
 
-                min_error_per_model = {model_id: DIST_ERROR_MAX for model_id in range(1, self.__total_models + 1)}
+                min_error_per_model = {model_id: DIST_ERROR_MAX for model_id in self.__eff_model_ids}
                 min_comb_key_per_model = {model_id: {'combination_id': None, 'member_id': None}
-                                          for model_id in range(1, self.__total_models + 1)}
+                                          for model_id in self.__eff_model_ids}
 
                 if not has_combination_id and not has_member_id:
                     error_per_model = calc_dist_rest_viol(rest_key, restraints)
@@ -2246,7 +2272,7 @@ class NmrVrptUtility:
 
             def fill_smaller_error_for_each_model(error_per_model, min_error_per_model,
                                                   combination_id, min_comb_key_per_model):
-                for model_id in range(1, self.__total_models + 1):
+                for model_id in self.__eff_model_ids:
                     error = error_per_model[model_id]
 
                     if error is not None and error < min_error_per_model[model_id]:
@@ -2257,7 +2283,7 @@ class NmrVrptUtility:
                 viol_per_model = {}
                 comb_key_per_model = {}
 
-                for model_id in range(1, self.__total_models + 1):
+                for model_id in self.__eff_model_ids:
                     error = min_error_per_model[model_id]
                     comb_key = min_comb_key_per_model[model_id]
 
@@ -2276,9 +2302,9 @@ class NmrVrptUtility:
 
                 self.__dihedRestDictWithCombKey[rest_key] = {}
 
-                min_error_per_model = {model_id: ANGLE_ERROR_MAX for model_id in range(1, self.__total_models + 1)}
+                min_error_per_model = {model_id: ANGLE_ERROR_MAX for model_id in self.__eff_model_ids}
                 min_comb_key_per_model = {model_id: {'combination_id': None}
-                                          for model_id in range(1, self.__total_models + 1)}
+                                          for model_id in self.__eff_model_ids}
 
                 if not has_combination_id:
                     error_per_model = calc_dihed_rest_viol(rest_key, restraints)
@@ -2407,7 +2433,7 @@ class NmrVrptUtility:
 
             def fill_smaller_error_for_each_model(error_per_model, min_error_per_model,
                                                   combination_id, min_comb_key_per_model):
-                for model_id in range(1, self.__total_models + 1):
+                for model_id in self.__eff_model_ids:
                     error = error_per_model[model_id]
 
                     if error is not None and error < min_error_per_model[model_id]:
@@ -2418,7 +2444,7 @@ class NmrVrptUtility:
                 viol_per_model = {}
                 comb_key_per_model = {}
 
-                for model_id in range(1, self.__total_models + 1):
+                for model_id in self.__eff_model_ids:
                     error = min_error_per_model[model_id]
                     comb_key = min_comb_key_per_model[model_id]
 
@@ -2437,9 +2463,9 @@ class NmrVrptUtility:
 
                 self.__rdcRestDictWithCombKey[rest_key] = {}
 
-                min_error_per_model = {model_id: RDC_ERROR_MAX for model_id in range(1, self.__total_models + 1)}
+                min_error_per_model = {model_id: RDC_ERROR_MAX for model_id in self.__eff_model_ids}
                 min_comb_key_per_model = {model_id: {'combination_id': None}
-                                          for model_id in range(1, self.__total_models + 1)}
+                                          for model_id in self.__eff_model_ids}
 
                 if not has_combination_id:
                     error_per_model = calc_rdc_rest_viol(rest_key, restraints)
@@ -2534,7 +2560,7 @@ class NmrVrptUtility:
             distance_violations_vs_models = {}
             distance_violations_in_models = {}
 
-            for m in range(1, self.__total_models + 1):
+            for m in self.__eff_model_ids:
                 distance_violations_in_models[m] = {}
 
                 for t in distance_type:
@@ -2587,7 +2613,7 @@ class NmrVrptUtility:
             self.__results['distance_violations_vs_models'] = distance_violations_vs_models
 
             for rest_key, viol_per_model in self.__distRestViolDict.items():
-                for m in range(1, self.__total_models + 1):
+                for m in self.__eff_model_ids:
                     err = viol_per_model[m]
 
                     if err is None or err == 0.0:
@@ -2623,6 +2649,7 @@ class NmrVrptUtility:
                 residual_distance_violation[dist_err_range] =\
                     get_violation_statistics_for_each_bin(beg_err_bin, end_err_bin,
                                                           self.__total_models,
+                                                          self.__eff_model_ids,
                                                           self.__distRestViolDict)
 
             self.__results['key_lists']['dist_range'] = dist_range
@@ -2666,7 +2693,7 @@ class NmrVrptUtility:
 
             all_distance_violations = []
             for rest_key, viol_per_model in self.__distRestViolDict.items():
-                for m in range(1, self.__total_models + 1):
+                for m in self.__eff_model_ids:
                     err = viol_per_model[m]
 
                     if err is None or err == 0.0:
@@ -2692,7 +2719,7 @@ class NmrVrptUtility:
 
             dist_violation_seq = {}
             for seq_key, rest_keys in self.__distRestSeqDict.items():
-                for m in range(1, self.__total_models + 1):
+                for m in self.__eff_model_ids:
                     _seq_key = (seq_key[0], seq_key[1], seq_key[2], m)
 
                     if _seq_key not in dist_violation_seq:
@@ -2796,7 +2823,7 @@ class NmrVrptUtility:
             angle_violations_vs_models = {}
             angle_violations_in_models = {}
 
-            for m in range(1, self.__total_models + 1):
+            for m in self.__eff_model_ids:
                 angle_violations_in_models[m] = {}
 
                 for t in angle_type:
@@ -2833,7 +2860,7 @@ class NmrVrptUtility:
             self.__results['angle_violations_vs_models'] = angle_violations_vs_models
 
             for rest_key, viol_per_model in self.__dihedRestViolDict.items():
-                for m in range(1, self.__total_models + 1):
+                for m in self.__eff_model_ids:
                     err = viol_per_model[m]
 
                     if err is None or err == 0.0:
@@ -2868,6 +2895,7 @@ class NmrVrptUtility:
                 residual_angle_violation[dihed_err_range] =\
                     get_violation_statistics_for_each_bin(beg_err_bin, end_err_bin,
                                                           self.__total_models,
+                                                          self.__eff_model_ids,
                                                           self.__dihedRestViolDict)
 
             self.__results['key_lists']['angle_range'] = angle_range
@@ -2911,7 +2939,7 @@ class NmrVrptUtility:
 
             all_angle_violations = []
             for rest_key, viol_per_model in self.__dihedRestViolDict.items():
-                for m in range(1, self.__total_models + 1):
+                for m in self.__eff_model_ids:
                     err = viol_per_model[m]
 
                     if err is None or err == 0.0:
@@ -2937,7 +2965,7 @@ class NmrVrptUtility:
 
             angle_violation_seq = {}
             for seq_key, rest_keys in self.__dihedRestSeqDict.items():
-                for m in range(1, self.__total_models + 1):
+                for m in self.__eff_model_ids:
                     _seq_key = (seq_key[0], seq_key[1], seq_key[2], m)
 
                     if _seq_key not in angle_violation_seq:
@@ -3039,7 +3067,7 @@ class NmrVrptUtility:
             rdc_violations_vs_models = {}
             rdc_violations_in_models = {}
 
-            for m in range(1, self.__total_models + 1):
+            for m in self.__eff_model_ids:
                 rdc_violations_in_models[m] = {}
 
                 for t in rdc_type:
@@ -3076,7 +3104,7 @@ class NmrVrptUtility:
             self.__results['rdc_violations_vs_models'] = rdc_violations_vs_models
 
             for rest_key, viol_per_model in self.__rdcRestViolDict.items():
-                for m in range(1, self.__total_models + 1):
+                for m in self.__eff_model_ids:
                     err = viol_per_model[m]
 
                     if err is None or err == 0.0:
@@ -3111,6 +3139,7 @@ class NmrVrptUtility:
                 residual_rdc_violation[rdc_err_range] =\
                     get_violation_statistics_for_each_bin(beg_err_bin, end_err_bin,
                                                           self.__total_models,
+                                                          self.__eff_model_ids,
                                                           self.__rdcRestViolDict)
 
             self.__results['key_lists']['rdc_range'] = rdc_range
@@ -3152,7 +3181,7 @@ class NmrVrptUtility:
 
             all_rdc_violations = []
             for rest_key, viol_per_model in self.__rdcRestViolDict.items():
-                for m in range(1, self.__total_models + 1):
+                for m in self.__eff_model_ids:
                     err = viol_per_model[m]
 
                     if err is None or err == 0.0:
@@ -3176,7 +3205,7 @@ class NmrVrptUtility:
 
             rdc_violation_seq = {}
             for seq_key, rest_keys in self.__rdcRestSeqDict.items():
-                for m in range(1, self.__total_models + 1):
+                for m in self.__eff_model_ids:
                     _seq_key = (seq_key[0], seq_key[1], seq_key[2], m)
 
                     if _seq_key not in rdc_violation_seq:

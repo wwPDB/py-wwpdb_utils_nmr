@@ -2320,16 +2320,29 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
     return atomId
 
 
-def retrieveRemappedSeqId(seqIdRemap, chainId, seqId):
+def retrieveRemappedSeqId(seqIdRemap, chainId, seqId, compId=None):
     """ Retrieve seq_id from mapping dictionary based on sequence alignments.
     """
 
     try:
 
-        if chainId is None:
-            remap = next(remap for remap in seqIdRemap if seqId in remap['seq_id_dict'])
+        if compId is None:
+
+            if chainId is None:
+                remap = next(remap for remap in seqIdRemap
+                             if seqId in remap['seq_id_dict'])
+            else:
+                remap = next(remap for remap in seqIdRemap
+                             if seqId in remap['seq_id_dict'] and remap['chain_id'] == chainId)
+
         else:
-            remap = next(remap for remap in seqIdRemap if seqId in remap['seq_id_dict'] and remap['chain_id'] == chainId)
+
+            if chainId is None:
+                remap = next(remap for remap in seqIdRemap
+                             if seqId in remap['seq_id_dict'] and compId in remap['comp_id_set'])
+            else:
+                remap = next(remap for remap in seqIdRemap
+                             if seqId in remap['seq_id_dict'] and remap['chain_id'] == chainId and compId in remap['comp_id_set'])
 
         return remap['chain_id'], remap['seq_id_dict'][seqId]
 

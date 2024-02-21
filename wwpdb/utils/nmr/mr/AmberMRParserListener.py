@@ -1833,20 +1833,21 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    'iat': self.iat[_col]
                                                                    }
                                                         if self.updateSanderAtomNumberDict(_factor):
-                                                            around = float(g[6]) + 1.0
+                                                            if g[6] is not None:
+                                                                around = float(g[6]) + 1.0
 
-                                                            g2 = None\
-                                                                if self.lastComment is None or not self.dist_sander_pat2.match(self.lastComment)\
-                                                                else self.dist_sander_pat2.search(self.lastComment).groups()
+                                                                g2 = None\
+                                                                    if self.lastComment is None or not self.dist_sander_pat2.match(self.lastComment)\
+                                                                    else self.dist_sander_pat2.search(self.lastComment).groups()
 
-                                                            if g2 is not None:
-                                                                _around = max(float(g2[6]), float(g2[7]))
-                                                                around = max(around, _around)
+                                                                if g2 is not None:
+                                                                    _around = max(float(g2[6]), float(g2[7]))
+                                                                    around = max(around, _around)
 
-                                                            __factor = self.getNeighborCandidateAtom(_factor, self.__sanderAtomNumberDict[self.iat[_col]], around)
-                                                            if __factor is not None:
-                                                                if self.updateSanderAtomNumberDict(__factor):
-                                                                    continue
+                                                                __factor = self.getNeighborCandidateAtom(_factor, self.__sanderAtomNumberDict[self.iat[_col]], around)
+                                                                if __factor is not None:
+                                                                    if self.updateSanderAtomNumberDict(__factor):
+                                                                        continue
                                                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                                     f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                     f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")

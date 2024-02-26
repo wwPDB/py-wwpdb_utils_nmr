@@ -2329,6 +2329,9 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'HN' + n
             if atomId.endswith('2') and ('HN' + n + 'A') in refAtomIdList:
                 return 'HN' + n + 'A'
+        if atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit():  # DAOTHER-9198: DNR(DC):H3+ -> HN3
+            if 'HN' + atomId[1] in refAtomIdList:
+                return 'HN' + atomId[1]
 
     if atomId.endswith('+1') or atomId.endswith('+2') or atomId.endswith('+3'):
         if atomId[:-2] in SYMBOLS_ELEMENT:

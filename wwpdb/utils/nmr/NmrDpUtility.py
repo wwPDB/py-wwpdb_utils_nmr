@@ -25431,6 +25431,27 @@ class NmrDpUtility:
 
                                                     _seq_key = (__seq_key[0], __seq_key[1])
 
+                                    else:
+                                        __seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                          if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                        if __seq_key is not None:
+                                            __comp_id = __seq_key[2]
+                                            if self.__ccU.updateChemCompDict(comp_id):
+                                                cc_type = self.__ccU.lastChemCompDict['_chem_comp.type']
+                                            if self.__ccU.updateChemCompDict(__comp_id):
+                                                __cc_type = self.__ccU.lastChemCompDict['_chem_comp.type']
+                                            if cc_type == __cc_type:  # DAOTHER-9198
+                                                found = True
+                                                comp_id = __seq_key[2]
+                                                _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, __seq_key[1], __seq_key[1]
+                                                _seq_key = (__seq_key[0], __seq_key[1])
+                                                _row[16], _row[17], _row[18], _row[19] =\
+                                                    __seq_key[0], __seq_key[1], comp_id, atom_id
+                                                if has_ins_code and __seq_key in auth_to_ins_code:
+                                                    _row[27] = auth_to_ins_code[__seq_key]
+
+                                                _seq_key = (__seq_key[0], __seq_key[1])
+
                                     if not found:
                                         _row[24] = 'UNMAPPED'
                                         # DAOTHER-9065

@@ -1402,7 +1402,7 @@ class CifReader:
 
             item = {}
 
-            r = np.full((_total_models, _total_models), 1000.0, dtype=float)
+            r = np.full((_total_models, _total_models), self.__rmsd_cutoff, dtype=float)
 
             _rmsd = []
 

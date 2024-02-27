@@ -264,10 +264,13 @@ class AmberMRReader:
                                                      self.__ccU, self.__csStat, self.__nefT,
                                                      self.__atomNumberDict
                                                      if 'global_sequence_offset' not in reasons
-                                                     and 'chain_seq_id_remap' not in reasons else None,
+                                                     and 'chain_seq_id_remap' not in reasons
+                                                     and 'use_alt_poly_seq' not in reasons else None,
                                                      reasons
-                                                     if self.__reasons__ is None or 'global_sequence_offset' not in self.__reasons__
-                                                     or 'chain_seq_id_remap' not in self.__reasons__ else self.__reasons__)
+                                                     if self.__reasons__ is None
+                                                     or 'global_sequence_offset' not in self.__reasons__
+                                                     or 'chain_seq_id_remap' not in self.__reasons__
+                                                     or 'use_alt_poly_seq' not in self.__reasons__ else self.__reasons__)
                     listener.setDebugMode(self.__debug)
                     listener.createSfDict(createSfDict)
                     if createSfDict:
@@ -326,6 +329,18 @@ class AmberMRReader:
 
 
 if __name__ == "__main__":
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6e83/ang.rst',
+                 '../../tests-nmr/mock-data-remediation/6e83/6e83.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6e83/dist.rst',
+                 '../../tests-nmr/mock-data-remediation/6e83/6e83.cif',
+                 None)
+
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6g99/man_noe2.rst',

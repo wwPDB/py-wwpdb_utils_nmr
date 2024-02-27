@@ -2014,6 +2014,10 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     elif 'H' + atomId[1:] + '1' in _refAtomIdList or 'H' + atomId[1:] + '11' in _refAtomIdList:
                         return 'H' + atomId[1:] + '%'
 
+                elif atomId in ('HT', 'HT%', 'HT*'):  # 6e83
+                    if refAtomIdList is not None and 'H1' in refAtomIdList:
+                        return 'H%'
+
                 elif refAtomIdList is not None and atomId + '2' in refAtomIdList:
                     return atomId + '%'
 

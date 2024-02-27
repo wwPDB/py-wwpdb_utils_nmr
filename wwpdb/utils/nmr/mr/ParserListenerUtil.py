@@ -5729,7 +5729,7 @@ def getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom, aux_atom=None)
         starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
         return starAtom
 
-    if chainId in offsetHolder:
+    if chainId in offsetHolder and seqId is not None:
         offset = offsetHolder[chainId]
         seqKey = (chainId, seqId + offset, compId)
         if has_aux_atom:
@@ -5739,7 +5739,7 @@ def getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom, aux_atom=None)
             atom['seq_id'] = seqId + offset
             return starAtom
 
-    elif f'_{chainId}' in offsetHolder:
+    elif f'_{chainId}' in offsetHolder and seqId is not None:
         offset = offsetHolder[f'_{chainId}']
         seqKey = (chainId, seqId + offset, compId)
         if seqKey in authToStarSeq:
@@ -5751,27 +5751,28 @@ def getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom, aux_atom=None)
         starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
         return starAtom
 
-    for offset in range(1, 1000):
-        seqKey = (chainId, seqId + offset, compId)
-        if has_aux_atom:
-            auxSeqKey = (auxChainId, auxSeqId + offset, auxCompId)
-        if seqKey in authToStarSeq and (not has_aux_atom or (has_aux_atom and auxSeqKey in authToStarSeq)):
-            starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
-            offsetHolder[chainId] = offset
-            if has_aux_atom and compId in monDict3 and auxCompId in monDict3:
-                offsetHolder[f'_{chainId}'] = offset
-            atom['seq_id'] = seqId + offset
-            return starAtom
-        seqKey = (chainId, seqId - offset, compId)
-        if has_aux_atom:
-            auxSeqKey = (auxChainId, auxSeqId + offset, auxCompId)
-        if seqKey in authToStarSeq and (not has_aux_atom or (has_aux_atom and auxSeqKey in authToStarSeq)):
-            starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
-            offsetHolder[chainId] = -offset
-            if has_aux_atom and compId in monDict3 and auxCompId in monDict3:
-                offsetHolder[f'_{chainId}'] = -offset
-            atom['seq_id'] = seqId - offset
-            return starAtom
+    if seqId is not None:
+        for offset in range(1, 1000):
+            seqKey = (chainId, seqId + offset, compId)
+            if has_aux_atom:
+                auxSeqKey = (auxChainId, auxSeqId + offset, auxCompId)
+            if seqKey in authToStarSeq and (not has_aux_atom or (has_aux_atom and auxSeqKey in authToStarSeq)):
+                starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
+                offsetHolder[chainId] = offset
+                if has_aux_atom and compId in monDict3 and auxCompId in monDict3:
+                    offsetHolder[f'_{chainId}'] = offset
+                atom['seq_id'] = seqId + offset
+                return starAtom
+            seqKey = (chainId, seqId - offset, compId)
+            if has_aux_atom:
+                auxSeqKey = (auxChainId, auxSeqId + offset, auxCompId)
+            if seqKey in authToStarSeq and (not has_aux_atom or (has_aux_atom and auxSeqKey in authToStarSeq)):
+                starAtom['chain_id'], starAtom['seq_id'], starAtom['entity_id'], _ = authToStarSeq[seqKey]
+                offsetHolder[chainId] = -offset
+                if has_aux_atom and compId in monDict3 and auxCompId in monDict3:
+                    offsetHolder[f'_{chainId}'] = -offset
+                atom['seq_id'] = seqId - offset
+                return starAtom
 
     _seqKey = next((_seqKey for _seqKey in authToStarSeq if chainId == _seqKey[0] and seqId == _seqKey[1]), None)
     if has_aux_atom:

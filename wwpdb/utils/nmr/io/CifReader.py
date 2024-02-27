@@ -1437,7 +1437,8 @@ class CifReader:
 
                     _rmsd.append(_rmsd_)
 
-            item['mean_rmsd'] = float(f"{np.mean(np.array(_rmsd)):.4f}")
+            if len(_rmsd) > 0:
+                item['mean_rmsd'] = float(f"{np.mean(np.array(_rmsd)):.4f}")
 
             _, v = np.linalg.eig(r)
             x = np.delete(np.abs(v), np.s_[1:], 1)
@@ -1466,7 +1467,8 @@ class CifReader:
 
                 _rmsd.append(calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q))
 
-            item['medoid_rmsd'] = float(f"{np.mean(np.array(_rmsd)):.4f}")
+            if len(_rmsd) > 0:
+                item['medoid_rmsd'] = float(f"{np.mean(np.array(_rmsd)):.4f}")
 
             _item = copy.copy(item)
 

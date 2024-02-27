@@ -23229,12 +23229,15 @@ class NmrDpUtility:
                                 atom_id_col = loop.tags.index(atom_id_name)
                                 ambig_code_col = loop.tags.index(ambig_code_name)
 
-                                row = next(row for row in loop
-                                           if row[chain_id_col] in alt_chain_id and int(row[seq_id_col]) == seq_id
-                                           and row[comp_id_col] == comp_id and row[atom_id_col] == atom_id)
+                                try:
+                                    row = next(row for row in loop
+                                               if row[chain_id_col] in alt_chain_id and int(row[seq_id_col]) == seq_id
+                                               and row[comp_id_col] == comp_id and row[atom_id_col] == atom_id)
 
-                                row[ambig_code_col] = 1
-                                modified = True
+                                    row[ambig_code_col] = 1
+                                    modified = True
+                                except ValueError:
+                                    pass
 
                             elif allowed_ambig_code > 0:
 

@@ -4844,7 +4844,9 @@ class NEFTranslator:
                                     return 1
                     return None
 
-                ref_atom = re.findall(r'(\S+)([xyXY])([%*])$|(\S+)([%*])$|(\S+)([xyXY]$)|([%*])(\S+)', nef_atom)[0]
+                ref_atom = re.findall(r'([^ \t\r\n\f\v\(\)\{\}\[\]]+)([xyXY])([%*])$'
+                                      r'|([^ \t\r\n\f\v\(\)\{\}\[\]]+)([%*])$|([^ \t\r\n\f\v\(\)\{\}\[\]]+)([xyXY]$)'
+                                      r'|([%*])([^ \t\r\n\f\v\(\)\{\}\[\]]+)', nef_atom)[0]
 
                 atm_set = [ref_atom.index(a) for a in ref_atom if a != '']
 

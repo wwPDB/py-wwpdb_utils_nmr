@@ -44685,15 +44685,16 @@ class NmrDpUtility:
                     if any(auth_asym_id for auth_asym_id in item[_auth_asym_id].split(',')
                            if auth_asym_id in self.__auth_asym_ids_with_chem_exch.keys()):
                         row[8] = row[9] = 'yes'
-                if entity_total[entity_id] > 0 and entity_type[entity_id] == 'polymer' and len(self.__label_asym_id_with_exptl_data) > 0:
-                    equiv_entity_assemblies = [_item for _item in self.__caC['entity_assembly'] if _item['entity'] == entity_id]
+                if entity_total[entity_id] > 0 and entity_type == 'polymer' and len(self.__label_asym_id_with_exptl_data) > 0:
+                    equiv_entity_assemblies = [_item for _item in self.__caC['entity_assembly'] if _item['entity_id'] == entity_id]
                     _item = next((_item for _item in equiv_entity_assemblies if any(label_asym_id for label_asym_id in _item[_label_asym_id].split(',')
                                                                                     if label_asym_id in self.__label_asym_id_with_exptl_data)), None)
-                    group_id = sorted(sorted(set(_item[_label_asym_id].split(','))), key=len)[0]
-                    if any(__item for __item in equiv_entity_assemblies if not any(label_asym_id for label_asym_id in __item[_label_asym_id].split(',')
-                                                                                   if label_asym_id in self.__label_asym_id_with_exptl_data)):
-                        if _item == item or row[6] is None or row[6] == 'no':
-                            row[10] = group_id
+                    if _item is not None:
+                        group_id = sorted(sorted(set(_item[_label_asym_id].split(','))), key=len)[0]
+                        if any(__item for __item in equiv_entity_assemblies if not any(label_asym_id for label_asym_id in __item[_label_asym_id].split(',')
+                                                                                       if label_asym_id in self.__label_asym_id_with_exptl_data)):
+                            if _item == item or row[6] is None or row[6] == 'no':
+                                row[10] = group_id
                 row[11], row[12] = item['entity_role'], item['entity_details']
                 row[13], row[14] = 1, self.__entry_id
 

@@ -565,8 +565,10 @@ class AmberMRParserListener(ParseTreeListener):
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
 
-        # whether use alternative polymer sequence
+        # whether to use alternative polymer sequence
         self.__useDefault = reasons is None or 'use_alt_poly_seq' not in reasons or not reasons['use_alt_poly_seq']
+        # whether to use alternative polymer sequence when comp_id is not available
+        self.__useDefaultWoCompId = reasons is not None and 'auth_seq_scheme' in reasons
 
         self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
 
@@ -932,6 +934,10 @@ class AmberMRParserListener(ParseTreeListener):
                         self.reasonsForReParsing['global_sequence_offset'][k] = collections.Counter(v).most_common()[0][0]
                     if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
                         del self.reasonsForReParsing['global_sequence_offset']
+
+                if 'use_alt_poly_seq' in self.reasonsForReParsing:
+                    if 'global_sequence_offset' in self.reasonsForReParsing or 'chain_seq_id_remap' in self.reasonsForReParsing:
+                        del self.reasonsForReParsing['use_alt_poly_seq']
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
@@ -4600,8 +4606,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         factor['atom_id'] = _atomId
                                         del factor['iat']
                                         self.__sanderAtomNumberDict[iat] = factor
+                                        """
                                         if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
                                             self.reasonsForReParsing['use_alt_poly_seq'] = True
+                                        """
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
                                             auth_seq_id_list = list(filter(None, np['auth_seq_id']))
@@ -4700,8 +4708,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         del _factor['igr']
                                         self.__sanderAtomNumberDict[igr] = _factor
                                         ccdCheckOnly = True
+                                        """
                                         if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
                                             self.reasonsForReParsing['use_alt_poly_seq'] = True
+                                        """
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
                                             auth_seq_id_list = list(filter(None, np['auth_seq_id']))
@@ -5154,8 +5164,10 @@ class AmberMRParserListener(ParseTreeListener):
                                             factor['atom_id'] = _atomId
                                             del factor['iat']
                                             self.__sanderAtomNumberDict[iat] = factor
+                                            """
                                             if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
                                                 self.reasonsForReParsing['use_alt_poly_seq'] = True
+                                            """
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
                                                 auth_seq_id_list = list(filter(None, np['auth_seq_id']))
@@ -5254,8 +5266,10 @@ class AmberMRParserListener(ParseTreeListener):
                                             del _factor['igr']
                                             self.__sanderAtomNumberDict[igr] = _factor
                                             ccdCheckOnly = True
+                                            """
                                             if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
                                                 self.reasonsForReParsing['use_alt_poly_seq'] = True
+                                            """
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
                                                 auth_seq_id_list = list(filter(None, np['auth_seq_id']))

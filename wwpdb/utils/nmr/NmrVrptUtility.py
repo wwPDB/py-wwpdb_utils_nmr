@@ -480,6 +480,8 @@ class NmrVrptUtility:
     """ Wrapper class for NMR restraint validation.
     """
 
+    __version__ = "v1.2"
+
     def __init__(self, verbose=False, log=sys.stderr,
                  cR=None, caC=None, ccU=None, csStat=None):
         self.__verbose = verbose

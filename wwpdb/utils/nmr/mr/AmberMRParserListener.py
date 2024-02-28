@@ -3823,7 +3823,7 @@ class AmberMRParserListener(ParseTreeListener):
             if self.__reasons is not None and 'global_sequence_offset' in self.__reasons:
                 __chainId = __offset = None
                 for _ps in self.__polySeq:
-                    _chainId = _ps['auth_chain_id']
+                    _chainId = _ps['auth_chain_id'] if useDefault or self.__altPolySeq is None else _ps['chain_id']
                     if _chainId in self.__reasons['global_sequence_offset']:
                         _seq_id_list = list(filter(None, _ps['auth_seq_id']))
                         _offset = self.__reasons['global_sequence_offset'][_chainId]
@@ -4216,7 +4216,7 @@ class AmberMRParserListener(ParseTreeListener):
             if self.__reasons is not None and 'global_sequence_offset' in self.__reasons:
                 __chainId = __offset = None
                 for _ps in self.__polySeq:
-                    _chainId = _ps['auth_chain_id']
+                    _chainId = _ps['auth_chain_id'] if useDefault or self.__altPolySeq is None else _ps['chain_id']
                     if _chainId in self.__reasons['global_sequence_offset']:
                         _seq_id_list = list(filter(None, _ps['auth_seq_id']))
                         _offset = self.__reasons['global_sequence_offset'][_chainId]

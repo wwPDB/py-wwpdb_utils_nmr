@@ -268,9 +268,9 @@ class AmberMRReader:
                                                      and 'use_alt_poly_seq' not in reasons else None,
                                                      reasons
                                                      if self.__reasons__ is None
-                                                     or 'global_sequence_offset' not in self.__reasons__
-                                                     or 'chain_seq_id_remap' not in self.__reasons__
-                                                     or 'use_alt_poly_seq' not in self.__reasons__ else self.__reasons__)
+                                                     or 'global_sequence_offset' in self.__reasons__
+                                                     or 'chain_seq_id_remap' in self.__reasons__
+                                                     or 'use_alt_poly_seq' in self.__reasons__ else self.__reasons__)
                     listener.setDebugMode(self.__debug)
                     listener.createSfDict(createSfDict)
                     if createSfDict:

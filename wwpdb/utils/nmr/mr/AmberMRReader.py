@@ -223,6 +223,14 @@ class AmberMRReader:
 
                 if reasons is not None:
 
+                    sanderAtomNumberDict = listener.getSanderAtomNumberDict()
+                    if sanderAtomNumberDict is not None and len(sanderAtomNumberDict) > 0:
+                        self.__atomNumberDict = sanderAtomNumberDict
+                        if self.__auxAtomNumberDict is not None and len(self.__auxAtomNumberDict) > 0:
+                            for k, v in self.__auxAtomNumberDict.items():
+                                if k not in self.__atomNumberDict:
+                                    self.__atomNumberDict[k] = v
+
                     if isFilePath and ifh is not None:
                         ifh.close()
 
@@ -298,7 +306,7 @@ class AmberMRReader:
                             print(listener.getContentSubtype())
 
                 sanderAtomNumberDict = listener.getSanderAtomNumberDict()
-                if len(sanderAtomNumberDict) > 0:
+                if sanderAtomNumberDict is not None and len(sanderAtomNumberDict) > 0:
                     self.__atomNumberDict = sanderAtomNumberDict
                     if self.__auxAtomNumberDict is not None and len(self.__auxAtomNumberDict) > 0:
                         for k, v in self.__auxAtomNumberDict.items():

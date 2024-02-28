@@ -8,6 +8,7 @@
 # 18-Dec-2023  M. Yokochi - retrieve non-leaving hydrogens independent of MolProbity (DAOTHER-8945)
 # 20-Dec-2023  M. Yokochi - add support for case 'Member_logic_code' value equals 'AND'
 # 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
+# 28-Feb-2024  M. Yokochi - collect atom_ids dictionary for both auth_atom_id and pdbx_auth_atom_name tags to prevent MISSING ATOM IN MODEL KeyError in restraintsanalysis.py (DAOTHER-9200)
 ##
 """ Wrapper class for NMR restraint validation.
     @author: Masashi Yokochi
@@ -477,7 +478,7 @@ def get_violation_statistics_for_each_bin(beg_err_bin, end_err_bin, total_models
 
 
 class NmrVrptUtility:
-    """ Wrapper class for NMR restraint validation.
+    """ Wrapper class for NMR restraint analysis.
     """
 
     __version__ = "v1.2"
@@ -1259,6 +1260,17 @@ class NmrVrptUtility:
                          c['auth_seq_id'], c['label_alt_id'], c['pdbx_PDB_ins_code'], c['auth_asym_id'])
 
                     coordinates_per_model[atom_key] = to_np_array(c)
+
+                    # DAOTHER-9200 for wwpdb.apps.validation.src.wrapper.restraintsanalysis.generate_formated_output (MISSING ATOM IN MODEL KeyError)
+                    if _auth_atom_id == 'pdbx_auth_atom_name' and c['auth_atom_id'] != c['alt_auth_atom_id']:
+                        _atom_key = (c['auth_asym_id'], c['auth_seq_id'], c['auth_comp_id'],
+                                     c['alt_auth_atom_id'], c['pdbx_PDB_ins_code'])
+
+                        atom_id_list_per_model[_atom_key] =\
+                            (c['label_entity_id'], c['label_asym_id'], c['label_comp_id'], c['label_seq_id'],
+                             c['auth_seq_id'], c['label_alt_id'], c['pdbx_PDB_ins_code'], c['auth_asym_id'])
+
+                        coordinates_per_model[_atom_key] = to_np_array(c)
 
                 self.__atomIdList[model_id] = atom_id_list_per_model
                 self.__coordinates[model_id] = coordinates_per_model
@@ -2511,7 +2523,8 @@ class NmrVrptUtility:
         if self.__has_prev_results:
             return True
 
-        self.__results = {'max_models': self.__total_models, 'atom_ids': self.__atomIdList, 'key_lists': {}}
+        self.__results = {'total_models': self.__total_models, 'eff_model_ids': self.__eff_model_ids,
+                          'atom_ids': self.__atomIdList, 'key_lists': {}}
 
         for dBlock in self.__rR.getDataBlockList():
 

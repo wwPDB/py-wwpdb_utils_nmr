@@ -22279,7 +22279,9 @@ class NmrDpUtility:
                             if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
                                 tolerance = std_value
 
-                                if (value < min_value - tolerance or value > max_value + tolerance) and sigma > self.cs_anomalous_error_scaled_by_sigma:
+                                if (value < min_value - tolerance or value > max_value + tolerance)\
+                                   and sigma > self.cs_anomalous_error_scaled_by_sigma\
+                                   and std_value > max_inclusive:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -22426,7 +22428,7 @@ class NmrDpUtility:
                                                     loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
                                                 modified = True
 
-                                elif sigma > self.cs_anomalous_error_scaled_by_sigma:
+                                elif sigma > self.cs_anomalous_error_scaled_by_sigma and std_value > max_inclusive:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -22504,7 +22506,7 @@ class NmrDpUtility:
                                             if self.__verbose:
                                                 self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
-                                elif sigma > self.cs_unusual_error_scaled_by_sigma:
+                                elif sigma > self.cs_unusual_error_scaled_by_sigma and std_value > max_inclusive:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -22572,7 +22574,9 @@ class NmrDpUtility:
                             else:
                                 tolerance = std_value * 10.0
 
-                                if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance) and sigma > self.cs_anomalous_error_scaled_by_sigma:
+                                if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance)\
+                                   and sigma > self.cs_anomalous_error_scaled_by_sigma\
+                                   and std_value > max_inclusive:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -22718,7 +22722,7 @@ class NmrDpUtility:
                                                         loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
                                                     modified = True
 
-                                elif sigma > self.cs_anomalous_error_scaled_by_sigma:
+                                elif sigma > self.cs_anomalous_error_scaled_by_sigma and std_value > max_inclusive:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -22881,7 +22885,9 @@ class NmrDpUtility:
                             sigma = abs(z_score)
                             tolerance = std_value
 
-                            if (value < min_value - tolerance or value > max_value + tolerance) and sigma > self.cs_unusual_error_scaled_by_sigma:
+                            if (value < min_value - tolerance or value > max_value + tolerance)\
+                               and sigma > self.cs_unusual_error_scaled_by_sigma\
+                               and std_value > max_inclusive:
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                 pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -23027,7 +23033,7 @@ class NmrDpUtility:
                                                 loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
                                             modified = True
 
-                            elif sigma > self.cs_unusual_error_scaled_by_sigma:  # Set 5.0 to be consistent with validation report
+                            elif sigma > self.cs_unusual_error_scaled_by_sigma and std_value > max_inclusive:  # Set 5.0 to be consistent with validation report
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                 pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -23105,7 +23111,7 @@ class NmrDpUtility:
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
                             #     """ Can skip this to be consistent with validation report
-                            # elif sigma > self.cs_unusual_error_scaled_by_sigma:
+                            # elif sigma > self.cs_unusual_error_scaled_by_sigma and std_value > max_inclusive:
 
                             #     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                             #     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)

@@ -22182,7 +22182,14 @@ class NmrDpUtility:
                     for comp_id2 in neighbor_comp_ids:
                         polypeptide_like |= self.__csStat.peptideLike(comp_id2)
 
-                    for cs_stat in self.__csStat.get(comp_id):
+                    cs_stats = self.__csStat.get(comp_id)
+                    if len(cs_stats) == 0:
+                        if self.__ccU.updateChemCompDict(comp_id):
+                            parent_comp_id = self.__ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
+                            if parent_comp_id in monDict3:  # DAOTHER-9198: retrieve BMRB chemical shift statittics from parent comp_id if possible (i.e. DNR -> DC)
+                                cs_stats = self.__csStat.get(parent_comp_id)
+
+                    for cs_stat in cs_stats:
 
                         if cs_stat['atom_id'] == atom_id_ and cs_stat['count'] > 0:
                             min_value = cs_stat['min']

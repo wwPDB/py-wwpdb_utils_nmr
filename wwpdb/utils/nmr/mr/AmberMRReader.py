@@ -223,6 +223,18 @@ class AmberMRReader:
 
                 if reasons is not None:
 
+                    if listener.warningMessage is None\
+                       or len(listener.warningMessage) == 0\
+                       or not any(f for f in listener.warningMessage
+                                  if '[Atom not found]' in f or '[Sequence mismatch]' in f or '[Invalid data]' in f):
+                        sanderAtomNumberDict = listener.getSanderAtomNumberDict()
+                        if sanderAtomNumberDict is not None and len(sanderAtomNumberDict) > 0:
+                            self.__atomNumberDict = sanderAtomNumberDict
+                            if self.__auxAtomNumberDict is not None and len(self.__auxAtomNumberDict) > 0:
+                                for k, v in self.__auxAtomNumberDict.items():
+                                    if k not in self.__atomNumberDict:
+                                        self.__atomNumberDict[k] = v
+
                     if isFilePath and ifh is not None:
                         ifh.close()
 
@@ -264,10 +276,13 @@ class AmberMRReader:
                                                      self.__ccU, self.__csStat, self.__nefT,
                                                      self.__atomNumberDict
                                                      if 'global_sequence_offset' not in reasons
-                                                     and 'chain_seq_id_remap' not in reasons else None,
+                                                     and 'chain_seq_id_remap' not in reasons
+                                                     and 'use_alt_poly_seq' not in reasons else None,
                                                      reasons
-                                                     if self.__reasons__ is None or 'global_sequence_offset' not in self.__reasons__
-                                                     or 'chain_seq_id_remap' not in self.__reasons__ else self.__reasons__)
+                                                     if self.__reasons__ is None
+                                                     or 'global_sequence_offset' in self.__reasons__
+                                                     or 'chain_seq_id_remap' in self.__reasons__
+                                                     or 'use_alt_poly_seq' in self.__reasons__ else self.__reasons__)
                     listener.setDebugMode(self.__debug)
                     listener.createSfDict(createSfDict)
                     if createSfDict:
@@ -295,7 +310,7 @@ class AmberMRReader:
                             print(listener.getContentSubtype())
 
                 sanderAtomNumberDict = listener.getSanderAtomNumberDict()
-                if len(sanderAtomNumberDict) > 0:
+                if sanderAtomNumberDict is not None and len(sanderAtomNumberDict) > 0:
                     self.__atomNumberDict = sanderAtomNumberDict
                     if self.__auxAtomNumberDict is not None and len(self.__auxAtomNumberDict) > 0:
                         for k, v in self.__auxAtomNumberDict.items():
@@ -328,6 +343,18 @@ class AmberMRReader:
 if __name__ == "__main__":
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6e83/ang.rst',
+                 '../../tests-nmr/mock-data-remediation/6e83/6e83.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6e83/dist.rst',
+                 '../../tests-nmr/mock-data-remediation/6e83/6e83.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6g99/man_noe2.rst',
                  '../../tests-nmr/mock-data-remediation/6g99/6g99.cif',
                  None)
@@ -346,6 +373,12 @@ if __name__ == "__main__":
 
     _reasons_ = {'auth_seq_scheme': {'B': True, 'A': True},
                  'global_sequence_offset': {'B': 252}}
+
+    reader = AmberMRReader(True, reasons=_reasons_)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6gbm/hbonds.rst',
+                 '../../tests-nmr/mock-data-remediation/6gbm/6gbm.cif',
+                 None)
 
     reader = AmberMRReader(True, reasons=_reasons_)
     reader.setDebugMode(True)

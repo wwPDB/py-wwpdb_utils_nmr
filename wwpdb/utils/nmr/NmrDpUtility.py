@@ -22182,7 +22182,14 @@ class NmrDpUtility:
                     for comp_id2 in neighbor_comp_ids:
                         polypeptide_like |= self.__csStat.peptideLike(comp_id2)
 
-                    for cs_stat in self.__csStat.get(comp_id):
+                    cs_stats = self.__csStat.get(comp_id)
+                    if len(cs_stats) == 0:
+                        if self.__ccU.updateChemCompDict(comp_id):
+                            parent_comp_id = self.__ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id']
+                            if parent_comp_id in monDict3:  # DAOTHER-9198: retrieve BMRB chemical shift statittics from parent comp_id if possible (i.e. DNR -> DC)
+                                cs_stats = self.__csStat.get(parent_comp_id)
+
+                    for cs_stat in cs_stats:
 
                         if cs_stat['atom_id'] == atom_id_ and cs_stat['count'] > 0:
                             min_value = cs_stat['min']
@@ -22279,7 +22286,9 @@ class NmrDpUtility:
                             if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
                                 tolerance = std_value
 
-                                if (value < min_value - tolerance or value > max_value + tolerance) and sigma > self.cs_anomalous_error_scaled_by_sigma:
+                                if (value < min_value - tolerance or value > max_value + tolerance)\
+                                   and sigma > self.cs_anomalous_error_scaled_by_sigma\
+                                   and std_value > max_inclusive:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -22426,7 +22435,7 @@ class NmrDpUtility:
                                                     loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
                                                 modified = True
 
-                                elif sigma > self.cs_anomalous_error_scaled_by_sigma:
+                                elif sigma > self.cs_anomalous_error_scaled_by_sigma and std_value > max_inclusive:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -22504,7 +22513,7 @@ class NmrDpUtility:
                                             if self.__verbose:
                                                 self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
-                                elif sigma > self.cs_unusual_error_scaled_by_sigma:
+                                elif sigma > self.cs_unusual_error_scaled_by_sigma and std_value > max_inclusive:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -22572,7 +22581,9 @@ class NmrDpUtility:
                             else:
                                 tolerance = std_value * 10.0
 
-                                if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance) and sigma > self.cs_anomalous_error_scaled_by_sigma:
+                                if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance)\
+                                   and sigma > self.cs_anomalous_error_scaled_by_sigma\
+                                   and std_value > max_inclusive:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -22718,7 +22729,7 @@ class NmrDpUtility:
                                                         loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
                                                     modified = True
 
-                                elif sigma > self.cs_anomalous_error_scaled_by_sigma:
+                                elif sigma > self.cs_anomalous_error_scaled_by_sigma and std_value > max_inclusive:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -22881,7 +22892,9 @@ class NmrDpUtility:
                             sigma = abs(z_score)
                             tolerance = std_value
 
-                            if (value < min_value - tolerance or value > max_value + tolerance) and sigma > self.cs_unusual_error_scaled_by_sigma:
+                            if (value < min_value - tolerance or value > max_value + tolerance)\
+                               and sigma > self.cs_unusual_error_scaled_by_sigma\
+                               and std_value > max_inclusive:
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                 pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -23027,7 +23040,7 @@ class NmrDpUtility:
                                                 loop.data[idx][details_col] += ('' if '\n' in _details else '\n') + details
                                             modified = True
 
-                            elif sigma > self.cs_unusual_error_scaled_by_sigma:  # Set 5.0 to be consistent with validation report
+                            elif sigma > self.cs_unusual_error_scaled_by_sigma and std_value > max_inclusive:  # Set 5.0 to be consistent with validation report
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                 pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -23105,7 +23118,7 @@ class NmrDpUtility:
                                         if self.__verbose:
                                             self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
                             #     """ Can skip this to be consistent with validation report
-                            # elif sigma > self.cs_unusual_error_scaled_by_sigma:
+                            # elif sigma > self.cs_unusual_error_scaled_by_sigma and std_value > max_inclusive:
 
                             #     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                             #     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -23229,12 +23242,15 @@ class NmrDpUtility:
                                 atom_id_col = loop.tags.index(atom_id_name)
                                 ambig_code_col = loop.tags.index(ambig_code_name)
 
-                                row = next(row for row in loop
-                                           if row[chain_id_col] in alt_chain_id and int(row[seq_id_col]) == seq_id
-                                           and row[comp_id_col] == comp_id and row[atom_id_col] == atom_id)
+                                try:
+                                    row = next(row for row in loop
+                                               if row[chain_id_col] in alt_chain_id and int(row[seq_id_col]) == seq_id
+                                               and row[comp_id_col] == comp_id and row[atom_id_col] == atom_id)
 
-                                row[ambig_code_col] = 1
-                                modified = True
+                                    row[ambig_code_col] = 1
+                                    modified = True
+                                except ValueError:
+                                    pass
 
                             elif allowed_ambig_code > 0:
 
@@ -25430,6 +25446,27 @@ class NmrDpUtility:
                                                         _row[27] = auth_to_ins_code[__seq_key]
 
                                                     _seq_key = (__seq_key[0], __seq_key[1])
+
+                                    else:
+                                        __seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                          if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                        if __seq_key is not None:
+                                            __comp_id = __seq_key[2]
+                                            if self.__ccU.updateChemCompDict(comp_id):
+                                                cc_type = self.__ccU.lastChemCompDict['_chem_comp.type']
+                                                if self.__ccU.updateChemCompDict(__comp_id):
+                                                    __cc_type = self.__ccU.lastChemCompDict['_chem_comp.type']
+                                                    if cc_type == __cc_type:  # DAOTHER-9198
+                                                        found = True
+                                                        comp_id = __seq_key[2]
+                                                        _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, __seq_key[1], __seq_key[1]
+                                                        _seq_key = (__seq_key[0], __seq_key[1])
+                                                        _row[16], _row[17], _row[18], _row[19] =\
+                                                            __seq_key[0], __seq_key[1], comp_id, atom_id
+                                                        if has_ins_code and __seq_key in auth_to_ins_code:
+                                                            _row[27] = auth_to_ins_code[__seq_key]
+
+                                                        _seq_key = (__seq_key[0], __seq_key[1])
 
                                     if not found:
                                         _row[24] = 'UNMAPPED'
@@ -31073,9 +31110,13 @@ class NmrDpUtility:
         fileListId = self.__file_path_list_len
 
         ar_file_order = []
+        ar_file_any_dist = []  # 6gbm, NOE restraint files must take precedence over other distance constraints such as hydrogen bonds
         ar_file_wo_dist = []
 
         derived_from_public_mr = False
+
+        hint_for_noe_dist = ['noe', 'roe', 'dist']
+        hint_for_any_dist = ['bond', 'disul', 'not', 'seen', 'pre', 'paramag', 'cidnp', 'csp', 'perturb', 'mutat', 'protect', 'symm']
 
         for ar in self.__inputParamDict[ar_file_path_list]:
 
@@ -31105,13 +31146,28 @@ class NmrDpUtility:
             if 'is_valid' not in ar or not ar['is_valid']:
                 continue
 
+            file_name = input_source_dic['file_name']
+
+            original_file_name = None
+            if 'original_file_name' in input_source_dic:
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                if file_name != original_file_name and original_file_name is not None:
+                    file_name = original_file_name
+
+            file_name = file_name.lower()
+
             if 'dist_restraint' in content_subtype.keys():
-                ar_file_order.append((input_source, ar, file_size))
+                if any(k in file_name for k in hint_for_noe_dist) and not any(k in file_name for k in hint_for_any_dist):
+                    ar_file_order.append((input_source, ar, file_size))
+                else:
+                    ar_file_any_dist.append((input_source, ar, file_size))
             else:
                 ar_file_wo_dist.append((input_source, ar, file_size))
 
         ar_file_order = sorted(ar_file_order, key=itemgetter(2), reverse=True)
-        ar_file_order.extend(ar_file_wo_dist)
+        ar_file_order.extend(sorted(ar_file_any_dist, key=itemgetter(2), reverse=True))
+        ar_file_order.extend(sorted(ar_file_wo_dist, key=itemgetter(2), reverse=True))
 
         poly_seq_set = []
 
@@ -44664,15 +44720,16 @@ class NmrDpUtility:
                     if any(auth_asym_id for auth_asym_id in item[_auth_asym_id].split(',')
                            if auth_asym_id in self.__auth_asym_ids_with_chem_exch.keys()):
                         row[8] = row[9] = 'yes'
-                if entity_total[entity_id] > 0 and entity_type[entity_id] == 'polymer' and len(self.__label_asym_id_with_exptl_data) > 0:
-                    equiv_entity_assemblies = [_item for _item in self.__caC['entity_assembly'] if _item['entity'] == entity_id]
+                if entity_total[entity_id] > 0 and entity_type == 'polymer' and len(self.__label_asym_id_with_exptl_data) > 0:
+                    equiv_entity_assemblies = [_item for _item in self.__caC['entity_assembly'] if _item['entity_id'] == entity_id]
                     _item = next((_item for _item in equiv_entity_assemblies if any(label_asym_id for label_asym_id in _item[_label_asym_id].split(',')
                                                                                     if label_asym_id in self.__label_asym_id_with_exptl_data)), None)
-                    group_id = sorted(sorted(set(_item[_label_asym_id].split(','))), key=len)[0]
-                    if any(__item for __item in equiv_entity_assemblies if not any(label_asym_id for label_asym_id in __item[_label_asym_id].split(',')
-                                                                                   if label_asym_id in self.__label_asym_id_with_exptl_data)):
-                        if _item == item or row[6] is None or row[6] == 'no':
-                            row[10] = group_id
+                    if _item is not None:
+                        group_id = sorted(sorted(set(_item[_label_asym_id].split(','))), key=len)[0]
+                        if any(__item for __item in equiv_entity_assemblies if not any(label_asym_id for label_asym_id in __item[_label_asym_id].split(',')
+                                                                                       if label_asym_id in self.__label_asym_id_with_exptl_data)):
+                            if _item == item or row[6] is None or row[6] == 'no':
+                                row[10] = group_id
                 row[11], row[12] = item['entity_role'], item['entity_details']
                 row[13], row[14] = 1, self.__entry_id
 

@@ -4631,6 +4631,13 @@ class NEFTranslator:
                         atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, _atom_id, details, leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
+                if atom_id[-1] == '+' and atom_id[1].isdigit() and len(atom_id) > 2 and self.__ccU.updateChemCompDict(comp_id):
+                    if self.__ccU.lastChemCompDict['_chem_comp.type'] in ('DNA LINKING', 'RNA LINKING'):  # DAOTHER-9198
+                        _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, 'HN' + atom_id[1:-1], details, leave_unmatched, methyl_only)
+                        if _details is None:
+                            atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
+                            return (atom_list, ambiguity_code, details)
+
             atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
 
             if details is not None and atom_id[-1] not in ('%', '*'):
@@ -4837,7 +4844,9 @@ class NEFTranslator:
                                     return 1
                     return None
 
-                ref_atom = re.findall(r'(\S+)([xyXY])([%*])$|(\S+)([%*])$|(\S+)([xyXY]$)|([%*])(\S+)', nef_atom)[0]
+                ref_atom = re.findall(r'([^ \t\r\n\f\v\(\)\{\}\[\]]+)([xyXY])([%*])$'
+                                      r'|([^ \t\r\n\f\v\(\)\{\}\[\]]+)([%*])$|([^ \t\r\n\f\v\(\)\{\}\[\]]+)([xyXY]$)'
+                                      r'|([%*])([^ \t\r\n\f\v\(\)\{\}\[\]]+)', nef_atom)[0]
 
                 atm_set = [ref_atom.index(a) for a in ref_atom if a != '']
 

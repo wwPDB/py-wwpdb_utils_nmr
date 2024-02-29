@@ -4741,6 +4741,10 @@ class AmberMRParserListener(ParseTreeListener):
         if not useDefault:  # or self.__altPolySeq is None:
             return False
 
+        # 6gbm, hbonds.rst
+        if self.__reasons is not None and ('global_sequence_offset' in self.__reasons or 'chain_seq_id_remap' in self.__reasons):
+            return False
+
         return self.updateSanderAtomNumberDict(factor, cifCheck, False)
 
     def updateSanderAtomNumberDictWithAmbigCode(self, factor, cifCheck=True, useDefault=True):
@@ -5300,6 +5304,10 @@ class AmberMRParserListener(ParseTreeListener):
             return True
 
         if not useDefault:  # or self.__altPolySeq is None:
+            return False
+
+        # 6gbm, hbonds.rst
+        if self.__reasons is not None and ('global_sequence_offset' in self.__reasons or 'chain_seq_id_remap' in self.__reasons):
             return False
 
         return self.updateSanderAtomNumberDictWithAmbigCode(factor, cifCheck, False)

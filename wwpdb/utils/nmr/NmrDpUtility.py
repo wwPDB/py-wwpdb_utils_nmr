@@ -31097,9 +31097,13 @@ class NmrDpUtility:
         fileListId = self.__file_path_list_len
 
         ar_file_order = []
+        ar_file_any_dist = []  # 6gbm, NOE restraint files must take precedence over other distance constraints such as hydrogen bonds
         ar_file_wo_dist = []
 
         derived_from_public_mr = False
+
+        hint_for_noe_dist = ['noe', 'roe', 'dist']
+        hint_for_any_dist = ['bond', 'disul', 'not', 'seen', 'pre', 'paramag', 'cidnp', 'csp', 'perturb', 'mutat', 'protect', 'symm']
 
         for ar in self.__inputParamDict[ar_file_path_list]:
 
@@ -31129,13 +31133,28 @@ class NmrDpUtility:
             if 'is_valid' not in ar or not ar['is_valid']:
                 continue
 
+            file_name = input_source_dic['file_name']
+
+            original_file_name = None
+            if 'original_file_name' in input_source_dic:
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                if file_name != original_file_name and original_file_name is not None:
+                    file_name = original_file_name
+
+            file_name = file_name.lower()
+
             if 'dist_restraint' in content_subtype.keys():
-                ar_file_order.append((input_source, ar, file_size))
+                if any(k in file_name for k in hint_for_noe_dist) and not any(k in file_name for k in hint_for_any_dist):
+                    ar_file_order.append((input_source, ar, file_size))
+                else:
+                    ar_file_any_dist.append((input_source, ar, file_size))
             else:
                 ar_file_wo_dist.append((input_source, ar, file_size))
 
         ar_file_order = sorted(ar_file_order, key=itemgetter(2), reverse=True)
-        ar_file_order.extend(ar_file_wo_dist)
+        ar_file_order.extend(sorted(ar_file_any_dist, key=itemgetter(2), reverse=True))
+        ar_file_order.extend(sorted(ar_file_wo_dist, key=itemgetter(2), reverse=True))
 
         poly_seq_set = []
 

@@ -223,13 +223,17 @@ class AmberMRReader:
 
                 if reasons is not None:
 
-                    sanderAtomNumberDict = listener.getSanderAtomNumberDict()
-                    if sanderAtomNumberDict is not None and len(sanderAtomNumberDict) > 0:
-                        self.__atomNumberDict = sanderAtomNumberDict
-                        if self.__auxAtomNumberDict is not None and len(self.__auxAtomNumberDict) > 0:
-                            for k, v in self.__auxAtomNumberDict.items():
-                                if k not in self.__atomNumberDict:
-                                    self.__atomNumberDict[k] = v
+                    if listener.warningMessage is None\
+                       or len(listener.warningMessage) == 0\
+                       or not any(f for f in listener.warningMessage
+                                  if '[Atom not found]' in f or '[Sequence mismatch]' in f or '[Invalid data]' in f):
+                        sanderAtomNumberDict = listener.getSanderAtomNumberDict()
+                        if sanderAtomNumberDict is not None and len(sanderAtomNumberDict) > 0:
+                            self.__atomNumberDict = sanderAtomNumberDict
+                            if self.__auxAtomNumberDict is not None and len(self.__auxAtomNumberDict) > 0:
+                                for k, v in self.__auxAtomNumberDict.items():
+                                    if k not in self.__atomNumberDict:
+                                        self.__atomNumberDict[k] = v
 
                     if isFilePath and ifh is not None:
                         ifh.close()
@@ -369,6 +373,12 @@ if __name__ == "__main__":
 
     _reasons_ = {'auth_seq_scheme': {'B': True, 'A': True},
                  'global_sequence_offset': {'B': 252}}
+
+    reader = AmberMRReader(True, reasons=_reasons_)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6gbm/hbonds.rst',
+                 '../../tests-nmr/mock-data-remediation/6gbm/6gbm.cif',
+                 None)
 
     reader = AmberMRReader(True, reasons=_reasons_)
     reader.setDebugMode(True)

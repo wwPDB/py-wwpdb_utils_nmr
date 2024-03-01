@@ -1174,7 +1174,7 @@ class RosettaMRParserListener(ParseTreeListener):
                             continue
                 updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                 if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
-                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
+                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=self.__hasCoord)
                     origCompId = ps['auth_comp_id'][idx]
                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                 if atomId is None\
@@ -1204,7 +1204,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                 cifCompId = ps['comp_id'][idx]
                                 updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                                 if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
-                                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, self.__hasCoord)
+                                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, cifCheck=self.__hasCoord)
                                     origCompId = ps['auth_comp_id'][idx]
                                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                                 if atomId is None\
@@ -1236,7 +1236,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     cifCompId = np['comp_id'][idx]
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                     if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
-                        _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
+                        _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=self.__hasCoord)
                         origCompId = np['auth_comp_id'][idx]
                         atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                     if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
@@ -1258,7 +1258,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         cifCompId = ps['comp_id'][idx]
                         updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                         if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
-                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
+                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCheck=self.__hasCoord)
                             origCompId = ps['auth_comp_id'][idx]
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if atomId is None\
@@ -1280,7 +1280,7 @@ class RosettaMRParserListener(ParseTreeListener):
                             cifCompId = np['comp_id'][idx]
                             updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                             if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
-                                _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
+                                _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCheck=self.__hasCoord)
                                 origCompId = np['auth_comp_id'][idx]
                                 atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if atomId is None\
@@ -1308,11 +1308,11 @@ class RosettaMRParserListener(ParseTreeListener):
                 if seqKey in self.__labelToAuthSeq:
                     _, seqId = self.__labelToAuthSeq[seqKey]
                     if seqId in ps['auth_seq_id']:
-                        idx = ps['auth_seq_id'].index(seqId)
+                        idx = ps['seq_id'].index(_seqId)
                         cifCompId = ps['comp_id'][idx]
                         updatePolySeqRst(self.__polySeqRst, chainId, seqId, cifCompId)
                         if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
-                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
+                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=self.__hasCoord)
                             origCompId = ps['auth_comp_id'][idx]
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if atomId is None\
@@ -1370,7 +1370,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 
-            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord, asis=self.__preferAuthSeq)
+            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, asis=self.__preferAuthSeq)
 
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
                 _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
@@ -1419,7 +1419,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     for np in self.__nonPolySeq:
                         if np['auth_chain_id'] == chainId and cifSeqId in np['auth_seq_id']:
                             cifSeqId = np['seq_id'][np['auth_seq_id'].index(cifSeqId)]
-                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId)
                             if coordAtomSite is not None:
                                 break
                 except ValueError:

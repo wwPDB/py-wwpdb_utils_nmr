@@ -2718,7 +2718,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             _atomIdSelect.add(realAtomId)
 
             for nonPolyCompId in _nonPolyCompIdSelect:
-                _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], nonPolyCompId['seq_id'], cifCheck)
+                _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], nonPolyCompId['seq_id'], cifCheck=cifCheck)
                 if coordAtomSite is not None:
                     for realAtomId in coordAtomSite['atom_id']:
                         _atomIdSelect.add(realAtomId)
@@ -2773,7 +2773,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                 _atomIdSelect.add(realAtomId)
 
                 for nonPolyCompId in _nonPolyCompIdSelect:
-                    _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], nonPolyCompId['seq_id'], cifCheck)
+                    _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], nonPolyCompId['seq_id'], cifCheck=cifCheck)
                     if coordAtomSite is not None:
                         for realAtomId in coordAtomSite['atom_id']:
                             _atomIdSelect.add(realAtomId)
@@ -2953,7 +2953,7 @@ class CharmmMRParserListener(ParseTreeListener):
                         continue
 
                     _seqId_ = seqId
-                    seqId = self.getRealSeqId(ps, seqId, isPolySeq)
+                    seqId, _compId_ = self.getRealSeqId(ps, seqId, isPolySeq)
 
                     if seqId is None:
                         continue
@@ -3016,13 +3016,17 @@ class CharmmMRParserListener(ParseTreeListener):
                             compId = ps['comp_id'][idx]
                             _seqId_ = ps['auth_seq_id'][idx]
 
-                    seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+                    if self.__authToInsCode is None or len(self.__authToInsCode) == 0 or _compId_ is None:
+                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, cifCheck=cifCheck)
+                    else:
+                        compId = _compId_
+                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, _compId_, cifCheck=cifCheck)
 
                     if compId is None and seqKey in self.__authToLabelSeq:
                         _, seqId = self.__authToLabelSeq[seqKey]
                         if ps is not None and seqId in ps['auth_seq_id']:
                             compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
-                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
 
                     if compId is None and coordAtomSite is not None and ps is not None and seqKey[1] in ps['auth_seq_id']:
                         compId = ps['comp_id'][ps['auth_seq_id'].index(seqKey[1])]
@@ -3032,7 +3036,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             idx = ps['auth_seq_id'].index(seqId)
                             seqId = ps['seq_id'][idx]
                             compId = ps['comp_id'][idx]
-                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
                         except ValueError:
                             pass
 
@@ -3049,7 +3053,7 @@ class CharmmMRParserListener(ParseTreeListener):
                     _seqId = seqId
                     if not isPolySeq and 'alt_auth_seq_id' in ps and seqId in ps['auth_seq_id'] and seqId not in ps['alt_auth_seq_id']:
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(ps['auth_seq_id'], ps['alt_auth_seq_id']) if _seqId == seqId)
-                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
 
                     if not isPolySeq and isChainSpecified and self.doesNonPolySeqIdMatchWithPolySeqUnobs(_factor['chain_id'][0], _seqId_):
                         continue
@@ -3134,7 +3138,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                         _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['alt_atom_id'].index(_atomId)]
                                         self.__authAtomId = 'auth_atom_id'
                                     elif self.__preferAuthSeq and atomSpecified:
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None:
                                             _compId = _coordAtomSite['comp_id']
                                             _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
@@ -3179,7 +3183,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 """
                                     elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
                                         self.__preferAuthSeq = True
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck)
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck=cifCheck)
                                         if _coordAtomSite is not None:
                                             _compId = _coordAtomSite['comp_id']
                                             _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
@@ -3213,7 +3217,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
                                 elif self.__preferAuthSeq and atomSpecified:
                                     if len(self.atomSelectionSet) == 0:
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None:
                                             _compId = _coordAtomSite['comp_id']
                                             _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
@@ -3259,7 +3263,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                 elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
                                     if len(self.atomSelectionSet) == 0:
                                         self.__preferAuthSeq = True
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck)
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck=cifCheck)
                                         if _coordAtomSite is not None:
                                             _compId = _coordAtomSite['comp_id']
                                             _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
@@ -3396,8 +3400,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                     if len(__psList) == 0:
                                                                         continue
                                                                     for __ps in __psList:
-                                                                        __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)
-                                                                        __seqKey, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck)
+                                                                        __seqId, _ = self.getRealSeqId(__ps, seqId, isPolySeq)
+                                                                        __seqKey, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
                                                                         if __coordAtomSite is not None:
                                                                             __compId = __coordAtomSite['comp_id']
                                                                             __atomIds = self.getAtomIdList(_factor, __compId, atomId)
@@ -3462,8 +3466,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                             if len(__psList) == 0:
                                                                 continue
                                                             for __ps in __psList:
-                                                                __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)
-                                                                __seqKey, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck)
+                                                                __seqId, _ = self.getRealSeqId(__ps, seqId, isPolySeq)
+                                                                __seqKey, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
                                                                 if __coordAtomSite is not None:
                                                                     __compId = __coordAtomSite['comp_id']
                                                                     __atomIds = self.getAtomIdList(_factor, __compId, atomId)
@@ -3551,6 +3555,7 @@ class CharmmMRParserListener(ParseTreeListener):
         offset = 0
         if not self.__preferAuthSeq:
             chainId = ps['chain_id']
+            offset = 0
             if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
                 offset = self.__reasons['label_seq_offset'][chainId]
             if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
@@ -3571,14 +3576,16 @@ class CharmmMRParserListener(ParseTreeListener):
                                 offset = offset[seqId - shift]
                                 break
                         if isinstance(offset, dict):
-                            return None
+                            return None, None
                 if seqId + offset in ps['auth_seq_id']:
-                    return seqId + offset
+                    return seqId + offset, ps['comp_id'][ps['auth_seq_id'].index(seqId + offset)]
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
-                    return _seqId
+                    return _seqId, ps['comp_id'][ps['seq_id'].index(seqId + offset)
+                                                 if seqId + offset in ps['seq_id']
+                                                 else ps['auth_seq_id'].index(seqId)]
         else:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
@@ -3595,12 +3602,12 @@ class CharmmMRParserListener(ParseTreeListener):
                                 offset = offset[seqId - shift]
                                 break
                         if isinstance(offset, dict):
-                            return None
+                            return None, None
         if seqId + offset in ps['auth_seq_id']:
-            return seqId + offset
+            return seqId + offset, ps['comp_id'][ps['auth_seq_id'].index(seqId + offset)]
         # if seqId in ps['seq_id']:
         #     return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
-        return seqId
+        return seqId, None
 
     def getRealChainId(self, chainId):
         if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and chainId in self.__reasons['segment_id_mismatch']:
@@ -3630,12 +3637,20 @@ class CharmmMRParserListener(ParseTreeListener):
             if chainId in _stats:
                 _stats[chainId] -= 1
 
-    def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
+    def getCoordAtomSiteOf(self, chainId, seqId, compId=None, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)
         if asis:
+            if cifCheck and compId is not None:
+                _seqKey = (chainId, seqId, compId)
+                if _seqKey in self.__coordAtomSite:
+                    return seqKey, self.__coordAtomSite[_seqKey]
             return seqKey, self.__coordAtomSite[seqKey] if cifCheck and seqKey in self.__coordAtomSite else None
         if seqKey in self.__labelToAuthSeq:
             seqKey = self.__labelToAuthSeq[seqKey]
+            if cifCheck and compId is not None:
+                _seqKey = (seqKey[0], seqKey[1], compId)
+                if _seqKey in self.__coordAtomSite:
+                    return seqKey, self.__coordAtomSite[_seqKey]
             return seqKey, self.__coordAtomSite[seqKey] if cifCheck and seqKey in self.__coordAtomSite else None
         return seqKey, None
 
@@ -4077,13 +4092,13 @@ class CharmmMRParserListener(ParseTreeListener):
                         if ps is not None:
                             found = False
                             for realSeqId in ps['auth_seq_id']:
-                                realSeqId = self.getRealSeqId(ps, realSeqId)
+                                realSeqId = self.getRealSeqId(ps, realSeqId)[0]
                                 if re.match(_seqId, str(realSeqId)):
                                     _seqIdSelect.add(realSeqId)
                                     found = True
                             if not found:
                                 for realSeqId in ps['auth_seq_id']:
-                                    realSeqId = self.getRealSeqId(ps, realSeqId)
+                                    realSeqId = self.getRealSeqId(ps, realSeqId)[0]
                                     seqKey = (chainId, realSeqId)
                                     if seqKey in self.__authToLabelSeq:
                                         _, realSeqId = self.__authToLabelSeq[seqKey]
@@ -4095,13 +4110,13 @@ class CharmmMRParserListener(ParseTreeListener):
                             for np in npList:
                                 found = False
                                 for realSeqId in np['auth_seq_id']:
-                                    realSeqId = self.getRealSeqId(np, realSeqId, False)
+                                    realSeqId = self.getRealSeqId(np, realSeqId, False)[0]
                                     if re.match(_seqId, str(realSeqId)):
                                         _seqIdSelect.add(realSeqId)
                                         found = True
                                 if not found:
                                     for realSeqId in np['auth_seq_id']:
-                                        realSeqId = self.getRealSeqId(np, realSeqId, False)
+                                        realSeqId = self.getRealSeqId(np, realSeqId, False)[0]
                                         seqKey = (chainId, realSeqId)
                                         if seqKey in self.__authToLabelSeq:
                                             _, realSeqId = self.__authToLabelSeq[seqKey]
@@ -4118,8 +4133,8 @@ class CharmmMRParserListener(ParseTreeListener):
                             continue
                         for seqId in self.factor['seq_id']:
                             if seqId in ps['auth_seq_id']:
-                                seqId = self.getRealSeqId(ps, seqId)
-                                compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                                seqId, compId = self.getRealSeqId(ps, seqId)
+                                # compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
                                 if self.__ccU.updateChemCompDict(compId):
                                     if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId):
                                         _atomIdSelect.add(atomId)
@@ -4129,8 +4144,8 @@ class CharmmMRParserListener(ParseTreeListener):
                             for np in npList:
                                 for seqId in self.factor['seq_id']:
                                     if seqId in np['auth_seq_id']:
-                                        seqId = self.getRealSeqId(np, seqId, False)
-                                        compId = np['comp_id'][np['auth_seq_id'].index(seqId)]
+                                        seqId, compId = self.getRealSeqId(np, seqId, False)
+                                        # compId = np['comp_id'][np['auth_seq_id'].index(seqId)]
                                         if self.__ccU.updateChemCompDict(compId):
                                             if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId):
                                                 _atomIdSelect.add(atomId)
@@ -4146,8 +4161,8 @@ class CharmmMRParserListener(ParseTreeListener):
                             continue
                         for seqId in self.factor['seq_id']:
                             if seqId in ps['auth_seq_id']:
-                                seqId = self.getRealSeqId(ps, seqId)
-                                compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                                seqId, compId = self.getRealSeqId(ps, seqId)
+                                # compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
                                 if self.__ccU.updateChemCompDict(compId):
                                     for cca in self.__ccU.lastAtomList:
                                         if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
@@ -4160,8 +4175,8 @@ class CharmmMRParserListener(ParseTreeListener):
                             for np in npList:
                                 for seqId in self.factor['seq_id']:
                                     if seqId in np['auth_seq_id']:
-                                        seqId = self.getRealSeqId(np, seqId, False)
-                                        compId = np['comp_id'][np['auth_seq_id'].index(seqId)]
+                                        seqId, compId = self.getRealSeqId(np, seqId, False)
+                                        # compId = np['comp_id'][np['auth_seq_id'].index(seqId)]
                                         if self.__ccU.updateChemCompDict(compId):
                                             for cca in self.__ccU.lastAtomList:
                                                 if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
@@ -4399,14 +4414,14 @@ class CharmmMRParserListener(ParseTreeListener):
                                 else:
                                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                                     if ps is not None and seqId in ps['auth_seq_id'] and ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
-                                        seqId = self.getRealSeqId(ps, seqId)
+                                        seqId = self.getRealSeqId(ps, seqId)[0]
                                         if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId):
                                             _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
                                     if self.__hasNonPolySeq:
                                         npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                                         for np in npList:
                                             if seqId in np['auth_seq_id'] and np['comp_id'][np['auth_seq_id'].index(seqId)] == compId:
-                                                seqId = self.getRealSeqId(np, seqId, False)
+                                                seqId = self.getRealSeqId(np, seqId, False)[0]
                                                 if any(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId):
                                                     _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
@@ -4431,8 +4446,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                     if ps is not None:
                                         for _seqId in [seqId - 1, seqId + 1]:
                                             if _seqId in ps['auth_seq_id']:
-                                                _seqId = self.getRealSeqId(ps, _seqId)
-                                                _compId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                                                _seqId, _compId = self.getRealSeqId(ps, _seqId)
+                                                # _compId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                                                 if self.__ccU.updateChemCompDict(_compId):
                                                     leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] == 'Y']
 
@@ -4471,8 +4486,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                         for np in npList:
                                             for _seqId in [seqId - 1, seqId + 1]:
                                                 if _seqId in np['auth_seq_id']:
-                                                    _seqId = self.getRealSeqId(np, _seqId, False)
-                                                    _compId = np['comp_id'][np['auth_seq_id'].index(_seqId)]
+                                                    _seqId, _compId = self.getRealSeqId(np, _seqId, False)
+                                                    # _compId = np['comp_id'][np['auth_seq_id'].index(_seqId)]
                                                     if self.__ccU.updateChemCompDict(_compId):
                                                         leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] == 'Y']
 
@@ -4683,7 +4698,7 @@ class CharmmMRParserListener(ParseTreeListener):
                         else:
                             ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                             if ps is not None and seqId in ps['auth_seq_id'] and ps['comp_id'][ps['auth_seq_id'].index(seqId)] == compId:
-                                seqId = self.getRealSeqId(ps, seqId)
+                                seqId = self.getRealSeqId(ps, seqId)[0]
                                 if self.__ccU.updateChemCompDict(compId):
                                     atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
                                     for atomId in atomIds:
@@ -4692,7 +4707,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                 npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                                 for np in npList:
                                     if seqId in np['auth_seq_id'] and np['comp_id'][np['auth_seq_id'].index(seqId)] == compId:
-                                        seqId = self.getRealSeqId(np, seqId, False)
+                                        seqId = self.getRealSeqId(np, seqId, False)[0]
                                         if self.__ccU.updateChemCompDict(compId):
                                             atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
                                             for atomId in atomIds:

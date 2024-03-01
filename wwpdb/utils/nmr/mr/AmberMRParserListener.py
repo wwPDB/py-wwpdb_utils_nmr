@@ -3856,7 +3856,7 @@ class AmberMRParserListener(ParseTreeListener):
                 compId = ps['comp_id'][idx]
                 cifSeqId = None if useDefault and not enforceAuthSeq else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
 
-                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck,
+                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
                                                                 asis=(not hasAuthSeqScheme or enforceAuthSeq or not self.__preferAuthSeq))
 
                 if compId not in monDict3 and self.__mrAtomNameMapping is not None:
@@ -3889,7 +3889,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 found = True
                                 self.__authAtomId = 'auth_atom_id'
                             elif self.__preferAuthSeq:
-                                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck, asis=False)
+                                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck, asis=False)
                                 if _coordAtomSite is not None:
                                     if _atomId in _coordAtomSite['atom_id']:
                                         found = True
@@ -3904,7 +3904,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         seqKey = _seqKey
 
                         elif self.__preferAuthSeq:
-                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck, asis=False)
+                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck, asis=False)
                             if _coordAtomSite is not None:
                                 if _atomId in _coordAtomSite['atom_id']:
                                     found = True
@@ -4012,7 +4012,7 @@ class AmberMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(seqId)
                         compId = ps['comp_id'][idx]
 
-                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
 
                         if compId not in monDict3 and self.__mrAtomNameMapping is not None:
                             origCompId = ps['auth_comp_id'][idx]
@@ -4044,7 +4044,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         found = True
                                         self.__authAtomId = 'auth_atom_id'
                                     elif self.__preferAuthSeq:
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None:
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 found = True
@@ -4059,7 +4059,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 seqKey = _seqKey
 
                                 elif self.__preferAuthSeq:
-                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                     if _coordAtomSite is not None:
                                         if _atomId in _coordAtomSite['atom_id']:
                                             found = True
@@ -4266,7 +4266,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
                    or compId == translateToStdResName(authCompId, compId, self.__ccU):
-                    seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck,
+                    seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
                                                                     asis=(not hasAuthSeqScheme or enforceAuthSeq or not self.__preferAuthSeq))
                     if coordAtomSite is not None and _authAtomId in coordAtomSite['atom_id']:
                         authAtomId = _authAtomId
@@ -4307,7 +4307,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         found = True
                                         self.__authAtomId = 'auth_atom_id'
                                     elif self.__preferAuthSeq:
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck, asis=False)
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None:
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 found = True
@@ -4322,7 +4322,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 seqKey = _seqKey
 
                                 elif self.__preferAuthSeq:
-                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck, asis=False)
+                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck, asis=False)
                                     if _coordAtomSite is not None:
                                         if _atomId in _coordAtomSite['atom_id']:
                                             found = True
@@ -4415,7 +4415,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         found = True
                                         self.__authAtomId = 'auth_atom_id'
                                     elif self.__preferAuthSeq:
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck, asis=False)
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None:
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 found = True
@@ -4430,7 +4430,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 seqKey = _seqKey
 
                                 elif self.__preferAuthSeq:
-                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck, asis=False)
+                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck, asis=False)
                                     if _coordAtomSite is not None:
                                         if _atomId in _coordAtomSite['atom_id']:
                                             found = True
@@ -4518,7 +4518,7 @@ class AmberMRParserListener(ParseTreeListener):
                     authCompId = factor['auth_comp_id'].upper() if 'auth_comp_id' in factor else 'None'
                     authAtomId = factor['auth_atom_id'].upper()
 
-                    seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+                    seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
 
                     if compId not in monDict3 and self.__mrAtomNameMapping is not None:
                         _, _, authAtomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, authAtomId, compId, coordAtomSite)
@@ -4556,7 +4556,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         found = True
                                         self.__authAtomId = 'auth_atom_id'
                                     elif self.__preferAuthSeq:
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None:
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 found = True
@@ -4571,7 +4571,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 seqKey = _seqKey
 
                                 elif self.__preferAuthSeq:
-                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                     if _coordAtomSite is not None:
                                         if _atomId in _coordAtomSite['atom_id']:
                                             found = True
@@ -4657,7 +4657,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         found = True
                                         self.__authAtomId = 'auth_atom_id'
                                     elif self.__preferAuthSeq:
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None:
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 found = True
@@ -4672,7 +4672,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 seqKey = _seqKey
 
                                 elif self.__preferAuthSeq:
-                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                     if _coordAtomSite is not None:
                                         if _atomId in _coordAtomSite['atom_id']:
                                             found = True
@@ -4879,7 +4879,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
                        or compId == translateToStdResName(authCompId, compId, self.__ccU):
 
-                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck,
+                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
                                                                         asis=(not hasAuthSeqScheme or enforceAuthSeq or not self.__preferAuthSeq))
                         if coordAtomSite is not None and _authAtomId_ in coordAtomSite['atom_id']:
                             authAtomId = _authAtomId_
@@ -4904,7 +4904,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             found = True
                                             self.__authAtomId = 'auth_atom_id'
                                         elif self.__preferAuthSeq:
-                                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck, asis=False)
+                                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck, asis=False)
                                             if _coordAtomSite is not None:
                                                 if _atomId in _coordAtomSite['atom_id']:
                                                     found = True
@@ -4919,7 +4919,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     seqKey = _seqKey
 
                                     elif self.__preferAuthSeq:
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck, asis=False)
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None:
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 found = True
@@ -5004,7 +5004,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             found = True
                                             self.__authAtomId = 'auth_atom_id'
                                         elif self.__preferAuthSeq:
-                                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck, asis=False)
+                                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck, asis=False)
                                             if _coordAtomSite is not None:
                                                 if _atomId in _coordAtomSite['atom_id']:
                                                     found = True
@@ -5019,7 +5019,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     seqKey = _seqKey
 
                                     elif self.__preferAuthSeq:
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck, asis=False)
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None:
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 found = True
@@ -5092,7 +5092,7 @@ class AmberMRParserListener(ParseTreeListener):
                         seqId = np['seq_id'][idx]
                         compId = np['comp_id'][idx]
 
-                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck)
+                        seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
 
                         if compId not in monDict3 and self.__mrAtomNameMapping is not None:
                             origCompId = np['auth_comp_id'][idx]
@@ -5118,7 +5118,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             found = True
                                             self.__authAtomId = 'auth_atom_id'
                                         elif self.__preferAuthSeq:
-                                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                             if _coordAtomSite is not None:
                                                 if _atomId in _coordAtomSite['atom_id']:
                                                     found = True
@@ -5133,7 +5133,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     seqKey = _seqKey
 
                                     elif self.__preferAuthSeq:
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None:
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 found = True
@@ -5219,7 +5219,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             found = True
                                             self.__authAtomId = 'auth_atom_id'
                                         elif self.__preferAuthSeq:
-                                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                             if _coordAtomSite is not None:
                                                 if _atomId in _coordAtomSite['atom_id']:
                                                     found = True
@@ -5234,7 +5234,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     seqKey = _seqKey
 
                                     elif self.__preferAuthSeq:
-                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck, asis=False)
+                                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None:
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 found = True
@@ -9037,7 +9037,7 @@ class AmberMRParserListener(ParseTreeListener):
         _seqId = seqId
 
         for ps in self.__polySeq:
-            chainId, seqId = self.getRealChainSeqId(ps, _seqId, None)
+            chainId, seqId = self.getRealChainSeqId(ps, _seqId)
             if seqId in ps['auth_seq_id']:
                 idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
@@ -9072,7 +9072,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.__hasNonPolySeq:
             for np in self.__nonPolySeq:
-                chainId, seqId = self.getRealChainSeqId(np, _seqId, None, False)
+                chainId, seqId = self.getRealChainSeqId(np, _seqId, isPolySeq=False)
                 if seqId in np['auth_seq_id']:
                     idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
@@ -9153,7 +9153,7 @@ class AmberMRParserListener(ParseTreeListener):
                 cifSeqId += offset
                 cifCompId = compId
 
-            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, cifCheck=self.__hasCoord)
 
             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
             if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():

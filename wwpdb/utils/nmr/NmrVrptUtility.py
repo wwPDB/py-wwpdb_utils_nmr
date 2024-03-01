@@ -11,7 +11,7 @@
 # 28-Feb-2024  M. Yokochi - collect atom_ids dictionary for both auth_atom_id and pdbx_auth_atom_name tags
 #                           to prevent MISSING ATOM IN MODEL KeyError in restraintsanalysis.py (DAOTHER-9200)
 ##
-""" Wrapper class for NMR restraint validation.
+""" Wrapper class for NMR restraint analysis.
     @author: Masashi Yokochi
     @note: This class is alternative implementation of wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis
 """
@@ -594,7 +594,7 @@ class NmrVrptUtility:
         # combination key (Combination_ID) of violated RDC restraints for each restraint key
         self.__rdcRestViolCombKeyDict = None
 
-        # summarized restraint validation results
+        # summarized restraint analysis results
         self.__results = None
 
         # whether the previous results have been retrieved
@@ -615,9 +615,9 @@ class NmrVrptUtility:
                         self.__calculateDihedralAngleRestraintViolations,
                         self.__calculateRdcRestraintViolations,
                         self.__summarizeCommonResults,
-                        self.__summarizeDistanceRestraintValidation,
-                        self.__summarizeDihedralAngleRestraintValidation,
-                        self.__summarizeRdcRestraintValidation,
+                        self.__summarizeDistanceRestraintAnalysis,
+                        self.__summarizeDihedralAngleRestraintAnalysis,
+                        self.__summarizeRdcRestraintAnalysis,
                         self.__outputResultsAsPickleFileIfPossible]
 
         # dictionary of processing tasks of each workflow operation
@@ -650,7 +650,7 @@ class NmrVrptUtility:
         self.__use_cache = use_cache
 
     def getResults(self):
-        """ Return NMR restraint validation result.
+        """ Return NMR restraint analysis result.
         """
 
         return self.__results
@@ -2538,8 +2538,8 @@ class NmrVrptUtility:
 
         return True
 
-    def __summarizeDistanceRestraintValidation(self):
-        """ Summarize distance restraint validation results.
+    def __summarizeDistanceRestraintAnalysis(self):
+        """ Summarize distance restraint analysis results.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.generate_output,
                    written by Kumaran Baskaran
@@ -2790,12 +2790,12 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__lfh.write(f"+NmrVrptUtility.__summarizeDistanceRestraintValidation() ++ Error  - {str(e)}\n")
+            self.__lfh.write(f"+NmrVrptUtility.__summarizeDistanceRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False
 
-    def __summarizeDihedralAngleRestraintValidation(self):
-        """ Summarize dihedral angle restraint validation results.
+    def __summarizeDihedralAngleRestraintAnalysis(self):
+        """ Summarize dihedral angle restraint analysis results.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.generate_output,
                    written by Kumaran Baskaran
@@ -3037,12 +3037,12 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__lfh.write(f"+NmrVrptUtility.__summarizeDihedralAngleRestraintValidation() ++ Error  - {str(e)}\n")
+            self.__lfh.write(f"+NmrVrptUtility.__summarizeDihedralAngleRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False
 
-    def __summarizeRdcRestraintValidation(self):
-        """ Summarize RDC restraint validation results.
+    def __summarizeRdcRestraintAnalysis(self):
+        """ Summarize RDC restraint analysis results.
             @author: Masashi Yokochi
         """
 
@@ -3267,7 +3267,7 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
-            self.__lfh.write(f"+NmrVrptUtility.__summarizeRdcRestraintValidation() ++ Error  - {str(e)}\n")
+            self.__lfh.write(f"+NmrVrptUtility.__summarizeRdcRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False
 

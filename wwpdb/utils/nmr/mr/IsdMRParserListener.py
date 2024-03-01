@@ -816,16 +816,16 @@ class IsdMRParserListener(ParseTreeListener):
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
-                    return _chainId, _seqId
+                    return _chainId, _seqId, ps['comp_id'][ps['seq_id'].index(seqId)]
         if seqId in ps['auth_seq_id']:
-            idx = ps['auth_seq_id'].index(seqId)
-            if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
-                return ps['auth_chain_id'], seqId
+            for idx in [_idx for _idx, _seqId in enumerate(ps['auth_seq_id']) if _seqId == seqId]:
+                if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
+                    return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
         # if seqId in ps['seq_id']:
         #     idx = ps['seq_id'].index(seqId)
         #     if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
         #         return ps['auth_chain_id'], ps['auth_seq_id'][idx]
-        return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId
+        return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequence(self, seqId, compId, atomId):
         """ Assign polymer sequences of the coordinates.
@@ -883,7 +883,7 @@ class IsdMRParserListener(ParseTreeListener):
         for ps in self.__polySeq:
             if preferNonPoly:
                 continue
-            chainId, seqId = self.getRealChainSeqId(ps, _seqId, compId)
+            chainId, seqId, cifCompId = self.getRealChainSeqId(ps, _seqId, compId)
             if self.__reasons is not None:
                 if fixedChainId is not None:
                     if fixedChainId != chainId:
@@ -893,7 +893,11 @@ class IsdMRParserListener(ParseTreeListener):
                 elif fixedSeqId is not None:
                     seqId = fixedSeqId
             if seqId in ps['auth_seq_id']:
-                idx = ps['auth_seq_id'].index(seqId)
+                if cifCompId is not None:
+                    idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(ps['auth_seq_id'], ps['comp_id']))
+                                if _seqId_ == seqId and _cifCompId_ == cifCompId), ps['auth_seq_id'].index(seqId))
+                else:
+                    idx = ps['auth_seq_id'].index(seqId)
                 cifCompId = ps['comp_id'][idx]
                 origCompId = ps['auth_comp_id'][idx]
                 if cifCompId != compId:
@@ -903,7 +907,7 @@ class IsdMRParserListener(ParseTreeListener):
                         origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                           if _seqId == seqId and _compId == compId)
                 if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
+                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -945,7 +949,7 @@ class IsdMRParserListener(ParseTreeListener):
                                         origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                                           if _seqId == seqId and _compId == compId)
                                 if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, self.__hasCoord)
+                                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, cifCompId, cifCheck=self.__hasCoord)
                                     atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -957,7 +961,7 @@ class IsdMRParserListener(ParseTreeListener):
 
         if self.__hasNonPolySeq:
             for np in self.__nonPolySeq:
-                chainId, seqId = self.getRealChainSeqId(np, _seqId, compId, False)
+                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if self.__reasons is not None:
                     if fixedChainId is not None:
                         if fixedChainId != chainId:
@@ -969,11 +973,15 @@ class IsdMRParserListener(ParseTreeListener):
                 if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
                     seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                 if seqId in np['auth_seq_id']:
-                    idx = np['auth_seq_id'].index(seqId)
+                    if cifCompId is not None:
+                        idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(np['auth_seq_id'], np['comp_id']))
+                                    if _seqId_ == seqId and _cifCompId_ == cifCompId), np['auth_seq_id'].index(seqId))
+                    else:
+                        idx = np['auth_seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
                     if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                        _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
+                        _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
                         atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                     if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
@@ -1004,7 +1012,7 @@ class IsdMRParserListener(ParseTreeListener):
                                 origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                                   if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
+                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.__hasCoord)
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -1032,7 +1040,7 @@ class IsdMRParserListener(ParseTreeListener):
                             cifCompId = np['comp_id'][idx]
                             origCompId = np['auth_comp_id'][idx]
                             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                                _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, self.__hasCoord)
+                                _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.__hasCoord)
                                 atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -1073,7 +1081,7 @@ class IsdMRParserListener(ParseTreeListener):
                 if seqKey in self.__labelToAuthSeq:
                     _, seqId = self.__labelToAuthSeq[seqKey]
                     if seqId in ps['auth_seq_id']:
-                        idx = ps['aut_seq_id'].index(seqId)
+                        idx = ps['seq_id'].index(_seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
                         if cifCompId != compId:
@@ -1083,7 +1091,7 @@ class IsdMRParserListener(ParseTreeListener):
                                 origCompId = next(origCompId for _seqId, _compId, origCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                                   if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, self.__hasCoord)
+                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
                             atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -1156,7 +1164,7 @@ class IsdMRParserListener(ParseTreeListener):
                 cifSeqId += offset
                 cifCompId = compId
 
-            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord, asis=self.__preferAuthSeq)
+            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, cifCompId, asis=self.__preferAuthSeq)
 
             if self.__cur_subtype == 'dist' and _compId is not None and (_compId.startswith('MTS') or _compId.startswith('ORI')) and cifCompId != _compId:
                 if _atomId[0] in ('O', 'N'):
@@ -1224,7 +1232,7 @@ class IsdMRParserListener(ParseTreeListener):
                     for np in self.__nonPolySeq:
                         if np['auth_chain_id'] == chainId and cifSeqId in np['auth_seq_id']:
                             cifSeqId = np['seq_id'][np['auth_seq_id'].index(cifSeqId)]
-                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, self.__hasCoord)
+                            seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, cifCompId)
                             if coordAtomSite is not None:
                                 break
                 except ValueError:
@@ -1244,7 +1252,7 @@ class IsdMRParserListener(ParseTreeListener):
                         cifCompId = compId
                 if not multiChain and not insCode:
                     if self.__preferAuthSeq:
-                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, asis=False)
+                        _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, cifCompId, asis=False)
                         if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                             if lenAtomId > 0 and _atomId[0] in _coordAtomSite['atom_id']:
                                 self.__authSeqId = 'label_seq_id'
@@ -1318,7 +1326,7 @@ class IsdMRParserListener(ParseTreeListener):
                 # self.__authAtomId = 'auth_atom_id'
 
             elif self.__preferAuthSeq:
-                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
+                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, asis=False)
                 if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
                         found = True
@@ -1336,7 +1344,7 @@ class IsdMRParserListener(ParseTreeListener):
 
             else:
                 self.__preferAuthSeq = True
-                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
+                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId)
                 if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
                         found = True
@@ -1355,7 +1363,7 @@ class IsdMRParserListener(ParseTreeListener):
                     self.__preferAuthSeq = False
 
         elif self.__preferAuthSeq:
-            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
+            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, asis=False)
             if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
@@ -1373,7 +1381,7 @@ class IsdMRParserListener(ParseTreeListener):
 
         else:
             self.__preferAuthSeq = True
-            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
+            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId)
             if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
@@ -1395,7 +1403,7 @@ class IsdMRParserListener(ParseTreeListener):
             return
 
         if self.__preferAuthSeq:
-            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
+            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, asis=False)
             if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
@@ -1413,7 +1421,7 @@ class IsdMRParserListener(ParseTreeListener):
 
         else:
             self.__preferAuthSeq = True
-            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
+            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId)
             if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
@@ -1573,20 +1581,27 @@ class IsdMRParserListener(ParseTreeListener):
 
         return atom1, atom2
 
-    def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
+    def getCoordAtomSiteOf(self, chainId, seqId, compId=None, cifCheck=True, asis=True):
         seqKey = (chainId, seqId)
-        coordAtomSite = None
         if cifCheck:
             preferAuthSeq = self.__preferAuthSeq if asis else not self.__preferAuthSeq
             if preferAuthSeq:
+                if compId is not None:
+                    _seqKey = (chainId, seqId, compId)
+                    if _seqKey in self.__coordAtomSite:
+                        return seqKey, self.__coordAtomSite[_seqKey]
                 if seqKey in self.__coordAtomSite:
-                    coordAtomSite = self.__coordAtomSite[seqKey]
+                    return seqKey, self.__coordAtomSite[seqKey]
             else:
                 if seqKey in self.__labelToAuthSeq:
                     seqKey = self.__labelToAuthSeq[seqKey]
+                    if cifCheck and compId is not None:
+                        _seqKey = (seqKey[0], seqKey[1], compId)
+                        if _seqKey in self.__coordAtomSite:
+                            return seqKey, self.__coordAtomSite[_seqKey]
                     if seqKey in self.__coordAtomSite:
-                        coordAtomSite = self.__coordAtomSite[seqKey]
-        return seqKey, coordAtomSite
+                        return seqKey, self.__coordAtomSite[seqKey]
+        return seqKey, None
 
     def __getCurrentRestraint(self):
         if self.__cur_subtype == 'dist':

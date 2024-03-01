@@ -3561,23 +3561,47 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                     compId = next(c['comp_id'] for c in coord
                                   if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId)
                     atomIds = [c['atom_id'] for c in coord
-                               if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId]
+                               if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
                     typeSymbols = [c['type_symbol'] for c in coord
-                                   if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId]
+                                   if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
                     coordAtomSite[seqKey] = {'comp_id': compId, 'atom_id': atomIds, 'type_symbol': typeSymbols}
                     if altAuthCompId is not None:
                         altCompIds = [c['comp_id'] for c in coord
-                                      if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId]
+                                      if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
                         coordAtomSite[seqKey]['alt_comp_id'] = altCompIds
                     if altAuthAtomId is not None:
                         altAtomIds = [c['alt_atom_id'] for c in coord
-                                      if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId]
+                                      if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
                         coordAtomSite[seqKey]['alt_atom_id'] = altAtomIds
-                    altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId), None)
+                    altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId and c['comp_id'] == compId), None)
                     if chainId in authToLabelChain and altSeqId is not None and altSeqId.isdigit():
                         labelToAuthSeq[(authToLabelChain[chainId], int(altSeqId))] = seqKey
                     else:
                         labelToAuthSeq[seqKey] = seqKey
+                    compIds = list(set(c['comp_id'] for c in coord
+                                       if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId))
+                    if len(compIds) > 1:  # 2kny: split implict ins_code of atom_site
+                        for compId in compIds:
+                            seqKey = (chainId, seqId, compId)
+                            atomIds = [c['atom_id'] for c in coord
+                                       if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
+                            typeSymbols = [c['type_symbol'] for c in coord
+                                           if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
+                            coordAtomSite[seqKey] = {'comp_id': compId, 'atom_id': atomIds, 'type_symbol': typeSymbols}
+                            if altAuthCompId is not None:
+                                altCompIds = [c['comp_id'] for c in coord
+                                              if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
+                                coordAtomSite[seqKey]['alt_comp_id'] = altCompIds
+                            if altAuthAtomId is not None:
+                                altAtomIds = [c['alt_atom_id'] for c in coord
+                                              if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
+                                coordAtomSite[seqKey]['alt_atom_id'] = altAtomIds
+                            altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId and c['comp_id'] == compId), None)
+                            if chainId in authToLabelChain and altSeqId is not None and altSeqId.isdigit():
+                                labelToAuthSeq[(authToLabelChain[chainId], int(altSeqId))] = (chainId, seqId)
+                            else:
+                                _seqKey = (seqKey[0], seqKey[1])
+                                labelToAuthSeq[_seqKey] = _seqKey
 
                     # DAOTHER-8817
                     if compId not in monDict3:

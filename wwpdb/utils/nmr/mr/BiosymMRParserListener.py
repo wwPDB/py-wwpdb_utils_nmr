@@ -1012,7 +1012,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
         preferNonPoly = False
 
-        if compId == 'CYSZ' and atomId == 'ZN' and self.__hasNonPoly:
+        if compId in ('CYSZ','CYZ') and atomId == 'ZN' and self.__hasNonPoly:
             znCount = 0
             znSeqId = None
             for np in self.__nonPoly:
@@ -1378,7 +1378,7 @@ class BiosymMRParserListener(ParseTreeListener):
         _compId = compId
         _atomId = atomId
 
-        if compId == 'CYSZ' and atomId == 'ZN' and self.__hasNonPoly:
+        if compId in ('CYSZ','CYZ') and atomId == 'ZN' and self.__hasNonPoly:
             znCount = 0
             znSeqId = None
             for np in self.__nonPoly:

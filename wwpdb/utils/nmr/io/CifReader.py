@@ -1408,7 +1408,7 @@ class CifReader:
 
             for ref_model_id in range(1, _total_models):
 
-                if ref_model_id not in eff_domain_id:
+                if ref_model_id not in eff_model_ids:
                     continue
 
                 _atom_site_ref = _atom_site_dict[ref_model_id]

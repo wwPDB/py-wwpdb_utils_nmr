@@ -2963,7 +2963,9 @@ class CharmmMRParserListener(ParseTreeListener):
                             fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
                             if fixedChainId != chainId:
                                 continue
-                        if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                        if not isPolySeq and 'np_seq_id_remap' in self.__reasons:
+                            _, seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
+                        elif 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                             fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                             if fixedChainId != chainId:
                                 continue
@@ -2973,8 +2975,6 @@ class CharmmMRParserListener(ParseTreeListener):
                                 continue
                         elif 'seq_id_remap' in self.__reasons:
                             _, seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
-                        elif not isPolySeq and 'np_seq_id_remap' in self.__reasons:
-                            _, seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
 
                     if ps is not None and seqId in ps['auth_seq_id']:
                         compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
@@ -3487,6 +3487,33 @@ class CharmmMRParserListener(ParseTreeListener):
                                                     if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
                                                        and _factor['chain_id'][0] != chainId and compId in monDict3:
                                                         continue
+                                                    # 2mgt
+                                                    if self.__hasNonPoly and self.__cur_subtype == 'dist' and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1:
+                                                        ligands = 0
+                                                        for np in self.__nonPoly:
+                                                            if np['auth_chain_id'] == chainId and _factor['atom_id'][0].upper() == np['comp_id'][0]:
+                                                                ligands += len(np['seq_id'])
+                                                        if ligands == 1:
+                                                            checked = False
+                                                            if 'np_seq_id_remap' not in self.reasonsForReParsing:
+                                                                self.reasonsForReParsing['np_seq_id_remap'] = {}
+                                                            srcSeqId = _factor['seq_id'][0]
+                                                            for np in self.__nonPoly:
+                                                                if _factor['atom_id'][0].upper() == np['comp_id'][0]:
+                                                                    dstSeqId = np['auth_seq_id'][0]
+                                                                    if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
+                                                                        self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
+                                                                    if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
+                                                                        if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] is not None:
+                                                                            if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
+                                                                                self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = None
+                                                                            else:
+                                                                                checked = True
+                                                                    else:
+                                                                        self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
+                                                                        checked = True
+                                                            if checked and isPolySeq and self.__reasons is not None and 'np_seq_id_remap' in self.__reasons:
+                                                                continue
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
                                                     if self.__cur_subtype == 'dist' and isPolySeq and isChainSpecified and compId in monDict3 and self.__csStat.peptideLike(compId):

@@ -2082,7 +2082,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         preferNonPoly = False
 
-        if compId in ('CYSZ','CYZ') and atomId == 'ZN' and self.__hasNonPoly:
+        if compId in ('CYSZ','CYZ', 'CYS') and atomId == 'ZN' and self.__hasNonPoly:
             znCount = 0
             znSeqId = None
             for np in self.__nonPoly:
@@ -2402,7 +2402,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         preferNonPoly = False
 
-        if compId in ('CYSZ','CYZ') and atomId == 'ZN' and self.__hasNonPoly:
+        if compId in ('CYSZ','CYZ', 'CYS') and atomId == 'ZN' and self.__hasNonPoly:
             znCount = 0
             znSeqId = None
             for np in self.__nonPoly:
@@ -3198,7 +3198,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if compId is not None:
 
-            if compId in ('CYSZ', 'CYZ') and atomId == 'ZN' and self.__hasNonPoly:
+            if compId in ('CYSZ', 'CYZ', 'CYS') and atomId == 'ZN' and self.__hasNonPoly:
                 znCount = 0
                 znSeqId = None
                 for np in self.__nonPoly:

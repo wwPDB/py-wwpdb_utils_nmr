@@ -23534,7 +23534,8 @@ class NmrDpUtility:
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
                                             + f", {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
                                             "However, observation nucleus of "\
-                                            + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + f" sharing the same {ambig_set_id_name} differs."
+                                            + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2)\
+                                            + f" is different in the set that share the same ambiguity code ({_atom_id[0]!r} vs {_atom_id2[0]!r})."
 
                                         self.report.error.appendDescription('invalid_ambiguity_code',
                                                                             {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -23550,7 +23551,8 @@ class NmrDpUtility:
                                             + f", {value_name} {value}, {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
                                             f"However, {value_name} {value2} of "\
                                             + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2)\
-                                            + f" differs by {value2 - value:.3f} (tolerance {CS_UNCERT_MAX})."
+                                            + " is noticeably diffrent from others in the set that share the same ambiguity code "\
+                                            f"by {value2 - value:.3f} (tolerance {CS_UNCERT_MAX})."
 
                                         self.report.error.appendDescription('invalid_ambiguity_code',
                                                                             {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,

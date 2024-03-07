@@ -185,6 +185,7 @@
 # 17-Jan-2024  M. Yokochi - detect coordinate issue (DAOTHER-9084, type_symbol mismatches label_atom_id)
 # 24-Jan-2024  M. Yokochi - reconstruct polymer/non-polymer sequence based on pdb_mon_id, instead of auth_mon_id (D_1300043061)
 # 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
+# 07-Mar-2024  M. Yokochi - extract pdbx_poly_seq_scheme.auth_mon_id as alt_cmop_id to prevent sequence mismatch due to 5-letter CCD ID (DAOTHER-9158 vs D_1300043061)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -40834,6 +40835,11 @@ class NmrDpUtility:
             _key_items.append({'name': 'pdb_mon_id', 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'})
             key_items = _key_items
 
+        if self.__cR.hasItem(lp_category, 'auth_mon_id'):
+            _key_items = copy.copy(key_items)
+            _key_items.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
+            key_items = _key_items
+
         if not self.__cR.hasCategory(lp_category):
             alias = True
             lp_category = self.lp_categories[file_type][content_subtype + '_alias']
@@ -42414,6 +42420,26 @@ class NmrDpUtility:
 
                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
+                    if conflict > 0 and any(len(c) > 3 for c in s2['comp_id']) and 'alt_comp_id' in s2:
+                        self.__pA.addTestSequence(s2['alt_comp_id'], chain_id)
+                        self.__pA.doAlign()
+
+                        myAlign = self.__pA.getAlignment(chain_id)
+
+                        length = len(myAlign)
+
+                        _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+                        if conflict > 0:
+                            self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                            self.__pA.doAlign()
+
+                            myAlign = self.__pA.getAlignment(chain_id)
+
+                            length = len(myAlign)
+
+                            _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
                     _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                     _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
@@ -42867,6 +42893,26 @@ class NmrDpUtility:
                     length = len(myAlign)
 
                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+                    if conflict > 0 and any(len(c) > 3 for c in s1['comp_id']) and 'alt_comp_id' in s1:
+                        self.__pA.setReferenceSequence(s1['alt_comp_id'], 'REF' + chain_id)
+                        self.__pA.doAlign()
+
+                        myAlign = self.__pA.getAlignment(chain_id)
+
+                        length = len(myAlign)
+
+                        _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+                        if conflict > 0:
+                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                            self.__pA.doAlign()
+
+                            myAlign = self.__pA.getAlignment(chain_id)
+
+                            length = len(myAlign)
+
+                            _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                     _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                     _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)

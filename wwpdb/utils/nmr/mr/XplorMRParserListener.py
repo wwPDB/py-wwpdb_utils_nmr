@@ -9266,6 +9266,8 @@ class XplorMRParserListener(ParseTreeListener):
                             elif compId == 'THR':
                                 atomIds = ['OG1']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
+                            elif compId == 'R1A':
+                                atomIds = ['O1']
 
                         for _atomId in atomIds:
                             ccdCheck = not cifCheck

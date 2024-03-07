@@ -1739,6 +1739,10 @@ class DynamoMRParserListener(ParseTreeListener):
                         atomId = 'NZ'
                     elif cifCompId == 'THR':
                         atomId = 'OG1'
+                    elif compId == 'HIS':
+                        atomId = 'NE2'
+                    elif compId == 'R1A':
+                        atomId = 'O1'
 
                 elif self.__csStat.peptideLike(cifCompId):
                     atomId = 'CA'

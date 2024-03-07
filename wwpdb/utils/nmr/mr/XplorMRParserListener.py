@@ -81,6 +81,7 @@ try:
                                                        XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
                                                        XPLOR_NITROXIDE_NAMES,
                                                        XPLOR_ORIGIN_AXIS_COLS,
+                                                       NITROOXIDE_ANCHOR_RES_NAMES,
                                                        CARTN_DATA_ITEMS,
                                                        AUTH_ATOM_DATA_ITEMS,
                                                        ATOM_NAME_DATA_ITEMS,
@@ -186,6 +187,7 @@ except ImportError:
                                            XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
                                            XPLOR_NITROXIDE_NAMES,
                                            XPLOR_ORIGIN_AXIS_COLS,
+                                           NITROOXIDE_ANCHOR_RES_NAMES,
                                            CARTN_DATA_ITEMS,
                                            AUTH_ATOM_DATA_ITEMS,
                                            ATOM_NAME_DATA_ITEMS,
@@ -406,6 +408,9 @@ class XplorMRParserListener(ParseTreeListener):
     __cur_union_expr = False
     __con_union_expr = False
     __top_union_expr = False
+
+    # has nitroxide
+    __has_nx = False
 
     depth = 0
 
@@ -1815,6 +1820,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.scale_a = None
         self.paramagCenter = None
+        self.__has_nx = False
 
     # Exit a parse tree produced by XplorMRParser#noe_assign.
     def exitNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):  # pylint: disable=unused-argument
@@ -8983,7 +8989,7 @@ class XplorMRParserListener(ParseTreeListener):
                                             else:
                                                 updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, _factor['chain_id'][0], _factor['seq_id'][0], compIds)
 
-                                if ligands == 0:
+                                if ligands == 0 and not self.__has_nx:
                                     self.__preferAuthSeq = not self.__preferAuthSeq
                                     self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                                     self.__setLocalSeqScheme()
@@ -9253,7 +9259,9 @@ class XplorMRParserListener(ParseTreeListener):
                                 if len(_atomIds_) > 0:
                                     atomIds = _atomIds_
 
+                        has_nx_local = has_nx_anchor = False
                         if self.__cur_subtype == 'dist' and atomId in XPLOR_NITROXIDE_NAMES:  # and coordAtomSite is not None and atomId not in atomSiteAtomId:
+                            self.__has_nx = has_nx_local = has_nx_anchor = True
                             if compId == 'CYS':
                                 atomIds = ['SG']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
@@ -9278,8 +9286,13 @@ class XplorMRParserListener(ParseTreeListener):
                             elif compId == 'THR':
                                 atomIds = ['OG1']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
+                            elif compId == 'HIS':
+                                atomIds = ['NE2']
+                                _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
                             elif compId == 'R1A':
                                 atomIds = ['O1']
+                            else:
+                                has_nx_anchor = False
 
                         for _atomId in atomIds:
                             ccdCheck = not cifCheck
@@ -9301,8 +9314,10 @@ class XplorMRParserListener(ParseTreeListener):
                                         if _coordAtomSite is not None:
                                             _compId = _coordAtomSite['comp_id']
                                             _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
-                                            if _atomId in _coordAtomSite['atom_id']:
-                                                if self.__cur_subtype != 'dist':
+                                            if _atomId in _coordAtomSite['atom_id']\
+                                               or (has_nx_local and not has_nx_anchor):
+                                                if self.__cur_subtype != 'dist'\
+                                                   or (has_nx_local and not has_nx_anchor and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
                                                     if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                         self.reasonsForReParsing['label_seq_scheme'] = {}
                                                     self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
@@ -9326,7 +9341,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                     self.__setLocalSeqScheme()
                                                 """
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                                if self.__cur_subtype != 'dist':
+                                                if self.__cur_subtype != 'dist'\
+                                                   or (has_nx_local and not has_nx_anchor and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
                                                     if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                         self.reasonsForReParsing['label_seq_scheme'] = {}
                                                     self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True

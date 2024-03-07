@@ -4143,8 +4143,12 @@ class CyanaMRParserListener(ParseTreeListener):
                                     cifAtomId = None
 
                             if cifAtomId is None:
-                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.")
+                                if _compId in monDict3:
+                                    self.__f.append(f"[Insufficient angle selection] {self.__getCurrentRestraint()}"
+                                                    f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {_compId!r}.")
+                                else:
+                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                    f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.")
                                 return
 
                         prevCifAtomId = cifAtomId
@@ -4283,8 +4287,12 @@ class CyanaMRParserListener(ParseTreeListener):
                             cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
 
                             if cifAtomId is None:
-                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.")
+                                if _compId in monDict3:
+                                    self.__f.append(f"[Insufficient angle selection] {self.__getCurrentRestraint()}"
+                                                    f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {_compId!r}.")
+                                else:
+                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                    f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.")
                                 return
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})
@@ -7668,8 +7676,12 @@ class CyanaMRParserListener(ParseTreeListener):
                                     cifAtomId = None
 
                             if cifAtomId is None:
-                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.")
+                                if _compId in monDict3:
+                                    self.__f.append(f"[Insufficient angle selection] {self.__getCurrentRestraint()}"
+                                                    f"The angle identifier {str(ctx.Simple_name(2))!r} is unknown for the residue {_compId!r}.")
+                                else:
+                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                    f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.")
                                 return
 
                         prevCifAtomId = cifAtomId
@@ -7808,8 +7820,12 @@ class CyanaMRParserListener(ParseTreeListener):
                             cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
 
                             if cifAtomId is None:
-                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.")
+                                if _compId in monDict3:
+                                    self.__f.append(f"[Insufficient angle selection] {self.__getCurrentRestraint()}"
+                                                    f"The angle identifier {str(ctx.Simple_name(2))!r} is unknown for the residue {_compId!r}.")
+                                else:
+                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                    f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle is not present in the coordinates.")
                                 return
 
                         atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId, 'comp_id': _cifCompId, 'atom_id': cifAtomId})

@@ -24652,6 +24652,8 @@ class NmrDpUtility:
 
                 regenerate_request = False  # DAOTHER-9065
 
+                can_auth_asym_id_mapping_failed = False  # DAOTHER-9158
+
                 lp.clear_data()
 
                 index = 1
@@ -25505,6 +25507,10 @@ class NmrDpUtility:
                                     break
 
                             if not resolved and chain_id in can_auth_asym_id_mapping:  # DAOTHER-8751, 8755
+
+                                if can_auth_asym_id_mapping_failed:  # DAOTHER-9158
+                                    regenerate_request = True
+
                                 mapping = can_auth_asym_id_mapping[chain_id]
 
                                 auth_asym_id = mapping['auth_asym_id']
@@ -25594,6 +25600,8 @@ class NmrDpUtility:
                                                                comp_id, atom_id, loop, index)
 
                             if not resolved and seq_id is not None and has_coordinate:
+
+                                can_auth_asym_id_mapping_failed = True  # DAOTHER-9158
 
                                 def test_seq_id_offset_as_is(lp, index, _row, _idx, chain_id, seq_id, comp_id, offset):
                                     _resolved = False

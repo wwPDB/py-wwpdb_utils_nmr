@@ -24305,7 +24305,7 @@ class NmrDpUtility:
                                 missing_ch3 = []
                         if not valid and len(missing_ch3) > 0 and atom_id not in _coord_atom_site['atom_id']:
                             atom_id = atom_id[:-1]
-                        if (valid and atom_id in _coord_atom_site['atom_id']) or prefer_auth_atom_name:
+                        if (valid and atom_id in _coord_atom_site['atom_id']) or prefer_auth_atom_name or _row[24] == 'UNMAPPED':
                             atom_ids = [atom_id]
                         else:
                             atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
@@ -24430,7 +24430,7 @@ class NmrDpUtility:
                             missing_ch3 = []
                     if not valid and len(missing_ch3) > 0:
                         atom_id = atom_id[:-1]
-                    if valid or prefer_auth_atom_name:
+                    if valid or prefer_auth_atom_name or _row[24] == 'UNMAPPED':
                         atom_ids = [atom_id]
                     else:
                         atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
@@ -25018,19 +25018,22 @@ class NmrDpUtility:
                             elif trial == 0:
                                 regenerate_request = True
 
+                        fill_auth_atom_id = _row[18] not in emptyValue
+
                         atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                         if len(atom_ids) == 0 or atom_ids[0] not in self.__csStat.getAllAtoms(comp_id):
                             atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                         len_atom_ids = len(atom_ids)
-                        if len_atom_ids == 0 or comp_id_bmrb_only:
+                        if len_atom_ids == 0 or comp_id_bmrb_only or _row[24] == 'UNMAPPED':
                             _row[6] = atom_id
                             _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                             if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                            if fill_auth_atom_id:
+                                _row[19] = _row[6]
                         else:
                             _row[6] = atom_ids[0]
                             _row[19] = None
-                            fill_auth_atom_id = _row[18] not in emptyValue
                             if self.__ccU.updateChemCompDict(comp_id):
                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
                                 if cca is not None:
@@ -25724,7 +25727,7 @@ class NmrDpUtility:
                             if len(atom_ids) == 0 or atom_ids[0] not in self.__csStat.getAllAtoms(comp_id):
                                 atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                             len_atom_ids = len(atom_ids)
-                            if len_atom_ids == 0 or comp_id_bmrb_only:
+                            if len_atom_ids == 0 or comp_id_bmrb_only or _row[24] == 'UNMAPPED':
                                 _row[6] = atom_id
                                 _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:

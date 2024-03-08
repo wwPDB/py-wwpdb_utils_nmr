@@ -25511,7 +25511,7 @@ class NmrDpUtility:
 
                             if not resolved and chain_id in can_auth_asym_id_mapping:  # DAOTHER-8751, 8755
 
-                                if can_auth_asym_id_mapping_failed:  # DAOTHER-9158
+                                if can_auth_asym_id_mapping_failed and trial == 0:  # DAOTHER-9158
                                     regenerate_request = True
 
                                 mapping = can_auth_asym_id_mapping[chain_id]

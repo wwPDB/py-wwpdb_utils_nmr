@@ -850,6 +850,13 @@
             "type": "string"
           }
         },
+        "alt_comp_id": {
+          "description": "List of original chemical component ID of a chain.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "struct_conf": {
           "description": "List of secondary structure of a chain.",
           "type": "array",

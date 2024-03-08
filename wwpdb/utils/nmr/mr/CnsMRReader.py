@@ -216,6 +216,31 @@ class CnsMRReader:
 if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/7dvm/7dvm-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/7dvm/7dvm.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2k9e/2k9e-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2k9e/2k9e.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/8ht7/dihe_f.tbl-corrected',
+                 '../../tests-nmr/mock-data-remediation/8ht7/8ht7.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2mgt/2mgt-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2mgt/2mgt.cif')
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2mgt/2mgt-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2mgt/2mgt.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/5kmz/5kmz-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/5kmz/5kmz.cif')
 

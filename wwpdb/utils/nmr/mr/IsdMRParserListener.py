@@ -840,7 +840,7 @@ class IsdMRParserListener(ParseTreeListener):
 
         preferNonPoly = False
 
-        if compId == 'CYSZ' and atomId == 'ZN' and self.__hasNonPoly:
+        if compId in ('CYSZ', 'CYZ', 'CYS') and atomId == 'ZN' and self.__hasNonPoly:
             znCount = 0
             znSeqId = None
             for np in self.__nonPoly:
@@ -1142,7 +1142,7 @@ class IsdMRParserListener(ParseTreeListener):
         _compId = compId
         _atomId = atomId
 
-        if compId == 'CYSZ' and atomId == 'ZN' and self.__hasNonPoly:
+        if compId in ('CYSZ', 'CYZ', 'CYS') and atomId == 'ZN' and self.__hasNonPoly:
             znCount = 0
             znSeqId = None
             for np in self.__nonPoly:
@@ -1185,6 +1185,10 @@ class IsdMRParserListener(ParseTreeListener):
                         atomId = 'NZ'
                     elif cifCompId == 'THR':
                         atomId = 'OG1'
+                    elif compId == 'HIS':
+                        atomId = 'NE2'
+                    elif compId == 'R1A':
+                        atomId = 'O1'
 
                 elif self.__csStat.peptideLike(cifCompId):
                     atomId = 'CA'

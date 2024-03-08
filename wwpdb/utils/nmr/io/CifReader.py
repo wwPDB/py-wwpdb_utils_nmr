@@ -30,6 +30,7 @@
 # 18-Dec-2023   my  - add calculate_uninstanced_coord() (DAOTHER-8945)
 # 24-Jan-2024   my  - add 'default-from' attribute for key/data items (D_1300043061)
 # 21-Feb-2024   my  - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
+# 07-Mar-2024   my  - extract pdbx_poly_seq_scheme.auth_mon_id as alt_cmop_id to prevent sequence mismatch due to 5-letter CCD ID (DAOTHER-9158 vs D_1300043061)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -715,6 +716,7 @@ class CifReader:
             auth_chain_id_col = -1 if 'auth_chain_id' not in altDict else altDict['auth_chain_id']
             auth_seq_id_col = -1 if 'auth_seq_id' not in altDict else altDict['auth_seq_id']
             auth_comp_id_col = -1 if 'auth_comp_id' not in altDict else altDict['auth_comp_id']
+            alt_comp_id_col = -1 if 'alt_comp_id' not in altDict else altDict['alt_comp_id']
 
             chainIds = sorted(set(row[chain_id_col] for row in rowList), key=lambda x: (len(x), x))
 
@@ -848,6 +850,17 @@ class CifReader:
                                     ent['auth_comp_id'].append(comp_id)
                                 else:
                                     ent['auth_comp_id'].append('.')
+
+                    if alt_comp_id_col != -1:
+                        ent['alt_comp_id'] = []
+                        for s in seqDict[c]:
+                            row = next((row for row in rowList if row[chain_id_col] == c and int(row[seq_id_col]) == s), None)
+                            if row is not None:
+                                comp_id = row[alt_comp_id_col]
+                                if comp_id not in self.emptyValue:
+                                    ent['alt_comp_id'].append(comp_id)
+                                else:
+                                    ent['alt_comp_id'].append('.')
 
                     if withStructConf and i < LEN_MAJOR_ASYM_ID:  # to process large assembly avoiding forced timeout
                         ent['struct_conf'] = self.__extractStructConf(c, seqDict[c])
@@ -1408,7 +1421,7 @@ class CifReader:
 
             for ref_model_id in range(1, _total_models):
 
-                if ref_model_id not in eff_domain_id:
+                if ref_model_id not in eff_model_ids:
                     continue
 
                 _atom_site_ref = _atom_site_dict[ref_model_id]

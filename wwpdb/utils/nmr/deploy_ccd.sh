@@ -31,7 +31,7 @@ do
  cc=`basename $cif_file .cif`
 
  if [ ${#cc} -gt 3 ] ; then
-  cc_hash=${cc:2}
+  cc_hash=${cc:3}
  else
   cc_hash=${cc:0:1}
  fi

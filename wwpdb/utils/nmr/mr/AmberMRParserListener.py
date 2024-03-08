@@ -4177,6 +4177,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         hasAuthSeqScheme = self.__reasons is not None and 'auth_seq_scheme' in self.__reasons
 
+        _useDefault = useDefault
         if self.__concatHetero and not hasAuthSeqScheme:
             useDefault = False
 
@@ -4238,8 +4239,13 @@ class AmberMRParserListener(ParseTreeListener):
                     seqId = factor['auth_seq_id'] + __offset
                     enforceAuthSeq = True
 
+            asis = False
+            _compId = translateToStdResName(authCompId, ccU=self.__ccU)
+            if authCompId in ps['comp_id'] and _compId != authCompId:
+                _compId = authCompId
+                asis = True
+
             if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                _compId = translateToStdResName(authCompId, ccU=self.__ccU)
                 __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId,
                                                            _compId if _compId in monDict3 else None)
                 if __chainId is not None and __chainId != chainId:
@@ -4251,7 +4257,6 @@ class AmberMRParserListener(ParseTreeListener):
             enforceAuthSeq |= hasAuthSeqScheme\
                 and chainId in self.__reasons['auth_seq_scheme'] and self.__reasons['auth_seq_scheme'][chainId]
 
-            _compId = translateToStdResName(authCompId, ccU=self.__ccU)
             if _compId in monDict3 and _compId not in ps['comp_id']:
                 continue
 
@@ -4265,7 +4270,7 @@ class AmberMRParserListener(ParseTreeListener):
                     _, _, authAtomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, authAtomId, compId)
 
                 if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
-                   or compId == translateToStdResName(authCompId, compId, self.__ccU):
+                   or compId == translateToStdResName(authCompId, compId, self.__ccU) or asis:
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
                                                                     asis=(not hasAuthSeqScheme or enforceAuthSeq or not self.__preferAuthSeq))
                     if coordAtomSite is not None and _authAtomId in coordAtomSite['atom_id']:
@@ -4494,6 +4499,16 @@ class AmberMRParserListener(ParseTreeListener):
 
                         if found:
                             return True
+
+            elif not useDefault and _useDefault:
+                _ps = next((_ps for _ps in self.__polySeq if _ps['chain_id'] == chainId), None)
+                if _ps is not None and seqId in _ps['auth_seq_id']:
+                    idx = _ps['auth_seq_id'].index(seqId)
+                    compId = _ps['comp_id'][idx]
+                    if compId == authCompId:
+                        if 'auth_seq_scheme' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['auth_seq_scheme'] = {}
+                        self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
 
         if self.__hasNonPolySeq and (useDefault or (self.__concatHetero and not hasAuthSeqScheme)):
 
@@ -4779,6 +4794,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         hasAuthSeqScheme = self.__reasons is not None and 'auth_seq_scheme' in self.__reasons
 
+        _useDefault = useDefault
         if self.__concatHetero and not hasAuthSeqScheme:
             useDefault = False
 
@@ -4849,8 +4865,13 @@ class AmberMRParserListener(ParseTreeListener):
                         seqId = factor['auth_seq_id'] + __offset
                         enforceAuthSeq = True
 
+                asis = False
+                _compId = translateToStdResName(authCompId, ccU=self.__ccU)
+                if authCompId in ps['comp_id'] and _compId != authCompId:
+                    _compId = authCompId
+                    asis = True
+
                 if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
-                    _compId = translateToStdResName(authCompId, ccU=self.__ccU)
                     __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId,
                                                                _compId if _compId in monDict3 else None)
                     if __chainId is not None and __chainId != chainId:
@@ -4862,7 +4883,6 @@ class AmberMRParserListener(ParseTreeListener):
                 enforceAuthSeq |= hasAuthSeqScheme\
                     and chainId in self.__reasons['auth_seq_scheme'] and self.__reasons['auth_seq_scheme'][chainId]
 
-                _compId = translateToStdResName(authCompId, ccU=self.__ccU)
                 if _compId in monDict3 and _compId not in ps['comp_id']:
                     continue
 
@@ -4877,7 +4897,7 @@ class AmberMRParserListener(ParseTreeListener):
                         _, _, _authAtomId_ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, authAtomId, compId)
 
                     if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
-                       or compId == translateToStdResName(authCompId, compId, self.__ccU):
+                       or compId == translateToStdResName(authCompId, compId, self.__ccU) or asis:
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
                                                                         asis=(not hasAuthSeqScheme or enforceAuthSeq or not self.__preferAuthSeq))
@@ -5080,6 +5100,16 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if chainId in LARGE_ASYM_ID:
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+
+                elif not useDefault and _useDefault:
+                    _ps = next((_ps for _ps in self.__polySeq if _ps['chain_id'] == chainId), None)
+                    if _ps is not None and seqId in _ps['auth_seq_id']:
+                        idx = _ps['auth_seq_id'].index(seqId)
+                        compId = _ps['comp_id'][idx]
+                        if compId == authCompId:
+                            if 'auth_seq_scheme' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['auth_seq_scheme'] = {}
+                            self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
 
             if not found and self.__hasNonPolySeq and (useDefault or (self.__concatHetero and not hasAuthSeqScheme)):
 

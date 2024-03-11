@@ -4652,10 +4652,11 @@ class NEFTranslator:
             return (atom_list, ambiguity_code, details)
 
         finally:
-            self.__cachedDictForValidStarAtomInXplor[key] = (atom_list, ambiguity_code, details)
+            _atom_list = copy.deepcopy(atom_list)
+            self.__cachedDictForValidStarAtomInXplor[key] = (_atom_list, ambiguity_code, details)
             if leave_unmatched:
                 key = (comp_id, atom_id, details, False, methyl_only)
-                self.__cachedDictForValidStarAtomInXplor[key] = (atom_list, ambiguity_code, details)
+                self.__cachedDictForValidStarAtomInXplor[key] = (_atom_list, ambiguity_code, details)
 
     def get_valid_star_atom(self, comp_id, atom_id, details=None, leave_unmatched=True, methyl_only=False):
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
@@ -4755,10 +4756,11 @@ class NEFTranslator:
             return (atom_list, ambiguity_code, details)
 
         finally:
-            self.__cachedDictForValidStarAtom[key] = (atom_list, ambiguity_code, details)
+            _atom_list = copy.deepcopy(atom_list)
+            self.__cachedDictForValidStarAtom[key] = (_atom_list, ambiguity_code, details)
             if leave_unmatched:
                 key = (comp_id, atom_id, details, False, methyl_only)
-                self.__cachedDictForValidStarAtom[key] = (atom_list, ambiguity_code, details)
+                self.__cachedDictForValidStarAtom[key] = (_atom_list, ambiguity_code, details)
 
     def get_star_atom(self, comp_id, nef_atom, details=None, leave_unmatched=True, methyl_only=False):
         """ Return list of instanced atom_id of a given NEF atom (including wildcard codes) and its ambiguity code.
@@ -5055,10 +5057,11 @@ class NEFTranslator:
             return (atom_list, ambiguity_code, details)
 
         finally:
-            self.__cachedDictForStarAtom[key] = (atom_list, ambiguity_code, details)
+            _atom_list = copy.deepcopy(atom_list)
+            self.__cachedDictForStarAtom[key] = (_atom_list, ambiguity_code, details)
             if leave_unmatched:
                 key = (comp_id, nef_atom, details, False, methyl_only)
-                self.__cachedDictForStarAtom[key] = (atom_list, ambiguity_code, details)
+                self.__cachedDictForStarAtom[key] = (_atom_list, ambiguity_code, details)
 
     def get_nef_atom(self, comp_id, star_atom_list, details=None, leave_unmatched=True):
         """ Return list of all instanced atom_id of given NMR-STAR atoms with ambiguity code and CS value in a given comp_id.
@@ -5485,10 +5488,11 @@ class NEFTranslator:
             return (atom_list, details, atom_id_map)
 
         finally:
-            self.__cachedDictForNefAtom[key] = (atom_list, details, atom_id_map)
+            _atom_list = copy.deepcopy(atom_list)
+            self.__cachedDictForNefAtom[key] = (_atom_list, details, atom_id_map)
             if leave_unmatched:
                 key = (comp_id, str(star_atom_list), str(details), False)
-                self.__cachedDictForNefAtom[key] = (atom_list, details, atom_id_map)
+                self.__cachedDictForNefAtom[key] = (_atom_list, details, atom_id_map)
 
     def get_group(self, comp_id, atom_id):
         """ Return heavy atom name and list of proton names bonded to the heavy atom.

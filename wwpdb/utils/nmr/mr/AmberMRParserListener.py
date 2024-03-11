@@ -3820,6 +3820,7 @@ class AmberMRParserListener(ParseTreeListener):
                             except IndexError:
                                 pass
 
+            globalSeqOffsetDone = False
             if self.__reasons is not None and 'global_sequence_offset' in self.__reasons:
                 __chainId = __offset = None
                 for _ps in self.__polySeq:
@@ -3838,9 +3839,9 @@ class AmberMRParserListener(ParseTreeListener):
                     if chainId != __chainId:
                         continue
                     seqId += __offset
-                    enforceAuthSeq = True
+                    enforceAuthSeq = globalSeqOffsetDone = True
 
-            if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
+            if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons and not globalSeqOffsetDone:
                 __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId)
                 if __chainId is not None and __chainId != chainId:
                     continue
@@ -4214,6 +4215,7 @@ class AmberMRParserListener(ParseTreeListener):
                             except IndexError:
                                 pass
 
+            globalSeqOffsetDone = False
             if self.__reasons is not None and 'global_sequence_offset' in self.__reasons:
                 __chainId = __offset = None
                 for _ps in self.__polySeq:
@@ -4237,7 +4239,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if chainId != __chainId:
                         continue
                     seqId = factor['auth_seq_id'] + __offset
-                    enforceAuthSeq = True
+                    enforceAuthSeq = globalSeqOffsetDone = True
 
             asis = False
             _compId = translateToStdResName(authCompId, ccU=self.__ccU)
@@ -4245,7 +4247,7 @@ class AmberMRParserListener(ParseTreeListener):
                 _compId = authCompId
                 asis = True
 
-            if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
+            if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons and not globalSeqOffsetDone:
                 __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId,
                                                            _compId if _compId in monDict3 else None)
                 if __chainId is not None and __chainId != chainId:
@@ -4840,6 +4842,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 except IndexError:
                                     pass
 
+                globalSeqOffsetDone = False
                 if self.__reasons is not None and 'global_sequence_offset' in self.__reasons:
                     __chainId = __offset = None
                     for _ps in self.__polySeq:
@@ -4863,7 +4866,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if chainId != __chainId:
                             continue
                         seqId = factor['auth_seq_id'] + __offset
-                        enforceAuthSeq = True
+                        enforceAuthSeq = globalSeqOffsetDone = True
 
                 asis = False
                 _compId = translateToStdResName(authCompId, ccU=self.__ccU)
@@ -4871,7 +4874,7 @@ class AmberMRParserListener(ParseTreeListener):
                     _compId = authCompId
                     asis = True
 
-                if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
+                if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons and not globalSeqOffsetDone:
                     __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId,
                                                                _compId if _compId in monDict3 else None)
                     if __chainId is not None and __chainId != chainId:

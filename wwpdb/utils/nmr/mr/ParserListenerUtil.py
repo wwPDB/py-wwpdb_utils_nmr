@@ -2063,6 +2063,21 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
             if atomId == 'NH':  # 2jwu
                 return 'N'
 
+        if refCompId == 'ASN' and atomId.startswith('HND'):  # 2kg1
+            if atomId == 'HND1':
+                return 'HD21'
+            if atomId == 'HND2':
+                return 'HD22'
+            if atomId == 'HND':
+                return 'HD2'
+        if refCompId == 'GLN' and atomId.startswith('HNE'):  # 2kg1
+            if atomId == 'HNE1':
+                return 'HE21'
+            if atomId == 'HNE2':
+                return 'HE22'
+            if atomId == 'HNE':
+                return 'HE2'
+
         # BIOSYM atom nomenclature
         if (atomId[-1] in ('R', 'S', 'Z', 'E') or (len(atomId) > 2 and atomId[-1] in ('*', '%') and atomId[-2] in ('R', 'S'))):
             if refCompId in ('CYS', 'ASP', 'HIS', 'SER'):
@@ -2981,12 +2996,12 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     branched = None if prevResult is None else prevResult.get('branched')
     nmrExtPolySeq = None if prevResult is None else prevResult.get('nmr_ext_poly_seq')
 
+    polySeqPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_poly_seq_scheme', 'pdb_mon_id') else 'mon_id'
+    nonPolyPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'pdb_mon_id') else 'mon_id'
+    branchedPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_branch_scheme', 'pdb_mon_id') else 'mon_id'
+
     if polySeq is None or nmrExtPolySeq is None:
         changed = True
-
-        polySeqPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_poly_seq_scheme', 'pdb_mon_id') else 'mon_id'
-        nonPolyPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'pdb_mon_id') else 'mon_id'
-        branchedPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_branch_scheme', 'pdb_mon_id') else 'mon_id'
 
         # loop categories
         _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',

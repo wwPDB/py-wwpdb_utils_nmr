@@ -1938,6 +1938,16 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return 'H7' + atomId[-1]
                 if atomId in 'H5':
                     return 'H7'
+            elif refCompId == 'THM' and refAtomIdList is not None and 'HM51' in refAtomIdList:
+                if atomId.startswith('Q7'):
+                    return 'HM5'
+                if atomId.startswith('H7'):
+                    if atomId in ('H71', 'H72', 'H73'):
+                        return 'HM5' + atomId[-1]
+                    if atomId in 'H7':
+                        return 'HM5'
+                if atomId == 'C7':  # 7png
+                    return 'C5M'
             elif refCompId in ('DA', 'A') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
                 return 'H6' + atomId[-1]
             elif refCompId in ('DG', 'G') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):  # 6g99
@@ -2050,9 +2060,11 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'HD1' + atomId[-1]
             if atomId == 'CD':
                 return 'CD1'
+
         if refCompId in ('SER', 'THR', 'TYR'):
             if atomId.startswith('HO') and len(atomId) > 2:  # 2n6j
                 return 'H' + atomId[2:]
+
         if len(refCompId) == 3 and refCompId in monDict3:
             if atomId == 'O1':
                 return 'O'
@@ -2070,6 +2082,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'HD22'
             if atomId == 'HND':
                 return 'HD2'
+
         if refCompId == 'GLN' and atomId.startswith('HNE'):  # 2kg1
             if atomId == 'HNE1':
                 return 'HE21'
@@ -2919,6 +2932,13 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
             return compId3
 
     if compId[-1] in ('5', '3'):
+
+        if compId[-1] == '5' and refCompId in ('DCZ', 'THM', 'OOB'):  # 7png
+            return refCompId
+
+        if compId[-1] == '3' and refCompId in ('4DG', 'L3X', 'URT', '23G', 'KAK', 'UZL'):
+            return refCompId
+
         _compId = compId[:-1]
 
         if _compId in monDict3:

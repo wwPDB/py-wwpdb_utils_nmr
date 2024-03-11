@@ -5407,7 +5407,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                     if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                         self.reasonsForReParsing['label_seq_scheme'] = {}
                                                     self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
-                                                else:
+                                                elif _atomId in _coordAtomSite['atom_id']:
                                                     _atom = {}
                                                     _atom['comp_id'] = _compId
                                                     _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]

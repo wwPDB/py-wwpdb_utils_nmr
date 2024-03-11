@@ -1933,6 +1933,11 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return atomId[:-1] if atomId.endswith('1') else atomId
             elif refCompId in ('DT', 'T') and atomId.startswith('Q5'):
                 return 'H7'
+            elif refCompId in ('DT', 'T') and atomId.startswith('H5'):  # 2lsz
+                if atomId in ('H51', 'H52', 'H53'):
+                    return 'H7' + atomId[-1]
+                if atomId in 'H5':
+                    return 'H7'
             elif refCompId in ('DA', 'A') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
                 return 'H6' + atomId[-1]
             elif refCompId in ('DG', 'G') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):  # 6g99

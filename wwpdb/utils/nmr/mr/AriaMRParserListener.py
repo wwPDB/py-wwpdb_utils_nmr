@@ -513,6 +513,8 @@ class AriaMRParserListener(ParseTreeListener):
                             if chainAssignFailed is not None:
                                 seqIdRemapFailed = []
 
+                                uniq_ps = not any('identical_chain_id' in ps for ps in self.__polySeq)
+
                                 for ca in chainAssignFailed:
                                     if ca['conflict'] > 0:
                                         continue
@@ -533,7 +535,27 @@ class AriaMRParserListener(ParseTreeListener):
                                                                                    in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
                                                                                    if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                             except StopIteration:
-                                                pass
+                                                if uniq_ps:
+                                                    seq_id_mapping[test_seq_id] = ref_seq_id
+
+                                    offset = None
+                                    offsets = [v - k for k, v in seq_id_mapping.items()]
+                                    if len(offsets) > 0 and ('gap_in_auth_seq' not in poly_seq_model or not poly_seq_model['gap_in_auth_seq']):
+                                        offsets = collections.Counter(offsets).most_common()
+                                        if len(offsets) > 1:
+                                            offset = offsets[0][0]
+                                            for k, v in seq_id_mapping.items():
+                                                if v - k != offset:
+                                                    seq_id_mapping[k] = k + offset
+
+                                    if uniq_ps and offset is not None and len(seq_id_mapping) > 0\
+                                       and ('gap_in_auth_seq' not in poly_seq_model or not poly_seq_model['gap_in_auth_seq']):
+                                        for ref_seq_id, mid_code, test_seq_id, ref_code, test_code in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id'],
+                                                                                                          sa['ref_code'], sa['test_code']):
+                                            if mid_code == '|' and test_seq_id not in seq_id_mapping:
+                                                seq_id_mapping[test_seq_id] = test_seq_id + offset
+                                            elif ref_code != '.' and test_code == '.':
+                                                seq_id_mapping[test_seq_id] = test_seq_id + offset
 
                                     if any(k for k, v in seq_id_mapping.items() if k != v)\
                                        and not any(k for k, v in seq_id_mapping.items()
@@ -908,11 +930,11 @@ class AriaMRParserListener(ParseTreeListener):
             elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
             elif 'seq_id_remap' in self.__reasons or 'chain_seq_id_remap' in self.__reasons:
-                if 'seq_id_remap' in self.__reasons:
-                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
-                if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                if 'chain_seq_id_remap' in self.__reasons:
                     fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], None, seqId,
                                                                      compId if compId in monDict3 else None)
+                if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
+                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
@@ -1218,11 +1240,11 @@ class AriaMRParserListener(ParseTreeListener):
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
                 refChainId = fixedChainId
             elif 'seq_id_remap' in self.__reasons or 'chain_seq_id_remap' in self.__reasons:
-                if 'seq_id_remap' in self.__reasons:
-                    _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
-                if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                if 'chain_seq_id_remap' in self.__reasons:
                     fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], str(refChainId), seqId,
                                                                      compId if compId in monDict3 else None)
+                if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
+                    _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 

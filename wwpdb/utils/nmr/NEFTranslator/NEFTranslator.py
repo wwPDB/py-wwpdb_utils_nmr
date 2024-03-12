@@ -1286,8 +1286,11 @@ class NEFTranslator:
 
         is_dist_lp = 'nef_distance_restraint' in lp_category
         is_dihed_lp = 'nef_dihedral_restraint' in lp_category
+        is_target_lp = is_dist_lp or is_dihed_lp
 
         def skip_empty_value_error(lp, idx):
+            if not is_target_lp:
+                return False
             if is_dist_lp and 'residue_name_1' in lp.tags and 'residue_name_2' in lp.tags\
                and (lp.data[idx][lp.tags.index('residue_name_1')] == 'HOH'
                     or lp.data[idx][lp.tags.index('residue_name_2')] == 'HOH'):
@@ -1472,8 +1475,11 @@ class NEFTranslator:
 
         is_dist_lp = 'Gen_dist_constraint' in lp_category
         is_dihed_lp = 'Torsion_angle_constraint' in lp_category
+        is_target_lp = is_dist_lp or is_dihed_lp
 
         def skip_empty_value_error(lp, idx):
+            if not is_target_lp:
+                return False
             if is_dist_lp and 'Auth_comp_ID_1' in lp.tags and 'Auth_comp_ID_2' in lp.tags\
                and (lp.data[idx][lp.tags.index('Auth_comp_ID_1')] == 'HOH'
                     or lp.data[idx][lp.tags.index('Auth_comp_ID_2')] == 'HOH'):
@@ -1723,6 +1729,18 @@ class NEFTranslator:
 
         is_dist_lp = 'Gen_dist_constraint' in lp_category
         is_dihed_lp = 'Torsion_angle_constraint' in lp_category
+        is_target_lp = is_dist_lp or is_dihed_lp
+
+        def skip_empty_value_error(lp, idx):
+            if not is_target_lp:
+                return False
+            if is_dist_lp and 'Auth_comp_ID_1' in lp.tags and 'Auth_comp_ID_2' in lp.tags\
+               and (lp.data[idx][lp.tags.index('Auth_comp_ID_1')] == 'HOH'
+                    or lp.data[idx][lp.tags.index('Auth_comp_ID_2')] == 'HOH'):
+                return True
+            if is_dihed_lp and 'Torsion_angle_name' in lp.tags and lp.data[idx][lp.tags.index('Torsion_angle_name')] == 'PPA':
+                return True
+            return False
 
         seq_id_col = 3
 
@@ -1769,11 +1787,7 @@ class NEFTranslator:
             else:
                 for idx, row in enumerate(seq_data):
                     if is_empty(row) and idx < len_loop_data:
-                        if is_dist_lp and 'Auth_comp_ID_1' in loop.tags and 'Auth_comp_ID_2' in loop.tags\
-                           and (loop.data[idx][loop.tags.index('Auth_comp_ID_1')] == 'HOH'
-                                or loop.data[idx][loop.tags.index('Auth_comp_ID_2')] == 'HOH'):
-                            continue
-                        if is_dihed_lp and 'Torsion_angle_name' in loop.tags and loop.data[idx][loop.tags.index('Torsion_angle_name')] == 'PPA':
+                        if skip_empty_value_error(loop, idx):
                             continue
                         r = {}
                         for j, t in enumerate(loop.tags):
@@ -1789,11 +1803,7 @@ class NEFTranslator:
                     int(row[seq_id_col])
                 except ValueError:
                     if idx < len_loop_data:
-                        if is_dist_lp and 'Auth_comp_ID_1' in loop.tags and 'Auth_comp_ID_2' in loop.tags\
-                           and (loop.data[idx][loop.tags.index('Auth_comp_ID_1')] == 'HOH'
-                                or loop.data[idx][loop.tags.index('Auth_comp_ID_2')] == 'HOH'):
-                            continue
-                        if is_dihed_lp and 'Torsion_angle_name' in loop.tags and loop.data[idx][loop.tags.index('Torsion_angle_name')] == 'PPA':
+                        if skip_empty_value_error(loop, idx):
                             continue
                         r = {}
                         for j, t in enumerate(loop.tags):
@@ -2314,8 +2324,11 @@ class NEFTranslator:
         is_nef_dihed_lp = 'nef_dihedral_restraint' in lp_category
         is_star_dist_lp = 'Gen_dist_constraint' in lp_category
         is_star_dihed_lp = 'Torsion_angle_constraint' in lp_category
+        is_target_lp = is_nef_dist_lp or is_nef_dihed_lp or is_star_dist_lp or is_star_dihed_lp
 
         def skip_empty_value_error(lp, idx):
+            if not is_target_lp:
+                return False
             if is_nef_dist_lp and 'residue_name_1' in lp.tags and 'residue_name_2' in lp.tags\
                and (lp.data[idx][lp.tags.index('residue_name_1')] == 'HOH'
                     or lp.data[idx][lp.tags.index('residue_name_2')] == 'HOH'):

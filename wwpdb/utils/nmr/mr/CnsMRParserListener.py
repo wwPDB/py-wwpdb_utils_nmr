@@ -5048,6 +5048,10 @@ class CnsMRParserListener(ParseTreeListener):
                         else:
                             self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {__factor}.")
+                            if foundCompId and len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
+                                compIds = guessCompIdFromAtomId(_factor['atom_id'], self.__polySeq, self.__nefT)
+                                if compIds is not None:
+                                    foundCompId = False  # 2l5y
                             if not foundCompId:
                                 # DAOTHER-9063
                                 ligands = 0

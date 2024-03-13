@@ -3156,6 +3156,12 @@ class CharmmMRParserListener(ParseTreeListener):
                                         _atom = {}
                                         _atom['comp_id'] = coordAtomSite['comp_id']
                                         _atom['type_symbol'] = coordAtomSite['type_symbol'][atomSiteAtomId.index(_atomId)]
+                                    elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in atomSiteAtomId
+                                                                               or ('H' + _atomId[-1]) in atomSiteAtomId):
+                                        _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in atomSiteAtomId else 'H' + _atomId[-1]
+                                        _atom = {}
+                                        _atom['comp_id'] = coordAtomSite['comp_id']
+                                        _atom['type_symbol'] = coordAtomSite['type_symbol'][atomSiteAtomId.index(_atomId)]
                                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:
                                         _atom = {}
                                         _atom['comp_id'] = coordAtomSite['comp_id']
@@ -3182,14 +3188,24 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                 self.reasonsForReParsing['label_seq_scheme'] = {}
                                                             if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
                                                                 self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
-                                                """
-                                                self.__preferAuthSeq = False
-                                                self.__authSeqId = 'label_seq_id'
-                                                seqKey = _seqKey
-                                                chainId, seqId = seqKey
-                                                if len(self.atomSelectionSet) > 0:
-                                                    self.__setLocalSeqScheme()
-                                                """
+                                            elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                                                       or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                if self.__cur_subtype != 'dist':
+                                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                        self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                    self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
+                                                else:
+                                                    _atom = {}
+                                                    _atom['comp_id'] = _compId
+                                                    _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                    if self.__ccU.updateChemCompDict(compId):
+                                                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                                        if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
+                                                            if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                                self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                            if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
+                                                                self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
                                                 if self.__cur_subtype != 'dist':
                                                     if 'label_seq_scheme' not in self.reasonsForReParsing:
@@ -3206,15 +3222,6 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                 self.reasonsForReParsing['label_seq_scheme'] = {}
                                                             if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
                                                                 self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
-                                                """
-                                                self.__preferAuthSeq = False
-                                                self.__authSeqId = 'label_seq_id'
-                                                self.__authAtomId = 'auth_atom_id'
-                                                seqKey = _seqKey
-                                                chainId, seqId = seqKey
-                                                if len(self.atomSelectionSet) > 0:
-                                                    self.__setLocalSeqScheme()
-                                                """
                                     elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
                                         self.__preferAuthSeq = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck=cifCheck)
@@ -3226,24 +3233,19 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                 self.__authSeqId = 'auth_seq_id'
-                                                """
-                                                seqKey = _seqKey
-                                                chainId, seqId = seqKey
-                                                if len(self.atomSelectionSet) > 0:
-                                                    self.__setLocalSeqScheme()
-                                                """
+                                            elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                                                       or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                _atom = {}
+                                                _atom['comp_id'] = _compId
+                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                self.__authSeqId = 'auth_seq_id'
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['alt_atom_id'].index(_atomId)]
                                                 self.__authSeqId = 'auth_seq_id'
                                                 self.__authAtomId = 'auth_atom_id'
-                                                """
-                                                seqKey = _seqKey
-                                                chainId, seqId = seqKey
-                                                if len(self.atomSelectionSet) > 0:
-                                                    self.__setLocalSeqScheme()
-                                                """
                                             else:
                                                 self.__preferAuthSeq = False
                                         else:
@@ -3266,14 +3268,19 @@ class CharmmMRParserListener(ParseTreeListener):
                                                             self.reasonsForReParsing['label_seq_scheme'] = {}
                                                         if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
                                                             self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
-                                                """
-                                                self.__preferAuthSeq = False
-                                                self.__authSeqId = 'label_seq_id'
-                                                seqKey = _seqKey
-                                                chainId, seqId = seqKey
-                                                if len(self.atomSelectionSet) > 0:
-                                                    self.__setLocalSeqScheme()
-                                                """
+                                            elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                                                       or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
+                                                _atom = {}
+                                                _atom['comp_id'] = _compId
+                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                if self.__ccU.updateChemCompDict(compId):
+                                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                                    if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
+                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                        if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
+                                                            self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
@@ -3285,15 +3292,6 @@ class CharmmMRParserListener(ParseTreeListener):
                                                             self.reasonsForReParsing['label_seq_scheme'] = {}
                                                         if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
                                                             self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
-                                                """
-                                                self.__preferAuthSeq = False
-                                                self.__authSeqId = 'label_seq_id'
-                                                self.__authAtomId = 'auth_atom_id'
-                                                seqKey = _seqKey
-                                                chainId, seqId = seqKey
-                                                if len(self.atomSelectionSet) > 0:
-                                                    self.__setLocalSeqScheme()
-                                                """
                                 elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
                                     if len(self.atomSelectionSet) == 0:
                                         self.__preferAuthSeq = True
@@ -3302,6 +3300,17 @@ class CharmmMRParserListener(ParseTreeListener):
                                             _compId = _coordAtomSite['comp_id']
                                             _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
                                             if _atomId in _coordAtomSite['atom_id']:
+                                                _atom = {}
+                                                _atom['comp_id'] = _compId
+                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                self.__authSeqId = 'auth_seq_id'
+                                                seqKey = _seqKey
+                                                chainId, seqId = seqKey
+                                                if len(self.atomSelectionSet) > 0:
+                                                    self.__setLocalSeqScheme()
+                                            elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                                                       or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
+                                                _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
                                                 _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
@@ -4463,6 +4472,10 @@ class CharmmMRParserListener(ParseTreeListener):
                                 _atom = None
                                 if coordAtomSite is not None:
                                     if _atomId in coordAtomSite['atom_id']:
+                                        _atom = {}
+                                        _atom['comp_id'] = coordAtomSite['comp_id']
+                                    elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in coordAtomSite['atom_id']
+                                                                               or ('H' + _atomId[-1] in coordAtomSite['atom_id'])):
                                         _atom = {}
                                         _atom['comp_id'] = coordAtomSite['comp_id']
                                     elif 'alt_atom_id' in coordAtomSite and _atomId in coordAtomSite['alt_atom_id']:

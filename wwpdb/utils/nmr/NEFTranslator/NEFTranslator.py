@@ -114,7 +114,7 @@ from operator import itemgetter
 
 try:
     from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue, monDict3,
-                                           protonBeginCode, pseProBeginCode,
+                                           protonBeginCode, pseProBeginCode, aminoProtonCode,
                                            letterToDigit, indexToLetter)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -123,7 +123,7 @@ try:
                                                        ALLOWED_AMBIGUITY_CODES)
 except ImportError:
     from nmr.AlignUtil import (emptyValue, trueValue, monDict3,
-                               protonBeginCode, pseProBeginCode,
+                               protonBeginCode, pseProBeginCode, aminoProtonCode,
                                letterToDigit, indexToLetter)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -4856,7 +4856,7 @@ class NEFTranslator:
             return copy.deepcopy(self.__cachedDictForStarAtom[key])
 
         comp_id = comp_id.upper()
-        is_std_comp_id = comp_id in monDict3 or self.__csStat.peptideLike(comp_id)  # ACA:H21, H22, H2 (5nwu)
+        is_std_comp_id = comp_id in monDict3
 
         atom_list = []
         ambiguity_code = 1
@@ -5016,6 +5016,10 @@ class NEFTranslator:
 
                     atom_list = [a for a in atoms if re.search(pattern, a) and nef_atom[0] in ('H', '1', '2', '3', a[0])]
 
+                    if not is_std_comp_id and self.__csStat.peptideLike(comp_id) and any(a in aminoProtonCode for a in atom_list)\
+                       and any(a not in aminoProtonCode for a in atom_list):
+                        atom_list = [a for a in atom_list if a not in aminoProtonCode]  # ACA:H21, H22, H2 (5nwu)
+
                     if atom_type != _atom_type and self.chemCompBond is not None and comp_id in self.chemCompBond:
                         _atom_list = []
                         for a in atom_list:
@@ -5072,6 +5076,10 @@ class NEFTranslator:
                         self.__lfh.write(f"+NEFTranslator.get_star_atom() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
                     atom_list = [a for a in atoms if re.search(pattern, a)]
+
+                    if not is_std_comp_id and self.__csStat.peptideLike(comp_id) and any(a in aminoProtonCode for a in atom_list)\
+                       and any(a not in aminoProtonCode for a in atom_list):
+                        atom_list = [a for a in atom_list if a not in aminoProtonCode]  # ACA:H21, H22, H2 (5nwu)
 
                     ambiguity_code = 1 if atom_list[0] in methyl_atoms else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
@@ -5132,6 +5140,8 @@ class NEFTranslator:
                     ambiguity_code = None
                     if leave_unmatched and details is None:
                         details = f"{nef_atom} is invalid atom_id in comp_id {comp_id}."
+
+            atom_list = sorted(atom_list)
 
             return (atom_list, ambiguity_code, details)
 

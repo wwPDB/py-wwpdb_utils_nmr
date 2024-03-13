@@ -1333,19 +1333,25 @@ class IsdMRParserListener(ParseTreeListener):
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
                                       'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
 
-                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+                _cifAtomId = self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+                if cifAtomId != _cifAtomId:
+                    atomSelection[-1]['atom_id'] = _cifAtomId
 
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
 
     def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite):
         if not self.__hasCoord:
-            return
+            return atomId
 
         found = False
 
         if coordAtomSite is not None:
             if atomId in coordAtomSite['atom_id']:
+                found = True
+            elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in coordAtomSite['atom_id']
+                                                      or ('H' + atomId[-1]) in coordAtomSite['atom_id']):
+                atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + atomId[-1]
                 found = True
             elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
                 found = True
@@ -1355,6 +1361,14 @@ class IsdMRParserListener(ParseTreeListener):
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, asis=False)
                 if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
+                        found = True
+                        self.__preferAuthSeq = False
+                        self.__authSeqId = 'label_seq_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
                         found = True
                         self.__preferAuthSeq = False
                         self.__authSeqId = 'label_seq_id'
@@ -1373,6 +1387,13 @@ class IsdMRParserListener(ParseTreeListener):
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId)
                 if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
+                        found = True
+                        self.__authSeqId = 'auth_seq_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
                         found = True
                         self.__authSeqId = 'auth_seq_id'
                         seqKey = _seqKey
@@ -1397,6 +1418,14 @@ class IsdMRParserListener(ParseTreeListener):
                     self.__authSeqId = 'label_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
+                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    found = True
+                    self.__preferAuthSeq = False
+                    self.__authSeqId = 'label_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                     found = True
                     self.__preferAuthSeq = False
@@ -1414,6 +1443,14 @@ class IsdMRParserListener(ParseTreeListener):
                     self.__authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
+                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    found = True
+                    self.__preferAuthSeq = False
+                    self.__authSeqId = 'label_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                     found = True
                     self.__authSeqId = 'auth_seq_id'
@@ -1426,7 +1463,7 @@ class IsdMRParserListener(ParseTreeListener):
                 self.__preferAuthSeq = False
 
         if found:
-            return
+            return atomId
 
         if self.__preferAuthSeq:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, asis=False)
@@ -1437,6 +1474,14 @@ class IsdMRParserListener(ParseTreeListener):
                     self.__authSeqId = 'label_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
+                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    found = True
+                    self.__preferAuthSeq = False
+                    self.__authSeqId = 'label_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                     found = True
                     self.__preferAuthSeq = False
@@ -1454,6 +1499,14 @@ class IsdMRParserListener(ParseTreeListener):
                     self.__authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
+                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    found = True
+                    self.__preferAuthSeq = False
+                    self.__authSeqId = 'label_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                     found = True
                     self.__authSeqId = 'auth_seq_id'
@@ -1466,7 +1519,7 @@ class IsdMRParserListener(ParseTreeListener):
                 self.__preferAuthSeq = False
 
         if found:
-            return
+            return atomId
 
         if self.__ccU.updateChemCompDict(compId):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
@@ -1477,8 +1530,7 @@ class IsdMRParserListener(ParseTreeListener):
                     auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or (ps is not None and min(auth_seq_id_list) == seqId):
                     if atomId in aminoProtonCode and atomId != 'H1':
-                        self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
-                        return
+                        return self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     if atomId in aminoProtonCode or atomId == 'P' or atomId.startswith('HOP'):
                         checked = True
                 if not checked:
@@ -1493,10 +1545,11 @@ class IsdMRParserListener(ParseTreeListener):
                                     self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                     f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                     "Please re-upload the model file.")
-                                    return
+                                    return atomId
                     if chainId in LARGE_ASYM_ID:
                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                         f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+        return atomId
 
     def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
         """ Return realistic bond constraint taking into account the current coordinates.

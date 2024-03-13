@@ -9797,7 +9797,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if _seqId in ps['auth_seq_id']:
                     return _seqId, ps['comp_id'][ps['seq_id'].index(seqId + offset)
                                                  if seqId + offset in ps['seq_id']
-                                                 else ps['auth_seq_id'].index(seqId)]
+                                                 else ps['auth_seq_id'].index(seqId + offset)]
         else:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:

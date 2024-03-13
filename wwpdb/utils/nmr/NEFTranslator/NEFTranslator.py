@@ -4856,7 +4856,7 @@ class NEFTranslator:
             return copy.deepcopy(self.__cachedDictForStarAtom[key])
 
         comp_id = comp_id.upper()
-        is_std_comp_id = comp_id in monDict3
+        is_std_comp_id = comp_id in monDict3 or self.__csStat.peptideLike(comp_id)  # ACA:H21, H22, H2 (5nwu)
 
         atom_list = []
         ambiguity_code = 1

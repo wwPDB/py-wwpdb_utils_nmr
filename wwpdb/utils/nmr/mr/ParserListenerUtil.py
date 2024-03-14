@@ -3073,6 +3073,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             if cR.hasItem(lpCategory, 'pdb_ins_code'):
                 keyItems.append({'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '.'})
 
+            if cR.hasItem(lpCategory, 'auth_mon_id'):
+                keyItems.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
+
             try:
                 polySeq = cR.getPolymerSequence(lpCategory, keyItems,
                                                 withStructConf=False,
@@ -3248,6 +3251,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
             if cR.hasItem(lpCategory, 'pdb_ins_code'):
                 keyItems.append({'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '.'})
+
+            if cR.hasItem(lpCategory, 'auth_mon_id'):
+                keyItems.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
 
             try:
                 nonPoly = cR.getPolymerSequence(lpCategory, keyItems,
@@ -3427,7 +3433,10 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         if cR.hasCategory(lpCategory):
 
             if cR.hasItem(lpCategory, 'pdb_ins_code'):
-                _keyItems['branched'].append({'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '.'})
+                keyItems.append({'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '.'})
+
+            if cR.hasItem(lpCategory, 'auth_mon_id'):
+                keyItems.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
 
             try:
                 branched = cR.getPolymerSequence(lpCategory, keyItems,

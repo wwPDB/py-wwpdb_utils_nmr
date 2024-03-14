@@ -233,6 +233,20 @@ class GromacsPTParserListener(ParseTreeListener):
                     and (is_prev_3_prime_comp
                          or self.__csStat.peptideLike(translateToStdResName(prev_comp_id, ccU=self.__ccU)))
 
+            def is_ligand(prev_comp_id, comp_id):
+                if prev_comp_id is None or not self.__hasNonPolyModel:
+                    return False
+                if not prev_comp_id.endswith('3'):
+                    return False
+                for np in self.__nonPolyModel:
+                    if comp_id in np['comp_id']:
+                        return True
+                for np in self.__nonPolyModel:
+                    if 'alt_comp_id' in np:
+                        if comp_id in np['alt_comp_id']:
+                            return True
+                return False
+
             def is_metal_ion(comp_id, atom_name):
                 if comp_id is None:
                     return False
@@ -266,6 +280,7 @@ class GromacsPTParserListener(ParseTreeListener):
 
                 if (terminus[atomNum - 1] and ancAtomName.endswith('T'))\
                    or is_segment(prevCompId, prevAtomName, compId, atomName)\
+                   or is_ligand(prevCompId, compId)\
                    or is_metal_ion(compId, atomName)\
                    or is_metal_ion(prevCompId, prevAtomName)\
                    or is_metal_elem(prevAtomName, prevSeqId, _seqId):
@@ -356,6 +371,16 @@ class GromacsPTParserListener(ParseTreeListener):
                                                                                 for atomNum in self.__atomNumberDict.values()
                                                                                 if atomNum['chain_id'] == chainId
                                                                                 and atomNum['seq_id'] == seqId])
+
+                            if self.__hasNonPolyModel and compId != authCompId:
+                                for np in self.__nonPolyModel:
+                                    if authCompId in np['comp_id']:
+                                        compId = authCompId
+                                        break
+                                    if 'alt_comp_id' in np and authCompId in np['alt_comp_id']:
+                                        compId = np['comp_id'][0]
+                                        break
+
                             if compId is not None:
                                 compIdList.append(compId + '?')  # decide when coordinate is available
                                 chemCompAtomIds = None

@@ -9692,13 +9692,18 @@ class XplorMRParserListener(ParseTreeListener):
                                                         for np in self.__nonPoly:
                                                             if np['auth_chain_id'] == chainId and _factor['atom_id'][0].upper() == np['comp_id'][0]:
                                                                 ligands += len(np['seq_id'])
+                                                        if ligands == 0:
+                                                            for np in self.__nonPoly:
+                                                                if 'alt_comp_id' in np and np['auth_chain_id'] == chainId and _factor['atom_id'][0].upper() == np['alt_comp_id'][0]:
+                                                                    ligands += len(np['seq_id'])
                                                         if ligands == 1:
                                                             checked = False
                                                             if 'np_seq_id_remap' not in self.reasonsForReParsing:
                                                                 self.reasonsForReParsing['np_seq_id_remap'] = {}
                                                             srcSeqId = _factor['seq_id'][0]
                                                             for np in self.__nonPoly:
-                                                                if _factor['atom_id'][0].upper() == np['comp_id'][0]:
+                                                                if _factor['atom_id'][0].upper() == np['comp_id'][0]\
+                                                                   or ('alt_comp_id' in np and _factor['atom_id'][0].upper() == np['alt_comp_id'][0]):
                                                                     dstSeqId = np['auth_seq_id'][0]
                                                                     if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
                                                                         self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
@@ -9811,7 +9816,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if _seqId in ps['auth_seq_id']:
                     return _seqId, ps['comp_id'][ps['seq_id'].index(seqId + offset)
                                                  if seqId + offset in ps['seq_id']
-                                                 else ps['auth_seq_id'].index(seqId + offset)]
+                                                 else ps['auth_seq_id'].index(_seqId)]
         else:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:

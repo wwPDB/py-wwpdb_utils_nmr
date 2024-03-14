@@ -2081,7 +2081,10 @@ class CyanaMRParserListener(ParseTreeListener):
             if compId is None:
                 return ps['auth_chain_id'], seqId, ps['auth_seq_id'][ps['auth_seq_id'].index(seqId)]
             for idx in [_idx for _idx, _seqId in enumerate(ps['auth_seq_id']) if _seqId == seqId]:
-                if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
+                if 'alt_comp_id' in ps:
+                    if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], ps['alt_comp_id'][idx]):
+                        return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
+                elif compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
                     return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
         # if seqId in ps['seq_id']:
         #     idx = ps['seq_id'].index(seqId)
@@ -3296,7 +3299,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, cifCompId, asis=self.__preferAuthSeq)
 
-            if self.__cur_subtype == 'dist' and _compId is not None and (_compId.startswith('MTS') or _compId.startswith('ORI')) and cifCompId != _compId:
+            if self.__cur_subtype == 'dist' and _compId is not None\
+               and (_compId.startswith('MTS') or _compId.startswith('ORI')) and cifCompId != _compId:
                 if _atomId[0] in ('O', 'N'):
 
                     if cifCompId == 'CYS':

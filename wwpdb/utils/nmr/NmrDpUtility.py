@@ -24803,7 +24803,7 @@ class NmrDpUtility:
                                     _row[19] = atom_id = auth_atom_name_to_id[comp_id][_atom_id]
                                 if _seq_key in coord_atom_site:
                                     _coord_atom_site = coord_atom_site[_seq_key]
-                                    # DAOTHER-8751, 8817 (D_130004306)
+                                    # DAOTHER-8751, 8817 (D_1300043061)
                                     if 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
                                        and _atom_id in _coord_atom_site['alt_atom_id']:
                                         comp_id = _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
@@ -28702,7 +28702,7 @@ class NmrDpUtility:
         if self.__mr_sf_dict_holder is None:
             self.__mr_sf_dict_holder = {}
 
-        if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode):  # DAOTHER-8751, 8817 (D_130004306)
+        if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode):  # DAOTHER-8751, 8817 (D_1300043061)
 
             if len(self.__star_data) == 0:
                 return True
@@ -33880,7 +33880,7 @@ class NmrDpUtility:
 
         # self.__pk_sf_holder = []
 
-        if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode):  # DAOTHER-8751, 8817 (D_130004306)
+        if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode):  # DAOTHER-8751, 8817 (D_1300043061)
 
             if len(self.__star_data) == 0:
                 return True
@@ -34424,7 +34424,7 @@ class NmrDpUtility:
                             _seq_key = (seq_key[0], seq_key[1])
                             if _seq_key in coord_atom_site:
                                 _coord_atom_site = coord_atom_site[_seq_key]
-                                # DAOTHER-8751, 8817 (D_130004306)
+                                # DAOTHER-8751, 8817 (D_1300043061)
                                 if 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
                                    and _atom_id in _coord_atom_site['alt_atom_id']:
                                     comp_id = _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
@@ -34496,7 +34496,7 @@ class NmrDpUtility:
                                     _seq_key = (seq_key[0], seq_key[1])
                                     if _seq_key in coord_atom_site:
                                         _coord_atom_site = coord_atom_site[_seq_key]
-                                        # DAOTHER-8751, 8817 (D_130004306)
+                                        # DAOTHER-8751, 8817 (D_1300043061)
                                         if 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
                                            and _atom_id in _coord_atom_site['alt_atom_id']:
                                             comp_id = _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
@@ -34587,7 +34587,7 @@ class NmrDpUtility:
                         _seq_key = (seq_key[0], seq_key[1])
                         if _seq_key in coord_atom_site:
                             _coord_atom_site = coord_atom_site[_seq_key]
-                            # DAOTHER-8751, 8817 (D_130004306)
+                            # DAOTHER-8751, 8817 (D_1300043061)
                             if 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
                                and _atom_id in _coord_atom_site['alt_atom_id']:
                                 comp_id = _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
@@ -34651,7 +34651,7 @@ class NmrDpUtility:
                                 _seq_key = (seq_key[0], seq_key[1])
                                 if _seq_key in coord_atom_site:
                                     _coord_atom_site = coord_atom_site[_seq_key]
-                                    # DAOTHER-8751, 8817 (D_130004306)
+                                    # DAOTHER-8751, 8817 (D_1300043061)
                                     if 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
                                        and _atom_id in _coord_atom_site['alt_atom_id']:
                                         comp_id = _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]

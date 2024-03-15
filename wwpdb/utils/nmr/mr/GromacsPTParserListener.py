@@ -373,13 +373,14 @@ class GromacsPTParserListener(ParseTreeListener):
                                                                                 and atomNum['seq_id'] == seqId])
 
                             if self.__hasNonPolyModel and compId != authCompId:
+                                ligands = 0
                                 for np in self.__nonPolyModel:
-                                    if authCompId in np['comp_id']:
-                                        compId = authCompId
-                                        break
-                                    if 'alt_comp_id' in np and authCompId in np['alt_comp_id']:
-                                        compId = np['comp_id'][0]
-                                        break
+                                    if 'alt_comp_id' in np:
+                                        ligands += np['alt_comp_id'].count(authCompId)
+                                if ligands == 1:
+                                    for np in self.__nonPolyModel:
+                                        if authCompId in np['alt_comp_id']:
+                                            compId = np['comp_id'][0]
 
                             if compId is not None:
                                 compIdList.append(compId + '?')  # decide when coordinate is available
@@ -418,6 +419,17 @@ class GromacsPTParserListener(ParseTreeListener):
                                                                             for atomNum in self.__atomNumberDict.values()
                                                                             if atomNum['chain_id'] == chainId
                                                                             and atomNum['seq_id'] == seqId])
+
+                        if self.__hasNonPolyModel and compId != authCompId:
+                            ligands = 0
+                            for np in self.__nonPolyModel:
+                                if 'alt_comp_id' in np:
+                                    ligands += np['alt_comp_id'].count(authCompId)
+                            if ligands == 1:
+                                for np in self.__nonPolyModel:
+                                    if authCompId in np['alt_comp_id']:
+                                        compId = np['comp_id'][0]
+
                         if compId is not None:
                             compIdList.append(compId + '?')  # decide when coordinate is available
                             chemCompAtomIds = None

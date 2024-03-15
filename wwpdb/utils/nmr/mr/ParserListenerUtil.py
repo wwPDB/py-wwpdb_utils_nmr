@@ -7604,52 +7604,59 @@ def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
     atomSelection = []
     warningMessage = None
 
+    origAtomId = atomId
+
     for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
         seqKey, coordAtomSite = getCoordAtomSiteOf(caC, authChainId, chainId, cifSeqId, cifCompId)
 
-        if preferAuthAtomName:
-            if compId in caC['auth_atom_name_to_id'] and authAtomId in caC['auth_atom_name_to_id'][compId] and cifCompId == coordAtomSite['comp_id']:
-                _atomId = caC['auth_atom_name_to_id'][compId][authAtomId]
-                if coordAtomSite is not None and _atomId in coordAtomSite['atom_id']:
-                    atomId = _atomId
-            if coordAtomSite is not None:
-                if authAtomId in coordAtomSite['alt_atom_id']:
-                    if coordAtomSite['comp_id'] != cifCompId:
-                        continue
+        if preferAuthAtomName and coordAtomSite is not None:
+            if compId in caC['auth_atom_name_to_id'] and cifCompId == coordAtomSite['comp_id']:
+                if authAtomId in caC['auth_atom_name_to_id'][compId]:
+                    _atomId = caC['auth_atom_name_to_id'][compId][authAtomId]
+                    if _atomId in coordAtomSite['atom_id']:
+                        atomId = _atomId
+                elif 'split_comp_id' not in coordAtomSite and origAtomId in caC['auth_atom_name_to_id'][compId]:
+                    _atomId = caC['auth_atom_name_to_id'][compId][origAtomId]
+                    if _atomId in coordAtomSite['atom_id']:
+                        atomId = _atomId
+            if 'alt_atom_id' in coordAtomSite and authAtomId in coordAtomSite['alt_atom_id']:
+                if coordAtomSite['comp_id'] != cifCompId:
+                    continue
+                atomId = coordAtomSite['atom_id'][coordAtomSite['alt_atom_id'].index(authAtomId)]
+            # DAOTHER-8751, 8817 (D_1300043061)
+            elif 'alt_comp_id' in coordAtomSite and 'alt_atom_id' in coordAtomSite\
+                 and authAtomId in coordAtomSite['alt_atom_id']:
+                _compId = coordAtomSite['alt_comp_id'][coordAtomSite['alt_atom_id'].index(authAtomId)]
+                if _compId != cifCompId:
+                    continue
+                if _compId in caC['auth_atom_name_to_id_ext'] and authAtomId in caC['auth_atom_name_to_id_ext'][_compId]\
+                   and len(set(coordAtomSite['alt_comp_id'])) > 1:
+                    atomId = caC['auth_atom_name_to_id_ext'][_compId][authAtomId]
+                else:
                     atomId = coordAtomSite['atom_id'][coordAtomSite['alt_atom_id'].index(authAtomId)]
-                # DAOTHER-8751, 8817 (D_1300043061)
-                elif 'alt_comp_id' in coordAtomSite and 'alt_atom_id' in coordAtomSite\
-                   and authAtomId in coordAtomSite['alt_atom_id']:
-                    _compId = coordAtomSite['alt_comp_id'][coordAtomSite['alt_atom_id'].index(authAtomId)]
-                    if _compId != cifCompId:
+            elif 'split_comp_id' in coordAtomSite:
+                found = False
+                for _compId in coordAtomSite['split_comp_id']:
+                    _seqKey, _coordAtomSite = getCoordAtomSiteOf(caC, authChainId, chainId, cifSeqId, _compId)
+                    if _coordAtomSite is None:
                         continue
-                    if _compId in caC['auth_atom_name_to_id_ext'] and authAtomId in caC['auth_atom_name_to_id_ext'][_compId]\
-                       and len(set(coordAtomSite['alt_comp_id'])) > 1:
-                        atomId = caC['auth_atom_name_to_id_ext'][_compId][authAtomId]
-                    else:
-                        atomId = coordAtomSite['atom_id'][coordAtomSite['alt_atom_id'].index(authAtomId)]
-                elif 'split_comp_id' in coordAtomSite:
-                    found = False
-                    for _compId in coordAtomSite['split_comp_id']:
-                        _seqKey, _coordAtomSite = getCoordAtomSiteOf(caC, authChainId, chainId, cifSeqId, _compId)
-                        if _coordAtomSite is not None:
-                            if 'alt_comp_id' in _coordAtomSite and 'alt_atom_id' in _coordAtomSite\
-                               and authAtomId in _coordAtomSite['alt_atom_id']:
-                                _compId = _coordAtomSite['alt_comp_id'][_coordAtomSite['alt_atom_id'].index(authAtomId)]
-                                if _compId == cifCompId:
-                                    if authAtomId in _coordAtomSite['alt_atom_id']:
-                                        atomId = _coordAtomSite['atom_id'][_coordAtomSite['alt_atom_id'].index(authAtomId)]
-                                    compId = _compId
-                                    coordAtomSite = _coordAtomSite
-                                    found = True
-                                    break
+                    if 'alt_comp_id' in _coordAtomSite and 'alt_atom_id' in _coordAtomSite\
+                       and authAtomId in _coordAtomSite['alt_atom_id']:
+                        _compId = _coordAtomSite['alt_comp_id'][_coordAtomSite['alt_atom_id'].index(authAtomId)]
+                        if _compId == cifCompId:
                             if authAtomId in _coordAtomSite['alt_atom_id']:
-                                compId = _compId
-                                coordAtomSite = _coordAtomSite
-                                found = True
-                                break
-                    if not found or (found and compId != cifCompId):
-                        continue
+                                atomId = _coordAtomSite['atom_id'][_coordAtomSite['alt_atom_id'].index(authAtomId)]
+                            compId = _compId
+                            coordAtomSite = _coordAtomSite
+                            found = True
+                            break
+                    if authAtomId in _coordAtomSite['alt_atom_id']:
+                        compId = _compId
+                        coordAtomSite = _coordAtomSite
+                        found = True
+                        break
+                if not found or (found and compId != cifCompId):
+                    continue
 
         if (coordAtomSite is not None and atomId in coordAtomSite['atom_id']) or preferAuthAtomName:
             _atomId = [atomId]

@@ -24798,15 +24798,24 @@ class NmrDpUtility:
                             _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
 
                             if prefer_auth_atom_name:
+                                if has_orig_seq:
+                                    orig_atom_id = _row[23]
                                 _atom_id = atom_id
-                                if comp_id in auth_atom_name_to_id and _atom_id in auth_atom_name_to_id[comp_id]:
-                                    _row[19] = atom_id = auth_atom_name_to_id[comp_id][_atom_id]
                                 if _seq_key in coord_atom_site:
                                     _coord_atom_site = coord_atom_site[_seq_key]
+                                    if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']:
+                                        if _atom_id in auth_atom_name_to_id[comp_id]:
+                                            if auth_atom_name_to_id[comp_id][_atom_id] in _coord_atom_site['atom_id']:
+                                                _row[19] = atom_id = auth_atom_name_to_id[comp_id][_atom_id]
+                                            elif 'split_comp_id' not in _coord_atom_site and has_orig_seq and orig_atom_id in auth_atom_name_to_id[comp_id]:
+                                                _row[19] = atom_id = auth_atom_name_to_id[comp_id][orig_atom_id]
+                                    if 'alt_atom_id' in _coord_atom_site and _atom_id in _coord_atom_site['alt_atom_id']\
+                                       and comp_id == _coord_atom_site['comp_id']:
+                                        _row[19] = atom_id = _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
                                     # DAOTHER-8751, 8817 (D_1300043061)
-                                    if 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
-                                       and _atom_id in _coord_atom_site['alt_atom_id']:
-                                        comp_id = _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                    elif 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
+                                         and _atom_id in _coord_atom_site['alt_atom_id']\
+                                         and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                         _row[18] = comp_id
                                         # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
                                         cca_row = next((cca_row for cca_row in self.__cca_dat
@@ -24816,14 +24825,16 @@ class NmrDpUtility:
                                         if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
                                            and len(set(_coord_atom_site['alt_comp_id'])) > 1:
                                             _row[19] = atom_id = auth_atom_name_to_id_ext[comp_id][_atom_id]
+                                        else:
+                                            _row[19] = atom_id = _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
                                     elif 'split_comp_id' in _coord_atom_site:
                                         for _comp_id in _coord_atom_site['split_comp_id']:
                                             if _comp_id == comp_id:
                                                 continue
                                             __seq_key = (_seq_key[0], _seq_key[1], _comp_id)
-                                            if __seq_key not in coord_atom_site:
-                                                continue
                                             __coord_atom_site = coord_atom_site[__seq_key]
+                                            if __coord_atom_site is None:
+                                                continue
                                             if 'alt_comp_id' in __coord_atom_site and 'alt_atom_id' in __coord_atom_site\
                                                and _atom_id in __coord_atom_site['alt_atom_id']:
                                                 comp_id = _comp_id
@@ -34447,15 +34458,20 @@ class NmrDpUtility:
 
                         if prefer_auth_atom_name:
                             _atom_id = atom_id
-                            if comp_id in auth_atom_name_to_id and _atom_id in auth_atom_name_to_id[comp_id]:
-                                atom_id = auth_atom_name_to_id[comp_id][_atom_id]
                             _seq_key = (seq_key[0], seq_key[1])
                             if _seq_key in coord_atom_site:
                                 _coord_atom_site = coord_atom_site[_seq_key]
+                                if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']\
+                                   and _atom_id in auth_atom_name_to_id[comp_id]:
+                                    if auth_atom_name_to_id[comp_id][_atom_id] in _coord_atom_site['atom_id']:
+                                        atom_id = auth_atom_name_to_id[comp_id][_atom_id]
+                                if 'alt_atom_id' in _coord_atom_site and _atom_id in _coord_atom_site['alt_atom_id']\
+                                   and comp_id == _coord_atom_site['comp_id']:
+                                    atom_id = _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
                                 # DAOTHER-8751, 8817 (D_1300043061)
-                                if 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
-                                   and _atom_id in _coord_atom_site['alt_atom_id']:
-                                    comp_id = _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                elif 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
+                                     and _atom_id in _coord_atom_site['alt_atom_id']\
+                                     and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                     # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
                                     cca_row = next((cca_row for cca_row in self.__cca_dat
                                                     if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
@@ -34464,6 +34480,8 @@ class NmrDpUtility:
                                     if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
                                        and len(set(_coord_atom_site['alt_comp_id'])) > 1:
                                         atom_id = auth_atom_name_to_id_ext[comp_id][_atom_id]
+                                    else:
+                                        atom_id = _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
                                 elif 'split_comp_id' in _coord_atom_site:
                                     for _comp_id in _coord_atom_site['split_comp_id']:
                                         if _comp_id == comp_id:
@@ -34545,15 +34563,20 @@ class NmrDpUtility:
 
                                 if prefer_auth_atom_name:
                                     _atom_id = atom_id
-                                    if comp_id in auth_atom_name_to_id and _atom_id in auth_atom_name_to_id[comp_id]:
-                                        atom_id = auth_atom_name_to_id[comp_id][_atom_id]
                                     _seq_key = (seq_key[0], seq_key[1])
                                     if _seq_key in coord_atom_site:
                                         _coord_atom_site = coord_atom_site[_seq_key]
+                                        if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']\
+                                           and _atom_id in auth_atom_name_to_id[comp_id]:
+                                            if auth_atom_name_to_id[comp_id][_atom_id] in _coord_atom_site['atom_id']:
+                                                atom_id = auth_atom_name_to_id[comp_id][_atom_id]
+                                        if 'alt_atom_id' in _coord_atom_site and _atom_id in _coord_atom_site['alt_atom_id']\
+                                           and comp_id == _coord_atom_site['comp_id']:
+                                            atom_id = _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
                                         # DAOTHER-8751, 8817 (D_1300043061)
-                                        if 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
-                                           and _atom_id in _coord_atom_site['alt_atom_id']:
-                                            comp_id = _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                        elif 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
+                                             and _atom_id in _coord_atom_site['alt_atom_id']\
+                                             and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                             # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
                                             cca_row = next((cca_row for cca_row in self.__cca_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
@@ -34562,6 +34585,8 @@ class NmrDpUtility:
                                             if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
                                                and len(set(_coord_atom_site['alt_comp_id'])) > 1:
                                                 atom_id = auth_atom_name_to_id_ext[comp_id][_atom_id]
+                                            else:
+                                                atom_id = _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
                                         elif 'split_comp_id' in _coord_atom_site:
                                             for _comp_id in _coord_atom_site['split_comp_id']:
                                                 if _comp_id == comp_id:
@@ -34662,15 +34687,20 @@ class NmrDpUtility:
 
                     if prefer_auth_atom_name:
                         _atom_id = atom_id
-                        if comp_id in auth_atom_name_to_id and _atom_id in auth_atom_name_to_id[comp_id]:
-                            atom_id = auth_atom_name_to_id[comp_id][_atom_id]
                         _seq_key = (seq_key[0], seq_key[1])
                         if _seq_key in coord_atom_site:
                             _coord_atom_site = coord_atom_site[_seq_key]
+                            if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']\
+                               and _atom_id in auth_atom_name_to_id[comp_id]:
+                                if auth_atom_name_to_id[comp_id][_atom_id] in _coord_atom_site['atom_id']:
+                                    atom_id = auth_atom_name_to_id[comp_id][_atom_id]
+                            if 'alt_atom_id' in _coord_atom_site and _atom_id in _coord_atom_site['alt_atom_id']\
+                               and comp_id == _coord_atom_site['comp_id']:
+                                atom_id = _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
                             # DAOTHER-8751, 8817 (D_1300043061)
-                            if 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
-                               and _atom_id in _coord_atom_site['alt_atom_id']:
-                                comp_id = _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
+                            elif 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
+                                 and _atom_id in _coord_atom_site['alt_atom_id']\
+                                 and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                 # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
                                 cca_row = next((cca_row for cca_row in self.__cca_dat
                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
@@ -34679,6 +34709,8 @@ class NmrDpUtility:
                                 if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
                                    and len(set(_coord_atom_site['alt_comp_id'])) > 1:
                                     atom_id = auth_atom_name_to_id_ext[comp_id][_atom_id]
+                                else:
+                                    atom_id = _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
                             elif 'split_comp_id' in _coord_atom_site:
                                 for _comp_id in _coord_atom_site['split_comp_id']:
                                     if _comp_id == comp_id:
@@ -34752,15 +34784,20 @@ class NmrDpUtility:
 
                             if prefer_auth_atom_name:
                                 _atom_id = atom_id
-                                if comp_id in auth_atom_name_to_id and _atom_id in auth_atom_name_to_id[comp_id]:
-                                    atom_id = auth_atom_name_to_id[comp_id][_atom_id]
                                 _seq_key = (seq_key[0], seq_key[1])
                                 if _seq_key in coord_atom_site:
                                     _coord_atom_site = coord_atom_site[_seq_key]
+                                    if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']\
+                                       and _atom_id in auth_atom_name_to_id[comp_id]:
+                                        if auth_atom_name_to_id[comp_id][_atom_id] in _coord_atom_site['atom_id']:
+                                            atom_id = auth_atom_name_to_id[comp_id][_atom_id]
+                                    if 'alt_atom_id' in _coord_atom_site and _atom_id in _coord_atom_site['alt_atom_id']\
+                                       and comp_id == _coord_atom_site['comp_id']:
+                                        atom_id = _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
                                     # DAOTHER-8751, 8817 (D_1300043061)
-                                    if 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
-                                       and _atom_id in _coord_atom_site['alt_atom_id']:
-                                        comp_id = _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                    elif 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
+                                         and _atom_id in _coord_atom_site['alt_atom_id']\
+                                         and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
                                         # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
                                         cca_row = next((cca_row for cca_row in self.__cca_dat
                                                         if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
@@ -34769,6 +34806,8 @@ class NmrDpUtility:
                                         if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
                                            and len(set(_coord_atom_site['alt_comp_id'])) > 1:
                                             atom_id = auth_atom_name_to_id_ext[comp_id][_atom_id]
+                                        else:
+                                            atom_id = _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
                                     elif 'split_comp_id' in _coord_atom_site:
                                         for _comp_id in _coord_atom_site['split_comp_id']:
                                             if _comp_id == comp_id:

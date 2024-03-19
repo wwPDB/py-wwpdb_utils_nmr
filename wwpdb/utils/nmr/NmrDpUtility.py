@@ -26526,10 +26526,13 @@ class NmrDpUtility:
 
                                 for row in lp_data:
                                     for d in range(num_dim):
-                                        chain_id = row[chain_id_names[d]]
-                                        seq_id = row[seq_id_names[d]]
-                                        comp_id = row[comp_id_names[d]]
-                                        atom_id = row[atom_id_names[d]]
+                                        chain_id = row.get(chain_id_names[d])
+                                        seq_id = row.get(seq_id_names[d])
+                                        comp_id = row.get(comp_id_names[d])
+                                        atom_id = row.get(atom_id_names[d])
+
+                                        if chain_id in emptyValue or seq_id in emptyValue or comp_id in emptyValue or atom_id in emptyValue:
+                                            continue
 
                                         _atom_ids = self.__getAtomIdList(comp_id, atom_id)
 
@@ -26996,20 +26999,12 @@ class NmrDpUtility:
                                             and comp_id_names[d] in row and atom_id_names[d] in row):
                                     continue
 
-                                chain_id = row[chain_id_names[d]]
-                                if chain_id in emptyValue:
-                                    continue
+                                chain_id = row.get(chain_id_names[d])
+                                seq_id = row.get(seq_id_names[d])
+                                comp_id = row.get(comp_id_names[d])
+                                atom_id = row.get(atom_id_names[d])
 
-                                seq_id = row[seq_id_names[d]]
-                                if seq_id in emptyValue:
-                                    continue
-
-                                comp_id = row[comp_id_names[d]]
-                                if comp_id in emptyValue:
-                                    continue
-
-                                atom_id = row[atom_id_names[d]]
-                                if atom_id in emptyValue:
+                                if chain_id in emptyValue or seq_id in emptyValue or comp_id in emptyValue or atom_id in emptyValue:
                                     continue
 
                                 position = row[position_names[d]]

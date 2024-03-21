@@ -792,10 +792,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.__cur_dist_type = 'cco'
                     break
                 if ('upl' in text or 'upper' in text) and not ('lol' in text or 'lower' in text):
-                    self.__cur_dist_type = 'upl'
+                    if self.__file_ext != 'lol':
+                        self.__cur_dist_type = 'upl'
                     break
                 if ('lol' in text or 'lower' in text) and not ('upl' in text or 'upper' in text):
-                    self.__cur_dist_type = 'lol'
+                    if self.__file_ext != 'upl':
+                        self.__cur_dist_type = 'lol'
                     break
             else:
                 break

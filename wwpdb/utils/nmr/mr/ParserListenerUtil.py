@@ -1917,6 +1917,20 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return "H5'"
                 if atomId == "H5''2" and "H5''" in _refAtomIdList:
                     return "H5''"
+            elif atomId == 'H2"':  # 6dm7
+                if refAtomIdList is not None:
+                    if "H2''" in refAtomIdList:
+                        return "H2''"
+                    if "H2'2" in refAtomIdList:
+                        return "H2'2"
+            elif atomId == 'H5"':
+                if refAtomIdList is not None:
+                    if "H5''" in refAtomIdList:
+                        return "H5''"
+                    if "H5'2" in refAtomIdList:
+                        return "H5'2"
+                    if "H5'A" in refAtomIdList:
+                        return "H5'A"
 
             if atomId in _refAtomIdList:
                 return atomId
@@ -7667,7 +7681,7 @@ def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
                 if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                     _atomId = [_atomId[int(atomId[-1]) - 1]]
 
-            if details is not None:
+            if details is not None or atomId.endswith('"'):
                 ccU = nefT.get_ccu()
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=ccU)
                 if _atomId_ != atomId:

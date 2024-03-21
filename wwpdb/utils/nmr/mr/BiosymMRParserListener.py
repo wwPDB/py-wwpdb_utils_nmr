@@ -1475,7 +1475,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                     _atomId = [_atomId[int(atomId[-1]) - 1]]
 
-            if details is not None:
+            if details is not None or atomId.endswith('"'):
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)
                 if _atomId_ != atomId:
                     if atomId.startswith('HT') and len(_atomId_) == 2:

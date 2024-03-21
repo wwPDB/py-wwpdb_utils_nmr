@@ -9522,7 +9522,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if details is not None and len(atomName) > 1:
                             _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomName[:-1], leave_unmatched=True)
 
-                        if details is not None:
+                        if details is not None or atomName.endswith('"'):
                             _atomId_ = translateToStdAtomName(atomName, cifCompId, ccU=self.__ccU)
                             if _atomId_ != atomName:
                                 if atomName.startswith('HT') and len(_atomId_) == 2:
@@ -9686,7 +9686,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                     _atomId = [_atomId[int(atomId[-1]) - 1]]
 
-            if details is not None:
+            if details is not None or atomId.endswith('"'):
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)
                 if _atomId_ != atomId:
                     if atomId.startswith('HT') and len(_atomId_) == 2:

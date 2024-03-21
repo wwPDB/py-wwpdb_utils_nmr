@@ -5981,7 +5981,7 @@ class CnsMRParserListener(ParseTreeListener):
             if atomId[-1].isdigit() and int(atomId[-1]) <= len(atomIds):
                 atomIds = [atomIds[int(atomId[-1]) - 1]]
 
-        if details is not None:
+        if details is not None or atomId.endswith('"'):
             _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))
             if _atomId != atomId:
                 if atomId.startswith('HT') and len(_atomId) == 2:

@@ -4918,6 +4918,13 @@ class CnsMRParserListener(ParseTreeListener):
                 if coordAtomSite is not None:
                     for realAtomId in coordAtomSite['atom_id']:
                         _atomIdSelect.add(realAtomId)
+                else:
+                    for np in self.__nonPolySeq:
+                        if nonPolyCompId['seq_id'] == np['auth_seq_id'][0]:
+                            _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], np['seq_id'][0], cifCheck=cifCheck)
+                            if coordAtomSite is not None:
+                                for realAtomId in coordAtomSite['atom_id']:
+                                    _atomIdSelect.add(realAtomId)
 
             _factor['atom_id'] = list(_atomIdSelect)
 

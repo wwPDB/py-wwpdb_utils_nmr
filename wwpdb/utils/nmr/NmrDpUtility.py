@@ -186,6 +186,7 @@
 # 24-Jan-2024  M. Yokochi - reconstruct polymer/non-polymer sequence based on pdb_mon_id, instead of auth_mon_id (D_1300043061)
 # 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
 # 07-Mar-2024  M. Yokochi - extract pdbx_poly_seq_scheme.auth_mon_id as alt_cmop_id to prevent sequence mismatch due to 5-letter CCD ID (DAOTHER-9158 vs D_1300043061)
+# 22-Mar-2024  M. Yokochi - test tautomeric states of histidine-like residue across models (DAOTHER-9252)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -261,6 +262,7 @@ try:
                                                        isIdenticalRestraint,
                                                        isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
+                                                       isLikeHis,
                                                        startsWithPdbRecord,
                                                        getRestraintName,
                                                        contentSubtypeOf,
@@ -363,6 +365,7 @@ except ImportError:
                                            isIdenticalRestraint,
                                            isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
+                                           isLikeHis,
                                            startsWithPdbRecord,
                                            getRestraintName,
                                            contentSubtypeOf,
@@ -1282,7 +1285,8 @@ class NmrDpUtility:
                            self.__extractCoordAtomSite,
                            self.__extractCoordCommonPolymerSequence,
                            self.__extractCoordNonStandardResidue,
-                           self.__appendCoordPolymerSequenceAlignment
+                           self.__appendCoordPolymerSequenceAlignment,
+                           self.__testTautomerOfHistidinePerModel
                            ]
 
         # cross validation tasks
@@ -6154,7 +6158,7 @@ class NmrDpUtility:
         self.__auth_to_label_seq = None
         # conversion dictionary from label_seq_id to auth_seq_id of the coordinates
         self.__label_to_auth_seq = None
-        # tautomer state in model
+        # tautomeric state in model
         self.__coord_tautomer = {}
         # rotamer state in model
         self.__coord_rotamer = {}
@@ -46826,6 +46830,123 @@ class NmrDpUtility:
             return len(prot_cis) > 0
 
         return False
+
+    def __testTautomerOfHistidinePerModel(self):
+        """ Check tautomeric state of a given histidine per model. (DAOTHER-9252)
+        """
+
+        src_id = self.report.getInputSourceIdOfCoord()
+
+        if src_id < 0:
+            return False
+
+        cif_input_source = self.report.input_sources[src_id]
+        cif_input_source_dic = cif_input_source.get()
+
+        file_name = cif_input_source_dic['file_name']
+        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+
+        model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
+
+        for ps in cif_polymer_sequence:
+            chain_id = ps['chain_id']
+
+            auth_chain_id = chain_id
+            if 'auth_chain_id' in ps:
+                auth_chain_id = ps['auth_chain_id']
+
+            for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
+
+                if not isLikeHis(comp_id, self.__ccU):
+                    continue
+
+                if comp_id == 'HIS':
+                    hd1_name = 'HD1'
+                    he2_name = 'HE2'
+                else:
+                    _hd1_name = self.__ccU.getBondedAtoms(comp_id, 'ND1', onlyProton=True)
+                    _he2_name = self.__ccU.getBondedAtoms(comp_id, 'NE2', onlyProton=True)
+                    if len(_hd1_name) != 1 or len(_he2_name) != 1:
+                        continue
+                    hd1_name = _hd1_name[0]
+                    he2_name = _he2_name[0]
+
+                try:
+                    auth_seq_id = ps['auth_seq_id'][ps['seq_id'].index(seq_id)]
+                except (KeyError, IndexError, ValueError):
+                    auth_seq_id = seq_id
+
+                try:
+
+                    protons = self.__cR.getDictListWithFilter('atom_site',
+                                                              [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                               {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
+                                                               ],
+                                                              [{'name': 'label_asym_id', 'type': 'str', 'value': chain_id},
+                                                               {'name': 'label_seq_id', 'type': 'int', 'value': seq_id},
+                                                               {'name': 'label_comp_id', 'type': 'str', 'value': comp_id},
+                                                               {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
+                                                               {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
+                                                               ])
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testTautomerOfHistidinePerModel() ++ Error  - " + str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__testTautomerOfHistidinePerModel() ++ Error  - {str(e)}\n")
+
+                    return False
+
+                if len(protons) > 0:
+
+                    tautomer_per_model = {}
+
+                    for model_id in self.__eff_model_ids:
+
+                        _protons = [h for h in protons if h['model_id'] == model_id]
+
+                        has_hd1 = False
+                        has_he2 = False
+
+                        for h in _protons:
+                            if h['atom_id'] == hd1_name:
+                                has_hd1 = True
+                            elif h['atom_id'] == he2_name:
+                                has_he2 = True
+
+                        if has_hd1 and has_he2:
+                            tautomer_per_model[model_id] = 'biprotonated'
+
+                        elif has_hd1:
+                            tautomer_per_model[model_id] = 'pi-tautomer'
+
+                        elif has_he2:
+                            tautomer_per_model[model_id] = 'tau-tautomer'
+
+                        else:
+                            tautomer_per_model[model_id] = 'unknown'
+
+                    rep_tautomer = tautomer_per_model[self.__representative_model_id]
+
+                    if any(tautomer != rep_tautomer for tautomer in tautomer_per_model.values()):
+                        cif_seq_code = f"{chain_id}:{seq_id}:{comp_id}"
+                        if chain_id != auth_chain_id or seq_id != auth_seq_id:
+                            cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{comp_id} in author sequence scheme)"
+
+                        err = f'{cif_seq_code} have been instantiated with different tautomeric states across models, {tautomer_per_model}. '\
+                            'Please re-upload the model file.'
+
+                        self.report.error.appendDescription('coordinate_issue',
+                                                            {'file_name': file_name, 'category': 'atom_site',
+                                                             'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__testTautomerOfHistidinePerModel() ++ Error  - {err}\n")
+
+        return True
 
     def __getTautomerOfHistidine(self, nmr_chain_id, nmr_seq_id):
         """ Return tautomeric state of a given histidine.

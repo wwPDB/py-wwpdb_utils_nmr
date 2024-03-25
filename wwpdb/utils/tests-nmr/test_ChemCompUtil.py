@@ -51,6 +51,8 @@ class TestChemCompUtil(unittest.TestCase):
         self.assertEqual(self.chem_comp_util.getAtomsBasedOnGreekLetterSystem('GHP', 'CE'), {'C4'})
         self.assertEqual(self.chem_comp_util.getAtomsBasedOnGreekLetterSystem('GHP', 'HZ'), {'HO4'})
         self.assertEqual(self.chem_comp_util.getAtomsBasedOnGreekLetterSystem('GHP', 'OZ'), {'O4'})
+        self.assertEqual(self.chem_comp_util.getAtomsBasedOnGreekLetterSystem('ACA', 'CA'), {'C2'})
+        self.assertEqual(self.chem_comp_util.getAtomsBasedOnGreekLetterSystem('ACA', 'HA'), {'H21', 'H22'})
 
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ import sys
 import re
 import copy
 import itertools
+import collections
 import numpy
 
 from antlr4 import ParseTreeListener
@@ -602,6 +603,8 @@ class RosettaMRParserListener(ParseTreeListener):
                             if chainAssignFailed is not None:
                                 seqIdRemapFailed = []
 
+                                uniq_ps = not any('identical_chain_id' in ps for ps in self.__polySeq)
+
                                 for ca in chainAssignFailed:
                                     if ca['conflict'] > 0:
                                         continue
@@ -622,7 +625,27 @@ class RosettaMRParserListener(ParseTreeListener):
                                                                                    in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
                                                                                    if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                             except StopIteration:
-                                                pass
+                                                if uniq_ps:
+                                                    seq_id_mapping[test_seq_id] = ref_seq_id
+
+                                    offset = None
+                                    offsets = [v - k for k, v in seq_id_mapping.items()]
+                                    if len(offsets) > 0 and ('gap_in_auth_seq' not in poly_seq_model or not poly_seq_model['gap_in_auth_seq']):
+                                        offsets = collections.Counter(offsets).most_common()
+                                        if len(offsets) > 1:
+                                            offset = offsets[0][0]
+                                            for k, v in seq_id_mapping.items():
+                                                if v - k != offset:
+                                                    seq_id_mapping[k] = k + offset
+
+                                    if uniq_ps and offset is not None and len(seq_id_mapping) > 0\
+                                       and ('gap_in_auth_seq' not in poly_seq_model or not poly_seq_model['gap_in_auth_seq']):
+                                        for ref_seq_id, mid_code, test_seq_id, ref_code, test_code in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id'],
+                                                                                                          sa['ref_code'], sa['test_code']):
+                                            if mid_code == '|' and test_seq_id not in seq_id_mapping:
+                                                seq_id_mapping[test_seq_id] = test_seq_id + offset
+                                            elif ref_code != '.' and test_code == '.':
+                                                seq_id_mapping[test_seq_id] = test_seq_id + offset
 
                                     if any(k for k, v in seq_id_mapping.items() if k != v)\
                                        and not any(k for k, v in seq_id_mapping.items()
@@ -1149,14 +1172,14 @@ class RosettaMRParserListener(ParseTreeListener):
                     if fixedChainId != chainId:
                         continue
                 else:
-                    if 'seq_id_remap' in self.__reasons:
-                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
-                        if fixedSeqId is not None:
-                            seqId = _seqId = fixedSeqId
-                    if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                    if 'chain_seq_id_remap' in self.__reasons:
                         fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId)
                         if fixedChainId is not None and fixedChainId != chainId:
                             continue
+                        if fixedSeqId is not None:
+                            seqId = _seqId = fixedSeqId
+                    if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
+                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
             if fixedChainId is not None and chainId != fixedChainId:
@@ -1221,14 +1244,14 @@ class RosettaMRParserListener(ParseTreeListener):
                         if fixedChainId != chainId:
                             continue
                     else:
-                        if 'seq_id_remap' in self.__reasons:
-                            _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
-                            if fixedSeqId is not None:
-                                seqId = _seqId = fixedSeqId
-                        if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                        if 'chain_seq_id_remap' in self.__reasons:
                             fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId)
                             if fixedChainId is not None and fixedChainId != chainId:
                                 continue
+                            if fixedSeqId is not None:
+                                seqId = _seqId = fixedSeqId
+                        if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
+                            _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
                             if fixedSeqId is not None:
                                 seqId = _seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
@@ -1388,7 +1411,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                     _atomId = [_atomId[int(atomId[-1]) - 1]]
 
-            if details is not None:
+            if details is not None or atomId.endswith('"'):
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)
                 if _atomId_ != atomId:
                     if atomId.startswith('HT') and len(_atomId_) == 2:
@@ -1463,7 +1486,9 @@ class RosettaMRParserListener(ParseTreeListener):
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
                                       'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
 
-                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+                _cifAtomId = self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+                if cifAtomId != _cifAtomId:
+                    atomSelection[-1]['atom_id'] = _cifAtomId
 
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
@@ -1483,12 +1508,16 @@ class RosettaMRParserListener(ParseTreeListener):
 
     def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite):
         if not self.__hasCoord:
-            return
+            return atomId
 
         found = False
 
         if coordAtomSite is not None:
             if atomId in coordAtomSite['atom_id']:
+                found = True
+            elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in coordAtomSite['atom_id']
+                                                      or ('H' + atomId[-1]) in coordAtomSite['atom_id']):
+                atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + atomId[-1]
                 found = True
             elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
                 found = True
@@ -1498,6 +1527,14 @@ class RosettaMRParserListener(ParseTreeListener):
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
                 if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
+                        found = True
+                        self.__preferAuthSeq = False
+                        self.__authSeqId = 'label_seq_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
                         found = True
                         self.__preferAuthSeq = False
                         self.__authSeqId = 'label_seq_id'
@@ -1516,6 +1553,13 @@ class RosettaMRParserListener(ParseTreeListener):
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
                 if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
+                        found = True
+                        self.__authSeqId = 'auth_seq_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
                         found = True
                         self.__authSeqId = 'auth_seq_id'
                         seqKey = _seqKey
@@ -1540,6 +1584,14 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__authSeqId = 'label_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
+                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    found = True
+                    self.__preferAuthSeq = False
+                    self.__authSeqId = 'label_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                     found = True
                     self.__preferAuthSeq = False
@@ -1557,6 +1609,13 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
+                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    found = True
+                    self.__authSeqId = 'auth_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                     found = True
                     self.__authSeqId = 'auth_seq_id'
@@ -1569,7 +1628,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.__preferAuthSeq = False
 
         if found:
-            return
+            return atomId
 
         if self.__preferAuthSeq:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
@@ -1580,6 +1639,14 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__authSeqId = 'label_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
+                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    found = True
+                    self.__preferAuthSeq = False
+                    self.__authSeqId = 'label_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                     found = True
                     self.__preferAuthSeq = False
@@ -1597,6 +1664,13 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
+                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    found = True
+                    self.__authSeqId = 'auth_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                     found = True
                     self.__authSeqId = 'auth_seq_id'
@@ -1609,7 +1683,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.__preferAuthSeq = False
 
         if found:
-            return
+            return atomId
 
         if self.__ccU.updateChemCompDict(compId):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
@@ -1620,8 +1694,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or (ps is not None and min(auth_seq_id_list) == seqId):
                     if atomId in aminoProtonCode and atomId != 'H1':
-                        self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
-                        return
+                        return self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     if atomId in aminoProtonCode or atomId == 'P' or atomId.startswith('HOP'):
                         checked = True
                 if not checked:
@@ -1636,10 +1709,11 @@ class RosettaMRParserListener(ParseTreeListener):
                                     self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                     f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                     "Please re-upload the model file.")
-                                    return
+                                    return atomId
                     if chainId in LARGE_ASYM_ID:
                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                         f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+        return atomId
 
     def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
         """ Return realistic bond constraint taking into account the current coordinates.

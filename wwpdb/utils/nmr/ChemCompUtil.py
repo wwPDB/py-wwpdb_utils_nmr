@@ -289,23 +289,31 @@ class ChemCompUtil:
         if elem not in ('H', 'C', 'N', 'O', 'S', 'P'):
             return {}
 
-        greek_letter = atomId[1]
+        greekLetter = atomId[1]
 
-        if greek_letter not in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
+        if greekLetter not in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
             return {}
 
         if compId != self.lastCompId and not self.updateChemCompDict(compId):
             return {}
 
-        if not any(a[self.ccaAtomId] == 'CA' for a in self.lastAtomList):
-            return {}
-
-        touched = ['N', 'C']
+        touched = ['N', 'C', 'O', 'OXT']
         parents = ['CA']
+
+        if not any(a[self.ccaAtomId] == 'CA' for a in self.lastAtomList):
+            if not any(a[self.ccaAtomId] == 'C' for a in self.lastAtomList):  # ACA:QA -> H21, H22 (5nwu)
+                return {}
+            bonded = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != 'C' else b[self.ccbAtomId2])
+                      for b in self.lastBonds if 'C' in (b[self.ccbAtomId1], b[self.ccbAtomId2])]
+            if len(bonded) == 0:
+                return {}
+            parents = [b for b in bonded if b not in touched]
+            if len(parents) == 0:
+                return {}
 
         for letter in ['A', 'B', 'G', 'D', 'E', 'Z', 'H']:
 
-            if greek_letter == letter:
+            if greekLetter == letter:
                 atoms = parents
                 for p in parents:
                     atoms.extend(self.getBondedAtoms(compId, p, onlyProton=True))

@@ -522,6 +522,8 @@ class BiosymMRParserListener(ParseTreeListener):
                             if chainAssignFailed is not None:
                                 seqIdRemapFailed = []
 
+                                uniq_ps = not any('identical_chain_id' in ps for ps in self.__polySeq)
+
                                 for ca in chainAssignFailed:
                                     if ca['conflict'] > 0:
                                         continue
@@ -542,7 +544,27 @@ class BiosymMRParserListener(ParseTreeListener):
                                                                                    in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
                                                                                    if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                             except StopIteration:
-                                                pass
+                                                if uniq_ps:
+                                                    seq_id_mapping[test_seq_id] = ref_seq_id
+
+                                    offset = None
+                                    offsets = [v - k for k, v in seq_id_mapping.items()]
+                                    if len(offsets) > 0 and ('gap_in_auth_seq' not in poly_seq_model or not poly_seq_model['gap_in_auth_seq']):
+                                        offsets = collections.Counter(offsets).most_common()
+                                        if len(offsets) > 1:
+                                            offset = offsets[0][0]
+                                            for k, v in seq_id_mapping.items():
+                                                if v - k != offset:
+                                                    seq_id_mapping[k] = k + offset
+
+                                    if uniq_ps and offset is not None and len(seq_id_mapping) > 0\
+                                       and ('gap_in_auth_seq' not in poly_seq_model or not poly_seq_model['gap_in_auth_seq']):
+                                        for ref_seq_id, mid_code, test_seq_id, ref_code, test_code in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id'],
+                                                                                                          sa['ref_code'], sa['test_code']):
+                                            if mid_code == '|' and test_seq_id not in seq_id_mapping:
+                                                seq_id_mapping[test_seq_id] = test_seq_id + offset
+                                            elif ref_code != '.' and test_code == '.':
+                                                seq_id_mapping[test_seq_id] = test_seq_id + offset
 
                                     if any(k for k, v in seq_id_mapping.items() if k != v)\
                                        and not any(k for k, v in seq_id_mapping.items()
@@ -989,7 +1011,10 @@ class BiosymMRParserListener(ParseTreeListener):
                     return _chainId, _seqId, ps['comp_id'][ps['seq_id'].index(seqId)]
         if seqId in ps['auth_seq_id']:
             for idx in [_idx for _idx, _seqId in enumerate(ps['auth_seq_id']) if _seqId == seqId]:
-                if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
+                if 'alt_comp_id' in ps:
+                    if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], ps['alt_comp_id'][idx], 'MTS', 'ORI'):
+                        return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
+                elif compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
                     return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
         # if seqId in ps['seq_id']:
         #     idx = ps['seq_id'].index(seqId)
@@ -1051,11 +1076,11 @@ class BiosymMRParserListener(ParseTreeListener):
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
                 refChainId = fixedChainId
             elif 'seq_id_remap' in self.__reasons or 'chain_seq_id_remap' in self.__reasons:
-                if 'seq_id_remap' in self.__reasons:
-                    _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
-                if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                if 'chain_seq_id_remap' in self.__reasons:
                     fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], str(refChainId), seqId,
                                                                      compId if compId in monDict3 else None)
+                if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
+                    _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
@@ -1402,7 +1427,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, cifCompId, asis=self.__preferAuthSeq)
 
-            if self.__cur_subtype == 'dist' and _compId is not None and (_compId.startswith('MTS') or _compId.startswith('ORI')) and cifCompId != _compId:
+            if self.__cur_subtype == 'dist' and _compId is not None\
+               and (_compId.startswith('MTS') or _compId.startswith('ORI')) and cifCompId != _compId:
                 if _atomId[0] in ('O', 'N'):
 
                     if cifCompId == 'CYS':
@@ -1449,7 +1475,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                     _atomId = [_atomId[int(atomId[-1]) - 1]]
 
-            if details is not None:
+            if details is not None or atomId.endswith('"'):
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)
                 if _atomId_ != atomId:
                     if atomId.startswith('HT') and len(_atomId_) == 2:
@@ -1551,19 +1577,25 @@ class BiosymMRParserListener(ParseTreeListener):
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
                                       'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
 
-                self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+                _cifAtomId = self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+                if cifAtomId != _cifAtomId:
+                    atomSelection[-1]['atom_id'] = _cifAtomId
 
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
 
     def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite):
         if not self.__hasCoord:
-            return
+            return atomId
 
         found = False
 
         if coordAtomSite is not None:
             if atomId in coordAtomSite['atom_id']:
+                found = True
+            elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in coordAtomSite['atom_id']
+                                                      or ('H' + atomId[-1]) in coordAtomSite['atom_id']):
+                atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in coordAtomSite['atom_id'] else 'H' + atomId[-1]
                 found = True
             elif 'alt_atom_id' in coordAtomSite and atomId in coordAtomSite['alt_atom_id']:
                 found = True
@@ -1573,6 +1605,14 @@ class BiosymMRParserListener(ParseTreeListener):
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, asis=False)
                 if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
+                        found = True
+                        self.__preferAuthSeq = False
+                        self.__authSeqId = 'label_seq_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
                         found = True
                         self.__preferAuthSeq = False
                         self.__authSeqId = 'label_seq_id'
@@ -1591,6 +1631,13 @@ class BiosymMRParserListener(ParseTreeListener):
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId)
                 if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
+                        found = True
+                        self.__authSeqId = 'auth_seq_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
                         found = True
                         self.__authSeqId = 'auth_seq_id'
                         seqKey = _seqKey
@@ -1615,6 +1662,14 @@ class BiosymMRParserListener(ParseTreeListener):
                     self.__authSeqId = 'label_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
+                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    found = True
+                    self.__preferAuthSeq = False
+                    self.__authSeqId = 'label_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                     found = True
                     self.__preferAuthSeq = False
@@ -1632,6 +1687,13 @@ class BiosymMRParserListener(ParseTreeListener):
                     self.__authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
+                elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                          or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                    atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                    found = True
+                    self.__authSeqId = 'auth_seq_id'
+                    seqKey = _seqKey
+                    self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                     found = True
                     self.__authSeqId = 'auth_seq_id'
@@ -1644,7 +1706,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 self.__preferAuthSeq = False
 
         if found:
-            return
+            return atomId
 
         if chainId in self.__chainNumberDict.values():
 
@@ -1652,6 +1714,14 @@ class BiosymMRParserListener(ParseTreeListener):
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, asis=False)
                 if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
                     if atomId in _coordAtomSite['atom_id']:
+                        found = True
+                        self.__preferAuthSeq = False
+                        self.__authSeqId = 'label_seq_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
+                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
                         found = True
                         self.__preferAuthSeq = False
                         self.__authSeqId = 'label_seq_id'
@@ -1673,6 +1743,13 @@ class BiosymMRParserListener(ParseTreeListener):
                         self.__authSeqId = 'auth_seq_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
+                    elif atomId in ('HN1', 'HN2', 'HN3') and ((atomId[-1] + 'HN') in _coordAtomSite['atom_id']
+                                                              or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
+                        atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
+                        found = True
+                        self.__authSeqId = 'auth_seq_id'
+                        seqKey = _seqKey
+                        self.__setLocalSeqScheme()
                     elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
                         found = True
                         self.__authSeqId = 'auth_seq_id'
@@ -1685,7 +1762,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     self.__preferAuthSeq = False
 
             if found:
-                return
+                return atomId
 
         if self.__ccU.updateChemCompDict(compId):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
@@ -1696,8 +1773,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or (ps is not None and min(auth_seq_id_list) == seqId):
                     if atomId in aminoProtonCode and atomId != 'H1':
-                        self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
-                        return
+                        return self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     if atomId in aminoProtonCode or atomId == 'P' or atomId.startswith('HOP'):
                         checked = True
                 if not checked:
@@ -1712,10 +1788,11 @@ class BiosymMRParserListener(ParseTreeListener):
                                     self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                     f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                     "Please re-upload the model file.")
-                                    return
+                                    return atomId
                     if chainId in LARGE_ASYM_ID:
                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                         f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+        return atomId
 
     def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
         """ Return realistic bond constraint taking into account the current coordinates.

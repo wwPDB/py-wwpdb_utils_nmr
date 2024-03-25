@@ -5,6 +5,8 @@ import re
 import pynmrstar
 from packaging import version as package_version
 
+from mmcif.io.IoAdapterPy import IoAdapterPy
+
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
     auth_view = 'mock-data-combine-at-upload'
@@ -112,7 +114,7 @@ def is_combined_nmr_data(file_path):
 
     mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
     proc_mr_file_name_pattern = re.compile(r'^D_[0-9]{6,10}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
-                                           r'_P\d+\.(amber|aria|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|sybyl|xplor-nih)\.V\d+$')
+                                           r'_P\d+\.(amber|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|sybyl|xplor-nih)\.V\d+$')
     pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}$')
     dep_id_pattern = re.compile(r'^D_[0-9]{6,10}$')
     bmrb_id_pattern = re.compile(r'^(bmr)?[0-9]{5,}$')
@@ -231,6 +233,8 @@ class gen_auth_view_onedep:
         self.__star_file_path = os.path.join(self.__entry_dir, 'bmr' + self.__bmrb_id + '_3.str')
 
         self.__annotated_star_file_path = os.path.join(self.__entry_dir, 'bmr' + self.__bmrb_id + '_annotated.str')
+
+        self.__annotated_cif_file_path = os.path.join(self.__entry_dir, 'bmr' + self.__bmrb_id + '_annotated.cif')
 
         self.__annotated_log_file_path = os.path.join(self.__entry_dir, 'bmr' + self.__bmrb_id + '-annotated-log.json')
 
@@ -826,9 +830,24 @@ class gen_auth_view_onedep:
         utility.addOutput(name='return_letter_path', value=self.__return_letter_path, type='file')
         utility.setDestination(self.__annotated_star_file_path)
         utility.setLog(self.__annotated_log_file_path)
-        utility.setVerbose(True)
+        utility.setVerbose(False)
 
         utility.op('nmr-cs-mr-merge')
+
+        try:
+
+            myIo = IoAdapterPy(False, sys.stderr)
+            containerList = myIo.readFile(self.__annotated_star_file_path)
+
+            if containerList is not None and len(containerList) > 1:
+
+                for c in containerList:
+                    c.setType('data')
+
+                myIo.writeFile(self.__annotated_cif_file_path, containerList=containerList[1:])
+
+        except Exception:
+            pass
 
         with open(self.__annotated_log_file_path) as file:
             report = json.loads(file.read())

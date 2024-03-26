@@ -17649,9 +17649,9 @@ class NmrDpUtility:
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched <= conflict or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
+                            if length == unmapped + conflict or _matched <= conflict + 1 or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
 
-                                if self.__tolerant_seq_align and _matched <= conflict and len(polymer_sequence) > 1:
+                                if self.__tolerant_seq_align and _matched <= conflict + 1 and len(polymer_sequence) > 1:
 
                                     __length = length
                                     __matched = _matched
@@ -17685,7 +17685,7 @@ class NmrDpUtility:
 
                                         _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                        if length == unmapped + conflict or _matched <= conflict:
+                                        if length == unmapped + conflict or _matched <= conflict + 1:
                                             continue
 
                                         if _matched - conflict < __matched - __conflict or unmapped + conflict > __unmapped + __conflict:
@@ -17971,9 +17971,9 @@ class NmrDpUtility:
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched <= conflict or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
+                            if length == unmapped + conflict or _matched <= conflict + 1 or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
 
-                                if self.__tolerant_seq_align and _matched <= conflict and len(polymer_sequence) > 1:
+                                if self.__tolerant_seq_align and _matched <= conflict + 1 and len(polymer_sequence) > 1:
 
                                     __length = length
                                     __matched = _matched
@@ -18007,7 +18007,7 @@ class NmrDpUtility:
 
                                         _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                        if length == unmapped + conflict or _matched <= conflict:
+                                        if length == unmapped + conflict or _matched <= conflict + 1:
                                             continue
 
                                         if _matched - conflict < __matched - __conflict or (unmapped + conflict > __unmapped + __conflict and __matched > 0):
@@ -18226,7 +18226,7 @@ class NmrDpUtility:
 
                                             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                            if length == unmapped + conflict or _matched <= conflict:
+                                            if length == unmapped + conflict or _matched <= conflict + 1:
                                                 break
 
                                             cross = True
@@ -18263,7 +18263,7 @@ class NmrDpUtility:
 
                                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                    if length == unmapped + conflict or _matched <= conflict:
+                                    if length == unmapped + conflict or _matched <= conflict + 1:
                                         continue
 
                                     _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
@@ -41861,7 +41861,7 @@ class NmrDpUtility:
 
                             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                            if length == unmapped + conflict or _matched <= conflict:
+                            if length == unmapped + conflict or _matched <= conflict + 1:
                                 continue
 
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
@@ -41930,7 +41930,7 @@ class NmrDpUtility:
 
                 _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                if length == unmapped + conflict or _matched <= conflict:
+                if length == unmapped + conflict or _matched <= conflict + 1:
                     continue
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
@@ -42066,7 +42066,7 @@ class NmrDpUtility:
 
                 _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                if length == unmapped + conflict or _matched <= conflict:
+                if length == unmapped + conflict or _matched <= conflict + 1:
                     continue
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)

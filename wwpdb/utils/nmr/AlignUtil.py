@@ -950,7 +950,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
 
             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-            if length == unmapped + conflict or _matched <= conflict:
+            if length == unmapped + conflict or _matched <= conflict + 1:
                 inhibitList.append({chain_id, chain_id2})
                 continue
 
@@ -1297,7 +1297,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
 
             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-            if length == unmapped + conflict or _matched <= conflict - conflictTh:
+            if length == unmapped + conflict or _matched <= conflict + 1 - conflictTh:
                 continue
 
             if not_decided_s2_comp_id:  # AMBER/GROMACS topology

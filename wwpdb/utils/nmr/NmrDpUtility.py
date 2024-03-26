@@ -11292,6 +11292,10 @@ class NmrDpUtility:
             if file_type != 'nm-pea-any':
                 continue
 
+            content_subtype = input_source_dic['content_subtype']
+            if content_subtype is None:
+                input_source_dic['content_subtype'] = {'spectral_peak': 1}
+
             original_file_name = None
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:

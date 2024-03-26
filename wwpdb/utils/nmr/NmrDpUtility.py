@@ -24161,21 +24161,21 @@ class NmrDpUtility:
 
             has_auth_seq = valid_auth_seq = False
 
-            if self.__remediation_mode or self.__annotation_mode:
-                if set(auth_pdb_tags) & set(loop.tags) == set(auth_pdb_tags):
-                    auth_dat = get_lp_tag(loop, auth_pdb_tags)
-                    if len(auth_dat) > 0:
-                        has_auth_seq = valid_auth_seq = True
-                        if not self.__annotation_mode:
-                            for row in auth_dat:
-                                try:
-                                    seq_key = (row[0], int(row[1]), row[2])
-                                    if seq_key not in auth_to_star_seq:
-                                        valid_auth_seq = False
-                                        break
-                                except (ValueError, TypeError):
-                                    has_auth_seq = valid_auth_seq = False
+            # if self.__remediation_mode or self.__annotation_mode:
+            if set(auth_pdb_tags) & set(loop.tags) == set(auth_pdb_tags):
+                auth_dat = get_lp_tag(loop, auth_pdb_tags)
+                if len(auth_dat) > 0:
+                    has_auth_seq = valid_auth_seq = True
+                    if not self.__annotation_mode:
+                        for row in auth_dat:
+                            try:
+                                seq_key = (row[0], int(row[1]), row[2])
+                                if seq_key not in auth_to_star_seq:
+                                    valid_auth_seq = False
                                     break
+                            except (ValueError, TypeError):
+                                has_auth_seq = valid_auth_seq = False
+                                break
 
             has_orig_seq = False
             ch2_name_in_xplor = ch3_name_in_xplor = False
@@ -24768,6 +24768,11 @@ class NmrDpUtility:
                             _seq_key = (seq_key[0], seq_key[1])
                             try:
                                 entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                if atom_id != _row[19]:
+                                    if _seq_key in coord_atom_site:
+                                        _coord_atom_site = coord_atom_site[_seq_key]
+                                        if atom_id in _coord_atom_site['atom_id']:
+                                            _row[19] = atom_id
                             except KeyError:
                                 if self.__annotation_mode:
                                     auth_asym_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq

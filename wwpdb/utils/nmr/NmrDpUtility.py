@@ -46999,7 +46999,7 @@ class NmrDpUtility:
                         if chain_id != auth_chain_id or seq_id != auth_seq_id:
                             cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{comp_id} in author sequence scheme)"
 
-                        err = f'{cif_seq_code} have been instantiated with different tautomeric states across models, {tautomer_per_model}. '\
+                        err = f'{cif_seq_code} has been instantiated with different tautomeric states across models, {tautomer_per_model}. '\
                             'Please re-upload the model file.'
 
                         self.report.error.appendDescription('coordinate_issue',

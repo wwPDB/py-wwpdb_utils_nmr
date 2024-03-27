@@ -186,6 +186,7 @@
 # 24-Jan-2024  M. Yokochi - reconstruct polymer/non-polymer sequence based on pdb_mon_id, instead of auth_mon_id (D_1300043061)
 # 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
 # 07-Mar-2024  M. Yokochi - extract pdbx_poly_seq_scheme.auth_mon_id as alt_cmop_id to prevent sequence mismatch due to 5-letter CCD ID (DAOTHER-9158 vs D_1300043061)
+# 22-Mar-2024  M. Yokochi - test tautomeric states of histidine-like residue across models (DAOTHER-9252)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -261,6 +262,7 @@ try:
                                                        isIdenticalRestraint,
                                                        isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
+                                                       isLikeHis,
                                                        startsWithPdbRecord,
                                                        getRestraintName,
                                                        contentSubtypeOf,
@@ -363,6 +365,7 @@ except ImportError:
                                            isIdenticalRestraint,
                                            isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
+                                           isLikeHis,
                                            startsWithPdbRecord,
                                            getRestraintName,
                                            contentSubtypeOf,
@@ -1282,7 +1285,8 @@ class NmrDpUtility:
                            self.__extractCoordAtomSite,
                            self.__extractCoordCommonPolymerSequence,
                            self.__extractCoordNonStandardResidue,
-                           self.__appendCoordPolymerSequenceAlignment
+                           self.__appendCoordPolymerSequenceAlignment,
+                           self.__testTautomerOfHistidinePerModel
                            ]
 
         # cross validation tasks
@@ -6154,7 +6158,7 @@ class NmrDpUtility:
         self.__auth_to_label_seq = None
         # conversion dictionary from label_seq_id to auth_seq_id of the coordinates
         self.__label_to_auth_seq = None
-        # tautomer state in model
+        # tautomeric state in model
         self.__coord_tautomer = {}
         # rotamer state in model
         self.__coord_rotamer = {}
@@ -11291,6 +11295,10 @@ class NmrDpUtility:
 
             if file_type != 'nm-pea-any':
                 continue
+
+            content_subtype = input_source_dic['content_subtype']
+            if content_subtype is None:
+                input_source_dic['content_subtype'] = {'spectral_peak': 1}
 
             original_file_name = None
             if 'original_file_name' in input_source_dic:
@@ -17645,9 +17653,9 @@ class NmrDpUtility:
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched <= conflict or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
+                            if length == unmapped + conflict or _matched <= conflict + 1 or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
 
-                                if self.__tolerant_seq_align and _matched <= conflict and len(polymer_sequence) > 1:
+                                if self.__tolerant_seq_align and _matched <= conflict + 1 and len(polymer_sequence) > 1:
 
                                     __length = length
                                     __matched = _matched
@@ -17681,7 +17689,7 @@ class NmrDpUtility:
 
                                         _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                        if length == unmapped + conflict or _matched <= conflict:
+                                        if length == unmapped + conflict or _matched <= conflict + 1:
                                             continue
 
                                         if _matched - conflict < __matched - __conflict or unmapped + conflict > __unmapped + __conflict:
@@ -17967,9 +17975,9 @@ class NmrDpUtility:
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched <= conflict or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
+                            if length == unmapped + conflict or _matched <= conflict + 1 or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
 
-                                if self.__tolerant_seq_align and _matched <= conflict and len(polymer_sequence) > 1:
+                                if self.__tolerant_seq_align and _matched <= conflict + 1 and len(polymer_sequence) > 1:
 
                                     __length = length
                                     __matched = _matched
@@ -18003,7 +18011,7 @@ class NmrDpUtility:
 
                                         _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                        if length == unmapped + conflict or _matched <= conflict:
+                                        if length == unmapped + conflict or _matched <= conflict + 1:
                                             continue
 
                                         if _matched - conflict < __matched - __conflict or (unmapped + conflict > __unmapped + __conflict and __matched > 0):
@@ -18222,7 +18230,7 @@ class NmrDpUtility:
 
                                             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                            if length == unmapped + conflict or _matched <= conflict:
+                                            if length == unmapped + conflict or _matched <= conflict + 1:
                                                 break
 
                                             cross = True
@@ -18259,7 +18267,7 @@ class NmrDpUtility:
 
                                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                    if length == unmapped + conflict or _matched <= conflict:
+                                    if length == unmapped + conflict or _matched <= conflict + 1:
                                         continue
 
                                     _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
@@ -20709,6 +20717,14 @@ class NmrDpUtility:
                             atom_id_1_name = item_names['atom_id_1']
                             atom_id_2_name = item_names['atom_id_2']
 
+                            if file_type == 'nmr-star':
+                                auth_chain_id_1_name = 'Auth_asym_ID_1'
+                                auth_chain_id_2_name = 'Auth_asym_ID_2'
+                                auth_seq_id_1_name = 'Auth_seq_ID_1'
+                                auth_seq_id_2_name = 'Auth_seq_ID_2'
+                                auth_atom_id_1_name = 'Auth_atom_ID_1'
+                                auth_atom_id_2_name = 'Auth_atom_ID_2'
+
                             for row in aux_data:
                                 chain_id_1 = row[chain_id_1_name]
                                 seq_id_1 = row[seq_id_1_name]
@@ -20734,6 +20750,21 @@ class NmrDpUtility:
                                     disulf['comp_id_2'] = comp_id_2
                                     disulf['atom_id_2'] = atom_id_2
                                     disulf['distance_value'] = None
+                                    bond = self.__getNmrBondLength(chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2)
+                                    if bond is not None:
+                                        disulf['distance_value'] = next((b['distance'] for b in bond if b['model_id'] == self.__representative_model_id), None)
+                                    if disulf['distance_value'] is None and file_type == 'nmr-star':
+                                        cif_chain_id_1 = row[auth_chain_id_1_name]
+                                        cif_chain_id_2 = row[auth_chain_id_2_name]
+                                        cif_seq_id_1 = row[auth_seq_id_1_name]
+                                        cif_seq_id_2 = row[auth_seq_id_2_name]
+                                        cif_atom_id_1 = row[auth_atom_id_1_name]
+                                        cif_atom_id_2 = row[auth_atom_id_2_name]
+                                        bond = self.__getCoordBondLength(cif_chain_id_1, cif_seq_id_1, cif_atom_id_1,
+                                                                         cif_chain_id_2, cif_seq_id_2, cif_atom_id_2,
+                                                                         label_scheme=False)
+                                        if bond is not None:
+                                            disulf['distance_value'] = next((b['distance'] for b in bond if b['model_id'] == self.__representative_model_id), None)
                                     disulf['warning_description_1'] = None
                                     disulf['warning_description_2'] = None
 
@@ -20892,6 +20923,21 @@ class NmrDpUtility:
                                     other['comp_id_2'] = comp_id_2
                                     other['atom_id_2'] = atom_id_2
                                     other['distance_value'] = None
+                                    bond = self.__getNmrBondLength(chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2)
+                                    if bond is not None:
+                                        other['distance_value'] = next((b['distance'] for b in bond if b['model_id'] == self.__representative_model_id), None)
+                                    if other['distance_value'] is None and file_type == 'nmr-star':
+                                        cif_chain_id_1 = row[auth_chain_id_1_name]
+                                        cif_chain_id_2 = row[auth_chain_id_2_name]
+                                        cif_seq_id_1 = row[auth_seq_id_1_name]
+                                        cif_seq_id_2 = row[auth_seq_id_2_name]
+                                        cif_atom_id_1 = row[auth_atom_id_1_name]
+                                        cif_atom_id_2 = row[auth_atom_id_2_name]
+                                        bond = self.__getCoordBondLength(cif_chain_id_1, cif_seq_id_1, cif_atom_id_1,
+                                                                         cif_chain_id_2, cif_seq_id_2, cif_atom_id_2,
+                                                                         label_scheme=False)
+                                        if bond is not None:
+                                            other['distance_value'] = next((b['distance'] for b in bond if b['model_id'] == self.__representative_model_id), None)
                                     other['warning_description_1'] = None
                                     other['warning_description_2'] = None
 
@@ -24157,21 +24203,21 @@ class NmrDpUtility:
 
             has_auth_seq = valid_auth_seq = False
 
-            if self.__remediation_mode or self.__annotation_mode:
-                if set(auth_pdb_tags) & set(loop.tags) == set(auth_pdb_tags):
-                    auth_dat = get_lp_tag(loop, auth_pdb_tags)
-                    if len(auth_dat) > 0:
-                        has_auth_seq = valid_auth_seq = True
-                        if not self.__annotation_mode:
-                            for row in auth_dat:
-                                try:
-                                    seq_key = (row[0], int(row[1]), row[2])
-                                    if seq_key not in auth_to_star_seq:
-                                        valid_auth_seq = False
-                                        break
-                                except (ValueError, TypeError):
-                                    has_auth_seq = valid_auth_seq = False
+            # if self.__remediation_mode or self.__annotation_mode:
+            if set(auth_pdb_tags) & set(loop.tags) == set(auth_pdb_tags):
+                auth_dat = get_lp_tag(loop, auth_pdb_tags)
+                if len(auth_dat) > 0:
+                    has_auth_seq = valid_auth_seq = True
+                    if not self.__annotation_mode:
+                        for row in auth_dat:
+                            try:
+                                seq_key = (row[0], int(row[1]), row[2])
+                                if seq_key not in auth_to_star_seq:
+                                    valid_auth_seq = False
                                     break
+                            except (ValueError, TypeError):
+                                has_auth_seq = valid_auth_seq = False
+                                break
 
             has_orig_seq = False
             ch2_name_in_xplor = ch3_name_in_xplor = False
@@ -24764,6 +24810,11 @@ class NmrDpUtility:
                             _seq_key = (seq_key[0], seq_key[1])
                             try:
                                 entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                if atom_id != _row[19]:
+                                    if _seq_key in coord_atom_site:
+                                        _coord_atom_site = coord_atom_site[_seq_key]
+                                        if atom_id in _coord_atom_site['atom_id']:
+                                            _row[19] = atom_id
                             except KeyError:
                                 if self.__annotation_mode:
                                     auth_asym_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
@@ -25599,8 +25650,27 @@ class NmrDpUtility:
                                                         __seq_key[0], __seq_key[1], comp_id, atom_id
                                                     if has_ins_code and __seq_key in auth_to_ins_code:
                                                         _row[27] = auth_to_ins_code[__seq_key]
+                                                    break
 
-                                                    _seq_key = (__seq_key[0], __seq_key[1])
+                                                if self.__caC['non_polymer'] is not None:
+                                                    ligands = 0
+                                                    for np in self.__caC['non_polymer']:
+                                                        if comp_id == np['comp_id'][0]:
+                                                            ligands += len(np['seq_id'])
+                                                    if ligands == 1:  # DAOTHER-9063, 2nd case
+                                                        __seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                                          if v[0] == _entity_assembly_id and v[2] == _entity_id), None)
+                                                        if __seq_key is not None:
+                                                            seq_id = auth_to_star_seq[__seq_key][1]
+                                                            found = True
+                                                            comp_id = __seq_key[2]
+                                                            _row[1], _row[2], _row[3], _row[4] = _entity_assembly_id, _entity_id, seq_id, seq_id
+                                                            _seq_key = (__seq_key[0], __seq_key[1])
+                                                            _row[16], _row[17], _row[18], _row[19] =\
+                                                                __seq_key[0], __seq_key[1], comp_id, atom_id
+                                                            if has_ins_code and __seq_key in auth_to_ins_code:
+                                                                _row[27] = auth_to_ins_code[__seq_key]
+                                                            break
 
                                     else:
                                         __seq_key = next((k for k, v in auth_to_star_seq.items()
@@ -25620,8 +25690,6 @@ class NmrDpUtility:
                                                             __seq_key[0], __seq_key[1], comp_id, atom_id
                                                         if has_ins_code and __seq_key in auth_to_ins_code:
                                                             _row[27] = auth_to_ins_code[__seq_key]
-
-                                                        _seq_key = (__seq_key[0], __seq_key[1])
 
                                     if not found:
                                         _row[24] = 'UNMAPPED'
@@ -28187,7 +28255,7 @@ class NmrDpUtility:
 
         return None
 
-    def __getCoordBondLength(self, cif_chain_id_1, cif_seq_id_1, cif_atom_id_1, cif_chain_id_2, cif_seq_id_2, cif_atom_id_2):
+    def __getCoordBondLength(self, cif_chain_id_1, cif_seq_id_1, cif_atom_id_1, cif_chain_id_2, cif_seq_id_2, cif_atom_id_2, label_scheme=True):
         """ Return the bond length of given two CIF atoms.
             @return: the bond length
         """
@@ -28204,17 +28272,17 @@ class NmrDpUtility:
 
             atom_site_1 = self.__cR.getDictListWithFilter('atom_site',
                                                           data_items,
-                                                          [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_1},
-                                                           {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_1},
-                                                           {'name': 'label_atom_id', 'type': 'str', 'value': cif_atom_id_1},
+                                                          [{'name': 'label_asym_id' if label_scheme else 'auth_asym_id', 'type': 'str', 'value': cif_chain_id_1},
+                                                           {'name': 'label_seq_id' if label_scheme else 'auth_seq_id', 'type': 'int', 'value': cif_seq_id_1},
+                                                           {'name': 'label_atom_id' if label_scheme else 'auth_atom_id', 'type': 'str', 'value': cif_atom_id_1},
                                                            {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                            ])
 
             atom_site_2 = self.__cR.getDictListWithFilter('atom_site',
                                                           data_items,
-                                                          [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_2},
-                                                           {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_2},
-                                                           {'name': 'label_atom_id', 'type': 'str', 'value': cif_atom_id_2},
+                                                          [{'name': 'label_asym_id' if label_scheme else 'auth_asym_id', 'type': 'str', 'value': cif_chain_id_2},
+                                                           {'name': 'label_seq_id' if label_scheme else 'auth_seq_id', 'type': 'int', 'value': cif_seq_id_2},
+                                                           {'name': 'label_atom_id' if label_scheme else 'auth_atom_id', 'type': 'str', 'value': cif_atom_id_2},
                                                            {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                            ])
 
@@ -41857,7 +41925,7 @@ class NmrDpUtility:
 
                             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                            if length == unmapped + conflict or _matched <= conflict:
+                            if length == unmapped + conflict or _matched <= conflict + 1:
                                 continue
 
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
@@ -41926,7 +41994,7 @@ class NmrDpUtility:
 
                 _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                if length == unmapped + conflict or _matched <= conflict:
+                if length == unmapped + conflict or _matched <= conflict + 1:
                     continue
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
@@ -42062,7 +42130,7 @@ class NmrDpUtility:
 
                 _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                if length == unmapped + conflict or _matched <= conflict:
+                if length == unmapped + conflict or _matched <= conflict + 1:
                     continue
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
@@ -46826,6 +46894,123 @@ class NmrDpUtility:
             return len(prot_cis) > 0
 
         return False
+
+    def __testTautomerOfHistidinePerModel(self):
+        """ Check tautomeric state of a given histidine per model. (DAOTHER-9252)
+        """
+
+        src_id = self.report.getInputSourceIdOfCoord()
+
+        if src_id < 0:
+            return False
+
+        cif_input_source = self.report.input_sources[src_id]
+        cif_input_source_dic = cif_input_source.get()
+
+        file_name = cif_input_source_dic['file_name']
+        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+
+        model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
+
+        for ps in cif_polymer_sequence:
+            chain_id = ps['chain_id']
+
+            auth_chain_id = chain_id
+            if 'auth_chain_id' in ps:
+                auth_chain_id = ps['auth_chain_id']
+
+            for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
+
+                if not isLikeHis(comp_id, self.__ccU):
+                    continue
+
+                if comp_id == 'HIS':
+                    hd1_name = 'HD1'
+                    he2_name = 'HE2'
+                else:
+                    _hd1_name = self.__ccU.getBondedAtoms(comp_id, 'ND1', onlyProton=True)
+                    _he2_name = self.__ccU.getBondedAtoms(comp_id, 'NE2', onlyProton=True)
+                    if len(_hd1_name) != 1 or len(_he2_name) != 1:
+                        continue
+                    hd1_name = _hd1_name[0]
+                    he2_name = _he2_name[0]
+
+                try:
+                    auth_seq_id = ps['auth_seq_id'][ps['seq_id'].index(seq_id)]
+                except (KeyError, IndexError, ValueError):
+                    auth_seq_id = seq_id
+
+                try:
+
+                    protons = self.__cR.getDictListWithFilter('atom_site',
+                                                              [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                               {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
+                                                               ],
+                                                              [{'name': 'label_asym_id', 'type': 'str', 'value': chain_id},
+                                                               {'name': 'label_seq_id', 'type': 'int', 'value': seq_id},
+                                                               {'name': 'label_comp_id', 'type': 'str', 'value': comp_id},
+                                                               {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
+                                                               {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
+                                                               ])
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testTautomerOfHistidinePerModel() ++ Error  - " + str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__testTautomerOfHistidinePerModel() ++ Error  - {str(e)}\n")
+
+                    return False
+
+                if len(protons) > 0:
+
+                    tautomer_per_model = {}
+
+                    for model_id in self.__eff_model_ids:
+
+                        _protons = [h for h in protons if h['model_id'] == model_id]
+
+                        has_hd1 = False
+                        has_he2 = False
+
+                        for h in _protons:
+                            if h['atom_id'] == hd1_name:
+                                has_hd1 = True
+                            elif h['atom_id'] == he2_name:
+                                has_he2 = True
+
+                        if has_hd1 and has_he2:
+                            tautomer_per_model[model_id] = 'biprotonated'
+
+                        elif has_hd1:
+                            tautomer_per_model[model_id] = 'pi-tautomer'
+
+                        elif has_he2:
+                            tautomer_per_model[model_id] = 'tau-tautomer'
+
+                        else:
+                            tautomer_per_model[model_id] = 'unknown'
+
+                    rep_tautomer = tautomer_per_model[self.__representative_model_id]
+
+                    if any(tautomer != rep_tautomer for tautomer in tautomer_per_model.values()):
+                        cif_seq_code = f"{chain_id}:{seq_id}:{comp_id}"
+                        if chain_id != auth_chain_id or seq_id != auth_seq_id:
+                            cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{comp_id} in author sequence scheme)"
+
+                        err = f'{cif_seq_code} has been instantiated with different tautomeric states across models, {tautomer_per_model}. '\
+                            'Please re-upload the model file.'
+
+                        self.report.error.appendDescription('coordinate_issue',
+                                                            {'file_name': file_name, 'category': 'atom_site',
+                                                             'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__testTautomerOfHistidinePerModel() ++ Error  - {err}\n")
+
+        return True
 
     def __getTautomerOfHistidine(self, nmr_chain_id, nmr_seq_id):
         """ Return tautomeric state of a given histidine.

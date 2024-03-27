@@ -5226,6 +5226,26 @@ def isLikePheOrTyr(compId, ccU):
     return False
 
 
+def isLikeHis(compId, ccU):
+    """ Return whether a given comp_id is like histigine.
+    """
+
+    if compId == 'HIS':
+        return True
+
+    if compId in monDict3:
+        return False
+
+    if ccU.updateChemCompDict(compId):
+        _refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
+        if 'ND1' not in _refAtomIdList or 'NE2' not in _refAtomIdList:
+            return False
+        _compId = ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
+        return _compId == 'HIS'
+
+    return False
+
+
 def getRdcCode(atoms):
     """ Return type of residual dipolar coupling restraint.
     """

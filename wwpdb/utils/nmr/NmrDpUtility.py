@@ -25614,10 +25614,10 @@ class NmrDpUtility:
                                                         _row[27] = auth_to_ins_code[__seq_key]
                                                     break
 
-                                                elif self.__caC['non_polymer'] is not None:
+                                                if self.__caC['non_polymer'] is not None:
                                                     ligands = 0
                                                     for np in self.__caC['non_polymer']:
-                                                       if comp_id == np['comp_id'][0]:
+                                                        if comp_id == np['comp_id'][0]:
                                                             ligands += len(np['seq_id'])
                                                     if ligands == 1:  # DAOTHER-9063, 2nd case
                                                         __seq_key = next((k for k, v in auth_to_star_seq.items()

@@ -25608,8 +25608,27 @@ class NmrDpUtility:
                                                         __seq_key[0], __seq_key[1], comp_id, atom_id
                                                     if has_ins_code and __seq_key in auth_to_ins_code:
                                                         _row[27] = auth_to_ins_code[__seq_key]
+                                                    break
 
-                                                    _seq_key = (__seq_key[0], __seq_key[1])
+                                                elif self.__caC['non_polymer'] is not None:
+                                                    ligands = 0
+                                                    for np in self.__caC['non_polymer']:
+                                                       if comp_id == np['comp_id'][0]:
+                                                            ligands += len(np['seq_id'])
+                                                    if ligands == 1:  # DAOTHER-9063, 2nd case
+                                                        __seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                                          if v[0] == _entity_assembly_id and v[2] == _entity_id), None)
+                                                        if __seq_key is not None:
+                                                            seq_id = auth_to_star_seq[__seq_key][1]
+                                                            found = True
+                                                            comp_id = __seq_key[2]
+                                                            _row[1], _row[2], _row[3], _row[4] = _entity_assembly_id, _entity_id, seq_id, seq_id
+                                                            _seq_key = (__seq_key[0], __seq_key[1])
+                                                            _row[16], _row[17], _row[18], _row[19] =\
+                                                                __seq_key[0], __seq_key[1], comp_id, atom_id
+                                                            if has_ins_code and __seq_key in auth_to_ins_code:
+                                                                _row[27] = auth_to_ins_code[__seq_key]
+                                                            break
 
                                     else:
                                         __seq_key = next((k for k, v in auth_to_star_seq.items()
@@ -25629,8 +25648,6 @@ class NmrDpUtility:
                                                             __seq_key[0], __seq_key[1], comp_id, atom_id
                                                         if has_ins_code and __seq_key in auth_to_ins_code:
                                                             _row[27] = auth_to_ins_code[__seq_key]
-
-                                                        _seq_key = (__seq_key[0], __seq_key[1])
 
                                     if not found:
                                         _row[24] = 'UNMAPPED'

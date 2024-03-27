@@ -20717,6 +20717,14 @@ class NmrDpUtility:
                             atom_id_1_name = item_names['atom_id_1']
                             atom_id_2_name = item_names['atom_id_2']
 
+                            if file_type == 'nmr-star':
+                                auth_chain_id_1_name = 'Auth_asym_ID_1'
+                                auth_chain_id_2_name = 'Auth_asym_ID_2'
+                                auth_seq_id_1_name = 'Auth_seq_ID_1'
+                                auth_seq_id_2_name = 'Auth_seq_ID_2'
+                                auth_atom_id_1_name = 'Auth_atom_ID_1'
+                                auth_atom_id_2_name = 'Auth_atom_ID_2'
+
                             for row in aux_data:
                                 chain_id_1 = row[chain_id_1_name]
                                 seq_id_1 = row[seq_id_1_name]
@@ -20742,6 +20750,21 @@ class NmrDpUtility:
                                     disulf['comp_id_2'] = comp_id_2
                                     disulf['atom_id_2'] = atom_id_2
                                     disulf['distance_value'] = None
+                                    bond = self.__getNmrBondLength(chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2)
+                                    if bond is not None:
+                                        disulf['distance_value'] = next((b['distance'] for b in bond if b['model_id'] == self.__representative_model_id), None)
+                                    if disulf['distance_value'] is None and file_type == 'nmr-star':
+                                        cif_chain_id_1 = row[auth_chain_id_1_name]
+                                        cif_chain_id_2 = row[auth_chain_id_2_name]
+                                        cif_seq_id_1 = row[auth_seq_id_1_name]
+                                        cif_seq_id_2 = row[auth_seq_id_2_name]
+                                        cif_atom_id_1 = row[auth_atom_id_1_name]
+                                        cif_atom_id_2 = row[auth_atom_id_2_name]
+                                        bond = self.__getCoordBondLength(cif_chain_id_1, cif_seq_id_1, cif_atom_id_1,
+                                                                         cif_chain_id_2, cif_seq_id_2, cif_atom_id_2,
+                                                                         label_scheme=False)
+                                        if bond is not None:
+                                            disulf['distance_value'] = next((b['distance'] for b in bond if b['model_id'] == self.__representative_model_id), None)
                                     disulf['warning_description_1'] = None
                                     disulf['warning_description_2'] = None
 
@@ -20900,6 +20923,21 @@ class NmrDpUtility:
                                     other['comp_id_2'] = comp_id_2
                                     other['atom_id_2'] = atom_id_2
                                     other['distance_value'] = None
+                                    bond = self.__getNmrBondLength(chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2)
+                                    if bond is not None:
+                                        other['distance_value'] = next((b['distance'] for b in bond if b['model_id'] == self.__representative_model_id), None)
+                                    if other['distance_value'] is None and file_type == 'nmr-star':
+                                        cif_chain_id_1 = row[auth_chain_id_1_name]
+                                        cif_chain_id_2 = row[auth_chain_id_2_name]
+                                        cif_seq_id_1 = row[auth_seq_id_1_name]
+                                        cif_seq_id_2 = row[auth_seq_id_2_name]
+                                        cif_atom_id_1 = row[auth_atom_id_1_name]
+                                        cif_atom_id_2 = row[auth_atom_id_2_name]
+                                        bond = self.__getCoordBondLength(cif_chain_id_1, cif_seq_id_1, cif_atom_id_1,
+                                                                         cif_chain_id_2, cif_seq_id_2, cif_atom_id_2,
+                                                                         label_scheme=False)
+                                        if bond is not None:
+                                            other['distance_value'] = next((b['distance'] for b in bond if b['model_id'] == self.__representative_model_id), None)
                                     other['warning_description_1'] = None
                                     other['warning_description_2'] = None
 
@@ -28217,7 +28255,7 @@ class NmrDpUtility:
 
         return None
 
-    def __getCoordBondLength(self, cif_chain_id_1, cif_seq_id_1, cif_atom_id_1, cif_chain_id_2, cif_seq_id_2, cif_atom_id_2):
+    def __getCoordBondLength(self, cif_chain_id_1, cif_seq_id_1, cif_atom_id_1, cif_chain_id_2, cif_seq_id_2, cif_atom_id_2, label_scheme=True):
         """ Return the bond length of given two CIF atoms.
             @return: the bond length
         """
@@ -28234,17 +28272,17 @@ class NmrDpUtility:
 
             atom_site_1 = self.__cR.getDictListWithFilter('atom_site',
                                                           data_items,
-                                                          [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_1},
-                                                           {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_1},
-                                                           {'name': 'label_atom_id', 'type': 'str', 'value': cif_atom_id_1},
+                                                          [{'name': 'label_asym_id' if label_scheme else 'auth_asym_id', 'type': 'str', 'value': cif_chain_id_1},
+                                                           {'name': 'label_seq_id' if label_scheme else 'auth_seq_id', 'type': 'int', 'value': cif_seq_id_1},
+                                                           {'name': 'label_atom_id' if label_scheme else 'auth_atom_id', 'type': 'str', 'value': cif_atom_id_1},
                                                            {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                            ])
 
             atom_site_2 = self.__cR.getDictListWithFilter('atom_site',
                                                           data_items,
-                                                          [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_2},
-                                                           {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_2},
-                                                           {'name': 'label_atom_id', 'type': 'str', 'value': cif_atom_id_2},
+                                                          [{'name': 'label_asym_id' if label_scheme else 'auth_asym_id', 'type': 'str', 'value': cif_chain_id_2},
+                                                           {'name': 'label_seq_id' if label_scheme else 'auth_seq_id', 'type': 'int', 'value': cif_seq_id_2},
+                                                           {'name': 'label_atom_id' if label_scheme else 'auth_atom_id', 'type': 'str', 'value': cif_atom_id_2},
                                                            {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
                                                            ])
 

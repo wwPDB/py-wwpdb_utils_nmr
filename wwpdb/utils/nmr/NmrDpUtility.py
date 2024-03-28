@@ -17472,13 +17472,13 @@ class NmrDpUtility:
 
         asm = []
 
-        for s in polymer_sequence:
+        for ps in polymer_sequence:
 
             has_nstd_res = False
 
-            ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
+            ent = {'chain_id': ps['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
-            for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+            for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                 if comp_id not in monDict3:
                     has_nstd_res = True
@@ -17498,7 +17498,7 @@ class NmrDpUtility:
                         ent['chem_comp_name'].append(cc_name)
 
                         if comp_id != '.':
-                            warn = f"Non standard residue ({s['chain_id']}:{seq_id}:{comp_id}) did not match with chemical component dictionary (CCD)."
+                            warn = f"Non standard residue ({ps['chain_id']}:{seq_id}:{comp_id}) did not match with chemical component dictionary (CCD)."
 
                             self.report.warning.appendDescription('ccd_mismatch',
                                                                   {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -18782,15 +18782,15 @@ class NmrDpUtility:
             # first_comp_ids = set()
 
             # if polymer_sequence is not None:
-            #     for s in polymer_sequence:
-            #         first_comp_id = s['comp_id'][0]
+            #     for ps in polymer_sequence:
+            #         first_comp_id = ps['comp_id'][0]
 
             #         if self.__csStat.peptideLike(first_comp_id):
             #             first_comp_ids.add(first_comp_id)
 
-            #         if s['seq_id'][0] < 1:
+            #         if ps['seq_id'][0] < 1:
 
-            #             for comp_id, seq_id in zip(s['comp_id'], s['seq_id']):
+            #             for comp_id, seq_id in zip(ps['comp_id'], ps['seq_id']):
             #                 if seq_id != 1:
             #                     continue
             #                 if self.__csStat.peptideLike(comp_id):
@@ -28325,6 +28325,11 @@ class NmrDpUtility:
 
         cif_input_source = self.report.input_sources[src_id]
         cif_input_source_dic = cif_input_source.get()
+
+        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+
+        if not has_poly_seq:
+            return False
 
         cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
 
@@ -41830,13 +41835,13 @@ class NmrDpUtility:
 
         asm = []
 
-        for s in polymer_sequence:
+        for ps in polymer_sequence:
 
             has_nstd_res = False
 
-            ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
+            ent = {'chain_id': ps['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
-            for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+            for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                 if comp_id not in monDict3:
                     has_nstd_res = True
@@ -46906,6 +46911,11 @@ class NmrDpUtility:
 
         cif_input_source = self.report.input_sources[src_id]
         cif_input_source_dic = cif_input_source.get()
+
+        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+
+        if not has_poly_seq:
+            return False
 
         file_name = cif_input_source_dic['file_name']
         cif_polymer_sequence = cif_input_source_dic['polymer_sequence']

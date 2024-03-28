@@ -17472,13 +17472,13 @@ class NmrDpUtility:
 
         asm = []
 
-        for s in polymer_sequence:
+        for ps in polymer_sequence:
 
             has_nstd_res = False
 
-            ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
+            ent = {'chain_id': ps['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
-            for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+            for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                 if comp_id not in monDict3:
                     has_nstd_res = True
@@ -17498,7 +17498,7 @@ class NmrDpUtility:
                         ent['chem_comp_name'].append(cc_name)
 
                         if comp_id != '.':
-                            warn = f"Non standard residue ({s['chain_id']}:{seq_id}:{comp_id}) did not match with chemical component dictionary (CCD)."
+                            warn = f"Non standard residue ({ps['chain_id']}:{seq_id}:{comp_id}) did not match with chemical component dictionary (CCD)."
 
                             self.report.warning.appendDescription('ccd_mismatch',
                                                                   {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -17510,7 +17510,7 @@ class NmrDpUtility:
 
                         # DAOTHER-9065
                         else:
-                            warn = f"Residue ({s['chain_id']}:{seq_id}:{comp_id}) was not specified. "\
+                            warn = f"Residue ({ps['chain_id']}:{seq_id}:{comp_id}) was not specified. "\
                                    "Please update the sequence in the Macromolecules page."
 
                             self.report.warning.appendDescription('sequence_mismatch',
@@ -18782,15 +18782,15 @@ class NmrDpUtility:
             # first_comp_ids = set()
 
             # if polymer_sequence is not None:
-            #     for s in polymer_sequence:
-            #         first_comp_id = s['comp_id'][0]
+            #     for ps in polymer_sequence:
+            #         first_comp_id = ps['comp_id'][0]
 
             #         if self.__csStat.peptideLike(first_comp_id):
             #             first_comp_ids.add(first_comp_id)
 
-            #         if s['seq_id'][0] < 1:
+            #         if ps['seq_id'][0] < 1:
 
-            #             for comp_id, seq_id in zip(s['comp_id'], s['seq_id']):
+            #             for comp_id, seq_id in zip(ps['comp_id'], ps['seq_id']):
             #                 if seq_id != 1:
             #                     continue
             #                 if self.__csStat.peptideLike(comp_id):
@@ -28326,6 +28326,11 @@ class NmrDpUtility:
         cif_input_source = self.report.input_sources[src_id]
         cif_input_source_dic = cif_input_source.get()
 
+        has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
+
+        if not has_poly_seq:
+            return False
+
         cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
 
         __errors = self.report.getTotalErrors()
@@ -28788,10 +28793,10 @@ class NmrDpUtility:
         if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[src_id]
-        input_source_dic = input_source.get()
+        cif_input_source = self.report.input_sources[src_id]
+        cif_input_source_dic = cif_input_source.get()
 
-        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+        has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
 
         if not has_poly_seq:
             return False
@@ -30847,9 +30852,6 @@ class NmrDpUtility:
         if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[src_id]
-        input_source_dic = input_source.get()
-
         if self.__pk_sf_holder is None:
             self.__pk_sf_holder = []
 
@@ -31126,10 +31128,10 @@ class NmrDpUtility:
         if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[src_id]
-        input_source_dic = input_source.get()
+        cif_input_source = self.report.input_sources[src_id]
+        cif_input_source_dic = cif_input_source.get()
 
-        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+        has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
 
         if not has_poly_seq:
             return False
@@ -33967,10 +33969,10 @@ class NmrDpUtility:
         if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[src_id]
-        input_source_dic = input_source.get()
+        cif_input_source = self.report.input_sources[src_id]
+        cif_input_source_dic = cif_input_source.get()
 
-        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+        has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
 
         if not has_poly_seq:
             return False
@@ -41000,14 +41002,14 @@ class NmrDpUtility:
         if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[src_id]
-        input_source_dic = input_source.get()
+        cif_input_source = self.report.input_sources[src_id]
+        cif_input_source_dic = cif_input_source.get()
 
-        if has_key_value(input_source_dic, 'content_subtype'):
+        if has_key_value(cif_input_source_dic, 'content_subtype'):
             return False
 
-        # file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
+        # file_name = cif_input_source_dic['file_name']
+        file_type = cif_input_source_dic['file_type']
 
         # initialize loop counter
         lp_counts = {t: 0 for t in self.cif_content_subtypes}
@@ -41041,7 +41043,7 @@ class NmrDpUtility:
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
-        input_source.setItemValue('content_subtype', content_subtypes)
+        cif_input_source.setItemValue('content_subtype', content_subtypes)
 
         return True
 
@@ -41054,21 +41056,21 @@ class NmrDpUtility:
         if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[src_id]
-        input_source_dic = input_source.get()
+        cif_input_source = self.report.input_sources[src_id]
+        cif_input_source_dic = cif_input_source.get()
 
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
+        file_name = cif_input_source_dic['file_name']
+        file_type = cif_input_source_dic['file_type']
 
-        if input_source_dic['content_subtype'] is None:
+        if cif_input_source_dic['content_subtype'] is None:
             return False
 
         content_subtype = 'poly_seq'
 
-        if content_subtype not in input_source_dic['content_subtype']:
+        if content_subtype not in cif_input_source_dic['content_subtype']:
             return False
 
-        if has_key_value(input_source_dic, 'polymer_sequence'):
+        if has_key_value(cif_input_source_dic, 'polymer_sequence'):
             return False
 
         alias = False
@@ -41142,7 +41144,7 @@ class NmrDpUtility:
                 if len(poly_seq) > 0 and poly_seq_cache_path is not None:
                     write_as_pickle(poly_seq, poly_seq_cache_path)
 
-            input_source.setItemValue('polymer_sequence', poly_seq)
+            cif_input_source.setItemValue('polymer_sequence', poly_seq)
 
             not_superimposed_ensemble = {}
             exactly_overlaid_ensemble = {}
@@ -41395,14 +41397,14 @@ class NmrDpUtility:
             if self.__coord_atom_site is not None:
                 return True
 
-        input_source = self.report.input_sources[src_id]
-        input_source_dic = input_source.get()
+        cif_input_source = self.report.input_sources[src_id]
+        cif_input_source_dic = cif_input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = cif_input_source_dic['file_name']
 
-        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+        has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
 
-        polymer_sequence = input_source_dic['polymer_sequence'] if has_poly_seq else []
+        polymer_sequence = cif_input_source_dic['polymer_sequence'] if has_poly_seq else []
 
         if has_poly_seq and any('auth_chain_id' not in ps for ps in polymer_sequence):
             has_poly_seq = False
@@ -41605,17 +41607,17 @@ class NmrDpUtility:
 
         __errors = self.report.getTotalErrors()
 
-        input_source = self.report.input_sources[src_id]
-        input_source_dic = input_source.get()
+        cif_input_source = self.report.input_sources[src_id]
+        cif_input_source_dic = cif_input_source.get()
 
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
+        file_name = cif_input_source_dic['file_name']
+        file_type = cif_input_source_dic['file_type']
 
         poly_seq_list_set = {}
 
         for content_subtype in self.cif_content_subtypes:
 
-            if content_subtype in ('entry_info', 'poly_seq', 'branched', 'non_poly') or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
+            if content_subtype in ('entry_info', 'poly_seq', 'branched', 'non_poly') or (not has_key_value(cif_input_source_dic['content_subtype'], content_subtype)):
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -41712,7 +41714,7 @@ class NmrDpUtility:
             return False
 
         if len(poly_seq_list_set) > 0:
-            input_source.setItemValue('polymer_sequence_in_loop', poly_seq_list_set)
+            cif_input_source.setItemValue('polymer_sequence_in_loop', poly_seq_list_set)
 
         return True
 
@@ -41730,17 +41732,17 @@ class NmrDpUtility:
         if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[src_id]
-        input_source_dic = input_source.get()
+        cif_input_source = self.report.input_sources[src_id]
+        cif_input_source_dic = cif_input_source.get()
 
-        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
-        has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+        has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
+        has_poly_seq_in_loop = has_key_value(cif_input_source_dic, 'polymer_sequence_in_loop')
 
         # pass if poly_seq exists
         if has_poly_seq or (not has_poly_seq_in_loop):
             return False
 
-        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+        polymer_sequence_in_loop = cif_input_source_dic['polymer_sequence_in_loop']
 
         chain_ids = set()
 
@@ -41802,7 +41804,7 @@ class NmrDpUtility:
                 asm.append({'chain_id': chain_id, 'seq_id': seq_id_list, 'comp_id': comp_id_list})
 
         if len(asm) > 0:
-            input_source.setItemValue('polymer_sequence', asm)
+            cif_input_source.setItemValue('polymer_sequence', asm)
 
         return True
 
@@ -41815,28 +41817,28 @@ class NmrDpUtility:
         if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[src_id]
-        input_source_dic = input_source.get()
+        cif_input_source = self.report.input_sources[src_id]
+        cif_input_source_dic = cif_input_source.get()
 
-        # file_name = input_source_dic['file_name']
-        # file_type = input_source_dic['file_type']
+        # file_name = cif_input_source_dic['file_name']
+        # file_type = cif_input_source_dic['file_type']
 
-        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+        has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
 
         if not has_poly_seq:
             return False
 
-        polymer_sequence = input_source_dic['polymer_sequence']
+        polymer_sequence = cif_input_source_dic['polymer_sequence']
 
         asm = []
 
-        for s in polymer_sequence:
+        for ps in polymer_sequence:
 
             has_nstd_res = False
 
-            ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
+            ent = {'chain_id': ps['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
-            for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+            for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                 if comp_id not in monDict3:
                     has_nstd_res = True
@@ -41861,7 +41863,7 @@ class NmrDpUtility:
                 asm.append(ent)
 
         if len(asm) > 0:
-            input_source.setItemValue('non_standard_residue', asm)
+            cif_input_source.setItemValue('non_standard_residue', asm)
 
         return True
 
@@ -41876,20 +41878,20 @@ class NmrDpUtility:
 
         # sequence alignment inside coordinate file
 
-        input_source = self.report.input_sources[src_id]
-        input_source_dic = input_source.get()
+        cif_input_source = self.report.input_sources[src_id]
+        cif_input_source_dic = cif_input_source.get()
 
-        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
-        has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+        has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
+        has_poly_seq_in_loop = has_key_value(cif_input_source_dic, 'polymer_sequence_in_loop')
 
         if not has_poly_seq:
             return False
 
-        polymer_sequence = input_source_dic['polymer_sequence']
+        polymer_sequence = cif_input_source_dic['polymer_sequence']
 
         if has_poly_seq_in_loop:
 
-            polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+            polymer_sequence_in_loop = cif_input_source_dic['polymer_sequence_in_loop']
 
             for content_subtype in polymer_sequence_in_loop.keys():
 
@@ -46907,6 +46909,11 @@ class NmrDpUtility:
         cif_input_source = self.report.input_sources[src_id]
         cif_input_source_dic = cif_input_source.get()
 
+        has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
+
+        if not has_poly_seq:
+            return False
+
         file_name = cif_input_source_dic['file_name']
         cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
 
@@ -47476,7 +47483,7 @@ class NmrDpUtility:
         if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[src_id]
+        cif_input_source = self.report.input_sources[src_id]
 
         chain_assign_dic = self.report.chain_assignment.get()
 
@@ -47545,7 +47552,7 @@ class NmrDpUtility:
                 asm.append(disulf)
 
             if len(asm) > 0:
-                input_source.setItemValue('disulfide_bond', asm)
+                cif_input_source.setItemValue('disulfide_bond', asm)
 
                 self.report.setDisulfideBond(True)
 
@@ -47866,7 +47873,7 @@ class NmrDpUtility:
         if src_id < 0:
             return False
 
-        input_source = self.report.input_sources[src_id]
+        cif_input_source = self.report.input_sources[src_id]
 
         chain_assign_dic = self.report.chain_assignment.get()
 
@@ -47935,7 +47942,7 @@ class NmrDpUtility:
                 asm.append(other)
 
             if len(asm) > 0:
-                input_source.setItemValue('other_bond', asm)
+                cif_input_source.setItemValue('other_bond', asm)
 
                 self.report.setOtherBond(True)
 

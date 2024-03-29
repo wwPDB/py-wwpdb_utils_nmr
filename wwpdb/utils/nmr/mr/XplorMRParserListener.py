@@ -808,7 +808,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                             seq_id_mapping = {}
                             for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
-                                if mid_code == '|':
+                                if mid_code == '|' and test_seq_id is not None:
                                     try:
                                         seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
                                                                            in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
@@ -933,7 +933,7 @@ class XplorMRParserListener(ParseTreeListener):
                                     seq_id_mapping = {}
                                     for ref_auth_seq_id, mid_code, test_seq_id in zip(sa['ref_auth_seq_id'] if 'ref_auth_seq_id' in sa else sa['ref_seq_id'],
                                                                                       sa['mid_code'], sa['test_seq_id']):
-                                        if mid_code == '|':
+                                        if mid_code == '|' and test_seq_id is not None:
                                             seq_id_mapping[test_seq_id] = ref_auth_seq_id
 
                                     if len(seq_id_mapping) > 1:
@@ -949,7 +949,7 @@ class XplorMRParserListener(ParseTreeListener):
                                             else:
                                                 seq_id_mapping = {}
                                                 for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
-                                                    if mid_code == '|':
+                                                    if mid_code == '|' and test_seq_id is not None:
                                                         seq_id_mapping[test_seq_id] = ref_seq_id
 
                                                 for k, v in seq_id_mapping.items():

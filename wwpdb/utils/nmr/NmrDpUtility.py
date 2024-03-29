@@ -18909,6 +18909,9 @@ class NmrDpUtility:
                         _atom_ids = []
                         for atom_id in atom_ids:
 
+                            if atom_id in emptyValue:
+                                continue
+
                             _atom_id = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
                             if len(_atom_id) == 0:
@@ -18936,6 +18939,9 @@ class NmrDpUtility:
                         atom_ids = sorted(set(_atom_ids))
 
                     for atom_id in atom_ids:
+
+                        if atom_id in emptyValue:
+                            continue
 
                         if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                             continue
@@ -19024,6 +19030,9 @@ class NmrDpUtility:
 
                         for atom_id in atom_ids:
 
+                            if atom_id in emptyValue:
+                                continue
+
                             if file_type == 'nef':
                                 _atom_id = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                                 if len(_atom_id) > 0:
@@ -19062,6 +19071,9 @@ class NmrDpUtility:
                                 break
 
                         for atom_id in atom_ids:
+
+                            if atom_id in emptyValue:
+                                continue
 
                             if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                 continue
@@ -19118,6 +19130,10 @@ class NmrDpUtility:
 
                             _auth_atom_ids = []
                             for auth_atom_id in auth_atom_ids:
+
+                                if auth_atom_id in emptyValue:
+                                    continue
+
                                 _auth_atom_id = translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids)
 
                                 auth_atom_ids = self.__getAtomIdList(comp_id, _auth_atom_id)
@@ -19154,6 +19170,9 @@ class NmrDpUtility:
                             auth_atom_ids = sorted(set(_auth_atom_ids))
 
                             for auth_atom_id in auth_atom_ids:
+
+                                if auth_atom_id in emptyValue:
+                                    continue
 
                                 if not self.__nefT.validate_comp_atom(comp_id,
                                                                       translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids)):
@@ -19192,6 +19211,9 @@ class NmrDpUtility:
 
                                     for auth_atom_id in (set(auth_atom_ids) | set(atom_ids)) - set(atom_ids):
 
+                                        if auth_atom_id in emptyValue:
+                                            continue
+
                                         if self.__nonblk_bad_nterm and self.__csStat.peptideLike(comp_id)\
                                            and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                             continue
@@ -19214,6 +19236,9 @@ class NmrDpUtility:
                             if not has_comp_id:
 
                                 for auth_atom_id in auth_atom_ids:
+
+                                    if auth_atom_id in emptyValue:
+                                        continue
 
                                     if self.__nonblk_bad_nterm and self.__csStat.peptideLike(comp_id)\
                                        and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
@@ -37001,12 +37026,16 @@ class NmrDpUtility:
                 member_id = row.get(member_id_name) if file_type == 'nmr-star' else None
                 member_logic_code = row.get(member_logic_code_name) if file_type == 'nmr-star' else None
 
+                comp_id_1 = row[comp_id_1_name]
+                comp_id_2 = row[comp_id_2_name]
+
+                if 'HOH' in (comp_id_1, comp_id_2):
+                    continue
+
                 chain_id_1 = row[chain_id_1_name]
                 chain_id_2 = row[chain_id_2_name]
                 seq_id_1 = row[seq_id_1_name]
                 seq_id_2 = row[seq_id_2_name]
-                comp_id_1 = row[comp_id_1_name]
-                comp_id_2 = row[comp_id_2_name]
                 atom_id_1 = row[atom_id_1_name]
                 atom_id_2 = row[atom_id_2_name]
                 weight = row.get(weight_name)
@@ -38788,6 +38817,11 @@ class NmrDpUtility:
                     lower_limit = None
                     upper_limit = None
 
+                data_type = row[angle_type_name]
+
+                if data_type == 'PPA':
+                    continue
+
                 chain_id_1 = row[chain_id_1_name]
                 chain_id_2 = row[chain_id_2_name]
                 chain_id_3 = row[chain_id_3_name]
@@ -38804,7 +38838,6 @@ class NmrDpUtility:
                 atom_id_2 = row[atom_id_2_name]
                 atom_id_3 = row[atom_id_3_name]
                 atom_id_4 = row[atom_id_4_name]
-                data_type = row[angle_type_name]
                 weight = row.get(weight_name)
                 set_id.add(row[id_tag])
 

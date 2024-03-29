@@ -308,6 +308,12 @@ def angle_target_values(target_value, target_value_uncertainty,
                     target_value_vote_clock += 1
 
             if target_value_vote_aclock + target_value_vote_clock == 0 or target_value_vote_aclock * target_value_vote_clock != 0:
+                if angle_diff(upper_bound, target_value_aclock) > angle_diff(upper_bound, target_value_clock)\
+                   and angle_diff(lower_bound, target_value_aclock) > angle_diff(lower_bound, target_value_clock):
+                    return target_value_aclock, lower_bound, upper_bound
+                if angle_diff(upper_bound, target_value_clock) > angle_diff(upper_bound, target_value_aclock)\
+                   and angle_diff(lower_bound, target_value_clock) > angle_diff(lower_bound, target_value_aclock):
+                    return target_value_clock, lower_bound, upper_bound
                 return None, lower_bound, upper_bound
 
             target_value = target_value_aclock if target_value_vote_aclock > target_value_vote_clock else target_value_clock
@@ -1402,8 +1408,9 @@ class NmrVrptUtility:
 
                     if atom_id_1 is None or atom_id_2 is None\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
-                        self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
-                                         f"{os.path.basename(self.__nmrDataPath)}.\n")
+                        if 'HOH' not in (comp_id_1, comp_id_2):
+                            self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
+                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
 
@@ -1642,8 +1649,9 @@ class NmrVrptUtility:
                     if atom_id_1 is None or atom_id_2 is None or atom_id_3 is None or atom_id_4 is None\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int)\
                        or not isinstance(auth_seq_id_3, int) or not isinstance(auth_seq_id_4, int):
-                        self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
-                                         f"{os.path.basename(self.__nmrDataPath)}.\n")
+                        if angle_type not in ('PPA', 'UNNAMED'):
+                            self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
 

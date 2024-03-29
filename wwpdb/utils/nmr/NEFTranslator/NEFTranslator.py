@@ -1503,6 +1503,14 @@ class NEFTranslator:
                     if row[2] in emptyValue:
                         has_valid_chain_id = False
                         break
+                if has_valid_chain_id:
+                    wrong_chain_id_anno = True
+                    for row in seq_data:
+                        if row[0] != row[2]:
+                            wrong_chain_id_anno = False
+                            break
+                    if wrong_chain_id_anno:
+                        has_valid_chain_id = False
                 if not has_valid_chain_id:
                     seq_data = get_lp_tag(loop, tags__)
                     for row in seq_data:
@@ -1904,6 +1912,29 @@ class NEFTranslator:
         else:
             loops = [star_data]
 
+        is_nef_dist_lp = 'nef_distance_restraint' in lp_category
+        is_nef_dihed_lp = 'nef_dihedral_restraint' in lp_category
+        is_star_dist_lp = 'Gen_dist_constraint' in lp_category
+        is_star_dihed_lp = 'Torsion_angle_constraint' in lp_category
+        is_target_lp = is_nef_dist_lp or is_nef_dihed_lp or is_star_dist_lp or is_star_dihed_lp
+
+        def skip_empty_value_error(lp, idx):
+            if not is_target_lp:
+                return False
+            if is_nef_dist_lp and 'residue_name_1' in lp.tags and 'residue_name_2' in lp.tags\
+               and (lp.data[idx][lp.tags.index('residue_name_1')] == 'HOH'
+                    or lp.data[idx][lp.tags.index('residue_name_2')] == 'HOH'):
+                return True
+            if is_nef_dihed_lp and 'name' in lp.tags and lp.data[idx][lp.tags.index('name')] == 'PPA':
+                return True
+            if is_star_dist_lp and 'Auth_comp_ID_1' in lp.tags and 'Auth_comp_ID_2' in lp.tags\
+               and (lp.data[idx][lp.tags.index('Auth_comp_ID_1')] == 'HOH'
+                    or lp.data[idx][lp.tags.index('Auth_comp_ID_2')] == 'HOH'):
+                return True
+            if is_star_dihed_lp and 'Torsion_angle_name' in lp.tags and lp.data[idx][lp.tags.index('Torsion_angle_name')] == 'PPA':
+                return True
+            return False
+
         f = []  # user warnings
 
         data = []  # data of all loops
@@ -1938,7 +1969,7 @@ class NEFTranslator:
                     continue
             else:
                 for idx, row in enumerate(pair_data):
-                    if is_empty(row) and idx < len_loop_data:
+                    if is_empty(row) and idx < len_loop_data and not skip_empty_value_error(loop, idx):
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
@@ -3967,6 +3998,29 @@ class NEFTranslator:
         else:
             loops = [star_data]
 
+        is_nef_dist_lp = 'nef_distance_restraint' in lp_category
+        is_nef_dihed_lp = 'nef_dihedral_restraint' in lp_category
+        is_star_dist_lp = 'Gen_dist_constraint' in lp_category
+        is_star_dihed_lp = 'Torsion_angle_constraint' in lp_category
+        is_target_lp = is_nef_dist_lp or is_nef_dihed_lp or is_star_dist_lp or is_star_dihed_lp
+
+        def skip_empty_value_error(lp, idx):
+            if not is_target_lp:
+                return False
+            if is_nef_dist_lp and 'residue_name_1' in lp.tags and 'residue_name_2' in lp.tags\
+               and (lp.data[idx][lp.tags.index('residue_name_1')] == 'HOH'
+                    or lp.data[idx][lp.tags.index('residue_name_2')] == 'HOH'):
+                return True
+            if is_nef_dihed_lp and 'name' in lp.tags and lp.data[idx][lp.tags.index('name')] == 'PPA':
+                return True
+            if is_star_dist_lp and 'Auth_comp_ID_1' in lp.tags and 'Auth_comp_ID_2' in lp.tags\
+               and (lp.data[idx][lp.tags.index('Auth_comp_ID_1')] == 'HOH'
+                    or lp.data[idx][lp.tags.index('Auth_comp_ID_2')] == 'HOH'):
+                return True
+            if is_star_dihed_lp and 'Torsion_angle_name' in lp.tags and lp.data[idx][lp.tags.index('Torsion_angle_name')] == 'PPA':
+                return True
+            return False
+
         data = []  # data of all loops
 
         key_names = [k['name'] for k in key_items]
@@ -4006,7 +4060,8 @@ class NEFTranslator:
                         seq_id_k = row[key_names.index(atom_key_k['seq_tag'])]
                         atom_id_k = row[key_names.index(atom_key_k['atom_tag'])]
 
-                        if chain_id_j == chain_id_k and seq_id_j == seq_id_k and atom_id_j == atom_id_k and idx < len_loop:
+                        if chain_id_j == chain_id_k and seq_id_j == seq_id_k and atom_id_j == atom_id_k and idx < len_loop\
+                           and not skip_empty_value_error(loop, idx):
                             dup_ids.add(idx)
                             break
 

@@ -1503,6 +1503,14 @@ class NEFTranslator:
                     if row[2] in emptyValue:
                         has_valid_chain_id = False
                         break
+                if has_valid_chain_id:
+                    wrong_chain_id_anno = True
+                    for row in seq_data:
+                        if row[0] != row[2]:
+                            wrong_chain_id_anno = False
+                            break
+                    if wrong_chain_id_anno:
+                        has_valid_chain_id = False
                 if not has_valid_chain_id:
                     seq_data = get_lp_tag(loop, tags__)
                     for row in seq_data:

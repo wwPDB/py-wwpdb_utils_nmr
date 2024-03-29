@@ -477,7 +477,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
                             seq_id_mapping = {}
                             for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
-                                if mid_code == '|':
+                                if mid_code == '|' and test_seq_id is not None:
                                     try:
                                         seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
                                                                            in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
@@ -582,7 +582,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
                                     seq_id_mapping = {}
                                     for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
-                                        if mid_code == '|':
+                                        if mid_code == '|' and test_seq_id is not None:
                                             try:
                                                 seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
                                                                                    in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
@@ -605,6 +605,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                        and ('gap_in_auth_seq' not in poly_seq_model or not poly_seq_model['gap_in_auth_seq']):
                                         for ref_seq_id, mid_code, test_seq_id, ref_code, test_code in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id'],
                                                                                                           sa['ref_code'], sa['test_code']):
+                                            if test_seq_id is None:
+                                                continue
                                             if mid_code == '|' and test_seq_id not in seq_id_mapping:
                                                 seq_id_mapping[test_seq_id] = test_seq_id + offset
                                             elif ref_code != '.' and test_code == '.':
@@ -1307,7 +1309,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     return _chainId, _seqId, ps['comp_id'][ps['seq_id'].index(seqId)]
         if seqId in ps['auth_seq_id']:
             for idx in [_idx for _idx, _seqId in enumerate(ps['auth_seq_id']) if _seqId == seqId]:
-                if 'alt_comp_id' in ps:
+                if 'alt_comp_id' in ps and idx < len(ps['alt_comp_id']):
                     if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], ps['alt_comp_id'][idx], 'MTS', 'ORI'):
                         return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
                 elif compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):

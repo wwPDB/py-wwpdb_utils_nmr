@@ -18909,6 +18909,9 @@ class NmrDpUtility:
                         _atom_ids = []
                         for atom_id in atom_ids:
 
+                            if atom_id in emptyValue:
+                                continue
+
                             _atom_id = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
                             if len(_atom_id) == 0:
@@ -18936,6 +18939,9 @@ class NmrDpUtility:
                         atom_ids = sorted(set(_atom_ids))
 
                     for atom_id in atom_ids:
+
+                        if atom_id in emptyValue:
+                            continue
 
                         if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                             continue
@@ -19024,6 +19030,9 @@ class NmrDpUtility:
 
                         for atom_id in atom_ids:
 
+                            if atom_id in emptyValue:
+                                continue
+
                             if file_type == 'nef':
                                 _atom_id = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                                 if len(_atom_id) > 0:
@@ -19062,6 +19071,9 @@ class NmrDpUtility:
                                 break
 
                         for atom_id in atom_ids:
+
+                            if atom_id in emptyValue:
+                                continue
 
                             if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                 continue
@@ -19118,6 +19130,10 @@ class NmrDpUtility:
 
                             _auth_atom_ids = []
                             for auth_atom_id in auth_atom_ids:
+
+                                if auth_atom_id in emptyValue:
+                                    continue
+
                                 _auth_atom_id = translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids)
 
                                 auth_atom_ids = self.__getAtomIdList(comp_id, _auth_atom_id)
@@ -19154,6 +19170,9 @@ class NmrDpUtility:
                             auth_atom_ids = sorted(set(_auth_atom_ids))
 
                             for auth_atom_id in auth_atom_ids:
+
+                                if auth_atom_id in emptyValue:
+                                    continue
 
                                 if not self.__nefT.validate_comp_atom(comp_id,
                                                                       translateToStdAtomName(auth_atom_id, comp_id, ref_atom_ids)):
@@ -19192,6 +19211,9 @@ class NmrDpUtility:
 
                                     for auth_atom_id in (set(auth_atom_ids) | set(atom_ids)) - set(atom_ids):
 
+                                        if auth_atom_id in emptyValue:
+                                            continue
+
                                         if self.__nonblk_bad_nterm and self.__csStat.peptideLike(comp_id)\
                                            and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                             continue
@@ -19214,6 +19236,9 @@ class NmrDpUtility:
                             if not has_comp_id:
 
                                 for auth_atom_id in auth_atom_ids:
+
+                                    if auth_atom_id in emptyValue:
+                                        continue
 
                                     if self.__nonblk_bad_nterm and self.__csStat.peptideLike(comp_id)\
                                        and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:

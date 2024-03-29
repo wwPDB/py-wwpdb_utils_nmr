@@ -1402,8 +1402,9 @@ class NmrVrptUtility:
 
                     if atom_id_1 is None or atom_id_2 is None\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
-                        self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
-                                         f"{os.path.basename(self.__nmrDataPath)}.\n")
+                        if 'HOH' not in (comp_id_1, comp_id_2):
+                            self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
+                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
 
@@ -1642,8 +1643,9 @@ class NmrVrptUtility:
                     if atom_id_1 is None or atom_id_2 is None or atom_id_3 is None or atom_id_4 is None\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int)\
                        or not isinstance(auth_seq_id_3, int) or not isinstance(auth_seq_id_4, int):
-                        self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
-                                         f"{os.path.basename(self.__nmrDataPath)}.\n")
+                        if angle_type not in ('PPA', 'UNNAMED'):
+                            self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
 

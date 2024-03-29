@@ -308,6 +308,12 @@ def angle_target_values(target_value, target_value_uncertainty,
                     target_value_vote_clock += 1
 
             if target_value_vote_aclock + target_value_vote_clock == 0 or target_value_vote_aclock * target_value_vote_clock != 0:
+                if angle_diff(upper_bound, target_value_aclock) > angle_diff(upper_bound, target_value_clock)\
+                   and angle_diff(lower_bound, target_value_aclock) > angle_diff(lower_bound, target_value_clock):
+                    return target_value_aclock, lower_bound, upper_bound
+                if angle_diff(upper_bound, target_value_clock) > angle_diff(upper_bound, target_value_aclock)\
+                   and angle_diff(lower_bound, target_value_clock) > angle_diff(lower_bound, target_value_aclock):
+                    return target_value_clock, lower_bound, upper_bound
                 return None, lower_bound, upper_bound
 
             target_value = target_value_aclock if target_value_vote_aclock > target_value_vote_clock else target_value_clock

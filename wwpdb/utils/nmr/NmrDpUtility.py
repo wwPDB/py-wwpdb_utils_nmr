@@ -38818,6 +38818,7 @@ class NmrDpUtility:
                     upper_limit = None
 
                 data_type = row[angle_type_name]
+
                 if data_type == 'PPA':
                     continue
 

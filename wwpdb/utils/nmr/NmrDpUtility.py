@@ -37026,12 +37026,16 @@ class NmrDpUtility:
                 member_id = row.get(member_id_name) if file_type == 'nmr-star' else None
                 member_logic_code = row.get(member_logic_code_name) if file_type == 'nmr-star' else None
 
+                comp_id_1 = row[comp_id_1_name]
+                comp_id_2 = row[comp_id_2_name]
+
+                if 'HOH' in (comp_id_1, comp_id_2):
+                    continue
+
                 chain_id_1 = row[chain_id_1_name]
                 chain_id_2 = row[chain_id_2_name]
                 seq_id_1 = row[seq_id_1_name]
                 seq_id_2 = row[seq_id_2_name]
-                comp_id_1 = row[comp_id_1_name]
-                comp_id_2 = row[comp_id_2_name]
                 atom_id_1 = row[atom_id_1_name]
                 atom_id_2 = row[atom_id_2_name]
                 weight = row.get(weight_name)
@@ -38813,6 +38817,10 @@ class NmrDpUtility:
                     lower_limit = None
                     upper_limit = None
 
+                data_type = row[angle_type_name]
+                if data_type == 'PPA':
+                    continue
+
                 chain_id_1 = row[chain_id_1_name]
                 chain_id_2 = row[chain_id_2_name]
                 chain_id_3 = row[chain_id_3_name]
@@ -38829,7 +38837,6 @@ class NmrDpUtility:
                 atom_id_2 = row[atom_id_2_name]
                 atom_id_3 = row[atom_id_3_name]
                 atom_id_4 = row[atom_id_4_name]
-                data_type = row[angle_type_name]
                 weight = row.get(weight_name)
                 set_id.add(row[id_tag])
 

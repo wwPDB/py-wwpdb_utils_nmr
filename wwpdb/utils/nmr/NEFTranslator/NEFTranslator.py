@@ -1509,6 +1509,16 @@ class NEFTranslator:
                         if row[0] != row[2]:
                             wrong_chain_id_anno = False
                             break
+                    if not wrong_chain_id_anno:
+                        wrong_chain_id_anno = True
+                        offset = None
+                        for row in seq_data:
+                            if offset is None:
+                                offset = int(row[0]) - int(row[2])
+                                continue
+                            if int(row[0]) - int(row[2]) != offset:
+                                wrong_chain_id_anno = False
+                                break
                     if wrong_chain_id_anno:
                         has_valid_chain_id = False
                 if not has_valid_chain_id:

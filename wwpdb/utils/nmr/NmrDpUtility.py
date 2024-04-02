@@ -42029,13 +42029,13 @@ class NmrDpUtility:
 
                 _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                if length == unmapped + conflict or _matched <= conflict + 1:
+                if length == unmapped + conflict:
                     continue
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
-                if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                if conflict > 0 and (hasLargeSeqGap(_s1, _s2) or (not hasLargeInnerSeqGap(s1) and hasLargeInnerSeqGap(s2))):  # DAOTHER-7465
                     _s2 = self.__compensateLadderHistidinTag2(chain_id, _s1, _s2)
                     __s1, __s2 = beautifyPolySeq(_s1, _s2)
                     _s1_ = __s1
@@ -42057,6 +42057,9 @@ class NmrDpUtility:
                         offset_2 = _offset_2
                         _s1 = __s1
                         _s2 = __s2
+
+                if _matched <= conflict + 1:
+                    continue
 
                 # if conflict > 0:
                 #     has_conflict = True
@@ -42165,13 +42168,13 @@ class NmrDpUtility:
 
                 _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                if length == unmapped + conflict or _matched <= conflict + 1:
+                if length == unmapped + conflict:
                     continue
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
-                if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                if conflict > 0 and (hasLargeSeqGap(_s1, _s2) or (hasLargeInnerSeqGap(s1) and not hasLargeInnerSeqGap(s2))):  # DAOTHER-7465
                     _s1 = self.__compensateLadderHistidinTag2(chain_id, _s2, _s1)
                     __s1, __s2 = beautifyPolySeq(_s1, _s2)
                     _s1_ = __s1
@@ -42193,6 +42196,9 @@ class NmrDpUtility:
                         offset_2 = _offset_2
                         _s1 = __s1
                         _s2 = __s2
+
+                if _matched <= conflict + 1:
+                    continue
 
                 # if conflict > 0:
                 #     has_conflict = True
@@ -42475,7 +42481,7 @@ class NmrDpUtility:
                         elif has_inner_gap_1 and not has_inner_gap_2:
                             _s1 = fillInnerBlankCompId(_s1)
 
-                    if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                    if conflict > 0 and (hasLargeSeqGap(_s1, _s2) or (not hasLargeInnerSeqGap(s1) and hasLargeInnerSeqGap(s2))):  # DAOTHER-7465
                         __s1, __s2 = beautifyPolySeq(_s1, _s2)
                         _s1 = __s1
                         _s2 = __s2
@@ -42732,7 +42738,7 @@ class NmrDpUtility:
                         elif has_inner_gap_1 and not has_inner_gap_2:
                             _s1 = fillInnerBlankCompId(_s1)
 
-                    if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                    if conflict > 0 and (hasLargeSeqGap(_s1, _s2) or (hasLargeInnerSeqGap(s1) and not hasLargeInnerSeqGap(s2))):  # DAOTHER-7465
                         __s1, __s2 = beautifyPolySeq(_s1, _s2)
                         _s1 = __s1
                         _s2 = __s2
@@ -43206,7 +43212,7 @@ class NmrDpUtility:
                         elif has_inner_gap_1 and not has_inner_gap_2:
                             _s1 = fillInnerBlankCompId(_s1)
 
-                    if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                    if conflict > 0 and (hasLargeSeqGap(_s1, _s2) or (not hasLargeInnerSeqGap(s1) and hasLargeInnerSeqGap(s2))):  # DAOTHER-7465
                         __s1, __s2 = beautifyPolySeq(_s1, _s2)
                         _s1 = __s1
                         _s2 = __s2

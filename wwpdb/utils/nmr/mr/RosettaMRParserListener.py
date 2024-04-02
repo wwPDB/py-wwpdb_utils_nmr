@@ -80,6 +80,7 @@ try:
                                            retrieveAtomIdentFromMRMap,
                                            retrieveAtomIdFromMRMap,
                                            retrieveRemappedSeqId,
+                                           retrieveRemappedSeqIdAndCompId,
                                            splitPolySeqRstForMultimers,
                                            splitPolySeqRstForExactNoes,
                                            retrieveRemappedChainId,
@@ -154,6 +155,7 @@ except ImportError:
                                retrieveAtomIdentFromMRMap,
                                retrieveAtomIdFromMRMap,
                                retrieveRemappedSeqId,
+                               retrieveRemappedSeqIdAndCompId,
                                splitPolySeqRstForMultimers,
                                splitPolySeqRstForExactNoes,
                                retrieveRemappedChainId,
@@ -267,6 +269,9 @@ class RosettaMRParserListener(ParseTreeListener):
     # current restraint subtype
     __cur_subtype = ''
     __cur_comment_inlined = False
+
+    # whether to allow extended sequence temporary
+    __allow_ext_seq = False
 
     # stack of function
     stackFuncs = []
@@ -659,6 +664,38 @@ class RosettaMRParserListener(ParseTreeListener):
                                 if len(seqIdRemapFailed) > 0:
                                     if 'chain_seq_id_remap' not in self.reasonsForReParsing:
                                         self.reasonsForReParsing['chain_seq_id_remap'] = seqIdRemapFailed
+                                else:
+                                    for ps in self.__polySeqRstFailed:
+                                        for ca in self.__chainAssign:
+                                            ref_chain_id = ca['ref_chain_id']
+                                            test_chain_id = ca['test_chain_id']
+
+                                            if test_chain_id != ps['chain_id']:
+                                                continue
+
+                                            sa = next(sa for sa in self.__seqAlign
+                                                      if sa['ref_chain_id'] == ref_chain_id
+                                                      and sa['test_chain_id'] == test_chain_id)
+
+                                            poly_seq_model = next(ps for ps in self.__polySeq
+                                                                  if ps['auth_chain_id'] == ref_chain_id)
+
+                                            seq_id_mapping = {}
+                                            comp_id_mapping = {}
+
+                                            for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
+                                                if seq_id in sa['test_seq_id']:
+                                                    idx = sa['test_seq_id'].index(seq_id)
+                                                    auth_seq_id = sa['ref_seq_id'][idx]
+                                                    seq_id_mapping[seq_id] = auth_seq_id
+                                                    comp_id_mapping[seq_id] = comp_id
+
+                                            seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
+                                                                     'comp_id_dict': comp_id_mapping})
+
+                                    if len(seqIdRemapFailed) > 0:
+                                        if 'ext_chain_seq_id_remap' not in self.reasonsForReParsing:
+                                            self.reasonsForReParsing['ext_chain_seq_id_remap'] = seqIdRemapFailed
 
             # """
             # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
@@ -673,6 +710,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 elif 'seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
                 elif 'chain_seq_id_remap' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['local_seq_scheme']
+                elif 'ext_chain_seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
@@ -1155,6 +1194,9 @@ class RosettaMRParserListener(ParseTreeListener):
         _seqId = seqId
 
         fixedSeqId = None
+        fixedCompId = None
+
+        self.__allow_ext_seq = False
 
         if self.__reasons is not None:
             if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
@@ -1163,18 +1205,27 @@ class RosettaMRParserListener(ParseTreeListener):
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
             elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
-            if 'seq_id_remap' not in self.__reasons and 'chain_seq_id_remap' not in self.__reasons:
-                if fixedSeqId is not None:
-                    seqId = _seqId = fixedSeqId
+            if fixedSeqId is not None:
+                seqId = _seqId = fixedSeqId
 
         for ps in self.__polySeq:
             chainId, seqId = self.getRealChainSeqId(ps, _seqId)
             if self.__reasons is not None:
-                if 'seq_id_remap' not in self.__reasons and 'chain_seq_id_remap' not in self.__reasons:
+                if 'seq_id_remap' not in self.__reasons\
+                   and 'chain_seq_id_remap' not in self.__reasons\
+                   and 'ext_chain_seq_id_remap' not in self.__reasons:
                     if fixedChainId != chainId:
                         continue
                 else:
-                    if 'chain_seq_id_remap' in self.__reasons:
+                    if 'ext_chain_seq_id_remap' in self.__reasons:
+                        fixedChainId, fixedSeqId, fixedCompId =\
+                            retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], chainId, seqId)
+                        if fixedChainId is not None and fixedChainId != chainId:
+                            continue
+                        if fixedSeqId is not None:
+                            self.__allow_ext_seq = fixedCompId is not None
+                            seqId = _seqId = fixedSeqId
+                    if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
                         fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId)
                         if fixedChainId is not None and fixedChainId != chainId:
                             continue
@@ -1186,9 +1237,12 @@ class RosettaMRParserListener(ParseTreeListener):
                             seqId = _seqId = fixedSeqId
             if fixedChainId is not None and chainId != fixedChainId:
                 continue
-            if seqId in ps['auth_seq_id']:
-                idx = ps['auth_seq_id'].index(seqId)
-                cifCompId = ps['comp_id'][idx]
+            if seqId in ps['auth_seq_id'] or fixedCompId is not None:
+                if fixedCompId is not None:
+                    cifCompId = fixedCompId
+                else:
+                    idx = ps['auth_seq_id'].index(seqId)
+                    cifCompId = ps['comp_id'][idx]
                 if self.__reasons is not None:
                     if 'non_poly_remap' in self.__reasons and cifCompId in self.__reasons['non_poly_remap']\
                        and seqId in self.__reasons['non_poly_remap'][cifCompId]:
@@ -1713,8 +1767,13 @@ class RosettaMRParserListener(ParseTreeListener):
                                                     "Please re-upload the model file.")
                                     return atomId
                     if chainId in LARGE_ASYM_ID:
-                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                        f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                        if self.__allow_ext_seq:
+                            self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                            f"The residue '{chainId}:{seqId}:{compId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                            "Please update the sequence in the Macromolecules page.")
+                        else:
+                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                            f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
         return atomId
 
     def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):

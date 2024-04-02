@@ -1513,6 +1513,9 @@ class NEFTranslator:
                         wrong_chain_id_anno = True
                         offset = None
                         for row in seq_data:
+                            if not row[2].isdigit():
+                                wrong_chain_id_anno = False
+                                break
                             if offset is None:
                                 offset = int(row[0]) - int(row[2])
                                 continue

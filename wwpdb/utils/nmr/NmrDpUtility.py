@@ -17653,9 +17653,10 @@ class NmrDpUtility:
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched <= conflict + 1 or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
+                            if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0)\
+                               or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
 
-                                if self.__tolerant_seq_align and _matched <= conflict + 1 and len(polymer_sequence) > 1:
+                                if self.__tolerant_seq_align and _matched <= conflict + (1 if length > 1 else 0) and len(polymer_sequence) > 1:
 
                                     __length = length
                                     __matched = _matched
@@ -17689,7 +17690,7 @@ class NmrDpUtility:
 
                                         _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                        if length == unmapped + conflict or _matched <= conflict + 1:
+                                        if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0):
                                             continue
 
                                         if _matched - conflict < __matched - __conflict or unmapped + conflict > __unmapped + __conflict:
@@ -17975,9 +17976,10 @@ class NmrDpUtility:
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched <= conflict + 1 or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
+                            if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0)\
+                               or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
 
-                                if self.__tolerant_seq_align and _matched <= conflict + 1 and len(polymer_sequence) > 1:
+                                if self.__tolerant_seq_align and _matched <= conflict + (1 if length > 1 else 0) and len(polymer_sequence) > 1:
 
                                     __length = length
                                     __matched = _matched
@@ -18011,7 +18013,7 @@ class NmrDpUtility:
 
                                         _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                        if length == unmapped + conflict or _matched <= conflict + 1:
+                                        if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0):
                                             continue
 
                                         if _matched - conflict < __matched - __conflict or (unmapped + conflict > __unmapped + __conflict and __matched > 0):
@@ -18230,7 +18232,7 @@ class NmrDpUtility:
 
                                             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                            if length == unmapped + conflict or _matched <= conflict + 1:
+                                            if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0):
                                                 break
 
                                             cross = True
@@ -18267,7 +18269,7 @@ class NmrDpUtility:
 
                                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                    if length == unmapped + conflict or _matched <= conflict + 1:
+                                    if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0):
                                         continue
 
                                     _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
@@ -41163,6 +41165,16 @@ class NmrDpUtility:
 
                     key_items = self.key_items[file_type][content_subtype]
 
+                    if self.__cR.hasItem(lp_category, 'pdb_mon_id'):
+                        _key_items = copy.copy(key_items)
+                        _key_items.append({'name': 'pdb_mon_id', 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'})
+                        key_items = _key_items
+
+                    if self.__cR.hasItem(lp_category, 'auth_mon_id'):
+                        _key_items = copy.copy(key_items)
+                        _key_items.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
+                        key_items = _key_items
+
                     try:
                         branched_seq = self.__cR.getPolymerSequence(lp_category, key_items,
                                                                     withStructConf=False, withRmsd=False, alias=False,
@@ -41171,6 +41183,36 @@ class NmrDpUtility:
                                                                     repAltId=self.__representative_alt_id)
                         if len(branched_seq) > 0:
                             poly_seq.extend(branched_seq)
+                    except Exception:
+                        pass
+
+                content_subtype = 'non_poly'
+
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                if self.__cR.hasCategory(lp_category):
+
+                    key_items = self.key_items[file_type][content_subtype]
+
+                    if self.__cR.hasItem(lp_category, 'pdb_mon_id'):
+                        _key_items = copy.copy(key_items)
+                        _key_items.append({'name': 'pdb_mon_id', 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'})
+                        key_items = _key_items
+
+                    if self.__cR.hasItem(lp_category, 'auth_mon_id'):
+                        _key_items = copy.copy(key_items)
+                        _key_items.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
+                        key_items = _key_items
+
+                    try:
+                        non_poly = self.__cR.getPolymerSequence(lp_category, key_items,
+                                                                withStructConf=False, withRmsd=False, alias=False,
+                                                                totalModels=self.__total_models,
+                                                                effModelIds=self.__eff_model_ids,
+                                                                repAltId=self.__representative_alt_id)
+
+                        if len(non_poly) > 0:
+                            poly_seq.extend(non_poly)
                     except Exception:
                         pass
 
@@ -41960,7 +42002,7 @@ class NmrDpUtility:
 
                             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                            if length == unmapped + conflict or _matched <= conflict + 1:
+                            if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0):
                                 continue
 
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
@@ -42058,7 +42100,7 @@ class NmrDpUtility:
                         _s1 = __s1
                         _s2 = __s2
 
-                if _matched <= conflict + 1:
+                if _matched <= conflict + (1 if length > 1 else 0):
                     continue
 
                 # if conflict > 0:
@@ -42197,7 +42239,7 @@ class NmrDpUtility:
                         _s1 = __s1
                         _s2 = __s2
 
-                if _matched <= conflict + 1:
+                if _matched <= conflict + (1 if length > 1 else 0):
                     continue
 
                 # if conflict > 0:

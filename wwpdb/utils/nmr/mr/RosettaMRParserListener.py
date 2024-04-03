@@ -677,6 +677,9 @@ class RosettaMRParserListener(ParseTreeListener):
                                                       if sa['ref_chain_id'] == ref_chain_id
                                                       and sa['test_chain_id'] == test_chain_id)
 
+                                            if len(sa['test_seq_id']) != len(sa['ref_seq_id']):
+                                                continue
+
                                             poly_seq_model = next(ps for ps in self.__polySeq
                                                                   if ps['auth_chain_id'] == ref_chain_id)
 

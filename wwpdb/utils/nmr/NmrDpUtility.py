@@ -52010,7 +52010,7 @@ class NmrDpUtility:
                         continue
                     constraint_type = get_first_sf_tag(sf, 'Constraint_type')
                     if 'NOE' in constraint_type:
-                        NOE_tot_num += sf_item['id']
+                        # NOE_tot_num += sf_item['id']
 
                         lp = sf_item['loop']
 
@@ -52024,10 +52024,10 @@ class NmrDpUtility:
                         comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
                         atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                         atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
-                        try:
-                            member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
-                        except ValueError:
-                            member_logic_code_col = -1
+                        # try:
+                        #     member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
+                        # except ValueError:
+                        #     member_logic_code_col = -1
                         try:
                             combination_id_col = lp.tags.index(item_names['combination_id'])
                         except ValueError:
@@ -52038,11 +52038,11 @@ class NmrDpUtility:
                             upper_limit_col = -1
 
                         prev_id = -1
-                        _atom1 = _atom2 = None
+                        # _atom1 = _atom2 = None
 
                         for row in lp:
                             _id = int(row[id_col])
-                            member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
+                            # member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
                             try:
                                 chain_id_1 = int(row[chain_id_1_col])
                                 chain_id_2 = int(row[chain_id_2_col])
@@ -52054,23 +52054,24 @@ class NmrDpUtility:
                             comp_id_2 = row[comp_id_2_col]
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
-                            if atom_id_1 is None or atom_id_2 is None:
+                            if atom_id_1 is None or atom_id_2 is None or _id == prev_id:
                                 continue
-                            if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
-                                atom1 = {'chain_id': chain_id_1,
-                                         'seq_id': seq_id_1,
-                                         'comp_id': comp_id_1,
-                                         'atom_id': atom_id_1}
-                                atom2 = {'chain_id': chain_id_2,
-                                         'seq_id': seq_id_2,
-                                         'comp_id': comp_id_2,
-                                         'atom_id': atom_id_2}
-                                if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
-                                   and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
-                                    prev_id, _atom1, _atom2 = _id, atom1, atom2
-                                    continue
-                                _atom1, _atom2 = atom1, atom2
-
+                            # """
+                            # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
+                            #     atom1 = {'chain_id': chain_id_1,
+                            #              'seq_id': seq_id_1,
+                            #              'comp_id': comp_id_1,
+                            #              'atom_id': atom_id_1}
+                            #     atom2 = {'chain_id': chain_id_2,
+                            #              'seq_id': seq_id_2,
+                            #              'comp_id': comp_id_2,
+                            #              'atom_id': atom_id_2}
+                            #     if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                            #        and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                            #         prev_id, _atom1, _atom2 = _id, atom1, atom2
+                            #         continue
+                            #     _atom1, _atom2 = atom1, atom2
+                            # """
                             prev_id = _id
 
                             combination_id = row[combination_id_col] if combination_id_col != -1 else None
@@ -52079,6 +52080,8 @@ class NmrDpUtility:
                             offset = abs(seq_id_1 - seq_id_2)
                             ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
                             uniq = combination_id in emptyValue and not ambig
+
+                            NOE_tot_num += 1
 
                             if uniq:
                                 NOE_unique_tot_num += 1
@@ -52165,7 +52168,7 @@ class NmrDpUtility:
                         continue
                     constraint_type = get_first_sf_tag(sf, 'Constraint_type')
                     if 'ROE' in constraint_type:
-                        ROE_tot_num += sf_item['id']
+                        # ROE_tot_num += sf_item['id']
 
                         lp = sf_item['loop']
 
@@ -52179,10 +52182,10 @@ class NmrDpUtility:
                         comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
                         atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                         atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
-                        try:
-                            member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
-                        except ValueError:
-                            member_logic_code_col = -1
+                        # try:
+                        #     member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
+                        # except ValueError:
+                        #     member_logic_code_col = -1
                         try:
                             combination_id_col = lp.tags.index(item_names['combination_id'])
                         except ValueError:
@@ -52193,11 +52196,11 @@ class NmrDpUtility:
                             upper_limit_col = -1
 
                         prev_id = -1
-                        _atom1 = _atom2 = None
+                        # _atom1 = _atom2 = None
 
                         for row in lp:
                             _id = int(row[id_col])
-                            member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
+                            # member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
                             try:
                                 chain_id_1 = int(row[chain_id_1_col])
                                 chain_id_2 = int(row[chain_id_2_col])
@@ -52209,23 +52212,24 @@ class NmrDpUtility:
                             comp_id_2 = row[comp_id_2_col]
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
-                            if atom_id_1 is None or atom_id_2 is None:
+                            if atom_id_1 is None or atom_id_2 is None or _id == prev_id:
                                 continue
-                            if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
-                                atom1 = {'chain_id': chain_id_1,
-                                         'seq_id': seq_id_1,
-                                         'comp_id': comp_id_1,
-                                         'atom_id': atom_id_1}
-                                atom2 = {'chain_id': chain_id_2,
-                                         'seq_id': seq_id_2,
-                                         'comp_id': comp_id_2,
-                                         'atom_id': atom_id_2}
-                                if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
-                                   and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
-                                    prev_id, _atom1, _atom2 = _id, atom1, atom2
-                                    continue
-                                _atom1, _atom2 = atom1, atom2
-
+                            # """
+                            # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
+                            #     atom1 = {'chain_id': chain_id_1,
+                            #              'seq_id': seq_id_1,
+                            #              'comp_id': comp_id_1,
+                            #              'atom_id': atom_id_1}
+                            #     atom2 = {'chain_id': chain_id_2,
+                            #              'seq_id': seq_id_2,
+                            #              'comp_id': comp_id_2,
+                            #              'atom_id': atom_id_2}
+                            #     if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                            #        and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                            #         prev_id, _atom1, _atom2 = _id, atom1, atom2
+                            #         continue
+                            #     _atom1, _atom2 = atom1, atom2
+                            # """
                             prev_id = _id
 
                             combination_id = row[combination_id_col] if combination_id_col != -1 else None
@@ -52234,6 +52238,8 @@ class NmrDpUtility:
                             offset = abs(seq_id_1 - seq_id_2)
                             ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
                             uniq = combination_id in emptyValue and not ambig
+
+                            ROE_tot_num += 1
 
                             if chain_id_1 == chain_id_2:
                                 if uniq:
@@ -52274,7 +52280,7 @@ class NmrDpUtility:
             Dihedral_angle_tot_num = 0
             if content_subtype in self.__mr_sf_dict_holder:
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                    Dihedral_angle_tot_num += sf_item['id']
+                    Dihedral_angle_tot_num += len(sf_item['loop'])
 
             if Dihedral_angle_tot_num > 0:
                 cst_sf.add_tag('Dihedral_angle_tot_num', Dihedral_angle_tot_num)
@@ -52624,10 +52630,9 @@ class NmrDpUtility:
 
             if content_subtype in self.__mr_sf_dict_holder:
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-
-                    RDC_tot_num += sf_item['id']
-
                     lp = sf_item['loop']
+
+                    # RDC_tot_num += sf_item['id']
 
                     item_names = self.item_names_in_rdc_loop[file_type]
                     id_col = lp.tags.index('ID')
@@ -52665,6 +52670,8 @@ class NmrDpUtility:
 
                         vector = {atom_id_1, atom_id_2}
                         offset = abs(seq_id_1 - seq_id_2)
+
+                        RDC_tot_num += 1
 
                         if chain_id_1 == chain_id_2:
                             if vector == {'H', 'C'} and offset == 1:
@@ -52892,7 +52899,7 @@ class NmrDpUtility:
             Derived_coupling_const_tot_num = 0
             if content_subtype in self.__mr_sf_dict_holder:
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                    Derived_coupling_const_tot_num += sf_item['id']
+                    Derived_coupling_const_tot_num += len(sf_item['loop'])
 
             if Derived_coupling_const_tot_num > 0:
                 cst_sf.add_tag('Derived_coupling_const_tot_num', Derived_coupling_const_tot_num)
@@ -52902,7 +52909,7 @@ class NmrDpUtility:
             Derived_CACB_chem_shift_tot_num = 0
             if content_subtype in self.__mr_sf_dict_holder:
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                    Derived_CACB_chem_shift_tot_num += sf_item['id']
+                    Derived_CACB_chem_shift_tot_num += len(sf_item['loop'])
 
             if Derived_CACB_chem_shift_tot_num > 0:
                 cst_sf.add_tag('Derived_CACB_chem_shift_tot_num', Derived_CACB_chem_shift_tot_num)
@@ -52912,7 +52919,7 @@ class NmrDpUtility:
             Derived_1H_chem_shift_tot_num = 0
             if content_subtype in self.__mr_sf_dict_holder:
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                    Derived_1H_chem_shift_tot_num += sf_item['id']
+                    Derived_1H_chem_shift_tot_num += len(sf_item['loop'])
 
             if Derived_1H_chem_shift_tot_num > 0:
                 cst_sf.add_tag('Derived_1H_chem_shift_tot_num', Derived_1H_chem_shift_tot_num)
@@ -52929,7 +52936,7 @@ class NmrDpUtility:
                     constraint_type = get_first_sf_tag(sf, 'Constraint_type')
                     if constraint_type != 'photo cidnp':
                         continue
-                    Derived_photo_cidnps_tot_num += sf_item['id']
+                    Derived_photo_cidnps_tot_num += len(sf_item['loop'])
 
             if Derived_photo_cidnps_tot_num > 0:
                 cst_sf.add_tag('Derived_photo_cidnps_tot_num', Derived_photo_cidnps_tot_num)
@@ -52944,7 +52951,7 @@ class NmrDpUtility:
                     constraint_type = get_first_sf_tag(sf, 'Constraint_type')
                     if constraint_type != 'paramagnetic relaxation':
                         continue
-                    Derived_paramag_relax_tot_num += sf_item['id']
+                    Derived_paramag_relax_tot_num += len(sf_item['loop'])
 
             if Derived_paramag_relax_tot_num > 0:
                 cst_sf.add_tag('Derived_paramag_relax_tot_num', Derived_paramag_relax_tot_num)
@@ -53933,7 +53940,7 @@ class NmrDpUtility:
                         if 'lower' in potential_type:
                             continue
                         if 'constraint_subtype' in sf_item[sf_framecode] and 'NOE' in sf_item[sf_framecode]['constraint_subtype']:
-                            NOE_tot_num += sf_item[sf_framecode]['id']
+                            # NOE_tot_num += sf_item[sf_framecode]['id']
 
                             if __pynmrstar_v3_2__:
                                 lp = sf.get_loop(lp_category)
@@ -53950,10 +53957,10 @@ class NmrDpUtility:
                             comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
                             atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                             atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
-                            try:
-                                member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
-                            except ValueError:
-                                member_logic_code_col = -1
+                            # try:
+                            #     member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
+                            # except ValueError:
+                            #     member_logic_code_col = -1
                             try:
                                 combination_id_col = lp.tags.index(item_names['combination_id'])
                             except ValueError:
@@ -53964,11 +53971,11 @@ class NmrDpUtility:
                                 upper_limit_col = -1
 
                             prev_id = -1
-                            _atom1 = _atom2 = None
+                            # _atom1 = _atom2 = None
 
                             for row in lp:
                                 _id = int(row[id_col])
-                                member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
+                                # member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
                                 try:
                                     chain_id_1 = int(row[chain_id_1_col])
                                     chain_id_2 = int(row[chain_id_2_col])
@@ -53980,23 +53987,24 @@ class NmrDpUtility:
                                 comp_id_2 = row[comp_id_2_col]
                                 atom_id_1 = row[atom_id_1_col]
                                 atom_id_2 = row[atom_id_2_col]
-                                if atom_id_1 is None or atom_id_2 is None:
+                                if atom_id_1 is None or atom_id_2 is None or _id == prev_id:
                                     continue
-                                if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
-                                    atom1 = {'chain_id': chain_id_1,
-                                             'seq_id': seq_id_1,
-                                             'comp_id': comp_id_1,
-                                             'atom_id': atom_id_1}
-                                    atom2 = {'chain_id': chain_id_2,
-                                             'seq_id': seq_id_2,
-                                             'comp_id': comp_id_2,
-                                             'atom_id': atom_id_2}
-                                    if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
-                                       and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
-                                        prev_id, _atom1, _atom2 = _id, atom1, atom2
-                                        continue
-                                    _atom1, _atom2 = atom1, atom2
-
+                                # """
+                                # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
+                                #     atom1 = {'chain_id': chain_id_1,
+                                #              'seq_id': seq_id_1,
+                                #              'comp_id': comp_id_1,
+                                #              'atom_id': atom_id_1}
+                                #     atom2 = {'chain_id': chain_id_2,
+                                #              'seq_id': seq_id_2,
+                                #              'comp_id': comp_id_2,
+                                #              'atom_id': atom_id_2}
+                                #     if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                #        and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                #         prev_id, _atom1, _atom2 = _id, atom1, atom2
+                                #         continue
+                                #     _atom1, _atom2 = atom1, atom2
+                                # """
                                 prev_id = _id
 
                                 combination_id = row[combination_id_col] if combination_id_col != -1 else None
@@ -54005,6 +54013,8 @@ class NmrDpUtility:
                                 offset = abs(seq_id_1 - seq_id_2)
                                 ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
                                 uniq = combination_id in emptyValue and not ambig
+
+                                NOE_tot_num += 1
 
                                 if uniq:
                                     NOE_unique_tot_num += 1
@@ -54092,7 +54102,7 @@ class NmrDpUtility:
                         if 'lower' in potential_type:
                             continue
                         if 'constraint_subtype' in sf_item[sf_framecode] and 'ROE' in sf_item[sf_framecode]['constraint_subtype']:
-                            ROE_tot_num += sf_item[sf_framecode]['id']
+                            # ROE_tot_num += sf_item[sf_framecode]['id']
 
                             if __pynmrstar_v3_2__:
                                 lp = sf.get_loop(lp_category)
@@ -54109,10 +54119,10 @@ class NmrDpUtility:
                             comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
                             atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                             atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
-                            try:
-                                member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
-                            except ValueError:
-                                member_logic_code_col = -1
+                            # try:
+                            #     member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
+                            # except ValueError:
+                            #     member_logic_code_col = -1
                             try:
                                 combination_id_col = lp.tags.index(item_names['combination_id'])
                             except ValueError:
@@ -54123,11 +54133,11 @@ class NmrDpUtility:
                                 upper_limit_col = -1
 
                             prev_id = -1
-                            _atom1 = _atom2 = None
+                            # _atom1 = _atom2 = None
 
                             for row in lp:
                                 _id = int(row[id_col])
-                                member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
+                                # member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
                                 try:
                                     chain_id_1 = int(row[chain_id_1_col])
                                     chain_id_2 = int(row[chain_id_2_col])
@@ -54139,23 +54149,24 @@ class NmrDpUtility:
                                 comp_id_2 = row[comp_id_2_col]
                                 atom_id_1 = row[atom_id_1_col]
                                 atom_id_2 = row[atom_id_2_col]
-                                if atom_id_1 is None or atom_id_2 is None:
+                                if atom_id_1 is None or atom_id_2 is None or _id == prev_id:
                                     continue
-                                if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
-                                    atom1 = {'chain_id': chain_id_1,
-                                             'seq_id': seq_id_1,
-                                             'comp_id': comp_id_1,
-                                             'atom_id': atom_id_1}
-                                    atom2 = {'chain_id': chain_id_2,
-                                             'seq_id': seq_id_2,
-                                             'comp_id': comp_id_2,
-                                             'atom_id': atom_id_2}
-                                    if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
-                                       and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
-                                        prev_id, _atom1, _atom2 = _id, atom1, atom2
-                                        continue
-                                    _atom1, _atom2 = atom1, atom2
-
+                                # """
+                                # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
+                                #     atom1 = {'chain_id': chain_id_1,
+                                #              'seq_id': seq_id_1,
+                                #              'comp_id': comp_id_1,
+                                #              'atom_id': atom_id_1}
+                                #     atom2 = {'chain_id': chain_id_2,
+                                #              'seq_id': seq_id_2,
+                                #              'comp_id': comp_id_2,
+                                #              'atom_id': atom_id_2}
+                                #     if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                #        and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                #         prev_id, _atom1, _atom2 = _id, atom1, atom2
+                                #         continue
+                                #     _atom1, _atom2 = atom1, atom2
+                                # """
                                 prev_id = _id
 
                                 combination_id = row[combination_id_col] if combination_id_col != -1 else None
@@ -54164,6 +54175,8 @@ class NmrDpUtility:
                                 offset = abs(seq_id_1 - seq_id_2)
                                 ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
                                 uniq = combination_id in emptyValue and not ambig
+
+                                ROE_tot_num += 1
 
                                 if chain_id_1 == chain_id_2:
                                     if uniq:
@@ -54605,7 +54618,7 @@ class NmrDpUtility:
                         else:
                             lp = sf.get_loop_by_category(lp_category)
 
-                        RDC_tot_num += sf_item[sf_framecode]['id']
+                        # RDC_tot_num += sf_item[sf_framecode]['id']
 
                         item_names = self.item_names_in_rdc_loop[file_type]
                         id_col = lp.tags.index('ID')
@@ -54643,6 +54656,8 @@ class NmrDpUtility:
 
                             vector = {atom_id_1, atom_id_2}
                             offset = abs(seq_id_1 - seq_id_2)
+
+                            RDC_tot_num += 1
 
                             if chain_id_1 == chain_id_2:
                                 if vector == {'H', 'C'} and offset == 1:
@@ -54754,7 +54769,7 @@ class NmrDpUtility:
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
             if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'hydrogen bond':
-                H_bonds_constrained_tot_num += sf_item[sf_framecode]['id']
+                H_bonds_constrained_tot_num += len(sf_item[sf_framecode]['loop'])
 
         if H_bonds_constrained_tot_num > 0:
             cst_sf.add_tag('H_bonds_constrained_tot_num', H_bonds_constrained_tot_num)
@@ -54763,7 +54778,7 @@ class NmrDpUtility:
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
             if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'disulfide bond':
-                SS_bonds_constrained_tot_num += sf_item[sf_framecode]['id']
+                SS_bonds_constrained_tot_num += len(sf_item[sf_framecode]['loop'])
 
         if SS_bonds_constrained_tot_num > 0:
             cst_sf.add_tag('SS_bonds_constrained_tot_num', SS_bonds_constrained_tot_num)
@@ -54772,7 +54787,7 @@ class NmrDpUtility:
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
             if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'photo cidnp':
-                Derived_photo_cidnps_tot_num += sf_item[sf_framecode]['id']
+                Derived_photo_cidnps_tot_num += len(sf_item[sf_framecode]['loop'])
 
         if Derived_photo_cidnps_tot_num > 0:
             cst_sf.add_tag('Derived_photo_cidnps_tot_num', Derived_photo_cidnps_tot_num)
@@ -54781,7 +54796,7 @@ class NmrDpUtility:
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
             if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'paramagnetic relaxation':
-                Derived_paramag_relax_tot_num += sf_item[sf_framecode]['id']
+                Derived_paramag_relax_tot_num += len(sf_item[sf_framecode]['loop'])
 
         if Derived_paramag_relax_tot_num > 0:
             cst_sf.add_tag('Derived_paramag_relax_tot_num', Derived_paramag_relax_tot_num)

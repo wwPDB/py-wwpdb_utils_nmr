@@ -4282,16 +4282,16 @@ save_constraint_statistics
    _Constraint_stat_list.NOE_tot_num                      1072
    _Constraint_stat_list.Dihedral_angle_tot_num           70
    _Constraint_stat_list.Protein_dihedral_angle_tot_num   70
-   _Constraint_stat_list.NOE_intraresidue_tot_num         248
-   _Constraint_stat_list.NOE_sequential_tot_num           238
-   _Constraint_stat_list.NOE_medium_range_tot_num         119
-   _Constraint_stat_list.NOE_long_range_tot_num           314
-   _Constraint_stat_list.NOE_unique_tot_num               919
-   _Constraint_stat_list.NOE_intraresidue_unique_tot_num  248
-   _Constraint_stat_list.NOE_sequential_unique_tot_num    238
-   _Constraint_stat_list.NOE_medium_range_unique_tot_num  119
-   _Constraint_stat_list.NOE_long_range_unique_tot_num    314
-   _Constraint_stat_list.NOE_unamb_intramol_tot_num       919
+   _Constraint_stat_list.NOE_intraresidue_tot_num         320
+   _Constraint_stat_list.NOE_sequential_tot_num           280
+   _Constraint_stat_list.NOE_medium_range_tot_num         127
+   _Constraint_stat_list.NOE_long_range_tot_num           345
+   _Constraint_stat_list.NOE_unique_tot_num               1072
+   _Constraint_stat_list.NOE_intraresidue_unique_tot_num  320
+   _Constraint_stat_list.NOE_sequential_unique_tot_num    280
+   _Constraint_stat_list.NOE_medium_range_unique_tot_num  127
+   _Constraint_stat_list.NOE_long_range_unique_tot_num    345
+   _Constraint_stat_list.NOE_unamb_intramol_tot_num       1072
    _Constraint_stat_list.NOE_unamb_intermol_tot_num       0
    _Constraint_stat_list.NOE_ambig_intramol_tot_num       0
    _Constraint_stat_list.NOE_ambig_intermol_tot_num       0

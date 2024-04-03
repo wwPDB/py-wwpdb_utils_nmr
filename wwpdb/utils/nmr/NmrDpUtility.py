@@ -53156,18 +53156,19 @@ class NmrDpUtility:
                         constraint_type = 'residual dipolar coupling'
                     constraint_subsubtype = sf_item.get('constraint_subsubtype')
 
-                    id_col = sf_item['loop'].tags.index('ID')
+                    if 'ID' in sf_item['loop'].tags:
+                        id_col = sf_item['loop'].tags.index('ID')
 
-                    count = 0
-                    prev_id = -1
-                    for _row in sf_item['loop']:
-                        _id = int(_row[id_col])
-                        if _id == prev_id:
-                            continue
-                        prev_id = _id
-                        count += 1
+                        count = 0
+                        prev_id = -1
+                        for _row in sf_item['loop']:
+                            _id = int(_row[id_col])
+                            if _id == prev_id:
+                                continue
+                            prev_id = _id
+                            count += 1
 
-                    sf_item['id'] = count
+                        sf_item['id'] = count
 
                     row[6], row[7], row[8], row[9] =\
                         constraint_type, constraint_subtype, constraint_subsubtype, sf_item['id']

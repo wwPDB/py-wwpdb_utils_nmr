@@ -53131,7 +53131,6 @@ class NmrDpUtility:
                         constraint_type, constraint_subtype, constraint_subsubtype, sf_item['id']
                     row[10], row[11] = 1, self.__entry_id
 
-                    print(row)
                     cf_loop.add_data(row)
 
         ext_mr_sf_holder = []

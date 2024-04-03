@@ -52280,7 +52280,7 @@ class NmrDpUtility:
             Dihedral_angle_tot_num = 0
             if content_subtype in self.__mr_sf_dict_holder:
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                    Dihedral_angle_tot_num += len(sf_item['loop'])
+                    Dihedral_angle_tot_num += sf_item['id']
 
             if Dihedral_angle_tot_num > 0:
                 cst_sf.add_tag('Dihedral_angle_tot_num', Dihedral_angle_tot_num)
@@ -52899,7 +52899,7 @@ class NmrDpUtility:
             Derived_coupling_const_tot_num = 0
             if content_subtype in self.__mr_sf_dict_holder:
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                    Derived_coupling_const_tot_num += len(sf_item['loop'])
+                    Derived_coupling_const_tot_num += sf_item['id']
 
             if Derived_coupling_const_tot_num > 0:
                 cst_sf.add_tag('Derived_coupling_const_tot_num', Derived_coupling_const_tot_num)
@@ -52909,7 +52909,7 @@ class NmrDpUtility:
             Derived_CACB_chem_shift_tot_num = 0
             if content_subtype in self.__mr_sf_dict_holder:
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                    Derived_CACB_chem_shift_tot_num += len(sf_item['loop'])
+                    Derived_CACB_chem_shift_tot_num += sf_item['id']
 
             if Derived_CACB_chem_shift_tot_num > 0:
                 cst_sf.add_tag('Derived_CACB_chem_shift_tot_num', Derived_CACB_chem_shift_tot_num)
@@ -52919,7 +52919,7 @@ class NmrDpUtility:
             Derived_1H_chem_shift_tot_num = 0
             if content_subtype in self.__mr_sf_dict_holder:
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-                    Derived_1H_chem_shift_tot_num += len(sf_item['loop'])
+                    Derived_1H_chem_shift_tot_num += sf_item['id']
 
             if Derived_1H_chem_shift_tot_num > 0:
                 cst_sf.add_tag('Derived_1H_chem_shift_tot_num', Derived_1H_chem_shift_tot_num)
@@ -52936,7 +52936,7 @@ class NmrDpUtility:
                     constraint_type = get_first_sf_tag(sf, 'Constraint_type')
                     if constraint_type != 'photo cidnp':
                         continue
-                    Derived_photo_cidnps_tot_num += len(sf_item['loop'])
+                    Derived_photo_cidnps_tot_num += sf_item['id']
 
             if Derived_photo_cidnps_tot_num > 0:
                 cst_sf.add_tag('Derived_photo_cidnps_tot_num', Derived_photo_cidnps_tot_num)
@@ -52951,7 +52951,7 @@ class NmrDpUtility:
                     constraint_type = get_first_sf_tag(sf, 'Constraint_type')
                     if constraint_type != 'paramagnetic relaxation':
                         continue
-                    Derived_paramag_relax_tot_num += len(sf_item['loop'])
+                    Derived_paramag_relax_tot_num += sf_item['id']
 
             if Derived_paramag_relax_tot_num > 0:
                 cst_sf.add_tag('Derived_paramag_relax_tot_num', Derived_paramag_relax_tot_num)
@@ -53113,10 +53113,25 @@ class NmrDpUtility:
                     if constraint_subtype is not None and constraint_subtype == 'RDC':
                         constraint_type = 'residual dipolar coupling'
                     constraint_subsubtype = sf_item.get('constraint_subsubtype')
+
+                    id_col = sf_item['loop'].tags.index('ID')
+
+                    count = 0
+                    prev_id = -1
+                    for _row in sf_item['loop']:
+                        _id = int(_row[id_col])
+                        if _id == prev_id:
+                            continue
+                        prev_id = _id
+                        count += 1
+
+                    sf_item['id'] = count
+
                     row[6], row[7], row[8], row[9] =\
                         constraint_type, constraint_subtype, constraint_subsubtype, sf_item['id']
                     row[10], row[11] = 1, self.__entry_id
 
+                    print(row)
                     cf_loop.add_data(row)
 
         ext_mr_sf_holder = []
@@ -54750,7 +54765,6 @@ class NmrDpUtility:
                             id_col = lp.tags.index('ID')
 
                             count = 0
-
                             prev_id = -1
                             for row in lp:
                                 _id = int(row[id_col])
@@ -54769,7 +54783,7 @@ class NmrDpUtility:
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
             if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'hydrogen bond':
-                H_bonds_constrained_tot_num += len(sf_item[sf_framecode]['loop'])
+                H_bonds_constrained_tot_num += sf_item[sf_framecode]['id']
 
         if H_bonds_constrained_tot_num > 0:
             cst_sf.add_tag('H_bonds_constrained_tot_num', H_bonds_constrained_tot_num)
@@ -54778,7 +54792,7 @@ class NmrDpUtility:
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
             if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'disulfide bond':
-                SS_bonds_constrained_tot_num += len(sf_item[sf_framecode]['loop'])
+                SS_bonds_constrained_tot_num += sf_item[sf_framecode]['id']
 
         if SS_bonds_constrained_tot_num > 0:
             cst_sf.add_tag('SS_bonds_constrained_tot_num', SS_bonds_constrained_tot_num)
@@ -54787,7 +54801,7 @@ class NmrDpUtility:
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
             if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'photo cidnp':
-                Derived_photo_cidnps_tot_num += len(sf_item[sf_framecode]['loop'])
+                Derived_photo_cidnps_tot_num += sf_item[sf_framecode]['id']
 
         if Derived_photo_cidnps_tot_num > 0:
             cst_sf.add_tag('Derived_photo_cidnps_tot_num', Derived_photo_cidnps_tot_num)
@@ -54796,7 +54810,7 @@ class NmrDpUtility:
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
             if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'paramagnetic relaxation':
-                Derived_paramag_relax_tot_num += len(sf_item[sf_framecode]['loop'])
+                Derived_paramag_relax_tot_num += sf_item[sf_framecode]['id']
 
         if Derived_paramag_relax_tot_num > 0:
             cst_sf.add_tag('Derived_paramag_relax_tot_num', Derived_paramag_relax_tot_num)

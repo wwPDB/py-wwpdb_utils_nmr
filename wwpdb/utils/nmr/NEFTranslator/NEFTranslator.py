@@ -1512,16 +1512,22 @@ class NEFTranslator:
                     if not wrong_chain_id_anno:
                         wrong_chain_id_anno = True
                         offset = None
+                        _seq_id_set = set()
                         for row in seq_data:
                             if not row[2].isdigit():
                                 wrong_chain_id_anno = False
                                 break
+                            _seq_id = int(row[0])
+                            _chain_id = int(row[2])
+                            _seq_id_set.add(_seq_id)
                             if offset is None:
-                                offset = int(row[0]) - int(row[2])
+                                offset = _seq_id - _chain_id
                                 continue
-                            if int(row[0]) - int(row[2]) != offset:
+                            if _seq_id - _chain_id != offset:
                                 wrong_chain_id_anno = False
                                 break
+                        if len(_seq_id_set) < 2:
+                            wrong_chain_id_anno = False
                     if wrong_chain_id_anno:
                         has_valid_chain_id = False
                 if not has_valid_chain_id:

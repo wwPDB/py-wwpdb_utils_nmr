@@ -4929,7 +4929,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
         return True
 
     if len(collections.Counter(chainIds).most_common()) > 1:
-        return '.' if is_connected() else None
+        return None  # '.' if is_connected() else None
 
     commonSeqId = collections.Counter(seqIds).most_common()
 

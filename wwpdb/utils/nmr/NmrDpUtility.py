@@ -53174,7 +53174,7 @@ class NmrDpUtility:
                         constraint_type = 'residual dipolar coupling'
                     constraint_subsubtype = sf_item.get('constraint_subsubtype')
 
-                    if 'ID' in sf_item['loop'].tags:
+                    try:
                         id_col = sf_item['loop'].tags.index('ID')
 
                         count = 0
@@ -53187,6 +53187,8 @@ class NmrDpUtility:
                             count += 1
 
                         sf_item['id'] = count
+                    except AttributeError:
+                        pass
 
                     row[6], row[7], row[8], row[9] =\
                         constraint_type, constraint_subtype, constraint_subsubtype, sf_item['id']

@@ -1644,7 +1644,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                                             self.atomSelectionSet[2],
                                                                             self.atomSelectionSet[3]):
                             angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                                   [atom1, atom2, atom3, atom4])
+                                                                   [atom1, atom2, atom3, atom4],
+                                                                   self.__cR, self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
                             if angleName is None:
                                 continue
                             if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
@@ -3133,7 +3134,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                                             self.atomSelectionSet[2],
                                                                             self.atomSelectionSet[3]):
                             angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                                   [atom1, atom2, atom3, atom4])
+                                                                   [atom1, atom2, atom3, atom4],
+                                                                   self.__cR, self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
                             if angleName is None:
                                 continue
                             if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):

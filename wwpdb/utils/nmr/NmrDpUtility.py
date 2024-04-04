@@ -28282,7 +28282,8 @@ class NmrDpUtility:
 
         return None
 
-    def __getCoordBondLength(self, cif_chain_id_1, cif_seq_id_1, cif_atom_id_1, cif_chain_id_2, cif_seq_id_2, cif_atom_id_2, label_scheme=True):
+    def __getCoordBondLength(self, cif_chain_id_1, cif_seq_id_1, cif_atom_id_1, cif_chain_id_2, cif_seq_id_2, cif_atom_id_2,
+                             label_scheme=True):
         """ Return the bond length of given two CIF atoms.
             @return: the bond length
         """
@@ -46844,19 +46845,23 @@ class NmrDpUtility:
 
         try:
 
-            filter_items = [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                            {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                            {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
-                            {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id}
-                            ]
+            if self.__cR.hasCategory('struct_conn'):
+                filter_items = [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
+                                {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id}
+                                ]
 
-            if not self.__bmrb_only and self.__cR.hasItem('struct_conn', 'pdbx_leaving_atom_flag'):
-                filter_items.append({'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'})
+                if not self.__bmrb_only and self.__cR.hasItem('struct_conn', 'pdbx_leaving_atom_flag'):
+                    filter_items.append({'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'})
 
-            struct_conn = self.__cR.getDictListWithFilter('struct_conn',
-                                                          [{'name': 'conn_type_id', 'type': 'str'}
-                                                           ],
-                                                          filter_items)
+                struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+                                                              [{'name': 'conn_type_id', 'type': 'str'}
+                                                               ],
+                                                              filter_items)
+
+            else:
+                struct_conn = []
 
         except Exception as e:
 
@@ -46880,17 +46885,18 @@ class NmrDpUtility:
 
                 try:
 
-                    close_contact = self.__cR.getDictListWithFilter('pdbx_validate_close_contact',
-                                                                    [{'name': 'dist', 'type': 'float'}
-                                                                     ],
-                                                                    [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id},
-                                                                     {'name': 'auth_asym_id_1', 'type': 'str', 'value': auth_cif_chain_id},
-                                                                     {'name': 'auth_seq_id_1', 'type': 'int', 'value': auth_beg_cif_seq_id},
-                                                                     {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
-                                                                     {'name': 'auth_asym_id_2', 'type': 'str', 'value': auth_cif_chain_id},
-                                                                     {'name': 'auth_seq_id_2', 'type': 'int', 'value': auth_end_cif_seq_id},
-                                                                     {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
-                                                                     ])
+                    if self.__cR.hasCategory('pdbx_validate_close_contact'):
+                        close_contact = self.__cR.getDictListWithFilter('pdbx_validate_close_contact',
+                                                                        [{'name': 'dist', 'type': 'float'}
+                                                                         ],
+                                                                        [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id},
+                                                                         {'name': 'auth_asym_id_1', 'type': 'str', 'value': auth_cif_chain_id},
+                                                                         {'name': 'auth_seq_id_1', 'type': 'int', 'value': auth_beg_cif_seq_id},
+                                                                         {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
+                                                                         {'name': 'auth_asym_id_2', 'type': 'str', 'value': auth_cif_chain_id},
+                                                                         {'name': 'auth_seq_id_2', 'type': 'int', 'value': auth_end_cif_seq_id},
+                                                                         {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
+                                                                         ])
 
                 except Exception as e:
 
@@ -46914,9 +46920,9 @@ class NmrDpUtility:
                 if dist is None:
                     return False
 
-                return 1.2 < dist < 1.4
+                return 1.0 < dist < 2.4
 
-            return 1.2 < close_contact[0]['dist'] < 1.4
+            return 1.0 < close_contact[0]['dist'] < 2.4
 
         return struct_conn[0]['conn_type_id'].startswith('covale')
 
@@ -46951,18 +46957,22 @@ class NmrDpUtility:
 
             try:
 
-                alias = not self.__cR.hasItem('struct_mon_prot_cis', 'pdbx_PDB_model_num')
+                if self.__cR.hasCategory('struct_mon_prot_cis'):
+                    alias = not self.__cR.hasItem('struct_mon_prot_cis', 'pdbx_PDB_model_num')
 
-                model_num_name = 'ndb_model_num' if alias else 'pdbx_PDB_model_num'
-                label_asym_id_2_name = 'ndb_label_asym_id_2' if alias else 'pdbx_label_asym_id_2'
-                label_seq_id_2_name = 'ndb_label_seq_id_2' if alias else 'pdbx_label_seq_id_2'
+                    model_num_name = 'ndb_model_num' if alias else 'pdbx_PDB_model_num'
+                    label_asym_id_2_name = 'ndb_label_asym_id_2' if alias else 'pdbx_label_asym_id_2'
+                    label_seq_id_2_name = 'ndb_label_seq_id_2' if alias else 'pdbx_label_seq_id_2'
 
-                prot_cis = self.__cR.getDictListWithFilter('struct_mon_prot_cis',
-                                                           [{'name': model_num_name, 'type': 'int'}
-                                                            ],
-                                                           [{'name': label_asym_id_2_name, 'type': 'str', 'value': cif_chain_id},
-                                                            {'name': label_seq_id_2_name, 'type': 'int', 'value': cif_seq_id}
-                                                            ])
+                    prot_cis = self.__cR.getDictListWithFilter('struct_mon_prot_cis',
+                                                               [{'name': model_num_name, 'type': 'int'}
+                                                                ],
+                                                               [{'name': label_asym_id_2_name, 'type': 'str', 'value': cif_chain_id},
+                                                                {'name': label_seq_id_2_name, 'type': 'int', 'value': cif_seq_id}
+                                                                ])
+
+                else:
+                    prot_cis = []
 
             except Exception as e:
 
@@ -47585,18 +47595,22 @@ class NmrDpUtility:
 
         try:
 
-            struct_conn = self.__cR.getDictListWithFilter('struct_conn',
-                                                          [{'name': 'conn_type_id', 'type': 'str'},
-                                                           {'name': 'ptnr1_label_asym_id', 'type': 'str'},
-                                                           {'name': 'ptnr1_label_seq_id', 'type': 'int'},
-                                                           {'name': 'ptnr1_label_comp_id', 'type': 'str'},
-                                                           {'name': 'ptnr1_label_atom_id', 'type': 'str'},
-                                                           {'name': 'ptnr2_label_asym_id', 'type': 'str'},
-                                                           {'name': 'ptnr2_label_seq_id', 'type': 'int'},
-                                                           {'name': 'ptnr2_label_comp_id', 'type': 'str'},
-                                                           {'name': 'ptnr2_label_atom_id', 'type': 'str'},
-                                                           {'name': 'pdbx_dist_value', 'type': 'float'}
-                                                           ])
+            if self.__cR.hasCategory('struct_conn'):
+                struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+                                                              [{'name': 'conn_type_id', 'type': 'str'},
+                                                               {'name': 'ptnr1_label_asym_id', 'type': 'str'},
+                                                               {'name': 'ptnr1_label_seq_id', 'type': 'int'},
+                                                               {'name': 'ptnr1_label_comp_id', 'type': 'str'},
+                                                               {'name': 'ptnr1_label_atom_id', 'type': 'str'},
+                                                               {'name': 'ptnr2_label_asym_id', 'type': 'str'},
+                                                               {'name': 'ptnr2_label_seq_id', 'type': 'int'},
+                                                               {'name': 'ptnr2_label_comp_id', 'type': 'str'},
+                                                               {'name': 'ptnr2_label_atom_id', 'type': 'str'},
+                                                               {'name': 'pdbx_dist_value', 'type': 'float'}
+                                                               ])
+
+            else:
+                struct_conn = []
 
         except Exception as e:
 
@@ -47975,18 +47989,22 @@ class NmrDpUtility:
 
         try:
 
-            struct_conn = self.__cR.getDictListWithFilter('struct_conn',
-                                                          [{'name': 'conn_type_id', 'type': 'str'},
-                                                           {'name': 'ptnr1_label_asym_id', 'type': 'str'},
-                                                           {'name': 'ptnr1_label_seq_id', 'type': 'int'},
-                                                           {'name': 'ptnr1_label_comp_id', 'type': 'str'},
-                                                           {'name': 'ptnr1_label_atom_id', 'type': 'str'},
-                                                           {'name': 'ptnr2_label_asym_id', 'type': 'str'},
-                                                           {'name': 'ptnr2_label_seq_id', 'type': 'int'},
-                                                           {'name': 'ptnr2_label_comp_id', 'type': 'str'},
-                                                           {'name': 'ptnr2_label_atom_id', 'type': 'str'},
-                                                           {'name': 'pdbx_dist_value', 'type': 'float'}
-                                                           ])
+            if self.__cR.hasCategory('struct_conn'):
+                struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+                                                              [{'name': 'conn_type_id', 'type': 'str'},
+                                                               {'name': 'ptnr1_label_asym_id', 'type': 'str'},
+                                                               {'name': 'ptnr1_label_seq_id', 'type': 'int'},
+                                                               {'name': 'ptnr1_label_comp_id', 'type': 'str'},
+                                                               {'name': 'ptnr1_label_atom_id', 'type': 'str'},
+                                                               {'name': 'ptnr2_label_asym_id', 'type': 'str'},
+                                                               {'name': 'ptnr2_label_seq_id', 'type': 'int'},
+                                                               {'name': 'ptnr2_label_comp_id', 'type': 'str'},
+                                                               {'name': 'ptnr2_label_atom_id', 'type': 'str'},
+                                                               {'name': 'pdbx_dist_value', 'type': 'float'}
+                                                               ])
+
+            else:
+                struct_conn = []
 
         except Exception as e:
 

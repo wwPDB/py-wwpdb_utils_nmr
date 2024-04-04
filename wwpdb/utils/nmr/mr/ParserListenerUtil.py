@@ -6,6 +6,7 @@
 # 13-Sep-2023  M. Yokochi - construct pseudo CCD from the coordinates (DAOTHER-8817)
 # 29-Sep-2023  M. Yokochi - add atom name mapping dictionary (DAOTHER-8817, 8828)
 # 24-Jan-2024  M. Yokochi - reconstruct polymer/non-polymer sequence based on pdb_mon_id, instead of auth_mon_id (D_1300043061)
+# 04-Apr-2024  M. Yokochi - permit dihedral angle restraint across entities due to ligand split (DAOTHER-9063)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -4896,7 +4897,9 @@ def isAmbigAtomSelection(atoms, csStat):
     return False
 
 
-def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms):
+def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms, cR=None,
+                               representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
+                               modelNumName='PDB_model_num'):
     """ Return type of dihedral angle restraint.
     """
 
@@ -4908,8 +4911,22 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
     chainIds = [a['chain_id'] for a in atoms]
     atomIds = [a['atom_id'] for a in atoms]
 
+    # DAOTHER-9063: Permit dihedral angle restraint across entities due to ligand split
+    def is_connected():
+        if cR is None:
+            return False
+        for idx, atom2 in enumerate(atoms):
+            if idx == 0:
+                continue
+            atom1 = atoms[idx - 1]
+            if not isStructConn(cR, atom1['chain_id'], atom1['seq_id'], atom1['atom_id'],
+                                atom2['chain_id'], atom2['seq_id'], atom2['atom_id'],
+                                representativeModelId, representativeAltId, modelNumName):
+                return False
+        return True
+
     if len(collections.Counter(chainIds).most_common()) > 1:
-        return None
+        return '.' if is_connected() else None
 
     commonSeqId = collections.Counter(seqIds).most_common()
 
@@ -5006,7 +5023,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         break
 
             if found:
-                return None
+                return '.' if is_connected() else None
 
     elif polynucleotide:
 
@@ -5122,7 +5139,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         break
 
             if found:
-                return None
+                return '.' if is_connected() else None
 
         if 'N1' in atomIds:
 
@@ -5135,7 +5152,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                     break
 
             if found:
-                return None
+                return '.' if is_connected() else None
 
         elif 'N9' in atomIds:
 
@@ -5148,7 +5165,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                     break
 
             if found:
-                return None
+                return '.' if is_connected() else None
 
     elif carbohydrates:
 
@@ -5204,9 +5221,9 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         break
 
             if found:
-                return None
+                return '.' if is_connected() else None
 
-    return '.' if lenCommonSeqId == 1 else None
+    return '.' if is_connected() else None
 
 
 def isLikePheOrTyr(compId, ccU):
@@ -5310,7 +5327,9 @@ def startsWithPdbRecord(line):
     return any(line[:-1] == pdb_record[:-1] for pdb_record in LEGACY_PDB_RECORDS if pdb_record.endswith(' '))
 
 
-def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID, modelNumName='PDB_model_num'):
+def isCyclicPolymer(cR, polySeq, authAsymId,
+                    representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
+                    modelNumName='PDB_model_num'):
     """ Return whether a given chain is cyclic polymer based on coordinate annotation.
     """
 
@@ -5332,18 +5351,22 @@ def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=REPRESENTATIV
 
     try:
 
-        filterItems = [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': labelAsymId},
-                       {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': labelAsymId},
-                       {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': begLabelSeqId},
-                       {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': endLabelSeqId},
-                       ]
+        if cR.hasCategory('struct_conn'):
+            filterItems = [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': labelAsymId},
+                           {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': labelAsymId},
+                           {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': begLabelSeqId},
+                           {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': endLabelSeqId},
+                           ]
 
-        if cR.hasItem('struct_conn', 'pdbx_leaving_atom_flag'):
-            filterItems.append({'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'})
+            if cR.hasItem('struct_conn', 'pdbx_leaving_atom_flag'):
+                filterItems.append({'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'})
 
-        struct_conn = cR.getDictListWithFilter('struct_conn',
-                                               [{'name': 'conn_type_id', 'type': 'str'}],
-                                               filterItems)
+            struct_conn = cR.getDictListWithFilter('struct_conn',
+                                                   [{'name': 'conn_type_id', 'type': 'str'}],
+                                                   filterItems)
+
+        else:
+            struct_conn = []
 
     except Exception:
         return False
@@ -5352,17 +5375,21 @@ def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=REPRESENTATIV
 
         try:
 
-            close_contact = cR.getDictListWithFilter('pdbx_validate_close_contact',
-                                                     [{'name': 'dist', 'type': 'float'}
-                                                      ],
-                                                     [{'name': modelNumName, 'type': 'int', 'value': representativeModelId},
-                                                      {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId},
-                                                      {'name': 'auth_seq_id_1', 'type': 'int', 'value': begAuthSeqId},
-                                                      {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
-                                                      {'name': 'auth_asym_id_2', 'type': 'str', 'value': authAsymId},
-                                                      {'name': 'auth_seq_id_2', 'type': 'int', 'value': endAuthSeqId},
-                                                      {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
-                                                      ])
+            if cR.hasCategory('pdbx_validate_close_contact'):
+                close_contact = cR.getDictListWithFilter('pdbx_validate_close_contact',
+                                                         [{'name': 'dist', 'type': 'float'}
+                                                          ],
+                                                         [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId},
+                                                          {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId},
+                                                          {'name': 'auth_seq_id_1', 'type': 'int', 'value': begAuthSeqId},
+                                                          {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
+                                                          {'name': 'auth_asym_id_2', 'type': 'str', 'value': authAsymId},
+                                                          {'name': 'auth_seq_id_2', 'type': 'int', 'value': endAuthSeqId},
+                                                          {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
+                                                          ])
+
+            else:
+                close_contact = []
 
         except Exception:
             return False
@@ -5370,7 +5397,7 @@ def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=REPRESENTATIV
         if len(close_contact) == 0:
 
             bond = getCoordBondLength(cR, labelAsymId, begLabelSeqId, 'N', labelAsymId, endLabelSeqId, 'C',
-                                      representativeAltId, modelNumName)
+                                      representativeAltId, modelNumName, True)
 
             if bond is None:
                 return False
@@ -5380,15 +5407,114 @@ def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=REPRESENTATIV
             if distance is None:
                 return False
 
-            return 1.2 < distance < 1.4
+            return 1.0 < distance < 2.4
 
-        return 1.2 < close_contact[0]['dist'] < 1.4
+        return 1.0 < close_contact[0]['dist'] < 2.4
 
     return struct_conn[0]['conn_type_id'] == 'covale'
 
 
-def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2, labelSeqId2, labelAtomId2,
-                       representativeAltId=REPRESENTATIVE_ALT_ID, modelNumName='PDB_model_num'):
+def isStructConn(cR, authAsymId1, authSeqId1, authAtomId1, authAsymId2, authSeqId2, authAtomId2,
+                 representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
+                 modelNumName='PDB_model_num'):
+    """ Return whether a given atom pair is structurally connected.
+    """
+
+    if cR is None:
+        return False
+
+    try:
+
+        if cR.hasCategory('struct_conn'):
+            filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId1},
+                           {'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId2},
+                           {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': authSeqId1},
+                           {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': authSeqId2},
+                           {'name': 'ptnr1_auth_atom_id', 'type': 'int', 'value': authAtomId1},
+                           {'name': 'ptnr2_auth_atom_id', 'type': 'int', 'value': authAtomId2}
+                           ]
+
+            struct_conn = cR.getDictListWithFilter('struct_conn',
+                                                   [{'name': 'conn_type_id', 'type': 'str'}],
+                                                   filterItems)
+
+            if len(struct_conn) == 0:
+                filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId2},
+                               {'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId1},
+                               {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': authSeqId2},
+                               {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': authSeqId1},
+                               {'name': 'ptnr1_auth_atom_id', 'type': 'int', 'value': authAtomId2},
+                               {'name': 'ptnr2_auth_atom_id', 'type': 'int', 'value': authAtomId1}
+                               ]
+
+                struct_conn = cR.getDictListWithFilter('struct_conn',
+                                                       [{'name': 'conn_type_id', 'type': 'str'}],
+                                                       filterItems)
+
+        else:
+            struct_conn = []
+
+    except Exception:
+        return False
+
+    if len(struct_conn) == 0:
+
+        try:
+
+            if cR.hasCategory('pdbx_validate_close_contact'):
+                close_contact = cR.getDictListWithFilter('pdbx_validate_close_contact',
+                                                         [{'name': 'dist', 'type': 'float'}
+                                                          ],
+                                                         [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId},
+                                                          {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId1},
+                                                          {'name': 'auth_seq_id_1', 'type': 'int', 'value': authSeqId1},
+                                                          {'name': 'auth_atom_id_1', 'type': 'str', 'value': authAtomId1},
+                                                          {'name': 'auth_asym_id_2', 'type': 'str', 'value': authAsymId2},
+                                                          {'name': 'auth_seq_id_2', 'type': 'int', 'value': authSeqId2},
+                                                          {'name': 'auth_atom_id_2', 'type': 'str', 'value': authAtomId2}
+                                                          ])
+
+                if len(close_contact) == 0:
+                    close_contact = cR.getDictListWithFilter('pdbx_validate_close_contact',
+                                                             [{'name': 'dist', 'type': 'float'}
+                                                              ],
+                                                             [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId},
+                                                              {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId2},
+                                                              {'name': 'auth_seq_id_1', 'type': 'int', 'value': authSeqId2},
+                                                              {'name': 'auth_atom_id_1', 'type': 'str', 'value': authAtomId2},
+                                                              {'name': 'auth_asym_id_2', 'type': 'str', 'value': authAsymId1},
+                                                              {'name': 'auth_seq_id_2', 'type': 'int', 'value': authSeqId1},
+                                                              {'name': 'auth_atom_id_2', 'type': 'str', 'value': authAtomId1}
+                                                              ])
+
+            else:
+                close_contact = []
+
+        except Exception:
+            return False
+
+        if len(close_contact) == 0:
+
+            bond = getCoordBondLength(cR, authAsymId1, authSeqId1, authAtomId1, authAsymId2, authSeqId2, authAtomId2,
+                                      representativeAltId, modelNumName, False)
+
+            if bond is None:
+                return False
+
+            distance = next((b['distance'] for b in bond if b['model_id'] == representativeModelId), None)
+
+            if distance is None:
+                return False
+
+            return 1.0 < distance < 2.4
+
+        return 1.0 < close_contact[0]['dist'] < 2.4
+
+    return struct_conn[0]['conn_type_id'] not in emptyValue
+
+
+def getCoordBondLength(cR, asymId1, seqId1, atomId1, asymId2, seqId2, atomId2,
+                       representativeAltId=REPRESENTATIVE_ALT_ID, modelNumName='PDB_model_num', labelScheme=True):
     """ Return the bond length of given two CIF atoms.
         @return: the bond length
     """
@@ -5408,17 +5534,17 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
 
         atom_site_1 = cR.getDictListWithFilter('atom_site',
                                                dataItems,
-                                               [{'name': 'label_asym_id', 'type': 'str', 'value': labelAsymId1},
-                                                {'name': 'label_seq_id', 'type': 'int', 'value': labelSeqId1},
-                                                {'name': 'label_atom_id', 'type': 'str', 'value': labelAtomId1},
+                                               [{'name': 'label_asym_id' if labelScheme else 'auth_asym_id', 'type': 'str', 'value': asymId1},
+                                                {'name': 'label_seq_id' if labelScheme else 'auth_seq_id', 'type': 'int', 'value': seqId1},
+                                                {'name': 'label_atom_id' if labelScheme else 'auth_atom_id', 'type': 'str', 'value': atomId1},
                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                 ])
 
         atom_site_2 = cR.getDictListWithFilter('atom_site',
                                                dataItems,
-                                               [{'name': 'label_asym_id', 'type': 'str', 'value': labelAsymId2},
-                                                {'name': 'label_seq_id', 'type': 'int', 'value': labelSeqId2},
-                                                {'name': 'label_atom_id', 'type': 'str', 'value': labelAtomId2},
+                                               [{'name': 'label_asym_id' if labelScheme else 'auth_asym_id', 'type': 'str', 'value': asymId2},
+                                                {'name': 'label_seq_id' if labelScheme else 'auth_seq_id', 'type': 'int', 'value': seqId2},
+                                                {'name': 'label_atom_id' if labelScheme else 'auth_atom_id', 'type': 'str', 'value': atomId2},
                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                 ])
 

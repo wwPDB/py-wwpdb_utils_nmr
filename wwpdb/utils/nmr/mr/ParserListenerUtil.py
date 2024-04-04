@@ -4897,7 +4897,7 @@ def isAmbigAtomSelection(atoms, csStat):
     return False
 
 
-def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms, cR=None,
+def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms, cR=None, ccU=None,
                                representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
                                modelNumName='PDB_model_num'):
     """ Return type of dihedral angle restraint.
@@ -4919,6 +4919,9 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
             if idx == 0:
                 continue
             atom1 = atoms[idx - 1]
+            if atom1['chain_id'] == atom2['chain_id'] and atom1['seq_id'] == atom2['seq_id']\
+               and ccU.hasBond(atom1['comp_id'], atom1['atom_id'], atom2['atom_id']):
+                continue
             if not isStructConn(cR, atom1['chain_id'], atom1['seq_id'], atom1['atom_id'],
                                 atom2['chain_id'], atom2['seq_id'], atom2['atom_id'],
                                 representativeModelId, representativeAltId, modelNumName):

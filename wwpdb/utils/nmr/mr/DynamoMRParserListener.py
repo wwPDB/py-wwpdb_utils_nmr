@@ -2627,7 +2627,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[3]):
                     angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                            [atom1, atom2, atom3, atom4],
-                                                           self.__cR, self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+                                                           self.__cR, self.__ccU,
+                                                           self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
                     if angleName in emptyValue:
                         continue
                     fixedAngleName = angleName
@@ -2646,7 +2647,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[3]):
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4],
-                                                       self.__cR, self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+                                                       self.__cR, self.__ccU,
+                                                       self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
                 if angleName is None:
                     continue
                 if isinstance(combinationId, int):
@@ -2774,7 +2776,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[3]):
                     angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                            [atom1, atom2, atom3, atom4],
-                                                           self.__cR, self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+                                                           self.__cR, self.__ccU,
+                                                           self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
                     if angleName in emptyValue:
                         continue
                     fixedAngleName = angleName
@@ -2793,7 +2796,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[3]):
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4],
-                                                       self.__cR, self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+                                                       self.__cR, self.__ccU,
+                                                       self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
                 if angleName is None:
                     continue
                 if isinstance(combinationId, int):
@@ -2921,7 +2925,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[3]):
                     angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                            [atom1, atom2, atom3, atom4],
-                                                           self.__cR, self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+                                                           self.__cR, self.__ccU,
+                                                           self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
                     if angleName in emptyValue:
                         continue
                     fixedAngleName = angleName
@@ -2940,7 +2945,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[3]):
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4],
-                                                       self.__cR, self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+                                                       self.__cR, self.__ccU,
+                                                       self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
                 if angleName is None:
                     continue
                 if isinstance(combinationId, int):
@@ -3991,7 +3997,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[3]):
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4],
-                                                       self.__cR, self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+                                                       self.__cR, self.__ccU,
+                                                       self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
                 if angleName is None:
                     continue
                 if angleName == 'PHI':
@@ -4136,7 +4143,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[3]):
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4],
-                                                       self.__cR, self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+                                                       self.__cR, self.__ccU,
+                                                       self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
                 if angleName is None:
                     continue
                 if angleName == 'PHI':
@@ -4281,7 +4289,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[3]):
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4],
-                                                       self.__cR, self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+                                                       self.__cR, self.__ccU,
+                                                       self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
                 if angleName is None:
                     continue
                 if angleName == 'PHI':

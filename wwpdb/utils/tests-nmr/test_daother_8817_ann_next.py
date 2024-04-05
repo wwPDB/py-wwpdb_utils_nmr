@@ -7,7 +7,6 @@
 import unittest
 import os
 import json
-from shutil import copyfile
 
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
@@ -95,7 +94,7 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(entry_dir + entry_id + '-str2str-deposit-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        if not report['error'] is None:
+        if report['error'] is not None:
             self.assertNotIn('internal_error', report['error'])
 
         self.assertIsNone(report['error'])

@@ -24308,7 +24308,10 @@ class NmrDpUtility:
 
                 if _seq_key in coord_atom_site:
                     _coord_atom_site = coord_atom_site[_seq_key]
-                    _row[5] = comp_id
+                    # DAOTHER-8817
+                    _row[5] = _row[18] = comp_id = _coord_atom_site['comp_id']
+                    if 'chain_id' in _coord_atom_site:
+                        _row[16] = _coord_atom_site['chain_id']
                     valid = True
                     missing_ch3 = []
                     if not self.__annotation_mode and atom_id in self.__csStat.getRepMethylProtons(comp_id):
@@ -28837,7 +28840,7 @@ class NmrDpUtility:
         if self.__mr_sf_dict_holder is None:
             self.__mr_sf_dict_holder = {}
 
-        if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode):  # DAOTHER-8751, 8817 (D_1300043061)
+        if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode or self.__native_combined):  # DAOTHER-8751, 8817 (D_1300043061)
 
             if len(self.__star_data) == 0:
                 return True
@@ -29204,6 +29207,7 @@ class NmrDpUtility:
                 auth_pdb_tags.extend(auth_comp_id_names)
                 auth_pdb_tags.extend(auth_atom_id_names)
 
+                coord_atom_site = self.__caC['coord_atom_site']
                 auth_to_star_seq = self.__caC['auth_to_star_seq']
                 auth_to_orig_seq = self.__caC['auth_to_orig_seq']
                 auth_to_ins_code = self.__caC['auth_to_ins_code'] if has_ins_code else None
@@ -29273,7 +29277,13 @@ class NmrDpUtility:
                                     seq_key = (chain_id, seq_id, comp_id)
 
                                     try:
-                                        auth_to_star_seq[seq_key]
+                                        auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
+                                        _seq_key = (seq_key[0], seq_key[1])
+                                        if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                            _coord_atom_site = coord_atom_site[_seq_key]
+                                            if 'chain_id' in _coord_atom_site:
+                                                chain_id = _coord_atom_site['chain_id']
+                                            comp_id = _coord_atom_site['comp_id']
                                     except KeyError:
                                         comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                         if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
@@ -29298,7 +29308,13 @@ class NmrDpUtility:
                                 seq_key = (chain_id, seq_id, comp_id)
 
                                 try:
-                                    auth_to_star_seq[seq_key]
+                                    auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
+                                    _seq_key = (seq_key[0], seq_key[1])
+                                    if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                        _coord_atom_site = coord_atom_site[_seq_key]
+                                        if 'chain_id' in _coord_atom_site:
+                                            chain_id = _coord_atom_site['chain_id']
+                                        comp_id = _coord_atom_site['comp_id']
                                 except KeyError:
                                     if self.__annotation_mode:
                                         chain_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
@@ -29598,7 +29614,13 @@ class NmrDpUtility:
                                     seq_key = (chain_id, seq_id, comp_id)
 
                                     try:
-                                        auth_to_star_seq[seq_key]
+                                        auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
+                                        _seq_key = (seq_key[0], seq_key[1])
+                                        if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                            _coord_atom_site = coord_atom_site[_seq_key]
+                                            if 'chain_id' in _coord_atom_site:
+                                                chain_id = _coord_atom_site['chain_id']
+                                            comp_id = _coord_atom_site['comp_id']
                                     except KeyError:
                                         if self.__annotation_mode:
                                             chain_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
@@ -29638,7 +29660,13 @@ class NmrDpUtility:
                                 seq_key = (chain_id, seq_id, comp_id)
 
                                 try:
-                                    auth_to_star_seq[seq_key]
+                                    auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
+                                    _seq_key = (seq_key[0], seq_key[1])
+                                    if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                        _coord_atom_site = coord_atom_site[_seq_key]
+                                        if 'chain_id' in _coord_atom_site:
+                                            chain_id = _coord_atom_site['chain_id']
+                                        comp_id = _coord_atom_site['comp_id']
                                 except KeyError:
                                     if self.__annotation_mode:
                                         chain_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
@@ -34012,7 +34040,7 @@ class NmrDpUtility:
 
         # self.__pk_sf_holder = []
 
-        if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode):  # DAOTHER-8751, 8817 (D_1300043061)
+        if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode or self.__native_combined):  # DAOTHER-8751, 8817 (D_1300043061)
 
             if len(self.__star_data) == 0:
                 return True
@@ -34531,6 +34559,12 @@ class NmrDpUtility:
                     if valid_auth_seq:
                         try:
                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                            _seq_key = (seq_key[0], seq_key[1])
+                            if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                _coord_atom_site = coord_atom_site[_seq_key]
+                                if 'chain_id' in _coord_atom_site:
+                                    auth_asym_id = _coord_atom_site['chain_id']
+                                comp_id = _coord_atom_site['comp_id']
                         except KeyError:
                             entity_assembly_id = seq_id = entity_id = None
                             if self.__annotation_mode:
@@ -34653,6 +34687,12 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id, auth_seq_id, comp_id)
                             if seq_key in auth_to_star_seq:
                                 entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                _seq_key = (seq_key[0], seq_key[1])
+                                if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                    _coord_atom_site = coord_atom_site[_seq_key]
+                                    if 'chain_id' in _coord_atom_site:
+                                        auth_asym_id = _coord_atom_site['chain_id']
+                                    comp_id = _coord_atom_site['comp_id']
 
                                 if prefer_auth_atom_name:
                                     _atom_id = atom_id
@@ -34760,6 +34800,12 @@ class NmrDpUtility:
                 if valid_auth_seq:
                     try:
                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                        _seq_key = (seq_key[0], seq_key[1])
+                        if _seq_key in coord_atom_site:  # DAOTHER-8817
+                            _coord_atom_site = coord_atom_site[_seq_key]
+                            if 'chain_id' in _coord_atom_site:
+                                auth_asym_id = _coord_atom_site['chain_id']
+                            comp_id = _coord_atom_site['comp_id']
                     except KeyError:
                         entity_assembly_id = seq_id = entity_id = None
                         if self.__annotation_mode:
@@ -34874,6 +34920,12 @@ class NmrDpUtility:
                             seq_key = (auth_asym_id, auth_seq_id, comp_id)
                         if seq_key in auth_to_star_seq:
                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                            _seq_key = (seq_key[0], seq_key[1])
+                            if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                _coord_atom_site = coord_atom_site[_seq_key]
+                                if 'chain_id' in _coord_atom_site:
+                                    auth_asym_id = _coord_atom_site['chain_id']
+                                comp_id = _coord_atom_site['comp_id']
 
                             if prefer_auth_atom_name:
                                 _atom_id = atom_id
@@ -42073,7 +42125,27 @@ class NmrDpUtility:
                 _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                 if length == unmapped + conflict:
-                    continue
+                    if len(s1['seq_id']) == 1 and 'alt_comp_id' in s1 and s1['alt_comp_id'][0] in s2['comp_id']:
+                        self.__pA.setReferenceSequence(s1['alt_comp_id'], 'REF' + chain_id)
+                        self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                        self.__pA.doAlign()
+
+                        myAlign = self.__pA.getAlignment(chain_id)
+
+                        length = len(myAlign)
+
+                        if length == 0:
+                            continue
+
+                        _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+                        if length == unmapped + conflict:
+                            continue
+
+                        self.__native_combined = True  # DAOTHER-8817
+
+                    else:
+                        continue
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
@@ -42212,7 +42284,27 @@ class NmrDpUtility:
                 _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                 if length == unmapped + conflict:
-                    continue
+                    if len(s2['seq_id']) == 1 and 'alt_comp_id' in s2 and s2['alt_comp_id'][0] in s1['comp_id']:
+                        self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                        self.__pA.addTestSequence(s2['alt_comp_id'], chain_id)
+                        self.__pA.doAlign()
+
+                        myAlign = self.__pA.getAlignment(chain_id)
+
+                        length = len(myAlign)
+
+                        if length == 0:
+                            continue
+
+                        _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+                        if length == unmapped + conflict:
+                            continue
+
+                        self.__native_combined = True  # DAOTHER-881
+
+                    else:
+                        continue
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)

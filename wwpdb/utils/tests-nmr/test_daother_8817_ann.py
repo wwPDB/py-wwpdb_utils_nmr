@@ -25,6 +25,10 @@ class TestNmrDpUtility(unittest.TestCase):
                                                         'cif': 'D_8000212514_model_P1.cif.V2'
                                                         },
                                'daother-8817-ann-3rd': {'str': 'daother-8817-nef2cif.str',
+                                                        'cif': 'D_8000212514_model_P1.cif.V2'},
+                               'daother-8817-ann-4th': {'str': 'D_800677_nmr-data-str_P1.str',
+                                                        'cif': 'D_8000212514_model_P1.cif.V5'},
+                               'daother-8817-ann-5th': {'str': 'D_800677_nmr-data-str_P1.str',
                                                         'cif': 'D_8000212514_model_P1.cif.V2'}
                                }
         self.utility = NmrDpUtility()
@@ -44,6 +48,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addOutput(name='nmr_cif_file_path', value=self.data_dir_path + entry_id + '-next.cif', type='file')
         self.utility.setLog(self.data_dir_path + entry_id + '-str2cif-annotate-log.json')
         self.utility.setDestination(self.data_dir_path + entry_id + '-next.str')
+        print(f' Generated {self.data_dir_path}{entry_id}-next.str')
         self.utility.setVerbose(False)
 
         self.utility.op('nmr-str2cif-annotate')
@@ -71,6 +76,12 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_str2cif_annotate_daother_8817_3rd(self):
         self.__test_nmr_str2cif_annotate('daother-8817-ann-3rd')
+
+    def test_nmr_str2cif_annotate_daother_8817_4th(self):
+        self.__test_nmr_str2cif_annotate('daother-8817-ann-4th')
+
+    def test_nmr_str2cif_annotate_daother_8817_5th(self):
+        self.__test_nmr_str2cif_annotate('daother-8817-ann-5th')
 
 
 if __name__ == '__main__':

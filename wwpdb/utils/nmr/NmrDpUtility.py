@@ -20762,6 +20762,9 @@ class NmrDpUtility:
                                 comp_id_2 = row[comp_id_2_name]
                                 atom_id_2 = row[atom_id_2_name]
 
+                                if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                                    continue
+
                                 atom_id_1_ = atom_id_1[0]
                                 atom_id_2_ = atom_id_2[0]
 
@@ -27974,6 +27977,9 @@ class NmrDpUtility:
                     comp_id_2 = row[comp_id_2_name]
                     atom_id_2 = row[atom_id_2_name]
 
+                    if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                        continue
+
                     if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
 
                         idx_msg = f"[Check row of {index_tag} {row[index_tag]}] " if index_tag in row else ''
@@ -30197,7 +30203,7 @@ class NmrDpUtility:
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
 
-                        if atom_id_1 is None or atom_id_2 is None:
+                        if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                             continue
 
                         atom_id_1_ = atom_id_1[0]
@@ -52413,7 +52419,8 @@ class NmrDpUtility:
                             comp_id_2 = row[comp_id_2_col]
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
-                            if atom_id_1 is None or atom_id_2 is None or _id == prev_id:
+
+                            if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                                 continue
                             # """
                             # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
@@ -52571,7 +52578,8 @@ class NmrDpUtility:
                             comp_id_2 = row[comp_id_2_col]
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
-                            if atom_id_1 is None or atom_id_2 is None or _id == prev_id:
+
+                            if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                                 continue
                             # """
                             # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
@@ -53023,8 +53031,10 @@ class NmrDpUtility:
                         comp_id_1 = row[comp_id_1_col]
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
-                        if atom_id_1 is None or atom_id_2 is None:
+
+                        if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                             continue
+
                         combination_id = row[combination_id_col] if combination_id_col != -1 else None
 
                         vector = {atom_id_1, atom_id_2}
@@ -53144,8 +53154,10 @@ class NmrDpUtility:
                         comp_id_2 = row[comp_id_2_col]
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
-                        if atom_id_1 is None or atom_id_2 is None:
+
+                        if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                             continue
+
                         if atom_id_1[0] in protonBeginCode:
                             if self.__ccU.updateChemCompDict(comp_id_1):
                                 bonded_atom_id_1 = self.__ccU.getBondedAtoms(comp_id_1, atom_id_1)
@@ -53216,8 +53228,10 @@ class NmrDpUtility:
                         comp_id_2 = row[comp_id_2_col]
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
-                        if atom_id_1 is None or atom_id_2 is None:
+
+                        if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                             continue
+
                         if atom_id_1[0] in protonBeginCode:
                             if self.__ccU.updateChemCompDict(comp_id_1):
                                 bonded_atom_id_1 = self.__ccU.getBondedAtoms(comp_id_1, atom_id_1)
@@ -54242,6 +54256,10 @@ class NmrDpUtility:
                                 comp_id_2 = row[comp_id_2_col]
                                 atom_id_1 = row[atom_id_1_col]
                                 atom_id_2 = row[atom_id_2_col]
+
+                                if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                                    continue
+
                                 atom_id_1_ = atom_id_1[0]
                                 atom_id_2_ = atom_id_2[0]
                                 if comp_id_1 == atom_id_1 or comp_id_2 == atom_id_2:
@@ -54363,7 +54381,8 @@ class NmrDpUtility:
                                 comp_id_2 = row[comp_id_2_col]
                                 atom_id_1 = row[atom_id_1_col]
                                 atom_id_2 = row[atom_id_2_col]
-                                if atom_id_1 is None or atom_id_2 is None or _id == prev_id:
+
+                                if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                                     continue
                                 # """
                                 # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
@@ -54525,7 +54544,8 @@ class NmrDpUtility:
                                 comp_id_2 = row[comp_id_2_col]
                                 atom_id_1 = row[atom_id_1_col]
                                 atom_id_2 = row[atom_id_2_col]
-                                if atom_id_1 is None or atom_id_2 is None or _id == prev_id:
+
+                                if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                                     continue
                                 # """
                                 # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
@@ -55026,8 +55046,10 @@ class NmrDpUtility:
                             comp_id_1 = row[comp_id_1_col]
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
-                            if atom_id_1 is None or atom_id_2 is None:
+
+                            if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                                 continue
+
                             combination_id = row[combination_id_col] if combination_id_col != -1 else None
 
                             vector = {atom_id_1, atom_id_2}

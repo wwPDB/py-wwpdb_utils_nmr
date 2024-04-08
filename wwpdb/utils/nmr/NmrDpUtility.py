@@ -52420,7 +52420,7 @@ class NmrDpUtility:
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
 
-                            if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                            if atom_id_1 in emptyValue or atom_id_2 in emptyValue or _id == prev_id:
                                 continue
                             # """
                             # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
@@ -52579,7 +52579,7 @@ class NmrDpUtility:
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
 
-                            if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                            if atom_id_1 in emptyValue or atom_id_2 in emptyValue or _id == prev_id:
                                 continue
                             # """
                             # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
@@ -53489,8 +53489,8 @@ class NmrDpUtility:
 
                     try:
                         id_col = sf_item['loop'].tags.index('ID')
-
                         count = 0
+
                         prev_id = -1
                         for _row in sf_item['loop']:
                             _id = int(_row[id_col])
@@ -54382,7 +54382,7 @@ class NmrDpUtility:
                                 atom_id_1 = row[atom_id_1_col]
                                 atom_id_2 = row[atom_id_2_col]
 
-                                if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                                if atom_id_1 in emptyValue or atom_id_2 in emptyValue or _id == prev_id:
                                     continue
                                 # """
                                 # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
@@ -54545,7 +54545,7 @@ class NmrDpUtility:
                                 atom_id_1 = row[atom_id_1_col]
                                 atom_id_2 = row[atom_id_2_col]
 
-                                if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                                if atom_id_1 in emptyValue or atom_id_2 in emptyValue or _id == prev_id:
                                     continue
                                 # """
                                 # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
@@ -55144,10 +55144,10 @@ class NmrDpUtility:
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
                         if sf_framecode not in sf_item:
                             sf_item[sf_framecode] = {'constraint_type': ' '.join(_restraint_name[:-1])}
-
                             id_col = lp.tags.index('ID')
 
                             count = 0
+
                             prev_id = -1
                             for row in lp:
                                 _id = int(row[id_col])

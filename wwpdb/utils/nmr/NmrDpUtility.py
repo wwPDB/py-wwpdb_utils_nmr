@@ -17653,9 +17653,10 @@ class NmrDpUtility:
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched <= conflict + 1 or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
+                            if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0)\
+                               or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
 
-                                if self.__tolerant_seq_align and _matched <= conflict + 1 and len(polymer_sequence) > 1:
+                                if self.__tolerant_seq_align and _matched <= conflict + (1 if length > 1 else 0) and len(polymer_sequence) > 1:
 
                                     __length = length
                                     __matched = _matched
@@ -17689,7 +17690,7 @@ class NmrDpUtility:
 
                                         _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                        if length == unmapped + conflict or _matched <= conflict + 1:
+                                        if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0):
                                             continue
 
                                         if _matched - conflict < __matched - __conflict or unmapped + conflict > __unmapped + __conflict:
@@ -17975,9 +17976,10 @@ class NmrDpUtility:
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched <= conflict + 1 or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
+                            if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0)\
+                               or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
 
-                                if self.__tolerant_seq_align and _matched <= conflict + 1 and len(polymer_sequence) > 1:
+                                if self.__tolerant_seq_align and _matched <= conflict + (1 if length > 1 else 0) and len(polymer_sequence) > 1:
 
                                     __length = length
                                     __matched = _matched
@@ -18011,7 +18013,7 @@ class NmrDpUtility:
 
                                         _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                        if length == unmapped + conflict or _matched <= conflict + 1:
+                                        if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0):
                                             continue
 
                                         if _matched - conflict < __matched - __conflict or (unmapped + conflict > __unmapped + __conflict and __matched > 0):
@@ -18230,7 +18232,7 @@ class NmrDpUtility:
 
                                             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                            if length == unmapped + conflict or _matched <= conflict + 1:
+                                            if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0):
                                                 break
 
                                             cross = True
@@ -18267,7 +18269,7 @@ class NmrDpUtility:
 
                                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                                    if length == unmapped + conflict or _matched <= conflict + 1:
+                                    if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0):
                                         continue
 
                                     _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
@@ -20759,6 +20761,9 @@ class NmrDpUtility:
                                 seq_id_2 = row[seq_id_2_name]
                                 comp_id_2 = row[comp_id_2_name]
                                 atom_id_2 = row[atom_id_2_name]
+
+                                if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                                    continue
 
                                 atom_id_1_ = atom_id_1[0]
                                 atom_id_2_ = atom_id_2[0]
@@ -24220,6 +24225,7 @@ class NmrDpUtility:
             auth_to_star_seq = self.__caC['auth_to_star_seq'] if self.__caC is not None else {}
             auth_to_orig_seq = self.__caC['auth_to_orig_seq'] if self.__caC is not None else {}
             auth_to_ins_code = self.__caC['auth_to_ins_code'] if self.__caC is not None else {}
+            auth_to_star_seq_ann = self.__caC['auth_to_star_seq_ann'] if self.__caC is not None else {}
             coord_atom_site = self.__caC['coord_atom_site'] if self.__caC is not None else {}
             auth_atom_name_to_id = self.__caC['auth_atom_name_to_id'] if self.__caC is not None else {}
             auth_atom_name_to_id_ext = self.__caC['auth_atom_name_to_id_ext'] if self.__caC is not None else {}
@@ -24237,7 +24243,7 @@ class NmrDpUtility:
                         for row in auth_dat:
                             try:
                                 seq_key = (row[0], int(row[1]), row[2])
-                                if seq_key not in auth_to_star_seq:
+                                if seq_key not in auth_to_star_seq_ann:
                                     valid_auth_seq = False
                                     break
                             except (ValueError, TypeError):
@@ -24304,9 +24310,15 @@ class NmrDpUtility:
                 fill_auth_atom_id = self.__annotation_mode or (_row[19] in emptyValue and _row[18] not in emptyValue)
                 fill_orig_atom_id = _row[23] not in emptyValue
 
+                if _seq_key is not None:
+                    seq_key = (_seq_key[0], _seq_key[1], comp_id)
+                    _seq_key = seq_key if seq_key in coord_atom_site else _seq_key
                 if _seq_key in coord_atom_site:
                     _coord_atom_site = coord_atom_site[_seq_key]
-                    _row[5] = comp_id
+                    # DAOTHER-8817
+                    if 'chain_id' in _coord_atom_site:
+                        _row[16] = _coord_atom_site['chain_id']
+                    _row[5] = _row[18] = comp_id = _coord_atom_site['comp_id']
                     valid = True
                     missing_ch3 = []
                     if not self.__annotation_mode and atom_id in self.__csStat.getRepMethylProtons(comp_id):
@@ -24681,7 +24693,7 @@ class NmrDpUtility:
 
             prefer_auth_atom_name = False
 
-            if self.__annotation_mode and len(auth_atom_name_to_id) > 0:
+            if (self.__annotation_mode or self.__native_combined) and len(auth_atom_name_to_id) > 0:
 
                 count_auth_name = count_auth_id = 0
 
@@ -24695,7 +24707,7 @@ class NmrDpUtility:
                     auth_seq_id_ = int(auth_seq_id)
                     seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                     try:
-                        auth_to_star_seq[seq_key]
+                        auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
                     except KeyError:
                         auth_asym_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                              if _auth_seq_id == auth_seq_id_ and _auth_comp_id == auth_comp_id), auth_asym_id)
@@ -24708,6 +24720,31 @@ class NmrDpUtility:
                             count_auth_name += 1
                         if auth_atom_id in auth_atom_name_to_id[auth_comp_id].values():
                             count_auth_id += 1
+
+                if count_auth_name + count_auth_id == 0:
+
+                    for row in loop:
+
+                        auth_asym_id = row[auth_asym_id_col]
+                        auth_seq_id = row[auth_seq_id_col]
+                        auth_comp_id = row[auth_comp_id_col]
+                        auth_atom_id = row[auth_atom_id_col]
+
+                        auth_seq_id_ = int(auth_seq_id)
+                        seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
+                        try:
+                            auth_to_star_seq_ann[seq_key]  # pylint: disable=pointless-statement
+                            _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
+                            if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                auth_comp_id = coord_atom_site[_seq_key]['comp_id']
+                        except KeyError:
+                            continue
+
+                        if auth_comp_id in auth_atom_name_to_id:
+                            if auth_atom_id in auth_atom_name_to_id[auth_comp_id]:
+                                count_auth_name += 1
+                            if auth_atom_id in auth_atom_name_to_id[auth_comp_id].values():
+                                count_auth_id += 1
 
                 prefer_auth_atom_name = count_auth_name > count_auth_id
 
@@ -24841,7 +24878,7 @@ class NmrDpUtility:
                                         if atom_id in _coord_atom_site['atom_id']:
                                             _row[19] = atom_id
                             except KeyError:
-                                if self.__annotation_mode:
+                                if self.__annotation_mode or self.__native_combined:
                                     auth_asym_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                          if _auth_seq_id == auth_seq_id_ and _auth_comp_id == auth_comp_id), auth_asym_id)
                                     seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
@@ -24868,7 +24905,10 @@ class NmrDpUtility:
                                                          if _auth_asym_id == auth_asym_id and _auth_seq_id == auth_seq_id_), auth_comp_id)
                                     comp_id = _row[18] = auth_comp_id
                                     seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
-                                    entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                    if seq_key in auth_to_star_seq:
+                                        entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                    else:
+                                        entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq_ann[seq_key]
 
                             self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
                             _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
@@ -24877,6 +24917,7 @@ class NmrDpUtility:
                                 if has_orig_seq:
                                     orig_atom_id = _row[23]
                                 _atom_id = atom_id
+                                _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                                 if _seq_key in coord_atom_site:
                                     _coord_atom_site = coord_atom_site[_seq_key]
                                     if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']:
@@ -24921,6 +24962,7 @@ class NmrDpUtility:
                                                 if cca_row is not None:
                                                     _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
                                                 row[19] = atom_id = __coord_atom_site['atom_id'][__coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                                _seq_key = __seq_key
                                                 break
                                             if _atom_id in __coord_atom_site['atom_id']:
                                                 comp_id = _comp_id
@@ -24930,6 +24972,7 @@ class NmrDpUtility:
                                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
                                                 if cca_row is not None:
                                                     _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
+                                                _seq_key = __seq_key
                                                 break
 
                             if has_ins_code and seq_key in auth_to_ins_code:
@@ -27941,6 +27984,9 @@ class NmrDpUtility:
                     comp_id_2 = row[comp_id_2_name]
                     atom_id_2 = row[atom_id_2_name]
 
+                    if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                        continue
+
                     if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
 
                         idx_msg = f"[Check row of {index_tag} {row[index_tag]}] " if index_tag in row else ''
@@ -28280,7 +28326,8 @@ class NmrDpUtility:
 
         return None
 
-    def __getCoordBondLength(self, cif_chain_id_1, cif_seq_id_1, cif_atom_id_1, cif_chain_id_2, cif_seq_id_2, cif_atom_id_2, label_scheme=True):
+    def __getCoordBondLength(self, cif_chain_id_1, cif_seq_id_1, cif_atom_id_1, cif_chain_id_2, cif_seq_id_2, cif_atom_id_2,
+                             label_scheme=True):
         """ Return the bond length of given two CIF atoms.
             @return: the bond length
         """
@@ -28787,7 +28834,8 @@ class NmrDpUtility:
             # DAOTHER-8817
             if self.__caC is not None and 'chem_comp_atom' in self.__caC\
                and 'auth_atom_name_to_id' in self.__caC\
-               and 'auth_atom_name_to_id_ext' in self.__caC:
+               and 'auth_atom_name_to_id_ext' in self.__caC\
+               and 'auth_to_star_seq_ann' in self.__caC:
                 self.__nefT.set_chem_comp_dict(self.__caC['chem_comp_atom'],
                                                self.__caC['chem_comp_bond'],
                                                self.__caC['chem_comp_topo'])
@@ -28834,7 +28882,7 @@ class NmrDpUtility:
         if self.__mr_sf_dict_holder is None:
             self.__mr_sf_dict_holder = {}
 
-        if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode):  # DAOTHER-8751, 8817 (D_1300043061)
+        if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode or self.__native_combined):  # DAOTHER-8751, 8817 (D_1300043061)
 
             if len(self.__star_data) == 0:
                 return True
@@ -29201,9 +29249,11 @@ class NmrDpUtility:
                 auth_pdb_tags.extend(auth_comp_id_names)
                 auth_pdb_tags.extend(auth_atom_id_names)
 
+                coord_atom_site = self.__caC['coord_atom_site']
                 auth_to_star_seq = self.__caC['auth_to_star_seq']
                 auth_to_orig_seq = self.__caC['auth_to_orig_seq']
                 auth_to_ins_code = self.__caC['auth_to_ins_code'] if has_ins_code else None
+                auth_to_star_seq_ann = self.__caC['auth_to_star_seq_ann']
                 auth_atom_name_to_id = self.__caC['auth_atom_name_to_id']
 
                 offset_holder = {}
@@ -29233,7 +29283,7 @@ class NmrDpUtility:
                                 try:
                                     for d in range(atom_dim_num):
                                         seq_key = (row[d], int(row[atom_dim_num + d]), row[atom_dim_num * 2 + d])
-                                        if seq_key not in auth_to_star_seq:
+                                        if seq_key not in auth_to_star_seq_ann:
                                             valid_auth_seq = False
                                             break
                                     if not valid_auth_seq:
@@ -29255,7 +29305,7 @@ class NmrDpUtility:
 
                         prefer_auth_atom_name = False
 
-                        if self.__annotation_mode and len(auth_atom_name_to_id) > 0:
+                        if (self.__annotation_mode or self.__native_combined) and len(auth_atom_name_to_id) > 0:
 
                             count_auth_name = count_auth_id = 0
 
@@ -29270,7 +29320,7 @@ class NmrDpUtility:
                                     seq_key = (chain_id, seq_id, comp_id)
 
                                     try:
-                                        auth_to_star_seq[seq_key]
+                                        auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
                                     except KeyError:
                                         comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                         if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
@@ -29280,6 +29330,32 @@ class NmrDpUtility:
                                             count_auth_name += 1
                                         if atom_id in auth_atom_name_to_id[comp_id].values():
                                             count_auth_id += 1
+
+                            if count_auth_name + count_auth_id == 0:
+
+                                for row_ in dat:
+
+                                    for d in range(atom_dim_num):
+                                        chain_id = row_[d]
+                                        seq_id = int(row_[atom_dim_num + d])
+                                        comp_id = row_[atom_dim_num * 2 + d]
+                                        atom_id = row_[atom_dim_num * 3 + d]
+
+                                        seq_key = (chain_id, seq_id, comp_id)
+
+                                        try:
+                                            auth_to_star_seq_ann[seq_key]  # pylint: disable=pointless-statement
+                                            _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
+                                            if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                                comp_id = coord_atom_site[_seq_key]['comp_id']
+                                        except KeyError:
+                                            continue
+
+                                        if comp_id in auth_atom_name_to_id:
+                                            if atom_id in auth_atom_name_to_id[comp_id]:
+                                                count_auth_name += 1
+                                            if atom_id in auth_atom_name_to_id[comp_id].values():
+                                                count_auth_id += 1
 
                             prefer_auth_atom_name = count_auth_name > count_auth_id
 
@@ -29295,9 +29371,9 @@ class NmrDpUtility:
                                 seq_key = (chain_id, seq_id, comp_id)
 
                                 try:
-                                    auth_to_star_seq[seq_key]
+                                    auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
                                 except KeyError:
-                                    if self.__annotation_mode:
+                                    if self.__annotation_mode or self.__native_combined:
                                         chain_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                          if _auth_seq_id == seq_id and _auth_comp_id == comp_id), chain_id)
                                         seq_key = (chain_id, seq_id, comp_id)
@@ -29580,14 +29656,14 @@ class NmrDpUtility:
 
                         prefer_auth_atom_name = False
 
-                        if self.__annotation_mode and len(auth_atom_name_to_id) > 0:
+                        if (self.__annotation_mode or self.__native_combined) and len(auth_atom_name_to_id) > 0:
 
                             count_auth_name = count_auth_id = 0
 
                             for row_ in dat:
 
                                 for d in range(atom_dim_num):
-                                    chain_id = auth_chain_id = row_[d]
+                                    chain_id = row_[d]
                                     seq_id = int(row_[atom_dim_num + d])
                                     comp_id = row_[atom_dim_num * 2 + d]
                                     atom_id = row_[atom_dim_num * 3 + d]
@@ -29595,22 +29671,21 @@ class NmrDpUtility:
                                     seq_key = (chain_id, seq_id, comp_id)
 
                                     try:
-                                        auth_to_star_seq[seq_key]
+                                        auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
                                     except KeyError:
-                                        if self.__annotation_mode:
-                                            chain_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                             if _auth_seq_id == seq_id and _auth_comp_id == comp_id), chain_id)
+                                        chain_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                         if _auth_seq_id == seq_id and _auth_comp_id == comp_id), chain_id)
+                                        seq_key = (chain_id, seq_id, comp_id)
+                                        if seq_key in auth_to_star_seq:
+                                            row_[d] = chain_id
+                                        else:
+                                            chain_id, comp_id = next(((_auth_asym_id, _auth_comp_id)
+                                                                      for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                                      if _auth_seq_id == seq_id), (chain_id, comp_id))
                                             seq_key = (chain_id, seq_id, comp_id)
                                             if seq_key in auth_to_star_seq:
                                                 row_[d] = chain_id
-                                            else:
-                                                chain_id, comp_id = next(((_auth_asym_id, _auth_comp_id)
-                                                                          for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                                          if _auth_seq_id == seq_id), (chain_id, comp_id))
-                                                seq_key = (chain_id, seq_id, comp_id)
-                                                if seq_key in auth_to_star_seq:
-                                                    row_[d] = chain_id
-                                                    row_[atom_dim_num * 2 + d] = comp_id
+                                                row_[atom_dim_num * 2 + d] = comp_id
                                         if seq_key not in auth_to_star_seq:
                                             comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                             if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
@@ -29620,6 +29695,32 @@ class NmrDpUtility:
                                             count_auth_name += 1
                                         if atom_id in auth_atom_name_to_id[comp_id].values():
                                             count_auth_id += 1
+
+                            if count_auth_name + count_auth_id == 0:
+
+                                for row_ in dat:
+
+                                    for d in range(atom_dim_num):
+                                        chain_id = row_[d]
+                                        seq_id = int(row_[atom_dim_num + d])
+                                        comp_id = row_[atom_dim_num * 2 + d]
+                                        atom_id = row_[atom_dim_num * 3 + d]
+
+                                        seq_key = (chain_id, seq_id, comp_id)
+
+                                        try:
+                                            auth_to_star_seq_ann[seq_key]  # pylint: disable=pointless-statement
+                                            _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
+                                            if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                                comp_id = coord_atom_site[_seq_key]['comp_id']
+                                        except KeyError:
+                                            continue
+
+                                        if comp_id in auth_atom_name_to_id:
+                                            if atom_id in auth_atom_name_to_id[comp_id]:
+                                                count_auth_name += 1
+                                            if atom_id in auth_atom_name_to_id[comp_id].values():
+                                                count_auth_id += 1
 
                             prefer_auth_atom_name = count_auth_name > count_auth_id
 
@@ -29635,9 +29736,9 @@ class NmrDpUtility:
                                 seq_key = (chain_id, seq_id, comp_id)
 
                                 try:
-                                    auth_to_star_seq[seq_key]
+                                    auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
                                 except KeyError:
-                                    if self.__annotation_mode:
+                                    if self.__annotation_mode or self.__native_combined:
                                         chain_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                          if _auth_seq_id == seq_id and _auth_comp_id == comp_id), chain_id)
                                         seq_key = (chain_id, seq_id, comp_id)
@@ -30109,7 +30210,7 @@ class NmrDpUtility:
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
 
-                        if atom_id_1 is None or atom_id_2 is None:
+                        if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                             continue
 
                         atom_id_1_ = atom_id_1[0]
@@ -34009,7 +34110,7 @@ class NmrDpUtility:
 
         # self.__pk_sf_holder = []
 
-        if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode):  # DAOTHER-8751, 8817 (D_1300043061)
+        if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode or self.__native_combined):  # DAOTHER-8751, 8817 (D_1300043061)
 
             if len(self.__star_data) == 0:
                 return True
@@ -34180,6 +34281,7 @@ class NmrDpUtility:
 
         coord_atom_site = self.__caC['coord_atom_site']
         auth_to_star_seq = self.__caC['auth_to_star_seq']
+        auth_to_star_seq_ann = self.__caC['auth_to_star_seq_ann']
         auth_atom_name_to_id = self.__caC['auth_atom_name_to_id']
         auth_atom_name_to_id_ext = self.__caC['auth_atom_name_to_id_ext']
 
@@ -34318,7 +34420,7 @@ class NmrDpUtility:
 
         prefer_auth_atom_name = False
 
-        if self.__annotation_mode and len(auth_atom_name_to_id) > 0:
+        if (self.__annotation_mode or self.__native_combined) and len(auth_atom_name_to_id) > 0:
 
             count_auth_name = count_auth_id = 0
 
@@ -34341,13 +34443,10 @@ class NmrDpUtility:
                                 atom_id = row[loop.tags.index(auth_assign_item_temps[3] % dim)]
                                 seq_key = (auth_asym_id_, auth_seq_id_, comp_id)
                                 if seq_key not in auth_to_star_seq:
-                                    if self.__annotation_mode:
-                                        comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                        if _auth_asym_id == auth_asym_id_ and _auth_seq_id == auth_seq_id_), comp_id)
-                                        seq_key = (auth_asym_id_, auth_seq_id_, comp_id)
-                                        if seq_key not in auth_to_star_seq:
-                                            valid_auth_seq = False
-                                    else:
+                                    comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                    if _auth_asym_id == auth_asym_id_ and _auth_seq_id == auth_seq_id_), comp_id)
+                                    seq_key = (auth_asym_id_, auth_seq_id_, comp_id)
+                                    if seq_key not in auth_to_star_seq:
                                         valid_auth_seq = False
                             except (ValueError, TypeError):
                                 has_auth_seq = valid_auth_seq = False
@@ -34394,7 +34493,7 @@ class NmrDpUtility:
 
                             if auth_asym_id is not None and auth_seq_id is not None:
                                 seq_key = (auth_asym_id, auth_seq_id, comp_id)
-                                if self.__annotation_mode and seq_key not in auth_to_star_seq:
+                                if seq_key not in auth_to_star_seq:
                                     comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                     if _auth_asym_id == auth_asym_id and _auth_seq_id == auth_seq_id), comp_id)
                                     seq_key = (auth_asym_id, auth_seq_id, comp_id)
@@ -34423,13 +34522,10 @@ class NmrDpUtility:
                             atom_id = row[loop.tags.index(auth_assign_items[3])]
                             seq_key = (auth_asym_id_, auth_seq_id_, comp_id)
                             if seq_key not in auth_to_star_seq:
-                                if self.__annotation_mode:
-                                    comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                    if _auth_asym_id == auth_asym_id_ and _auth_seq_id == auth_seq_id_), comp_id)
-                                    seq_key = (auth_asym_id_, auth_seq_id_, comp_id)
-                                    if seq_key not in auth_to_star_seq:
-                                        valid_auth_seq = False
-                                else:
+                                comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                if _auth_asym_id == auth_asym_id_ and _auth_seq_id == auth_seq_id_), comp_id)
+                                seq_key = (auth_asym_id_, auth_seq_id_, comp_id)
+                                if seq_key not in auth_to_star_seq:
                                     valid_auth_seq = False
                         except (ValueError, TypeError):
                             has_auth_seq = valid_auth_seq = False
@@ -34469,7 +34565,7 @@ class NmrDpUtility:
 
                         if auth_asym_id is not None and auth_seq_id is not None:
                             seq_key = (auth_asym_id, auth_seq_id, comp_id)
-                            if self.__annotation_mode and seq_key not in auth_to_star_seq:
+                            if seq_key not in auth_to_star_seq:
                                 comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                 if _auth_asym_id == auth_asym_id and _auth_seq_id == auth_seq_id), comp_id)
                                 seq_key = (auth_asym_id, auth_seq_id, comp_id)
@@ -34482,6 +34578,161 @@ class NmrDpUtility:
                                             count_auth_name += 1
                                         if atom_id in auth_atom_name_to_id[comp_id].values():
                                             count_auth_id += 1
+
+            if count_auth_name + count_auth_id == 0:
+
+                for row in loop:
+
+                    if content_subtype == 'spectral_peak':
+
+                        for dim in range(1, max_dim):
+                            has_auth_seq = valid_auth_seq = True
+                            for auth_assign_item_temp in auth_assign_item_temps:
+                                auth_assign_item = auth_assign_item_temp % dim
+                                if auth_assign_item not in loop.tags:
+                                    has_auth_seq = valid_auth_seq = False
+                                    break
+                            if has_auth_seq:
+                                try:
+                                    auth_asym_id_ = row[loop.tags.index(auth_assign_item_temps[0] % dim)]
+                                    auth_seq_id_ = int(row[loop.tags.index(auth_assign_item_temps[1] % dim)])
+                                    comp_id = row[loop.tags.index(auth_assign_item_temps[2] % dim)]
+                                    atom_id = row[loop.tags.index(auth_assign_item_temps[3] % dim)]
+                                    seq_key = (auth_asym_id_, auth_seq_id_, comp_id)
+                                    if seq_key not in auth_to_star_seq_ann:
+                                        valid_auth_seq = False
+                                    else:
+                                        _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
+                                        if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                            comp_id = coord_atom_site[_seq_key]['comp_id']
+                                except (ValueError, TypeError):
+                                    has_auth_seq = valid_auth_seq = False
+
+                            if valid_auth_seq:
+
+                                if atom_id not in emptyValue:
+
+                                    if comp_id in auth_atom_name_to_id:
+                                        if atom_id in auth_atom_name_to_id[comp_id]:
+                                            count_auth_name += 1
+                                        if atom_id in auth_atom_name_to_id[comp_id].values():
+                                            count_auth_id += 1
+
+                            else:
+
+                                chain_id = seq_id = comp_id = atom_id = None
+
+                                for col, assign_item_temp in enumerate(assign_item_temps):
+                                    assign_item = assign_item_temp % dim
+                                    if col == 0:
+                                        chain_id = row[loop.tags.index(assign_item)]
+                                    elif col == 1:
+                                        continue
+                                    elif col == 2:
+                                        try:
+                                            seq_id = int(row[loop.tags.index(assign_item)])
+                                        except (ValueError, TypeError):
+                                            pass
+                                    elif col == 3:
+                                        if seq_id is None:
+                                            try:
+                                                seq_id = int(row[loop.tags.index(assign_item)])
+                                            except (ValueError, TypeError):
+                                                pass
+                                    elif col == 4:
+                                        comp_id = row[loop.tags.index(assign_item)]
+                                        if comp_id not in emptyValue:
+                                            comp_id = comp_id.upper()
+                                    else:
+                                        atom_id = row[loop.tags.index(assign_item)]
+
+                                auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
+
+                                if auth_asym_id is not None and auth_seq_id is not None:
+                                    seq_key = (auth_asym_id, auth_seq_id, comp_id)
+                                    if seq_key in auth_to_star_seq_ann:
+                                        _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
+                                        if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                            comp_id = coord_atom_site[_seq_key]['comp_id']
+
+                                        if atom_id not in emptyValue:
+
+                                            if comp_id in auth_atom_name_to_id:
+                                                if atom_id in auth_atom_name_to_id[comp_id]:
+                                                    count_auth_name += 1
+                                                if atom_id in auth_atom_name_to_id[comp_id].values():
+                                                    count_auth_id += 1
+
+                    else:
+
+                        has_auth_seq = valid_auth_seq = True
+                        for auth_assign_item in auth_assign_items:
+                            if auth_assign_item not in loop.tags:
+                                has_auth_seq = valid_auth_seq = False
+                                break
+                        if has_auth_seq:
+                            try:
+                                auth_asym_id_ = row[loop.tags.index(auth_assign_items[0])]
+                                auth_seq_id_ = int(row[loop.tags.index(auth_assign_items[1])])
+                                comp_id = row[loop.tags.index(auth_assign_items[2])]
+                                atom_id = row[loop.tags.index(auth_assign_items[3])]
+                                seq_key = (auth_asym_id_, auth_seq_id_, comp_id)
+                                if seq_key not in auth_to_star_seq:
+                                    valid_auth_seq = False
+                                else:
+                                    _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
+                                    if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                        comp_id = coord_atom_site[_seq_key]['comp_id']
+                            except (ValueError, TypeError):
+                                has_auth_seq = valid_auth_seq = False
+
+                        if valid_auth_seq:
+
+                            if atom_id not in emptyValue:
+
+                                if comp_id in auth_atom_name_to_id:
+                                    if atom_id in auth_atom_name_to_id[comp_id]:
+                                        count_auth_name += 1
+                                    if atom_id in auth_atom_name_to_id[comp_id].values():
+                                        count_auth_id += 1
+
+                        else:
+
+                            chain_id = seq_id = comp_id = atom_id = None
+
+                            for col, assign_item in enumerate(assign_items):
+                                if col == 0:
+                                    chain_id = row[loop.tags.index(assign_item)]
+                                elif col == 1:
+                                    continue
+                                elif col == 2:
+                                    try:
+                                        seq_id = int(row[loop.tags.index(assign_item)])
+                                    except (ValueError, TypeError):
+                                        pass
+                                elif col == 3:
+                                    comp_id = row[loop.tags.index(assign_item)]
+                                    if comp_id not in emptyValue:
+                                        comp_id = comp_id.upper()
+                                else:
+                                    atom_id = row[loop.tags.index(assign_item)]
+
+                            auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
+
+                            if auth_asym_id is not None and auth_seq_id is not None:
+                                seq_key = (auth_asym_id, auth_seq_id, comp_id)
+                                if seq_key in auth_to_star_seq_ann:
+                                    _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
+                                    if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                        comp_id = coord_atom_site[_seq_key]['comp_id']
+
+                                    if atom_id not in emptyValue:
+
+                                        if comp_id in auth_atom_name_to_id:
+                                            if atom_id in auth_atom_name_to_id[comp_id]:
+                                                count_auth_name += 1
+                                            if atom_id in auth_atom_name_to_id[comp_id].values():
+                                                count_auth_id += 1
 
             prefer_auth_atom_name = count_auth_name > count_auth_id
 
@@ -34520,7 +34771,7 @@ class NmrDpUtility:
                                     seq_key = (auth_asym_id_, auth_seq_id_, comp_id)
                                     if seq_key not in auth_to_star_seq:
                                         valid_auth_seq = False
-                                else:
+                                elif seq_key not in auth_to_star_seq_ann:
                                     valid_auth_seq = False
                         except (ValueError, TypeError):
                             has_auth_seq = valid_auth_seq = False
@@ -34528,6 +34779,12 @@ class NmrDpUtility:
                     if valid_auth_seq:
                         try:
                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                            _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
+                            if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                _coord_atom_site = coord_atom_site[_seq_key]
+                                if 'chain_id' in _coord_atom_site:
+                                    auth_asym_id = _coord_atom_site['chain_id']
+                                comp_id = _coord_atom_site['comp_id']
                         except KeyError:
                             entity_assembly_id = seq_id = entity_id = None
                             if self.__annotation_mode:
@@ -34548,7 +34805,7 @@ class NmrDpUtility:
 
                         if prefer_auth_atom_name:
                             _atom_id = atom_id
-                            _seq_key = (seq_key[0], seq_key[1])
+                            _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                             if _seq_key in coord_atom_site:
                                 _coord_atom_site = coord_atom_site[_seq_key]
                                 if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']\
@@ -34650,10 +34907,16 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id, auth_seq_id, comp_id)
                             if seq_key in auth_to_star_seq:
                                 entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
+                                if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                    _coord_atom_site = coord_atom_site[_seq_key]
+                                    if 'chain_id' in _coord_atom_site:
+                                        auth_asym_id = _coord_atom_site['chain_id']
+                                    comp_id = _coord_atom_site['comp_id']
 
                                 if prefer_auth_atom_name:
                                     _atom_id = atom_id
-                                    _seq_key = (seq_key[0], seq_key[1])
+                                    _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                                     if _seq_key in coord_atom_site:
                                         _coord_atom_site = coord_atom_site[_seq_key]
                                         if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']\
@@ -34749,7 +35012,7 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id_, auth_seq_id_, comp_id)
                                 if seq_key not in auth_to_star_seq:
                                     valid_auth_seq = False
-                            else:
+                            elif seq_key not in auth_to_star_seq_ann:
                                 valid_auth_seq = False
                     except (ValueError, TypeError):
                         has_auth_seq = valid_auth_seq = False
@@ -34757,6 +35020,12 @@ class NmrDpUtility:
                 if valid_auth_seq:
                     try:
                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                        _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
+                        if _seq_key in coord_atom_site:  # DAOTHER-8817
+                            _coord_atom_site = coord_atom_site[_seq_key]
+                            if 'chain_id' in _coord_atom_site:
+                                auth_asym_id = _coord_atom_site['chain_id']
+                            comp_id = _coord_atom_site['comp_id']
                     except KeyError:
                         entity_assembly_id = seq_id = entity_id = None
                         if self.__annotation_mode:
@@ -34777,7 +35046,7 @@ class NmrDpUtility:
 
                     if prefer_auth_atom_name:
                         _atom_id = atom_id
-                        _seq_key = (seq_key[0], seq_key[1])
+                        _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                         if _seq_key in coord_atom_site:
                             _coord_atom_site = coord_atom_site[_seq_key]
                             if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']\
@@ -34871,10 +35140,16 @@ class NmrDpUtility:
                             seq_key = (auth_asym_id, auth_seq_id, comp_id)
                         if seq_key in auth_to_star_seq:
                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                            _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
+                            if _seq_key in coord_atom_site:  # DAOTHER-8817
+                                _coord_atom_site = coord_atom_site[_seq_key]
+                                if 'chain_id' in _coord_atom_site:
+                                    auth_asym_id = _coord_atom_site['chain_id']
+                                comp_id = _coord_atom_site['comp_id']
 
                             if prefer_auth_atom_name:
                                 _atom_id = atom_id
-                                _seq_key = (seq_key[0], seq_key[1])
+                                _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                                 if _seq_key in coord_atom_site:
                                     _coord_atom_site = coord_atom_site[_seq_key]
                                     if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']\
@@ -41163,6 +41438,16 @@ class NmrDpUtility:
 
                     key_items = self.key_items[file_type][content_subtype]
 
+                    if self.__cR.hasItem(lp_category, 'pdb_mon_id'):
+                        _key_items = copy.copy(key_items)
+                        _key_items.append({'name': 'pdb_mon_id', 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'})
+                        key_items = _key_items
+
+                    if self.__cR.hasItem(lp_category, 'auth_mon_id'):
+                        _key_items = copy.copy(key_items)
+                        _key_items.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
+                        key_items = _key_items
+
                     try:
                         branched_seq = self.__cR.getPolymerSequence(lp_category, key_items,
                                                                     withStructConf=False, withRmsd=False, alias=False,
@@ -41171,6 +41456,36 @@ class NmrDpUtility:
                                                                     repAltId=self.__representative_alt_id)
                         if len(branched_seq) > 0:
                             poly_seq.extend(branched_seq)
+                    except Exception:
+                        pass
+
+                content_subtype = 'non_poly'
+
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                if self.__cR.hasCategory(lp_category):
+
+                    key_items = self.key_items[file_type][content_subtype]
+
+                    if self.__cR.hasItem(lp_category, 'pdb_mon_id'):
+                        _key_items = copy.copy(key_items)
+                        _key_items.append({'name': 'pdb_mon_id', 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'})
+                        key_items = _key_items
+
+                    if self.__cR.hasItem(lp_category, 'auth_mon_id'):
+                        _key_items = copy.copy(key_items)
+                        _key_items.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
+                        key_items = _key_items
+
+                    try:
+                        non_poly = self.__cR.getPolymerSequence(lp_category, key_items,
+                                                                withStructConf=False, withRmsd=False, alias=False,
+                                                                totalModels=self.__total_models,
+                                                                effModelIds=self.__eff_model_ids,
+                                                                repAltId=self.__representative_alt_id)
+
+                        if len(non_poly) > 0:
+                            poly_seq.extend(non_poly)
                     except Exception:
                         pass
 
@@ -41960,7 +42275,7 @@ class NmrDpUtility:
 
                             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                            if length == unmapped + conflict or _matched <= conflict + 1:
+                            if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0):
                                 continue
 
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
@@ -42029,13 +42344,33 @@ class NmrDpUtility:
 
                 _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                if length == unmapped + conflict or _matched <= conflict + 1:
-                    continue
+                if length == unmapped + conflict:
+                    if len(s1['seq_id']) == 1 and 'alt_comp_id' in s1 and s1['alt_comp_id'][0] in s2['comp_id']:
+                        self.__pA.setReferenceSequence(s1['alt_comp_id'], 'REF' + chain_id)
+                        self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                        self.__pA.doAlign()
+
+                        myAlign = self.__pA.getAlignment(chain_id)
+
+                        length = len(myAlign)
+
+                        if length == 0:
+                            continue
+
+                        _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+                        if length == unmapped + conflict:
+                            continue
+
+                        self.__native_combined = True  # DAOTHER-8817
+
+                    else:
+                        continue
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
-                if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                if conflict > 0 and (hasLargeSeqGap(_s1, _s2) or (not hasLargeInnerSeqGap(s1) and hasLargeInnerSeqGap(s2))):  # DAOTHER-7465
                     _s2 = self.__compensateLadderHistidinTag2(chain_id, _s1, _s2)
                     __s1, __s2 = beautifyPolySeq(_s1, _s2)
                     _s1_ = __s1
@@ -42057,6 +42392,9 @@ class NmrDpUtility:
                         offset_2 = _offset_2
                         _s1 = __s1
                         _s2 = __s2
+
+                if _matched <= conflict + (1 if length > 1 else 0):
+                    continue
 
                 # if conflict > 0:
                 #     has_conflict = True
@@ -42165,13 +42503,33 @@ class NmrDpUtility:
 
                 _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                if length == unmapped + conflict or _matched <= conflict + 1:
-                    continue
+                if length == unmapped + conflict:
+                    if len(s2['seq_id']) == 1 and 'alt_comp_id' in s2 and s2['alt_comp_id'][0] in s1['comp_id']:
+                        self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                        self.__pA.addTestSequence(s2['alt_comp_id'], chain_id)
+                        self.__pA.doAlign()
+
+                        myAlign = self.__pA.getAlignment(chain_id)
+
+                        length = len(myAlign)
+
+                        if length == 0:
+                            continue
+
+                        _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+                        if length == unmapped + conflict:
+                            continue
+
+                        self.__native_combined = True  # DAOTHER-8817
+
+                    else:
+                        continue
 
                 _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
                 _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
 
-                if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                if conflict > 0 and (hasLargeSeqGap(_s1, _s2) or (hasLargeInnerSeqGap(s1) and not hasLargeInnerSeqGap(s2))):  # DAOTHER-7465
                     _s1 = self.__compensateLadderHistidinTag2(chain_id, _s2, _s1)
                     __s1, __s2 = beautifyPolySeq(_s1, _s2)
                     _s1_ = __s1
@@ -42193,6 +42551,9 @@ class NmrDpUtility:
                         offset_2 = _offset_2
                         _s1 = __s1
                         _s2 = __s2
+
+                if _matched <= conflict + (1 if length > 1 else 0):
+                    continue
 
                 # if conflict > 0:
                 #     has_conflict = True
@@ -42475,7 +42836,7 @@ class NmrDpUtility:
                         elif has_inner_gap_1 and not has_inner_gap_2:
                             _s1 = fillInnerBlankCompId(_s1)
 
-                    if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                    if conflict > 0 and (hasLargeSeqGap(_s1, _s2) or (not hasLargeInnerSeqGap(s1) and hasLargeInnerSeqGap(s2))):  # DAOTHER-7465
                         __s1, __s2 = beautifyPolySeq(_s1, _s2)
                         _s1 = __s1
                         _s2 = __s2
@@ -42732,7 +43093,7 @@ class NmrDpUtility:
                         elif has_inner_gap_1 and not has_inner_gap_2:
                             _s1 = fillInnerBlankCompId(_s1)
 
-                    if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                    if conflict > 0 and (hasLargeSeqGap(_s1, _s2) or (hasLargeInnerSeqGap(s1) and not hasLargeInnerSeqGap(s2))):  # DAOTHER-7465
                         __s1, __s2 = beautifyPolySeq(_s1, _s2)
                         _s1 = __s1
                         _s2 = __s2
@@ -43206,7 +43567,7 @@ class NmrDpUtility:
                         elif has_inner_gap_1 and not has_inner_gap_2:
                             _s1 = fillInnerBlankCompId(_s1)
 
-                    if conflict > 0 and hasLargeSeqGap(_s1, _s2):  # DAOTHER-7465
+                    if conflict > 0 and (hasLargeSeqGap(_s1, _s2) or (not hasLargeInnerSeqGap(s1) and hasLargeInnerSeqGap(s2))):  # DAOTHER-7465
                         __s1, __s2 = beautifyPolySeq(_s1, _s2)
                         _s1 = __s1
                         _s2 = __s2
@@ -46796,19 +47157,23 @@ class NmrDpUtility:
 
         try:
 
-            filter_items = [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                            {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                            {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
-                            {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id}
-                            ]
+            if self.__cR.hasCategory('struct_conn'):
+                filter_items = [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
+                                {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id}
+                                ]
 
-            if not self.__bmrb_only and self.__cR.hasItem('struct_conn', 'pdbx_leaving_atom_flag'):
-                filter_items.append({'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'})
+                if not self.__bmrb_only and self.__cR.hasItem('struct_conn', 'pdbx_leaving_atom_flag'):
+                    filter_items.append({'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'})
 
-            struct_conn = self.__cR.getDictListWithFilter('struct_conn',
-                                                          [{'name': 'conn_type_id', 'type': 'str'}
-                                                           ],
-                                                          filter_items)
+                struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+                                                              [{'name': 'conn_type_id', 'type': 'str'}
+                                                               ],
+                                                              filter_items)
+
+            else:
+                struct_conn = []
 
         except Exception as e:
 
@@ -46832,17 +47197,18 @@ class NmrDpUtility:
 
                 try:
 
-                    close_contact = self.__cR.getDictListWithFilter('pdbx_validate_close_contact',
-                                                                    [{'name': 'dist', 'type': 'float'}
-                                                                     ],
-                                                                    [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id},
-                                                                     {'name': 'auth_asym_id_1', 'type': 'str', 'value': auth_cif_chain_id},
-                                                                     {'name': 'auth_seq_id_1', 'type': 'int', 'value': auth_beg_cif_seq_id},
-                                                                     {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
-                                                                     {'name': 'auth_asym_id_2', 'type': 'str', 'value': auth_cif_chain_id},
-                                                                     {'name': 'auth_seq_id_2', 'type': 'int', 'value': auth_end_cif_seq_id},
-                                                                     {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
-                                                                     ])
+                    if self.__cR.hasCategory('pdbx_validate_close_contact'):
+                        close_contact = self.__cR.getDictListWithFilter('pdbx_validate_close_contact',
+                                                                        [{'name': 'dist', 'type': 'float'}
+                                                                         ],
+                                                                        [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id},
+                                                                         {'name': 'auth_asym_id_1', 'type': 'str', 'value': auth_cif_chain_id},
+                                                                         {'name': 'auth_seq_id_1', 'type': 'int', 'value': auth_beg_cif_seq_id},
+                                                                         {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
+                                                                         {'name': 'auth_asym_id_2', 'type': 'str', 'value': auth_cif_chain_id},
+                                                                         {'name': 'auth_seq_id_2', 'type': 'int', 'value': auth_end_cif_seq_id},
+                                                                         {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
+                                                                         ])
 
                 except Exception as e:
 
@@ -46866,9 +47232,9 @@ class NmrDpUtility:
                 if dist is None:
                     return False
 
-                return 1.2 < dist < 1.4
+                return 1.0 < dist < 2.4
 
-            return 1.2 < close_contact[0]['dist'] < 1.4
+            return 1.0 < close_contact[0]['dist'] < 2.4
 
         return struct_conn[0]['conn_type_id'].startswith('covale')
 
@@ -46903,18 +47269,22 @@ class NmrDpUtility:
 
             try:
 
-                alias = not self.__cR.hasItem('struct_mon_prot_cis', 'pdbx_PDB_model_num')
+                if self.__cR.hasCategory('struct_mon_prot_cis'):
+                    alias = not self.__cR.hasItem('struct_mon_prot_cis', 'pdbx_PDB_model_num')
 
-                model_num_name = 'ndb_model_num' if alias else 'pdbx_PDB_model_num'
-                label_asym_id_2_name = 'ndb_label_asym_id_2' if alias else 'pdbx_label_asym_id_2'
-                label_seq_id_2_name = 'ndb_label_seq_id_2' if alias else 'pdbx_label_seq_id_2'
+                    model_num_name = 'ndb_model_num' if alias else 'pdbx_PDB_model_num'
+                    label_asym_id_2_name = 'ndb_label_asym_id_2' if alias else 'pdbx_label_asym_id_2'
+                    label_seq_id_2_name = 'ndb_label_seq_id_2' if alias else 'pdbx_label_seq_id_2'
 
-                prot_cis = self.__cR.getDictListWithFilter('struct_mon_prot_cis',
-                                                           [{'name': model_num_name, 'type': 'int'}
-                                                            ],
-                                                           [{'name': label_asym_id_2_name, 'type': 'str', 'value': cif_chain_id},
-                                                            {'name': label_seq_id_2_name, 'type': 'int', 'value': cif_seq_id}
-                                                            ])
+                    prot_cis = self.__cR.getDictListWithFilter('struct_mon_prot_cis',
+                                                               [{'name': model_num_name, 'type': 'int'}
+                                                                ],
+                                                               [{'name': label_asym_id_2_name, 'type': 'str', 'value': cif_chain_id},
+                                                                {'name': label_seq_id_2_name, 'type': 'int', 'value': cif_seq_id}
+                                                                ])
+
+                else:
+                    prot_cis = []
 
             except Exception as e:
 
@@ -47537,18 +47907,22 @@ class NmrDpUtility:
 
         try:
 
-            struct_conn = self.__cR.getDictListWithFilter('struct_conn',
-                                                          [{'name': 'conn_type_id', 'type': 'str'},
-                                                           {'name': 'ptnr1_label_asym_id', 'type': 'str'},
-                                                           {'name': 'ptnr1_label_seq_id', 'type': 'int'},
-                                                           {'name': 'ptnr1_label_comp_id', 'type': 'str'},
-                                                           {'name': 'ptnr1_label_atom_id', 'type': 'str'},
-                                                           {'name': 'ptnr2_label_asym_id', 'type': 'str'},
-                                                           {'name': 'ptnr2_label_seq_id', 'type': 'int'},
-                                                           {'name': 'ptnr2_label_comp_id', 'type': 'str'},
-                                                           {'name': 'ptnr2_label_atom_id', 'type': 'str'},
-                                                           {'name': 'pdbx_dist_value', 'type': 'float'}
-                                                           ])
+            if self.__cR.hasCategory('struct_conn'):
+                struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+                                                              [{'name': 'conn_type_id', 'type': 'str'},
+                                                               {'name': 'ptnr1_label_asym_id', 'type': 'str'},
+                                                               {'name': 'ptnr1_label_seq_id', 'type': 'int'},
+                                                               {'name': 'ptnr1_label_comp_id', 'type': 'str'},
+                                                               {'name': 'ptnr1_label_atom_id', 'type': 'str'},
+                                                               {'name': 'ptnr2_label_asym_id', 'type': 'str'},
+                                                               {'name': 'ptnr2_label_seq_id', 'type': 'int'},
+                                                               {'name': 'ptnr2_label_comp_id', 'type': 'str'},
+                                                               {'name': 'ptnr2_label_atom_id', 'type': 'str'},
+                                                               {'name': 'pdbx_dist_value', 'type': 'float'}
+                                                               ])
+
+            else:
+                struct_conn = []
 
         except Exception as e:
 
@@ -47927,18 +48301,22 @@ class NmrDpUtility:
 
         try:
 
-            struct_conn = self.__cR.getDictListWithFilter('struct_conn',
-                                                          [{'name': 'conn_type_id', 'type': 'str'},
-                                                           {'name': 'ptnr1_label_asym_id', 'type': 'str'},
-                                                           {'name': 'ptnr1_label_seq_id', 'type': 'int'},
-                                                           {'name': 'ptnr1_label_comp_id', 'type': 'str'},
-                                                           {'name': 'ptnr1_label_atom_id', 'type': 'str'},
-                                                           {'name': 'ptnr2_label_asym_id', 'type': 'str'},
-                                                           {'name': 'ptnr2_label_seq_id', 'type': 'int'},
-                                                           {'name': 'ptnr2_label_comp_id', 'type': 'str'},
-                                                           {'name': 'ptnr2_label_atom_id', 'type': 'str'},
-                                                           {'name': 'pdbx_dist_value', 'type': 'float'}
-                                                           ])
+            if self.__cR.hasCategory('struct_conn'):
+                struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+                                                              [{'name': 'conn_type_id', 'type': 'str'},
+                                                               {'name': 'ptnr1_label_asym_id', 'type': 'str'},
+                                                               {'name': 'ptnr1_label_seq_id', 'type': 'int'},
+                                                               {'name': 'ptnr1_label_comp_id', 'type': 'str'},
+                                                               {'name': 'ptnr1_label_atom_id', 'type': 'str'},
+                                                               {'name': 'ptnr2_label_asym_id', 'type': 'str'},
+                                                               {'name': 'ptnr2_label_seq_id', 'type': 'int'},
+                                                               {'name': 'ptnr2_label_comp_id', 'type': 'str'},
+                                                               {'name': 'ptnr2_label_atom_id', 'type': 'str'},
+                                                               {'name': 'pdbx_dist_value', 'type': 'float'}
+                                                               ])
+
+            else:
+                struct_conn = []
 
         except Exception as e:
 
@@ -52004,7 +52382,7 @@ class NmrDpUtility:
                         continue
                     constraint_type = get_first_sf_tag(sf, 'Constraint_type')
                     if 'NOE' in constraint_type:
-                        NOE_tot_num += sf_item['id']
+                        # NOE_tot_num += sf_item['id']
 
                         lp = sf_item['loop']
 
@@ -52018,10 +52396,10 @@ class NmrDpUtility:
                         comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
                         atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                         atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
-                        try:
-                            member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
-                        except ValueError:
-                            member_logic_code_col = -1
+                        # try:
+                        #     member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
+                        # except ValueError:
+                        #     member_logic_code_col = -1
                         try:
                             combination_id_col = lp.tags.index(item_names['combination_id'])
                         except ValueError:
@@ -52032,11 +52410,11 @@ class NmrDpUtility:
                             upper_limit_col = -1
 
                         prev_id = -1
-                        _atom1 = _atom2 = None
+                        # _atom1 = _atom2 = None
 
                         for row in lp:
                             _id = int(row[id_col])
-                            member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
+                            # member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
                             try:
                                 chain_id_1 = int(row[chain_id_1_col])
                                 chain_id_2 = int(row[chain_id_2_col])
@@ -52048,23 +52426,25 @@ class NmrDpUtility:
                             comp_id_2 = row[comp_id_2_col]
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
-                            if atom_id_1 is None or atom_id_2 is None:
-                                continue
-                            if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
-                                atom1 = {'chain_id': chain_id_1,
-                                         'seq_id': seq_id_1,
-                                         'comp_id': comp_id_1,
-                                         'atom_id': atom_id_1}
-                                atom2 = {'chain_id': chain_id_2,
-                                         'seq_id': seq_id_2,
-                                         'comp_id': comp_id_2,
-                                         'atom_id': atom_id_2}
-                                if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
-                                   and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
-                                    prev_id, _atom1, _atom2 = _id, atom1, atom2
-                                    continue
-                                _atom1, _atom2 = atom1, atom2
 
+                            if atom_id_1 in emptyValue or atom_id_2 in emptyValue or _id == prev_id:
+                                continue
+                            # """
+                            # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
+                            #     atom1 = {'chain_id': chain_id_1,
+                            #              'seq_id': seq_id_1,
+                            #              'comp_id': comp_id_1,
+                            #              'atom_id': atom_id_1}
+                            #     atom2 = {'chain_id': chain_id_2,
+                            #              'seq_id': seq_id_2,
+                            #              'comp_id': comp_id_2,
+                            #              'atom_id': atom_id_2}
+                            #     if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                            #        and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                            #         prev_id, _atom1, _atom2 = _id, atom1, atom2
+                            #         continue
+                            #     _atom1, _atom2 = atom1, atom2
+                            # """
                             prev_id = _id
 
                             combination_id = row[combination_id_col] if combination_id_col != -1 else None
@@ -52073,6 +52453,8 @@ class NmrDpUtility:
                             offset = abs(seq_id_1 - seq_id_2)
                             ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
                             uniq = combination_id in emptyValue and not ambig
+
+                            NOE_tot_num += 1
 
                             if uniq:
                                 NOE_unique_tot_num += 1
@@ -52159,7 +52541,7 @@ class NmrDpUtility:
                         continue
                     constraint_type = get_first_sf_tag(sf, 'Constraint_type')
                     if 'ROE' in constraint_type:
-                        ROE_tot_num += sf_item['id']
+                        # ROE_tot_num += sf_item['id']
 
                         lp = sf_item['loop']
 
@@ -52173,10 +52555,10 @@ class NmrDpUtility:
                         comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
                         atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                         atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
-                        try:
-                            member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
-                        except ValueError:
-                            member_logic_code_col = -1
+                        # try:
+                        #     member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
+                        # except ValueError:
+                        #     member_logic_code_col = -1
                         try:
                             combination_id_col = lp.tags.index(item_names['combination_id'])
                         except ValueError:
@@ -52187,11 +52569,11 @@ class NmrDpUtility:
                             upper_limit_col = -1
 
                         prev_id = -1
-                        _atom1 = _atom2 = None
+                        # _atom1 = _atom2 = None
 
                         for row in lp:
                             _id = int(row[id_col])
-                            member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
+                            # member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
                             try:
                                 chain_id_1 = int(row[chain_id_1_col])
                                 chain_id_2 = int(row[chain_id_2_col])
@@ -52203,23 +52585,25 @@ class NmrDpUtility:
                             comp_id_2 = row[comp_id_2_col]
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
-                            if atom_id_1 is None or atom_id_2 is None:
-                                continue
-                            if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
-                                atom1 = {'chain_id': chain_id_1,
-                                         'seq_id': seq_id_1,
-                                         'comp_id': comp_id_1,
-                                         'atom_id': atom_id_1}
-                                atom2 = {'chain_id': chain_id_2,
-                                         'seq_id': seq_id_2,
-                                         'comp_id': comp_id_2,
-                                         'atom_id': atom_id_2}
-                                if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
-                                   and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
-                                    prev_id, _atom1, _atom2 = _id, atom1, atom2
-                                    continue
-                                _atom1, _atom2 = atom1, atom2
 
+                            if atom_id_1 in emptyValue or atom_id_2 in emptyValue or _id == prev_id:
+                                continue
+                            # """
+                            # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
+                            #     atom1 = {'chain_id': chain_id_1,
+                            #              'seq_id': seq_id_1,
+                            #              'comp_id': comp_id_1,
+                            #              'atom_id': atom_id_1}
+                            #     atom2 = {'chain_id': chain_id_2,
+                            #              'seq_id': seq_id_2,
+                            #              'comp_id': comp_id_2,
+                            #              'atom_id': atom_id_2}
+                            #     if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                            #        and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                            #         prev_id, _atom1, _atom2 = _id, atom1, atom2
+                            #         continue
+                            #     _atom1, _atom2 = atom1, atom2
+                            # """
                             prev_id = _id
 
                             combination_id = row[combination_id_col] if combination_id_col != -1 else None
@@ -52228,6 +52612,8 @@ class NmrDpUtility:
                             offset = abs(seq_id_1 - seq_id_2)
                             ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
                             uniq = combination_id in emptyValue and not ambig
+
+                            ROE_tot_num += 1
 
                             if chain_id_1 == chain_id_2:
                                 if uniq:
@@ -52618,10 +53004,9 @@ class NmrDpUtility:
 
             if content_subtype in self.__mr_sf_dict_holder:
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
-
-                    RDC_tot_num += sf_item['id']
-
                     lp = sf_item['loop']
+
+                    # RDC_tot_num += sf_item['id']
 
                     item_names = self.item_names_in_rdc_loop[file_type]
                     id_col = lp.tags.index('ID')
@@ -52653,12 +53038,16 @@ class NmrDpUtility:
                         comp_id_1 = row[comp_id_1_col]
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
-                        if atom_id_1 is None or atom_id_2 is None:
+
+                        if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                             continue
+
                         combination_id = row[combination_id_col] if combination_id_col != -1 else None
 
                         vector = {atom_id_1, atom_id_2}
                         offset = abs(seq_id_1 - seq_id_2)
+
+                        RDC_tot_num += 1
 
                         if chain_id_1 == chain_id_2:
                             if vector == {'H', 'C'} and offset == 1:
@@ -52772,8 +53161,10 @@ class NmrDpUtility:
                         comp_id_2 = row[comp_id_2_col]
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
-                        if atom_id_1 is None or atom_id_2 is None:
+
+                        if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                             continue
+
                         if atom_id_1[0] in protonBeginCode:
                             if self.__ccU.updateChemCompDict(comp_id_1):
                                 bonded_atom_id_1 = self.__ccU.getBondedAtoms(comp_id_1, atom_id_1)
@@ -52844,8 +53235,10 @@ class NmrDpUtility:
                         comp_id_2 = row[comp_id_2_col]
                         atom_id_1 = row[atom_id_1_col]
                         atom_id_2 = row[atom_id_2_col]
-                        if atom_id_1 is None or atom_id_2 is None:
+
+                        if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                             continue
+
                         if atom_id_1[0] in protonBeginCode:
                             if self.__ccU.updateChemCompDict(comp_id_1):
                                 bonded_atom_id_1 = self.__ccU.getBondedAtoms(comp_id_1, atom_id_1)
@@ -53100,6 +53493,23 @@ class NmrDpUtility:
                     if constraint_subtype is not None and constraint_subtype == 'RDC':
                         constraint_type = 'residual dipolar coupling'
                     constraint_subsubtype = sf_item.get('constraint_subsubtype')
+
+                    try:
+                        id_col = sf_item['loop'].tags.index('ID')
+                        count = 0
+
+                        prev_id = -1
+                        for _row in sf_item['loop']:
+                            _id = int(_row[id_col])
+                            if _id == prev_id:
+                                continue
+                            prev_id = _id
+                            count += 1
+
+                        sf_item['id'] = count
+                    except AttributeError:
+                        pass
+
                     row[6], row[7], row[8], row[9] =\
                         constraint_type, constraint_subtype, constraint_subsubtype, sf_item['id']
                     row[10], row[11] = 1, self.__entry_id
@@ -53853,6 +54263,10 @@ class NmrDpUtility:
                                 comp_id_2 = row[comp_id_2_col]
                                 atom_id_1 = row[atom_id_1_col]
                                 atom_id_2 = row[atom_id_2_col]
+
+                                if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
+                                    continue
+
                                 atom_id_1_ = atom_id_1[0]
                                 atom_id_2_ = atom_id_2[0]
                                 if comp_id_1 == atom_id_1 or comp_id_2 == atom_id_2:
@@ -53927,7 +54341,7 @@ class NmrDpUtility:
                         if 'lower' in potential_type:
                             continue
                         if 'constraint_subtype' in sf_item[sf_framecode] and 'NOE' in sf_item[sf_framecode]['constraint_subtype']:
-                            NOE_tot_num += sf_item[sf_framecode]['id']
+                            # NOE_tot_num += sf_item[sf_framecode]['id']
 
                             if __pynmrstar_v3_2__:
                                 lp = sf.get_loop(lp_category)
@@ -53944,10 +54358,10 @@ class NmrDpUtility:
                             comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
                             atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                             atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
-                            try:
-                                member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
-                            except ValueError:
-                                member_logic_code_col = -1
+                            # try:
+                            #     member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
+                            # except ValueError:
+                            #     member_logic_code_col = -1
                             try:
                                 combination_id_col = lp.tags.index(item_names['combination_id'])
                             except ValueError:
@@ -53958,11 +54372,11 @@ class NmrDpUtility:
                                 upper_limit_col = -1
 
                             prev_id = -1
-                            _atom1 = _atom2 = None
+                            # _atom1 = _atom2 = None
 
                             for row in lp:
                                 _id = int(row[id_col])
-                                member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
+                                # member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
                                 try:
                                     chain_id_1 = int(row[chain_id_1_col])
                                     chain_id_2 = int(row[chain_id_2_col])
@@ -53974,23 +54388,25 @@ class NmrDpUtility:
                                 comp_id_2 = row[comp_id_2_col]
                                 atom_id_1 = row[atom_id_1_col]
                                 atom_id_2 = row[atom_id_2_col]
-                                if atom_id_1 is None or atom_id_2 is None:
-                                    continue
-                                if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
-                                    atom1 = {'chain_id': chain_id_1,
-                                             'seq_id': seq_id_1,
-                                             'comp_id': comp_id_1,
-                                             'atom_id': atom_id_1}
-                                    atom2 = {'chain_id': chain_id_2,
-                                             'seq_id': seq_id_2,
-                                             'comp_id': comp_id_2,
-                                             'atom_id': atom_id_2}
-                                    if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
-                                       and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
-                                        prev_id, _atom1, _atom2 = _id, atom1, atom2
-                                        continue
-                                    _atom1, _atom2 = atom1, atom2
 
+                                if atom_id_1 in emptyValue or atom_id_2 in emptyValue or _id == prev_id:
+                                    continue
+                                # """
+                                # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
+                                #     atom1 = {'chain_id': chain_id_1,
+                                #              'seq_id': seq_id_1,
+                                #              'comp_id': comp_id_1,
+                                #              'atom_id': atom_id_1}
+                                #     atom2 = {'chain_id': chain_id_2,
+                                #              'seq_id': seq_id_2,
+                                #              'comp_id': comp_id_2,
+                                #              'atom_id': atom_id_2}
+                                #     if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                #        and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                #         prev_id, _atom1, _atom2 = _id, atom1, atom2
+                                #         continue
+                                #     _atom1, _atom2 = atom1, atom2
+                                # """
                                 prev_id = _id
 
                                 combination_id = row[combination_id_col] if combination_id_col != -1 else None
@@ -53999,6 +54415,8 @@ class NmrDpUtility:
                                 offset = abs(seq_id_1 - seq_id_2)
                                 ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
                                 uniq = combination_id in emptyValue and not ambig
+
+                                NOE_tot_num += 1
 
                                 if uniq:
                                     NOE_unique_tot_num += 1
@@ -54086,7 +54504,7 @@ class NmrDpUtility:
                         if 'lower' in potential_type:
                             continue
                         if 'constraint_subtype' in sf_item[sf_framecode] and 'ROE' in sf_item[sf_framecode]['constraint_subtype']:
-                            ROE_tot_num += sf_item[sf_framecode]['id']
+                            # ROE_tot_num += sf_item[sf_framecode]['id']
 
                             if __pynmrstar_v3_2__:
                                 lp = sf.get_loop(lp_category)
@@ -54103,10 +54521,10 @@ class NmrDpUtility:
                             comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
                             atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
                             atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
-                            try:
-                                member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
-                            except ValueError:
-                                member_logic_code_col = -1
+                            # try:
+                            #     member_logic_code_col = lp.tags.index(item_names['member_logic_code'])
+                            # except ValueError:
+                            #     member_logic_code_col = -1
                             try:
                                 combination_id_col = lp.tags.index(item_names['combination_id'])
                             except ValueError:
@@ -54117,11 +54535,11 @@ class NmrDpUtility:
                                 upper_limit_col = -1
 
                             prev_id = -1
-                            _atom1 = _atom2 = None
+                            # _atom1 = _atom2 = None
 
                             for row in lp:
                                 _id = int(row[id_col])
-                                member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
+                                # member_logic_code = row[member_logic_code_col] if member_logic_code_col != -1 else None
                                 try:
                                     chain_id_1 = int(row[chain_id_1_col])
                                     chain_id_2 = int(row[chain_id_2_col])
@@ -54133,23 +54551,25 @@ class NmrDpUtility:
                                 comp_id_2 = row[comp_id_2_col]
                                 atom_id_1 = row[atom_id_1_col]
                                 atom_id_2 = row[atom_id_2_col]
-                                if atom_id_1 is None or atom_id_2 is None:
-                                    continue
-                                if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
-                                    atom1 = {'chain_id': chain_id_1,
-                                             'seq_id': seq_id_1,
-                                             'comp_id': comp_id_1,
-                                             'atom_id': atom_id_1}
-                                    atom2 = {'chain_id': chain_id_2,
-                                             'seq_id': seq_id_2,
-                                             'comp_id': comp_id_2,
-                                             'atom_id': atom_id_2}
-                                    if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
-                                       and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
-                                        prev_id, _atom1, _atom2 = _id, atom1, atom2
-                                        continue
-                                    _atom1, _atom2 = atom1, atom2
 
+                                if atom_id_1 in emptyValue or atom_id_2 in emptyValue or _id == prev_id:
+                                    continue
+                                # """
+                                # if (member_logic_code is not None and member_logic_code == 'OR') or _id == prev_id:
+                                #     atom1 = {'chain_id': chain_id_1,
+                                #              'seq_id': seq_id_1,
+                                #              'comp_id': comp_id_1,
+                                #              'atom_id': atom_id_1}
+                                #     atom2 = {'chain_id': chain_id_2,
+                                #              'seq_id': seq_id_2,
+                                #              'comp_id': comp_id_2,
+                                #              'atom_id': atom_id_2}
+                                #     if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                #        and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                #         prev_id, _atom1, _atom2 = _id, atom1, atom2
+                                #         continue
+                                #     _atom1, _atom2 = atom1, atom2
+                                # """
                                 prev_id = _id
 
                                 combination_id = row[combination_id_col] if combination_id_col != -1 else None
@@ -54158,6 +54578,8 @@ class NmrDpUtility:
                                 offset = abs(seq_id_1 - seq_id_2)
                                 ambig = upper_limit is not None and (upper_limit <= DIST_AMBIG_LOW or upper_limit >= DIST_AMBIG_UP)
                                 uniq = combination_id in emptyValue and not ambig
+
+                                ROE_tot_num += 1
 
                                 if chain_id_1 == chain_id_2:
                                     if uniq:
@@ -54599,7 +55021,7 @@ class NmrDpUtility:
                         else:
                             lp = sf.get_loop_by_category(lp_category)
 
-                        RDC_tot_num += sf_item[sf_framecode]['id']
+                        # RDC_tot_num += sf_item[sf_framecode]['id']
 
                         item_names = self.item_names_in_rdc_loop[file_type]
                         id_col = lp.tags.index('ID')
@@ -54631,12 +55053,16 @@ class NmrDpUtility:
                             comp_id_1 = row[comp_id_1_col]
                             atom_id_1 = row[atom_id_1_col]
                             atom_id_2 = row[atom_id_2_col]
-                            if atom_id_1 is None or atom_id_2 is None:
+
+                            if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                                 continue
+
                             combination_id = row[combination_id_col] if combination_id_col != -1 else None
 
                             vector = {atom_id_1, atom_id_2}
                             offset = abs(seq_id_1 - seq_id_2)
+
+                            RDC_tot_num += 1
 
                             if chain_id_1 == chain_id_2:
                                 if vector == {'H', 'C'} and offset == 1:
@@ -54725,7 +55151,6 @@ class NmrDpUtility:
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
                         if sf_framecode not in sf_item:
                             sf_item[sf_framecode] = {'constraint_type': ' '.join(_restraint_name[:-1])}
-
                             id_col = lp.tags.index('ID')
 
                             count = 0

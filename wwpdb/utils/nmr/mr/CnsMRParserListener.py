@@ -1945,7 +1945,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
                     angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                           [atom1, atom2, atom3, atom4])
+                                                           [atom1, atom2, atom3, atom4],
+                                                           self.__cR, self.__ccU,
+                                                           self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
                     if angleName in emptyValue:
                         continue
                     fixedAngleName = angleName
@@ -1961,7 +1963,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                       [atom1, atom2, atom3, atom4])
+                                                       [atom1, atom2, atom3, atom4],
+                                                       self.__cR, self.__ccU,
+                                                       self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
                 if angleName is None:
                     continue
                 if isinstance(combinationId, int):

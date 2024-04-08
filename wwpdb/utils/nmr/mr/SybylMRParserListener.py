@@ -64,6 +64,7 @@ try:
                                            retrieveAtomIdentFromMRMap,
                                            retrieveAtomIdFromMRMap,
                                            retrieveRemappedSeqId,
+                                           retrieveRemappedSeqIdAndCompId,
                                            splitPolySeqRstForMultimers,
                                            splitPolySeqRstForExactNoes,
                                            retrieveRemappedChainId,
@@ -122,6 +123,7 @@ except ImportError:
                                retrieveAtomIdentFromMRMap,
                                retrieveAtomIdFromMRMap,
                                retrieveRemappedSeqId,
+                               retrieveRemappedSeqIdAndCompId,
                                splitPolySeqRstForMultimers,
                                splitPolySeqRstForExactNoes,
                                retrieveRemappedChainId,
@@ -215,6 +217,9 @@ class SybylMRParserListener(ParseTreeListener):
 
     # current restraint subtype
     __cur_subtype = ''
+
+    # whether to allow extended sequence temporary
+    __allow_ext_seq = False
 
     # collection of atom selection
     atomSelectionSet = []
@@ -552,6 +557,41 @@ class SybylMRParserListener(ParseTreeListener):
                                 if len(seqIdRemapFailed) > 0:
                                     if 'chain_seq_id_remap' not in self.reasonsForReParsing:
                                         self.reasonsForReParsing['chain_seq_id_remap'] = seqIdRemapFailed
+                                else:
+                                    for ps in self.__polySeqRstFailed:
+                                        for ca in self.__chainAssign:
+                                            ref_chain_id = ca['ref_chain_id']
+                                            test_chain_id = ca['test_chain_id']
+
+                                            if test_chain_id != ps['chain_id']:
+                                                continue
+
+                                            sa = next(sa for sa in self.__seqAlign
+                                                      if sa['ref_chain_id'] == ref_chain_id
+                                                      and sa['test_chain_id'] == test_chain_id)
+
+                                            if len(sa['test_seq_id']) != len(sa['ref_seq_id']):
+                                                continue
+
+                                            poly_seq_model = next(ps for ps in self.__polySeq
+                                                                  if ps['auth_chain_id'] == ref_chain_id)
+
+                                            seq_id_mapping = {}
+                                            comp_id_mapping = {}
+
+                                            for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
+                                                if seq_id in sa['test_seq_id']:
+                                                    idx = sa['test_seq_id'].index(seq_id)
+                                                    auth_seq_id = sa['ref_seq_id'][idx]
+                                                    seq_id_mapping[seq_id] = auth_seq_id
+                                                    comp_id_mapping[seq_id] = comp_id
+
+                                            seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
+                                                                     'comp_id_dict': comp_id_mapping})
+
+                                    if len(seqIdRemapFailed) > 0:
+                                        if 'ext_chain_seq_id_remap' not in self.reasonsForReParsing:
+                                            self.reasonsForReParsing['ext_chain_seq_id_remap'] = seqIdRemapFailed
 
             # """
             # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
@@ -566,6 +606,8 @@ class SybylMRParserListener(ParseTreeListener):
                 elif 'seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
                 elif 'chain_seq_id_remap' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['local_seq_scheme']
+                elif 'ext_chain_seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
@@ -870,8 +912,11 @@ class SybylMRParserListener(ParseTreeListener):
 
         fixedChainId = None
         fixedSeqId = None
+        fixedCompId = None
 
         preferNonPoly = False
+
+        self.__allow_ext_seq = False
 
         if compId in ('CYSZ', 'CYZ', 'CYS') and atomId == 'ZN' and self.__hasNonPoly:
             znCount = 0
@@ -902,8 +947,15 @@ class SybylMRParserListener(ParseTreeListener):
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
             elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
-            elif 'seq_id_remap' in self.__reasons or 'chain_seq_id_remap' in self.__reasons:
-                if 'chain_seq_id_remap' in self.__reasons:
+            elif 'seq_id_remap' in self.__reasons\
+                 or 'chain_seq_id_remap' in self.__reasons\
+                 or 'ext_chain_seq_id_remap' in self.__reasons:
+                if 'ext_chain_seq_id_remap' in self.__reasons:
+                    fixedChainId, fixedSeqId, fixedCompId =\
+                        retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], None, seqId,
+                                                       compId if compId in monDict3 else None)
+                    self.__allow_ext_seq = fixedCompId is not None
+                if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
                     fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], None, seqId,
                                                                      compId if compId in monDict3 else None)
                 if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
@@ -925,14 +977,17 @@ class SybylMRParserListener(ParseTreeListener):
                         seqId = fixedSeqId
                 elif fixedSeqId is not None:
                     seqId = fixedSeqId
-            if seqId in ps['auth_seq_id']:
-                if cifCompId is not None:
-                    idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(ps['auth_seq_id'], ps['comp_id']))
-                                if _seqId_ == seqId and _cifCompId_ == cifCompId), ps['auth_seq_id'].index(seqId))
+            if seqId in ps['auth_seq_id'] or fixedCompId is not None:
+                if fixedCompId is not None:
+                    cifCompId = origCompId = fixedCompId
                 else:
-                    idx = ps['auth_seq_id'].index(seqId)
-                cifCompId = ps['comp_id'][idx]
-                origCompId = ps['auth_comp_id'][idx]
+                    if cifCompId is not None:
+                        idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(ps['auth_seq_id'], ps['comp_id']))
+                                    if _seqId_ == seqId and _cifCompId_ == cifCompId), ps['auth_seq_id'].index(seqId))
+                    else:
+                        idx = ps['auth_seq_id'].index(seqId)
+                    cifCompId = ps['comp_id'][idx]
+                    origCompId = ps['auth_comp_id'][idx]
                 if cifCompId != compId:
                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                     if compId in compIds:
@@ -1558,8 +1613,13 @@ class SybylMRParserListener(ParseTreeListener):
                                                     "Please re-upload the model file.")
                                     return atomId
                     if chainId in LARGE_ASYM_ID:
-                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                        f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                        if self.__allow_ext_seq:
+                            self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                            f"The residue '{chainId}:{seqId}:{compId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                            "Please update the sequence in the Macromolecules page.")
+                        else:
+                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                            f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
         return atomId
 
     def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):

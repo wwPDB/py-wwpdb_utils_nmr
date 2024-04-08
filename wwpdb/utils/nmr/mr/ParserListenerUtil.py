@@ -6,6 +6,7 @@
 # 13-Sep-2023  M. Yokochi - construct pseudo CCD from the coordinates (DAOTHER-8817)
 # 29-Sep-2023  M. Yokochi - add atom name mapping dictionary (DAOTHER-8817, 8828)
 # 24-Jan-2024  M. Yokochi - reconstruct polymer/non-polymer sequence based on pdb_mon_id, instead of auth_mon_id (D_1300043061)
+# 04-Apr-2024  M. Yokochi - permit dihedral angle restraint across entities due to ligand split (DAOTHER-9063)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -3034,6 +3035,10 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     nonPolyPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'pdb_mon_id') else 'mon_id'
     branchedPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_branch_scheme', 'pdb_mon_id') else 'mon_id'
 
+    polySeqAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_poly_seq_scheme', 'auth_mon_id') else 'mon_id'
+    nonPolyAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'auth_mon_id') else 'mon_id'
+    branchedAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_branch_scheme', 'auth_mon_id') else 'mon_id'
+
     if polySeq is None or nmrExtPolySeq is None:
         changed = True
 
@@ -3513,6 +3518,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     authToOrigSeq = None if prevResult is None else prevResult.get('auth_to_orig_seq')
     authToInsCode = None if prevResult is None else prevResult.get('auth_to_ins_code')
     authToEntityType = None if prevResult is None else prevResult.get('auth_to_entity_type')
+    authToStarSeqAnn = None if prevResult is None else prevResult.get('auth_to_star_seq_ann')
     labelToAuthChain = None if prevResult is None else prevResult.get('label_to_auth_chain')
     authToLabelChain = None if prevResult is None else prevResult.get('auth_to_label_chain')
     entityAssembly = None if prevResult is None else prevResult.get('entity_assembly')
@@ -3552,6 +3558,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                          {'name': 'type_symbol', 'type': 'str'}
                          ]
 
+            if authAsymId != 'auth_asym_id':  # DAOTHER-8817
+                dataItems.append({'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'})
             if altAuthCompId is not None:
                 dataItems.append({'name': altAuthCompId, 'type': 'str', 'alt_name': 'alt_comp_id'})
             if altAuthAtomId is not None:
@@ -3629,7 +3637,11 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
                     typeSymbols = [c['type_symbol'] for c in coord
                                    if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
-                    coordAtomSite[seqKey] = {'comp_id': compId, 'atom_id': atomIds, 'type_symbol': typeSymbols}
+                    authChainId = chainId
+                    if authAsymId != 'auth_asym_id':  # DAOTHER-8817
+                        authChainId = next(c['auth_chain_id'] for c in coord
+                                           if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId)
+                    coordAtomSite[seqKey] = {'chain_id': authChainId, 'comp_id': compId, 'atom_id': atomIds, 'type_symbol': typeSymbols}
                     if altAuthCompId is not None:
                         altCompIds = [c['comp_id'] for c in coord
                                       if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
@@ -3643,6 +3655,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         labelToAuthSeq[(authToLabelChain[chainId], int(altSeqId))] = seqKey
                     else:
                         labelToAuthSeq[seqKey] = seqKey
+                        if chainId != authChainId:
+                            altKey = (authChainId, seqId)
+                            coordAtomSite[altKey] = coordAtomSite[seqKey]
                     compIds = list(set(c['comp_id'] for c in coord
                                        if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId))
                     if len(compIds) > 1:  # 2kny: split implict ins_code of atom_site
@@ -3653,7 +3668,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                        if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
                             typeSymbols = [c['type_symbol'] for c in coord
                                            if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
-                            coordAtomSite[seqKey] = {'comp_id': compId, 'atom_id': atomIds, 'type_symbol': typeSymbols, 'split_comp_id': compIds}
+                            coordAtomSite[seqKey] = {'chain_id': authChainId, 'comp_id': compId, 'atom_id': atomIds, 'type_symbol': typeSymbols, 'split_comp_id': compIds}
                             if altAuthCompId is not None:
                                 altCompIds = [c['comp_id'] for c in coord
                                               if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId and c['comp_id'] == compId]
@@ -3668,6 +3683,9 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             else:
                                 _seqKey = (seqKey[0], seqKey[1])
                                 labelToAuthSeq[_seqKey] = _seqKey
+                                if chainId != authChainId:
+                                    altKey = (authChainId, seqId, compId)
+                                    coordAtomSite[altKey] = coordAtomSite[seqKey]
 
                     # DAOTHER-8817
                     if compId not in monDict3:
@@ -3810,13 +3828,14 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                 authToLabelSeq[authSeqKey] = labelSeqKey
                 labelToAuthSeq[labelSeqKey] = authSeqKey
 
-        if authToStarSeq is None or authToEntityType is None or entityAssembly is None:
+        if authToStarSeq is None or authToEntityType is None or entityAssembly is None or authToStarSeqAnn is None:
             changed = True
 
             authToStarSeq = {}
             authToOrigSeq = {}
             authToInsCode = {}
             authToEntityType = {}
+            authToStarSeqAnn = {}
             entityAssembly = []
 
             entityAssemblyId = 1
@@ -3915,7 +3934,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'seq_id', 'type': 'int'},
                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                     {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
+                                     {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'},
+                                     {'name': polySeqAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}  # DAOTHER-8817
                                      ]
 
                         if has_ins_code:
@@ -3942,19 +3962,23 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         if len(authAsymIds) <= MAX_MAG_IDENT_ASYM_ID:
                             if len(labelAsymIds) == 1:
                                 for item in mappings:
+                                    has_ins_code_val = has_ins_code and item['ins_code'] not in emptyValue
                                     seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
-                                    authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                    authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
                                     authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
-                                    if has_ins_code and item['ins_code'] not in emptyValue:
+                                    if has_ins_code_val:
                                         authToInsCode[seqKey] = item['ins_code']
                                     authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                    if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                        _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
+                                        authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
                                 ext_mappings = 0
                                 ext_fw = 0.0
                                 for extSeq in nmrExtPolySeq:
                                     if extSeq['auth_chain_id'] not in authAsymIds:
                                         continue
                                     seqKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
-                                    authToStarSeq[seqKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                    authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
                                     authToOrigSeq[seqKey] = (extSeq['seq_id'], extSeq['auth_comp_id'])
                                     authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
                                     ext_mappings += 1
@@ -3965,16 +3989,20 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 for item in mappings:
                                     altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                     if altKey not in authToStarSeq:
-                                        authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
-                                        if has_ins_code and item['ins_code'] not in emptyValue:
+                                        has_ins_code_val = has_ins_code and item['ins_code'] not in emptyValue
+                                        authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                        if has_ins_code_val:
                                             authToInsCode[altKey] = item['ins_code']
                                         authToEntityType[altKey] = entityPolyType
+                                        if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                            _altKey = (item['auth_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
+                                            authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
                                 for extSeq in nmrExtPolySeq:
                                     if extSeq['auth_chain_id'] not in authAsymIds:
                                         continue
                                     altKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
                                     if altKey not in authToStarSeq:
-                                        authToStarSeq[altKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                        authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
                                         authToEntityType[altKey] = entityPolyType
 
                                 entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
@@ -4026,19 +4054,24 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                             for item in mappings:
                                                 if item['label_asym_id'] != labelAsymId:
                                                     continue
+                                                has_ins_code_val = has_ins_code and item['ins_code'] not in emptyValue
                                                 seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
-                                                authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                                authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
                                                 authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
-                                                if has_ins_code and item['ins_code'] not in emptyValue:
+                                                if has_ins_code_val:
                                                     authToInsCode[seqKey] = item['ins_code']
                                                 authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                                if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                                    _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
+                                                    authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
+
                                             ext_mappings = 0
                                             ext_fw = 0.0
                                             for extSeq in nmrExtPolySeq:
                                                 if extSeq['chain_id'] != labelAsymId:
                                                     continue
                                                 seqKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
-                                                authToStarSeq[seqKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                                authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
                                                 authToOrigSeq[seqKey] = (extSeq['seq_id'], extSeq['auth_comp_id'])
                                                 authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
                                                 ext_mappings += 1
@@ -4051,16 +4084,21 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                     continue
                                                 altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                                 if altKey not in authToStarSeq:
-                                                    authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
-                                                    if has_ins_code and item['ins_code'] not in emptyValue:
+                                                    has_ins_code_val = has_ins_code and item['ins_code'] not in emptyValue
+                                                    authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                                    if has_ins_code_val:
                                                         authToInsCode[altKey] = item['ins_code']
                                                     authToEntityType[altKey] = entityPolyType
+                                                    if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                                        _altKey = (item['auth_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
+                                                        authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
+
                                             for extSeq in nmrExtPolySeq:
                                                 if extSeq['chain_id'] != labelAsymId:
                                                     continue
                                                 altKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
                                                 if altKey not in authToStarSeq:
-                                                    authToStarSeq[altKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                                    authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
                                                     authToEntityType[altKey] = entityPolyType
 
                                             entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
@@ -4091,12 +4129,16 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 labelAsymIds = []
                                 for item in mappings:
                                     if item['auth_asym_id'] == _authAsymId:
+                                        has_ins_code_val = has_ins_code and item['ins_code'] not in emptyValue
                                         seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
-                                        authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                        authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, item['seq_id'], entityId, True)
                                         authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
-                                        if has_ins_code and item['ins_code'] not in emptyValue:
+                                        if has_ins_code_val:
                                             authToInsCode[seqKey] = item['ins_code']
                                         authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                        if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                            _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
+                                            authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
                                         if item['label_asym_id'] not in labelAsymIds:
                                             labelAsymIds.append(item['label_asym_id'])
                                 ext_mappings = 0
@@ -4104,7 +4146,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 for extSeq in nmrExtPolySeq:
                                     if extSeq['auth_chain_id'] == _authAsymId:
                                         seqKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
-                                        authToStarSeq[seqKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                        authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
                                         authToOrigSeq[seqKey] = (extSeq['seq_id'], extSeq['auth_comp_id'])
                                         authToEntityType[seqKey] = entityPolyType  # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
                                         ext_mappings += 1
@@ -4116,15 +4158,19 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                     if item['auth_asym_id'] == _authAsymId:
                                         altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                         if altKey not in authToStarSeq:
-                                            authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
-                                            if has_ins_code and item['ins_code'] not in emptyValue:
+                                            has_ins_code_val = has_ins_code and item['ins_code'] not in emptyValue
+                                            authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                            if has_ins_code_val:
                                                 authToInsCode[altKey] = item['ins_code']
                                             authToEntityType[altKey] = entityPolyType
+                                            if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                                _altKey = (item['auth_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
+                                                authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
                                 for extSeq in nmrExtPolySeq:
                                     if extSeq['auth_chain_id'] == _authAsymId:
                                         altKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])
                                         if altKey not in authToStarSeq:
-                                            authToStarSeq[altKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
+                                            authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, extSeq['seq_id'], entityId, True)
                                             authToEntityType[altKey] = entityPolyType
 
                                 entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
@@ -4168,7 +4214,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                     {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id'}
+                                     {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id'},
+                                     {'name': branchedAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id'}  # DAOTHER-8817
                                      ]
 
                         if has_ins_code:
@@ -4186,22 +4233,30 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         if len(authAsymIds) <= MAX_MAG_IDENT_ASYM_ID:
                             labelAsymIds = []
                             for item in mappings:
+                                has_ins_code_val = has_ins_code and item['ins_code'] not in emptyValue
                                 seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
-                                authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
+                                authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
                                 authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
-                                if has_ins_code and item['ins_code'] not in emptyValue:
+                                if has_ins_code_val:
                                     authToInsCode[seqKey] = item['ins_code']
                                 authToEntityType[seqKey] = entityPolyType  # e.g. oligosaccharide
+                                if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                    _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
+                                    authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
                                 if item['label_asym_id'] not in labelAsymIds:
                                     labelAsymIds.append(item['label_asym_id'])
 
                             for item in mappings:
                                 altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                 if altKey not in authToStarSeq:
-                                    authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
-                                    if has_ins_code and item['ins_code'] not in emptyValue:
+                                    has_ins_code_val = has_ins_code and item['ins_code'] not in emptyValue
+                                    authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                    if has_ins_code_val:
                                         authToInsCode[altKey] = item['ins_code']
                                     authToEntityType[altKey] = entityPolyType
+                                    if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                        _altKey = (item['auth_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
+                                        authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
 
                             entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
                                                    'entity_type': entityType, 'entity_src_method': entitySrcMethod,
@@ -4221,11 +4276,15 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 labelAsymIds = []
                                 for item in mappings:
                                     if item['auth_asym_id'] == _authAsymId:
+                                        has_ins_code_val = has_ins_code and item['ins_code'] not in emptyValue
                                         seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
-                                        authToStarSeq[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
-                                        if has_ins_code and item['ins_code'] not in emptyValue:
+                                        authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, item['seq_id'], entityId, False)
+                                        if has_ins_code_val:
                                             authToInsCode[seqKey] = item['ins_code']
                                         authToEntityType[seqKey] = entityPolyType  # e.g. oligosaccharide
+                                        if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                            _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
+                                            authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
                                         if item['label_asym_id'] not in labelAsymIds:
                                             labelAsymIds.append(item['label_asym_id'])
 
@@ -4233,10 +4292,14 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                     if item['auth_asym_id'] == _authAsymId:
                                         altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                                         if altKey not in authToStarSeq:
-                                            authToStarSeq[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
-                                            if has_ins_code and item['ins_code'] not in emptyValue:
+                                            has_ins_code_val = has_ins_code and item['ins_code'] not in emptyValue
+                                            authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, item['seq_id'], entityId, True)
+                                            if has_ins_code_val:
                                                 authToInsCode[altKey] = item['ins_code']
                                             authToEntityType[altKey] = entityPolyType
+                                            if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                                _altKey = (item['auth_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
+                                                authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
 
                                 entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
                                                        'entity_type': entityType, 'entity_src_method': entitySrcMethod,
@@ -4260,7 +4323,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                     {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
+                                     {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'},
+                                     {'name': nonPolyAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}  # DAOTHER-8817
                                      ]
 
                         if has_ins_code:
@@ -4273,12 +4337,22 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         authAsymIds = []
                         compId = None
                         for idx, item in enumerate(mappings):
+                            has_ins_code_val = has_ins_code and item['ins_code'] not in emptyValue
                             seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
-                            authToStarSeq[seqKey] = (entityAssemblyId, idx + 1, entityId, True)
+                            authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] = (entityAssemblyId, idx + 1, entityId, True)
                             authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
-                            if has_ins_code and item['ins_code'] not in emptyValue:
+                            if has_ins_code_val:
                                 authToInsCode[seqKey] = item['ins_code']
                             authToEntityType[seqKey] = entityType
+                            if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
+                                authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
+                            if item['auth_asym_id'] != item['label_asym_id']:  # DAOTHER-8817
+                                _seqKey = (item['label_asym_id'], item['auth_seq_id'], item['comp_id'])
+                                authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
+                                if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                    _seqKey = (item['label_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
+                                    authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
                             if item['auth_asym_id'] not in authAsymIds:
                                 authAsymIds.append(item['auth_asym_id'])
                             if compId is None:
@@ -4287,10 +4361,20 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         for idx, item in enumerate(mappings):
                             altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
                             if altKey not in authToStarSeq:
-                                authToStarSeq[altKey] = (entityAssemblyId, idx + 1, entityId, False)
-                                if has_ins_code and item['ins_code'] not in emptyValue:
+                                has_ins_code_val = has_ins_code and item['ins_code'] not in emptyValue
+                                authToStarSeq[altKey] = authToStarSeqAnn[altKey] = (entityAssemblyId, idx + 1, entityId, False)
+                                if has_ins_code_val:
                                     authToInsCode[altKey] = item['ins_code']
                                 authToEntityType[altKey] = entityType
+                                if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                    _altKey = (item['auth_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
+                                    authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
+                                if item['auth_asym_id'] != item['label_asym_id']:  # DAOTHER-8817
+                                    _altKey = (item['label_asym_id'], item['alt_seq_id'], item['comp_id'])
+                                    authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
+                                    if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                        _altKey = (item['label_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
+                                        authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
 
                         labelAsymIds = []
                         for item in mappings:
@@ -4419,6 +4503,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'auth_to_orig_seq': authToOrigSeq,
             'auth_to_ins_code': authToInsCode,
             'auth_to_entity_type': authToEntityType,
+            'auth_to_star_seq_ann': authToStarSeqAnn,
             'entity_assembly': entityAssembly,
             'chem_comp_atom': chemCompAtom,
             'chem_comp_bond': chemCompBond,
@@ -4896,7 +4981,9 @@ def isAmbigAtomSelection(atoms, csStat):
     return False
 
 
-def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms):
+def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms, cR=None, ccU=None,
+                               representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
+                               modelNumName='PDB_model_num'):
     """ Return type of dihedral angle restraint.
     """
 
@@ -4908,8 +4995,25 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
     chainIds = [a['chain_id'] for a in atoms]
     atomIds = [a['atom_id'] for a in atoms]
 
+    # DAOTHER-9063: Permit dihedral angle restraint across entities due to ligand split
+    def is_connected():
+        if cR is None:
+            return False
+        for idx, atom2 in enumerate(atoms):
+            if idx == 0:
+                continue
+            atom1 = atoms[idx - 1]
+            if atom1['chain_id'] == atom2['chain_id'] and atom1['seq_id'] == atom2['seq_id']\
+               and ccU.hasBond(atom1['comp_id'], atom1['atom_id'], atom2['atom_id']):
+                continue
+            if not isStructConn(cR, atom1['chain_id'], atom1['seq_id'], atom1['atom_id'],
+                                atom2['chain_id'], atom2['seq_id'], atom2['atom_id'],
+                                representativeModelId, representativeAltId, modelNumName):
+                return False
+        return True
+
     if len(collections.Counter(chainIds).most_common()) > 1:
-        return None
+        return None  # '.' if is_connected() else None
 
     commonSeqId = collections.Counter(seqIds).most_common()
 
@@ -5006,7 +5110,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         break
 
             if found:
-                return None
+                return '.' if is_connected() else None
 
     elif polynucleotide:
 
@@ -5122,7 +5226,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         break
 
             if found:
-                return None
+                return '.' if is_connected() else None
 
         if 'N1' in atomIds:
 
@@ -5135,7 +5239,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                     break
 
             if found:
-                return None
+                return '.' if is_connected() else None
 
         elif 'N9' in atomIds:
 
@@ -5148,7 +5252,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                     break
 
             if found:
-                return None
+                return '.' if is_connected() else None
 
     elif carbohydrates:
 
@@ -5204,9 +5308,9 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         break
 
             if found:
-                return None
+                return '.' if is_connected() else None
 
-    return '.' if lenCommonSeqId == 1 else None
+    return '.' if is_connected() else None
 
 
 def isLikePheOrTyr(compId, ccU):
@@ -5310,7 +5414,9 @@ def startsWithPdbRecord(line):
     return any(line[:-1] == pdb_record[:-1] for pdb_record in LEGACY_PDB_RECORDS if pdb_record.endswith(' '))
 
 
-def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID, modelNumName='PDB_model_num'):
+def isCyclicPolymer(cR, polySeq, authAsymId,
+                    representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
+                    modelNumName='PDB_model_num'):
     """ Return whether a given chain is cyclic polymer based on coordinate annotation.
     """
 
@@ -5332,18 +5438,22 @@ def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=REPRESENTATIV
 
     try:
 
-        filterItems = [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': labelAsymId},
-                       {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': labelAsymId},
-                       {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': begLabelSeqId},
-                       {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': endLabelSeqId},
-                       ]
+        if cR.hasCategory('struct_conn'):
+            filterItems = [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': labelAsymId},
+                           {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': labelAsymId},
+                           {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': begLabelSeqId},
+                           {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': endLabelSeqId},
+                           ]
 
-        if cR.hasItem('struct_conn', 'pdbx_leaving_atom_flag'):
-            filterItems.append({'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'})
+            if cR.hasItem('struct_conn', 'pdbx_leaving_atom_flag'):
+                filterItems.append({'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'})
 
-        struct_conn = cR.getDictListWithFilter('struct_conn',
-                                               [{'name': 'conn_type_id', 'type': 'str'}],
-                                               filterItems)
+            struct_conn = cR.getDictListWithFilter('struct_conn',
+                                                   [{'name': 'conn_type_id', 'type': 'str'}],
+                                                   filterItems)
+
+        else:
+            struct_conn = []
 
     except Exception:
         return False
@@ -5352,17 +5462,21 @@ def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=REPRESENTATIV
 
         try:
 
-            close_contact = cR.getDictListWithFilter('pdbx_validate_close_contact',
-                                                     [{'name': 'dist', 'type': 'float'}
-                                                      ],
-                                                     [{'name': modelNumName, 'type': 'int', 'value': representativeModelId},
-                                                      {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId},
-                                                      {'name': 'auth_seq_id_1', 'type': 'int', 'value': begAuthSeqId},
-                                                      {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
-                                                      {'name': 'auth_asym_id_2', 'type': 'str', 'value': authAsymId},
-                                                      {'name': 'auth_seq_id_2', 'type': 'int', 'value': endAuthSeqId},
-                                                      {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
-                                                      ])
+            if cR.hasCategory('pdbx_validate_close_contact'):
+                close_contact = cR.getDictListWithFilter('pdbx_validate_close_contact',
+                                                         [{'name': 'dist', 'type': 'float'}
+                                                          ],
+                                                         [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId},
+                                                          {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId},
+                                                          {'name': 'auth_seq_id_1', 'type': 'int', 'value': begAuthSeqId},
+                                                          {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
+                                                          {'name': 'auth_asym_id_2', 'type': 'str', 'value': authAsymId},
+                                                          {'name': 'auth_seq_id_2', 'type': 'int', 'value': endAuthSeqId},
+                                                          {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
+                                                          ])
+
+            else:
+                close_contact = []
 
         except Exception:
             return False
@@ -5370,7 +5484,7 @@ def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=REPRESENTATIV
         if len(close_contact) == 0:
 
             bond = getCoordBondLength(cR, labelAsymId, begLabelSeqId, 'N', labelAsymId, endLabelSeqId, 'C',
-                                      representativeAltId, modelNumName)
+                                      representativeAltId, modelNumName, True)
 
             if bond is None:
                 return False
@@ -5380,15 +5494,114 @@ def isCyclicPolymer(cR, polySeq, authAsymId, representativeModelId=REPRESENTATIV
             if distance is None:
                 return False
 
-            return 1.2 < distance < 1.4
+            return 1.0 < distance < 2.4
 
-        return 1.2 < close_contact[0]['dist'] < 1.4
+        return 1.0 < close_contact[0]['dist'] < 2.4
 
     return struct_conn[0]['conn_type_id'] == 'covale'
 
 
-def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2, labelSeqId2, labelAtomId2,
-                       representativeAltId=REPRESENTATIVE_ALT_ID, modelNumName='PDB_model_num'):
+def isStructConn(cR, authAsymId1, authSeqId1, authAtomId1, authAsymId2, authSeqId2, authAtomId2,
+                 representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
+                 modelNumName='PDB_model_num'):
+    """ Return whether a given atom pair is structurally connected.
+    """
+
+    if cR is None:
+        return False
+
+    try:
+
+        if cR.hasCategory('struct_conn'):
+            filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId1},
+                           {'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId2},
+                           {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': authSeqId1},
+                           {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': authSeqId2},
+                           {'name': 'ptnr1_auth_atom_id', 'type': 'int', 'value': authAtomId1},
+                           {'name': 'ptnr2_auth_atom_id', 'type': 'int', 'value': authAtomId2}
+                           ]
+
+            struct_conn = cR.getDictListWithFilter('struct_conn',
+                                                   [{'name': 'conn_type_id', 'type': 'str'}],
+                                                   filterItems)
+
+            if len(struct_conn) == 0:
+                filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId2},
+                               {'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId1},
+                               {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': authSeqId2},
+                               {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': authSeqId1},
+                               {'name': 'ptnr1_auth_atom_id', 'type': 'int', 'value': authAtomId2},
+                               {'name': 'ptnr2_auth_atom_id', 'type': 'int', 'value': authAtomId1}
+                               ]
+
+                struct_conn = cR.getDictListWithFilter('struct_conn',
+                                                       [{'name': 'conn_type_id', 'type': 'str'}],
+                                                       filterItems)
+
+        else:
+            struct_conn = []
+
+    except Exception:
+        return False
+
+    if len(struct_conn) == 0:
+
+        try:
+
+            if cR.hasCategory('pdbx_validate_close_contact'):
+                close_contact = cR.getDictListWithFilter('pdbx_validate_close_contact',
+                                                         [{'name': 'dist', 'type': 'float'}
+                                                          ],
+                                                         [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId},
+                                                          {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId1},
+                                                          {'name': 'auth_seq_id_1', 'type': 'int', 'value': authSeqId1},
+                                                          {'name': 'auth_atom_id_1', 'type': 'str', 'value': authAtomId1},
+                                                          {'name': 'auth_asym_id_2', 'type': 'str', 'value': authAsymId2},
+                                                          {'name': 'auth_seq_id_2', 'type': 'int', 'value': authSeqId2},
+                                                          {'name': 'auth_atom_id_2', 'type': 'str', 'value': authAtomId2}
+                                                          ])
+
+                if len(close_contact) == 0:
+                    close_contact = cR.getDictListWithFilter('pdbx_validate_close_contact',
+                                                             [{'name': 'dist', 'type': 'float'}
+                                                              ],
+                                                             [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId},
+                                                              {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId2},
+                                                              {'name': 'auth_seq_id_1', 'type': 'int', 'value': authSeqId2},
+                                                              {'name': 'auth_atom_id_1', 'type': 'str', 'value': authAtomId2},
+                                                              {'name': 'auth_asym_id_2', 'type': 'str', 'value': authAsymId1},
+                                                              {'name': 'auth_seq_id_2', 'type': 'int', 'value': authSeqId1},
+                                                              {'name': 'auth_atom_id_2', 'type': 'str', 'value': authAtomId1}
+                                                              ])
+
+            else:
+                close_contact = []
+
+        except Exception:
+            return False
+
+        if len(close_contact) == 0:
+
+            bond = getCoordBondLength(cR, authAsymId1, authSeqId1, authAtomId1, authAsymId2, authSeqId2, authAtomId2,
+                                      representativeAltId, modelNumName, False)
+
+            if bond is None:
+                return False
+
+            distance = next((b['distance'] for b in bond if b['model_id'] == representativeModelId), None)
+
+            if distance is None:
+                return False
+
+            return 1.0 < distance < 2.4
+
+        return 1.0 < close_contact[0]['dist'] < 2.4
+
+    return struct_conn[0]['conn_type_id'] not in emptyValue
+
+
+def getCoordBondLength(cR, asymId1, seqId1, atomId1, asymId2, seqId2, atomId2,
+                       representativeAltId=REPRESENTATIVE_ALT_ID, modelNumName='PDB_model_num', labelScheme=True):
     """ Return the bond length of given two CIF atoms.
         @return: the bond length
     """
@@ -5408,17 +5621,17 @@ def getCoordBondLength(cR, labelAsymId1, labelSeqId1, labelAtomId1, labelAsymId2
 
         atom_site_1 = cR.getDictListWithFilter('atom_site',
                                                dataItems,
-                                               [{'name': 'label_asym_id', 'type': 'str', 'value': labelAsymId1},
-                                                {'name': 'label_seq_id', 'type': 'int', 'value': labelSeqId1},
-                                                {'name': 'label_atom_id', 'type': 'str', 'value': labelAtomId1},
+                                               [{'name': 'label_asym_id' if labelScheme else 'auth_asym_id', 'type': 'str', 'value': asymId1},
+                                                {'name': 'label_seq_id' if labelScheme else 'auth_seq_id', 'type': 'int', 'value': seqId1},
+                                                {'name': 'label_atom_id' if labelScheme else 'auth_atom_id', 'type': 'str', 'value': atomId1},
                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                 ])
 
         atom_site_2 = cR.getDictListWithFilter('atom_site',
                                                dataItems,
-                                               [{'name': 'label_asym_id', 'type': 'str', 'value': labelAsymId2},
-                                                {'name': 'label_seq_id', 'type': 'int', 'value': labelSeqId2},
-                                                {'name': 'label_atom_id', 'type': 'str', 'value': labelAtomId2},
+                                               [{'name': 'label_asym_id' if labelScheme else 'auth_asym_id', 'type': 'str', 'value': asymId2},
+                                                {'name': 'label_seq_id' if labelScheme else 'auth_seq_id', 'type': 'int', 'value': seqId2},
+                                                {'name': 'label_atom_id' if labelScheme else 'auth_atom_id', 'type': 'str', 'value': atomId2},
                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                 ])
 

@@ -1344,7 +1344,7 @@ class NEFTranslator:
             for idx, row in enumerate(seq_data):
                 try:
                     int(row[0])
-                except ValueError:
+                except (ValueError, TypeError):
                     if idx < len_loop_data:
                         if skip_empty_value_error(loop, idx):
                             continue
@@ -1509,6 +1509,25 @@ class NEFTranslator:
                         if row[0] != row[2]:
                             wrong_chain_id_anno = False
                             break
+                    if not wrong_chain_id_anno:
+                        wrong_chain_id_anno = True
+                        offset = None
+                        _seq_id_set = set()
+                        for row in seq_data:
+                            if not row[2].isdigit():
+                                wrong_chain_id_anno = False
+                                break
+                            _seq_id = int(row[0])
+                            _chain_id = int(row[2])
+                            _seq_id_set.add(_seq_id)
+                            if offset is None:
+                                offset = _seq_id - _chain_id
+                                continue
+                            if _seq_id - _chain_id != offset:
+                                wrong_chain_id_anno = False
+                                break
+                        if len(_seq_id_set) < 2:
+                            wrong_chain_id_anno = False
                     if wrong_chain_id_anno:
                         has_valid_chain_id = False
                 if not has_valid_chain_id:
@@ -1584,7 +1603,7 @@ class NEFTranslator:
             for idx, row in enumerate(seq_data):
                 try:
                     int(row[0])
-                except ValueError:
+                except (ValueError, TypeError):
                     if idx < len_loop_data:
                         if skip_empty_value_error(loop, idx):
                             continue
@@ -1809,7 +1828,7 @@ class NEFTranslator:
             for idx, row in enumerate(seq_data):
                 try:
                     int(row[seq_id_col])
-                except ValueError:
+                except (ValueError, TypeError):
                     if idx < len_loop_data:
                         if skip_empty_value_error(loop, idx):
                             continue
@@ -2075,7 +2094,7 @@ class NEFTranslator:
             for idx, row in enumerate(a_type_data):
                 try:
                     int(row[1])
-                except ValueError:
+                except (ValueError, TypeError):
                     if idx < len_loop_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
@@ -2198,7 +2217,7 @@ class NEFTranslator:
                         else:
                             try:
                                 int(row[3])
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 if idx < len_loop_data:
                                     r = {}
                                     for j, t in enumerate(loop.tags):
@@ -2298,7 +2317,7 @@ class NEFTranslator:
                 else:
                     try:
                         int(i)
-                    except ValueError:
+                    except (ValueError, TypeError):
                         if idx < len_loop_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
@@ -2605,7 +2624,7 @@ class NEFTranslator:
                             if len(dup_idxs) > 0:
                                 raise KeyError(f"{tags[idx_tag_id]} must be unique in loop. {dup_idxs} are duplicated.")
 
-                        except ValueError:
+                        except (ValueError, TypeError):
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[idx][j]

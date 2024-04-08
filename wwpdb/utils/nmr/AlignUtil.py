@@ -950,7 +950,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
 
             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-            if length == unmapped + conflict or _matched <= conflict + 1:
+            if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0):
                 inhibitList.append({chain_id, chain_id2})
                 continue
 
@@ -1297,7 +1297,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
 
             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-            if length == unmapped + conflict or _matched <= conflict + 1 - conflictTh:
+            if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0) - conflictTh:
                 continue
 
             if not_decided_s2_comp_id:  # AMBER/GROMACS topology
@@ -2348,6 +2348,39 @@ def retrieveRemappedSeqId(seqIdRemap, chainId, seqId, compId=None):
 
     except StopIteration:
         return None, None
+
+
+def retrieveRemappedSeqIdAndCompId(seqIdRemap, chainId, seqId, compId=None):
+    """ Retrieve seq_id from mapping dictionary based on sequence alignments.
+    """
+
+    try:
+
+        if compId is None:
+
+            if chainId is None:
+                remap = next(remap for remap in seqIdRemap
+                             if seqId in remap['seq_id_dict'] and seqId in remap['comp_id_dict'])
+            else:
+                remap = next(remap for remap in seqIdRemap
+                             if seqId in remap['seq_id_dict'] and seqId in remap['comp_id_dict']
+                             and remap['chain_id'] == chainId)
+
+        else:
+
+            if chainId is None:
+                remap = next(remap for remap in seqIdRemap
+                             if seqId in remap['seq_id_dict'] and seqId in remap['comp_id_dict']
+                             and compId in remap['comp_id_dict'].values())
+            else:
+                remap = next(remap for remap in seqIdRemap
+                             if seqId in remap['seq_id_dict'] and seqId in remap['comp_id_dict']
+                             and remap['chain_id'] == chainId and compId in remap['comp_id_dict'].values())
+
+        return remap['chain_id'], remap['seq_id_dict'][seqId], remap['comp_id_dict'][seqId]
+
+    except StopIteration:
+        return None, None, None
 
 
 def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssign):

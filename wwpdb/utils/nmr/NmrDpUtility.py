@@ -24310,6 +24310,8 @@ class NmrDpUtility:
                 fill_auth_atom_id = self.__annotation_mode or (_row[19] in emptyValue and _row[18] not in emptyValue)
                 fill_orig_atom_id = _row[23] not in emptyValue
 
+                seq_key = (_seq_key[0], _seq_key[1], comp_id)
+                _seq_key = seq_key if seq_key in coord_atom_site else _seq_key
                 if _seq_key in coord_atom_site:
                     _coord_atom_site = coord_atom_site[_seq_key]
                     # DAOTHER-8817
@@ -24731,7 +24733,7 @@ class NmrDpUtility:
                         seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                         try:
                             auth_to_star_seq_ann[seq_key]  # pylint: disable=pointless-statement
-                            _seq_key = (seq_key[0], seq_key[1])
+                            _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                             if _seq_key in coord_atom_site:  # DAOTHER-8817
                                 auth_comp_id = coord_atom_site[_seq_key]['comp_id']
                         except KeyError:
@@ -24902,7 +24904,10 @@ class NmrDpUtility:
                                                          if _auth_asym_id == auth_asym_id and _auth_seq_id == auth_seq_id_), auth_comp_id)
                                     comp_id = _row[18] = auth_comp_id
                                     seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
-                                    entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                    if seq_key in auth_to_star_seq:
+                                        entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                    else:
+                                        entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq_ann[seq_key]
 
                             self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
                             _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
@@ -24911,6 +24916,7 @@ class NmrDpUtility:
                                 if has_orig_seq:
                                     orig_atom_id = _row[23]
                                 _atom_id = atom_id
+                                _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                                 if _seq_key in coord_atom_site:
                                     _coord_atom_site = coord_atom_site[_seq_key]
                                     if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']:
@@ -29338,7 +29344,7 @@ class NmrDpUtility:
 
                                         try:
                                             auth_to_star_seq_ann[seq_key]  # pylint: disable=pointless-statement
-                                            _seq_key = (seq_key[0], seq_key[1])
+                                            _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                                             if _seq_key in coord_atom_site:  # DAOTHER-8817
                                                 comp_id = coord_atom_site[_seq_key]['comp_id']
                                         except KeyError:
@@ -29703,7 +29709,7 @@ class NmrDpUtility:
 
                                         try:
                                             auth_to_star_seq_ann[seq_key]  # pylint: disable=pointless-statement
-                                            _seq_key = (seq_key[0], seq_key[1])
+                                            _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                                             if _seq_key in coord_atom_site:  # DAOTHER-8817
                                                 comp_id = coord_atom_site[_seq_key]['comp_id']
                                         except KeyError:
@@ -34595,7 +34601,7 @@ class NmrDpUtility:
                                     if seq_key not in auth_to_star_seq_ann:
                                         valid_auth_seq = False
                                     else:
-                                        _seq_key = (seq_key[0], seq_key[1])
+                                        _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                                         if _seq_key in coord_atom_site:  # DAOTHER-8817
                                             comp_id = coord_atom_site[_seq_key]['comp_id']
                                 except (ValueError, TypeError):
@@ -34644,7 +34650,7 @@ class NmrDpUtility:
                                 if auth_asym_id is not None and auth_seq_id is not None:
                                     seq_key = (auth_asym_id, auth_seq_id, comp_id)
                                     if seq_key in auth_to_star_seq_ann:
-                                        _seq_key = (seq_key[0], seq_key[1])
+                                        _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                                         if _seq_key in coord_atom_site:  # DAOTHER-8817
                                             comp_id = coord_atom_site[_seq_key]['comp_id']
 
@@ -34673,7 +34679,7 @@ class NmrDpUtility:
                                 if seq_key not in auth_to_star_seq:
                                     valid_auth_seq = False
                                 else:
-                                    _seq_key = (seq_key[0], seq_key[1])
+                                    _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                                     if _seq_key in coord_atom_site:  # DAOTHER-8817
                                         comp_id = coord_atom_site[_seq_key]['comp_id']
                             except (ValueError, TypeError):
@@ -34715,7 +34721,7 @@ class NmrDpUtility:
                             if auth_asym_id is not None and auth_seq_id is not None:
                                 seq_key = (auth_asym_id, auth_seq_id, comp_id)
                                 if seq_key in auth_to_star_seq_ann:
-                                    _seq_key = (seq_key[0], seq_key[1])
+                                    _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                                     if _seq_key in coord_atom_site:  # DAOTHER-8817
                                         comp_id = coord_atom_site[_seq_key]['comp_id']
 
@@ -34772,7 +34778,7 @@ class NmrDpUtility:
                     if valid_auth_seq:
                         try:
                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
-                            _seq_key = (seq_key[0], seq_key[1])
+                            _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                             if _seq_key in coord_atom_site:  # DAOTHER-8817
                                 _coord_atom_site = coord_atom_site[_seq_key]
                                 if 'chain_id' in _coord_atom_site:
@@ -34798,7 +34804,7 @@ class NmrDpUtility:
 
                         if prefer_auth_atom_name:
                             _atom_id = atom_id
-                            _seq_key = (seq_key[0], seq_key[1])
+                            _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                             if _seq_key in coord_atom_site:
                                 _coord_atom_site = coord_atom_site[_seq_key]
                                 if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']\
@@ -34900,7 +34906,7 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id, auth_seq_id, comp_id)
                             if seq_key in auth_to_star_seq:
                                 entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
-                                _seq_key = (seq_key[0], seq_key[1])
+                                _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                                 if _seq_key in coord_atom_site:  # DAOTHER-8817
                                     _coord_atom_site = coord_atom_site[_seq_key]
                                     if 'chain_id' in _coord_atom_site:
@@ -34909,7 +34915,7 @@ class NmrDpUtility:
 
                                 if prefer_auth_atom_name:
                                     _atom_id = atom_id
-                                    _seq_key = (seq_key[0], seq_key[1])
+                                    _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                                     if _seq_key in coord_atom_site:
                                         _coord_atom_site = coord_atom_site[_seq_key]
                                         if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']\
@@ -35013,7 +35019,7 @@ class NmrDpUtility:
                 if valid_auth_seq:
                     try:
                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
-                        _seq_key = (seq_key[0], seq_key[1])
+                        _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                         if _seq_key in coord_atom_site:  # DAOTHER-8817
                             _coord_atom_site = coord_atom_site[_seq_key]
                             if 'chain_id' in _coord_atom_site:
@@ -35039,7 +35045,7 @@ class NmrDpUtility:
 
                     if prefer_auth_atom_name:
                         _atom_id = atom_id
-                        _seq_key = (seq_key[0], seq_key[1])
+                        _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                         if _seq_key in coord_atom_site:
                             _coord_atom_site = coord_atom_site[_seq_key]
                             if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']\
@@ -35133,7 +35139,7 @@ class NmrDpUtility:
                             seq_key = (auth_asym_id, auth_seq_id, comp_id)
                         if seq_key in auth_to_star_seq:
                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
-                            _seq_key = (seq_key[0], seq_key[1])
+                            _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                             if _seq_key in coord_atom_site:  # DAOTHER-8817
                                 _coord_atom_site = coord_atom_site[_seq_key]
                                 if 'chain_id' in _coord_atom_site:
@@ -35142,7 +35148,7 @@ class NmrDpUtility:
 
                             if prefer_auth_atom_name:
                                 _atom_id = atom_id
-                                _seq_key = (seq_key[0], seq_key[1])
+                                _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                                 if _seq_key in coord_atom_site:
                                     _coord_atom_site = coord_atom_site[_seq_key]
                                     if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']\

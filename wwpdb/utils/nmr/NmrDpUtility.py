@@ -24310,8 +24310,9 @@ class NmrDpUtility:
                 fill_auth_atom_id = self.__annotation_mode or (_row[19] in emptyValue and _row[18] not in emptyValue)
                 fill_orig_atom_id = _row[23] not in emptyValue
 
-                seq_key = (_seq_key[0], _seq_key[1], comp_id)
-                _seq_key = seq_key if seq_key in coord_atom_site else _seq_key
+                if _seq_key is not None:
+                    seq_key = (_seq_key[0], _seq_key[1], comp_id)
+                    _seq_key = seq_key if seq_key in coord_atom_site else _seq_key
                 if _seq_key in coord_atom_site:
                     _coord_atom_site = coord_atom_site[_seq_key]
                     # DAOTHER-8817

@@ -1,0 +1,949 @@
+data_cs_need_acc_no
+
+save_nef_nmr_meta_data
+   _Entry.Sf_category                 entry_information
+   _Entry.Sf_framecode                nef_nmr_meta_data
+   _Entry.ID                          NEED_ACC_NO
+   _Entry.NMR_STAR_version            3.2.6.0
+   _Entry.Source_data_format          nmr_exchange_format
+   _Entry.Source_data_format_version  1.1
+   _Entry.Generated_software_name     CYANA
+   _Entry.Generated_software_version  3.98.16
+   _Entry.Generated_date              2023-08-31T15:48:42
+   _Entry.UUID                        CYANA-2023-08-31T15:48:42-5646097885
+
+   loop_
+      _Data_set.Type
+      _Data_set.Count
+      _Data_set.Entry_ID
+
+     assigned_chemical_shifts   1   NEED_ACC_NO    
+
+   stop_
+
+   loop_
+      _Datum.Type
+      _Datum.Count
+      _Datum.Entry_ID
+
+     '1H chemical shifts'               27   NEED_ACC_NO    
+     'distance constraints'             28   NEED_ACC_NO    
+     'ambiguous distance constraints'   39   NEED_ACC_NO    
+
+   stop_
+
+save_
+
+save_nef_molecular_system
+   _Assembly.Sf_category                      assembly
+   _Assembly.Sf_framecode                     nef_molecular_system
+   _Assembly.Entry_ID                         NEED_ACC_NO
+   _Assembly.ID                               1
+   _Assembly.Name                             ?
+   _Assembly.BMRB_code                        .
+   _Assembly.Number_of_components             2
+   _Assembly.Organic_ligands                  1
+   _Assembly.Metal_ions                       .
+   _Assembly.Non_standard_bonds               .
+   _Assembly.Ambiguous_conformational_states  .
+   _Assembly.Ambiguous_chem_comp_sites        .
+   _Assembly.Molecules_in_chemical_exchange   .
+   _Assembly.Paramagnetic                     no
+   _Assembly.Thiol_state                      'all free'
+   _Assembly.Molecular_mass                   19502.041
+   _Assembly.Enzyme_commission_number         .
+   _Assembly.Details                          .
+   _Assembly.DB_query_date                    .
+   _Assembly.DB_query_revised_last_date       .
+
+   loop_
+      _Entity_assembly.ID
+      _Entity_assembly.Entity_assembly_name
+      _Entity_assembly.Entity_ID
+      _Entity_assembly.Entity_label
+      _Entity_assembly.Asym_ID
+      _Entity_assembly.PDB_chain_ID
+      _Entity_assembly.Experimental_data_reported
+      _Entity_assembly.Physical_state
+      _Entity_assembly.Conformational_isomer
+      _Entity_assembly.Chemical_exchange_state
+      _Entity_assembly.Magnetic_equivalence_group_code
+      _Entity_assembly.Role
+      _Entity_assembly.Details
+      _Entity_assembly.Entry_ID
+      _Entity_assembly.Assembly_ID
+
+     1   entity_1     1   $entity_1     A   A   yes   .   .   .   .   .   'KRAS G12V GMPPNP bound'   NEED_ACC_NO   1    
+     2   entity_7ZC   2   $entity_7ZC   B   B   yes   .   .   .   .   .   ?                          NEED_ACC_NO   1    
+
+   stop_
+
+   loop_
+      _Chem_comp_assembly.Entity_assembly_ID
+      _Chem_comp_assembly.Entity_ID
+      _Chem_comp_assembly.Comp_index_ID
+      _Chem_comp_assembly.Comp_ID
+      _Chem_comp_assembly.Seq_ID
+      _Chem_comp_assembly.Auth_asym_ID
+      _Chem_comp_assembly.Auth_seq_ID
+      _Chem_comp_assembly.Auth_comp_ID
+      _Chem_comp_assembly.Auth_variant_ID
+      _Chem_comp_assembly.Sequence_linking
+      _Chem_comp_assembly.Cis_residue
+      _Chem_comp_assembly.NEF_index
+      _Chem_comp_assembly.Assembly_ID
+
+     1   1   1     MET   1     A   1     MET   .   start    .    1     1    
+     1   1   2     THR   2     A   2     THR   .   middle   .    2     1    
+     1   1   3     GLU   3     A   3     GLU   .   middle   .    3     1    
+     1   1   4     TYR   4     A   4     TYR   .   middle   .    4     1    
+     1   1   5     LYS   5     A   5     LYS   .   middle   .    5     1    
+     1   1   6     LEU   6     A   6     LEU   .   middle   .    6     1    
+     1   1   7     VAL   7     A   7     VAL   .   middle   .    7     1    
+     1   1   8     VAL   8     A   8     VAL   .   middle   .    8     1    
+     1   1   9     VAL   9     A   9     VAL   .   middle   .    9     1    
+     1   1   10    GLY   10    A   10    GLY   .   middle   no   10    1    
+     1   1   11    ALA   11    A   11    ALA   .   middle   .    11    1    
+     1   1   12    VAL   12    A   12    VAL   .   middle   .    12    1    
+     1   1   13    GLY   13    A   13    GLY   .   middle   no   13    1    
+     1   1   14    VAL   14    A   14    VAL   .   middle   .    14    1    
+     1   1   15    GLY   15    A   15    GLY   .   middle   no   15    1    
+     1   1   16    LYS   16    A   16    LYS   .   middle   .    16    1    
+     1   1   17    SER   17    A   17    SER   .   middle   .    17    1    
+     1   1   18    ALA   18    A   18    ALA   .   middle   .    18    1    
+     1   1   19    LEU   19    A   19    LEU   .   middle   .    19    1    
+     1   1   20    THR   20    A   20    THR   .   middle   .    20    1    
+     1   1   21    ILE   21    A   21    ILE   .   middle   .    21    1    
+     1   1   22    GLN   22    A   22    GLN   .   middle   .    22    1    
+     1   1   23    LEU   23    A   23    LEU   .   middle   .    23    1    
+     1   1   24    ILE   24    A   24    ILE   .   middle   .    24    1    
+     1   1   25    GLN   25    A   25    GLN   .   middle   .    25    1    
+     1   1   26    ASN   26    A   26    ASN   .   middle   .    26    1    
+     1   1   27    HIS   27    A   27    HIS   .   middle   .    27    1    
+     1   1   28    PHE   28    A   28    PHE   .   middle   .    28    1    
+     1   1   29    VAL   29    A   29    VAL   .   middle   .    29    1    
+     1   1   30    ASP   30    A   30    ASP   .   middle   .    30    1    
+     1   1   31    GLU   31    A   31    GLU   .   middle   .    31    1    
+     1   1   32    TYR   32    A   32    TYR   .   middle   .    32    1    
+     1   1   33    ASP   33    A   33    ASP   .   middle   .    33    1    
+     1   1   34    PRO   34    A   34    PRO   .   middle   no   34    1    
+     1   1   35    THR   35    A   35    THR   .   middle   .    35    1    
+     1   1   36    ILE   36    A   36    ILE   .   middle   .    36    1    
+     1   1   37    GLU   37    A   37    GLU   .   middle   .    37    1    
+     1   1   38    ASP   38    A   38    ASP   .   middle   .    38    1    
+     1   1   39    SER   39    A   39    SER   .   middle   .    39    1    
+     1   1   40    TYR   40    A   40    TYR   .   middle   .    40    1    
+     1   1   41    ARG   41    A   41    ARG   .   middle   .    41    1    
+     1   1   42    LYS   42    A   42    LYS   .   middle   .    42    1    
+     1   1   43    GLN   43    A   43    GLN   .   middle   .    43    1    
+     1   1   44    VAL   44    A   44    VAL   .   middle   .    44    1    
+     1   1   45    VAL   45    A   45    VAL   .   middle   .    45    1    
+     1   1   46    ILE   46    A   46    ILE   .   middle   .    46    1    
+     1   1   47    ASP   47    A   47    ASP   .   middle   .    47    1    
+     1   1   48    GLY   48    A   48    GLY   .   middle   no   48    1    
+     1   1   49    GLU   49    A   49    GLU   .   middle   .    49    1    
+     1   1   50    THR   50    A   50    THR   .   middle   .    50    1    
+     1   1   51    CYS   51    A   51    CYS   .   middle   .    51    1    
+     1   1   52    LEU   52    A   52    LEU   .   middle   .    52    1    
+     1   1   53    LEU   53    A   53    LEU   .   middle   .    53    1    
+     1   1   54    ASP   54    A   54    ASP   .   middle   .    54    1    
+     1   1   55    ILE   55    A   55    ILE   .   middle   .    55    1    
+     1   1   56    LEU   56    A   56    LEU   .   middle   .    56    1    
+     1   1   57    ASP   57    A   57    ASP   .   middle   .    57    1    
+     1   1   58    THR   58    A   58    THR   .   middle   .    58    1    
+     1   1   59    ALA   59    A   59    ALA   .   middle   .    59    1    
+     1   1   60    GLY   60    A   60    GLY   .   middle   no   60    1    
+     1   1   61    GLN   61    A   61    GLN   .   middle   .    61    1    
+     1   1   62    GLU   62    A   62    GLU   .   middle   .    62    1    
+     1   1   63    GLU   63    A   63    GLU   .   middle   .    63    1    
+     1   1   64    TYR   64    A   64    TYR   .   middle   .    64    1    
+     1   1   65    SER   65    A   65    SER   .   middle   .    65    1    
+     1   1   66    ALA   66    A   66    ALA   .   middle   .    66    1    
+     1   1   67    MET   67    A   67    MET   .   middle   .    67    1    
+     1   1   68    ARG   68    A   68    ARG   .   middle   .    68    1    
+     1   1   69    ASP   69    A   69    ASP   .   middle   .    69    1    
+     1   1   70    GLN   70    A   70    GLN   .   middle   .    70    1    
+     1   1   71    TYR   71    A   71    TYR   .   middle   .    71    1    
+     1   1   72    MET   72    A   72    MET   .   middle   .    72    1    
+     1   1   73    ARG   73    A   73    ARG   .   middle   .    73    1    
+     1   1   74    THR   74    A   74    THR   .   middle   .    74    1    
+     1   1   75    GLY   75    A   75    GLY   .   middle   no   75    1    
+     1   1   76    GLU   76    A   76    GLU   .   middle   .    76    1    
+     1   1   77    GLY   77    A   77    GLY   .   middle   no   77    1    
+     1   1   78    PHE   78    A   78    PHE   .   middle   .    78    1    
+     1   1   79    LEU   79    A   79    LEU   .   middle   .    79    1    
+     1   1   80    CYS   80    A   80    CYS   .   middle   .    80    1    
+     1   1   81    VAL   81    A   81    VAL   .   middle   .    81    1    
+     1   1   82    PHE   82    A   82    PHE   .   middle   .    82    1    
+     1   1   83    ALA   83    A   83    ALA   .   middle   .    83    1    
+     1   1   84    ILE   84    A   84    ILE   .   middle   .    84    1    
+     1   1   85    ASN   85    A   85    ASN   .   middle   .    85    1    
+     1   1   86    ASN   86    A   86    ASN   .   middle   .    86    1    
+     1   1   87    THR   87    A   87    THR   .   middle   .    87    1    
+     1   1   88    LYS   88    A   88    LYS   .   middle   .    88    1    
+     1   1   89    SER   89    A   89    SER   .   middle   .    89    1    
+     1   1   90    PHE   90    A   90    PHE   .   middle   .    90    1    
+     1   1   91    GLU   91    A   91    GLU   .   middle   .    91    1    
+     1   1   92    ASP   92    A   92    ASP   .   middle   .    92    1    
+     1   1   93    ILE   93    A   93    ILE   .   middle   .    93    1    
+     1   1   94    HIS   94    A   94    HIS   .   middle   .    94    1    
+     1   1   95    HIS   95    A   95    HIS   .   middle   .    95    1    
+     1   1   96    TYR   96    A   96    TYR   .   middle   .    96    1    
+     1   1   97    ARG   97    A   97    ARG   .   middle   .    97    1    
+     1   1   98    GLU   98    A   98    GLU   .   middle   .    98    1    
+     1   1   99    GLN   99    A   99    GLN   .   middle   .    99    1    
+     1   1   100   ILE   100   A   100   ILE   .   middle   .    100   1    
+     1   1   101   LYS   101   A   101   LYS   .   middle   .    101   1    
+     1   1   102   ARG   102   A   102   ARG   .   middle   .    102   1    
+     1   1   103   VAL   103   A   103   VAL   .   middle   .    103   1    
+     1   1   104   LYS   104   A   104   LYS   .   middle   .    104   1    
+     1   1   105   ASP   105   A   105   ASP   .   middle   .    105   1    
+     1   1   106   SER   106   A   106   SER   .   middle   .    106   1    
+     1   1   107   GLU   107   A   107   GLU   .   middle   .    107   1    
+     1   1   108   ASP   108   A   108   ASP   .   middle   .    108   1    
+     1   1   109   VAL   109   A   109   VAL   .   middle   .    109   1    
+     1   1   110   PRO   110   A   110   PRO   .   middle   no   110   1    
+     1   1   111   MET   111   A   111   MET   .   middle   .    111   1    
+     1   1   112   VAL   112   A   112   VAL   .   middle   .    112   1    
+     1   1   113   LEU   113   A   113   LEU   .   middle   .    113   1    
+     1   1   114   VAL   114   A   114   VAL   .   middle   .    114   1    
+     1   1   115   GLY   115   A   115   GLY   .   middle   no   115   1    
+     1   1   116   ASN   116   A   116   ASN   .   middle   .    116   1    
+     1   1   117   LYS   117   A   117   LYS   .   middle   .    117   1    
+     1   1   118   SER   118   A   118   SER   .   middle   .    118   1    
+     1   1   119   ASP   119   A   119   ASP   .   middle   .    119   1    
+     1   1   120   LEU   120   A   120   LEU   .   middle   .    120   1    
+     1   1   121   PRO   121   A   121   PRO   .   middle   no   121   1    
+     1   1   122   SER   122   A   122   SER   .   middle   .    122   1    
+     1   1   123   ARG   123   A   123   ARG   .   middle   .    123   1    
+     1   1   124   THR   124   A   124   THR   .   middle   .    124   1    
+     1   1   125   VAL   125   A   125   VAL   .   middle   .    125   1    
+     1   1   126   ASP   126   A   126   ASP   .   middle   .    126   1    
+     1   1   127   THR   127   A   127   THR   .   middle   .    127   1    
+     1   1   128   LYS   128   A   128   LYS   .   middle   .    128   1    
+     1   1   129   GLN   129   A   129   GLN   .   middle   .    129   1    
+     1   1   130   ALA   130   A   130   ALA   .   middle   .    130   1    
+     1   1   131   GLN   131   A   131   GLN   .   middle   .    131   1    
+     1   1   132   ASP   132   A   132   ASP   .   middle   .    132   1    
+     1   1   133   LEU   133   A   133   LEU   .   middle   .    133   1    
+     1   1   134   ALA   134   A   134   ALA   .   middle   .    134   1    
+     1   1   135   ARG   135   A   135   ARG   .   middle   .    135   1    
+     1   1   136   SER   136   A   136   SER   .   middle   .    136   1    
+     1   1   137   TYR   137   A   137   TYR   .   middle   .    137   1    
+     1   1   138   GLY   138   A   138   GLY   .   middle   no   138   1    
+     1   1   139   ILE   139   A   139   ILE   .   middle   .    139   1    
+     1   1   140   PRO   140   A   140   PRO   .   middle   no   140   1    
+     1   1   141   PHE   141   A   141   PHE   .   middle   .    141   1    
+     1   1   142   ILE   142   A   142   ILE   .   middle   .    142   1    
+     1   1   143   GLU   143   A   143   GLU   .   middle   .    143   1    
+     1   1   144   THR   144   A   144   THR   .   middle   .    144   1    
+     1   1   145   SER   145   A   145   SER   .   middle   .    145   1    
+     1   1   146   ALA   146   A   146   ALA   .   middle   .    146   1    
+     1   1   147   LYS   147   A   147   LYS   .   middle   .    147   1    
+     1   1   148   THR   148   A   148   THR   .   middle   .    148   1    
+     1   1   149   ARG   149   A   149   ARG   .   middle   .    149   1    
+     1   1   150   GLN   150   A   150   GLN   .   middle   .    150   1    
+     1   1   151   GLY   151   A   151   GLY   .   middle   no   151   1    
+     1   1   152   VAL   152   A   152   VAL   .   middle   .    152   1    
+     1   1   153   ASP   153   A   153   ASP   .   middle   .    153   1    
+     1   1   154   ASP   154   A   154   ASP   .   middle   .    154   1    
+     1   1   155   ALA   155   A   155   ALA   .   middle   .    155   1    
+     1   1   156   PHE   156   A   156   PHE   .   middle   .    156   1    
+     1   1   157   TYR   157   A   157   TYR   .   middle   .    157   1    
+     1   1   158   THR   158   A   158   THR   .   middle   .    158   1    
+     1   1   159   LEU   159   A   159   LEU   .   middle   .    159   1    
+     1   1   160   VAL   160   A   160   VAL   .   middle   .    160   1    
+     1   1   161   ARG   161   A   161   ARG   .   middle   .    161   1    
+     1   1   162   GLU   162   A   162   GLU   .   middle   .    162   1    
+     1   1   163   ILE   163   A   163   ILE   .   middle   .    163   1    
+     1   1   164   ARG   164   A   164   ARG   .   middle   .    164   1    
+     1   1   165   LYS   165   A   165   LYS   .   middle   .    165   1    
+     1   1   166   HIS   166   A   166   HIS   .   middle   .    166   1    
+     1   1   167   LYS   167   A   167   LYS   .   middle   .    167   1    
+     1   1   168   GLU   168   A   168   GLU   .   middle   .    168   1    
+     1   1   169   LYS   169   A   169   LYS   .   end      .    169   1    
+     2   2   1     7ZC   1     B   500   7ZC   .   .        .    170   1    
+
+   stop_
+
+save_
+
+save_entity_1
+   _Entity.Sf_category                      entity
+   _Entity.Sf_framecode                     entity_1
+   _Entity.Entry_ID                         NEED_ACC_NO
+   _Entity.ID                               1
+   _Entity.BMRB_code                        .
+   _Entity.Name                             'RASK GTPase (Fragment)'
+   _Entity.Type                             polymer
+   _Entity.Polymer_common_type              protein
+   _Entity.Polymer_type                     polypeptide(L)
+   _Entity.Polymer_type_details             .
+   _Entity.Polymer_strand_ID                A
+   _Entity.Polymer_seq_one_letter_code_can
+;
+MTEYKLVVVGAVGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQVVIDGETCLLDILDTAGQEEYSAMRDQYMRTGEGFLC
+VFAINNTKSFEDIHHYREQIKRVKDSEDVPMVLVGNKSDLPSRTVDTKQAQDLARSYGIPFIETSAKTRQGVDDAFYTLV
+REIRKHKEK
+;
+   _Entity.Polymer_seq_one_letter_code    
+;
+MTEYKLVVVGAVGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQVVIDGETCLLDILDTAGQEEYSAMRDQYMRTGEGFLC
+VFAINNTKSFEDIHHYREQIKRVKDSEDVPMVLVGNKSDLPSRTVDTKQAQDLARSYGIPFIETSAKTRQGVDDAFYTLV
+REIRKHKEK
+;
+   _Entity.Target_identifier                .
+   _Entity.Polymer_author_defined_seq       .
+   _Entity.Polymer_author_seq_details       .
+   _Entity.Ambiguous_conformational_states  .
+   _Entity.Ambiguous_chem_comp_sites        .
+   _Entity.Nstd_monomer                     no
+   _Entity.Nstd_chirality                   .
+   _Entity.Nstd_linkage                     no
+   _Entity.Nonpolymer_comp_ID               .
+   _Entity.Nonpolymer_comp_label            .
+   _Entity.Number_of_monomers               169
+   _Entity.Number_of_nonpolymer_components  .
+   _Entity.Paramagnetic                     no
+   _Entity.Thiol_state                      'all free'
+   _Entity.Src_method                       man
+   _Entity.Parent_entity_ID                 .
+   _Entity.Fragment                         ?
+   _Entity.Mutation                         ?
+   _Entity.EC_number                        ?
+   _Entity.Calc_isoelectric_point           .
+   _Entity.Formula_weight                   19297.773
+   _Entity.Formula_weight_exptl             .
+   _Entity.Formula_weight_exptl_meth        .
+   _Entity.Details                          'KRAS G12V GMPPNP bound'
+   _Entity.DB_query_date                    .
+   _Entity.DB_query_revised_last_date       .
+
+   loop_
+      _Entity_comp_index.ID
+      _Entity_comp_index.Auth_seq_ID
+      _Entity_comp_index.Comp_ID
+      _Entity_comp_index.Comp_label
+      _Entity_comp_index.Entry_ID
+      _Entity_comp_index.Entity_ID
+
+     1     1     MET   .   NEED_ACC_NO   1    
+     2     2     THR   .   NEED_ACC_NO   1    
+     3     3     GLU   .   NEED_ACC_NO   1    
+     4     4     TYR   .   NEED_ACC_NO   1    
+     5     5     LYS   .   NEED_ACC_NO   1    
+     6     6     LEU   .   NEED_ACC_NO   1    
+     7     7     VAL   .   NEED_ACC_NO   1    
+     8     8     VAL   .   NEED_ACC_NO   1    
+     9     9     VAL   .   NEED_ACC_NO   1    
+     10    10    GLY   .   NEED_ACC_NO   1    
+     11    11    ALA   .   NEED_ACC_NO   1    
+     12    12    VAL   .   NEED_ACC_NO   1    
+     13    13    GLY   .   NEED_ACC_NO   1    
+     14    14    VAL   .   NEED_ACC_NO   1    
+     15    15    GLY   .   NEED_ACC_NO   1    
+     16    16    LYS   .   NEED_ACC_NO   1    
+     17    17    SER   .   NEED_ACC_NO   1    
+     18    18    ALA   .   NEED_ACC_NO   1    
+     19    19    LEU   .   NEED_ACC_NO   1    
+     20    20    THR   .   NEED_ACC_NO   1    
+     21    21    ILE   .   NEED_ACC_NO   1    
+     22    22    GLN   .   NEED_ACC_NO   1    
+     23    23    LEU   .   NEED_ACC_NO   1    
+     24    24    ILE   .   NEED_ACC_NO   1    
+     25    25    GLN   .   NEED_ACC_NO   1    
+     26    26    ASN   .   NEED_ACC_NO   1    
+     27    27    HIS   .   NEED_ACC_NO   1    
+     28    28    PHE   .   NEED_ACC_NO   1    
+     29    29    VAL   .   NEED_ACC_NO   1    
+     30    30    ASP   .   NEED_ACC_NO   1    
+     31    31    GLU   .   NEED_ACC_NO   1    
+     32    32    TYR   .   NEED_ACC_NO   1    
+     33    33    ASP   .   NEED_ACC_NO   1    
+     34    34    PRO   .   NEED_ACC_NO   1    
+     35    35    THR   .   NEED_ACC_NO   1    
+     36    36    ILE   .   NEED_ACC_NO   1    
+     37    37    GLU   .   NEED_ACC_NO   1    
+     38    38    ASP   .   NEED_ACC_NO   1    
+     39    39    SER   .   NEED_ACC_NO   1    
+     40    40    TYR   .   NEED_ACC_NO   1    
+     41    41    ARG   .   NEED_ACC_NO   1    
+     42    42    LYS   .   NEED_ACC_NO   1    
+     43    43    GLN   .   NEED_ACC_NO   1    
+     44    44    VAL   .   NEED_ACC_NO   1    
+     45    45    VAL   .   NEED_ACC_NO   1    
+     46    46    ILE   .   NEED_ACC_NO   1    
+     47    47    ASP   .   NEED_ACC_NO   1    
+     48    48    GLY   .   NEED_ACC_NO   1    
+     49    49    GLU   .   NEED_ACC_NO   1    
+     50    50    THR   .   NEED_ACC_NO   1    
+     51    51    CYS   .   NEED_ACC_NO   1    
+     52    52    LEU   .   NEED_ACC_NO   1    
+     53    53    LEU   .   NEED_ACC_NO   1    
+     54    54    ASP   .   NEED_ACC_NO   1    
+     55    55    ILE   .   NEED_ACC_NO   1    
+     56    56    LEU   .   NEED_ACC_NO   1    
+     57    57    ASP   .   NEED_ACC_NO   1    
+     58    58    THR   .   NEED_ACC_NO   1    
+     59    59    ALA   .   NEED_ACC_NO   1    
+     60    60    GLY   .   NEED_ACC_NO   1    
+     61    61    GLN   .   NEED_ACC_NO   1    
+     62    62    GLU   .   NEED_ACC_NO   1    
+     63    63    GLU   .   NEED_ACC_NO   1    
+     64    64    TYR   .   NEED_ACC_NO   1    
+     65    65    SER   .   NEED_ACC_NO   1    
+     66    66    ALA   .   NEED_ACC_NO   1    
+     67    67    MET   .   NEED_ACC_NO   1    
+     68    68    ARG   .   NEED_ACC_NO   1    
+     69    69    ASP   .   NEED_ACC_NO   1    
+     70    70    GLN   .   NEED_ACC_NO   1    
+     71    71    TYR   .   NEED_ACC_NO   1    
+     72    72    MET   .   NEED_ACC_NO   1    
+     73    73    ARG   .   NEED_ACC_NO   1    
+     74    74    THR   .   NEED_ACC_NO   1    
+     75    75    GLY   .   NEED_ACC_NO   1    
+     76    76    GLU   .   NEED_ACC_NO   1    
+     77    77    GLY   .   NEED_ACC_NO   1    
+     78    78    PHE   .   NEED_ACC_NO   1    
+     79    79    LEU   .   NEED_ACC_NO   1    
+     80    80    CYS   .   NEED_ACC_NO   1    
+     81    81    VAL   .   NEED_ACC_NO   1    
+     82    82    PHE   .   NEED_ACC_NO   1    
+     83    83    ALA   .   NEED_ACC_NO   1    
+     84    84    ILE   .   NEED_ACC_NO   1    
+     85    85    ASN   .   NEED_ACC_NO   1    
+     86    86    ASN   .   NEED_ACC_NO   1    
+     87    87    THR   .   NEED_ACC_NO   1    
+     88    88    LYS   .   NEED_ACC_NO   1    
+     89    89    SER   .   NEED_ACC_NO   1    
+     90    90    PHE   .   NEED_ACC_NO   1    
+     91    91    GLU   .   NEED_ACC_NO   1    
+     92    92    ASP   .   NEED_ACC_NO   1    
+     93    93    ILE   .   NEED_ACC_NO   1    
+     94    94    HIS   .   NEED_ACC_NO   1    
+     95    95    HIS   .   NEED_ACC_NO   1    
+     96    96    TYR   .   NEED_ACC_NO   1    
+     97    97    ARG   .   NEED_ACC_NO   1    
+     98    98    GLU   .   NEED_ACC_NO   1    
+     99    99    GLN   .   NEED_ACC_NO   1    
+     100   100   ILE   .   NEED_ACC_NO   1    
+     101   101   LYS   .   NEED_ACC_NO   1    
+     102   102   ARG   .   NEED_ACC_NO   1    
+     103   103   VAL   .   NEED_ACC_NO   1    
+     104   104   LYS   .   NEED_ACC_NO   1    
+     105   105   ASP   .   NEED_ACC_NO   1    
+     106   106   SER   .   NEED_ACC_NO   1    
+     107   107   GLU   .   NEED_ACC_NO   1    
+     108   108   ASP   .   NEED_ACC_NO   1    
+     109   109   VAL   .   NEED_ACC_NO   1    
+     110   110   PRO   .   NEED_ACC_NO   1    
+     111   111   MET   .   NEED_ACC_NO   1    
+     112   112   VAL   .   NEED_ACC_NO   1    
+     113   113   LEU   .   NEED_ACC_NO   1    
+     114   114   VAL   .   NEED_ACC_NO   1    
+     115   115   GLY   .   NEED_ACC_NO   1    
+     116   116   ASN   .   NEED_ACC_NO   1    
+     117   117   LYS   .   NEED_ACC_NO   1    
+     118   118   SER   .   NEED_ACC_NO   1    
+     119   119   ASP   .   NEED_ACC_NO   1    
+     120   120   LEU   .   NEED_ACC_NO   1    
+     121   121   PRO   .   NEED_ACC_NO   1    
+     122   122   SER   .   NEED_ACC_NO   1    
+     123   123   ARG   .   NEED_ACC_NO   1    
+     124   124   THR   .   NEED_ACC_NO   1    
+     125   125   VAL   .   NEED_ACC_NO   1    
+     126   126   ASP   .   NEED_ACC_NO   1    
+     127   127   THR   .   NEED_ACC_NO   1    
+     128   128   LYS   .   NEED_ACC_NO   1    
+     129   129   GLN   .   NEED_ACC_NO   1    
+     130   130   ALA   .   NEED_ACC_NO   1    
+     131   131   GLN   .   NEED_ACC_NO   1    
+     132   132   ASP   .   NEED_ACC_NO   1    
+     133   133   LEU   .   NEED_ACC_NO   1    
+     134   134   ALA   .   NEED_ACC_NO   1    
+     135   135   ARG   .   NEED_ACC_NO   1    
+     136   136   SER   .   NEED_ACC_NO   1    
+     137   137   TYR   .   NEED_ACC_NO   1    
+     138   138   GLY   .   NEED_ACC_NO   1    
+     139   139   ILE   .   NEED_ACC_NO   1    
+     140   140   PRO   .   NEED_ACC_NO   1    
+     141   141   PHE   .   NEED_ACC_NO   1    
+     142   142   ILE   .   NEED_ACC_NO   1    
+     143   143   GLU   .   NEED_ACC_NO   1    
+     144   144   THR   .   NEED_ACC_NO   1    
+     145   145   SER   .   NEED_ACC_NO   1    
+     146   146   ALA   .   NEED_ACC_NO   1    
+     147   147   LYS   .   NEED_ACC_NO   1    
+     148   148   THR   .   NEED_ACC_NO   1    
+     149   149   ARG   .   NEED_ACC_NO   1    
+     150   150   GLN   .   NEED_ACC_NO   1    
+     151   151   GLY   .   NEED_ACC_NO   1    
+     152   152   VAL   .   NEED_ACC_NO   1    
+     153   153   ASP   .   NEED_ACC_NO   1    
+     154   154   ASP   .   NEED_ACC_NO   1    
+     155   155   ALA   .   NEED_ACC_NO   1    
+     156   156   PHE   .   NEED_ACC_NO   1    
+     157   157   TYR   .   NEED_ACC_NO   1    
+     158   158   THR   .   NEED_ACC_NO   1    
+     159   159   LEU   .   NEED_ACC_NO   1    
+     160   160   VAL   .   NEED_ACC_NO   1    
+     161   161   ARG   .   NEED_ACC_NO   1    
+     162   162   GLU   .   NEED_ACC_NO   1    
+     163   163   ILE   .   NEED_ACC_NO   1    
+     164   164   ARG   .   NEED_ACC_NO   1    
+     165   165   LYS   .   NEED_ACC_NO   1    
+     166   166   HIS   .   NEED_ACC_NO   1    
+     167   167   LYS   .   NEED_ACC_NO   1    
+     168   168   GLU   .   NEED_ACC_NO   1    
+     169   169   LYS   .   NEED_ACC_NO   1    
+
+   stop_
+
+   loop_
+      _Entity_poly_seq.Hetero
+      _Entity_poly_seq.Mon_ID
+      _Entity_poly_seq.Num
+      _Entity_poly_seq.Comp_index_ID
+      _Entity_poly_seq.Entry_ID
+      _Entity_poly_seq.Entity_ID
+
+     .   MET   1     1     NEED_ACC_NO   1    
+     .   THR   2     2     NEED_ACC_NO   1    
+     .   GLU   3     3     NEED_ACC_NO   1    
+     .   TYR   4     4     NEED_ACC_NO   1    
+     .   LYS   5     5     NEED_ACC_NO   1    
+     .   LEU   6     6     NEED_ACC_NO   1    
+     .   VAL   7     7     NEED_ACC_NO   1    
+     .   VAL   8     8     NEED_ACC_NO   1    
+     .   VAL   9     9     NEED_ACC_NO   1    
+     .   GLY   10    10    NEED_ACC_NO   1    
+     .   ALA   11    11    NEED_ACC_NO   1    
+     .   VAL   12    12    NEED_ACC_NO   1    
+     .   GLY   13    13    NEED_ACC_NO   1    
+     .   VAL   14    14    NEED_ACC_NO   1    
+     .   GLY   15    15    NEED_ACC_NO   1    
+     .   LYS   16    16    NEED_ACC_NO   1    
+     .   SER   17    17    NEED_ACC_NO   1    
+     .   ALA   18    18    NEED_ACC_NO   1    
+     .   LEU   19    19    NEED_ACC_NO   1    
+     .   THR   20    20    NEED_ACC_NO   1    
+     .   ILE   21    21    NEED_ACC_NO   1    
+     .   GLN   22    22    NEED_ACC_NO   1    
+     .   LEU   23    23    NEED_ACC_NO   1    
+     .   ILE   24    24    NEED_ACC_NO   1    
+     .   GLN   25    25    NEED_ACC_NO   1    
+     .   ASN   26    26    NEED_ACC_NO   1    
+     .   HIS   27    27    NEED_ACC_NO   1    
+     .   PHE   28    28    NEED_ACC_NO   1    
+     .   VAL   29    29    NEED_ACC_NO   1    
+     .   ASP   30    30    NEED_ACC_NO   1    
+     .   GLU   31    31    NEED_ACC_NO   1    
+     .   TYR   32    32    NEED_ACC_NO   1    
+     .   ASP   33    33    NEED_ACC_NO   1    
+     .   PRO   34    34    NEED_ACC_NO   1    
+     .   THR   35    35    NEED_ACC_NO   1    
+     .   ILE   36    36    NEED_ACC_NO   1    
+     .   GLU   37    37    NEED_ACC_NO   1    
+     .   ASP   38    38    NEED_ACC_NO   1    
+     .   SER   39    39    NEED_ACC_NO   1    
+     .   TYR   40    40    NEED_ACC_NO   1    
+     .   ARG   41    41    NEED_ACC_NO   1    
+     .   LYS   42    42    NEED_ACC_NO   1    
+     .   GLN   43    43    NEED_ACC_NO   1    
+     .   VAL   44    44    NEED_ACC_NO   1    
+     .   VAL   45    45    NEED_ACC_NO   1    
+     .   ILE   46    46    NEED_ACC_NO   1    
+     .   ASP   47    47    NEED_ACC_NO   1    
+     .   GLY   48    48    NEED_ACC_NO   1    
+     .   GLU   49    49    NEED_ACC_NO   1    
+     .   THR   50    50    NEED_ACC_NO   1    
+     .   CYS   51    51    NEED_ACC_NO   1    
+     .   LEU   52    52    NEED_ACC_NO   1    
+     .   LEU   53    53    NEED_ACC_NO   1    
+     .   ASP   54    54    NEED_ACC_NO   1    
+     .   ILE   55    55    NEED_ACC_NO   1    
+     .   LEU   56    56    NEED_ACC_NO   1    
+     .   ASP   57    57    NEED_ACC_NO   1    
+     .   THR   58    58    NEED_ACC_NO   1    
+     .   ALA   59    59    NEED_ACC_NO   1    
+     .   GLY   60    60    NEED_ACC_NO   1    
+     .   GLN   61    61    NEED_ACC_NO   1    
+     .   GLU   62    62    NEED_ACC_NO   1    
+     .   GLU   63    63    NEED_ACC_NO   1    
+     .   TYR   64    64    NEED_ACC_NO   1    
+     .   SER   65    65    NEED_ACC_NO   1    
+     .   ALA   66    66    NEED_ACC_NO   1    
+     .   MET   67    67    NEED_ACC_NO   1    
+     .   ARG   68    68    NEED_ACC_NO   1    
+     .   ASP   69    69    NEED_ACC_NO   1    
+     .   GLN   70    70    NEED_ACC_NO   1    
+     .   TYR   71    71    NEED_ACC_NO   1    
+     .   MET   72    72    NEED_ACC_NO   1    
+     .   ARG   73    73    NEED_ACC_NO   1    
+     .   THR   74    74    NEED_ACC_NO   1    
+     .   GLY   75    75    NEED_ACC_NO   1    
+     .   GLU   76    76    NEED_ACC_NO   1    
+     .   GLY   77    77    NEED_ACC_NO   1    
+     .   PHE   78    78    NEED_ACC_NO   1    
+     .   LEU   79    79    NEED_ACC_NO   1    
+     .   CYS   80    80    NEED_ACC_NO   1    
+     .   VAL   81    81    NEED_ACC_NO   1    
+     .   PHE   82    82    NEED_ACC_NO   1    
+     .   ALA   83    83    NEED_ACC_NO   1    
+     .   ILE   84    84    NEED_ACC_NO   1    
+     .   ASN   85    85    NEED_ACC_NO   1    
+     .   ASN   86    86    NEED_ACC_NO   1    
+     .   THR   87    87    NEED_ACC_NO   1    
+     .   LYS   88    88    NEED_ACC_NO   1    
+     .   SER   89    89    NEED_ACC_NO   1    
+     .   PHE   90    90    NEED_ACC_NO   1    
+     .   GLU   91    91    NEED_ACC_NO   1    
+     .   ASP   92    92    NEED_ACC_NO   1    
+     .   ILE   93    93    NEED_ACC_NO   1    
+     .   HIS   94    94    NEED_ACC_NO   1    
+     .   HIS   95    95    NEED_ACC_NO   1    
+     .   TYR   96    96    NEED_ACC_NO   1    
+     .   ARG   97    97    NEED_ACC_NO   1    
+     .   GLU   98    98    NEED_ACC_NO   1    
+     .   GLN   99    99    NEED_ACC_NO   1    
+     .   ILE   100   100   NEED_ACC_NO   1    
+     .   LYS   101   101   NEED_ACC_NO   1    
+     .   ARG   102   102   NEED_ACC_NO   1    
+     .   VAL   103   103   NEED_ACC_NO   1    
+     .   LYS   104   104   NEED_ACC_NO   1    
+     .   ASP   105   105   NEED_ACC_NO   1    
+     .   SER   106   106   NEED_ACC_NO   1    
+     .   GLU   107   107   NEED_ACC_NO   1    
+     .   ASP   108   108   NEED_ACC_NO   1    
+     .   VAL   109   109   NEED_ACC_NO   1    
+     .   PRO   110   110   NEED_ACC_NO   1    
+     .   MET   111   111   NEED_ACC_NO   1    
+     .   VAL   112   112   NEED_ACC_NO   1    
+     .   LEU   113   113   NEED_ACC_NO   1    
+     .   VAL   114   114   NEED_ACC_NO   1    
+     .   GLY   115   115   NEED_ACC_NO   1    
+     .   ASN   116   116   NEED_ACC_NO   1    
+     .   LYS   117   117   NEED_ACC_NO   1    
+     .   SER   118   118   NEED_ACC_NO   1    
+     .   ASP   119   119   NEED_ACC_NO   1    
+     .   LEU   120   120   NEED_ACC_NO   1    
+     .   PRO   121   121   NEED_ACC_NO   1    
+     .   SER   122   122   NEED_ACC_NO   1    
+     .   ARG   123   123   NEED_ACC_NO   1    
+     .   THR   124   124   NEED_ACC_NO   1    
+     .   VAL   125   125   NEED_ACC_NO   1    
+     .   ASP   126   126   NEED_ACC_NO   1    
+     .   THR   127   127   NEED_ACC_NO   1    
+     .   LYS   128   128   NEED_ACC_NO   1    
+     .   GLN   129   129   NEED_ACC_NO   1    
+     .   ALA   130   130   NEED_ACC_NO   1    
+     .   GLN   131   131   NEED_ACC_NO   1    
+     .   ASP   132   132   NEED_ACC_NO   1    
+     .   LEU   133   133   NEED_ACC_NO   1    
+     .   ALA   134   134   NEED_ACC_NO   1    
+     .   ARG   135   135   NEED_ACC_NO   1    
+     .   SER   136   136   NEED_ACC_NO   1    
+     .   TYR   137   137   NEED_ACC_NO   1    
+     .   GLY   138   138   NEED_ACC_NO   1    
+     .   ILE   139   139   NEED_ACC_NO   1    
+     .   PRO   140   140   NEED_ACC_NO   1    
+     .   PHE   141   141   NEED_ACC_NO   1    
+     .   ILE   142   142   NEED_ACC_NO   1    
+     .   GLU   143   143   NEED_ACC_NO   1    
+     .   THR   144   144   NEED_ACC_NO   1    
+     .   SER   145   145   NEED_ACC_NO   1    
+     .   ALA   146   146   NEED_ACC_NO   1    
+     .   LYS   147   147   NEED_ACC_NO   1    
+     .   THR   148   148   NEED_ACC_NO   1    
+     .   ARG   149   149   NEED_ACC_NO   1    
+     .   GLN   150   150   NEED_ACC_NO   1    
+     .   GLY   151   151   NEED_ACC_NO   1    
+     .   VAL   152   152   NEED_ACC_NO   1    
+     .   ASP   153   153   NEED_ACC_NO   1    
+     .   ASP   154   154   NEED_ACC_NO   1    
+     .   ALA   155   155   NEED_ACC_NO   1    
+     .   PHE   156   156   NEED_ACC_NO   1    
+     .   TYR   157   157   NEED_ACC_NO   1    
+     .   THR   158   158   NEED_ACC_NO   1    
+     .   LEU   159   159   NEED_ACC_NO   1    
+     .   VAL   160   160   NEED_ACC_NO   1    
+     .   ARG   161   161   NEED_ACC_NO   1    
+     .   GLU   162   162   NEED_ACC_NO   1    
+     .   ILE   163   163   NEED_ACC_NO   1    
+     .   ARG   164   164   NEED_ACC_NO   1    
+     .   LYS   165   165   NEED_ACC_NO   1    
+     .   HIS   166   166   NEED_ACC_NO   1    
+     .   LYS   167   167   NEED_ACC_NO   1    
+     .   GLU   168   168   NEED_ACC_NO   1    
+     .   LYS   169   169   NEED_ACC_NO   1    
+
+   stop_
+
+save_
+
+save_entity_7ZC
+   _Entity.Sf_category                      entity
+   _Entity.Sf_framecode                     entity_7ZC
+   _Entity.Entry_ID                         NEED_ACC_NO
+   _Entity.ID                               2
+   _Entity.BMRB_code                        7ZC
+   _Entity.Name                             1-(5-methoxy-1H-indol-3-yl)-N,N-dimethyl-methanamine
+   _Entity.Type                             non-polymer
+   _Entity.Polymer_common_type              .
+   _Entity.Polymer_type                     .
+   _Entity.Polymer_type_details             .
+   _Entity.Polymer_strand_ID                B
+   _Entity.Polymer_seq_one_letter_code_can  .
+   _Entity.Polymer_seq_one_letter_code      .
+   _Entity.Target_identifier                .
+   _Entity.Polymer_author_defined_seq       .
+   _Entity.Polymer_author_seq_details       .
+   _Entity.Ambiguous_conformational_states  .
+   _Entity.Ambiguous_chem_comp_sites        .
+   _Entity.Nstd_monomer                     .
+   _Entity.Nstd_chirality                   .
+   _Entity.Nstd_linkage                     .
+   _Entity.Nonpolymer_comp_ID               7ZC
+   _Entity.Nonpolymer_comp_label            $chem_comp_7ZC
+   _Entity.Number_of_monomers               .
+   _Entity.Number_of_nonpolymer_components  1
+   _Entity.Paramagnetic                     no
+   _Entity.Thiol_state                      'not present'
+   _Entity.Src_method                       syn
+   _Entity.Parent_entity_ID                 .
+   _Entity.Fragment                         .
+   _Entity.Mutation                         .
+   _Entity.EC_number                        .
+   _Entity.Calc_isoelectric_point           .
+   _Entity.Formula_weight                   204.268
+   _Entity.Formula_weight_exptl             .
+   _Entity.Formula_weight_exptl_meth        .
+   _Entity.Details                          ?
+   _Entity.DB_query_date                    .
+   _Entity.DB_query_revised_last_date       .
+
+   loop_
+      _Entity_comp_index.ID
+      _Entity_comp_index.Auth_seq_ID
+      _Entity_comp_index.Comp_ID
+      _Entity_comp_index.Comp_label
+      _Entity_comp_index.Entry_ID
+      _Entity_comp_index.Entity_ID
+
+     1   500   7ZC   $chem_comp_7ZC   NEED_ACC_NO   2    
+
+   stop_
+
+save_
+
+save_nef_chemical_shift_list_3C11
+   _Assigned_chem_shift_list.Sf_category     assigned_chemical_shifts
+   _Assigned_chem_shift_list.Sf_framecode    nef_chemical_shift_list_3C11
+   _Assigned_chem_shift_list.Entry_ID        NEED_ACC_NO
+   _Assigned_chem_shift_list.ID              1
+   _Assigned_chem_shift_list.Data_file_name  D_1292133086_nmr-data-original_P1.str
+
+   loop_
+      _Atom_chem_shift.ID
+      _Atom_chem_shift.Entity_assembly_ID
+      _Atom_chem_shift.Entity_ID
+      _Atom_chem_shift.Comp_index_ID
+      _Atom_chem_shift.Seq_ID
+      _Atom_chem_shift.Comp_ID
+      _Atom_chem_shift.Atom_ID
+      _Atom_chem_shift.Atom_type
+      _Atom_chem_shift.Atom_isotope_number
+      _Atom_chem_shift.Val
+      _Atom_chem_shift.Val_err
+      _Atom_chem_shift.Assign_fig_of_merit
+      _Atom_chem_shift.Ambiguity_code
+      _Atom_chem_shift.Ambiguity_set_ID
+      _Atom_chem_shift.Occupancy
+      _Atom_chem_shift.Resonance_ID
+      _Atom_chem_shift.Auth_asym_ID
+      _Atom_chem_shift.Auth_seq_ID
+      _Atom_chem_shift.Auth_comp_ID
+      _Atom_chem_shift.Auth_atom_ID
+      _Atom_chem_shift.Original_PDB_strand_ID
+      _Atom_chem_shift.Original_PDB_residue_no
+      _Atom_chem_shift.Original_PDB_residue_name
+      _Atom_chem_shift.Original_PDB_atom_name
+      _Atom_chem_shift.Details
+      _Atom_chem_shift.Entry_ID
+      _Atom_chem_shift.Assigned_chem_shift_list_ID
+
+     1    1   1   7    7    VAL   HG21   H   1   0.698   0.020   .   2   .   .   .   A   7     VAL   HG21   A   7     VAL   HGy%   .   NEED_ACC_NO   1    
+     2    1   1   7    7    VAL   HG22   H   1   0.698   0.020   .   2   .   .   .   A   7     VAL   HG22   A   7     VAL   HGy%   .   NEED_ACC_NO   1    
+     3    1   1   7    7    VAL   HG23   H   1   0.698   0.020   .   2   .   .   .   A   7     VAL   HG23   A   7     VAL   HGy%   .   NEED_ACC_NO   1    
+     4    1   1   56   56   LEU   HD11   H   1   0.488   0.020   .   2   .   .   .   A   56    LEU   HD11   A   56    LEU   HDx%   .   NEED_ACC_NO   1    
+     5    1   1   56   56   LEU   HD12   H   1   0.488   0.020   .   2   .   .   .   A   56    LEU   HD12   A   56    LEU   HDx%   .   NEED_ACC_NO   1    
+     6    1   1   56   56   LEU   HD13   H   1   0.488   0.020   .   2   .   .   .   A   56    LEU   HD13   A   56    LEU   HDx%   .   NEED_ACC_NO   1    
+     7    1   1   56   56   LEU   HD21   H   1   0.270   0.020   .   2   .   .   .   A   56    LEU   HD21   A   56    LEU   HDy%   .   NEED_ACC_NO   1    
+     8    1   1   56   56   LEU   HD22   H   1   0.270   0.020   .   2   .   .   .   A   56    LEU   HD22   A   56    LEU   HDy%   .   NEED_ACC_NO   1    
+     9    1   1   56   56   LEU   HD23   H   1   0.270   0.020   .   2   .   .   .   A   56    LEU   HD23   A   56    LEU   HDy%   .   NEED_ACC_NO   1    
+     10   1   1   74   74   THR   HG21   H   1   1.087   0.020   .   1   .   .   .   A   74    THR   HG21   A   74    THR   HG2%   .   NEED_ACC_NO   1    
+     11   1   1   74   74   THR   HG22   H   1   1.087   0.020   .   1   .   .   .   A   74    THR   HG22   A   74    THR   HG2%   .   NEED_ACC_NO   1    
+     12   1   1   74   74   THR   HG23   H   1   1.087   0.020   .   1   .   .   .   A   74    THR   HG23   A   74    THR   HG2%   .   NEED_ACC_NO   1    
+     13   2   2   1    1    7ZC   H1     H   1   3.811   0.020   .   1   .   .   .   B   500   7ZC   H1     B   500   LIG   HX1%   .   NEED_ACC_NO   1    
+     14   2   2   1    1    7ZC   H2     H   1   3.811   0.020   .   1   .   .   .   B   500   7ZC   H2     B   500   LIG   HX1%   .   NEED_ACC_NO   1    
+     15   2   2   1    1    7ZC   H3     H   1   3.811   0.020   .   1   .   .   .   B   500   7ZC   H3     B   500   LIG   HX1%   .   NEED_ACC_NO   1    
+     16   2   2   1    1    7ZC   H17    H   1   7.197   0.020   .   1   .   .   .   B   500   7ZC   H17    B   500   LIG   H2     .   NEED_ACC_NO   1    
+     17   2   2   1    1    7ZC   H4     H   1   7.489   0.020   .   1   .   .   .   B   500   7ZC   H4     B   500   LIG   H3     .   NEED_ACC_NO   1    
+     18   2   2   1    1    7ZC   H5     H   1   7.369   0.020   .   1   .   .   .   B   500   7ZC   H5     B   500   LIG   H4     .   NEED_ACC_NO   1    
+     19   2   2   1    1    7ZC   H7     H   1   7.489   0.020   .   1   .   .   .   B   500   7ZC   H7     B   500   LIG   H5     .   NEED_ACC_NO   1    
+     20   2   2   1    1    7ZC   H8     H   1   3.617   0.020   .   2   .   .   .   B   500   7ZC   H8     B   500   LIG   H6%    .   NEED_ACC_NO   1    
+     21   2   2   1    1    7ZC   H9     H   1   3.617   0.020   .   2   .   .   .   B   500   7ZC   H9     B   500   LIG   H6%    .   NEED_ACC_NO   1    
+     22   2   2   1    1    7ZC   H11    H   1   2.766   0.020   .   2   .   .   .   B   500   7ZC   H11    B   500   LIG   Hx%    .   NEED_ACC_NO   1    
+     23   2   2   1    1    7ZC   H12    H   1   2.766   0.020   .   2   .   .   .   B   500   7ZC   H12    B   500   LIG   Hx%    .   NEED_ACC_NO   1    
+     24   2   2   1    1    7ZC   H13    H   1   2.766   0.020   .   2   .   .   .   B   500   7ZC   H13    B   500   LIG   Hx%    .   NEED_ACC_NO   1    
+     25   2   2   1    1    7ZC   H14    H   1   2.766   0.020   .   2   .   .   .   B   500   7ZC   H14    B   500   LIG   Hy%    .   NEED_ACC_NO   1    
+     26   2   2   1    1    7ZC   H15    H   1   2.766   0.020   .   2   .   .   .   B   500   7ZC   H15    B   500   LIG   Hy%    .   NEED_ACC_NO   1    
+     27   2   2   1    1    7ZC   H16    H   1   2.766   0.020   .   2   .   .   .   B   500   7ZC   H16    B   500   LIG   Hy%    .   NEED_ACC_NO   1    
+
+   stop_
+
+save_
+
+save_constraint_statistics
+   _Constraint_stat_list.Sf_category     constraint_statistics
+   _Constraint_stat_list.Sf_framecode    constraint_statistics
+   _Constraint_stat_list.Entry_ID        NEED_ACC_NO
+   _Constraint_stat_list.ID              1
+   _Constraint_stat_list.Data_file_name  D_1292133086_nmr-data-original_P1.str
+
+   loop_
+      _Constraint_file.ID
+      _Constraint_file.Constraint_filename
+      _Constraint_file.Block_ID
+      _Constraint_file.Constraint_type
+      _Constraint_file.Constraint_subtype
+      _Constraint_file.Constraint_subsubtype
+      _Constraint_file.Constraint_number
+      _Constraint_file.Entry_ID
+      _Constraint_file.Constraint_stat_list_ID
+
+     1   D_1292133086_nmr-data-original_P1.str   1   distance   .   ambi   17   NEED_ACC_NO   1    
+
+   stop_
+
+save_
+
+save_nef_distance_restraint_list_1
+   _Gen_dist_constraint_list.Sf_category         general_distance_constraints
+   _Gen_dist_constraint_list.Sf_framecode        nef_distance_restraint_list_1
+   _Gen_dist_constraint_list.Entry_ID            NEED_ACC_NO
+   _Gen_dist_constraint_list.ID                  1
+   _Gen_dist_constraint_list.Data_file_name      D_1292133086_nmr-data-original_P1.str
+   _Gen_dist_constraint_list.Constraint_type     .
+   _Gen_dist_constraint_list.Constraint_file_ID  1
+   _Gen_dist_constraint_list.Potential_type      undefined
+   _Gen_dist_constraint_list.Block_ID            1
+
+   loop_
+      _Gen_dist_constraint.Index_ID
+      _Gen_dist_constraint.ID
+      _Gen_dist_constraint.Combination_ID
+      _Gen_dist_constraint.Member_ID
+      _Gen_dist_constraint.Member_logic_code
+      _Gen_dist_constraint.Entity_assembly_ID_1
+      _Gen_dist_constraint.Entity_ID_1
+      _Gen_dist_constraint.Comp_index_ID_1
+      _Gen_dist_constraint.Comp_ID_1
+      _Gen_dist_constraint.Atom_ID_1
+      _Gen_dist_constraint.Entity_assembly_ID_2
+      _Gen_dist_constraint.Entity_ID_2
+      _Gen_dist_constraint.Comp_index_ID_2
+      _Gen_dist_constraint.Comp_ID_2
+      _Gen_dist_constraint.Atom_ID_2
+      _Gen_dist_constraint.Distance_val
+      _Gen_dist_constraint.Target_val
+      _Gen_dist_constraint.Target_val_uncertainty
+      _Gen_dist_constraint.Lower_linear_limit
+      _Gen_dist_constraint.Upper_linear_limit
+      _Gen_dist_constraint.Distance_lower_bound_val
+      _Gen_dist_constraint.Distance_upper_bound_val
+      _Gen_dist_constraint.Weight
+      _Gen_dist_constraint.Auth_asym_ID_1
+      _Gen_dist_constraint.Auth_seq_ID_1
+      _Gen_dist_constraint.Auth_comp_ID_1
+      _Gen_dist_constraint.Auth_atom_ID_1
+      _Gen_dist_constraint.Auth_atom_name_1
+      _Gen_dist_constraint.Auth_asym_ID_2
+      _Gen_dist_constraint.Auth_seq_ID_2
+      _Gen_dist_constraint.Auth_comp_ID_2
+      _Gen_dist_constraint.Auth_atom_ID_2
+      _Gen_dist_constraint.Auth_atom_name_2
+      _Gen_dist_constraint.Entry_ID
+      _Gen_dist_constraint.Gen_dist_constraint_list_ID
+
+     1    1    .   .   OR   2   2   1    7ZC   H11    2   2   1   7ZC   H17   .   .   .   .   .   2.49   3.32   1.0   B   500   7ZC   H11    Hx%    B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     2    1    .   .   OR   2   2   1    7ZC   H12    2   2   1   7ZC   H17   .   .   .   .   .   2.49   3.32   1.0   B   500   7ZC   H12    Hx%    B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     3    1    .   .   OR   2   2   1    7ZC   H13    2   2   1   7ZC   H17   .   .   .   .   .   2.49   3.32   1.0   B   500   7ZC   H13    Hx%    B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     4    2    .   .   OR   2   2   1    7ZC   H17    2   2   1   7ZC   H1    .   .   .   .   .   2.01   2.68   1.0   B   500   7ZC   H17    H2     B   500   7ZC   H1    HX1%   NEED_ACC_NO   1    
+     5    2    .   .   OR   2   2   1    7ZC   H17    2   2   1   7ZC   H2    .   .   .   .   .   2.01   2.68   1.0   B   500   7ZC   H17    H2     B   500   7ZC   H2    HX1%   NEED_ACC_NO   1    
+     6    2    .   .   OR   2   2   1    7ZC   H17    2   2   1   7ZC   H3    .   .   .   .   .   2.01   2.68   1.0   B   500   7ZC   H17    H2     B   500   7ZC   H3    HX1%   NEED_ACC_NO   1    
+     7    3    .   .   OR   2   2   1    7ZC   H4     2   2   1   7ZC   H1    .   .   .   .   .   3.03   4.05   1.0   B   500   7ZC   H4     H3     B   500   7ZC   H1    HX1%   NEED_ACC_NO   1    
+     8    3    .   .   OR   2   2   1    7ZC   H4     2   2   1   7ZC   H2    .   .   .   .   .   3.03   4.05   1.0   B   500   7ZC   H4     H3     B   500   7ZC   H2    HX1%   NEED_ACC_NO   1    
+     9    3    .   .   OR   2   2   1    7ZC   H4     2   2   1   7ZC   H3    .   .   .   .   .   3.03   4.05   1.0   B   500   7ZC   H4     H3     B   500   7ZC   H3    HX1%   NEED_ACC_NO   1    
+     10   4    .   .   .    2   2   1    7ZC   H4     2   2   1   7ZC   H5    .   .   .   .   .   1.89   2.53   1.0   B   500   7ZC   H4     H3     B   500   7ZC   H5    H4     NEED_ACC_NO   1    
+     11   5    .   .   OR   2   2   1    7ZC   H11    2   2   1   7ZC   H7    .   .   .   .   .   3.31   4.41   1.0   B   500   7ZC   H11    Hx%    B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     12   5    .   .   OR   2   2   1    7ZC   H12    2   2   1   7ZC   H7    .   .   .   .   .   3.31   4.41   1.0   B   500   7ZC   H12    Hx%    B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     13   5    .   .   OR   2   2   1    7ZC   H13    2   2   1   7ZC   H7    .   .   .   .   .   3.31   4.41   1.0   B   500   7ZC   H13    Hx%    B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     14   6    .   .   OR   1   1   56   LEU   HD21   2   2   1   7ZC   H17   .   .   .   .   .   3.38   4.51   1.0   A   56    LEU   HD21   HDy%   B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     15   6    .   .   OR   1   1   56   LEU   HD22   2   2   1   7ZC   H17   .   .   .   .   .   3.38   4.51   1.0   A   56    LEU   HD22   HDy%   B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     16   6    .   .   OR   1   1   56   LEU   HD23   2   2   1   7ZC   H17   .   .   .   .   .   3.38   4.51   1.0   A   56    LEU   HD23   HDy%   B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     17   7    .   .   OR   1   1   56   LEU   HD21   2   2   1   7ZC   H4    .   .   .   .   .   3.42   7      1.0   A   56    LEU   HD21   HDy%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     18   7    .   .   OR   1   1   56   LEU   HD22   2   2   1   7ZC   H4    .   .   .   .   .   3.42   7      1.0   A   56    LEU   HD22   HDy%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     19   7    .   .   OR   1   1   56   LEU   HD23   2   2   1   7ZC   H4    .   .   .   .   .   3.42   7      1.0   A   56    LEU   HD23   HDy%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     20   8    .   .   OR   1   1   56   LEU   HD11   2   2   1   7ZC   H4    .   .   .   .   .   3.02   4.02   1.0   A   56    LEU   HD11   HDx%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     21   8    .   .   OR   1   1   56   LEU   HD12   2   2   1   7ZC   H4    .   .   .   .   .   3.02   4.02   1.0   A   56    LEU   HD12   HDx%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     22   8    .   .   OR   1   1   56   LEU   HD13   2   2   1   7ZC   H4    .   .   .   .   .   3.02   4.02   1.0   A   56    LEU   HD13   HDx%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     23   9    .   .   OR   1   1   56   LEU   HD11   2   2   1   7ZC   H7    .   .   .   .   .   5.12   6.83   1.0   A   56    LEU   HD11   HDx%   B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     24   9    .   .   OR   1   1   56   LEU   HD12   2   2   1   7ZC   H7    .   .   .   .   .   5.12   6.83   1.0   A   56    LEU   HD12   HDx%   B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     25   9    .   .   OR   1   1   56   LEU   HD13   2   2   1   7ZC   H7    .   .   .   .   .   5.12   6.83   1.0   A   56    LEU   HD13   HDx%   B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     26   10   .   .   OR   1   1   7    VAL   HG21   2   2   1   7ZC   H4    .   .   .   .   .   2.68   3.57   1.0   A   7     VAL   HG21   HGy%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     27   10   .   .   OR   1   1   7    VAL   HG22   2   2   1   7ZC   H4    .   .   .   .   .   2.68   3.57   1.0   A   7     VAL   HG22   HGy%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     28   10   .   .   OR   1   1   7    VAL   HG23   2   2   1   7ZC   H4    .   .   .   .   .   2.68   3.57   1.0   A   7     VAL   HG23   HGy%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     29   11   .   .   OR   1   1   7    VAL   HG21   2   2   1   7ZC   H5    .   .   .   .   .   2.11   2.82   1.0   A   7     VAL   HG21   HGy%   B   500   7ZC   H5    H4     NEED_ACC_NO   1    
+     30   11   .   .   OR   1   1   7    VAL   HG22   2   2   1   7ZC   H5    .   .   .   .   .   2.11   2.82   1.0   A   7     VAL   HG22   HGy%   B   500   7ZC   H5    H4     NEED_ACC_NO   1    
+     31   11   .   .   OR   1   1   7    VAL   HG23   2   2   1   7ZC   H5    .   .   .   .   .   2.11   2.82   1.0   A   7     VAL   HG23   HGy%   B   500   7ZC   H5    H4     NEED_ACC_NO   1    
+     32   13   .   .   OR   1   1   74   THR   HG21   2   2   1   7ZC   H17   .   .   .   .   .   3.4    4.53   1.0   A   74    THR   HG21   HG2%   B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     33   13   .   .   OR   1   1   74   THR   HG22   2   2   1   7ZC   H17   .   .   .   .   .   3.4    4.53   1.0   A   74    THR   HG22   HG2%   B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     34   13   .   .   OR   1   1   74   THR   HG23   2   2   1   7ZC   H17   .   .   .   .   .   3.4    4.53   1.0   A   74    THR   HG23   HG2%   B   500   7ZC   H17   H2     NEED_ACC_NO   1    
+     35   14   .   .   OR   1   1   74   THR   HG21   2   2   1   7ZC   H4    .   .   .   .   .   2.74   7      1.0   A   74    THR   HG21   HG2%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     36   14   .   .   OR   1   1   74   THR   HG22   2   2   1   7ZC   H4    .   .   .   .   .   2.74   7      1.0   A   74    THR   HG22   HG2%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     37   14   .   .   OR   1   1   74   THR   HG23   2   2   1   7ZC   H4    .   .   .   .   .   2.74   7      1.0   A   74    THR   HG23   HG2%   B   500   7ZC   H4    H3     NEED_ACC_NO   1    
+     38   15   .   .   OR   1   1   74   THR   HG21   2   2   1   7ZC   H11   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG21   HG2%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     39   15   .   .   OR   1   1   74   THR   HG21   2   2   1   7ZC   H12   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG21   HG2%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     40   15   .   .   OR   1   1   74   THR   HG21   2   2   1   7ZC   H13   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG21   HG2%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     41   15   .   .   OR   1   1   74   THR   HG22   2   2   1   7ZC   H11   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG22   HG2%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     42   15   .   .   OR   1   1   74   THR   HG22   2   2   1   7ZC   H12   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG22   HG2%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     43   15   .   .   OR   1   1   74   THR   HG22   2   2   1   7ZC   H13   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG22   HG2%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     44   15   .   .   OR   1   1   74   THR   HG23   2   2   1   7ZC   H11   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG23   HG2%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     45   15   .   .   OR   1   1   74   THR   HG23   2   2   1   7ZC   H12   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG23   HG2%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     46   15   .   .   OR   1   1   74   THR   HG23   2   2   1   7ZC   H13   .   .   .   .   .   2.5    6.0    1.0   A   74    THR   HG23   HG2%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     47   16   .   .   OR   1   1   56   LEU   HD11   2   2   1   7ZC   H11   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD11   HDx%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     48   16   .   .   OR   1   1   56   LEU   HD11   2   2   1   7ZC   H12   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD11   HDx%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     49   16   .   .   OR   1   1   56   LEU   HD11   2   2   1   7ZC   H13   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD11   HDx%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     50   16   .   .   OR   1   1   56   LEU   HD12   2   2   1   7ZC   H11   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD12   HDx%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     51   16   .   .   OR   1   1   56   LEU   HD12   2   2   1   7ZC   H12   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD12   HDx%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     52   16   .   .   OR   1   1   56   LEU   HD12   2   2   1   7ZC   H13   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD12   HDx%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     53   16   .   .   OR   1   1   56   LEU   HD13   2   2   1   7ZC   H11   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD13   HDx%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     54   16   .   .   OR   1   1   56   LEU   HD13   2   2   1   7ZC   H12   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD13   HDx%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     55   16   .   .   OR   1   1   56   LEU   HD13   2   2   1   7ZC   H13   .   .   .   .   .   2.5    6.0    1.0   A   56    LEU   HD13   HDx%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     56   17   .   .   OR   1   1   7    VAL   HG21   2   2   1   7ZC   H11   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG21   HGy%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     57   17   .   .   OR   1   1   7    VAL   HG21   2   2   1   7ZC   H12   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG21   HGy%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     58   17   .   .   OR   1   1   7    VAL   HG21   2   2   1   7ZC   H13   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG21   HGy%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     59   17   .   .   OR   1   1   7    VAL   HG22   2   2   1   7ZC   H11   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG22   HGy%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     60   17   .   .   OR   1   1   7    VAL   HG22   2   2   1   7ZC   H12   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG22   HGy%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     61   17   .   .   OR   1   1   7    VAL   HG22   2   2   1   7ZC   H13   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG22   HGy%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     62   17   .   .   OR   1   1   7    VAL   HG23   2   2   1   7ZC   H11   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG23   HGy%   B   500   7ZC   H11   Hx%    NEED_ACC_NO   1    
+     63   17   .   .   OR   1   1   7    VAL   HG23   2   2   1   7ZC   H12   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG23   HGy%   B   500   7ZC   H12   Hx%    NEED_ACC_NO   1    
+     64   17   .   .   OR   1   1   7    VAL   HG23   2   2   1   7ZC   H13   .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG23   HGy%   B   500   7ZC   H13   Hx%    NEED_ACC_NO   1    
+     65   18   .   .   OR   1   1   7    VAL   HG21   2   2   1   7ZC   H7    .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG21   HGy%   B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     66   18   .   .   OR   1   1   7    VAL   HG22   2   2   1   7ZC   H7    .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG22   HGy%   B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+     67   18   .   .   OR   1   1   7    VAL   HG23   2   2   1   7ZC   H7    .   .   .   .   .   3.5    20.0   1.0   A   7     VAL   HG23   HGy%   B   500   7ZC   H7    H5     NEED_ACC_NO   1    
+
+   stop_
+
+save_

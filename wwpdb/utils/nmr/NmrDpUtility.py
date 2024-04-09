@@ -2271,14 +2271,14 @@ class NmrDpUtility:
                                                       {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                       {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                       {'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
-                                                      {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
+                                                      {'name': 'label_seq_id', 'type': 'str', 'default': '.'},
                                                       {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
                                                       ],
                                    'coordinate_ins_alias': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                             {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                             {'name': 'ndb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
-                                                            {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
+                                                            {'name': 'label_seq_id', 'type': 'str', 'default': '.'},
                                                             {'name': 'ndb_model', 'type': 'int', 'alt_name': 'model_id'}
                                                             ]
                                    }
@@ -41765,7 +41765,7 @@ class NmrDpUtility:
             data_items = [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                           {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
                           {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                          {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
+                          {'name': 'auth_seq_id', 'type': 'int'},  # non-polymer
                           {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                           {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
                           {'name': 'type_symbol', 'type': 'str'}  # DAOTHER-9084

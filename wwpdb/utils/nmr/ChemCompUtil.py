@@ -343,8 +343,9 @@ class ChemCompUtil:
         """ Return whether a given comp_id is peptide-like component.
         """
 
-        if compId in emptyValue or not self.updateChemCompDict(compId):
-            return False
+        if compId is not None:
+            if not self.updateChemCompDict(compId):
+                return False
 
         ctype = self.lastChemCompDict['_chem_comp.type'].upper()
 
@@ -374,8 +375,9 @@ class ChemCompUtil:
             @return: array of bool: peptide, nucleotide, carbohydrate
         """
 
-        if compId in emptyValue or not self.updateChemCompDict(compId):
-            return False, False, False
+        if compId is not None:
+            if not self.updateChemCompDict(compId):
+                return False, False, False
 
         results = [False] * 3
 

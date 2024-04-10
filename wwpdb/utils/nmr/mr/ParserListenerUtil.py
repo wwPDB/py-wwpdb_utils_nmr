@@ -7800,7 +7800,7 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
                         chainAssign.add((chainId, seqId, cifCompId, False))
                 else:
                     _atomId, _, details = nefT.get_valid_star_atom(cifCompId, atomId)
-                    if len(_atomId) > 0 and details is None:
+                    if len(_atomId) > 0 and (details is None or compId not in monDict3):
                         chainAssign.add((chainId, seqId, cifCompId, False))
 
     if len(chainAssign) == 0:

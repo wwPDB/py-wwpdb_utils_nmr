@@ -47561,6 +47561,10 @@ class NmrDpUtility:
             if 'auth_chain_id' in ps:
                 auth_chain_id = ps['auth_chain_id']
 
+            if len(cif_polymer_sequence) >= LEN_MAJOR_ASYM_ID:
+                if auth_chain_id not in LARGE_ASYM_ID:
+                    continue
+
             for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                 if not isLikeHis(comp_id, self.__ccU):

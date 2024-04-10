@@ -5351,6 +5351,9 @@ def isLikePheOrTyr(compId, ccU):
     if compId in ('PHE', 'TYR'):
         return True
 
+    if compId in monDict3:
+        return False
+
     if ccU.updateChemCompDict(compId):
         _refAtomIdList = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList]
         if 'CD1' not in _refAtomIdList or 'CD2' not in _refAtomIdList:

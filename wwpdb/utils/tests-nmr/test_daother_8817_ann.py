@@ -22,8 +22,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.data_file_path = {'daother-8817-ann': {'str': 'daother-8817-nef2cif.str',
                                                     'cif': 'D_8000212514_model_P1.cif.V5'},
                                'daother-8817-ann-2nd': {'str': 'D_8000212514_nmr-data-str_P1.str.V2',
-                                                        'cif': 'D_8000212514_model_P1.cif.V2'
-                                                        },
+                                                        'cif': 'D_8000212514_model_P1.cif.V2'},
                                'daother-8817-ann-3rd': {'str': 'daother-8817-nef2cif.str',
                                                         'cif': 'D_8000212514_model_P1.cif.V2'},
                                'daother-8817-ann-4th': {'str': 'D_800677_nmr-data-str_P1.str',

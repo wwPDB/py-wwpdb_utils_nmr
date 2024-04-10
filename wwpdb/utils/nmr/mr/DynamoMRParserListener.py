@@ -1593,7 +1593,7 @@ class DynamoMRParserListener(ParseTreeListener):
                                 self.__chainNumberDict[refChainId] = chainId
                     else:
                         _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
-                        if len(_atomId) > 0 and details is None:
+                        if len(_atomId) > 0 and (details is None or compId not in monDict3):
                             chainAssign.add((chainId, seqId, cifCompId, False))
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
@@ -1668,7 +1668,7 @@ class DynamoMRParserListener(ParseTreeListener):
                                     #     self.reasonsForReParsing['label_seq_scheme'] = True
                             else:
                                 _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
-                                if len(_atomId) > 0 and details is None:
+                                if len(_atomId) > 0 and (details is None or compId not in monDict3):
                                     chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId

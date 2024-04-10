@@ -212,7 +212,7 @@ class SybylMRReader:
 if __name__ == "__main__":
     reader = SybylMRReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/5niq/Peptide14_restraints.txt',
+    reader.parse('../../tests-nmr/mock-data-remediation/5niq/Peptide14_restraints.txt-corrected',
                  '../../tests-nmr/mock-data-remediation/5niq/5niq.cif')
 
     reader = SybylMRReader(True)

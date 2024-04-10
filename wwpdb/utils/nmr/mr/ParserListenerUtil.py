@@ -7798,8 +7798,10 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
                 if compId in (cifCompId, origCompId):
                     if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.add((chainId, seqId, cifCompId, False))
-                elif len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                    chainAssign.add((chainId, seqId, cifCompId, False))
+                else:
+                    _atomId, _, details = nefT.get_valid_star_atom(cifCompId, atomId)
+                    if len(_atomId) > 0 and details is None:
+                        chainAssign.add((chainId, seqId, cifCompId, False))
 
     if len(chainAssign) == 0:
         for ps in polySeq:
@@ -7840,8 +7842,10 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
                         if compId in (cifCompId, origCompId):
                             if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
-                        elif len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
+                        else:
+                            _atomId, _, details = nefT.get_valid_star_atom(cifCompId, atomId)
+                            if len(_atomId) > 0 and details is None:
+                                chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
 
     if len(chainAssign) == 0 and altPolySeq is not None:
         for ps in altPolySeq:

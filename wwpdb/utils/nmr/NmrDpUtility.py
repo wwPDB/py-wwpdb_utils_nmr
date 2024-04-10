@@ -25933,6 +25933,14 @@ class NmrDpUtility:
                                         _row[20], _row[21], _row[22], _row[23] =\
                                             _row[16], _row[17], _row[18], _row[19]
 
+                                    # DAOTHER-9281
+                                    if isinstance(_row[1], int) and str(_row[1]) in seq_id_offset_for_unmapped:
+                                        __offset = seq_id_offset_for_unmapped[str(_row[1])]
+                                    elif isinstance(_row[1], str) and _row[1] in seq_id_offset_for_unmapped:
+                                        __offset = seq_id_offset_for_unmapped[_row[1]]
+                                    else:
+                                        __offset = 0
+
                                     if comp_id not in monDict3:
                                         for item in entity_assembly:
                                             if 'comp_id' in item and comp_id == item['comp_id']:
@@ -25973,14 +25981,6 @@ class NmrDpUtility:
                                                             break
 
                                     else:
-
-                                        # DAOTHER-9281
-                                        if isinstance(_row[1], int) and str(_row[1]) in seq_id_offset_for_unmapped:
-                                            __offset = seq_id_offset_for_unmapped[str(_row[1])]
-                                        elif isinstance(_row[1], str) and _row[1] in seq_id_offset_for_unmapped:
-                                            __offset = seq_id_offset_for_unmapped[_row[1]]
-                                        else:
-                                            __offset = 0
 
                                         __seq_key = next((k for k, v in auth_to_star_seq.items()
                                                           if v[0] == entity_assembly_id

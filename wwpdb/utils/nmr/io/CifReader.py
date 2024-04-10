@@ -683,7 +683,7 @@ class CifReader:
             for idxIt, itName in enumerate(itNameList):
                 itDict[itName] = idxIt
                 if itName in keyNames:
-                    altDict[next(k['alt_name'] for k in keyItems if k['name'] == itName)] = idxIt
+                    altDict[next(k['alt_name'] if 'alt_name' in k else itName for k in keyItems if k['name'] == itName)] = idxIt
 
             if set(keyNames) & set(itDict.keys()) != set(keyNames):
                 raise LookupError(f"Missing one of data items {keyNames}.")

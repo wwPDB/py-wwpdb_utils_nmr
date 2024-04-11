@@ -9576,6 +9576,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                                     self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "
                                                                                     "Please re-upload the model file.")
+                                                        elif bondedTo[0][0] == 'O':
+                                                            checked = True
+
                                                 if not checked and not self.__cur_union_expr:
                                                     if chainId in LARGE_ASYM_ID:
                                                         if isPolySeq and not self.__preferAuthSeq\

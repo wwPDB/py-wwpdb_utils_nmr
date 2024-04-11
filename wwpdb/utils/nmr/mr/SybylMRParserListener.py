@@ -985,7 +985,7 @@ class SybylMRParserListener(ParseTreeListener):
                         idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(ps['auth_seq_id'], ps['comp_id']))
                                     if _seqId_ == seqId and _cifCompId_ == cifCompId), ps['auth_seq_id'].index(seqId))
                     else:
-                        idx = ps['auth_seq_id'].index(seqId)
+                        idx = ps['auth_seq_id'].index(seqId) if seqId in ps['auth_seq_id'] else ps['seq_id'].index(seqId)
                     cifCompId = ps['comp_id'][idx]
                     origCompId = ps['auth_comp_id'][idx]
                 if cifCompId != compId:
@@ -1073,7 +1073,7 @@ class SybylMRParserListener(ParseTreeListener):
                         idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(np['auth_seq_id'], np['comp_id']))
                                     if _seqId_ == seqId and _cifCompId_ == cifCompId), np['auth_seq_id'].index(seqId))
                     else:
-                        idx = np['auth_seq_id'].index(seqId)
+                        idx = np['auth_seq_id'].index(seqId) if seqId in np['auth_seq_id'] else np['seq_id'].index(seqId)
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
                     if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
@@ -1415,6 +1415,8 @@ class SybylMRParserListener(ParseTreeListener):
                 _cifAtomId = self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
                 if cifAtomId != _cifAtomId:
                     atomSelection[-1]['atom_id'] = _cifAtomId
+                    if _cifAtomId.startswith('Ignorable'):
+                        atomSelection.pop()
 
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
@@ -1624,6 +1626,9 @@ class SybylMRParserListener(ParseTreeListener):
                                                     f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                     "Please re-upload the model file.")
                                     return atomId
+                            if bondedTo[0][0] == 'O':
+                                return 'Ignorable hydroxyl group'
+
                     if chainId in LARGE_ASYM_ID:
                         if self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"

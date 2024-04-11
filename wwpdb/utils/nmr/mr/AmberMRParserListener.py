@@ -4287,6 +4287,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                         self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
                                                                         "Please re-upload the model file.")
+                                            elif bondedTo[0][0] == 'O':
+                                                checked = True
+
                                     if not checked:
                                         if chainId in LARGE_ASYM_ID:
                                             if enableWarning:
@@ -4459,6 +4462,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
                                                                                 "Please re-upload the model file.")
+                                                    elif bondedTo[0][0] == 'O':
+                                                        checked = True
+
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
                                                     if enableWarning:
@@ -4748,6 +4754,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                             self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
                                                                             "Please re-upload the model file.")
+                                                    elif bondedTo[0][0] == 'O':
+                                                        checked = True
+
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -4875,6 +4884,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                             self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
                                                                             "Please re-upload the model file.")
+                                                    elif bondedTo[0][0] == 'O':
+                                                        checked = True
+
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -5053,6 +5065,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                             self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
                                                                             "Please re-upload the model file.")
+                                                    elif bondedTo[0][0] == 'O':
+                                                        checked = True
+
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -5173,6 +5188,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                             self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
                                                                             "Please re-upload the model file.")
+                                                    elif bondedTo[0][0] == 'O':
+                                                        checked = True
+
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -5442,6 +5460,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
                                                                                 "Please re-upload the model file.")
+                                                        elif bondedTo[0][0] == 'O':
+                                                            checked = True
+
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -5561,6 +5582,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
                                                                                 "Please re-upload the model file.")
+                                                        elif bondedTo[0][0] == 'O':
+                                                            checked = True
+
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -5703,6 +5727,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
                                                                                 "Please re-upload the model file.")
+                                                        elif bondedTo[0][0] == 'O':
+                                                            checked = True
+
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -5823,6 +5850,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
                                                                                 "Please re-upload the model file.")
+                                                        elif bondedTo[0][0] == 'O':
+                                                            checked = True
+
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -9851,6 +9881,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                         f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                         "Please re-upload the model file.")
                                         return
+                            elif bondedTo[0][0] == 'O':
+                                return
+
                     if enableWarning:
                         if chainId in LARGE_ASYM_ID:
                             self.__f.append(f"[Atom not found] "

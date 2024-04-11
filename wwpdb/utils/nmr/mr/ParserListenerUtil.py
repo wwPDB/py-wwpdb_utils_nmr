@@ -8049,6 +8049,9 @@ def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
                 atomSelection.append(_atomSelection)
 
             warningMessage = testCoordAtomIdConsistency(caC, nefT.get_ccu(), authChainId, chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
+            if warningMessage is not None and warningMessage.startswith('Ignorable'):
+                warningMessage = None
+                atomSelection.pop()
 
     return atomSelection, warningMessage
 
@@ -8171,6 +8174,8 @@ def testCoordAtomIdConsistency(caC, ccU, authChainId, chainId, seqId, compId, at
                             return f"[Hydrogen not instantiated] "\
                                 f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
                                 "Please re-upload the model file."
+                        if bondedTo[0][0] == 'O':
+                            return 'Ignorable hydroxyl group'
                 if enableWarning:
                     if chainId in LARGE_ASYM_ID:
                         return f"[Atom not found] "\

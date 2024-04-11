@@ -1769,6 +1769,9 @@ class RosettaMRParserListener(ParseTreeListener):
                                                     f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                     "Please re-upload the model file.")
                                     return atomId
+                            if bondedTo[0][0] == 'O':
+                                return 'Ignorable hydroxyl group'
+
                     if chainId in LARGE_ASYM_ID:
                         if self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"

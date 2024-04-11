@@ -23527,6 +23527,8 @@ class NmrDpUtility:
                                 # Inter-residue ambiguities
                                 elif ambig_code == 5:
 
+                                    inter_residue_seq_id = False
+
                                     for _row in ambig_set:
                                         chain_id2 = _row[chain_id_name]
                                         seq_id2 = _row[seq_id_name]
@@ -23538,24 +23540,37 @@ class NmrDpUtility:
                                         if self.__isNmrAtomName(comp_id2, atom_id2):
                                             _atom_id2 = self.__getRepAtomId(comp_id2, atom_id2)
 
-                                        if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and _atom_id < _atom_id2)):
+                                        if chain_id2 != chain_id or seq_id2 != seq_id:
+                                            inter_residue_seq_id = True
+                                            break
 
-                                            if chain_id == chain_id2 and seq_id == seq_id2:
-                                                if _atom_id2 in self.__csStat.getProtonsInSameGroup(comp_id, _atom_id):
-                                                    continue
+                                    if not inter_residue_seq_id:
 
-                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
-                                                + f", {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
-                                                "It indicates inter-residue ambiguities. However, row of "\
-                                                + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+                                        for _row in ambig_set:
+                                            chain_id2 = _row[chain_id_name]
+                                            seq_id2 = _row[seq_id_name]
+                                            comp_id2 = _row[comp_id_name]
+                                            atom_id2 = _row[atom_id_name]
 
-                                            self.report.error.appendDescription('invalid_ambiguity_code',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': err})
-                                            self.report.setError()
+                                            _atom_id2 = atom_id2
 
-                                            if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                            if self.__isNmrAtomName(comp_id2, atom_id2):
+                                                _atom_id2 = self.__getRepAtomId(comp_id2, atom_id2)
+
+                                            if chain_id2 == chain_id and seq_id2 == seq_id and _atom_id < _atom_id2:
+
+                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                                    + f", {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
+                                                    "It indicates inter-residue ambiguities. However, row of "\
+                                                    + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+
+                                                self.report.error.appendDescription('invalid_ambiguity_code',
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                                     'description': err})
+                                                self.report.setError()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
 
                                 # Inter-molecular ambiguities
                                 elif ambig_code == 6:

@@ -1241,6 +1241,13 @@ class BiosymMRParserListener(ParseTreeListener):
                                 pass
 
         if self.__hasNonPolySeq:
+            ligands = 0
+            for np in self.__nonPoly:
+                ligands += np['comp_id'].count(_compId)
+            if ligands == 0:
+                for np in self.__nonPoly:
+                    if 'alt_comp_id' in np:
+                        ligands += np['alt_comp_id'].count(_compId)
             for np in self.__nonPolySeq:
                 chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
@@ -1323,6 +1330,13 @@ class BiosymMRParserListener(ParseTreeListener):
                             # """
 
             if self.__hasNonPolySeq:
+                ligands = 0
+                for np in self.__nonPoly:
+                    ligands += np['comp_id'].count(_compId)
+                if ligands == 0:
+                    for np in self.__nonPoly:
+                        if 'alt_comp_id' in np:
+                            ligands += np['alt_comp_id'].count(_compId)
                 for np in self.__nonPolySeq:
                     chainId = np['auth_chain_id']
                     if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:

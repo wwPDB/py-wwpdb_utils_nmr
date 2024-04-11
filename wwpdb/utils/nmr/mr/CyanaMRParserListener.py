@@ -2301,6 +2301,13 @@ class CyanaMRParserListener(ParseTreeListener):
                                 pass
 
         if self.__hasNonPolySeq:
+            ligands = 0
+            for np in self.__nonPoly:
+                ligands += np['comp_id'].count(_compId)
+            if ligands == 0:
+                for np in self.__nonPoly:
+                    if 'alt_comp_id' in np:
+                        ligands += np['alt_comp_id'].count(_compId)
             for np in self.__nonPolySeq:
                 chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if self.__reasons is not None:
@@ -2311,7 +2318,8 @@ class CyanaMRParserListener(ParseTreeListener):
                             seqId = fixedSeqId
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
-                if seqId in np['auth_seq_id']:
+                if seqId in np['auth_seq_id']\
+                   or (ligands == 1 and (_compId in np['comp_id'] or ('alt_comp_id' in np and _compId in np['alt_comp_id']))):
                     if cifCompId is not None:
                         idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(np['auth_seq_id'], np['comp_id']))
                                     if _seqId_ == seqId and _cifCompId_ == cifCompId), np['auth_seq_id'].index(seqId))
@@ -2656,6 +2664,13 @@ class CyanaMRParserListener(ParseTreeListener):
                                 pass
 
         if self.__hasNonPolySeq:
+            ligands = 0
+            for np in self.__nonPoly:
+                ligands += np['comp_id'].count(_compId)
+            if ligands == 0:
+                for np in self.__nonPoly:
+                    if 'alt_comp_id' in np:
+                        ligands += np['alt_comp_id'].count(_compId)
             for np in self.__nonPolySeq:
                 chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
@@ -2669,7 +2684,8 @@ class CyanaMRParserListener(ParseTreeListener):
                             seqId = fixedSeqId
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
-                if seqId in np['auth_seq_id']:
+                if seqId in np['auth_seq_id']\
+                   or (ligands == 1 and (_compId in np['comp_id'] or ('alt_comp_id' in np and _compId in np['alt_comp_id']))):
                     if cifCompId is not None:
                         idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(np['auth_seq_id'], np['comp_id']))
                                     if _seqId_ == seqId and _cifCompId_ == cifCompId), np['auth_seq_id'].index(seqId))

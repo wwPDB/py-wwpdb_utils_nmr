@@ -7788,11 +7788,21 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
         else:
             nonPolySeq = branched
 
+        ligands = 0
+        if hasNonPoly:
+            for np in nonPoly:
+                ligands += np['comp_id'].count(compId)
+            if ligands == 0:
+                for np in nonPoly:
+                    if 'alt_comp_id' in np:
+                        ligands += np['alt_comp_id'].count(compId)
+
         for np in nonPolySeq:
             chainId, seqId = getRealChainSeqId(nefT.get_ccu(), np, _seqId, compId, False)
             if refChainId != chainId:
                 continue
-            if seqId in np['auth_seq_id']:
+            if seqId in np['auth_seq_id']\
+               or (ligands == 1 and (compId in np['comp_id'] or ('alt_comp_id' in np and compId in np['alt_comp_id']))):
                 idx = np['auth_seq_id'].index(seqId)
                 cifCompId = np['comp_id'][idx]
                 origCompId = np['auth_comp_id'][idx]
@@ -7847,7 +7857,7 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
                                 chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
                         else:
                             _atomId, _, details = nefT.get_valid_star_atom(cifCompId, atomId)
-                            if len(_atomId) > 0 and details is None:
+                            if len(_atomId) > 0 and (details is None or compId not in monDict3):
                                 chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
 
     if len(chainAssign) == 0 and altPolySeq is not None:

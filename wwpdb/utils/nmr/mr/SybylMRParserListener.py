@@ -1048,6 +1048,13 @@ class SybylMRParserListener(ParseTreeListener):
                                 pass
 
         if self.__hasNonPolySeq:
+            ligands = 0
+            for np in self.__nonPoly:
+                ligands += np['comp_id'].count(_compId)
+            if ligands == 0:
+                for np in self.__nonPoly:
+                    if 'alt_comp_id' in np:
+                        ligands += np['alt_comp_id'].count(_compId)
             for np in self.__nonPolySeq:
                 chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if self.__reasons is not None:
@@ -1060,7 +1067,8 @@ class SybylMRParserListener(ParseTreeListener):
                         seqId = fixedSeqId
                 if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
                     seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
-                if seqId in np['auth_seq_id']:
+                if seqId in np['auth_seq_id']\
+                   or (ligands == 1 and (_compId in np['comp_id'] or ('alt_comp_id' in np and _compId in np['alt_comp_id']))):
                     if cifCompId is not None:
                         idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(np['auth_seq_id'], np['comp_id']))
                                     if _seqId_ == seqId and _cifCompId_ == cifCompId), np['auth_seq_id'].index(seqId))

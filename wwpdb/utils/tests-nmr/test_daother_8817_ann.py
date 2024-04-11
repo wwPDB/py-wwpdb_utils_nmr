@@ -22,14 +22,17 @@ class TestNmrDpUtility(unittest.TestCase):
         self.data_file_path = {'daother-8817-ann': {'str': 'daother-8817-nef2cif.str',
                                                     'cif': 'D_8000212514_model_P1.cif.V5'},
                                'daother-8817-ann-2nd': {'str': 'D_8000212514_nmr-data-str_P1.str.V2',
-                                                        'cif': 'D_8000212514_model_P1.cif.V2'
-                                                        },
+                                                        'cif': 'D_8000212514_model_P1.cif.V2'},
                                'daother-8817-ann-3rd': {'str': 'daother-8817-nef2cif.str',
                                                         'cif': 'D_8000212514_model_P1.cif.V2'},
                                'daother-8817-ann-4th': {'str': 'D_800677_nmr-data-str_P1.str',
                                                         'cif': 'D_8000212514_model_P1.cif.V5'},
                                'daother-8817-ann-5th': {'str': 'D_800677_nmr-data-str_P1.str',
-                                                        'cif': 'D_8000212514_model_P1.cif.V2'}
+                                                        'cif': 'D_8000212514_model_P1.cif.V2'},
+                               'daother-8817-ann-6th': {'str': 'daother-8817-nef2cif.cif',
+                                                        'cif': 'D_1292133086_model_P1.cif.V19'},
+                               'daother-8817-ann-7th': {'str': 'daother-8817-nef2cif.cif',
+                                                        'cif': 'D_8000212922_model_P1.cif.V5'}
                                }
         self.utility = NmrDpUtility()
 
@@ -82,6 +85,12 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_str2cif_annotate_daother_8817_5th(self):
         self.__test_nmr_str2cif_annotate('daother-8817-ann-5th')
+
+    def test_nmr_str2cif_annotate_daother_8817_6th(self):
+        self.__test_nmr_str2cif_annotate('daother-8817-ann-6th')
+
+    def test_nmr_str2cif_annotate_daother_8817_7th(self):
+        self.__test_nmr_str2cif_annotate('daother-8817-ann-7th')
 
 
 if __name__ == '__main__':

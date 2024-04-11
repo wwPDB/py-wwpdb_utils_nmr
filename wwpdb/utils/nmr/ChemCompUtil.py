@@ -23,13 +23,15 @@ try:
     from wwpdb.utils.config.ConfigInfo import getSiteId
     from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCc
     from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
-    from wwpdb.utils.nmr.AlignUtil import (monDict3,
+    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
+                                           monDict3,
                                            protonBeginCode)
     cICc = ConfigInfoAppCc(getSiteId())
     CC_CVS_PATH = cICc.get_site_cc_cvs_path()
 except ImportError:
     from nmr.io.ChemCompIo import ChemCompReader
-    from nmr.AlignUtil import (monDict3,
+    from nmr.AlignUtil import (emptyValue,
+                               monDict3,
                                protonBeginCode)
     CC_CVS_PATH = os.path.dirname(__file__) + '/ligand_dict'  # need to setup 'ligand_dict' CCD resource for NMR restraint processing
 
@@ -147,7 +149,7 @@ class ChemCompUtil:
             @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
         """
 
-        if compId is None:
+        if compId in emptyValue:
             return False
 
         compId = compId.upper()

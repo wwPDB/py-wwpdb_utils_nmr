@@ -2271,14 +2271,14 @@ class NmrDpUtility:
                                                       {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                       {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                       {'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
-                                                      {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
+                                                      {'name': 'label_seq_id', 'type': 'str', 'default': '.'},
                                                       {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
                                                       ],
                                    'coordinate_ins_alias': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                             {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                             {'name': 'ndb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
-                                                            {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
+                                                            {'name': 'label_seq_id', 'type': 'str', 'default': '.'},
                                                             {'name': 'ndb_model', 'type': 'int', 'alt_name': 'model_id'}
                                                             ]
                                    }
@@ -24232,10 +24232,14 @@ class NmrDpUtility:
 
             _auth_to_orig_seq = {}
 
-            has_auth_seq = valid_auth_seq = False
+            has_auth_seq = valid_auth_seq = has_auth_chain = False
+            aux_auth_seq_id_col = aux_auth_comp_id_col = aux_auth_atom_id_col = -1
+
+            valid_auth_seq_per_chain = []
 
             # if self.__remediation_mode or self.__annotation_mode:
             if set(auth_pdb_tags) & set(loop.tags) == set(auth_pdb_tags):
+                auth_asym_id_col = loop.tags.index('Auth_asym_ID')
                 auth_dat = get_lp_tag(loop, auth_pdb_tags)
                 if len(auth_dat) > 0:
                     has_auth_seq = valid_auth_seq = True
@@ -24249,6 +24253,61 @@ class NmrDpUtility:
                             except (ValueError, TypeError):
                                 has_auth_seq = valid_auth_seq = False
                                 break
+
+            # DAOTHER-9281
+            elif 'Auth_asym_ID' in loop.tags:
+                has_auth_chain = True
+                auth_asym_id_col = loop.tags.index('Auth_asym_ID')
+                _auth_pdb_tags = ['Auth_asym_ID']
+                if 'Auth_seq_ID' in loop.tags:
+                    _auth_pdb_tags.append('Auth_seq_ID')
+                elif 'Comp_index_ID' in loop.tags:
+                    _auth_pdb_tags.append('Comp_index_ID')
+                elif 'Seq_ID' in loop.tags:
+                    _auth_pdb_tags.append('Seq_ID')
+
+                if 'Auth_comp_ID' in loop.tags:
+                    _auth_pdb_tags.append('Auth_comp_ID')
+                elif 'Comp_ID' in loop.tags:
+                    _auth_pdb_tags.append('Comp_ID')
+
+                if 'Auth_atom_ID' in loop.tags:
+                    _auth_pdb_tags.append('Auth_atom_ID')
+                elif 'Atom_ID' in loop.tags:
+                    _auth_pdb_tags.append('Atom_ID')
+
+                if len(_auth_pdb_tags) == 4:
+                    auth_dat = get_lp_tag(loop, _auth_pdb_tags)
+                    if len(auth_dat) > 0:
+                        aux_auth_seq_id_col = loop.tags.index(_auth_pdb_tags[1])
+                        aux_auth_comp_id_col = loop.tags.index(_auth_pdb_tags[2])
+                        aux_auth_atom_id_col = loop.tags.index(_auth_pdb_tags[3])
+
+                        valid_auth_seq = True
+                        if not self.__annotation_mode:
+                            for row in auth_dat:
+                                try:
+                                    seq_key = (row[0], int(row[1]), row[2])
+                                    if seq_key not in auth_to_star_seq_ann:
+                                        valid_auth_seq = False
+                                        break
+                                except (ValueError, TypeError):
+                                    valid_auth_seq = False
+                                    break
+                        if not valid_auth_seq:
+                            for row in auth_dat:
+                                if row[0] not in valid_auth_seq_per_chain:
+                                    valid_auth_seq_per_chain.append(row[0])
+                            if not self.__annotation_mode:
+                                for row in auth_dat:
+                                    try:
+                                        seq_key = (row[0], int(row[1]), row[2])
+                                        if seq_key not in auth_to_star_seq_ann:
+                                            if row[0] in valid_auth_seq_per_chain:
+                                                valid_auth_seq_per_chain.remove(row[0])
+                                    except (ValueError, TypeError):
+                                        if row[0] in valid_auth_seq_per_chain:
+                                            valid_auth_seq_per_chain.remove(row[0])
 
             has_orig_seq = False
             ch2_name_in_xplor = ch3_name_in_xplor = False
@@ -24388,7 +24447,8 @@ class NmrDpUtility:
                                 missing_ch3 = []
                         if not valid and len(missing_ch3) > 0 and atom_id not in _coord_atom_site['atom_id']:
                             atom_id = atom_id[:-1]
-                        if (valid and atom_id in _coord_atom_site['atom_id']) or prefer_auth_atom_name or _row[24] == 'UNMAPPED':
+                        if (valid and atom_id in _coord_atom_site['atom_id'])\
+                           or ((prefer_auth_atom_name or _row[24] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M')):
                             atom_ids = [atom_id]
                         else:
                             atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
@@ -24513,7 +24573,7 @@ class NmrDpUtility:
                             missing_ch3 = []
                     if not valid and len(missing_ch3) > 0:
                         atom_id = atom_id[:-1]
-                    if valid or prefer_auth_atom_name or _row[24] == 'UNMAPPED':
+                    if (valid or prefer_auth_atom_name or _row[24] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M'):
                         atom_ids = [atom_id]
                     else:
                         atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
@@ -24607,7 +24667,6 @@ class NmrDpUtility:
             copied_chain_ids = set()
 
             if has_auth_seq:
-                auth_asym_id_col = loop.tags.index('Auth_asym_ID')
                 auth_seq_id_col = loop.tags.index('Auth_seq_ID')
                 auth_comp_id_col = loop.tags.index('Auth_comp_ID')
                 auth_atom_id_col = loop.tags.index('Auth_atom_ID')
@@ -25119,6 +25178,185 @@ class NmrDpUtility:
                         else:
                             resolved = False
 
+                    # DAOTHER-9281
+                    elif has_auth_chain and (valid_auth_seq or row[auth_asym_id_col] in valid_auth_seq_per_chain):
+                        auth_asym_id = row[auth_asym_id_col]
+                        auth_seq_id = row[aux_auth_seq_id_col]
+                        auth_comp_id = row[aux_auth_comp_id_col]
+
+                        _row[17] = auth_seq_id
+
+                        auth_seq_id_ = int(auth_seq_id)
+                        seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
+                        _seq_key = (seq_key[0], seq_key[1])
+                        try:
+                            entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                            if atom_id != _row[19]:
+                                if _seq_key in coord_atom_site:
+                                    _coord_atom_site = coord_atom_site[_seq_key]
+                                    if atom_id in _coord_atom_site['atom_id']:
+                                        _row[19] = atom_id
+                        except KeyError:
+                            if self.__annotation_mode or self.__native_combined:
+                                auth_asym_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                     if _auth_seq_id == auth_seq_id_ and _auth_comp_id == auth_comp_id), auth_asym_id)
+                                seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
+                                if seq_key in auth_to_star_seq:
+                                    _row[16] = row[auth_asym_id_col] = auth_asym_id
+                                    _row[20] = row[orig_asym_id_col] = auth_asym_id
+                                    _seq_key = (seq_key[0], seq_key[1])
+                                    entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                else:
+                                    auth_asym_id, auth_comp_id = next(((_auth_asym_id, _auth_comp_id)
+                                                                       for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                                       if _auth_seq_id == auth_seq_id_), (auth_asym_id, auth_comp_id))
+                                    seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
+                                    if seq_key in auth_to_star_seq:
+                                        _row[16] = row[auth_asym_id_col] = auth_asym_id
+                                        _row[20] = row[orig_asym_id_col] = auth_asym_id
+                                        _row[5] = row[comp_id_col] = auth_comp_id
+                                        _row[18] = row[auth_comp_id_col] = auth_comp_id
+                                        comp_id = auth_comp_id
+                                        _seq_key = (seq_key[0], seq_key[1])
+                                        entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                            if seq_key not in auth_to_star_seq:
+                                auth_comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                     if _auth_asym_id == auth_asym_id and _auth_seq_id == auth_seq_id_), auth_comp_id)
+                                comp_id = _row[18] = auth_comp_id
+                                seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
+                                if seq_key in auth_to_star_seq:
+                                    entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
+                                else:
+                                    entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq_ann[seq_key]
+
+                        self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
+                        _row[1], _row[2], _row[3], _row[4] = entity_assembly_id, entity_id, seq_id, seq_id
+
+                        if prefer_auth_atom_name:
+                            if has_orig_seq:
+                                orig_atom_id = _row[23]
+                            _atom_id = atom_id
+                            _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
+                            if _seq_key in coord_atom_site:
+                                _coord_atom_site = coord_atom_site[_seq_key]
+                                if comp_id in auth_atom_name_to_id and comp_id == _coord_atom_site['comp_id']:
+                                    if _atom_id in auth_atom_name_to_id[comp_id]:
+                                        if auth_atom_name_to_id[comp_id][_atom_id] in _coord_atom_site['atom_id']:
+                                            _row[19] = atom_id = auth_atom_name_to_id[comp_id][_atom_id]
+                                        elif 'split_comp_id' not in _coord_atom_site and has_orig_seq and orig_atom_id in auth_atom_name_to_id[comp_id]:
+                                            _row[19] = atom_id = auth_atom_name_to_id[comp_id][orig_atom_id]
+                                if 'alt_atom_id' in _coord_atom_site and _atom_id in _coord_atom_site['alt_atom_id']\
+                                   and comp_id == _coord_atom_site['comp_id']:
+                                    _row[19] = atom_id = _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                # DAOTHER-8751, 8817 (D_1300043061)
+                                elif 'alt_comp_id' in _coord_atom_site and 'alt_atom_id' in _coord_atom_site\
+                                     and _atom_id in _coord_atom_site['alt_atom_id']\
+                                     and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:
+                                    _row[18] = comp_id
+                                    # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
+                                    cca_row = next((cca_row for cca_row in self.__cca_dat
+                                                    if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                    if cca_row is not None:
+                                        _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
+                                    if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
+                                       and len(set(_coord_atom_site['alt_comp_id'])) > 1:
+                                        _row[19] = atom_id = auth_atom_name_to_id_ext[comp_id][_atom_id]
+                                    else:
+                                        _row[19] = atom_id = _coord_atom_site['atom_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                elif 'split_comp_id' in _coord_atom_site:
+                                    for _comp_id in _coord_atom_site['split_comp_id']:
+                                        if _comp_id == comp_id:
+                                            continue
+                                        __seq_key = (_seq_key[0], _seq_key[1], _comp_id)
+                                        __coord_atom_site = coord_atom_site[__seq_key]
+                                        if __coord_atom_site is None:
+                                            continue
+                                        if 'alt_comp_id' in __coord_atom_site and 'alt_atom_id' in __coord_atom_site\
+                                           and _atom_id in __coord_atom_site['alt_atom_id']:
+                                            comp_id = _comp_id
+                                            _row[18] = comp_id
+                                            # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
+                                            cca_row = next((cca_row for cca_row in self.__cca_dat
+                                                            if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                            if cca_row is not None:
+                                                _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
+                                            row[19] = atom_id = __coord_atom_site['atom_id'][__coord_atom_site['alt_atom_id'].index(_atom_id)]
+                                            _seq_key = __seq_key
+                                            break
+                                        if _atom_id in __coord_atom_site['atom_id']:
+                                            comp_id = _comp_id
+                                            _row[18] = comp_id
+                                            # 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'
+                                            cca_row = next((cca_row for cca_row in self.__cca_dat
+                                                            if cca_row[4] == comp_id and cca_row[5] == _seq_key[0] and cca_row[6] == _seq_key[1]), None)
+                                            if cca_row is not None:
+                                                _row[1], _row[2], _row[3], _row[4] = cca_row[0], cca_row[1], cca_row[2], cca_row[3]
+                                            _seq_key = __seq_key
+                                            break
+
+                        if has_ins_code and seq_key in auth_to_ins_code:
+                            _row[27] = auth_to_ins_code[seq_key]
+
+                        if seq_key in auth_to_orig_seq:
+                            if _row[20] not in emptyValue and seq_key not in _auth_to_orig_seq:
+                                orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
+                            if not has_orig_seq:
+                                orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                if orig_seq_id in emptyValue:
+                                    orig_seq_id = auth_seq_id
+                                if orig_comp_id in emptyValue:
+                                    orig_comp_id = comp_id
+                                _row[20], _row[21], _row[22], _row[23] =\
+                                    auth_asym_id, orig_seq_id, orig_comp_id, _orig_atom_id
+                            elif any(d in emptyValue for d in orig_dat[idx]):
+                                if seq_key in _auth_to_orig_seq:
+                                    _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
+                                elif comp_id != auth_comp_id and translateToStdResName(comp_id, ccU=self.__ccU) == auth_comp_id:
+                                    _row[20], _row[21], _row[22] = auth_asym_id, auth_seq_id, comp_id
+                                    _row[5] = comp_id = auth_comp_id
+                                if _row[23] in emptyValue:
+                                    _row[23] = atom_id
+                                ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                if ambig_code > 0:
+                                    orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
+                                    if orig_seq_id in emptyValue:
+                                        orig_seq_id = auth_seq_id
+                                    if orig_comp_id in emptyValue:
+                                        orig_comp_id = comp_id
+                                    _row[20], _row[21], _row[22] =\
+                                        auth_asym_id, orig_seq_id, orig_comp_id
+                                    if atom_id[0] not in protonBeginCode:
+                                        _row[23] = atom_id
+                                    else:
+                                        len_in_grp = len(self.__csStat.getProtonsInSameGroup(comp_id, atom_id))
+                                        if len_in_grp == 2:
+                                            _row[23] = (atom_id[0:-1] + '1')\
+                                                if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
+                                        elif len_in_grp == 3:
+                                            _row[23] = (atom_id[-1] + atom_id[0:-1])\
+                                                if ch3_name_in_xplor and atom_id[0] == 'H' and atom_id[-1] in ('1', '2', '3') else atom_id
+                                        elif _row[23] in emptyValue:
+                                            _row[23] = atom_id
+
+                        else:
+                            seq_key = next((k for k, v in auth_to_star_seq.items()
+                                            if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                            if seq_key is not None:
+                                _seq_key = (seq_key[0], seq_key[1])
+                                _row[16], _row[17], _row[18], _row[19] =\
+                                    seq_key[0], seq_key[1], seq_key[2], atom_id
+
+                                if has_ins_code and seq_key in auth_to_ins_code:
+                                    _row[27] = auth_to_ins_code[seq_key]
+
+                            _row[20], _row[21], _row[22], _row[23] =\
+                                row[auth_asym_id_col], row[aux_auth_seq_id_col], \
+                                row[aux_auth_comp_id_col], row[aux_auth_atom_id_col]
+
+                        index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key,
+                                                  comp_id, atom_id, loop, idx)
+
                     else:
                         resolved = False
 
@@ -25148,30 +25386,24 @@ class NmrDpUtility:
                         # DAOTHER-9065
                         if details_col != -1 and row[details_col] == 'UNMAPPED':
                             if isinstance(_row[1], int) and str(_row[1]) in seq_id_offset_for_unmapped:
-                                offset = None
-                                if isinstance(_row[17], int):
-                                    offset = _row[3] - _row[17]
-                                elif isinstance(_row[17], str) and _row[17].isdigit():
-                                    offset = _row[3] - int(_row[17])
-                                if offset is not None and offset != seq_id_offset_for_unmapped[str(_row[1])]:
-                                    if isinstance(_row[17], int):
-                                        _row[3] = _row[17] + seq_id_offset_for_unmapped[str(_row[1])]
-                                        _row[4] = _row[3]
-                                    else:
-                                        _row[3] = int(_row[17]) + seq_id_offset_for_unmapped[str(_row[1])]
-                                        _row[4] = _row[3]
+                                __offset = seq_id_offset_for_unmapped[str(_row[1])]
                             elif isinstance(_row[1], str) and _row[1] in seq_id_offset_for_unmapped:
+                                __offset = seq_id_offset_for_unmapped[_row[1]]
+                            else:
+                                __offset = None
+
+                            if __offset is not None:
                                 offset = None
                                 if isinstance(_row[17], int):
                                     offset = _row[3] - _row[17]
                                 elif isinstance(_row[17], str) and _row[17].isdigit():
                                     offset = _row[3] - int(_row[17])
-                                if offset is not None and offset != seq_id_offset_for_unmapped[_row[1]]:
+                                if offset is not None and offset != __offset:
                                     if isinstance(_row[17], int):
-                                        _row[3] = _row[17] + seq_id_offset_for_unmapped[_row[1]]
+                                        _row[3] = _row[17] + __offset
                                         _row[4] = _row[3]
                                     else:
-                                        _row[3] = int(_row[17]) + seq_id_offset_for_unmapped[_row[1]]
+                                        _row[3] = int(_row[17]) + __offset
                                         _row[4] = _row[3]
                             elif trial == 0:
                                 regenerate_request = True
@@ -25701,6 +25933,14 @@ class NmrDpUtility:
                                         _row[20], _row[21], _row[22], _row[23] =\
                                             _row[16], _row[17], _row[18], _row[19]
 
+                                    # DAOTHER-9281
+                                    if isinstance(_row[1], int) and str(_row[1]) in seq_id_offset_for_unmapped:
+                                        __offset = seq_id_offset_for_unmapped[str(_row[1])]
+                                    elif isinstance(_row[1], str) and _row[1] in seq_id_offset_for_unmapped:
+                                        __offset = seq_id_offset_for_unmapped[_row[1]]
+                                    else:
+                                        __offset = 0
+
                                     if comp_id not in monDict3:
                                         for item in entity_assembly:
                                             if 'comp_id' in item and comp_id == item['comp_id']:
@@ -25741,8 +25981,11 @@ class NmrDpUtility:
                                                             break
 
                                     else:
+
                                         __seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                          if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                                          if v[0] == entity_assembly_id
+                                                          and v[1] == seq_id + __offset
+                                                          and v[2] == entity_id), None)
                                         if __seq_key is not None:
                                             __comp_id = __seq_key[2]
                                             if self.__ccU.updateChemCompDict(comp_id):
@@ -25762,11 +26005,8 @@ class NmrDpUtility:
                                     if not found:
                                         _row[24] = 'UNMAPPED'
                                         # DAOTHER-9065
-                                        if isinstance(_row[1], int) and str(_row[1]) in seq_id_offset_for_unmapped:
-                                            _row[3] += seq_id_offset_for_unmapped[str(_row[1])]
-                                            _row[4] = _row[3]
-                                        elif isinstance(_row[1], str) and _row[1] in seq_id_offset_for_unmapped:
-                                            _row[3] += seq_id_offset_for_unmapped[_row[1]]
+                                        if __offset != 0:
+                                            _row[3] += __offset
                                             _row[4] = _row[3]
                                         elif trial == 0:
                                             regenerate_request = True
@@ -25870,30 +26110,24 @@ class NmrDpUtility:
                             # DAOTHER-9065
                             if details_col != -1 and row[details_col] == 'UNMAPPED':
                                 if isinstance(_row[1], int) and str(_row[1]) in seq_id_offset_for_unmapped:
-                                    offset = None
-                                    if isinstance(_row[17], int):
-                                        offset = _row[3] - _row[17]
-                                    elif isinstance(_row[17], str) and _row[17].isdigit():
-                                        offset = _row[3] - int(_row[17])
-                                    if offset is not None and offset != seq_id_offset_for_unmapped[str(_row[1])]:
-                                        if isinstance(_row[17], int):
-                                            _row[3] = _row[17] + seq_id_offset_for_unmapped[str(_row[1])]
-                                            _row[4] = _row[3]
-                                        else:
-                                            _row[3] = int(_row[17]) + seq_id_offset_for_unmapped[str(_row[1])]
-                                            _row[4] = _row[3]
+                                    __offset = seq_id_offset_for_unmapped[str(_row[1])]
                                 elif isinstance(_row[1], str) and _row[1] in seq_id_offset_for_unmapped:
+                                    __offset = seq_id_offset_for_unmapped[_row[1]]
+                                else:
+                                    __offset = None
+
+                                if __offset is not None:
                                     offset = None
                                     if isinstance(_row[17], int):
                                         offset = _row[3] - _row[17]
                                     elif isinstance(_row[17], str) and _row[17].isdigit():
                                         offset = _row[3] - int(_row[17])
-                                    if offset is not None and offset != seq_id_offset_for_unmapped[_row[1]]:
+                                    if offset is not None and offset != __offset:
                                         if isinstance(_row[17], int):
-                                            _row[3] = _row[17] + seq_id_offset_for_unmapped[_row[1]]
+                                            _row[3] = _row[17] + __offset
                                             _row[4] = _row[3]
                                         else:
-                                            _row[3] = int(_row[17]) + seq_id_offset_for_unmapped[_row[1]]
+                                            _row[3] = int(_row[17]) + __offset
                                             _row[4] = _row[3]
                                 elif trial == 0:
                                     regenerate_request = True
@@ -25990,8 +26224,6 @@ class NmrDpUtility:
 
                         elif ambig_id in (4, 5, 6, 9):
                             has_genuine_ambig_code = True
-
-                    chain_id = row[chain_id_col]
 
                     lp.add_data(_row)
 
@@ -41765,7 +41997,7 @@ class NmrDpUtility:
             data_items = [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                           {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
                           {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                          {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},  # non-polymer
+                          {'name': 'auth_seq_id', 'type': 'int'},  # non-polymer
                           {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                           {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
                           {'name': 'type_symbol', 'type': 'str'}  # DAOTHER-9084
@@ -47328,6 +47560,10 @@ class NmrDpUtility:
             auth_chain_id = chain_id
             if 'auth_chain_id' in ps:
                 auth_chain_id = ps['auth_chain_id']
+
+            if len(cif_polymer_sequence) >= LEN_MAJOR_ASYM_ID:
+                if auth_chain_id not in LARGE_ASYM_ID:
+                    continue
 
             for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 

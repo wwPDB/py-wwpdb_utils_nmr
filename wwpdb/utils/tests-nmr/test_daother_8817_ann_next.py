@@ -22,7 +22,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.data_file_path = {'daother-8817-ann-4th': {'str': 'D_800677_nmr-data-str_P1.str',
                                                         'cif': 'D_8000212514_model_P1.cif.V5'},
                                'daother-8817-ann-5th': {'str': 'D_800677_nmr-data-str_P1.str',
-                                                        'cif': 'D_8000212514_model_P1.cif.V2'}
+                                                        'cif': 'D_8000212514_model_P1.cif.V2'},
+                               'daother-8817-ann-7th': {'str': 'daother-8817-ann-7th-next.str',
+                                                        'cif': 'D_8000212922_model_P1.cif.V5'}
                                }
         self.utility = NmrDpUtility()
 
@@ -116,6 +118,10 @@ class TestNmrDpUtility(unittest.TestCase):
     def test_nmr_str2str_deposit_daother_8817_ann_5th(self):
         self.__test_nmr_str_consistency('daother-8817-ann-5th')
         self.__test_nmr_str2str_deposit('daother-8817-ann-5th')
+
+    def test_nmr_str2str_deposit_daother_8817_ann_7th(self):
+        self.__test_nmr_str_consistency('daother-8817-ann-7th')
+        self.__test_nmr_str2str_deposit('daother-8817-ann-7th')
 
 
 if __name__ == '__main__':

@@ -7960,7 +7960,7 @@ def selectCoordAtoms(cR, caC, nefT, chainAssign, authChainId, seqId, compId, ato
             _atomId = [atomId]
         else:
             _atomId = []
-            if atomId[0] in ('Q', 'M') and coordAtomSite is not None:
+            if not isPolySeq and atomId[0] in ('Q', 'M') and coordAtomSite is not None:
                 pattern = re.compile(fr'H{atomId[1:]}\d+') if compId in monDict3 else re.compile(fr'H{atomId[1:]}\S?$')
                 atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
                 if len(atomIdList) > 1:

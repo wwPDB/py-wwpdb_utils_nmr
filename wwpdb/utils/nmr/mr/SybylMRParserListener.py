@@ -1316,7 +1316,7 @@ class SybylMRParserListener(ParseTreeListener):
                         _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
 
             _atomId = []
-            if atomId[0] in ('Q', 'M') and coordAtomSite is not None:
+            if not isPolySeq and atomId[0] in ('Q', 'M') and coordAtomSite is not None:
                 key = (chainId, cifSeqId, compId, atomId)
                 if key in self.__cachedDictForStarAtom:
                     _atomId = copy.deepcopy(self.__cachedDictForStarAtom[key])

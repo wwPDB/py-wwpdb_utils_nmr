@@ -314,6 +314,8 @@ class RosettaMRParserListener(ParseTreeListener):
     # dictionary of pynmrstar saveframes
     sfDict = {}
 
+    __cachedDictForStarAtom = {}
+
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  representativeAltId=REPRESENTATIVE_ALT_ID,
@@ -410,6 +412,8 @@ class RosettaMRParserListener(ParseTreeListener):
         self.__atom_sel_comment_pattern = re.compile(r'([A-Za-z]+)(\d+)(\S+)$')
 
         self.sfDict = {}
+
+        self.__cachedDictForStarAtom = {}
 
     def setDebugMode(self, debug):
         self.__debug = debug
@@ -1468,23 +1472,29 @@ class RosettaMRParserListener(ParseTreeListener):
 
             _atomId = []
             if atomId[0] in ('Q', 'M') and coordAtomSite is not None:
-                pattern = re.compile(fr'H{atomId[1:]}\d+') if cifCompId in monDict3 else re.compile(fr'H{atomId[1:]}\S?$')
-                atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
-                if len(atomIdList) > 1:
-                    hvyAtomIdList = [a for a in coordAtomSite['atom_id'] if a[0] in ('C', 'N')]
-                    hvyAtomId = None
-                    for canHvyAtomId in hvyAtomIdList:
-                        if isStructConn(self.__cR, chainId, cifSeqId, canHvyAtomId, chainId, cifSeqId, atomIdList[0],
-                                        representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
-                                        modelNumName=self.__modelNumName):
-                            hvyAtomId = canHvyAtomId
-                            break
-                    if hvyAtomId is not None:
-                        for _atomId_ in atomIdList:
-                            if isStructConn(self.__cR, chainId, cifSeqId, hvyAtomId, chainId, cifSeqId, _atomId_,
+                key = (chainId, cifSeqId, cifCompId, atomId)
+                if key in self.__cachedDictForStarAtom:
+                    _atomId = copy.deepcopy(self.__cachedDictForStarAtom[key])
+                else:
+                    pattern = re.compile(fr'H{atomId[1:]}\d+') if cifCompId in monDict3 else re.compile(fr'H{atomId[1:]}\S?$')
+                    atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
+                    if len(atomIdList) > 1:
+                        hvyAtomIdList = [a for a in coordAtomSite['atom_id'] if a[0] in ('C', 'N')]
+                        hvyAtomId = None
+                        for canHvyAtomId in hvyAtomIdList:
+                            if isStructConn(self.__cR, chainId, cifSeqId, canHvyAtomId, chainId, cifSeqId, atomIdList[0],
                                             representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
                                             modelNumName=self.__modelNumName):
-                                _atomId.append(_atomId_)
+                                hvyAtomId = canHvyAtomId
+                                break
+                        if hvyAtomId is not None:
+                            for _atomId_ in atomIdList:
+                                if isStructConn(self.__cR, chainId, cifSeqId, hvyAtomId, chainId, cifSeqId, _atomId_,
+                                                representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
+                                                modelNumName=self.__modelNumName):
+                                    _atomId.append(_atomId_)
+                    if len(_atomId) > 1:
+                        self.__cachedDictForStarAtom[key] = copy.deepcopy(_atomId)
             if len(_atomId) > 1:
                 details = None
             else:

@@ -32,6 +32,7 @@ try:
                                                        getRdcCode,
                                                        translateToStdAtomName,
                                                        isCyclicPolymer,
+                                                       isStructConn,
                                                        getRestraintName,
                                                        contentSubtypeOf,
                                                        incListIdCounter,
@@ -107,6 +108,7 @@ except ImportError:
                                            getRdcCode,
                                            translateToStdAtomName,
                                            isCyclicPolymer,
+                                           isStructConn,
                                            getRestraintName,
                                            contentSubtypeOf,
                                            incListIdCounter,
@@ -1464,11 +1466,33 @@ class RosettaMRParserListener(ParseTreeListener):
                     if _seqId != cifSeqId:
                         _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
 
-            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
-            if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
-                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
-                if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
-                    _atomId = [_atomId[int(atomId[-1]) - 1]]
+            _atomId = []
+            if atomId[0] in ('Q', 'M') and coordAtomSite is not None:
+                pattern = re.compile(fr'H{atomId[1:]}\d+') if cifCompId in monDict3 else re.compile(fr'H{atomId[1:]}\S?$')
+                atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
+                if len(atomIdList) > 1:
+                    hvyAtomIdList = [a for a in coordAtomSite['atom_id'] if a[0] in ('C', 'N')]
+                    hvyAtomId = None
+                    for canHvyAtomId in hvyAtomIdList:
+                        if isStructConn(self.__cR, chainId, cifSeqId, canHvyAtomId, chainId, cifSeqId, atomIdList[0],
+                                        representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
+                                        modelNumName=self.__modelNumName):
+                            hvyAtomId = canHvyAtomId
+                            break
+                    if hvyAtomId is not None:
+                        for _atomId_ in atomIdList:
+                            if isStructConn(self.__cR, chainId, cifSeqId, hvyAtomId, chainId, cifSeqId, _atomId_,
+                                            representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
+                                            modelNumName=self.__modelNumName):
+                                _atomId.append(_atomId_)
+            if len(_atomId) > 1:
+                details = None
+            else:
+                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
+                if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
+                    if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                        _atomId = [_atomId[int(atomId[-1]) - 1]]
 
             if details is not None or atomId.endswith('"'):
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)

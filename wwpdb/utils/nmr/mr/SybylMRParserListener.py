@@ -26,6 +26,7 @@ try:
                                                        hasInterChainRestraint,
                                                        isAmbigAtomSelection,
                                                        isCyclicPolymer,
+                                                       isStructConn,
                                                        getAltProtonIdInBondConstraint,
                                                        getRestraintName,
                                                        contentSubtypeOf,
@@ -85,6 +86,7 @@ except ImportError:
                                            hasInterChainRestraint,
                                            isAmbigAtomSelection,
                                            isCyclicPolymer,
+                                           isStructConn,
                                            getAltProtonIdInBondConstraint,
                                            getRestraintName,
                                            contentSubtypeOf,
@@ -1069,11 +1071,16 @@ class SybylMRParserListener(ParseTreeListener):
                     seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                 if seqId in np['auth_seq_id']\
                    or (ligands == 1 and (_compId in np['comp_id'] or ('alt_comp_id' in np and _compId in np['alt_comp_id']))):
-                    if cifCompId is not None:
-                        idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(np['auth_seq_id'], np['comp_id']))
-                                    if _seqId_ == seqId and _cifCompId_ == cifCompId), np['auth_seq_id'].index(seqId))
-                    else:
-                        idx = np['auth_seq_id'].index(seqId) if seqId in np['auth_seq_id'] else np['seq_id'].index(seqId)
+                    idx = -1
+                    try:
+                        if cifCompId is not None:
+                            idx = next(_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(np['auth_seq_id'], np['comp_id']))
+                                       if _seqId_ == seqId and _cifCompId_ == cifCompId)
+                    except StopIteration:
+                        pass
+                    if idx == -1:
+                        idx = np['auth_seq_id'].index(seqId) if seqId in np['auth_seq_id']\
+                            else np['seq_id'].index(seqId) if seqId in np['seq_id'] else 0
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
                     if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
@@ -1304,11 +1311,33 @@ class SybylMRParserListener(ParseTreeListener):
                     if _seqId != cifSeqId:
                         _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
 
-            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
-            if details is not None and len(atomId) > 1 and not atomId[-1].isalpha() and (atomId[0] in pseProBeginCode or atomId[0] in ('C', 'N', 'P', 'F')):
-                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
-                if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
-                    _atomId = [_atomId[int(atomId[-1]) - 1]]
+            _atomId = []
+            if atomId[0] in ('Q', 'M') and coordAtomSite is not None:
+                pattern = re.compile(fr'H{atomId[1:]}\d+') if compId in monDict3 else re.compile(fr'H{atomId[1:]}\S?$')
+                atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
+                if len(atomIdList) > 1:
+                    hvyAtomIdList = [a for a in coordAtomSite['atom_id'] if a[0] in ('C', 'N')]
+                    hvyAtomId = None
+                    for canHvyAtomId in hvyAtomIdList:
+                        if isStructConn(self.__cR, chainId, cifSeqId, canHvyAtomId, chainId, cifSeqId, atomIdList[0],
+                                        representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
+                                        modelNumName=self.__modelNumName):
+                            hvyAtomId = canHvyAtomId
+                            break
+                    if hvyAtomId is not None:
+                        for _atomId_ in atomIdList:
+                            if isStructConn(self.__cR, chainId, cifSeqId, hvyAtomId, chainId, cifSeqId, _atomId_,
+                                            representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
+                                            modelNumName=self.__modelNumName):
+                                _atomId.append(_atomId_)
+            if len(_atomId) > 1:
+                details = None
+            else:
+                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
+                if details is not None and len(atomId) > 1 and not atomId[-1].isalpha() and (atomId[0] in pseProBeginCode or atomId[0] in ('C', 'N', 'P', 'F')):
+                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
+                    if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                        _atomId = [_atomId[int(atomId[-1]) - 1]]
 
             if details is not None or atomId.endswith('"'):
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)

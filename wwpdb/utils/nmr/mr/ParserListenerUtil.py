@@ -7803,7 +7803,8 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
                 continue
             if seqId in np['auth_seq_id']\
                or (ligands == 1 and (compId in np['comp_id'] or ('alt_comp_id' in np and compId in np['alt_comp_id']))):
-                idx = np['auth_seq_id'].index(seqId)
+                idx = np['auth_seq_id'].index(seqId) if seqId in np['auth_seq_id']\
+                    else np['seq_id'].index(seqId) if seqId in np['seq_id'] else 0
                 cifCompId = np['comp_id'][idx]
                 origCompId = np['auth_comp_id'][idx]
                 if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
@@ -7890,8 +7891,10 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
     return list(chainAssign), warningMessage
 
 
-def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId, authAtomId,
-                     allowAmbig=True, enableWarning=True, preferAuthAtomName=False, offset=1):
+def selectCoordAtoms(cR, caC, nefT, chainAssign, authChainId, seqId, compId, atomId, authAtomId,
+                     allowAmbig=True, enableWarning=True, preferAuthAtomName=False,
+                     representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
+                     modelNumName='PDB_model_num', offset=1):
     """ Select atoms of the coordinates.
         @return atom selection, warning mesage (None for valid case)
     """
@@ -7956,11 +7959,33 @@ def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
         if (coordAtomSite is not None and atomId in coordAtomSite['atom_id']) or preferAuthAtomName:
             _atomId = [atomId]
         else:
-            _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
-            if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
-                _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
-                if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
-                    _atomId = [_atomId[int(atomId[-1]) - 1]]
+            _atomId = []
+            if atomId[0] in ('Q', 'M') and coordAtomSite is not None:
+                pattern = re.compile(fr'H{atomId[1:]}\d+') if compId in monDict3 else re.compile(fr'H{atomId[1:]}\S?$')
+                atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
+                if len(atomIdList) > 1:
+                    hvyAtomIdList = [a for a in coordAtomSite['atom_id'] if a[0] in ('C', 'N')]
+                    hvyAtomId = None
+                    for canHvyAtomId in hvyAtomIdList:
+                        if isStructConn(cR, authChainId, cifSeqId, canHvyAtomId, authChainId, cifSeqId, atomIdList[0],
+                                        representativeModelId=representativeModelId, representativeAltId=representativeAltId,
+                                        modelNumName=modelNumName):
+                            hvyAtomId = canHvyAtomId
+                            break
+                    if hvyAtomId is not None:
+                        for _atomId_ in atomIdList:
+                            if isStructConn(cR, authChainId, cifSeqId, hvyAtomId, authChainId, cifSeqId, _atomId_,
+                                            representativeModelId=representativeModelId, representativeAltId=representativeAltId,
+                                            modelNumName=modelNumName):
+                                _atomId.append(_atomId_)
+            if len(_atomId) > 1:
+                details = None
+            else:
+                _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
+                if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                    _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
+                    if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                        _atomId = [_atomId[int(atomId[-1]) - 1]]
 
             if details is not None or atomId.endswith('"'):
                 ccU = nefT.get_ccu()
@@ -8030,8 +8055,10 @@ def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
 
         if lenAtomId == 0:
             if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
-                return selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
-                                        allowAmbig, enableWarning, preferAuthAtomName, offset=1)
+                return selectCoordAtoms(cR, caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
+                                        allowAmbig, enableWarning, preferAuthAtomName,
+                                        representativeModelId=representativeModelId, representativeAltId=representativeAltId,
+                                        modelNumName=modelNumName, offset=1)
             if enableWarning:
                 warningMessage = f"[Invalid atom nomenclature] "\
                     f"{seqId}:{compId}:{atomId} is invalid atom nomenclature."

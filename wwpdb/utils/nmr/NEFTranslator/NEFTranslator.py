@@ -4802,7 +4802,7 @@ class NEFTranslator:
                     if details is not None:
                         atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
                         # 2l8r, comp_id=APR, atom_id=Q5D -> ['H5R1', 'H5R2']
-                        if details is not None and atom_id[0] in pseProBeginCode:
+                        if details is not None and atom_id[0] in ('Q', 'M'):
                             protons = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[1:], onlyProton=True)
                             resolved = False
                             len_protons = len(protons)
@@ -4817,26 +4817,9 @@ class NEFTranslator:
                                 len_protons = len(protons)
                                 if len_protons in (1, 3):
                                     atom_list, ambiguity_code, details = protons, 1, None
-                                    resolved = True
                                 elif len_protons == 2:
                                     atom_list, ambiguity_code, details = protons, 2, None
-                                    resolved = True
-                            if not resolved:
-                                protons = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[1:] + '1', onlyProton=True)
-                                protons.extend(self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[1:] + '2', onlyProton=True))
-                                len_protons = len(protons)
-                                if len_protons in (1, 2, 3, 4, 6):
-                                    atom_list, ambiguity_code, details =\
-                                        protons, self.__csStat.getMaxAmbigCodeWoSetId(comp_id, protons[0]), None
-                                    resolved = True
-                            if not resolved:
-                                protons = self.__ccU.getBondedAtoms(comp_id, 'N' + atom_id[1:] + '1', onlyProton=True)
-                                protons.extend(self.__ccU.getBondedAtoms(comp_id, 'N' + atom_id[1:] + '2', onlyProton=True))
-                                len_protons = len(protons)
-                                if len_protons in (1, 2, 4):
-                                    atom_list, ambiguity_code, details =\
-                                        protons, self.__csStat.getMaxAmbigCodeWoSetId(comp_id, protons[0]), None
-                                    resolved = True
+
             return (atom_list, ambiguity_code, details)
 
         finally:

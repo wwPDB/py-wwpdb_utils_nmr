@@ -29503,6 +29503,8 @@ class NmrDpUtility:
                 auth_to_star_seq_ann = self.__caC['auth_to_star_seq_ann']
                 auth_atom_name_to_id = self.__caC['auth_atom_name_to_id']
 
+                model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
+
                 offset_holder = {}
 
                 has_key_seq = False
@@ -29715,9 +29717,11 @@ class NmrDpUtility:
                                         rescued = True
 
                                 if not rescued:
-                                    atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
+                                    atom_sels[d], warn = selectCoordAtoms(self.__cR, self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
                                                                           allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
-                                                                          preferAuthAtomName=prefer_auth_atom_name)
+                                                                          preferAuthAtomName=prefer_auth_atom_name,
+                                                                          representativeModelId=self.__representative_model_id, representativeAltId=self.__representative_alt_id,
+                                                                          modelNumName=model_num_name)
 
                                 if warn is not None:
 
@@ -30101,9 +30105,11 @@ class NmrDpUtility:
 
                                     continue
 
-                                atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
+                                atom_sels[d], warn = selectCoordAtoms(self.__cR, self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
                                                                       allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
-                                                                      preferAuthAtomName=prefer_auth_atom_name)
+                                                                      preferAuthAtomName=prefer_auth_atom_name,
+                                                                      representativeModelId=self.__representative_model_id, representativeAltId=self.__representative_alt_id,
+                                                                      modelNumName=model_num_name)
 
                                 if warn is not None:
 

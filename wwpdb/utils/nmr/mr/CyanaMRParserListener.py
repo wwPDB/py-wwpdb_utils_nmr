@@ -285,6 +285,7 @@ class CyanaMRParserListener(ParseTreeListener):
     __authToOrigSeq = None
     __authToInsCode = None
     __authToEntityType = None
+    __modResidue = None
     __splitLigand = None
 
     __offsetHolder = None
@@ -408,6 +409,7 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
             self.__authToEntityType = ret['auth_to_entity_type']
+            self.__modResidue = ret['mod_residue']
             self.__splitLigand = ret['split_ligand']
 
         self.__offsetHolder = {}
@@ -2199,6 +2201,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
         compId = translateToStdResName(_compId, ccU=self.__ccU)
 
+        if len(self.__modResidue) > 0:
+            modRes = next((modRes for modRes in self.__modResidue
+                           if modRes['auth_comp_id'] == compId
+                           and (compId != _compId or seqId in (modRes['auth_seq_id'], modRes['seq_id']))), None)
+            if modRes is not None:
+                compId = modRes['comp_id']
+
         self.__allow_ext_seq = False
 
         if self.__reasons is not None:
@@ -2569,6 +2578,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
         compId = translateToStdResName(_compId, ccU=self.__ccU)
 
+        if len(self.__modResidue) > 0:
+            modRes = next((modRes for modRes in self.__modResidue
+                           if modRes['auth_comp_id'] == compId
+                           and (compId != _compId or seqId in (modRes['auth_seq_id'], modRes['seq_id']))), None)
+            if modRes is not None:
+                compId = modRes['comp_id']
+
         self.__allow_ext_seq = False
 
         if self.__reasons is not None:
@@ -2601,11 +2617,13 @@ class CyanaMRParserListener(ParseTreeListener):
                         retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], str(refChainId), seqId,
                                                        compId if compId in monDict3 else None)
                     self.__allow_ext_seq = fixedCompId is not None
-                    refChainId = fixedChainId
+                    if fixedSeqId is not None:
+                        refChainId = fixedChainId
                 if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
                     fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], str(refChainId), seqId,
                                                                      compId if compId in monDict3 else None)
-                    refChainId = fixedChainId
+                    if fixedSeqId is not None:
+                        refChainId = fixedChainId
                 if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
                     _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
             if fixedSeqId is not None:

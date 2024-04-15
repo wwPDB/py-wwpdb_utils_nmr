@@ -222,6 +222,7 @@ class BiosymMRParserListener(ParseTreeListener):
     __authToStarSeq = None
     __authToOrigSeq = None
     __authToInsCode = None
+    __modResidue = None
     __splitLigand = None
 
     __offsetHolder = None
@@ -309,6 +310,7 @@ class BiosymMRParserListener(ParseTreeListener):
             self.__authToStarSeq = ret['auth_to_star_seq']
             self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
+            self.__modResidue = ret['mod_residue']
             self.__splitLigand = ret['split_ligand']
 
         self.__offsetHolder = {}
@@ -1135,6 +1137,13 @@ class BiosymMRParserListener(ParseTreeListener):
 
         compId = translateToStdResName(_compId, ccU=self.__ccU)
 
+        if len(self.__modResidue) > 0:
+            modRes = next((modRes for modRes in self.__modResidue
+                           if modRes['auth_comp_id'] == compId
+                           and (compId != _compId or seqId in (modRes['auth_seq_id'], modRes['seq_id']))), None)
+            if modRes is not None:
+                compId = modRes['comp_id']
+
         if self.__reasons is not None:
             if 'non_poly_remap' in self.__reasons and _compId in self.__reasons['non_poly_remap']\
                and seqId in self.__reasons['non_poly_remap'][_compId]:
@@ -1152,16 +1161,20 @@ class BiosymMRParserListener(ParseTreeListener):
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
                 refChainId = fixedChainId
             elif 'seq_id_remap' in self.__reasons\
-                 or 'chain_seq_id_remap' in self.__reasons\
-                 or 'ext_chain_seq_id_remap' in self.__reasons:
+                    or 'chain_seq_id_remap' in self.__reasons\
+                    or 'ext_chain_seq_id_remap' in self.__reasons:
                 if 'ext_chain_seq_id_remap' in self.__reasons:
                     fixedChainId, fixedSeqId, fixedCompId =\
                         retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], str(refChainId), seqId,
                                                        compId if compId in monDict3 else None)
                     self.__allow_ext_seq = fixedCompId is not None
+                    if fixedSeqId is not None:
+                        refChainId = fixedChainId
                 if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
                     fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], str(refChainId), seqId,
                                                                      compId if compId in monDict3 else None)
+                    if fixedSeqId is not None:
+                        refChainId = fixedChainId
                 if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
                     _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
             if fixedSeqId is not None:

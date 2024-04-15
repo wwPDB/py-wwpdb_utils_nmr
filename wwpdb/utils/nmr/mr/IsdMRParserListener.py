@@ -199,6 +199,7 @@ class IsdMRParserListener(ParseTreeListener):
     __authToStarSeq = None
     __authToOrigSeq = None
     __authToInsCode = None
+    __modResidue = None
     __splitLigand = None
 
     __offsetHolder = None
@@ -283,6 +284,7 @@ class IsdMRParserListener(ParseTreeListener):
             self.__authToStarSeq = ret['auth_to_star_seq']
             self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
+            self.__modResidue = ret['mod_residue']
             self.__splitLigand = ret['split_ligand']
 
         self.__offsetHolder = {}
@@ -956,6 +958,13 @@ class IsdMRParserListener(ParseTreeListener):
             seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         compId = translateToStdResName(_compId, ccU=self.__ccU)
+
+        if len(self.__modResidue) > 0:
+            modRes = next((modRes for modRes in self.__modResidue
+                           if modRes['auth_comp_id'] == compId
+                           and (compId != _compId or seqId in (modRes['auth_seq_id'], modRes['seq_id']))), None)
+            if modRes is not None:
+                compId = modRes['comp_id']
 
         if self.__reasons is not None:
             if 'non_poly_remap' in self.__reasons and _compId in self.__reasons['non_poly_remap']\

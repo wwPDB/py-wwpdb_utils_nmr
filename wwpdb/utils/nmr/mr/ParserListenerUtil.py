@@ -3030,6 +3030,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     nonPoly = None if prevResult is None else prevResult.get('non_polymer')
     branched = None if prevResult is None else prevResult.get('branched')
     nmrExtPolySeq = None if prevResult is None else prevResult.get('nmr_ext_poly_seq')
+    modResidue = None if prevResult is None else prevResult.get('mod_residue')
     splitLigand = None if prevResult is None else prevResult.get('split_ligand')
 
     polySeqPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_poly_seq_scheme', 'pdb_mon_id') else 'mon_id'
@@ -3040,14 +3041,15 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     nonPolyAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'auth_mon_id') else 'mon_id'
     branchedAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_branch_scheme', 'auth_mon_id') else 'mon_id'
 
-    if polySeq is None or nmrExtPolySeq is None or splitLigand is None:
+    if polySeq is None or nmrExtPolySeq is None or modResidue is None or splitLigand is None:
         changed = True
 
         # loop categories
         _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',
                          'non_poly': 'pdbx_nonpoly_scheme',
                          'branched': 'pdbx_branch_scheme',
-                         'coordinate': 'atom_site'
+                         'coordinate': 'atom_site',
+                         'mod_residue': 'pdbx_struct_mod_residue'
                          }
 
         # key items of loop
@@ -3078,7 +3080,13 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                     {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
                                     {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'auth_comp_id'},
                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
-                                    ]
+                                    ],
+                     'mod_residue': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                     {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                     {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
+                                     {'name': 'parent_comp_id', 'type': 'str', 'alt_name': 'auth_comp_id'},
+                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'}]
                      }
 
         contentSubtype = 'poly_seq'
@@ -3444,6 +3452,15 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                     nonPoly.append(ent)
 
+        contentSubtype = 'mod_residue'
+
+        lpCategory = _lpCategories[contentSubtype]
+        keyItems = _keyItems[contentSubtype]
+
+        modResidue = []
+        if cR.hasCategory(lpCategory):
+            modResidue = cR.getDictListWithFilter(lpCategory, keyItems)
+
         contentSubtype = 'branched'
 
         lpCategory = _lpCategories[contentSubtype]
@@ -3533,7 +3550,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                 'alt_polymer_sequence': altPolySeq,
                 'non_polymer': nonPoly,
                 'branched': branched,
-                'nmr_ext_poly_seq': nmrExtPolySeq}
+                'nmr_ext_poly_seq': nmrExtPolySeq,
+                'mod_residue': modResidue}
 
     modelNumName = None if prevResult is None else prevResult.get('model_num_name')
     authAsymId = None if prevResult is None else prevResult.get('auth_asym_id')
@@ -4566,6 +4584,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'non_polymer': nonPoly,
             'branched': branched,
             'nmr_ext_poly_seq': nmrExtPolySeq,
+            'mod_residue': modResidue,
             'coord_atom_site': coordAtomSite,
             'coord_unobs_res': coordUnobsRes,
             'label_to_auth_seq': labelToAuthSeq,

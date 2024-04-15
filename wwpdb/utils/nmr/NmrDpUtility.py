@@ -29140,6 +29140,7 @@ class NmrDpUtility:
                and 'auth_atom_name_to_id' in self.__caC\
                and 'auth_atom_name_to_id_ext' in self.__caC\
                and 'auth_to_star_seq_ann' in self.__caC\
+               and 'mod_residue' in self.__caC\
                and 'split_ligand' in self.__caC:
                 self.__nefT.set_chem_comp_dict(self.__caC['chem_comp_atom'],
                                                self.__caC['chem_comp_bond'],

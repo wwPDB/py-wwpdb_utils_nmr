@@ -199,6 +199,7 @@ class IsdMRParserListener(ParseTreeListener):
     __authToStarSeq = None
     __authToOrigSeq = None
     __authToInsCode = None
+    __splitLigand = None
 
     __offsetHolder = None
 
@@ -282,6 +283,7 @@ class IsdMRParserListener(ParseTreeListener):
             self.__authToStarSeq = ret['auth_to_star_seq']
             self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
+            self.__splitLigand = ret['split_ligand']
 
         self.__offsetHolder = {}
 
@@ -930,6 +932,26 @@ class IsdMRParserListener(ParseTreeListener):
                 seqId = _seqId = znSeqId
                 preferNonPoly = True
 
+        if self.__splitLigand is not None and len(self.__splitLigand):
+            found = False
+            for (_, _seqId_, _compId_), ligList in self.__splitLigand.items():
+                if _seqId_ != seqId or _compId_ != compId:
+                    continue
+                for idx, lig in enumerate(ligList):
+                    _atomId = atomId
+                    if self.__mrAtomNameMapping is not None and compId not in monDict3:
+                        _, _, _atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+
+                    if _atomId in lig['atom_ids']:
+                        seqId = _seqId = lig['auth_seq_id']
+                        compId = _compId = lig['comp_id']
+                        atomId = _atomId
+                        preferNonPoly = idx > 0
+                        found = True
+                        break
+                if found:
+                    break
+
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
@@ -1246,17 +1268,6 @@ class IsdMRParserListener(ParseTreeListener):
 
         _compId = compId
         _atomId = atomId
-
-        if compId in ('CYSZ', 'CYZ', 'CYS') and atomId == 'ZN' and self.__hasNonPoly:
-            znCount = 0
-            znSeqId = None
-            for np in self.__nonPoly:
-                if np['comp_id'][0] == 'ZN':
-                    znSeqId = np['auth_seq_id'][0]
-                    znCount += 1
-            if znCount == 1:
-                compId = _compId = 'ZN'
-                seqId = znSeqId
 
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)

@@ -3030,6 +3030,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     nonPoly = None if prevResult is None else prevResult.get('non_polymer')
     branched = None if prevResult is None else prevResult.get('branched')
     nmrExtPolySeq = None if prevResult is None else prevResult.get('nmr_ext_poly_seq')
+    splitLigand = None if prevResult is None else prevResult.get('split_ligand')
 
     polySeqPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_poly_seq_scheme', 'pdb_mon_id') else 'mon_id'
     nonPolyPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'pdb_mon_id') else 'mon_id'
@@ -3039,7 +3040,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     nonPolyAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'auth_mon_id') else 'mon_id'
     branchedAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_branch_scheme', 'auth_mon_id') else 'mon_id'
 
-    if polySeq is None or nmrExtPolySeq is None:
+    if polySeq is None or nmrExtPolySeq is None or splitLigand is None:
         changed = True
 
         # loop categories
@@ -3086,6 +3087,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         keyItems = _keyItems[contentSubtype]
 
         nmrExtPolySeq = []
+        splitLigand = {}
 
         try:
 
@@ -3495,6 +3497,34 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             except KeyError:
                 branched = None
 
+        if branched is not None or nonPoly is not None:
+            if nonPoly is not None and len(nonPoly) > 0:
+                for np in nonPoly:
+                    if 'alt_comp_id' in np and 'alt_auth_seq_id' in np:
+                        authChainId = np['auth_chain_id']
+                        for authSeqId, compId, altAuthSeqId, altCompId in zip(np['auth_seq_id'], np['comp_id'], np['alt_auth_seq_id'], np['alt_comp_id']):
+                            for ps in polySeq:
+                                if ps['auth_chain_id'] == authChainId and 'alt_comp_id' in ps:
+                                    for _authSeqId, _compId, _altCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['alt_comp_id']):
+                                        if _authSeqId == authSeqId and _altCompId == altCompId and compId != _compId:
+                                            seqKey = (authChainId, authSeqId, altCompId)
+                                            if seqKey not in splitLigand:
+                                                splitLigand[seqKey] = [{'auth_seq_id': authSeqId, 'comp_id': _compId, 'atom_ids': []}]
+                                            splitLigand[seqKey].append({'auth_seq_id': altAuthSeqId, 'comp_id': compId, 'atom_ids': []})
+            if branched is not None and len(branched) > 0:
+                for br in branched:
+                    if 'alt_comp_id' in br and 'alt_auth_seq_id' in br:
+                        authChainId = br['auth_chain_id']
+                        for authSeqId, compId, altAuthSeqId, altCompId in zip(br['auth_seq_id'], br['comp_id'], br['alt_auth_seq_id'], np['alt_comp_id']):
+                            for ps in polySeq:
+                                if ps['auth_chain_id'] == authChainId and 'alt_comp_id' in ps:
+                                    for _authSeqId, _compId, _altCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['alt_comp_id']):
+                                        if _authSeqId == authSeqId and _altCompId == altCompId and compId != _compId:
+                                            seqKey = (authChainId, authSeqId, altCompId)
+                                            if seqKey not in splitLigand:
+                                                splitLigand[seqKey] = [{'auth_seq_id': authSeqId, 'comp_id': _compId, 'atom_ids': []}]
+                                            splitLigand[seqKey].append({'auth_seq_id': altAuthSeqId, 'comp_id': compId, 'atom_ids': []})
+
     if not fullCheck:
         if not changed:
             return prevResult
@@ -3658,6 +3688,18 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         if chainId != authChainId:
                             altKey = (authChainId, seqId)
                             coordAtomSite[altKey] = coordAtomSite[seqKey]
+                    if splitLigand is not None and len(splitLigand) > 0:
+                        found = False
+                        for (_authChainId, _, _), ligList in splitLigand.items():
+                            if _authChainId != authChainId:
+                                continue
+                            for lig in ligList:
+                                if lig['auth_seq_id'] == seqId and lig['comp_id'] == compId:
+                                    lig['atom_ids'] = atomIds
+                                    found = True
+                                    break
+                            if found:
+                                break
                     compIds = list(set(c['comp_id'] for c in coord
                                        if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId))
                     if len(compIds) > 1:  # 2kny: split implict ins_code of atom_site
@@ -4540,7 +4582,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'chem_comp_bond': chemCompBond,
             'chem_comp_topo': chemCompTopo,
             'auth_atom_name_to_id': authAtomNameToId,
-            'auth_atom_name_to_id_ext': authAtomNameToIdExt}
+            'auth_atom_name_to_id_ext': authAtomNameToIdExt,
+            'split_ligand': splitLigand}
 
 
 def extendCoordChainsForExactNoes(modelChainIdExt,

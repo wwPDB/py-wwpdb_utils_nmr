@@ -14245,7 +14245,8 @@ class NmrDpUtility:
                         if footer:
                             fofh.write(line)
                             col = line.split()
-                            if len(col) == 10:
+                            len_col = len(col)
+                            if len_col == 10:
                                 original_comp_id = col[5]
                                 if original_comp_id not in monDict3:  # extract non-standard residues
                                     try:
@@ -14255,9 +14256,65 @@ class NmrDpUtility:
                                                     'original_atom_id': col[4],
                                                     'original_comp_id': original_comp_id,
                                                     'original_seq_id': int(col[3])}
-                                        self.__mr_atom_name_mapping.append(atom_map)
+                                        if atom_map not in self.__mr_atom_name_mapping:
+                                            self.__mr_atom_name_mapping.append(atom_map)
                                     except ValueError:
                                         pass
+                            elif len_col >= 8:  # 2liw 4 digits residue number
+
+                                def split_concat_comp_id_seq_id(string):
+                                    if not string[-1].isdigit():
+                                        return None, None
+                                    idx = len(string) - 1
+                                    while idx >= 0 and string[idx].isdigit():
+                                        idx -= 1
+                                    if idx == 0:
+                                        return None, None
+                                    if string[idx] != '-':
+                                        idx += 1
+                                    return string[:idx], int(string[idx:])
+
+                                if len(col[2]) > 4:
+                                    auth_comp_id, auth_seq_id = split_concat_comp_id_seq_id(col[2])
+
+                                    if len(col[4]) > 4 and len_col == 8:
+                                        orig_comp_id, orig_seq_id = split_concat_comp_id_seq_id(col[4])
+                                        if auth_comp_id is not None and orig_comp_id is not None and orig_comp_id not in monDict3:
+                                            atom_map = {'auth_atom_id': col[1],
+                                                        'auth_comp_id': auth_comp_id,
+                                                        'auth_seq_id': auth_seq_id,
+                                                        'original_atom_id': col[3],
+                                                        'original_comp_id': orig_comp_id,
+                                                        'original_seq_id': orig_seq_id}
+                                            if atom_map not in self.__mr_atom_name_mapping:
+                                                self.__mr_atom_name_mapping.append(atom_map)
+                                    elif len_col == 9:
+                                        if auth_comp_id is not None and col[4] not in monDict3:
+                                            try:
+                                                atom_map = {'auth_atom_id': col[1],
+                                                            'auth_comp_id': auth_comp_id,
+                                                            'auth_seq_id': auth_seq_id,
+                                                            'original_atom_id': col[3],
+                                                            'original_comp_id': col[4],
+                                                            'original_seq_id': int(col[5])}
+                                                if atom_map not in self.__mr_atom_name_mapping:
+                                                    self.__mr_atom_name_mapping.append(atom_map)
+                                            except ValueError:
+                                                pass
+                                elif len(col[5]) > 4 and len_col == 9:
+                                    orig_comp_id, orig_seq_id = split_concat_comp_id_seq_id(col[5])
+                                    if orig_comp_id is not None and orig_comp_id not in monDict3:
+                                        try:
+                                            atom_map = {'auth_atom_id': col[1],
+                                                        'auth_comp_id': col[2],
+                                                        'auth_seq_id': int(col[3]),
+                                                        'original_atom_id': col[4],
+                                                        'original_comp_id': orig_comp_id,
+                                                        'original_seq_id': orig_seq_id}
+                                            if atom_map not in self.__mr_atom_name_mapping:
+                                                self.__mr_atom_name_mapping.append(atom_map)
+                                        except ValueError:
+                                            pass
 
                         else:
                             ofh.write(line)
@@ -29082,7 +29139,8 @@ class NmrDpUtility:
             if self.__caC is not None and 'chem_comp_atom' in self.__caC\
                and 'auth_atom_name_to_id' in self.__caC\
                and 'auth_atom_name_to_id_ext' in self.__caC\
-               and 'auth_to_star_seq_ann' in self.__caC:
+               and 'auth_to_star_seq_ann' in self.__caC\
+               and 'split_ligand' in self.__caC:
                 self.__nefT.set_chem_comp_dict(self.__caC['chem_comp_atom'],
                                                self.__caC['chem_comp_bond'],
                                                self.__caC['chem_comp_topo'])
@@ -41448,7 +41506,11 @@ class NmrDpUtility:
 
             return True
 
-        except Exception:
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - " + str(e))
+            self.report.setError()
+
             return False
 
     def __parseCoordFilePath(self):

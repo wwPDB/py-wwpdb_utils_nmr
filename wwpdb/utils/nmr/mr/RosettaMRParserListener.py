@@ -1461,10 +1461,10 @@ class RosettaMRParserListener(ParseTreeListener):
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, asis=self.__preferAuthSeq)
 
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
-                if atomId != _atomId and coordAtomSite is not None\
-                   and (_atomId in coordAtomSite['atom_id'] or (_atomId.endswith('%') and _atomId[:-1] + '2' in coordAtomSite['atom_id'])):
-                    atomId = _atomId
+                _atomId_ = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
+                if atomId != _atomId_ and coordAtomSite is not None\
+                   and (_atomId_ in coordAtomSite['atom_id'] or (_atomId_.endswith('%') and _atomId_[:-1] + '2' in coordAtomSite['atom_id'])):
+                    atomId = _atomId_
                 elif self.__reasons is not None and 'branched_remap' in self.__reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, cifSeqId)
                     if _seqId != cifSeqId:
@@ -1509,14 +1509,14 @@ class RosettaMRParserListener(ParseTreeListener):
                 if _atomId_ != atomId:
                     if atomId.startswith('HT') and len(_atomId_) == 2:
                         _atomId_ = 'H'
-                    __atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
+                    __atomId__ = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                     if coordAtomSite is not None:
-                        if any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
-                            _atomId = __atomId
-                        elif __atomId[0][0] in protonBeginCode:
-                            __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId[0])
+                        if any(_atomId_ for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
+                            _atomId = __atomId__
+                        elif __atomId__[0][0] in protonBeginCode:
+                            __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId__[0])
                             if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
-                                _atomId = __atomId
+                                _atomId = __atomId__
                 elif coordAtomSite is not None:
                     _atomId = []
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
@@ -1541,14 +1541,18 @@ class RosettaMRParserListener(ParseTreeListener):
                 except ValueError:
                     pass
 
+            if coordAtomSite is not None and len(_atomId) == 0 and authAtomId == 'ME' and 'ZN' in coordAtomSite['atom_id']:
+                atomId = 'ZN'
+                _atomId = [atomId]
+
             lenAtomId = len(_atomId)
             if lenAtomId == 0:
                 self.__f.append(f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"
-                                f"{seqId}:{atomId} is invalid atom nomenclature.")
+                                f"{seqId}:{authAtomId} is invalid atom nomenclature.")
                 continue
             if lenAtomId > 1 and not allowAmbig:
                 self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
-                                f"Ambiguous atom selection '{seqId}:{atomId}' is not allowed as {subtype_name} restraint.")
+                                f"Ambiguous atom selection '{seqId}:{authAtomId}' is not allowed as {subtype_name} restraint.")
                 continue
 
             for cifAtomId in _atomId:

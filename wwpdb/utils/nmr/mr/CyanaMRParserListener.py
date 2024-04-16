@@ -2164,16 +2164,19 @@ class CyanaMRParserListener(ParseTreeListener):
 
         preferNonPoly = False
 
-        if compId in ('CYSZ', 'CYZ', 'CYS') and atomId == 'ZN' and self.__hasNonPoly:
+        if compId in ('CYSZ', 'CYZ', 'CYS', 'ION') and atomId in ('ZN', 'ME') and self.__hasNonPoly:
             znCount = 0
             znSeqId = None
             for np in self.__nonPoly:
                 if np['comp_id'][0] == 'ZN':
                     znSeqId = np['auth_seq_id'][0]
                     znCount += 1
-            if znCount == 1:
+            if znCount > 0:
                 compId = _compId = 'ZN'
-                seqId = _seqId = znSeqId
+                if znCount == 1:
+                    seqId = _seqId = znSeqId
+                if atomId == 'ME':
+                    atomId = 'ZN'
                 preferNonPoly = True
 
         if self.__splitLigand is not None and len(self.__splitLigand):
@@ -2541,16 +2544,19 @@ class CyanaMRParserListener(ParseTreeListener):
 
         preferNonPoly = False
 
-        if compId in ('CYSZ', 'CYZ', 'CYS') and atomId == 'ZN' and self.__hasNonPoly:
+        if compId in ('CYSZ', 'CYZ', 'CYS', 'ION') and atomId in ('ZN', 'ME') and self.__hasNonPoly:
             znCount = 0
             znSeqId = None
             for np in self.__nonPoly:
                 if np['comp_id'][0] == 'ZN':
                     znSeqId = np['auth_seq_id'][0]
                     znCount += 1
-            if znCount == 1:
+            if znCount > 0:
                 compId = _compId = 'ZN'
-                seqId = _seqId = znSeqId
+                if znCount == 1:
+                    seqId = _seqId = znSeqId
+                if atomId == 'ME':
+                    atomId = 'ZN'
                 preferNonPoly = True
 
         if self.__splitLigand is not None and len(self.__splitLigand):
@@ -3420,13 +3426,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
         authAtomId = atomId
 
-        _compId = compId
-        _atomId = atomId
+        __compId = compId
+        __atomId = atomId
 
         if compId is not None:
 
             if self.__mrAtomNameMapping is not None and compId not in monDict3:
-                _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+                __atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
             if self.__reasons is not None:
                 if 'ambig_atom_id_remap' in self.__reasons and compId in self.__reasons['ambig_atom_id_remap']\
@@ -3479,7 +3485,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.atomSelectionSet.append(atomSelection)
                     return
 
-            compId = translateToStdResName(_compId, ccU=self.__ccU)
+            compId = translateToStdResName(__compId, ccU=self.__ccU)
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 
@@ -3489,9 +3495,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, cifCompId, asis=self.__preferAuthSeq)
 
-            if self.__cur_subtype == 'dist' and _compId is not None\
-               and (_compId.startswith('MTS') or _compId.startswith('ORI')) and cifCompId != _compId:
-                if _atomId[0] in ('O', 'N'):
+            if self.__cur_subtype == 'dist' and __compId is not None\
+               and (__compId.startswith('MTS') or __compId.startswith('ORI')) and cifCompId != __compId:
+                if __atomId[0] in ('O', 'N'):
 
                     if cifCompId == 'CYS':
                         atomId = 'SG'
@@ -3518,10 +3524,10 @@ class CyanaMRParserListener(ParseTreeListener):
                     atomId = 'CA'
 
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
-                if atomId != _atomId and coordAtomSite is not None\
-                   and (_atomId in coordAtomSite['atom_id'] or (_atomId.endswith('%') and _atomId[:-1] + '2' in coordAtomSite['atom_id'])):
-                    atomId = _atomId
+                __atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
+                if atomId != __atomId and coordAtomSite is not None\
+                   and (__atomId in coordAtomSite['atom_id'] or (__atomId.endswith('%') and __atomId[:-1] + '2' in coordAtomSite['atom_id'])):
+                    atomId = __atomId
                 elif self.__reasons is not None and 'branched_remap' in self.__reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, cifSeqId)
                     if _seqId != cifSeqId:
@@ -3566,14 +3572,14 @@ class CyanaMRParserListener(ParseTreeListener):
                 if _atomId_ != atomId:
                     if atomId.startswith('HT') and len(_atomId_) == 2:
                         _atomId_ = 'H'
-                    __atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
+                    __atomId__ = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                     if coordAtomSite is not None:
-                        if any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
-                            _atomId = __atomId
-                        elif __atomId[0][0] in protonBeginCode:
-                            __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId[0])
+                        if any(_atomId_ for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
+                            _atomId = __atomId__
+                        elif __atomId__[0][0] in protonBeginCode:
+                            __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId__[0])
                             if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
-                                _atomId = __atomId
+                                _atomId = __atomId__
                 elif coordAtomSite is not None:
                     _atomId = []
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
@@ -3593,6 +3599,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                 break
                 except ValueError:
                     pass
+
+            if coordAtomSite is not None and len(_atomId) == 0 and __atomId == 'ME' and 'ZN' in coordAtomSite['atom_id']:
+                compId = atomId = 'ZN'
+                _atomId = [atomId]
 
             lenAtomId = len(_atomId)
             if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
@@ -3615,7 +3625,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                 self.__setLocalSeqScheme()
                                 continue
                     self.__f.append(f"[Sequence mismatch] {self.__getCurrentRestraint()}"
-                                    f"Residue name {_compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
+                                    f"Residue name {__compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
                     continue
 
             if compId != cifCompId and compId in monDict3 and not isPolySeq:
@@ -3629,12 +3639,12 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
                 if enableWarning:
                     self.__f.append(f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"
-                                    f"{seqId}:{_compId}:{atomId} is invalid atom nomenclature.")
+                                    f"{seqId}:{__compId}:{__atomId} is invalid atom nomenclature.")
                 continue
             if lenAtomId > 1 and not allowAmbig:
                 if enableWarning:
                     self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
-                                    f"Ambiguous atom selection '{seqId}:{_compId}:{atomId}' is not allowed as a angle restraint.")
+                                    f"Ambiguous atom selection '{seqId}:{__compId}:{__atomId}' is not allowed as a angle restraint.")
                 continue
 
             for cifAtomId in _atomId:

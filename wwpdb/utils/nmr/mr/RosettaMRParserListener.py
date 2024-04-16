@@ -71,6 +71,7 @@ try:
                                            protonBeginCode,
                                            aminoProtonCode,
                                            rdcBbPairCode,
+                                           zincIonCode,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
@@ -147,6 +148,7 @@ except ImportError:
                                protonBeginCode,
                                aminoProtonCode,
                                rdcBbPairCode,
+                               zincIonCode,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
@@ -1541,7 +1543,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 except ValueError:
                     pass
 
-            if coordAtomSite is not None and len(_atomId) == 0 and authAtomId == 'ME' and 'ZN' in coordAtomSite['atom_id']:
+            if coordAtomSite is not None and len(_atomId) == 0 and authAtomId in zincIonCode\
+               and 'ZN' in coordAtomSite['atom_id']:
                 atomId = 'ZN'
                 _atomId = [atomId]
 

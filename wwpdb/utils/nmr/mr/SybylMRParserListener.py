@@ -57,6 +57,7 @@ try:
                                            protonBeginCode,
                                            pseProBeginCode,
                                            aminoProtonCode,
+                                           zincIonCode,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -117,6 +118,7 @@ except ImportError:
                                protonBeginCode,
                                pseProBeginCode,
                                aminoProtonCode,
+                               zincIonCode,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -928,7 +930,8 @@ class SybylMRParserListener(ParseTreeListener):
 
         self.__allow_ext_seq = False
 
-        if compId in ('CYSZ', 'CYZ', 'CYS', 'ION') and atomId in ('ZN', 'ME') and self.__hasNonPoly:
+        if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
+           and atomId in zincIonCode and self.__hasNonPoly:
             znCount = 0
             znSeqId = None
             for np in self.__nonPoly:
@@ -939,6 +942,8 @@ class SybylMRParserListener(ParseTreeListener):
                 compId = _compId = 'ZN'
                 if znCount == 1:
                     seqId = _seqId = znSeqId
+                if atomId in zincIonCode:
+                    atomId = 'ZN'
                 preferNonPoly = True
 
         if self.__splitLigand is not None and len(self.__splitLigand):
@@ -1403,7 +1408,8 @@ class SybylMRParserListener(ParseTreeListener):
                 except ValueError:
                     pass
 
-            if coordAtomSite is not None and len(_atomId) == 0 and __atomId == 'ME' and 'ZN' in coordAtomSite['atom_id']:
+            if coordAtomSite is not None and len(_atomId) == 0 and __atomId in zincIonCode\
+               and 'ZN' in coordAtomSite['atom_id']:
                 compId = atomId = 'ZN'
                 _atomId = [atomId]
 

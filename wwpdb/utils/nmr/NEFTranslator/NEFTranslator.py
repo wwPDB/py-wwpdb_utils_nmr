@@ -1497,6 +1497,20 @@ class NEFTranslator:
             len_loop_data = len(loop.data)
 
             if lp_category == '_Atom_chem_shift' and self.__remediation_mode and set(tags) & set(loop.tags) == set(tags) and set(tags__) & set(loop.tags) == set(tags__):
+                if seq_id != alt_seq_id and alt_seq_id in loop.tags:
+                    pre_tag = [seq_id, alt_seq_id]
+                    pre_seq_data = get_lp_tag(loop, pre_tag)
+                    seq_id_set = set()
+                    alt_seq_id_set = set()
+                    for row in pre_seq_data:
+                        seq_id_set.add(row[0])
+                        alt_seq_id_set.add(row[1])
+                    if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:
+                        seq_id_col = loop.tags.index('Comp_index_ID')
+                        alt_seq_id_col = loop.tags.index('Seq_ID')
+                        for r in loop.data:
+                            r[seq_id_col] = r[alt_seq_id_col]
+
                 seq_data = get_lp_tag(loop, tags)
                 has_valid_chain_id = True
                 for row in seq_data:
@@ -2464,6 +2478,20 @@ class NEFTranslator:
                         if 'Folding_type' in loop.tags and 'Under_sampling_type' in allowed_tags:
                             col = loop.tags.index('Folding_type')
                             loop.tags[col] = 'Under_sampling_type'
+
+                if lp_category == '_Atom_chem_shift' and self.__remediation_mode and 'Comp_index_ID' in loop.tags and 'Seq_ID' in loop.tags:
+                    pre_tag = ['Comp_index_ID', 'Seq_ID']
+                    pre_seq_data = get_lp_tag(loop, pre_tag)
+                    seq_id_set = set()
+                    alt_seq_id_set = set()
+                    for row in pre_seq_data:
+                        seq_id_set.add(row[0])
+                        alt_seq_id_set.add(row[1])
+                    if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:
+                        seq_id_col = loop.tags.index('Comp_index_ID')
+                        alt_seq_id_col = loop.tags.index('Seq_ID')
+                        for r in loop.data:
+                            r[seq_id_col] = r[alt_seq_id_col]
 
                 tag_data = []
 

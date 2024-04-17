@@ -4611,7 +4611,15 @@ class AmberMRParserListener(ParseTreeListener):
                 and chainId in self.__reasons['auth_seq_scheme'] and self.__reasons['auth_seq_scheme'][chainId]
 
             if _compId in monDict3 and _compId not in ps['comp_id']:
-                continue
+                keep = False
+                if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
+                    idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
+                    compId = ps['comp_id'][idx]
+                    if compId not in monDict3 and self.__ccU.updateChemCompDict(compId)\
+                       and _compId == self.__ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?'):
+                        keep = True
+                if not keep:
+                    continue
 
             if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
                 idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
@@ -5331,7 +5339,15 @@ class AmberMRParserListener(ParseTreeListener):
                     and chainId in self.__reasons['auth_seq_scheme'] and self.__reasons['auth_seq_scheme'][chainId]
 
                 if _compId in monDict3 and _compId not in ps['comp_id']:
-                    continue
+                    keep = False
+                    if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
+                        idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
+                        compId = ps['comp_id'][idx]
+                        if compId not in monDict3 and self.__ccU.updateChemCompDict(compId)\
+                           and _compId == self.__ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?'):
+                            keep = True
+                    if not keep:
+                        continue
 
                 if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
                     idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)

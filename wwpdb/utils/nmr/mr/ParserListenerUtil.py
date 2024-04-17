@@ -2018,6 +2018,8 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                                 return 'H' + atomId[2:] + '%'
                         if 'H' + atomId[2:] + '2' in _refAtomIdList:
                             return 'H' + atomId[2:] + '%'
+                        if refCompId in monDict3:  # 2n9e
+                            return 'H' + atomId[2:] + '%'
                     else:
                         if refAtomIdList is not None:
                             if 'H' + atomId[1:] + '2' in refAtomIdList:

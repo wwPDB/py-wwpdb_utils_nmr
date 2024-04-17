@@ -964,7 +964,7 @@ class AriaMRParserListener(ParseTreeListener):
         self.__allow_ext_seq = False
 
         if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
-           and atomId in zincIonCode and self.__hasNonPoly:
+           and atomId in zincIonCode and self.__hasNonPolySeq:
             znCount = 0
             znSeqId = None
             for np in self.__nonPoly:
@@ -1125,12 +1125,13 @@ class AriaMRParserListener(ParseTreeListener):
 
         if self.__hasNonPolySeq:
             ligands = 0
-            for np in self.__nonPoly:
-                ligands += np['comp_id'].count(_compId)
-            if ligands == 0:
+            if self.__hasNonPoly:
                 for np in self.__nonPoly:
-                    if 'alt_comp_id' in np:
-                        ligands += np['alt_comp_id'].count(_compId)
+                    ligands += np['comp_id'].count(_compId)
+                if ligands == 0:
+                    for np in self.__nonPoly:
+                        if 'alt_comp_id' in np:
+                            ligands += np['alt_comp_id'].count(_compId)
             for np in self.__nonPolySeq:
                 chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if self.__reasons is not None:
@@ -1331,7 +1332,7 @@ class AriaMRParserListener(ParseTreeListener):
         self.__allow_ext_seq = False
 
         if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
-           and atomId in zincIonCode and self.__hasNonPoly:
+           and atomId in zincIonCode and self.__hasNonPolySeq:
             znCount = 0
             znSeqId = None
             for np in self.__nonPoly:
@@ -1514,12 +1515,13 @@ class AriaMRParserListener(ParseTreeListener):
 
         if self.__hasNonPolySeq:
             ligands = 0
-            for np in self.__nonPoly:
-                ligands += np['comp_id'].count(_compId)
-            if ligands == 0:
+            if self.__hasNonPoly:
                 for np in self.__nonPoly:
-                    if 'alt_comp_id' in np:
-                        ligands += np['alt_comp_id'].count(_compId)
+                    ligands += np['comp_id'].count(_compId)
+                if ligands == 0:
+                    for np in self.__nonPoly:
+                        if 'alt_comp_id' in np:
+                            ligands += np['alt_comp_id'].count(_compId)
             for np in self.__nonPolySeq:
                 chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:

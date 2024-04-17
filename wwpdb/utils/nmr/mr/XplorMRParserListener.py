@@ -786,8 +786,9 @@ class XplorMRParserListener(ParseTreeListener):
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-                    if self.__reasons is None and any(f for f in self.__f
-                                                      if '[Atom not found]' in f or '[Sequence mismatch]' in f):
+                    if self.__reasons is None\
+                       and (any(f for f in self.__f if '[Atom not found]' in f or '[Sequence mismatch]' in f)
+                            or (not self.hasAnyRestraints() and any(f for f in self.__f if '[Insufficient atom selection]' in f))):
 
                         seqIdRemap = []
 
@@ -1015,7 +1016,13 @@ class XplorMRParserListener(ParseTreeListener):
             if 'global_sequence_offset' in self.reasonsForReParsing and 'local_seq_scheme' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['local_seq_scheme']
 
-            if not any(f for f in self.__f if '[Atom not found]' in f):
+            if 'global_auth_sequence_offset' in self.reasonsForReParsing:
+                if 'local_seq_scheme' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['local_seq_scheme']
+                if 'label_seq_scheme' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['label_seq_scheme']
+
+            if not any(f for f in self.__f if '[Atom not found]' in f) and self.hasAnyRestraints():
 
                 if len(self.reasonsForReParsing) > 0:
                     self.reasonsForReParsing = {}
@@ -13426,6 +13433,16 @@ class XplorMRParserListener(ParseTreeListener):
                           }
 
         return {k: v for k, v in contentSubtype.items() if v > 0}
+
+    def hasAnyRestraints(self):
+        """ Return whether any restraint is parsed successfully.
+        """
+        if len(self.sfDict) == 0:
+            return False
+        for v in self.sfDict.values():
+            if 'index_id' in v and v['index_id'] > 0:
+                return True
+        return False
 
     def getPolymerSequence(self):
         """ Return polymer sequence of XPLOR-NIH MR file.

@@ -7852,16 +7852,26 @@ class XplorMRParserListener(ParseTreeListener):
         donor = self.atomSelectionSet[self.donor_columnSel][0]
 
         if acceptor['atom_id'][0] not in ('N', 'O', 'F'):
-            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                            "The acceptor atom type should be one of Nitrogen, Oxygen, Fluorine; "
-                            f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}.")
-            return
+            # https://nmr.cit.nih.gov/xplor-nih/xplorMan/node454.html - allow reverse expression since example is wrong
+            if acceptor['atom_id'][0] in protonBeginCode and donor['atom_id'][0] in ('N', 'O', 'F'):
+                pass
+
+            else:
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "The acceptor atom type should be one of Nitrogen, Oxygen, Fluorine; "
+                                f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}.")
+                return
 
         if donor['atom_id'][0] not in protonBeginCode:
-            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                            "The donor atom type should be Hydrogen; "
-                            f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}.")
-            return
+            # https://nmr.cit.nih.gov/xplor-nih/xplorMan/node454.html - allow reverse expression since example is wrong
+            if acceptor['atom_id'][0] in protonBeginCode and donor['atom_id'][0] in ('N', 'O', 'F'):
+                pass
+
+            else:
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "The donor atom type should be Hydrogen; "
+                                f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}.")
+                return
 
         chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
         seq_id_1 = self.atomSelectionSet[0][0]['seq_id']

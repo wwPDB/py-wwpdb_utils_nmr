@@ -1505,11 +1505,22 @@ class NEFTranslator:
                     for row in pre_seq_data:
                         seq_id_set.add(row[0])
                         alt_seq_id_set.add(row[1])
-                    if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:
+                    if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:  # 2kyb
                         seq_id_col = loop.tags.index('Comp_index_ID')
                         alt_seq_id_col = loop.tags.index('Seq_ID')
                         for r in loop.data:
                             r[seq_id_col] = r[alt_seq_id_col]
+                    elif 'Auth_seq_ID' in loop.tags:
+                        pre_tag = ['Auth_seq_ID']
+                        pre_seq_data = get_lp_tag(loop, pre_tag)
+                        alt_seq_id_set = set()
+                        for row in pre_seq_data:
+                            alt_seq_id_set.add(row[0])
+                        if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:  # 6wux
+                            seq_id_col = loop.tags.index('Comp_index_ID')
+                            alt_seq_id_col = loop.tags.index('Auth_seq_ID')
+                            for r in loop.data:
+                                r[seq_id_col] = r[alt_seq_id_col]
 
                 seq_data = get_lp_tag(loop, tags)
                 has_valid_chain_id = True
@@ -2487,11 +2498,22 @@ class NEFTranslator:
                     for row in pre_seq_data:
                         seq_id_set.add(row[0])
                         alt_seq_id_set.add(row[1])
-                    if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:
+                    if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:  # 2kyb
                         seq_id_col = loop.tags.index('Comp_index_ID')
                         alt_seq_id_col = loop.tags.index('Seq_ID')
                         for r in loop.data:
                             r[seq_id_col] = r[alt_seq_id_col]
+                    elif 'Auth_seq_ID' in loop.tags:
+                        pre_tag = ['Auth_seq_ID']
+                        pre_seq_data = get_lp_tag(loop, pre_tag)
+                        alt_seq_id_set = set()
+                        for row in pre_seq_data:
+                            alt_seq_id_set.add(row[0])
+                        if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:  # 6wux
+                            seq_id_col = loop.tags.index('Comp_index_ID')
+                            alt_seq_id_col = loop.tags.index('Auth_seq_ID')
+                            for r in loop.data:
+                                r[seq_id_col] = r[alt_seq_id_col]
 
                 tag_data = []
 

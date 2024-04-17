@@ -384,13 +384,13 @@ class BMRBChemShiftStat:
 
         return []
 
-    def getMaxAmbigCodeWoSetId(self, comp_id, atom_id):
+    def getMaxAmbigCodeWoSetId(self, comp_id, atom_id, default=0):
         """ Return maximum ambiguity code of a given atom that does not require declaration of ambiguity set ID.
-            @return: one of (1, 2, 3), 0 for not found
+            @return: one of (1, 2, 3), 0 for not found (by default)
         """
 
         if comp_id in emptyValue or atom_id in emptyValue:
-            return 0
+            return default
 
         if comp_id not in self.__std_comp_ids:
             self.loadOtherStatFromCsvFiles(comp_id)
@@ -411,7 +411,7 @@ class BMRBChemShiftStat:
             return 1
 
         except StopIteration:
-            return 0
+            return default
 
     def getGeminalAtom(self, comp_id, atom_id):
         """ Return geminal or aromatic opposite atom of a given atom.

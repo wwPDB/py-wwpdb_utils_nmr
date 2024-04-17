@@ -150,6 +150,7 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('D4P', 'H6'), 3)
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('GHP', 'HC2'), 3)
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('GHP', 'H6'), 3)
+        self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('FUC', 'H61'), 1)
 
     def test_prot_in_same_group(self):
         self.assertEqual(self.bmrb_cs_stat.getProtonsInSameGroup('ARG', 'HB2'), ['HB2', 'HB3'])

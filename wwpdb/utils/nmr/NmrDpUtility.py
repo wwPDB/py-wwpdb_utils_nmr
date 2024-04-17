@@ -24517,8 +24517,11 @@ class NmrDpUtility:
                                     heme = comp_id == 'HEM' or 'HEME' in self.__ccU.lastChemCompDict['_chem_comp.name']
                             if not heme:
                                 missing_ch3 = []
+                        _atom_id = atom_id
                         if not valid and len(missing_ch3) > 0 and atom_id not in _coord_atom_site['atom_id']:
                             atom_id = atom_id[:-1]
+                            if _atom_id in self.__csStat.getRepMethylProtons(comp_id):
+                                atom_id = _atom_id
                         if (valid and atom_id in _coord_atom_site['atom_id'])\
                            or ((prefer_auth_atom_name or _row[24] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M')):
                             atom_ids = [atom_id]
@@ -24561,14 +24564,13 @@ class NmrDpUtility:
                                 _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-
                             if len_atom_ids > 1:
                                 if _row[12] == 1 or _row[12] in emptyValue:
                                     if _row[6] not in methyl_atoms\
                                        or (_row[6] in methyl_atoms
                                            and ((_row[7][0] == 'H' and len_atom_ids == 6)
                                                 or (_row[7][0] == 'C' and len_atom_ids == 2))):
-                                        _row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
+                                        _row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6], None)
                                 __row = copy.copy(_row)
                                 if fill_auth_atom_id:
                                     __row[19] = __row[6]
@@ -24643,8 +24645,11 @@ class NmrDpUtility:
                                 heme = comp_id == 'HEM' or 'HEME' in self.__ccU.lastChemCompDict['_chem_comp.name']
                         if not heme:
                             missing_ch3 = []
+                    _atom_id = atom_id
                     if not valid and len(missing_ch3) > 0:
                         atom_id = atom_id[:-1]
+                        if _atom_id in self.__csStat.getRepMethylProtons(comp_id):
+                            atom_id = _atom_id
                     if (valid or prefer_auth_atom_name or _row[24] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M'):
                         atom_ids = [atom_id]
                     else:
@@ -24686,14 +24691,13 @@ class NmrDpUtility:
                             _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                             if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-
                         if len_atom_ids > 1:
                             if _row[12] == 1 or _row[12] in emptyValue:
                                 if _row[6] not in methyl_atoms\
                                    or (_row[6] in methyl_atoms
                                        and ((_row[7][0] == 'H' and len_atom_ids == 6)
                                             or (_row[7][0] == 'C' and len_atom_ids == 2))):
-                                    _row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
+                                    _row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6], None)
                             __row = copy.copy(_row)
                             if fill_auth_atom_id:
                                 __row[19] = __row[6]
@@ -26379,9 +26383,7 @@ class NmrDpUtility:
 
                                 for __row in lp:
                                     if __row[12] == ambig_id and __row[13] == ambig_set_id:
-                                        __row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
-                                        if __row[12] == 0:
-                                            __row[12] = None
+                                        __row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id, None)
                                         __row[13] = None
 
                                 if not isinstance(sf, pynmrstar.Loop) and any(aux_loop for aux_loop in sf if aux_loop.category == aux_lp_category):

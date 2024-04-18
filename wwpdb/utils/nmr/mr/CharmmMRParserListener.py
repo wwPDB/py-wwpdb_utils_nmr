@@ -5799,8 +5799,9 @@ class CharmmMRParserListener(ParseTreeListener):
         if len(self.sfDict) == 0:
             return False
         for v in self.sfDict.values():
-            if 'index_id' in v and v['index_id'] > 0:
-                return True
+            for item in v:
+                if item['index_id'] > 0:
+                    return True
         return False
 
     def getPolymerSequence(self):

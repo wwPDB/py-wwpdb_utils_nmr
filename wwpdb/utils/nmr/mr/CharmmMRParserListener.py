@@ -2850,11 +2850,7 @@ class CharmmMRParserListener(ParseTreeListener):
         if 'atom_selection' not in _factor:
             _factor['atom_selection'] = atomSelection
         else:
-            _atomSelection = []
-            for _atom in _factor['atom_selection']:
-                if _atom in atomSelection:
-                    _atomSelection.append(_atom)
-            _factor['atom_selection'] = _atomSelection
+            _factor['atom_selection'] = self.__intersectionAtom_selections(_factor['atom_selection'], atomSelection)
 
         if len(_factor['atom_selection']) == 0:
             __factor = copy.copy(_factor)
@@ -4901,9 +4897,37 @@ class CharmmMRParserListener(ParseTreeListener):
                                         "The 'not' clause has no effect.")
 
                 elif 'atom_selection' not in self.factor:
-                    self.factor['atom_id'] = [None]
-                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                                    "The 'not' clause has no effect.")
+                    self.factor = self.__consumeFactor_expressions(self.factor, cifCheck=True)
+
+                    if 'atom_selection' in self.factor:
+                        _refAtomSelection = self.factor['atom_selection']
+
+                        try:
+
+                            _atomSelection =\
+                                self.__cR.getDictListWithFilter('atom_site',
+                                                                AUTH_ATOM_DATA_ITEMS,
+                                                                [{'name': self.__modelNumName, 'type': 'int',
+                                                                  'value': self.__representativeModelId},
+                                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                                  'enum': (self.__representativeAltId,)}
+                                                                 ])
+
+                        except Exception as e:
+                            if self.__verbose:
+                                self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}")
+
+                        self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
+
+                        if len(self.factor['atom_selection']) == 0:
+                            self.factor['atom_id'] = [None]
+                            self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                            "The 'not' clause has no effect.")
+
+                    else:
+                        self.factor['atom_id'] = [None]
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        "The 'not' clause has no effect.")
 
                 else:
 

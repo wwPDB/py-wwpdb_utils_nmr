@@ -188,6 +188,7 @@
 # 07-Mar-2024  M. Yokochi - extract pdbx_poly_seq_scheme.auth_mon_id as alt_cmop_id to prevent sequence mismatch due to 5-letter CCD ID (DAOTHER-9158 vs D_1300043061)
 # 22-Mar-2024  M. Yokochi - test tautomeric states of histidine-like residue across models (DAOTHER-9252)
 ##
+from wwpdb.utils.nmr.AlignUtil import protonBeginCode, pseProBeginCode
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
 """
@@ -24508,6 +24509,12 @@ class NmrDpUtility:
                                         _row[19] = atom_id
                             else:
                                 atom_id = 'H1'
+                                if fill_auth_atom_id:
+                                    _row[19] = atom_id
+                        elif atom_id in aminoProtonCode and 'C' + atom_id[1:] in _coord_atom_site['atom_id']:
+                            bonded = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[1:], onlyProton=True)
+                            if len(bonded) == 1 and bonded[0] in _coord_atom_site['atom_id']:
+                                atom_id = bonded[0]
                                 if fill_auth_atom_id:
                                     _row[19] = atom_id
                         if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 4.0):

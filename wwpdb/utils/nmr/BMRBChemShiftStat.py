@@ -793,6 +793,11 @@ class BMRBChemShiftStat:
                 if not self.__ccU.updateChemCompDict(comp_id):
                     continue
 
+                rep_methyl_protons = self.__ccU.getRepMethylProtons(comp_id)
+                non_rep_methyl_protons = self.__ccU.getNonRepMethylProtons(comp_id)
+                rep_methylene_protons = self.__ccU.getRepMethyleneOrAminoProtons(comp_id)
+                non_rep_methylene_protons = self.__ccU.getNonRepMethyleneOrAminoProtons(comp_id)
+
                 _atom_id = row['atom_id']
 
                 # methyl proton group
@@ -921,6 +926,42 @@ class BMRBChemShiftStat:
                         if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
                             atm_list.append(_row)
 
+                # DAOTHER-9317: representative methyl group
+                elif any(rep_methyl_proton.startswith(_atom_id) for rep_methyl_proton in rep_methyl_protons
+                         if rep_methyl_proton != _atom_id and 0 <= len(rep_methyl_proton) - len(_atom_id) <= 1 and _atom_id not in non_rep_methyl_protons):
+
+                    rep_methyl_proton = next(rep_methyl_proton for rep_methyl_proton in rep_methyl_protons
+                                             if rep_methyl_proton.startswith(_atom_id))
+
+                    for _atom_id in self.__ccU.getProtonsInSameGroup(comp_id, rep_methyl_proton):
+                        _row = {}
+                        _row['comp_id'] = comp_id
+                        _row['atom_id'] = _atom_id
+
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                        if not __status:
+                            continue
+
+                        if _row['comp_id'] != __comp_id:
+                            _row['comp_id'] = __comp_id
+                        if _row['atom_id'] != __atom_id:
+                            _row['atom_id'] = __atom_id
+
+                        _row['count'] = int(row['count'])
+                        _row['avg'] = float(row['avg'])
+                        try:
+                            _row['std'] = float(row['std'])
+                        except ValueError:
+                            _row['std'] = None
+                        _row['min'] = float(row['min'])
+                        _row['max'] = float(row['max'])
+                        _row['desc'] = 'methyl'
+                        _row['primary'] = False
+                        _row['norm_freq'] = None
+
+                        if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                            atm_list.append(_row)
+
                 # geminal proton group
                 elif _atom_id.startswith('Q'):
                     _atom_id = re.sub(r'^Q', 'H', _atom_id)
@@ -947,7 +988,7 @@ class BMRBChemShiftStat:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
                         _row['max'] = float(row['max'])
-                        _row['desc'] = 'methyl'
+                        _row['desc'] = 'isolated'
                         _row['primary'] = False
                         _row['norm_freq'] = None
 
@@ -986,6 +1027,42 @@ class BMRBChemShiftStat:
 
                     if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
                         atm_list.append(_row)
+
+                # DAOTHER-9317: general methylene/amino group
+                elif any(rep_methylene_proton.startswith(_atom_id) for rep_methylene_proton in rep_methylene_protons
+                         if rep_methylene_proton != _atom_id and 0 <= len(rep_methylene_proton) - len(_atom_id) <= 1 and _atom_id not in non_rep_methylene_protons):
+
+                    rep_methylene_proton = next(rep_methylene_proton for rep_methylene_proton in rep_methylene_protons
+                                                if rep_methylene_proton.startswith(_atom_id))
+
+                    for _atom_id in self.__ccU.getProtonsInSameGroup(comp_id, rep_methylene_proton):
+                        _row = {}
+                        _row['comp_id'] = comp_id
+                        _row['atom_id'] = _atom_id
+
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                        if not __status:
+                            continue
+
+                        if _row['comp_id'] != __comp_id:
+                            _row['comp_id'] = __comp_id
+                        if _row['atom_id'] != __atom_id:
+                            _row['atom_id'] = __atom_id
+
+                        _row['count'] = int(row['count'])
+                        _row['avg'] = float(row['avg'])
+                        try:
+                            _row['std'] = float(row['std'])
+                        except ValueError:
+                            _row['std'] = None
+                        _row['min'] = float(row['min'])
+                        _row['max'] = float(row['max'])
+                        _row['desc'] = 'isolated'
+                        _row['primary'] = False
+                        _row['norm_freq'] = None
+
+                        if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                            atm_list.append(_row)
 
         comp_ids = set(item['comp_id'] for item in atm_list)
 

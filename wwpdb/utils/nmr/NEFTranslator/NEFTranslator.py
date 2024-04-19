@@ -5058,7 +5058,7 @@ class NEFTranslator:
                             if atom_list[0] in v:
                                 len_v = len(v)
                                 if len_v == 2:
-                                    return 2  # methylen/amino
+                                    return 2  # methylene/amino
                                 if len_v == 1:
                                     if k[0] == 'C' and self.chemCompTopo is not None and comp_id in self.chemCompTopo\
                                        and any(len(tv) == 2 and tv[0][0] == 'C' and tv[1][0] == 'C'

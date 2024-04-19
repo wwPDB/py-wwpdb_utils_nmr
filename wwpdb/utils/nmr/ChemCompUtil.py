@@ -8,6 +8,7 @@
 # 13-Jun-2023  M. Yokochi - add getEffectiveFormulaWeight()
 # 07-Dec-2023  M. Yokochi - add support for PTM items (backbone, n_terminal, c_terminal atom flags)
 # 13-Dec-2023  M. Yokochi - add getAtomsBasedOnGreekLetterSystem(), peptideLike() and getTypeOfCompId() (DAOTHER-8945)
+# 19-Apr-2024  M. Yokochi - add getRepMethyleneOrAminoProtons() and getNonRepMethyleneOrAminoProtons() (DAOTHER-9317)
 ##
 """ Wrapper class for retrieving chemical component dictionary.
     @author: Masashi Yokochi
@@ -241,6 +242,50 @@ class ChemCompUtil:
                        if (b[self.ccbAtomId1] == carbon and b[self.ccbAtomId2][0] in protonBeginCode)
                        or (b[self.ccbAtomId2] == carbon and b[self.ccbAtomId1][0] in protonBeginCode)]
             if len(protons) != 3:
+                continue
+            atmList.extend(protons[1:])
+
+        return atmList
+
+    def getRepMethyleneOrAminoProtons(self, compId):
+        """ Return representative protons in methylene/amino group of a given comp_id.
+        """
+
+        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+            return []
+
+        atmList = []
+
+        corns = (a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] in ('C', 'N'))
+
+        for corn in corns:
+            protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != corn else b[self.ccbAtomId2])
+                       for b in self.lastBonds
+                       if (b[self.ccbAtomId1] == corn and b[self.ccbAtomId2][0] in protonBeginCode)
+                       or (b[self.ccbAtomId2] == corn and b[self.ccbAtomId1][0] in protonBeginCode)]
+            if len(protons) != 2:
+                continue
+            atmList.append(protons[0])
+
+        return atmList
+
+    def getNonRepMethyleneOrAminoProtons(self, compId):
+        """ Return non-representative protons in methylene/amino group of a given comp_id.
+        """
+
+        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+            return []
+
+        atmList = []
+
+        corns = (a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] in ('C', 'N'))
+
+        for corn in corns:
+            protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != corn else b[self.ccbAtomId2])
+                       for b in self.lastBonds
+                       if (b[self.ccbAtomId1] == corn and b[self.ccbAtomId2][0] in protonBeginCode)
+                       or (b[self.ccbAtomId2] == corn and b[self.ccbAtomId1][0] in protonBeginCode)]
+            if len(protons) != 2:
                 continue
             atmList.extend(protons[1:])
 

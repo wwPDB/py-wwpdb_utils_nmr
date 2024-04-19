@@ -1826,7 +1826,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                         return "H2'1"
                     if atomId == "H2''" and "H2'2" in refAtomIdList:  # DCZ, THM
                         return "H2'2"
-                    if atomId == "H2''" and "HO2'" in refAtomIdList:  # 5MC (DAOTHER-9313)
+                    if atomId == "H2''" and "HO2'" in refAtomIdList:  # 5MC (DAOTHER-9317)
                         return "HO2'"
                     if atomId == "H2''" and "H2'" in refAtomIdList:
                         return "H2'"
@@ -1834,7 +1834,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                         return "H2''"
                     if atomId == "H2''''" and "H2'2" in refAtomIdList:  # DCZ, THM
                         return "H2'2"
-                    if atomId == "H2''''" and "HO2'" in refAtomIdList:  # 5MC (DAOTHER-9313)
+                    if atomId == "H2''''" and "HO2'" in refAtomIdList:  # 5MC (DAOTHER-9317)
                         return "HO2'"
                     if atomId == "H2''1" and "H2'1" in refAtomIdList:  # 4EN
                         return "H2'1"
@@ -1848,7 +1848,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return "H2'1"
                 if atomId == "H2''" and "H2'2" in _refAtomIdList:  # DCZ, THM
                     return "H2'2"
-                if atomId == "H2''" and "HO2'" in _refAtomIdList:  # 5MC (DAOTHER-9313)
+                if atomId == "H2''" and "HO2'" in _refAtomIdList:  # 5MC (DAOTHER-9317)
                     return "HO2'"
                 if atomId == "H2''" and "H2'" in _refAtomIdList:
                     return "H2'"

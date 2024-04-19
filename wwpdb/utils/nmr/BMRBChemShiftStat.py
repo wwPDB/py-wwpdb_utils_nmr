@@ -16,7 +16,7 @@
 # 11-Nov-2022  M. Yokochi - add getProtonsInSameGroup() (NMR restraint remediation)
 # 20-Apr-2023  M. Yokochi - change backbone definition to be consistent with NMR restraint validation
 # 13-Dec-2023  M. Yokochi - support peptide-like residues containing symmetric aromatic ring (DAOTHER-8945)
-# 19-Apr-2024  M. Yokochi - add testAtomNomenclatureOfLibrary (DAOTHER-9317)
+# 19-Apr-2024  M. Yokochi - remap chemical shift statistics in reference to CCD (DAOTHER-9317)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -1080,6 +1080,7 @@ class BMRBChemShiftStat:
 
     def checkAtomNomenclature(self, atom_id, comp_id=None):
         """ Check atom nomenclature.
+            @return: status (bool), mapped comp_id, mapped atom_id
         """
 
         if comp_id is not None:
@@ -1114,7 +1115,7 @@ class BMRBChemShiftStat:
 
         if len(ref_atom_ids) == 0 or cc_rel_status != 'REL':
             if self.__verbose:
-                self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Error  - {comp_id} is not valid CCD ID, status code: {cc_rel_status}\n")
+                self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id} is not valid CCD ID, status code: {cc_rel_status}\n")
             return False, None, None
 
         ref_alt_atom_ids = [a[self.__ccU.ccaAltAtomId] for a in self.__ccU.lastAtomList]
@@ -1150,7 +1151,7 @@ class BMRBChemShiftStat:
 
         if len(_ref_atom_ids) == 0:
             if self.__verbose:
-                self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Error  - {comp_id}:{atom_id} did not match with any atom in CCD. No candidates foud\n")
+                self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} did not match with any atom in CCD. No candidates foud\n")
 
             return False, None, None
 
@@ -1168,7 +1169,7 @@ class BMRBChemShiftStat:
             return True, comp_id, _atom_id
 
         if self.__verbose:
-            self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Error  - {comp_id}:{atom_id} did not match with any atom in CCD, {_ref_atom_ids}\n")
+            self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} did not match with any atom in CCD, {_ref_atom_ids}\n")
 
         return False, None, None
 
@@ -1753,6 +1754,7 @@ class BMRBChemShiftStat:
 
     def testAtomNomenclatureOfLibrary(self):
         """ Report inconsistencies between BMRB chemical shift statistics and current CCD.
+            @return: status (bool)
         """
 
         def check_bmrb_cs_stat(atm_list):

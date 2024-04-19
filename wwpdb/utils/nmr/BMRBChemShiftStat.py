@@ -928,7 +928,8 @@ class BMRBChemShiftStat:
 
                 # DAOTHER-9317: representative methyl group
                 elif any(rep_methyl_proton.startswith(_atom_id) for rep_methyl_proton in rep_methyl_protons
-                         if rep_methyl_proton != _atom_id and 0 <= len(rep_methyl_proton) - len(_atom_id) <= 1 and _atom_id not in non_rep_methyl_protons):
+                         if rep_methyl_proton != _atom_id and 0 <= len(rep_methyl_proton) - len(_atom_id) <= 1
+                         and _atom_id not in non_rep_methyl_protons):
 
                     rep_methyl_proton = next(rep_methyl_proton for rep_methyl_proton in rep_methyl_protons
                                              if rep_methyl_proton.startswith(_atom_id))
@@ -1030,7 +1031,8 @@ class BMRBChemShiftStat:
 
                 # DAOTHER-9317: general methylene/amino group
                 elif any(rep_methylene_proton.startswith(_atom_id) for rep_methylene_proton in rep_methylene_protons
-                         if rep_methylene_proton != _atom_id and 0 <= len(rep_methylene_proton) - len(_atom_id) <= 1 and _atom_id not in non_rep_methylene_protons):
+                         if rep_methylene_proton != _atom_id and 0 <= len(rep_methylene_proton) - len(_atom_id) <= 1
+                         and _atom_id not in non_rep_methylene_protons):
 
                     rep_methylene_proton = next(rep_methylene_proton for rep_methylene_proton in rep_methylene_protons
                                                 if rep_methylene_proton.startswith(_atom_id))
@@ -2005,6 +2007,8 @@ class BMRBChemShiftStat:
                 ambig_code = self.getMaxAmbigCodeWoSetId(comp_id, name)
 
                 if name in methyl_list:
+                    if len(name) < 3:
+                        continue
                     _name = name[:-1]
                     if _name[0] == 'H':
                         name_set.add('M' + _name[1:])
@@ -2021,6 +2025,8 @@ class BMRBChemShiftStat:
                 elif ambig_code >= 2:
                     geminal_name = self.getGeminalAtom(comp_id, name)
                     if geminal_name is not None:
+                        if len(name) < 3:
+                            continue
                         _name = name[:-1]
                         if _name[0] == 'H':
                             name_set.add('Q' + _name[1:])

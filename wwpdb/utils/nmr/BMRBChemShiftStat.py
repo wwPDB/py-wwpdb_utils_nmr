@@ -16,6 +16,7 @@
 # 11-Nov-2022  M. Yokochi - add getProtonsInSameGroup() (NMR restraint remediation)
 # 20-Apr-2023  M. Yokochi - change backbone definition to be consistent with NMR restraint validation
 # 13-Dec-2023  M. Yokochi - support peptide-like residues containing symmetric aromatic ring (DAOTHER-8945)
+# 19-Apr-2024  M. Yokochi - add testAtomNomenclatureOfLibrary (DAOTHER-9317)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -1044,8 +1045,44 @@ class BMRBChemShiftStat:
                         and a[self.__ccU.ccaCTerminalAtomFlag] == 'N'))):
             return True
 
+        comp_id = self.__ccU.lastCompId
+        ref_atom_ids = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
+        ref_alt_atom_ids = [a[self.__ccU.ccaAltAtomId] for a in self.__ccU.lastAtomList]
+
+        if len(ref_atom_ids) == 0:
+            if self.__verbose:
+                cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
+                self.__lfh.write(f"+BMRBChemShiftStat.__checkAtomNomenclature() ++ Error  - {comp_id} is not valid CCD ID, status code: {cc_rel_status}\n")
+            return False
+
+        if atom_id in ref_atom_ids and atom_id in ref_alt_atom_ids:
+            _ref_atom_id = next(a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
+                                if a[self.__ccU.ccaAltAtomId] == atom_id)
+
+            if atom_id == _ref_atom_id:
+                return True
+
+            if self.__verbose:
+                self.__lfh.write(f"+BMRBChemShiftStat.__checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} is valid, "
+                                 f"but _chem_comp.alt_atom_id matched with different atom_id {_ref_atom_id}\n")
+
+            return True
+
+        if atom_id in ref_atom_ids and atom_id not in ref_alt_atom_ids:
+            return True
+
+        if atom_id not in ref_alt_atom_ids and atom_id in ref_alt_atom_ids:
+            _ref_atom_id = next(a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
+                                if a[self.__ccU.ccaAltAtomId] == atom_id)
+
+            if self.__verbose:
+                self.__lfh.write(f"+BMRBChemShiftStat.__checkAtomNomenclature() ++ Error  - {comp_id}:{atom_id} matched with _chem_comp.alt_atom_id only. "
+                                 f"It should be {_ref_atom_id}\n")
+
+            return False
+
         if self.__verbose:
-            self.__lfh.write(f"+BMRBChemShiftStat.__checkAtomNomenclature() ++ Error  - Invalid atom nomenclature {atom_id}, comp_id {self.__ccU.lastCompId}\n")
+            self.__lfh.write(f"+BMRBChemShiftStat.__checkAtomNomenclature() ++ Error  - {comp_id}:{atom_id} did not match with any atom in CCD\n")
 
         return False
 
@@ -1627,6 +1664,146 @@ class BMRBChemShiftStat:
         self.__oth_comp_ids = set(item['comp_id'] for item in self.others)
 
         self.__all_comp_ids |= self.__oth_comp_ids
+
+    def testAtomNomenclatureOfLibrary(self):
+        """ Report inconsistencies between BMRB chemical shift statistics and current CCD.
+        """
+
+        def check_bmrb_cs_stat(atm_list):
+
+            ret = {'warning': 0, 'error': 0}
+
+            comp_ids = set(item['comp_id'] for item in atm_list)
+
+            for comp_id in comp_ids:
+
+                if not self.__ccU.updateChemCompDict(comp_id):
+                    print(f'[Error] {comp_id} does not match with any CCD ID.')
+                    ret['error'] += 1
+                    continue
+
+                _list = [a for a in atm_list if a['comp_id'] == comp_id]
+
+                ref_atom_ids = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
+
+                if len(ref_atom_ids) == 0:
+                    cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
+                    print(f'[Error] {comp_id} is not valid CCD ID, status code: {cc_rel_status}.')
+                    ret['error'] += 1
+                    continue
+
+                ref_alt_atom_ids = [a[self.__ccU.ccaAltAtomId] for a in self.__ccU.lastAtomList]
+
+                peptide_like = self.__ccU.peptideLike()
+
+                leaving_atom_list = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
+                                     if not (a[self.__ccU.ccaLeavingAtomFlag] != 'Y'
+                                             or (peptide_like
+                                                 and a[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                                                 and a[self.__ccU.ccaCTerminalAtomFlag] == 'N'))]
+
+                for a in _list:
+                    atom_id = a['atom_id']
+
+                    if atom_id in leaving_atom_list:
+                        print(f'[Warning] {comp_id}:{atom_id} is leaving atom.')
+                        ret['warning'] += 1
+
+                    if atom_id in ref_atom_ids and atom_id in ref_alt_atom_ids:
+                        _ref_atom_id = next(a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
+                                            if a[self.__ccU.ccaAltAtomId] == atom_id)
+                        if atom_id == _ref_atom_id:
+                            continue
+                        print(f'[Warning] {comp_id}:{atom_id} is valid, but _chem_comp.alt_atom_id matched with different atom_id {_ref_atom_id}.')
+                        ret['warning'] += 1
+
+                    elif atom_id in ref_atom_ids and atom_id not in ref_alt_atom_ids:
+                        continue
+
+                    elif atom_id not in ref_alt_atom_ids and atom_id in ref_alt_atom_ids:
+                        _ref_atom_id = next(a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
+                                            if a[self.__ccU.ccaAltAtomId] == atom_id)
+                        print(f'[Error] {comp_id}:{atom_id} matched with _chem_comp.alt_atom_id only. It should be {_ref_atom_id}.')
+                        ret['error'] += 1
+
+                    else:
+                        print(f'[Error] {comp_id}:{atom_id} did not match with any atom in CCD.')
+                        ret['error'] += 1
+
+            return ret
+
+        status = True
+
+        print('\nBMRB CS statistics name: aa_filt')
+        result = check_bmrb_cs_stat(self.aa_filt)
+        if result['warning'] == 0 and result['error'] == 0:
+            print('OK')
+        elif result['error'] > 0:
+            print(f"{result['error']} Error, {result['warning']} Warning")
+            status = False
+        else:
+            print(f"{result['warning']} Warning")
+
+        print('\nBMRB CS statistics name: dna_filt')
+        result = check_bmrb_cs_stat(self.dna_filt)
+        if result['warning'] == 0 and result['error'] == 0:
+            print('OK')
+        elif result['error'] > 0:
+            print(f"{result['error']} Error, {result['warning']} Warning")
+            status = False
+        else:
+            print(f"{result['warning']} Warning")
+
+        print('\nBMRB CS statistics name: rna_filt')
+        result = check_bmrb_cs_stat(self.rna_filt)
+        if result['warning'] == 0 and result['error'] == 0:
+            print('OK')
+        elif result['error'] > 0:
+            print(f"{result['error']} Error, {result['warning']} Warning")
+        else:
+            print(f"{result['warning']} Warning")
+
+        print('\nBMRB CS statistics name: aa_full')
+        result = check_bmrb_cs_stat(self.aa_full)
+        if result['warning'] == 0 and result['error'] == 0:
+            print('OK')
+        elif result['error'] > 0:
+            print(f"{result['error']} Error, {result['warning']} Warning")
+            status = False
+        else:
+            print(f"{result['warning']} Warning")
+
+        print('\nBMRB CS statistics name: dna_full')
+        result = check_bmrb_cs_stat(self.dna_full)
+        if result['warning'] == 0 and result['error'] == 0:
+            print('OK')
+        elif result['error'] > 0:
+            print(f"{result['error']} Error, {result['warning']} Warning")
+            status = False
+        else:
+            print(f"{result['warning']} Warning")
+
+        print('\nBMRB CS statistics name: rna_full')
+        result = check_bmrb_cs_stat(self.rna_full)
+        if result['warning'] == 0 and result['error'] == 0:
+            print('OK')
+        elif result['error'] > 0:
+            print(f"{result['error']} Error, {result['warning']} Warning")
+            status = False
+        else:
+            print(f"{result['warning']} Warning")
+
+        print('\nBMRB CS statistics name: others')
+        result = check_bmrb_cs_stat(self.others)
+        if result['warning'] == 0 and result['error'] == 0:
+            print('OK')
+        elif result['error'] > 0:
+            print(f"{result['error']} Error, {result['warning']} Warning")
+            status = False
+        else:
+            print(f"{result['warning']} Warning")
+
+        return status
 
     def getAtomLikeNameSet(self, excl_minor_atom=False, primary=False, minimum_len=1):
         """ Return atom like names of all standard residues.

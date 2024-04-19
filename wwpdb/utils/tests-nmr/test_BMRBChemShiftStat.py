@@ -6,6 +6,7 @@
 # 16-Apr-2020  M. Yokochi - fix ambiguity code of atom name starts with 'Q' (e.g. LYZ:QZ)
 # 20-Nov-2020  M. Yokochi - add unit test for HEM, HEB, HEC (DAOTHER-6366)
 # 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
+# 19-Apr-2024  M. yokochi - add unit test to verify BMRB CS statistsics are filtered by CCD (DAOTHER-9317)
 ##
 import unittest
 
@@ -162,6 +163,9 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.peptideLike('6NA'), True)
         self.assertEqual(self.bmrb_cs_stat.peptideLike('D4P'), True)
         self.assertEqual(self.bmrb_cs_stat.peptideLike('GHP'), True)
+
+    def test_atom_nomenclature(self):
+        self.assertEqual(self.bmrb_cs_stat.testAtomNomenclatureOfLibrary(), True)
 
 
 if __name__ == '__main__':

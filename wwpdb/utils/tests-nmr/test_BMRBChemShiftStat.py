@@ -57,9 +57,9 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('DA', excl_minor_atom=True), ["H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''"])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('A'), ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", 'P'])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('A', excl_minor_atom=True), ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''"])
-        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC'), ["H1'", "H2'", "H3'", "H4'", "H5'", "H5''", 'P', "C5'", "C4'", "C3'", "C2'", "C1'", "HO2'"])
+        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC'), ["H1'", "H2'", "HO2'", "H3'", "H4'", "H5'", "H5''", 'P', "C5'", "C4'", "C3'", "C2'", "C1'"])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC', polypeptide_like=True), [])
-        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC', polynucleotide_like=True), ["H1'", "H2'", "H3'", "H4'", "H5'", "H5''", 'P', "C5'", "C4'", "C3'", "C2'", "C1'", "HO2'"])
+        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC', polynucleotide_like=True), ["H1'", "H2'", "HO2'", "H3'", "H4'", "H5'", "H5''", 'P', "C5'", "C4'", "C3'", "C2'", "C1'"])
 
     def test_arom_atoms(self):
         self.assertEqual(self.bmrb_cs_stat.getAromaticAtoms('ALA'), [])
@@ -166,6 +166,9 @@ class TestBMRBChemShiftStat(unittest.TestCase):
 
     def test_atom_nomenclature(self):
         self.assertEqual(self.bmrb_cs_stat.testAtomNomenclatureOfLibrary(), True)
+
+    def test_doh_hn1(self):
+        self.assertEqual(self.bmrb_cs_stat.checkAtomNomenclature('HN1', 'DOH'), (True, 'BHD', 'H'))
 
 
 if __name__ == '__main__':

@@ -33,12 +33,16 @@ from operator import itemgetter
 
 try:
     from wwpdb.utils.nmr.AlignUtil import (emptyValue,
-                                           protonBeginCode)
+                                           protonBeginCode,
+                                           pseProBeginCode)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import translateToStdAtomName
 except ImportError:
     from nmr.AlignUtil import (emptyValue,
-                               protonBeginCode)
+                               protonBeginCode,
+                               pseProBeginCode)
     from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.mr.ParserListenerUtil import translateToStdAtomName
 
 
 class BMRBChemShiftStat:
@@ -800,8 +804,14 @@ class BMRBChemShiftStat:
                         _row['comp_id'] = comp_id
                         _row['atom_id'] = _atom_id + str(i)
 
-                        if not self.__checkAtomNomenclature(_row['atom_id']):
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                        if not __status:
                             continue
+
+                        if _row['comp_id'] != __comp_id:
+                            _row['comp_id'] = __comp_id
+                        if _row['atom_id'] != __atom_id:
+                            _row['atom_id'] = __atom_id
 
                         _row['count'] = int(row['count'])
                         _row['avg'] = float(row['avg'])
@@ -815,7 +825,8 @@ class BMRBChemShiftStat:
                         _row['primary'] = False
                         _row['norm_freq'] = None
 
-                        atm_list.append(_row)
+                        if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                            atm_list.append(_row)
 
                 elif comp_id == 'HEM' and re.match(r'^HM[A-D]$', _atom_id) is not None:  # others.csv dependent code
 
@@ -824,8 +835,14 @@ class BMRBChemShiftStat:
                         _row['comp_id'] = comp_id
                         _row['atom_id'] = _atom_id + i
 
-                        if not self.__checkAtomNomenclature(_row['atom_id']):
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                        if not __status:
                             continue
+
+                        if _row['comp_id'] != __comp_id:
+                            _row['comp_id'] = __comp_id
+                        if _row['atom_id'] != __atom_id:
+                            _row['atom_id'] = __atom_id
 
                         _row['count'] = int(row['count'])
                         _row['avg'] = float(row['avg'])
@@ -839,7 +856,8 @@ class BMRBChemShiftStat:
                         _row['primary'] = False
                         _row['norm_freq'] = None
 
-                        atm_list.append(_row)
+                        if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                            atm_list.append(_row)
 
                 elif comp_id == 'HEB' and (re.match(r'^HM[A-D]1$', _atom_id) is not None or _atom_id == 'HBB1'):  # others.csv dependent code
 
@@ -848,8 +866,14 @@ class BMRBChemShiftStat:
                         _row['comp_id'] = comp_id
                         _row['atom_id'] = _atom_id[:-1] + str(i)
 
-                        if not self.__checkAtomNomenclature(_row['atom_id']):
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                        if not __status:
                             continue
+
+                        if _row['comp_id'] != __comp_id:
+                            _row['comp_id'] = __comp_id
+                        if _row['atom_id'] != __atom_id:
+                            _row['atom_id'] = __atom_id
 
                         _row['count'] = int(row['count'])
                         _row['avg'] = float(row['avg'])
@@ -863,7 +887,8 @@ class BMRBChemShiftStat:
                         _row['primary'] = False
                         _row['norm_freq'] = None
 
-                        atm_list.append(_row)
+                        if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                            atm_list.append(_row)
 
                 elif comp_id == 'HEC' and (re.match(r'^HM[A-D]$', _atom_id) is not None or re.match(r'^HB[BC]$', _atom_id) is not None):  # others.csv dependent code
 
@@ -872,8 +897,14 @@ class BMRBChemShiftStat:
                         _row['comp_id'] = comp_id
                         _row['atom_id'] = _atom_id + str(i)
 
-                        if not self.__checkAtomNomenclature(_row['atom_id']):
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                        if not __status:
                             continue
+
+                        if _row['comp_id'] != __comp_id:
+                            _row['comp_id'] = __comp_id
+                        if _row['atom_id'] != __atom_id:
+                            _row['atom_id'] = __atom_id
 
                         _row['count'] = int(row['count'])
                         _row['avg'] = float(row['avg'])
@@ -887,7 +918,8 @@ class BMRBChemShiftStat:
                         _row['primary'] = False
                         _row['norm_freq'] = None
 
-                        atm_list.append(_row)
+                        if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                            atm_list.append(_row)
 
                 # geminal proton group
                 elif _atom_id.startswith('Q'):
@@ -898,8 +930,14 @@ class BMRBChemShiftStat:
                         _row['comp_id'] = comp_id
                         _row['atom_id'] = _atom_id + str(i)
 
-                        if not self.__checkAtomNomenclature(_row['atom_id']):
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                        if not __status:
                             continue
+
+                        if _row['comp_id'] != __comp_id:
+                            _row['comp_id'] = __comp_id
+                        if _row['atom_id'] != __atom_id:
+                            _row['atom_id'] = __atom_id
 
                         _row['count'] = int(row['count'])
                         _row['avg'] = float(row['avg'])
@@ -913,7 +951,8 @@ class BMRBChemShiftStat:
                         _row['primary'] = False
                         _row['norm_freq'] = None
 
-                        atm_list.append(_row)
+                        if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                            atm_list.append(_row)
 
                 elif not ((comp_id == 'HEM' and re.match(r'^HM[A-D][AB]$', _atom_id) is not None)
                           or (comp_id == 'HEB' and (re.match(r'^HM[A-D][23]$', _atom_id) is not None
@@ -924,8 +963,14 @@ class BMRBChemShiftStat:
                     _row['comp_id'] = comp_id
                     _row['atom_id'] = _atom_id
 
-                    if not self.__checkAtomNomenclature(_row['atom_id']):
+                    __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                    if not __status:
                         continue
+
+                    if _row['comp_id'] != __comp_id:
+                        _row['comp_id'] = __comp_id
+                    if _row['atom_id'] != __atom_id:
+                        _row['atom_id'] = __atom_id
 
                     _row['count'] = int(row['count'])
                     _row['avg'] = float(row['avg'])
@@ -939,7 +984,8 @@ class BMRBChemShiftStat:
                     _row['primary'] = False
                     _row['norm_freq'] = None
 
-                    atm_list.append(_row)
+                    if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                        atm_list.append(_row)
 
         comp_ids = set(item['comp_id'] for item in atm_list)
 
@@ -971,7 +1017,8 @@ class BMRBChemShiftStat:
                                 _row['norm_freq'] = None
                                 _row['count'] = 0
 
-                                atm_list.append(_row)
+                                if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                                    atm_list.append(_row)
 
         self.__detectMethylProtonFromAtomNomenclature(comp_ids, atm_list)
         self.__detectGeminalProtonFromAtomNomenclature(comp_ids, atm_list)
@@ -1031,60 +1078,99 @@ class BMRBChemShiftStat:
 
         self.extras.extend(atm_list)
 
-    def __checkAtomNomenclature(self, atom_id):
+    def checkAtomNomenclature(self, atom_id, comp_id=None):
         """ Check atom nomenclature.
         """
 
-        peptide_like = self.__ccU.peptideLike()
-
-        if any(a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
-               if a[self.__ccU.ccaAtomId] == atom_id
-               and (a[self.__ccU.ccaLeavingAtomFlag] != 'Y'
-                    or (peptide_like
-                        and a[self.__ccU.ccaNTerminalAtomFlag] == 'N'
-                        and a[self.__ccU.ccaCTerminalAtomFlag] == 'N'))):
-            return True
+        if comp_id is not None:
+            self.__ccU.updateChemCompDict(comp_id)
 
         comp_id = self.__ccU.lastCompId
-        ref_atom_ids = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
-        ref_alt_atom_ids = [a[self.__ccU.ccaAltAtomId] for a in self.__ccU.lastAtomList]
+        peptide_like = self.__ccU.peptideLike()
 
-        if len(ref_atom_ids) == 0:
-            if self.__verbose:
+        cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
+
+        if cc_rel_status == 'OBS' and '_chem_comp.pdbx_replaced_by' in self.__ccU.lastChemCompDict:
+            replaced_by = self.__ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
+            if replaced_by not in emptyValue and self.__ccU.updateChemCompDict(replaced_by):
+                if self.__verbose:
+                    self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id} is replaced by {replaced_by}\n")
+
+                comp_id = replaced_by
+                ref_atom_ids = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
+
                 cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
-                self.__lfh.write(f"+BMRBChemShiftStat.__checkAtomNomenclature() ++ Error  - {comp_id} is not valid CCD ID, status code: {cc_rel_status}\n")
-            return False
+
+        if cc_rel_status == 'REL':
+            if any(a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
+                   if a[self.__ccU.ccaAtomId] == atom_id
+                   and (a[self.__ccU.ccaLeavingAtomFlag] != 'Y'
+                        or (peptide_like
+                            and a[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                            and a[self.__ccU.ccaCTerminalAtomFlag] == 'N'))):
+                return True, comp_id, atom_id
+
+        ref_atom_ids = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
+
+        if len(ref_atom_ids) == 0 or cc_rel_status != 'REL':
+            if self.__verbose:
+                self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Error  - {comp_id} is not valid CCD ID, status code: {cc_rel_status}\n")
+            return False, None, None
+
+        ref_alt_atom_ids = [a[self.__ccU.ccaAltAtomId] for a in self.__ccU.lastAtomList]
 
         if atom_id in ref_atom_ids and atom_id in ref_alt_atom_ids:
             _ref_atom_id = next(a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
                                 if a[self.__ccU.ccaAltAtomId] == atom_id)
 
             if atom_id == _ref_atom_id:
-                return True
+                return True, comp_id, atom_id
 
             if self.__verbose:
-                self.__lfh.write(f"+BMRBChemShiftStat.__checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} is valid, "
+                self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} is valid, "
                                  f"but _chem_comp.alt_atom_id matched with different atom_id {_ref_atom_id}\n")
 
-            return True
+            return True, comp_id, atom_id
 
         if atom_id in ref_atom_ids and atom_id not in ref_alt_atom_ids:
-            return True
+            return True, comp_id, atom_id
 
-        if atom_id not in ref_alt_atom_ids and atom_id in ref_alt_atom_ids:
+        if atom_id not in ref_atom_ids and atom_id in ref_alt_atom_ids:
             _ref_atom_id = next(a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
                                 if a[self.__ccU.ccaAltAtomId] == atom_id)
 
             if self.__verbose:
-                self.__lfh.write(f"+BMRBChemShiftStat.__checkAtomNomenclature() ++ Error  - {comp_id}:{atom_id} matched with _chem_comp.alt_atom_id only. "
+                self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} matched with _chem_comp.alt_atom_id only. "
                                  f"It should be {_ref_atom_id}\n")
 
-            return False
+            # print(f'case 1. {_comp_id}:{atom_id} -> {comp_id}:{_ref_atom_id}')
+            return True, comp_id, _ref_atom_id
+
+        _ref_atom_ids = [a for a in ref_atom_ids if a[0] == atom_id[0] or a[0] == 'H' and atom_id[0] in pseProBeginCode]
+
+        if len(_ref_atom_ids) == 0:
+            if self.__verbose:
+                self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Error  - {comp_id}:{atom_id} did not match with any atom in CCD. No candidates foud\n")
+
+            return False, None, None
+
+        if len(atom_id) > 1 and atom_id[0] in ('1', '2', '3') and atom_id[1] == 'H' and atom_id[1:] + atom_id[0] in _ref_atom_ids:
+            # print(f'case 2. {_comp_id}:{atom_id} -> {comp_id}:{atom_id[1:] + atom_id[0]}')
+            return True, comp_id, atom_id[1:] + atom_id[0]
+
+        if atom_id[-1] == "'" and self.getTypeOfCompId(comp_id)[2] and atom_id[:-1] in _ref_atom_ids:
+            # print(f'case 3. {_comp_id}:{atom_id} -> {comp_id}:{atom_id[:-1]}')
+            return True, comp_id, atom_id[:-1]
+
+        _atom_id = translateToStdAtomName(atom_id, comp_id, refAtomIdList=_ref_atom_ids, ccU=self.__ccU, unambig=False)
+        if _atom_id in _ref_atom_ids:
+            # print(f'case 4. {_comp_id}:{atom_id} -> {comp_id}:{_atom_id}')
+            return True, comp_id, _atom_id
 
         if self.__verbose:
-            self.__lfh.write(f"+BMRBChemShiftStat.__checkAtomNomenclature() ++ Error  - {comp_id}:{atom_id} did not match with any atom in CCD\n")
+            self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Error  - {comp_id}:{atom_id} did not match with any atom in CCD, {_ref_atom_ids}\n")
 
-        return False
+        return False, None, None
 
     def __detectMethylProtonFromAtomNomenclature(self, comp_ids, atm_list):
         """ Detect methyl proton from atom nomenclature.
@@ -1685,9 +1771,19 @@ class BMRBChemShiftStat:
                 _list = [a for a in atm_list if a['comp_id'] == comp_id]
 
                 ref_atom_ids = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
+                cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
 
-                if len(ref_atom_ids) == 0:
-                    cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
+                if cc_rel_status == 'OBS' and '_chem_comp.pdbx_replaced_by' in self.__ccU.lastChemCompDict:
+                    replaced_by = self.__ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
+                    if replaced_by not in emptyValue and self.__ccU.updateChemCompDict(replaced_by):
+                        print(f'[Warning] {comp_id} is replaced by {replaced_by}.')
+
+                        comp_id = replaced_by
+
+                        ref_atom_ids = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
+                        cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
+
+                if len(ref_atom_ids) == 0 or cc_rel_status != 'REL':
                     print(f'[Error] {comp_id} is not valid CCD ID, status code: {cc_rel_status}.')
                     ret['error'] += 1
                     continue

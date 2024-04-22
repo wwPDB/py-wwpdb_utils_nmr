@@ -22417,7 +22417,7 @@ class NmrDpUtility:
                             z_score = float(f"{(value - avg_value) / std_value:.2f}")
                             sigma = abs(z_score)
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                            if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
                                 tolerance = std_value
 
                                 if (value < min_value - tolerance or value > max_value + tolerance)\
@@ -22492,10 +22492,10 @@ class NmrDpUtility:
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
-                                        if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs or self.__remediation_mode:
+                                        if (na['ring_angle'] - self.magic_angle) * z_score > 0.0 or self.__nonblk_anomalous_cs or self.__remediation_mode:
 
                                             self.report.warning.appendDescription('anomalous_data'
-                                                                                  if na['ring_angle'] - self.magic_angle * z_score < 0.0
+                                                                                  if (na['ring_angle'] - self.magic_angle) * z_score < 0.0
                                                                                   or na['ring_distance'] > self.vicinity_aromatic
                                                                                   else 'unusual_data',
                                                                                   {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -22507,7 +22507,7 @@ class NmrDpUtility:
                                                 self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
                                             if self.__bmrb_only and self.__leave_intl_note and file_type == 'nmr-star' and details_col != -1\
-                                               and (na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
+                                               and ((na['ring_angle'] - self.magic_angle) * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
                                                 _details = loop.data[idx][details_col]
                                                 details = f"{full_value_name} {value} is not within expected range "\
                                                     f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
@@ -22597,7 +22597,7 @@ class NmrDpUtility:
 
                                     elif pa is None:
 
-                                        if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                        if (na['ring_angle'] - self.magic_angle) * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                                 + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
@@ -22662,7 +22662,7 @@ class NmrDpUtility:
 
                                     if na is not None:
 
-                                        if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                        if (na['ring_angle'] - self.magic_angle) * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
                                             warn += f" The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                                 f"is located at a distance of {na['ring_distance']}Å, "\
                                                 f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
@@ -22713,7 +22713,8 @@ class NmrDpUtility:
                                         self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
                             else:
-                                tolerance = std_value * 10.0
+
+                                tolerance = std_value * 10.0  # rare residue/ligand
 
                                 if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance)\
                                    and sigma > self.cs_anomalous_error_scaled_by_sigma\
@@ -22787,9 +22788,9 @@ class NmrDpUtility:
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
-                                        if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs or self.__remediation_mode:
+                                        if (na['ring_angle'] - self.magic_angle) * z_score > 0.0 or self.__nonblk_anomalous_cs or self.__remediation_mode:
 
-                                            if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                            if (na['ring_angle'] - self.magic_angle) * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
                                                 self.report.warning.appendDescription('anomalous_data',
                                                                                       {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -22891,7 +22892,7 @@ class NmrDpUtility:
 
                                     elif pa is None:
 
-                                        if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                        if (na['ring_angle'] - self.magic_angle) * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                                 + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
@@ -23098,10 +23099,11 @@ class NmrDpUtility:
                                         f"is located at a distance of {na['ring_distance']}Å, "\
                                         f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
-                                    if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs or self.__remediation_mode:
+                                    if (na['ring_angle'] - self.magic_angle) * z_score > 0.0 or self.__nonblk_anomalous_cs or self.__remediation_mode:
 
                                         self.report.warning.appendDescription('anomalous_data'
-                                                                              if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic
+                                                                              if (na['ring_angle'] - self.magic_angle) * z_score < 0.0
+                                                                              or na['ring_distance'] > self.vicinity_aromatic
                                                                               else 'unusual_data',
                                                                               {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                                'description': warn,
@@ -23112,7 +23114,7 @@ class NmrDpUtility:
                                             self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
                                         if self.__bmrb_only and self.__leave_intl_note and file_type == 'nmr-star' and details_col != -1\
-                                           and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
+                                           and ((na['ring_angle'] - self.magic_angle) * z_score > 0.0 or self.__nonblk_anomalous_cs):
                                             _details = loop.data[idx][details_col]
                                             details = f"{full_value_name} {value} is not within expected range "\
                                                 f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
@@ -23202,7 +23204,7 @@ class NmrDpUtility:
 
                                 elif pa is None:
 
-                                    if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                    if (na['ring_angle'] - self.magic_angle) * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                             + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
@@ -23267,7 +23269,7 @@ class NmrDpUtility:
 
                             #     if na is not None:
 
-                            #         if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                            #         if na['ring_angle'] - (self.magic_angle * z_score) < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
                             #             warn += f" The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                             #                 f"is located at a distance of {na['ring_distance']}Å, "\
                             #                 f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
@@ -35799,7 +35801,7 @@ class NmrDpUtility:
 
                                 polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
                                     non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
 
                                     if atom_id in non_rep_methyl_pros:
@@ -35824,7 +35826,7 @@ class NmrDpUtility:
 
                                 polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
                                     non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
 
                                     if atom_id in non_rep_methyl_pros:
@@ -35849,7 +35851,7 @@ class NmrDpUtility:
 
                                 polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
                                     non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
 
                                     if atom_id in non_rep_methyl_pros:
@@ -36063,7 +36065,7 @@ class NmrDpUtility:
 
                             polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                            if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
 
                                 all_atoms = self.__csStat.getAllAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
                                 non_excl_atoms = self.__csStat.getAllAtoms(comp_id, excl_minor_atom=False)
@@ -36203,7 +36205,7 @@ class NmrDpUtility:
 
                             polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                            if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
 
                                 bb_atoms = self.__csStat.getBackBoneAtoms(comp_id, excl_minor_atom=True)
                                 non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
@@ -36329,7 +36331,7 @@ class NmrDpUtility:
 
                             polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                            if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
 
                                 sc_atoms = self.__csStat.getSideChainAtoms(comp_id, excl_minor_atom=True)
                                 non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
@@ -36450,7 +36452,7 @@ class NmrDpUtility:
 
                             polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                            if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
 
                                 ch3_atoms = self.__csStat.getMethylAtoms(comp_id)
                                 non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
@@ -36554,7 +36556,7 @@ class NmrDpUtility:
 
                             polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                            if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
 
                                 aro_atoms = self.__csStat.getAromaticAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
                                 non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)

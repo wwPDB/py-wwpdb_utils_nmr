@@ -16,7 +16,7 @@
 # 11-Nov-2022  M. Yokochi - add getProtonsInSameGroup() (NMR restraint remediation)
 # 20-Apr-2023  M. Yokochi - change backbone definition to be consistent with NMR restraint validation
 # 13-Dec-2023  M. Yokochi - support peptide-like residues containing symmetric aromatic ring (DAOTHER-8945)
-# 19-Apr-2024  M. Yokochi - remap chemical shift statistics in reference to CCD (DAOTHER-9317)
+# 22-Apr-2024  M. Yokochi - remap chemical shift statistics in reference to CCD (DAOTHER-9317)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -59,6 +59,15 @@ class BMRBChemShiftStat:
         # directory
         self.stat_dir = os.path.dirname(__file__) + '/bmrb_cs_stat/'
 
+        # URL for BMRB chemical shift statistics
+        self.url_for_bmrb_cs_stat_dir = 'https://bmrb.io/ftp/pub/bmrb/statistics/chem_shifts/'
+
+        # csv file names
+        self.csv_files = ('aa_filt.csv', 'aa_full.csv',
+                          'dna_filt.csv', 'dna_full.csv',
+                          'rna_filt.csv', 'rna_full.csv',
+                          'others.csv')
+
         # statistics objects
         self.aa_filt = []
         self.aa_full = []
@@ -83,7 +92,7 @@ class BMRBChemShiftStat:
         self.__not_comp_ids = set()
 
         self.aa_threshold = 0.1
-        self.na_threshold = 0.3
+        self.na_threshold = 0.25
 
         self.max_count_th = 10
 
@@ -289,8 +298,8 @@ class BMRBChemShiftStat:
         finally:
             self.__cachedDictForSimilarCompId[key] = comp_id
 
-    def hasEnoughStat(self, comp_id, primary=True):
-        """ Return whether a given comp_id has enough chemical shift statistics.
+    def hasSufficientStat(self, comp_id, primary=True):
+        """ Return whether a given comp_id has sufficient chemical shift statistics.
         """
 
         if comp_id in emptyValue:
@@ -489,11 +498,12 @@ class BMRBChemShiftStat:
         cs_stat = self.__get(comp_id)
 
         if comp_id in self.__std_comp_ids or primary:
-            return [item['atom_id'] for item in cs_stat if
-                    (not excl_minor_atom or (excl_minor_atom and item['primary']))]
+            return [item['atom_id'] for item in cs_stat
+                    if (comp_id != 'PRO' or item['atom_id'] != 'H')  # DAOTHER-9317: PRO:H is in BMRB CS statistics
+                    and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
-        return [item['atom_id'] for item in cs_stat if
-                (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
+        return [item['atom_id'] for item in cs_stat
+                if (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
     def getBackBoneAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False, carbohydrates_like=False):
         """ Return backbone atoms of a given comp_id.
@@ -516,6 +526,7 @@ class BMRBChemShiftStat:
         if comp_id in self.__aa_comp_ids:
             return [item['atom_id'] for item in cs_stat
                     if item['atom_id'] in ("C", "CA", "H", "HA", "HA2", "HA3", "N", "O")
+                    and (comp_id != 'PRO' or item['atom_id'] != 'H')  # DAOTHER-9317: PRO:H is in BMRB CS statistics
                     and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
         if comp_id in self.__dna_comp_ids:
@@ -665,7 +676,9 @@ class BMRBChemShiftStat:
 
         if comp_id in self.__std_comp_ids or polypeptide_like:
             return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] not in bb_atoms and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
+                    if item['atom_id'] not in bb_atoms
+                    and (comp_id != 'PRO' or item['atom_id'] != 'H')  # DAOTHER-9317: PRO:H is in BMRB CS statistics
+                    and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
         return [item['atom_id'] for item in cs_stat
                 if item['atom_id'] not in bb_atoms and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
@@ -729,12 +742,7 @@ class BMRBChemShiftStat:
         """ Load all BMRB chemical shift statistics from CSV files.
         """
 
-        csv_files = (self.stat_dir + 'aa_filt.csv', self.stat_dir + 'aa_full.csv',
-                     self.stat_dir + 'dna_filt.csv', self.stat_dir + 'dna_full.csv',
-                     self.stat_dir + 'rna_filt.csv', self.stat_dir + 'rna_full.csv',
-                     self.stat_dir + 'others.csv')
-
-        if any(not os.path.exists(csv_file) for csv_file in csv_files):
+        if any(not os.path.exists(self.stat_dir + csv_file) for csv_file in self.csv_files):
             return False
 
         self.aa_filt = self.loadStatFromCsvFile(self.stat_dir + 'aa_filt.csv', self.aa_threshold)
@@ -800,6 +808,9 @@ class BMRBChemShiftStat:
 
                 _atom_id = row['atom_id']
 
+                if comp_id == 'THR' and _atom_id == 'MG':
+                    _atom_id = 'MG2'
+
                 # methyl proton group
                 if _atom_id.startswith('M'):
                     _atom_id = re.sub(r'^M', 'H', _atom_id)
@@ -809,7 +820,7 @@ class BMRBChemShiftStat:
                         _row['comp_id'] = comp_id
                         _row['atom_id'] = _atom_id + str(i)
 
-                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'], verbose=False)
                         if not __status:
                             continue
 
@@ -840,7 +851,7 @@ class BMRBChemShiftStat:
                         _row['comp_id'] = comp_id
                         _row['atom_id'] = _atom_id + i
 
-                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'], verbose=False)
                         if not __status:
                             continue
 
@@ -871,7 +882,7 @@ class BMRBChemShiftStat:
                         _row['comp_id'] = comp_id
                         _row['atom_id'] = _atom_id[:-1] + str(i)
 
-                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'], verbose=False)
                         if not __status:
                             continue
 
@@ -902,7 +913,7 @@ class BMRBChemShiftStat:
                         _row['comp_id'] = comp_id
                         _row['atom_id'] = _atom_id + str(i)
 
-                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'], verbose=False)
                         if not __status:
                             continue
 
@@ -939,7 +950,7 @@ class BMRBChemShiftStat:
                         _row['comp_id'] = comp_id
                         _row['atom_id'] = _atom_id
 
-                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'], verbose=False)
                         if not __status:
                             continue
 
@@ -972,7 +983,7 @@ class BMRBChemShiftStat:
                         _row['comp_id'] = comp_id
                         _row['atom_id'] = _atom_id + str(i)
 
-                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'], verbose=False)
                         if not __status:
                             continue
 
@@ -1001,11 +1012,12 @@ class BMRBChemShiftStat:
                                                     or re.match(r'^HBB[23]', _atom_id) is not None))
                           or (comp_id == 'HEC' and (re.match(r'^HM[A-D][123]$', _atom_id) is not None
                                                     or re.match(r'^HB[BC][123]$', _atom_id) is not None))):
+
                     _row = {}
                     _row['comp_id'] = comp_id
                     _row['atom_id'] = _atom_id
 
-                    __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                    __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'], verbose=False)
                     if not __status:
                         continue
 
@@ -1029,20 +1041,251 @@ class BMRBChemShiftStat:
                     if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
                         atm_list.append(_row)
 
-                # DAOTHER-9317: general methylene/amino group
-                elif any(rep_methylene_proton.startswith(_atom_id) for rep_methylene_proton in rep_methylene_protons
-                         if rep_methylene_proton != _atom_id and 0 <= len(rep_methylene_proton) - len(_atom_id) <= 1
-                         and _atom_id not in non_rep_methylene_protons):
+        comp_ids = set(item['comp_id'] for item in atm_list)
 
-                    rep_methylene_proton = next(rep_methylene_proton for rep_methylene_proton in rep_methylene_protons
-                                                if rep_methylene_proton.startswith(_atom_id))
+        if secondary_th is not None:  # extract rest of atoms for non-standard residues
 
-                    for _atom_id in self.__ccU.getProtonsInSameGroup(comp_id, rep_methylene_proton):
+            for comp_id in comp_ids:
+
+                if self.__ccU.updateChemCompDict(comp_id):
+
+                    peptide_like = self.__ccU.peptideLike()
+
+                    for a in self.__ccU.lastAtomList:
+
+                        if a[self.__ccU.ccaTypeSymbol] not in ('H', 'C', 'N', 'P'):
+                            continue
+
+                        if a[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
+                           or (peptide_like
+                               and a[self.__ccU.ccaNTerminalAtomFlag] == 'N'
+                               and a[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
+
+                            if not any(item for item in atm_list if item['comp_id'] == comp_id and item['atom_id'] == a[self.__ccU.ccaAtomId]):
+
+                                _row = {}
+                                _row['comp_id'] = comp_id
+                                _row['atom_id'] = a[self.__ccU.ccaAtomId]
+                                _row['desc'] = 'isolated'
+                                _row['primary'] = False
+                                _row['norm_freq'] = None
+                                _row['count'] = 0
+
+                                if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                                    atm_list.append(_row)
+
+        self.__detectMethylProtonFromAtomNomenclature(comp_ids, atm_list)
+        self.__detectGeminalProtonFromAtomNomenclature(comp_ids, atm_list)
+
+        self.__detectGeminalCarbon(comp_ids, atm_list)
+        self.__detectGeminalNitrogen(comp_ids, atm_list)
+
+        self.__detectMajorResonance(comp_ids, atm_list, primary_th, secondary_th)
+
+        __atm_list = copy.deepcopy(atm_list)
+
+        atm_list = []
+
+        with open(file_name, 'r', encoding='utf-8') as ifh:
+            reader = csv.DictReader(ifh)
+
+            for row in reader:
+
+                comp_id = row['comp_id']
+
+                if comp_id_interest is not None and comp_id != comp_id_interest:
+                    continue
+
+                if not self.__ccU.updateChemCompDict(comp_id):
+                    continue
+
+                prev_atm_list = [item for item in __atm_list if item['comp_id'] == comp_id]
+
+                # peptide_like = self.__ccU.peptideLike()
+
+                rep_methyl_protons = self.__ccU.getRepMethylProtons(comp_id)
+                non_rep_methyl_protons = self.__ccU.getNonRepMethylProtons(comp_id)
+                rep_methylene_protons = self.__ccU.getRepMethyleneOrAminoProtons(comp_id)
+                non_rep_methylene_protons = self.__ccU.getNonRepMethyleneOrAminoProtons(comp_id)
+
+                _atom_id = row['atom_id']
+
+                if comp_id == 'THR' and _atom_id == 'MG':
+                    _atom_id = 'MG2'
+
+                # methyl proton group
+                if _atom_id.startswith('M'):
+                    _atom_id = re.sub(r'^M', 'H', _atom_id)
+
+                    for i in range(1, 4):
+                        _row = {}
+                        _row['comp_id'] = comp_id
+                        _row['atom_id'] = _atom_id + str(i)
+
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'], verbose=self.__verbose)
+                        if not __status:
+                            continue
+
+                        if _row['comp_id'] != __comp_id:
+                            _row['comp_id'] = __comp_id
+                        if _row['atom_id'] != __atom_id:
+                            _row['atom_id'] = __atom_id
+
+                        _row['count'] = int(row['count'])
+                        _row['avg'] = float(row['avg'])
+                        try:
+                            _row['std'] = float(row['std'])
+                        except ValueError:
+                            _row['std'] = None
+                        _row['min'] = float(row['min'])
+                        _row['max'] = float(row['max'])
+                        _row['desc'] = 'methyl'
+                        _row['primary'] = False
+                        _row['norm_freq'] = None
+
+                        if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                            atm_list.append(_row)
+
+                elif comp_id == 'HEM' and re.match(r'^HM[A-D]$', _atom_id) is not None:  # others.csv dependent code
+
+                    for i in ['', 'A', 'B']:
+                        _row = {}
+                        _row['comp_id'] = comp_id
+                        _row['atom_id'] = _atom_id + i
+
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'], verbose=self.__verbose)
+                        if not __status:
+                            continue
+
+                        if _row['comp_id'] != __comp_id:
+                            _row['comp_id'] = __comp_id
+                        if _row['atom_id'] != __atom_id:
+                            _row['atom_id'] = __atom_id
+
+                        _row['count'] = int(row['count'])
+                        _row['avg'] = float(row['avg'])
+                        try:
+                            _row['std'] = float(row['std'])
+                        except ValueError:
+                            _row['std'] = None
+                        _row['min'] = float(row['min'])
+                        _row['max'] = float(row['max'])
+                        _row['desc'] = 'methyl'
+                        _row['primary'] = False
+                        _row['norm_freq'] = None
+
+                        if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                            atm_list.append(_row)
+
+                elif comp_id == 'HEB' and (re.match(r'^HM[A-D]1$', _atom_id) is not None or _atom_id == 'HBB1'):  # others.csv dependent code
+
+                    for i in range(1, 4):
+                        _row = {}
+                        _row['comp_id'] = comp_id
+                        _row['atom_id'] = _atom_id[:-1] + str(i)
+
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'], verbose=self.__verbose)
+                        if not __status:
+                            continue
+
+                        if _row['comp_id'] != __comp_id:
+                            _row['comp_id'] = __comp_id
+                        if _row['atom_id'] != __atom_id:
+                            _row['atom_id'] = __atom_id
+
+                        _row['count'] = int(row['count'])
+                        _row['avg'] = float(row['avg'])
+                        try:
+                            _row['std'] = float(row['std'])
+                        except ValueError:
+                            _row['std'] = None
+                        _row['min'] = float(row['min'])
+                        _row['max'] = float(row['max'])
+                        _row['desc'] = 'methyl'
+                        _row['primary'] = False
+                        _row['norm_freq'] = None
+
+                        if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                            atm_list.append(_row)
+
+                elif comp_id == 'HEC' and (re.match(r'^HM[A-D]$', _atom_id) is not None or re.match(r'^HB[BC]$', _atom_id) is not None):  # others.csv dependent code
+
+                    for i in range(1, 4):
+                        _row = {}
+                        _row['comp_id'] = comp_id
+                        _row['atom_id'] = _atom_id + str(i)
+
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'], verbose=self.__verbose)
+                        if not __status:
+                            continue
+
+                        if _row['comp_id'] != __comp_id:
+                            _row['comp_id'] = __comp_id
+                        if _row['atom_id'] != __atom_id:
+                            _row['atom_id'] = __atom_id
+
+                        _row['count'] = int(row['count'])
+                        _row['avg'] = float(row['avg'])
+                        try:
+                            _row['std'] = float(row['std'])
+                        except ValueError:
+                            _row['std'] = None
+                        _row['min'] = float(row['min'])
+                        _row['max'] = float(row['max'])
+                        _row['desc'] = 'methyl'
+                        _row['primary'] = False
+                        _row['norm_freq'] = None
+
+                        if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                            atm_list.append(_row)
+
+                # DAOTHER-9317: representative methyl group
+                elif any(rep_methyl_proton.startswith(_atom_id) for rep_methyl_proton in rep_methyl_protons
+                         if rep_methyl_proton != _atom_id and 0 <= len(rep_methyl_proton) - len(_atom_id) <= 1
+                         and _atom_id not in non_rep_methyl_protons):
+
+                    rep_methyl_proton = next(rep_methyl_proton for rep_methyl_proton in rep_methyl_protons
+                                             if rep_methyl_proton.startswith(_atom_id))
+
+                    for _atom_id in self.__ccU.getProtonsInSameGroup(comp_id, rep_methyl_proton):
                         _row = {}
                         _row['comp_id'] = comp_id
                         _row['atom_id'] = _atom_id
 
-                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'])
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_atom_id, verbose=self.__verbose)
+                        if not __status:
+                            continue
+
+                        if _row['comp_id'] != __comp_id:
+                            _row['comp_id'] = __comp_id
+                        if _row['atom_id'] != __atom_id:
+                            _row['atom_id'] = __atom_id
+
+                        _row['count'] = int(row['count'])
+                        _row['avg'] = float(row['avg'])
+                        try:
+                            _row['std'] = float(row['std'])
+                        except ValueError:
+                            _row['std'] = None
+                        _row['min'] = float(row['min'])
+                        _row['max'] = float(row['max'])
+                        _row['desc'] = 'methyl'
+                        _row['primary'] = False
+                        _row['norm_freq'] = None
+
+                        if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                            atm_list.append(_row)
+
+                # geminal proton group
+                elif _atom_id.startswith('Q'):
+                    _atom_id = re.sub(r'^Q', 'H', _atom_id)
+
+                    for i in range(1, 4):
+                        _row = {}
+                        _row['comp_id'] = comp_id
+                        _row['atom_id'] = _atom_id + str(i)
+
+                        __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'], verbose=self.__verbose)
                         if not __status:
                             continue
 
@@ -1065,6 +1308,197 @@ class BMRBChemShiftStat:
 
                         if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
                             atm_list.append(_row)
+
+                elif not ((comp_id == 'HEM' and re.match(r'^HM[A-D][AB]$', _atom_id) is not None)
+                          or (comp_id == 'HEB' and (re.match(r'^HM[A-D][23]$', _atom_id) is not None
+                                                    or re.match(r'^HBB[23]', _atom_id) is not None))
+                          or (comp_id == 'HEC' and (re.match(r'^HM[A-D][123]$', _atom_id) is not None
+                                                    or re.match(r'^HB[BC][123]$', _atom_id) is not None))):
+
+                    has_geminal_stat = any(item['desc'] == 'geminal' for item in prev_atm_list if item['atom_id'] == _atom_id and 'avg' in item)
+                    has_aroma_opposit_stat = any(item['desc'].startswith('aroma-opposite') for item in prev_atm_list if item['atom_id'] == _atom_id and 'avg' in item)
+                    has_methyl_geminal_stat = any(item['desc'] == 'methyl-geminal' for item in prev_atm_list if item['atom_id'] == _atom_id and 'avg' in item)
+
+                    if len(_atom_id) > 2 and has_geminal_stat:
+                        others = self.__ccU.getProtonsInSameGroup(comp_id, _atom_id, exclSelf=True)
+                        if len(others) > 0 and not any('avg' in item for item in prev_atm_list if item['atom_id'] == others[0])\
+                           and others[0] in rep_methylene_protons:
+
+                            _atom_id = others[0]
+
+                            _row = {}
+                            _row['comp_id'] = comp_id
+                            _row['atom_id'] = _atom_id
+
+                            __status, __comp_id, __atom_id = self.checkAtomNomenclature(_atom_id, verbose=self.__verbose)
+                            if not __status:
+                                continue
+
+                            if _row['comp_id'] != __comp_id:
+                                _row['comp_id'] = __comp_id
+                            if _row['atom_id'] != __atom_id:
+                                _row['atom_id'] = __atom_id
+
+                            _row['count'] = int(row['count'])
+                            _row['avg'] = float(row['avg'])
+                            try:
+                                _row['std'] = float(row['std'])
+                            except ValueError:
+                                _row['std'] = None
+                            _row['min'] = float(row['min'])
+                            _row['max'] = float(row['max'])
+                            _row['desc'] = 'isolated'
+                            _row['primary'] = False
+                            _row['norm_freq'] = None
+
+                            if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                                atm_list.append(_row)
+
+                            continue
+
+                    elif len(_atom_id) > 2 and not has_geminal_stat\
+                            and any(rep_methylene_proton.startswith(_atom_id[:-1]) for rep_methylene_proton in rep_methylene_protons):
+                        rep_methylene_proton = next(rep_methylene_proton for rep_methylene_proton in rep_methylene_protons
+                                                    if rep_methylene_proton.startswith(_atom_id[:-1]))
+                        others = self.__ccU.getProtonsInSameGroup(comp_id, rep_methylene_proton, exclSelf=True)
+                        if len(others) > 0 and any('avg' in item for item in prev_atm_list if item['atom_id'] == others[0])\
+                           and others[0] in non_rep_methylene_protons:
+
+                            _atom_id = others[0]
+
+                            _row = {}
+                            _row['comp_id'] = comp_id
+                            _row['atom_id'] = _atom_id
+
+                            __status, __comp_id, __atom_id = self.checkAtomNomenclature(_atom_id, verbose=self.__verbose)
+                            if not __status:
+                                continue
+
+                            if _row['comp_id'] != __comp_id:
+                                _row['comp_id'] = __comp_id
+                            if _row['atom_id'] != __atom_id:
+                                _row['atom_id'] = __atom_id
+
+                            _row['count'] = int(row['count'])
+                            _row['avg'] = float(row['avg'])
+                            try:
+                                _row['std'] = float(row['std'])
+                            except ValueError:
+                                _row['std'] = None
+                            _row['min'] = float(row['min'])
+                            _row['max'] = float(row['max'])
+                            _row['desc'] = 'isolated'
+                            _row['primary'] = False
+                            _row['norm_freq'] = None
+
+                            if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                                atm_list.append(_row)
+
+                            continue
+
+                    if len(_atom_id) > 2 and has_aroma_opposit_stat:
+                        _item = next(item for item in prev_atm_list if item['atom_id'] == _atom_id and 'avg' in item and item['desc'].startswith('aroma-opposit'))
+                        other = next((item['atom_id'] for item in prev_atm_list
+                                      if item['desc'] == _item['desc'] and item['atom_id'].startswith(_item['atom_id'][:-1]) and item['atom_id'] != _item['atom_id']), None)
+
+                        if other is not None and not any('avg' in item for item in prev_atm_list if item['atom_id'] == other):
+
+                            for __atom_id in sorted([_atom_id, other]):
+                                _row = {}
+                                _row['comp_id'] = comp_id
+                                _row['atom_id'] = __atom_id
+
+                                __status, __comp_id, __atom_id = self.checkAtomNomenclature(__atom_id, verbose=self.__verbose)
+                                if not __status:
+                                    continue
+
+                                if _row['comp_id'] != __comp_id:
+                                    _row['comp_id'] = __comp_id
+                                if _row['atom_id'] != __atom_id:
+                                    _row['atom_id'] = __atom_id
+
+                                _row['count'] = int(row['count'])
+                                _row['avg'] = float(row['avg'])
+                                try:
+                                    _row['std'] = float(row['std'])
+                                except ValueError:
+                                    _row['std'] = None
+                                _row['min'] = float(row['min'])
+                                _row['max'] = float(row['max'])
+                                _row['desc'] = 'isolated'
+                                _row['primary'] = False
+                                _row['norm_freq'] = None
+
+                                if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                                    atm_list.append(_row)
+
+                            continue
+
+                    if len(_atom_id) > 3 and has_methyl_geminal_stat:
+                        _item = next(item for item in prev_atm_list if item['atom_id'] == _atom_id and 'avg' in item and item['desc'] == 'methyl-geminal')
+                        others = [item['atom_id'] for item in prev_atm_list
+                                  if item['desc'] == _item['desc'] and item['atom_id'].startswith(_item['atom_id'][:-2]) and item['atom_id'] != _item['atom_id']]
+
+                        if len(others) > 0 and not any('avg' in item for item in prev_atm_list if item['atom_id'] in others):
+
+                            for __atom_id in sorted([_atom_id, others]):
+                                _row = {}
+                                _row['comp_id'] = comp_id
+                                _row['atom_id'] = __atom_id
+
+                                __status, __comp_id, __atom_id = self.checkAtomNomenclature(__atom_id, verbose=self.__verbose)
+                                if not __status:
+                                    continue
+
+                                if _row['comp_id'] != __comp_id:
+                                    _row['comp_id'] = __comp_id
+                                if _row['atom_id'] != __atom_id:
+                                    _row['atom_id'] = __atom_id
+
+                                _row['count'] = int(row['count'])
+                                _row['avg'] = float(row['avg'])
+                                try:
+                                    _row['std'] = float(row['std'])
+                                except ValueError:
+                                    _row['std'] = None
+                                _row['min'] = float(row['min'])
+                                _row['max'] = float(row['max'])
+                                _row['desc'] = 'isolated'
+                                _row['primary'] = False
+                                _row['norm_freq'] = None
+
+                                if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                                    atm_list.append(_row)
+
+                            continue
+
+                    _row = {}
+                    _row['comp_id'] = comp_id
+                    _row['atom_id'] = _atom_id
+
+                    __status, __comp_id, __atom_id = self.checkAtomNomenclature(_row['atom_id'], verbose=self.__verbose)
+                    if not __status:
+                        continue
+
+                    if _row['comp_id'] != __comp_id:
+                        _row['comp_id'] = __comp_id
+                    if _row['atom_id'] != __atom_id:
+                        _row['atom_id'] = __atom_id
+
+                    _row['count'] = int(row['count'])
+                    _row['avg'] = float(row['avg'])
+                    try:
+                        _row['std'] = float(row['std'])
+                    except ValueError:
+                        _row['std'] = None
+                    _row['min'] = float(row['min'])
+                    _row['max'] = float(row['max'])
+                    _row['desc'] = 'isolated'
+                    _row['primary'] = False
+                    _row['norm_freq'] = None
+
+                    if not any(a['comp_id'] == _row['comp_id'] and a['atom_id'] == _row['atom_id'] for a in atm_list):
+                        atm_list.append(_row)
 
         comp_ids = set(item['comp_id'] for item in atm_list)
 
@@ -1157,7 +1591,7 @@ class BMRBChemShiftStat:
 
         self.extras.extend(atm_list)
 
-    def checkAtomNomenclature(self, atom_id, comp_id=None):
+    def checkAtomNomenclature(self, atom_id, comp_id=None, verbose=False):
         """ Check atom nomenclature.
             @return: status (bool), mapped comp_id, mapped atom_id
         """
@@ -1173,7 +1607,7 @@ class BMRBChemShiftStat:
         if cc_rel_status == 'OBS' and '_chem_comp.pdbx_replaced_by' in self.__ccU.lastChemCompDict:
             replaced_by = self.__ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
             if replaced_by not in emptyValue and self.__ccU.updateChemCompDict(replaced_by):
-                if self.__verbose:
+                if verbose:
                     self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id} is replaced by {replaced_by}\n")
 
                 comp_id = replaced_by
@@ -1193,7 +1627,7 @@ class BMRBChemShiftStat:
         ref_atom_ids = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
 
         if len(ref_atom_ids) == 0 or cc_rel_status != 'REL':
-            if self.__verbose:
+            if verbose:
                 self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id} is not valid CCD ID, status code: {cc_rel_status}\n")
             return False, None, None
 
@@ -1206,7 +1640,7 @@ class BMRBChemShiftStat:
             if atom_id == _ref_atom_id:
                 return True, comp_id, atom_id
 
-            if self.__verbose:
+            if verbose:
                 self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} is valid, "
                                  f"but _chem_comp.alt_atom_id matched with different atom_id {_ref_atom_id}\n")
 
@@ -1219,7 +1653,7 @@ class BMRBChemShiftStat:
             _ref_atom_id = next(a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList
                                 if a[self.__ccU.ccaAltAtomId] == atom_id)
 
-            if self.__verbose:
+            if verbose:
                 self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} matched with _chem_comp.alt_atom_id only. "
                                  f"It should be {_ref_atom_id}\n")
 
@@ -1229,8 +1663,8 @@ class BMRBChemShiftStat:
         _ref_atom_ids = [a for a in ref_atom_ids if a[0] == atom_id[0] or a[0] == 'H' and atom_id[0] in pseProBeginCode]
 
         if len(_ref_atom_ids) == 0:
-            if self.__verbose:
-                self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} did not match with any atom in CCD. No candidates foud\n")
+            if verbose:
+                self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} did not match with any atom in CCD. No candidates found\n")
 
             return False, None, None
 
@@ -1247,7 +1681,7 @@ class BMRBChemShiftStat:
             # print(f'case 4. {_comp_id}:{atom_id} -> {comp_id}:{_atom_id}')
             return True, comp_id, _atom_id
 
-        if self.__verbose:
+        if verbose:
             self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} did not match with any atom in CCD, {_ref_atom_ids}\n")
 
         return False, None, None
@@ -1831,6 +2265,48 @@ class BMRBChemShiftStat:
 
         self.__all_comp_ids |= self.__oth_comp_ids
 
+    def updateStatCsvFiles(self):
+        """ Update BMRB chemical shift statistics.
+        """
+        import requests  # pylint: disable=import-outside-toplevel
+        import datetime  # pylint: disable=import-outside-toplevel
+        from dateutil.parser import parse as parsedate  # pylint: disable=import-outside-toplevel
+
+        def update_csv_file(csv_file):
+            try:
+                print(f'Downloading {self.url_for_bmrb_cs_stat_dir + csv_file} -> {self.stat_dir + csv_file} ...')
+                r = requests.get(self.url_for_bmrb_cs_stat_dir + csv_file, timeout=5.0)
+                with open(os.path.join(self.stat_dir + csv_file), 'w') as f_out:
+                    f_out.write(r.text)
+            except Exception as e:
+                self.__lfh.write(f"+BMRBChemShiftStat.updateStatCsvFiles() ++ Error  - {e}\n")
+
+        for csv_file in self.csv_files:
+
+            try:
+                r = requests.head(self.url_for_bmrb_cs_stat_dir + csv_file, timeout=5.0)
+            except Exception as e:
+                self.__lfh.write(f"+BMRBChemShiftStat.updateStatCsvFiles() ++ Error  - {e}\n")
+                return False
+
+            if r.status_code != 200:
+                self.__lfh.write(f"+BMRBChemShiftStat.updateStatCsvFiles() ++ Warning  - {r}\n")
+                return False
+
+            url_last_modified = parsedate(r.headers['Last-Modified']).astimezone()
+
+            if not os.path.exists(self.stat_dir + csv_file):
+                update_csv_file(csv_file)
+
+            else:
+                file_last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(self.stat_dir + csv_file)).astimezone()
+                if url_last_modified > file_last_modified:
+                    update_csv_file(csv_file)
+                else:
+                    print(f'{self.stat_dir + csv_file} is update (Last-Modified: {url_last_modified=})')
+
+        return True
+
     def testAtomNomenclatureOfLibrary(self):
         """ Report inconsistencies between BMRB chemical shift statistics and current CCD.
             @return: status (bool)
@@ -1937,6 +2413,7 @@ class BMRBChemShiftStat:
             print('OK')
         elif result['error'] > 0:
             print(f"{result['error']} Error, {result['warning']} Warning")
+            status = False
         else:
             print(f"{result['warning']} Warning")
 

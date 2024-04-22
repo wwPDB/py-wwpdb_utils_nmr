@@ -1082,6 +1082,8 @@ class BMRBChemShiftStat:
 
         self.__detectMajorResonance(comp_ids, atm_list, primary_th, secondary_th)
 
+        # DAOTHER-9317: retrieve missing statistics of geminal, aromatic opposit, and gemenal methyl groups
+
         __atm_list = copy.deepcopy(atm_list)
 
         atm_list = []
@@ -1098,6 +1100,15 @@ class BMRBChemShiftStat:
 
                 if not self.__ccU.updateChemCompDict(comp_id):
                     continue
+
+                cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
+
+                if cc_rel_status == 'OBS' and '_chem_comp.pdbx_replaced_by' in self.__ccU.lastChemCompDict:
+                    replaced_by = self.__ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
+                    if replaced_by in emptyValue or not self.__ccU.updateChemCompDict(replaced_by):
+                        continue
+
+                    comp_id = replaced_by
 
                 prev_atm_list = [item for item in __atm_list if item['comp_id'] == comp_id]
 
@@ -1440,8 +1451,9 @@ class BMRBChemShiftStat:
                                   if item['desc'] == _item['desc'] and item['atom_id'].startswith(_item['atom_id'][:-2]) and item['atom_id'] != _item['atom_id']]
 
                         if len(others) > 0 and not any('avg' in item for item in prev_atm_list if item['atom_id'] in others):
+                            others.append(_atom_id)
 
-                            for __atom_id in sorted([_atom_id, others]):
+                            for __atom_id in sorted(others):
                                 _row = {}
                                 _row['comp_id'] = comp_id
                                 _row['atom_id'] = __atom_id

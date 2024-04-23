@@ -24584,7 +24584,7 @@ class NmrDpUtility:
                                     __row[19] = __row[6]
                                 lp.add_data(__row)
 
-                                for _atom_id in atom_ids[1:-1]:
+                                for _atom_id in atom_ids[1:]:
                                     __row = copy.copy(_row)
 
                                     index += 1
@@ -24711,7 +24711,7 @@ class NmrDpUtility:
                                 __row[19] = __row[6]
                             lp.add_data(__row)
 
-                            for _atom_id in atom_ids[1:-1]:
+                            for _atom_id in atom_ids[1:]:
                                 __row = copy.copy(_row)
 
                                 index += 1
@@ -25527,7 +25527,7 @@ class NmrDpUtility:
                                 __row = copy.copy(_row)
                                 lp.add_data(__row)
 
-                                for _atom_id in atom_ids[1:-1]:
+                                for _atom_id in atom_ids[1:]:
                                     __row = copy.copy(_row)
 
                                     index += 1
@@ -26248,7 +26248,7 @@ class NmrDpUtility:
                                     __row = copy.copy(_row)
                                     lp.add_data(__row)
 
-                                    for _atom_id in atom_ids[1:-1]:
+                                    for _atom_id in atom_ids[1:]:
                                         __row = copy.copy(_row)
 
                                         index += 1

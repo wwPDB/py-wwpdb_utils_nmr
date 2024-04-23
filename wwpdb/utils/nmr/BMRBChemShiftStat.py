@@ -2315,7 +2315,7 @@ class BMRBChemShiftStat:
                 if url_last_modified > file_last_modified:
                     update_csv_file(csv_file)
                 else:
-                    print(f'{self.stat_dir + csv_file} is update (Last-Modified: {url_last_modified=})')
+                    print(f'{self.stat_dir + csv_file} is update (Last-Modified: {url_last_modified})')
 
         return True
 

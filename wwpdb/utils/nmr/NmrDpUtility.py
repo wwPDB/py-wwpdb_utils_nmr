@@ -9382,7 +9382,6 @@ class NmrDpUtility:
 
         # increment loop counter of each content subtype
         for lp_category in self.__lp_category_list:
-
             if lp_category in self.lp_categories[file_type].values():
                 lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
 
@@ -38039,7 +38038,10 @@ class NmrDpUtility:
                                                                   member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
                                                                   chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
-                    _count[data_type] += 1
+                    if data_type in _count:
+                        _count[data_type] += 1
+                    else:
+                        _count[data_type] = 1
 
                 range_of_vals.append(v)
                 count_of_vals.append(_count)
@@ -38320,7 +38322,10 @@ class NmrDpUtility:
                                                                                   member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
                                                                                   chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
-                                    _count[data_type] += 1
+                                    if data_type in _count:
+                                        _count[data_type] += 1
+                                    else:
+                                        _count[data_type] = 1
 
                             if 0.0 <= v < scale and redundant:
 
@@ -38375,7 +38380,10 @@ class NmrDpUtility:
                                                                               member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
                                                                               chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
-                                _count[data_type] += 1
+                                if data_type in _count:
+                                    _count[data_type] += 1
+                                else:
+                                    _count[data_type] = 1
 
                         range_of_vals.append(v)
                         count_of_vals.append(_count)
@@ -39979,7 +39987,10 @@ class NmrDpUtility:
                                                                                   chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
                                                                                   chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)[0]
 
-                                    _count[data_type] += 1
+                                    if data_type in _count:
+                                        _count[data_type] += 1
+                                    else:
+                                        _count[data_type] = 1
 
                             if 0.0 <= v < scale and redundant:
 
@@ -40003,7 +40014,10 @@ class NmrDpUtility:
                                                                               chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
                                                                               chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)[0]
 
-                                _count[data_type] += 1
+                                if data_type in _count:
+                                    _count[data_type] += 1
+                                else:
+                                    _count[data_type] = 1
 
                         range_of_vals.append(v)
                         count_of_vals.append(_count)
@@ -40359,7 +40373,10 @@ class NmrDpUtility:
 
                     data_type = self.__getTypeOfRdcRestraint(atom_id_1, atom_id_2)
 
-                    _count[data_type] += 1
+                    if data_type in _count:
+                        _count[data_type] += 1
+                    else:
+                        _count[data_type] = 1
 
                 range_of_vals.append(v)
                 count_of_vals.append(_count)
@@ -54415,7 +54432,6 @@ class NmrDpUtility:
 
         # increment loop counter of each content subtype
         for lp_category in self.__lp_category_list:
-
             if lp_category in self.lp_categories[file_type].values():
                 lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
 

@@ -226,6 +226,26 @@ if __name__ == "__main__":
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2n6y/2n6y-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2n6y/2n6y.cif')
+    reader = CyanaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2n6y/2n6y-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2n6y/2n6y.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2l8r/2l8r-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2l8r/2l8r.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2n63/2n63-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2n63/2n63.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/7nt7/final.aco',
                      '../../tests-nmr/mock-data-remediation/7nt7/7nt7.cif')
     reader = CyanaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
@@ -260,9 +280,8 @@ if __name__ == "__main__":
 
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
-    reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/2nam/2nam-corrected.mr',
-                     '../../tests-nmr/mock-data-remediation/2nam/2nam.cif')
+    reader.parse('../../tests-nmr/mock-data-remediation/2nam/2nam-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2nam/2nam.cif')
 
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)

@@ -528,8 +528,9 @@ class CharmmMRParserListener(ParseTreeListener):
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
-                    if self.__reasons is None and any(f for f in self.__f
-                                                      if '[Atom not found]' in f or '[Sequence mismatch]' in f):
+                    if self.__reasons is None\
+                       and (any(f for f in self.__f if '[Atom not found]' in f or '[Sequence mismatch]' in f)
+                            or (not self.hasAnyRestraints() and any(f for f in self.__f if '[Insufficient atom selection]' in f))):
 
                         seqIdRemap = []
 
@@ -757,7 +758,13 @@ class CharmmMRParserListener(ParseTreeListener):
             if 'global_sequence_offset' in self.reasonsForReParsing and 'local_seq_scheme' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['local_seq_scheme']
 
-            if not any(f for f in self.__f if '[Atom not found]' in f):
+            if 'global_auth_sequence_offset' in self.reasonsForReParsing:
+                if 'local_seq_scheme' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['local_seq_scheme']
+                if 'label_seq_scheme' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['label_seq_scheme']
+
+            if not any(f for f in self.__f if '[Atom not found]' in f) and self.hasAnyRestraints():
 
                 if len(self.reasonsForReParsing) > 0:
                     self.reasonsForReParsing = {}
@@ -2843,11 +2850,7 @@ class CharmmMRParserListener(ParseTreeListener):
         if 'atom_selection' not in _factor:
             _factor['atom_selection'] = atomSelection
         else:
-            _atomSelection = []
-            for _atom in _factor['atom_selection']:
-                if _atom in atomSelection:
-                    _atomSelection.append(_atom)
-            _factor['atom_selection'] = _atomSelection
+            _factor['atom_selection'] = self.__intersectionAtom_selections(_factor['atom_selection'], atomSelection)
 
         if len(_factor['atom_selection']) == 0:
             __factor = copy.copy(_factor)
@@ -3420,6 +3423,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                     self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "
                                                                                     "Please re-upload the model file.")
+                                                        elif bondedTo[0][0] == 'O':
+                                                            checked = True
+
                                                 if not checked and not self.__cur_union_expr:
                                                     if chainId in LARGE_ASYM_ID:
                                                         if isPolySeq and not self.__preferAuthSeq\
@@ -4891,9 +4897,37 @@ class CharmmMRParserListener(ParseTreeListener):
                                         "The 'not' clause has no effect.")
 
                 elif 'atom_selection' not in self.factor:
-                    self.factor['atom_id'] = [None]
-                    self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                                    "The 'not' clause has no effect.")
+                    self.factor = self.__consumeFactor_expressions(self.factor, cifCheck=True)
+
+                    if 'atom_selection' in self.factor:
+                        _refAtomSelection = self.factor['atom_selection']
+
+                        try:
+
+                            _atomSelection =\
+                                self.__cR.getDictListWithFilter('atom_site',
+                                                                AUTH_ATOM_DATA_ITEMS,
+                                                                [{'name': self.__modelNumName, 'type': 'int',
+                                                                  'value': self.__representativeModelId},
+                                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                                  'enum': (self.__representativeAltId,)}
+                                                                 ])
+
+                        except Exception as e:
+                            if self.__verbose:
+                                self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}")
+
+                        self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
+
+                        if len(self.factor['atom_selection']) == 0:
+                            self.factor['atom_id'] = [None]
+                            self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                            "The 'not' clause has no effect.")
+
+                    else:
+                        self.factor['atom_id'] = [None]
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                        "The 'not' clause has no effect.")
 
                 else:
 
@@ -5782,6 +5816,17 @@ class CharmmMRParserListener(ParseTreeListener):
                           }
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
+
+    def hasAnyRestraints(self):
+        """ Return whether any restraint is parsed successfully.
+        """
+        if len(self.sfDict) == 0:
+            return False
+        for v in self.sfDict.values():
+            for item in v:
+                if item['index_id'] > 0:
+                    return True
+        return False
 
     def getPolymerSequence(self):
         """ Return polymer sequence of CHARMM MR file.

@@ -221,6 +221,16 @@ class XplorMRReader:
 if __name__ == "__main__":
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6qeu/disu.tbl',
+                 '../../tests-nmr/mock-data-remediation/6qeu/6qeu.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5kmz/TPK_restraints.txt',
+                 '../../tests-nmr/mock-data-remediation/5kmz/5kmz.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6bvy/test.mr',
                  '../../tests-nmr/mock-data-remediation/6bvy/6bvy.cif')
 

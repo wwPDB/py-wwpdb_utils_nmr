@@ -28,7 +28,7 @@ save_nef_nmr_meta_data
 
      '1H chemical shifts'               27   NEED_ACC_NO    
      'distance constraints'             28   NEED_ACC_NO    
-     'ambiguous distance constraints'   39   NEED_ACC_NO    
+     'ambiguous distance constraints'   48   NEED_ACC_NO    
 
    stop_
 
@@ -823,7 +823,7 @@ save_constraint_statistics
       _Constraint_file.Entry_ID
       _Constraint_file.Constraint_stat_list_ID
 
-     1   D_1292133086_nmr-data-original_P1.str   1   distance   .   ambi   17   NEED_ACC_NO   1    
+     1   D_1292133086_nmr-data-original_P1.str   1   distance   .   ambi   18   NEED_ACC_NO   1    
 
    stop_
 
@@ -908,42 +908,51 @@ save_nef_distance_restraint_list_1
      11   1   1   7    VAL   HG21   2   2   1   LIG   H4    29   .   .   OR   .   .   .   2.11   2.82   .   1.0   .   A   7     VAL   HG21   HGy%   B   500   LIG   H4    H4     1   NEED_ACC_NO    
      11   1   1   7    VAL   HG22   2   2   1   LIG   H4    30   .   .   OR   .   .   .   2.11   2.82   .   1.0   .   A   7     VAL   HG22   HGy%   B   500   LIG   H4    H4     1   NEED_ACC_NO    
      11   1   1   7    VAL   HG23   2   2   1   LIG   H4    31   .   .   OR   .   .   .   2.11   2.82   .   1.0   .   A   7     VAL   HG23   HGy%   B   500   LIG   H4    H4     1   NEED_ACC_NO    
-     13   1   1   74   THR   HG21   2   2   1   LIG   H2    32   .   .   OR   .   .   .   3.4    4.53   .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H2    H2     1   NEED_ACC_NO    
-     13   1   1   74   THR   HG22   2   2   1   LIG   H2    33   .   .   OR   .   .   .   3.4    4.53   .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H2    H2     1   NEED_ACC_NO    
-     13   1   1   74   THR   HG23   2   2   1   LIG   H2    34   .   .   OR   .   .   .   3.4    4.53   .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H2    H2     1   NEED_ACC_NO    
-     14   1   1   74   THR   HG21   2   2   1   LIG   H3    35   .   .   OR   .   .   .   2.74   7      .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
-     14   1   1   74   THR   HG22   2   2   1   LIG   H3    36   .   .   OR   .   .   .   2.74   7      .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
-     14   1   1   74   THR   HG23   2   2   1   LIG   H3    37   .   .   OR   .   .   .   2.74   7      .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
-     15   1   1   74   THR   HG21   2   2   1   LIG   H71   38   .   1   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG21   2   2   1   LIG   H72   39   .   2   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG21   2   2   1   LIG   H73   40   .   3   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG22   2   2   1   LIG   H71   41   .   4   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG22   2   2   1   LIG   H72   42   .   5   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG22   2   2   1   LIG   H73   43   .   6   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG23   2   2   1   LIG   H71   44   .   7   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG23   2   2   1   LIG   H72   45   .   8   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     15   1   1   74   THR   HG23   2   2   1   LIG   H73   46   .   9   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD11   2   2   1   LIG   H71   47   .   1   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD11   HDx%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD11   2   2   1   LIG   H72   48   .   2   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD11   HDx%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD11   2   2   1   LIG   H73   49   .   3   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD11   HDx%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD12   2   2   1   LIG   H71   50   .   4   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD12   HDx%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD12   2   2   1   LIG   H72   51   .   5   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD12   HDx%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD12   2   2   1   LIG   H73   52   .   6   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD12   HDx%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD13   2   2   1   LIG   H71   53   .   7   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD13   HDx%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD13   2   2   1   LIG   H72   54   .   8   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD13   HDx%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     16   1   1   56   LEU   HD13   2   2   1   LIG   H73   55   .   9   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD13   HDx%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG21   2   2   1   LIG   H71   56   .   1   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG21   HGy%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG21   2   2   1   LIG   H72   57   .   2   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG21   HGy%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG21   2   2   1   LIG   H73   58   .   3   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG21   HGy%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG22   2   2   1   LIG   H71   59   .   4   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG22   HGy%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG22   2   2   1   LIG   H72   60   .   5   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG22   HGy%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG22   2   2   1   LIG   H73   61   .   6   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG22   HGy%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG23   2   2   1   LIG   H71   62   .   7   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG23   HGy%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG23   2   2   1   LIG   H72   63   .   8   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG23   HGy%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
-     17   1   1   7    VAL   HG23   2   2   1   LIG   H73   64   .   9   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG23   HGy%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
-     18   1   1   7    VAL   HG21   2   2   1   LIG   H5    65   .   .   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG21   HGy%   B   500   LIG   H5    H5     1   NEED_ACC_NO    
-     18   1   1   7    VAL   HG22   2   2   1   LIG   H5    66   .   .   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG22   HGy%   B   500   LIG   H5    H5     1   NEED_ACC_NO    
-     18   1   1   7    VAL   HG23   2   2   1   LIG   H5    67   .   .   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG23   HGy%   B   500   LIG   H5    H5     1   NEED_ACC_NO    
+     12   1   1   74   THR   HG21   2   2   1   LIG   H11   32   .   1   OR   .   .   .   3.29   4.39   .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H11   Q1     1   NEED_ACC_NO    
+     12   1   1   74   THR   HG21   2   2   1   LIG   H12   33   .   2   OR   .   .   .   3.29   4.39   .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H12   Q1     1   NEED_ACC_NO    
+     12   1   1   74   THR   HG21   2   2   1   LIG   H13   34   .   3   OR   .   .   .   3.29   4.39   .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H13   Q1     1   NEED_ACC_NO    
+     12   1   1   74   THR   HG22   2   2   1   LIG   H11   35   .   4   OR   .   .   .   3.29   4.39   .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H11   Q1     1   NEED_ACC_NO    
+     12   1   1   74   THR   HG22   2   2   1   LIG   H12   36   .   5   OR   .   .   .   3.29   4.39   .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H12   Q1     1   NEED_ACC_NO    
+     12   1   1   74   THR   HG22   2   2   1   LIG   H13   37   .   6   OR   .   .   .   3.29   4.39   .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H13   Q1     1   NEED_ACC_NO    
+     12   1   1   74   THR   HG23   2   2   1   LIG   H11   38   .   7   OR   .   .   .   3.29   4.39   .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H11   Q1     1   NEED_ACC_NO    
+     12   1   1   74   THR   HG23   2   2   1   LIG   H12   39   .   8   OR   .   .   .   3.29   4.39   .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H12   Q1     1   NEED_ACC_NO    
+     12   1   1   74   THR   HG23   2   2   1   LIG   H13   40   .   9   OR   .   .   .   3.29   4.39   .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H13   Q1     1   NEED_ACC_NO    
+     13   1   1   74   THR   HG21   2   2   1   LIG   H2    41   .   .   OR   .   .   .   3.4    4.53   .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H2    H2     1   NEED_ACC_NO    
+     13   1   1   74   THR   HG22   2   2   1   LIG   H2    42   .   .   OR   .   .   .   3.4    4.53   .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H2    H2     1   NEED_ACC_NO    
+     13   1   1   74   THR   HG23   2   2   1   LIG   H2    43   .   .   OR   .   .   .   3.4    4.53   .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H2    H2     1   NEED_ACC_NO    
+     14   1   1   74   THR   HG21   2   2   1   LIG   H3    44   .   .   OR   .   .   .   2.74   7      .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
+     14   1   1   74   THR   HG22   2   2   1   LIG   H3    45   .   .   OR   .   .   .   2.74   7      .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
+     14   1   1   74   THR   HG23   2   2   1   LIG   H3    46   .   .   OR   .   .   .   2.74   7      .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H3    H3     1   NEED_ACC_NO    
+     15   1   1   74   THR   HG21   2   2   1   LIG   H71   47   .   1   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
+     15   1   1   74   THR   HG21   2   2   1   LIG   H72   48   .   2   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
+     15   1   1   74   THR   HG21   2   2   1   LIG   H73   49   .   3   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG21   HG2%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
+     15   1   1   74   THR   HG22   2   2   1   LIG   H71   50   .   4   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
+     15   1   1   74   THR   HG22   2   2   1   LIG   H72   51   .   5   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
+     15   1   1   74   THR   HG22   2   2   1   LIG   H73   52   .   6   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG22   HG2%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
+     15   1   1   74   THR   HG23   2   2   1   LIG   H71   53   .   7   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
+     15   1   1   74   THR   HG23   2   2   1   LIG   H72   54   .   8   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
+     15   1   1   74   THR   HG23   2   2   1   LIG   H73   55   .   9   OR   .   .   .   2.5    6.0    .   1.0   .   A   74    THR   HG23   HG2%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
+     16   1   1   56   LEU   HD11   2   2   1   LIG   H71   56   .   1   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD11   HDx%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
+     16   1   1   56   LEU   HD11   2   2   1   LIG   H72   57   .   2   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD11   HDx%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
+     16   1   1   56   LEU   HD11   2   2   1   LIG   H73   58   .   3   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD11   HDx%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
+     16   1   1   56   LEU   HD12   2   2   1   LIG   H71   59   .   4   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD12   HDx%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
+     16   1   1   56   LEU   HD12   2   2   1   LIG   H72   60   .   5   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD12   HDx%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
+     16   1   1   56   LEU   HD12   2   2   1   LIG   H73   61   .   6   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD12   HDx%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
+     16   1   1   56   LEU   HD13   2   2   1   LIG   H71   62   .   7   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD13   HDx%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
+     16   1   1   56   LEU   HD13   2   2   1   LIG   H72   63   .   8   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD13   HDx%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
+     16   1   1   56   LEU   HD13   2   2   1   LIG   H73   64   .   9   OR   .   .   .   2.5    6.0    .   1.0   .   A   56    LEU   HD13   HDx%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
+     17   1   1   7    VAL   HG21   2   2   1   LIG   H71   65   .   1   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG21   HGy%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
+     17   1   1   7    VAL   HG21   2   2   1   LIG   H72   66   .   2   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG21   HGy%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
+     17   1   1   7    VAL   HG21   2   2   1   LIG   H73   67   .   3   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG21   HGy%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
+     17   1   1   7    VAL   HG22   2   2   1   LIG   H71   68   .   4   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG22   HGy%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
+     17   1   1   7    VAL   HG22   2   2   1   LIG   H72   69   .   5   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG22   HGy%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
+     17   1   1   7    VAL   HG22   2   2   1   LIG   H73   70   .   6   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG22   HGy%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
+     17   1   1   7    VAL   HG23   2   2   1   LIG   H71   71   .   7   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG23   HGy%   B   500   LIG   H71   Hx%    1   NEED_ACC_NO    
+     17   1   1   7    VAL   HG23   2   2   1   LIG   H72   72   .   8   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG23   HGy%   B   500   LIG   H72   Hx%    1   NEED_ACC_NO    
+     17   1   1   7    VAL   HG23   2   2   1   LIG   H73   73   .   9   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG23   HGy%   B   500   LIG   H73   Hx%    1   NEED_ACC_NO    
+     18   1   1   7    VAL   HG21   2   2   1   LIG   H5    74   .   .   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG21   HGy%   B   500   LIG   H5    H5     1   NEED_ACC_NO    
+     18   1   1   7    VAL   HG22   2   2   1   LIG   H5    75   .   .   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG22   HGy%   B   500   LIG   H5    H5     1   NEED_ACC_NO    
+     18   1   1   7    VAL   HG23   2   2   1   LIG   H5    76   .   .   OR   .   .   .   3.5    20.0   .   1.0   .   A   7     VAL   HG23   HGy%   B   500   LIG   H5    H5     1   NEED_ACC_NO    
 
    stop_
 

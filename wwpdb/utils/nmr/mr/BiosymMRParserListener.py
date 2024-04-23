@@ -7,6 +7,7 @@
     @author: Masashi Yokochi
 """
 import sys
+import re
 import itertools
 import numpy
 import copy
@@ -26,6 +27,7 @@ try:
                                                        hasInterChainRestraint,
                                                        isAmbigAtomSelection,
                                                        isCyclicPolymer,
+                                                       isStructConn,
                                                        getAltProtonIdInBondConstraint,
                                                        isLikePheOrTyr,
                                                        getRestraintName,
@@ -62,6 +64,7 @@ try:
                                            protonBeginCode,
                                            pseProBeginCode,
                                            aminoProtonCode,
+                                           zincIonCode,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -92,6 +95,7 @@ except ImportError:
                                            hasInterChainRestraint,
                                            isAmbigAtomSelection,
                                            isCyclicPolymer,
+                                           isStructConn,
                                            getAltProtonIdInBondConstraint,
                                            isLikePheOrTyr,
                                            getRestraintName,
@@ -128,6 +132,7 @@ except ImportError:
                                protonBeginCode,
                                pseProBeginCode,
                                aminoProtonCode,
+                               zincIonCode,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -219,6 +224,8 @@ class BiosymMRParserListener(ParseTreeListener):
     __authToStarSeq = None
     __authToOrigSeq = None
     __authToInsCode = None
+    __modResidue = None
+    __splitLigand = None
 
     __offsetHolder = None
 
@@ -269,6 +276,8 @@ class BiosymMRParserListener(ParseTreeListener):
     # dictionary of pynmrstar saveframes
     sfDict = {}
 
+    __cachedDictForStarAtom = {}
+
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  representativeAltId=REPRESENTATIVE_ALT_ID,
@@ -303,6 +312,8 @@ class BiosymMRParserListener(ParseTreeListener):
             self.__authToStarSeq = ret['auth_to_star_seq']
             self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
+            self.__modResidue = ret['mod_residue']
+            self.__splitLigand = ret['split_ligand']
 
         self.__offsetHolder = {}
 
@@ -352,6 +363,8 @@ class BiosymMRParserListener(ParseTreeListener):
         self.geoRestraints = 0       # BIOSYM: Chirality/prochirality constraints
 
         self.sfDict = {}
+
+        self.__cachedDictForStarAtom = {}
 
     def setDebugMode(self, debug):
         self.__debug = debug
@@ -1084,17 +1097,41 @@ class BiosymMRParserListener(ParseTreeListener):
 
         self.__allow_ext_seq = False
 
-        if compId in ('CYSZ', 'CYZ', 'CYS') and atomId == 'ZN' and self.__hasNonPoly:
+        if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
+           and atomId in zincIonCode and self.__hasNonPolySeq:
             znCount = 0
             znSeqId = None
             for np in self.__nonPoly:
                 if np['comp_id'][0] == 'ZN':
                     znSeqId = np['auth_seq_id'][0]
                     znCount += 1
-            if znCount == 1:
+            if znCount > 0:
                 compId = _compId = 'ZN'
-                seqId = _seqId = znSeqId
+                if znCount == 1:
+                    seqId = _seqId = znSeqId
+                if atomId in zincIonCode:
+                    atomId = 'ZN'
                 preferNonPoly = True
+
+        if self.__splitLigand is not None and len(self.__splitLigand):
+            found = False
+            for (_, _seqId_, _compId_), ligList in self.__splitLigand.items():
+                if _seqId_ != seqId or _compId_ != compId:
+                    continue
+                for idx, lig in enumerate(ligList):
+                    _atomId = atomId
+                    if self.__mrAtomNameMapping is not None and compId not in monDict3:
+                        _, _, _atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+
+                    if _atomId in lig['atom_ids']:
+                        seqId = _seqId = lig['auth_seq_id']
+                        compId = _compId = lig['comp_id']
+                        atomId = _atomId
+                        preferNonPoly = idx > 0
+                        found = True
+                        break
+                if found:
+                    break
 
         if refChainId is not None:
             if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == refChainId):
@@ -1105,6 +1142,13 @@ class BiosymMRParserListener(ParseTreeListener):
             seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
         compId = translateToStdResName(_compId, ccU=self.__ccU)
+
+        if len(self.__modResidue) > 0:
+            modRes = next((modRes for modRes in self.__modResidue
+                           if modRes['auth_comp_id'] == compId
+                           and (compId != _compId or seqId in (modRes['auth_seq_id'], modRes['seq_id']))), None)
+            if modRes is not None:
+                compId = modRes['comp_id']
 
         if self.__reasons is not None:
             if 'non_poly_remap' in self.__reasons and _compId in self.__reasons['non_poly_remap']\
@@ -1123,16 +1167,20 @@ class BiosymMRParserListener(ParseTreeListener):
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
                 refChainId = fixedChainId
             elif 'seq_id_remap' in self.__reasons\
-                 or 'chain_seq_id_remap' in self.__reasons\
-                 or 'ext_chain_seq_id_remap' in self.__reasons:
+                    or 'chain_seq_id_remap' in self.__reasons\
+                    or 'ext_chain_seq_id_remap' in self.__reasons:
                 if 'ext_chain_seq_id_remap' in self.__reasons:
                     fixedChainId, fixedSeqId, fixedCompId =\
                         retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], str(refChainId), seqId,
                                                        compId if compId in monDict3 else None)
                     self.__allow_ext_seq = fixedCompId is not None
+                    if fixedSeqId is not None:
+                        refChainId = fixedChainId
                 if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
                     fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], str(refChainId), seqId,
                                                                      compId if compId in monDict3 else None)
+                    if fixedSeqId is not None:
+                        refChainId = fixedChainId
                 if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
                     _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
             if fixedSeqId is not None:
@@ -1170,7 +1218,7 @@ class BiosymMRParserListener(ParseTreeListener):
                         idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(ps['auth_seq_id'], ps['comp_id']))
                                     if _seqId_ == seqId and _cifCompId_ == cifCompId), ps['auth_seq_id'].index(seqId))
                     else:
-                        idx = ps['auth_seq_id'].index(seqId)
+                        idx = ps['auth_seq_id'].index(seqId) if seqId in ps['auth_seq_id'] else ps['seq_id'].index(seqId)
                     cifCompId = ps['comp_id'][idx]
                     origCompId = ps['auth_comp_id'][idx]
                 if cifCompId != compId:
@@ -1241,6 +1289,14 @@ class BiosymMRParserListener(ParseTreeListener):
                                 pass
 
         if self.__hasNonPolySeq:
+            ligands = 0
+            if self.__hasNonPoly:
+                for np in self.__nonPoly:
+                    ligands += np['comp_id'].count(_compId)
+                if ligands == 0:
+                    for np in self.__nonPoly:
+                        if 'alt_comp_id' in np:
+                            ligands += np['alt_comp_id'].count(_compId)
             for np in self.__nonPolySeq:
                 chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
@@ -1255,11 +1311,16 @@ class BiosymMRParserListener(ParseTreeListener):
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
-                    if cifCompId is not None:
-                        idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(np['auth_seq_id'], np['comp_id']))
-                                    if _seqId_ == seqId and _cifCompId_ == cifCompId), np['auth_seq_id'].index(seqId))
-                    else:
-                        idx = np['auth_seq_id'].index(seqId)
+                    idx = -1
+                    try:
+                        if cifCompId is not None:
+                            idx = next(_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(np['auth_seq_id'], np['comp_id']))
+                                       if _seqId_ == seqId and _cifCompId_ == cifCompId)
+                    except StopIteration:
+                        pass
+                    if idx == -1:
+                        idx = np['auth_seq_id'].index(seqId) if seqId in np['auth_seq_id']\
+                            else np['seq_id'].index(seqId) if seqId in np['seq_id'] else 0
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
@@ -1461,24 +1522,13 @@ class BiosymMRParserListener(ParseTreeListener):
 
         authAtomId = atomId
 
-        _compId = compId
-        _atomId = atomId
-
-        if compId in ('CYSZ', 'CYZ', 'CYS') and atomId == 'ZN' and self.__hasNonPoly:
-            znCount = 0
-            znSeqId = None
-            for np in self.__nonPoly:
-                if np['comp_id'][0] == 'ZN':
-                    znSeqId = np['auth_seq_id'][0]
-                    znCount += 1
-            if znCount == 1:
-                compId = _compId = 'ZN'
-                seqId = znSeqId
+        __compId = compId
+        __atomId = atomId
 
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
-            _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+            __atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
 
-        compId = translateToStdResName(_compId, ccU=self.__ccU)
+        compId = translateToStdResName(__compId, ccU=self.__ccU)
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 
@@ -1488,9 +1538,9 @@ class BiosymMRParserListener(ParseTreeListener):
 
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, cifCompId, asis=self.__preferAuthSeq)
 
-            if self.__cur_subtype == 'dist' and _compId is not None\
-               and (_compId.startswith('MTS') or _compId.startswith('ORI')) and cifCompId != _compId:
-                if _atomId[0] in ('O', 'N'):
+            if self.__cur_subtype == 'dist' and __compId is not None\
+               and (__compId.startswith('MTS') or __compId.startswith('ORI')) and cifCompId != __compId:
+                if __atomId[0] in ('O', 'N'):
 
                     if cifCompId == 'CYS':
                         atomId = 'SG'
@@ -1517,38 +1567,66 @@ class BiosymMRParserListener(ParseTreeListener):
                     atomId = 'CA'
 
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
-                if atomId != _atomId and coordAtomSite is not None\
-                   and (_atomId in coordAtomSite['atom_id'] or (_atomId.endswith('%') and _atomId[:-1] + '2' in coordAtomSite['atom_id'])):
-                    atomId = _atomId
+                __atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
+                if atomId != __atomId and coordAtomSite is not None\
+                   and (__atomId in coordAtomSite['atom_id'] or (__atomId.endswith('%') and __atomId[:-1] + '2' in coordAtomSite['atom_id'])):
+                    atomId = __atomId
                 elif self.__reasons is not None and 'branched_remap' in self.__reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, cifSeqId)
                     if _seqId != cifSeqId:
                         _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
 
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, cifCompId)
-            if atomId != _atomId and coordAtomSite is not None and _atomId in coordAtomSite['atom_id']:
-                atomId = _atomId
+            if atomId != __atomId and coordAtomSite is not None and __atomId in coordAtomSite['atom_id']:
+                atomId = __atomId
 
-            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
-            if details is not None and len(atomId) > 1 and not atomId[-1].isalpha() and (atomId[0] in pseProBeginCode or atomId[0] in ('C', 'N', 'P', 'F')):
-                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
-                if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
-                    _atomId = [_atomId[int(atomId[-1]) - 1]]
+            _atomId = []
+            if not isPolySeq and atomId[0] in ('Q', 'M') and coordAtomSite is not None:
+                key = (chainId, cifSeqId, compId, atomId)
+                if key in self.__cachedDictForStarAtom:
+                    _atomId = copy.deepcopy(self.__cachedDictForStarAtom[key])
+                else:
+                    pattern = re.compile(fr'H{atomId[1:]}\d+') if compId in monDict3 else re.compile(fr'H{atomId[1:]}\S?$')
+                    atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
+                    if len(atomIdList) > 1:
+                        hvyAtomIdList = [a for a in coordAtomSite['atom_id'] if a[0] in ('C', 'N')]
+                        hvyAtomId = None
+                        for canHvyAtomId in hvyAtomIdList:
+                            if isStructConn(self.__cR, chainId, cifSeqId, canHvyAtomId, chainId, cifSeqId, atomIdList[0],
+                                            representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
+                                            modelNumName=self.__modelNumName):
+                                hvyAtomId = canHvyAtomId
+                                break
+                        if hvyAtomId is not None:
+                            for _atomId_ in atomIdList:
+                                if isStructConn(self.__cR, chainId, cifSeqId, hvyAtomId, chainId, cifSeqId, _atomId_,
+                                                representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
+                                                modelNumName=self.__modelNumName):
+                                    _atomId.append(_atomId_)
+                    if len(_atomId) > 1:
+                        self.__cachedDictForStarAtom[key] = copy.deepcopy(_atomId)
+            if len(_atomId) > 1:
+                details = None
+            else:
+                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
+                if details is not None and len(atomId) > 1 and not atomId[-1].isalpha() and (atomId[0] in pseProBeginCode or atomId[0] in ('C', 'N', 'P', 'F')):
+                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
+                    if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                        _atomId = [_atomId[int(atomId[-1]) - 1]]
 
             if details is not None or atomId.endswith('"'):
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)
                 if _atomId_ != atomId:
                     if atomId.startswith('HT') and len(_atomId_) == 2:
                         _atomId_ = 'H'
-                    __atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
+                    __atomId__ = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                     if coordAtomSite is not None:
-                        if any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
-                            _atomId = __atomId
-                        elif __atomId[0][0] in protonBeginCode:
-                            __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId[0])
+                        if any(_atomId_ for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
+                            _atomId = __atomId__
+                        elif __atomId__[0][0] in protonBeginCode:
+                            __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId__[0])
                             if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
-                                _atomId = __atomId
+                                _atomId = __atomId__
                 elif coordAtomSite is not None:
                     _atomId = []
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
@@ -1568,6 +1646,11 @@ class BiosymMRParserListener(ParseTreeListener):
                                 break
                 except ValueError:
                     pass
+
+            if coordAtomSite is not None and len(_atomId) == 0 and __atomId in zincIonCode\
+               and 'ZN' in coordAtomSite['atom_id']:
+                compId = atomId = 'ZN'
+                _atomId = [atomId]
 
             lenAtomId = len(_atomId)
             if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
@@ -1590,7 +1673,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                 self.__setLocalSeqScheme()
                                 continue
                     self.__f.append(f"[Sequence mismatch] {self.__getCurrentRestraint()}"
-                                    f"Residue name {_compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
+                                    f"Residue name {__compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
                     continue
 
             if compId != cifCompId and compId in monDict3 and not isPolySeq:
@@ -1603,11 +1686,11 @@ class BiosymMRParserListener(ParseTreeListener):
                     self.selectCoordAtoms(chainAssign, seqId, compId, atomId, allowAmbig, offset=1)
                     return
                 self.__f.append(f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"
-                                f"{seqId}:{_compId}:{atomId} is invalid atom nomenclature.")
+                                f"{seqId}:{__compId}:{__atomId} is invalid atom nomenclature.")
                 continue
             if lenAtomId > 1 and not allowAmbig:
                 self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
-                                f"Ambiguous atom selection '{seqId}:{_compId}:{atomId}' is not allowed as a angle restraint.")
+                                f"Ambiguous atom selection '{seqId}:{__compId}:{__atomId}' is not allowed as a angle restraint.")
                 continue
 
             for cifAtomId in _atomId:
@@ -1641,6 +1724,8 @@ class BiosymMRParserListener(ParseTreeListener):
                 _cifAtomId = self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
                 if cifAtomId != _cifAtomId:
                     atomSelection[-1]['atom_id'] = _cifAtomId
+                    if _cifAtomId.startswith('Ignorable'):
+                        atomSelection.pop()
 
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
@@ -1850,6 +1935,9 @@ class BiosymMRParserListener(ParseTreeListener):
                                                     f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                     "Please re-upload the model file.")
                                     return atomId
+                            if bondedTo[0][0] == 'O':
+                                return 'Ignorable hydroxyl group'
+
                     if chainId in LARGE_ASYM_ID:
                         if self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"

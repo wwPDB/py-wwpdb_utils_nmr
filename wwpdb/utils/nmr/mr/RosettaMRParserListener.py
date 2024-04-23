@@ -32,6 +32,7 @@ try:
                                                        getRdcCode,
                                                        translateToStdAtomName,
                                                        isCyclicPolymer,
+                                                       isStructConn,
                                                        getRestraintName,
                                                        contentSubtypeOf,
                                                        incListIdCounter,
@@ -70,6 +71,7 @@ try:
                                            protonBeginCode,
                                            aminoProtonCode,
                                            rdcBbPairCode,
+                                           zincIonCode,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
@@ -107,6 +109,7 @@ except ImportError:
                                            getRdcCode,
                                            translateToStdAtomName,
                                            isCyclicPolymer,
+                                           isStructConn,
                                            getRestraintName,
                                            contentSubtypeOf,
                                            incListIdCounter,
@@ -145,6 +148,7 @@ except ImportError:
                                protonBeginCode,
                                aminoProtonCode,
                                rdcBbPairCode,
+                               zincIonCode,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
@@ -312,6 +316,8 @@ class RosettaMRParserListener(ParseTreeListener):
     # dictionary of pynmrstar saveframes
     sfDict = {}
 
+    __cachedDictForStarAtom = {}
+
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  representativeAltId=REPRESENTATIVE_ALT_ID,
@@ -408,6 +414,8 @@ class RosettaMRParserListener(ParseTreeListener):
         self.__atom_sel_comment_pattern = re.compile(r'([A-Za-z]+)(\d+)(\S+)$')
 
         self.sfDict = {}
+
+        self.__cachedDictForStarAtom = {}
 
     def setDebugMode(self, debug):
         self.__debug = debug
@@ -1455,34 +1463,62 @@ class RosettaMRParserListener(ParseTreeListener):
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, asis=self.__preferAuthSeq)
 
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                _atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
-                if atomId != _atomId and coordAtomSite is not None\
-                   and (_atomId in coordAtomSite['atom_id'] or (_atomId.endswith('%') and _atomId[:-1] + '2' in coordAtomSite['atom_id'])):
-                    atomId = _atomId
+                _atomId_ = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
+                if atomId != _atomId_ and coordAtomSite is not None\
+                   and (_atomId_ in coordAtomSite['atom_id'] or (_atomId_.endswith('%') and _atomId_[:-1] + '2' in coordAtomSite['atom_id'])):
+                    atomId = _atomId_
                 elif self.__reasons is not None and 'branched_remap' in self.__reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, cifSeqId)
                     if _seqId != cifSeqId:
                         _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
 
-            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
-            if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
-                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
-                if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
-                    _atomId = [_atomId[int(atomId[-1]) - 1]]
+            _atomId = []
+            if not isPolySeq and atomId[0] in ('Q', 'M') and coordAtomSite is not None:
+                key = (chainId, cifSeqId, cifCompId, atomId)
+                if key in self.__cachedDictForStarAtom:
+                    _atomId = copy.deepcopy(self.__cachedDictForStarAtom[key])
+                else:
+                    pattern = re.compile(fr'H{atomId[1:]}\d+') if cifCompId in monDict3 else re.compile(fr'H{atomId[1:]}\S?$')
+                    atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
+                    if len(atomIdList) > 1:
+                        hvyAtomIdList = [a for a in coordAtomSite['atom_id'] if a[0] in ('C', 'N')]
+                        hvyAtomId = None
+                        for canHvyAtomId in hvyAtomIdList:
+                            if isStructConn(self.__cR, chainId, cifSeqId, canHvyAtomId, chainId, cifSeqId, atomIdList[0],
+                                            representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
+                                            modelNumName=self.__modelNumName):
+                                hvyAtomId = canHvyAtomId
+                                break
+                        if hvyAtomId is not None:
+                            for _atomId_ in atomIdList:
+                                if isStructConn(self.__cR, chainId, cifSeqId, hvyAtomId, chainId, cifSeqId, _atomId_,
+                                                representativeModelId=self.__representativeModelId, representativeAltId=self.__representativeAltId,
+                                                modelNumName=self.__modelNumName):
+                                    _atomId.append(_atomId_)
+                    if len(_atomId) > 1:
+                        self.__cachedDictForStarAtom[key] = copy.deepcopy(_atomId)
+            if len(_atomId) > 1:
+                details = None
+            else:
+                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
+                if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
+                    if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                        _atomId = [_atomId[int(atomId[-1]) - 1]]
 
             if details is not None or atomId.endswith('"'):
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)
                 if _atomId_ != atomId:
                     if atomId.startswith('HT') and len(_atomId_) == 2:
                         _atomId_ = 'H'
-                    __atomId = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
+                    __atomId__ = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, _atomId_)[0]
                     if coordAtomSite is not None:
-                        if any(_atomId_ for _atomId_ in __atomId if _atomId_ in coordAtomSite['atom_id']):
-                            _atomId = __atomId
-                        elif __atomId[0][0] in protonBeginCode:
-                            __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId[0])
+                        if any(_atomId_ for _atomId_ in __atomId__ if _atomId_ in coordAtomSite['atom_id']):
+                            _atomId = __atomId__
+                        elif __atomId__[0][0] in protonBeginCode:
+                            __bondedTo = self.__ccU.getBondedAtoms(cifCompId, __atomId__[0])
                             if len(__bondedTo) > 0 and __bondedTo[0] in coordAtomSite['atom_id']:
-                                _atomId = __atomId
+                                _atomId = __atomId__
                 elif coordAtomSite is not None:
                     _atomId = []
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
@@ -1507,14 +1543,19 @@ class RosettaMRParserListener(ParseTreeListener):
                 except ValueError:
                     pass
 
+            if coordAtomSite is not None and len(_atomId) == 0 and authAtomId in zincIonCode\
+               and 'ZN' in coordAtomSite['atom_id']:
+                atomId = 'ZN'
+                _atomId = [atomId]
+
             lenAtomId = len(_atomId)
             if lenAtomId == 0:
                 self.__f.append(f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"
-                                f"{seqId}:{atomId} is invalid atom nomenclature.")
+                                f"{seqId}:{authAtomId} is invalid atom nomenclature.")
                 continue
             if lenAtomId > 1 and not allowAmbig:
                 self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
-                                f"Ambiguous atom selection '{seqId}:{atomId}' is not allowed as {subtype_name} restraint.")
+                                f"Ambiguous atom selection '{seqId}:{authAtomId}' is not allowed as {subtype_name} restraint.")
                 continue
 
             for cifAtomId in _atomId:
@@ -1769,6 +1810,9 @@ class RosettaMRParserListener(ParseTreeListener):
                                                     f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                     "Please re-upload the model file.")
                                     return atomId
+                            if bondedTo[0][0] == 'O':
+                                return 'Ignorable hydroxyl group'
+
                     if chainId in LARGE_ASYM_ID:
                         if self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"

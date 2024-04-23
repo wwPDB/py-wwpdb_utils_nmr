@@ -1497,6 +1497,31 @@ class NEFTranslator:
             len_loop_data = len(loop.data)
 
             if lp_category == '_Atom_chem_shift' and self.__remediation_mode and set(tags) & set(loop.tags) == set(tags) and set(tags__) & set(loop.tags) == set(tags__):
+                if seq_id != alt_seq_id and alt_seq_id in loop.tags:
+                    pre_tag = [seq_id, alt_seq_id]
+                    pre_seq_data = get_lp_tag(loop, pre_tag)
+                    seq_id_set = set()
+                    alt_seq_id_set = set()
+                    for row in pre_seq_data:
+                        seq_id_set.add(row[0])
+                        alt_seq_id_set.add(row[1])
+                    if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:  # 2kyb
+                        seq_id_col = loop.tags.index('Comp_index_ID')
+                        alt_seq_id_col = loop.tags.index('Seq_ID')
+                        for r in loop.data:
+                            r[seq_id_col] = r[alt_seq_id_col]
+                    elif 'Auth_seq_ID' in loop.tags:
+                        pre_tag = ['Auth_seq_ID']
+                        pre_seq_data = get_lp_tag(loop, pre_tag)
+                        alt_seq_id_set = set()
+                        for row in pre_seq_data:
+                            alt_seq_id_set.add(row[0])
+                        if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:  # 6wux
+                            seq_id_col = loop.tags.index('Comp_index_ID')
+                            alt_seq_id_col = loop.tags.index('Auth_seq_ID')
+                            for r in loop.data:
+                                r[seq_id_col] = r[alt_seq_id_col]
+
                 seq_data = get_lp_tag(loop, tags)
                 has_valid_chain_id = True
                 for row in seq_data:
@@ -2464,6 +2489,31 @@ class NEFTranslator:
                         if 'Folding_type' in loop.tags and 'Under_sampling_type' in allowed_tags:
                             col = loop.tags.index('Folding_type')
                             loop.tags[col] = 'Under_sampling_type'
+
+                if lp_category == '_Atom_chem_shift' and self.__remediation_mode and 'Comp_index_ID' in loop.tags and 'Seq_ID' in loop.tags:
+                    pre_tag = ['Comp_index_ID', 'Seq_ID']
+                    pre_seq_data = get_lp_tag(loop, pre_tag)
+                    seq_id_set = set()
+                    alt_seq_id_set = set()
+                    for row in pre_seq_data:
+                        seq_id_set.add(row[0])
+                        alt_seq_id_set.add(row[1])
+                    if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:  # 2kyb
+                        seq_id_col = loop.tags.index('Comp_index_ID')
+                        alt_seq_id_col = loop.tags.index('Seq_ID')
+                        for r in loop.data:
+                            r[seq_id_col] = r[alt_seq_id_col]
+                    elif 'Auth_seq_ID' in loop.tags:
+                        pre_tag = ['Auth_seq_ID']
+                        pre_seq_data = get_lp_tag(loop, pre_tag)
+                        alt_seq_id_set = set()
+                        for row in pre_seq_data:
+                            alt_seq_id_set.add(row[0])
+                        if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:  # 6wux
+                            seq_id_col = loop.tags.index('Comp_index_ID')
+                            alt_seq_id_col = loop.tags.index('Auth_seq_ID')
+                            for r in loop.data:
+                                r[seq_id_col] = r[alt_seq_id_col]
 
                 tag_data = []
 
@@ -4801,6 +4851,24 @@ class NEFTranslator:
                     atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id + '*', details, leave_unmatched, methyl_only)
                     if details is not None:
                         atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
+                        # 2l8r, comp_id=APR, atom_id=Q5D -> ['H5R1', 'H5R2']
+                        if details is not None and atom_id[0] in ('Q', 'M'):
+                            protons = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[1:], onlyProton=True)
+                            resolved = False
+                            len_protons = len(protons)
+                            if len_protons in (1, 3):
+                                atom_list, ambiguity_code, details = protons, 1, None
+                                resolved = True
+                            elif len_protons == 2:
+                                atom_list, ambiguity_code, details = protons, 2, None
+                                resolved = True
+                            if not resolved:
+                                protons = self.__ccU.getBondedAtoms(comp_id, 'N' + atom_id[1:], onlyProton=True)
+                                len_protons = len(protons)
+                                if len_protons in (1, 3):
+                                    atom_list, ambiguity_code, details = protons, 1, None
+                                elif len_protons == 2:
+                                    atom_list, ambiguity_code, details = protons, 2, None
 
             return (atom_list, ambiguity_code, details)
 
@@ -4990,7 +5058,7 @@ class NEFTranslator:
                             if atom_list[0] in v:
                                 len_v = len(v)
                                 if len_v == 2:
-                                    return 2  # methylen/amino
+                                    return 2  # methylene/amino
                                 if len_v == 1:
                                     if k[0] == 'C' and self.chemCompTopo is not None and comp_id in self.chemCompTopo\
                                        and any(len(tv) == 2 and tv[0][0] == 'C' and tv[1][0] == 'C'

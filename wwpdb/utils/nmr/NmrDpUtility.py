@@ -14245,7 +14245,8 @@ class NmrDpUtility:
                         if footer:
                             fofh.write(line)
                             col = line.split()
-                            if len(col) == 10:
+                            len_col = len(col)
+                            if len_col == 10:
                                 original_comp_id = col[5]
                                 if original_comp_id not in monDict3:  # extract non-standard residues
                                     try:
@@ -14255,9 +14256,65 @@ class NmrDpUtility:
                                                     'original_atom_id': col[4],
                                                     'original_comp_id': original_comp_id,
                                                     'original_seq_id': int(col[3])}
-                                        self.__mr_atom_name_mapping.append(atom_map)
+                                        if atom_map not in self.__mr_atom_name_mapping:
+                                            self.__mr_atom_name_mapping.append(atom_map)
                                     except ValueError:
                                         pass
+                            elif len_col >= 8:  # 2liw 4 digits residue number
+
+                                def split_concat_comp_id_seq_id(string):
+                                    if not string[-1].isdigit():
+                                        return None, None
+                                    idx = len(string) - 1
+                                    while idx >= 0 and string[idx].isdigit():
+                                        idx -= 1
+                                    if idx == 0:
+                                        return None, None
+                                    if string[idx] != '-':
+                                        idx += 1
+                                    return string[:idx], int(string[idx:])
+
+                                if len(col[2]) > 4:
+                                    auth_comp_id, auth_seq_id = split_concat_comp_id_seq_id(col[2])
+
+                                    if len(col[4]) > 4 and len_col == 8:
+                                        orig_comp_id, orig_seq_id = split_concat_comp_id_seq_id(col[4])
+                                        if auth_comp_id is not None and orig_comp_id is not None and orig_comp_id not in monDict3:
+                                            atom_map = {'auth_atom_id': col[1],
+                                                        'auth_comp_id': auth_comp_id,
+                                                        'auth_seq_id': auth_seq_id,
+                                                        'original_atom_id': col[3],
+                                                        'original_comp_id': orig_comp_id,
+                                                        'original_seq_id': orig_seq_id}
+                                            if atom_map not in self.__mr_atom_name_mapping:
+                                                self.__mr_atom_name_mapping.append(atom_map)
+                                    elif len_col == 9:
+                                        if auth_comp_id is not None and col[4] not in monDict3:
+                                            try:
+                                                atom_map = {'auth_atom_id': col[1],
+                                                            'auth_comp_id': auth_comp_id,
+                                                            'auth_seq_id': auth_seq_id,
+                                                            'original_atom_id': col[3],
+                                                            'original_comp_id': col[4],
+                                                            'original_seq_id': int(col[5])}
+                                                if atom_map not in self.__mr_atom_name_mapping:
+                                                    self.__mr_atom_name_mapping.append(atom_map)
+                                            except ValueError:
+                                                pass
+                                elif len(col[5]) > 4 and len_col == 9:
+                                    orig_comp_id, orig_seq_id = split_concat_comp_id_seq_id(col[5])
+                                    if orig_comp_id is not None and orig_comp_id not in monDict3:
+                                        try:
+                                            atom_map = {'auth_atom_id': col[1],
+                                                        'auth_comp_id': col[2],
+                                                        'auth_seq_id': int(col[3]),
+                                                        'original_atom_id': col[4],
+                                                        'original_comp_id': orig_comp_id,
+                                                        'original_seq_id': orig_seq_id}
+                                            if atom_map not in self.__mr_atom_name_mapping:
+                                                self.__mr_atom_name_mapping.append(atom_map)
+                                        except ValueError:
+                                            pass
 
                         else:
                             ofh.write(line)
@@ -22360,7 +22417,7 @@ class NmrDpUtility:
                             z_score = float(f"{(value - avg_value) / std_value:.2f}")
                             sigma = abs(z_score)
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                            if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
                                 tolerance = std_value
 
                                 if (value < min_value - tolerance or value > max_value + tolerance)\
@@ -22435,10 +22492,10 @@ class NmrDpUtility:
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
-                                        if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs or self.__remediation_mode:
+                                        if (na['ring_angle'] - self.magic_angle) * z_score > 0.0 or self.__nonblk_anomalous_cs or self.__remediation_mode:
 
                                             self.report.warning.appendDescription('anomalous_data'
-                                                                                  if na['ring_angle'] - self.magic_angle * z_score < 0.0
+                                                                                  if (na['ring_angle'] - self.magic_angle) * z_score < 0.0
                                                                                   or na['ring_distance'] > self.vicinity_aromatic
                                                                                   else 'unusual_data',
                                                                                   {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -22450,7 +22507,7 @@ class NmrDpUtility:
                                                 self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
                                             if self.__bmrb_only and self.__leave_intl_note and file_type == 'nmr-star' and details_col != -1\
-                                               and (na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
+                                               and ((na['ring_angle'] - self.magic_angle) * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
                                                 _details = loop.data[idx][details_col]
                                                 details = f"{full_value_name} {value} is not within expected range "\
                                                     f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
@@ -22540,7 +22597,7 @@ class NmrDpUtility:
 
                                     elif pa is None:
 
-                                        if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                        if (na['ring_angle'] - self.magic_angle) * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                                 + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
@@ -22605,7 +22662,7 @@ class NmrDpUtility:
 
                                     if na is not None:
 
-                                        if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                        if (na['ring_angle'] - self.magic_angle) * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
                                             warn += f" The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                                                 f"is located at a distance of {na['ring_distance']}Å, "\
                                                 f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
@@ -22656,7 +22713,8 @@ class NmrDpUtility:
                                         self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
                             else:
-                                tolerance = std_value * 10.0
+
+                                tolerance = std_value * 10.0  # rare residue/ligand
 
                                 if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance)\
                                    and sigma > self.cs_anomalous_error_scaled_by_sigma\
@@ -22730,9 +22788,9 @@ class NmrDpUtility:
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
-                                        if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs or self.__remediation_mode:
+                                        if (na['ring_angle'] - self.magic_angle) * z_score > 0.0 or self.__nonblk_anomalous_cs or self.__remediation_mode:
 
-                                            if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                            if (na['ring_angle'] - self.magic_angle) * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
                                                 self.report.warning.appendDescription('anomalous_data',
                                                                                       {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -22834,7 +22892,7 @@ class NmrDpUtility:
 
                                     elif pa is None:
 
-                                        if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                        if (na['ring_angle'] - self.magic_angle) * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                                 + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
@@ -23041,10 +23099,11 @@ class NmrDpUtility:
                                         f"is located at a distance of {na['ring_distance']}Å, "\
                                         f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
 
-                                    if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs or self.__remediation_mode:
+                                    if (na['ring_angle'] - self.magic_angle) * z_score > 0.0 or self.__nonblk_anomalous_cs or self.__remediation_mode:
 
                                         self.report.warning.appendDescription('anomalous_data'
-                                                                              if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic
+                                                                              if (na['ring_angle'] - self.magic_angle) * z_score < 0.0
+                                                                              or na['ring_distance'] > self.vicinity_aromatic
                                                                               else 'unusual_data',
                                                                               {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                                'description': warn,
@@ -23055,7 +23114,7 @@ class NmrDpUtility:
                                             self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
 
                                         if self.__bmrb_only and self.__leave_intl_note and file_type == 'nmr-star' and details_col != -1\
-                                           and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
+                                           and ((na['ring_angle'] - self.magic_angle) * z_score > 0.0 or self.__nonblk_anomalous_cs):
                                             _details = loop.data[idx][details_col]
                                             details = f"{full_value_name} {value} is not within expected range "\
                                                 f"(avg {avg_value}, std {std_value}, min {min_value}, max {max_value}, Z_score {z_score:.2f}). "\
@@ -23145,7 +23204,7 @@ class NmrDpUtility:
 
                                 elif pa is None:
 
-                                    if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                    if (na['ring_angle'] - self.magic_angle) * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                             + f"] {full_value_name} {value} ({chain_id}:{seq_id}:{comp_id}:{atom_name}) should be verified "\
@@ -23210,7 +23269,7 @@ class NmrDpUtility:
 
                             #     if na is not None:
 
-                            #         if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                            #         if na['ring_angle'] - (self.magic_angle * z_score) < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
                             #             warn += f" The nearest aromatic ring ({na['chain_id']}:{na['seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
                             #                 f"is located at a distance of {na['ring_distance']}Å, "\
                             #                 f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
@@ -23527,6 +23586,8 @@ class NmrDpUtility:
                                 # Inter-residue ambiguities
                                 elif ambig_code == 5:
 
+                                    inter_residue_seq_id = False
+
                                     for _row in ambig_set:
                                         chain_id2 = _row[chain_id_name]
                                         seq_id2 = _row[seq_id_name]
@@ -23538,24 +23599,37 @@ class NmrDpUtility:
                                         if self.__isNmrAtomName(comp_id2, atom_id2):
                                             _atom_id2 = self.__getRepAtomId(comp_id2, atom_id2)
 
-                                        if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and _atom_id < _atom_id2)):
+                                        if chain_id2 != chain_id or seq_id2 != seq_id:
+                                            inter_residue_seq_id = True
+                                            break
 
-                                            if chain_id == chain_id2 and seq_id == seq_id2:
-                                                if _atom_id2 in self.__csStat.getProtonsInSameGroup(comp_id, _atom_id):
-                                                    continue
+                                    if not inter_residue_seq_id:
 
-                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
-                                                + f", {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
-                                                "It indicates inter-residue ambiguities. However, row of "\
-                                                + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+                                        for _row in ambig_set:
+                                            chain_id2 = _row[chain_id_name]
+                                            seq_id2 = _row[seq_id_name]
+                                            comp_id2 = _row[comp_id_name]
+                                            atom_id2 = _row[atom_id_name]
 
-                                            self.report.error.appendDescription('invalid_ambiguity_code',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': err})
-                                            self.report.setError()
+                                            _atom_id2 = atom_id2
 
-                                            if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                            if self.__isNmrAtomName(comp_id2, atom_id2):
+                                                _atom_id2 = self.__getRepAtomId(comp_id2, atom_id2)
+
+                                            if chain_id2 == chain_id and seq_id2 == seq_id and _atom_id < _atom_id2:
+
+                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                                    + f", {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
+                                                    "It indicates inter-residue ambiguities. However, row of "\
+                                                    + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+
+                                                self.report.error.appendDescription('invalid_ambiguity_code',
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                                     'description': err})
+                                                self.report.setError()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
 
                                 # Inter-molecular ambiguities
                                 elif ambig_code == 6:
@@ -24438,6 +24512,12 @@ class NmrDpUtility:
                                 atom_id = 'H1'
                                 if fill_auth_atom_id:
                                     _row[19] = atom_id
+                        elif atom_id in aminoProtonCode and 'C' + atom_id[1:] in _coord_atom_site['atom_id']:
+                            bonded = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[1:], onlyProton=True)
+                            if len(bonded) == 1 and bonded[0] in _coord_atom_site['atom_id']:
+                                atom_id = bonded[0]
+                                if fill_auth_atom_id:
+                                    _row[19] = atom_id
                         if len(missing_ch3) > 0 and (_row[9] in emptyValue or float(_row[9]) >= 4.0):
                             heme = False
                             if _row[9] not in emptyValue:
@@ -24445,8 +24525,11 @@ class NmrDpUtility:
                                     heme = comp_id == 'HEM' or 'HEME' in self.__ccU.lastChemCompDict['_chem_comp.name']
                             if not heme:
                                 missing_ch3 = []
+                        _atom_id = atom_id
                         if not valid and len(missing_ch3) > 0 and atom_id not in _coord_atom_site['atom_id']:
                             atom_id = atom_id[:-1]
+                            if _atom_id in self.__csStat.getRepMethylProtons(comp_id):
+                                atom_id = _atom_id
                         if (valid and atom_id in _coord_atom_site['atom_id'])\
                            or ((prefer_auth_atom_name or _row[24] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M')):
                             atom_ids = [atom_id]
@@ -24489,20 +24572,19 @@ class NmrDpUtility:
                                 _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-
                             if len_atom_ids > 1:
                                 if _row[12] == 1 or _row[12] in emptyValue:
                                     if _row[6] not in methyl_atoms\
                                        or (_row[6] in methyl_atoms
                                            and ((_row[7][0] == 'H' and len_atom_ids == 6)
                                                 or (_row[7][0] == 'C' and len_atom_ids == 2))):
-                                        _row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
+                                        _row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6], None)
                                 __row = copy.copy(_row)
                                 if fill_auth_atom_id:
                                     __row[19] = __row[6]
                                 lp.add_data(__row)
 
-                                for _atom_id in atom_ids[1:-1]:
+                                for _atom_id in atom_ids[1:]:
                                     __row = copy.copy(_row)
 
                                     index += 1
@@ -24571,8 +24653,11 @@ class NmrDpUtility:
                                 heme = comp_id == 'HEM' or 'HEME' in self.__ccU.lastChemCompDict['_chem_comp.name']
                         if not heme:
                             missing_ch3 = []
+                    _atom_id = atom_id
                     if not valid and len(missing_ch3) > 0:
                         atom_id = atom_id[:-1]
+                        if _atom_id in self.__csStat.getRepMethylProtons(comp_id):
+                            atom_id = _atom_id
                     if (valid or prefer_auth_atom_name or _row[24] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M'):
                         atom_ids = [atom_id]
                     else:
@@ -24614,20 +24699,19 @@ class NmrDpUtility:
                             _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                             if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-
                         if len_atom_ids > 1:
                             if _row[12] == 1 or _row[12] in emptyValue:
                                 if _row[6] not in methyl_atoms\
                                    or (_row[6] in methyl_atoms
                                        and ((_row[7][0] == 'H' and len_atom_ids == 6)
                                             or (_row[7][0] == 'C' and len_atom_ids == 2))):
-                                    _row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
+                                    _row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6], None)
                             __row = copy.copy(_row)
                             if fill_auth_atom_id:
                                 __row[19] = __row[6]
                             lp.add_data(__row)
 
-                            for _atom_id in atom_ids[1:-1]:
+                            for _atom_id in atom_ids[1:]:
                                 __row = copy.copy(_row)
 
                                 index += 1
@@ -25443,7 +25527,7 @@ class NmrDpUtility:
                                 __row = copy.copy(_row)
                                 lp.add_data(__row)
 
-                                for _atom_id in atom_ids[1:-1]:
+                                for _atom_id in atom_ids[1:]:
                                     __row = copy.copy(_row)
 
                                     index += 1
@@ -26164,7 +26248,7 @@ class NmrDpUtility:
                                     __row = copy.copy(_row)
                                     lp.add_data(__row)
 
-                                    for _atom_id in atom_ids[1:-1]:
+                                    for _atom_id in atom_ids[1:]:
                                         __row = copy.copy(_row)
 
                                         index += 1
@@ -26307,9 +26391,7 @@ class NmrDpUtility:
 
                                 for __row in lp:
                                     if __row[12] == ambig_id and __row[13] == ambig_set_id:
-                                        __row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
-                                        if __row[12] == 0:
-                                            __row[12] = None
+                                        __row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id, None)
                                         __row[13] = None
 
                                 if not isinstance(sf, pynmrstar.Loop) and any(aux_loop for aux_loop in sf if aux_loop.category == aux_lp_category):
@@ -29067,7 +29149,9 @@ class NmrDpUtility:
             if self.__caC is not None and 'chem_comp_atom' in self.__caC\
                and 'auth_atom_name_to_id' in self.__caC\
                and 'auth_atom_name_to_id_ext' in self.__caC\
-               and 'auth_to_star_seq_ann' in self.__caC:
+               and 'auth_to_star_seq_ann' in self.__caC\
+               and 'mod_residue' in self.__caC\
+               and 'split_ligand' in self.__caC:
                 self.__nefT.set_chem_comp_dict(self.__caC['chem_comp_atom'],
                                                self.__caC['chem_comp_bond'],
                                                self.__caC['chem_comp_topo'])
@@ -29488,6 +29572,8 @@ class NmrDpUtility:
                 auth_to_star_seq_ann = self.__caC['auth_to_star_seq_ann']
                 auth_atom_name_to_id = self.__caC['auth_atom_name_to_id']
 
+                model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
+
                 offset_holder = {}
 
                 has_key_seq = False
@@ -29700,9 +29786,11 @@ class NmrDpUtility:
                                         rescued = True
 
                                 if not rescued:
-                                    atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
+                                    atom_sels[d], warn = selectCoordAtoms(self.__cR, self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
                                                                           allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
-                                                                          preferAuthAtomName=prefer_auth_atom_name)
+                                                                          preferAuthAtomName=prefer_auth_atom_name,
+                                                                          representativeModelId=self.__representative_model_id, representativeAltId=self.__representative_alt_id,
+                                                                          modelNumName=model_num_name)
 
                                 if warn is not None:
 
@@ -30086,9 +30174,11 @@ class NmrDpUtility:
 
                                     continue
 
-                                atom_sels[d], warn = selectCoordAtoms(self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
+                                atom_sels[d], warn = selectCoordAtoms(self.__cR, self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
                                                                       allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
-                                                                      preferAuthAtomName=prefer_auth_atom_name)
+                                                                      preferAuthAtomName=prefer_auth_atom_name,
+                                                                      representativeModelId=self.__representative_model_id, representativeAltId=self.__representative_alt_id,
+                                                                      modelNumName=model_num_name)
 
                                 if warn is not None:
 
@@ -35711,7 +35801,7 @@ class NmrDpUtility:
 
                                 polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
                                     non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
 
                                     if atom_id in non_rep_methyl_pros:
@@ -35736,7 +35826,7 @@ class NmrDpUtility:
 
                                 polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
                                     non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
 
                                     if atom_id in non_rep_methyl_pros:
@@ -35761,7 +35851,7 @@ class NmrDpUtility:
 
                                 polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
                                     non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
 
                                     if atom_id in non_rep_methyl_pros:
@@ -35975,7 +36065,7 @@ class NmrDpUtility:
 
                             polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                            if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
 
                                 all_atoms = self.__csStat.getAllAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
                                 non_excl_atoms = self.__csStat.getAllAtoms(comp_id, excl_minor_atom=False)
@@ -36115,7 +36205,7 @@ class NmrDpUtility:
 
                             polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                            if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
 
                                 bb_atoms = self.__csStat.getBackBoneAtoms(comp_id, excl_minor_atom=True)
                                 non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
@@ -36241,7 +36331,7 @@ class NmrDpUtility:
 
                             polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                            if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
 
                                 sc_atoms = self.__csStat.getSideChainAtoms(comp_id, excl_minor_atom=True)
                                 non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
@@ -36362,7 +36452,7 @@ class NmrDpUtility:
 
                             polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                            if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
 
                                 ch3_atoms = self.__csStat.getMethylAtoms(comp_id)
                                 non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
@@ -36466,7 +36556,7 @@ class NmrDpUtility:
 
                             polypeptide_like = self.__csStat.peptideLike(comp_id)
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                            if self.__csStat.hasSufficientStat(comp_id, polypeptide_like):
 
                                 aro_atoms = self.__csStat.getAromaticAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
                                 non_rep_methyl_pros = self.__csStat.getNonRepMethylProtons(comp_id)
@@ -41427,7 +41517,11 @@ class NmrDpUtility:
 
             return True
 
-        except Exception:
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - " + str(e))
+            self.report.setError()
+
             return False
 
     def __parseCoordFilePath(self):

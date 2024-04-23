@@ -8,11 +8,16 @@
 import unittest
 import os
 import sys
+import pynmrstar
+from packaging import version
 
 try:
     from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
 except ImportError:
     from nmr.CifToNmrStar import CifToNmrStar
+
+
+__pynmrstar_v3_3_4__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.4")
 
 
 if __package__ is None or __package__ == "":
@@ -32,8 +37,9 @@ class TestCifToNmrStar(unittest.TestCase):
         pass
 
     def test_write_schema_as_pickles(self):
-        if os.access(self.cif_to_nmr_star.schema_dir, os.W_OK):
-            self.cif_to_nmr_star.write_schema_as_pickles()
+        if not __pynmrstar_v3_3_4__:
+            if os.access(self.cif_to_nmr_star.schema_dir, os.W_OK):
+                self.cif_to_nmr_star.write_schema_as_pickles()
 
     def test_convert_2mmz(self):
         if os.path.exists('mock-data-remediation'):

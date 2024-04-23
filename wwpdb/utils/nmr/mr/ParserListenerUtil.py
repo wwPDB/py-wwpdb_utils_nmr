@@ -1826,12 +1826,16 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                         return "H2'1"
                     if atomId == "H2''" and "H2'2" in refAtomIdList:  # DCZ, THM
                         return "H2'2"
+                    if atomId == "H2''" and "HO2'" in refAtomIdList:  # 5MC (DAOTHER-9317)
+                        return "HO2'"
                     if atomId == "H2''" and "H2'" in refAtomIdList:
                         return "H2'"
                     if atomId == "H2''''" and "H2''" in refAtomIdList:
                         return "H2''"
                     if atomId == "H2''''" and "H2'2" in refAtomIdList:  # DCZ, THM
                         return "H2'2"
+                    if atomId == "H2''''" and "HO2'" in refAtomIdList:  # 5MC (DAOTHER-9317)
+                        return "HO2'"
                     if atomId == "H2''1" and "H2'1" in refAtomIdList:  # 4EN
                         return "H2'1"
                     if atomId == "H2''2" and "H2'2" in refAtomIdList:  # 4EN
@@ -1844,6 +1848,8 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return "H2'1"
                 if atomId == "H2''" and "H2'2" in _refAtomIdList:  # DCZ, THM
                     return "H2'2"
+                if atomId == "H2''" and "HO2'" in _refAtomIdList:  # 5MC (DAOTHER-9317)
+                    return "HO2'"
                 if atomId == "H2''" and "H2'" in _refAtomIdList:
                     return "H2'"
                 if atomId == "H2''''" and "H2''" in _refAtomIdList:
@@ -2017,6 +2023,8 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                             if 'H' + atomId[2:] + '2' in refAtomIdList:
                                 return 'H' + atomId[2:] + '%'
                         if 'H' + atomId[2:] + '2' in _refAtomIdList:
+                            return 'H' + atomId[2:] + '%'
+                        if refCompId in monDict3:  # 2n9e
                             return 'H' + atomId[2:] + '%'
                     else:
                         if refAtomIdList is not None:
@@ -3030,6 +3038,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     nonPoly = None if prevResult is None else prevResult.get('non_polymer')
     branched = None if prevResult is None else prevResult.get('branched')
     nmrExtPolySeq = None if prevResult is None else prevResult.get('nmr_ext_poly_seq')
+    modResidue = None if prevResult is None else prevResult.get('mod_residue')
+    splitLigand = None if prevResult is None else prevResult.get('split_ligand')
 
     polySeqPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_poly_seq_scheme', 'pdb_mon_id') else 'mon_id'
     nonPolyPdbMonIdName = 'pdb_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'pdb_mon_id') else 'mon_id'
@@ -3039,14 +3049,15 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     nonPolyAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'auth_mon_id') else 'mon_id'
     branchedAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_branch_scheme', 'auth_mon_id') else 'mon_id'
 
-    if polySeq is None or nmrExtPolySeq is None:
+    if polySeq is None or nmrExtPolySeq is None or modResidue is None or splitLigand is None:
         changed = True
 
         # loop categories
         _lpCategories = {'poly_seq': 'pdbx_poly_seq_scheme',
                          'non_poly': 'pdbx_nonpoly_scheme',
                          'branched': 'pdbx_branch_scheme',
-                         'coordinate': 'atom_site'
+                         'coordinate': 'atom_site',
+                         'mod_residue': 'pdbx_struct_mod_residue'
                          }
 
         # key items of loop
@@ -3077,7 +3088,13 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                     {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
                                     {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'auth_comp_id'},
                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
-                                    ]
+                                    ],
+                     'mod_residue': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                     {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                     {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
+                                     {'name': 'parent_comp_id', 'type': 'str', 'alt_name': 'auth_comp_id'},
+                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'}]
                      }
 
         contentSubtype = 'poly_seq'
@@ -3086,6 +3103,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         keyItems = _keyItems[contentSubtype]
 
         nmrExtPolySeq = []
+        splitLigand = {}
 
         try:
 
@@ -3442,6 +3460,15 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                     nonPoly.append(ent)
 
+        contentSubtype = 'mod_residue'
+
+        lpCategory = _lpCategories[contentSubtype]
+        keyItems = _keyItems[contentSubtype]
+
+        modResidue = []
+        if cR.hasCategory(lpCategory):
+            modResidue = cR.getDictListWithFilter(lpCategory, keyItems)
+
         contentSubtype = 'branched'
 
         lpCategory = _lpCategories[contentSubtype]
@@ -3495,6 +3522,34 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             except KeyError:
                 branched = None
 
+        if branched is not None or nonPoly is not None:
+            if nonPoly is not None and len(nonPoly) > 0:
+                for np in nonPoly:
+                    if 'alt_comp_id' in np and 'alt_auth_seq_id' in np:
+                        authChainId = np['auth_chain_id']
+                        for authSeqId, compId, altAuthSeqId, altCompId in zip(np['auth_seq_id'], np['comp_id'], np['alt_auth_seq_id'], np['alt_comp_id']):
+                            for ps in polySeq:
+                                if ps['auth_chain_id'] == authChainId and 'alt_comp_id' in ps:
+                                    for _authSeqId, _compId, _altCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['alt_comp_id']):
+                                        if _authSeqId == authSeqId and _altCompId == altCompId and compId != _compId:
+                                            seqKey = (authChainId, authSeqId, altCompId)
+                                            if seqKey not in splitLigand:
+                                                splitLigand[seqKey] = [{'auth_seq_id': authSeqId, 'comp_id': _compId, 'atom_ids': []}]
+                                            splitLigand[seqKey].append({'auth_seq_id': altAuthSeqId, 'comp_id': compId, 'atom_ids': []})
+            if branched is not None and len(branched) > 0:
+                for br in branched:
+                    if 'alt_comp_id' in br and 'alt_auth_seq_id' in br:
+                        authChainId = br['auth_chain_id']
+                        for authSeqId, compId, altAuthSeqId, altCompId in zip(br['auth_seq_id'], br['comp_id'], br['alt_auth_seq_id'], np['alt_comp_id']):
+                            for ps in polySeq:
+                                if ps['auth_chain_id'] == authChainId and 'alt_comp_id' in ps:
+                                    for _authSeqId, _compId, _altCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['alt_comp_id']):
+                                        if _authSeqId == authSeqId and _altCompId == altCompId and compId != _compId:
+                                            seqKey = (authChainId, authSeqId, altCompId)
+                                            if seqKey not in splitLigand:
+                                                splitLigand[seqKey] = [{'auth_seq_id': authSeqId, 'comp_id': _compId, 'atom_ids': []}]
+                                            splitLigand[seqKey].append({'auth_seq_id': altAuthSeqId, 'comp_id': compId, 'atom_ids': []})
+
     if not fullCheck:
         if not changed:
             return prevResult
@@ -3503,7 +3558,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                 'alt_polymer_sequence': altPolySeq,
                 'non_polymer': nonPoly,
                 'branched': branched,
-                'nmr_ext_poly_seq': nmrExtPolySeq}
+                'nmr_ext_poly_seq': nmrExtPolySeq,
+                'mod_residue': modResidue}
 
     modelNumName = None if prevResult is None else prevResult.get('model_num_name')
     authAsymId = None if prevResult is None else prevResult.get('auth_asym_id')
@@ -3658,6 +3714,18 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         if chainId != authChainId:
                             altKey = (authChainId, seqId)
                             coordAtomSite[altKey] = coordAtomSite[seqKey]
+                    if splitLigand is not None and len(splitLigand) > 0:
+                        found = False
+                        for (_authChainId, _, _), ligList in splitLigand.items():
+                            if _authChainId != authChainId:
+                                continue
+                            for lig in ligList:
+                                if lig['auth_seq_id'] == seqId and lig['comp_id'] == compId:
+                                    lig['atom_ids'] = atomIds
+                                    found = True
+                                    break
+                            if found:
+                                break
                     compIds = list(set(c['comp_id'] for c in coord
                                        if c['chain_id'] == chainId and c['seq_id'] is not None and c['seq_id'] == seqId))
                     if len(compIds) > 1:  # 2kny: split implict ins_code of atom_site
@@ -4524,6 +4592,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'non_polymer': nonPoly,
             'branched': branched,
             'nmr_ext_poly_seq': nmrExtPolySeq,
+            'mod_residue': modResidue,
             'coord_atom_site': coordAtomSite,
             'coord_unobs_res': coordUnobsRes,
             'label_to_auth_seq': labelToAuthSeq,
@@ -4540,7 +4609,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'chem_comp_bond': chemCompBond,
             'chem_comp_topo': chemCompTopo,
             'auth_atom_name_to_id': authAtomNameToId,
-            'auth_atom_name_to_id_ext': authAtomNameToIdExt}
+            'auth_atom_name_to_id_ext': authAtomNameToIdExt,
+            'split_ligand': splitLigand}
 
 
 def extendCoordChainsForExactNoes(modelChainIdExt,
@@ -7788,12 +7858,23 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
         else:
             nonPolySeq = branched
 
+        ligands = 0
+        if hasNonPoly:
+            for np in nonPoly:
+                ligands += np['comp_id'].count(compId)
+            if ligands == 0:
+                for np in nonPoly:
+                    if 'alt_comp_id' in np:
+                        ligands += np['alt_comp_id'].count(compId)
+
         for np in nonPolySeq:
             chainId, seqId = getRealChainSeqId(nefT.get_ccu(), np, _seqId, compId, False)
             if refChainId != chainId:
                 continue
-            if seqId in np['auth_seq_id']:
-                idx = np['auth_seq_id'].index(seqId)
+            if seqId in np['auth_seq_id']\
+               or (ligands == 1 and (compId in np['comp_id'] or ('alt_comp_id' in np and compId in np['alt_comp_id']))):
+                idx = np['auth_seq_id'].index(seqId) if seqId in np['auth_seq_id']\
+                    else np['seq_id'].index(seqId) if seqId in np['seq_id'] else 0
                 cifCompId = np['comp_id'][idx]
                 origCompId = np['auth_comp_id'][idx]
                 if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
@@ -7847,7 +7928,7 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
                                 chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
                         else:
                             _atomId, _, details = nefT.get_valid_star_atom(cifCompId, atomId)
-                            if len(_atomId) > 0 and details is None:
+                            if len(_atomId) > 0 and (details is None or compId not in monDict3):
                                 chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
 
     if len(chainAssign) == 0 and altPolySeq is not None:
@@ -7880,8 +7961,10 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
     return list(chainAssign), warningMessage
 
 
-def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId, authAtomId,
-                     allowAmbig=True, enableWarning=True, preferAuthAtomName=False, offset=1):
+def selectCoordAtoms(cR, caC, nefT, chainAssign, authChainId, seqId, compId, atomId, authAtomId,
+                     allowAmbig=True, enableWarning=True, preferAuthAtomName=False,
+                     representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
+                     modelNumName='PDB_model_num', offset=1):
     """ Select atoms of the coordinates.
         @return atom selection, warning mesage (None for valid case)
     """
@@ -7946,11 +8029,33 @@ def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
         if (coordAtomSite is not None and atomId in coordAtomSite['atom_id']) or preferAuthAtomName:
             _atomId = [atomId]
         else:
-            _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
-            if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
-                _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
-                if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
-                    _atomId = [_atomId[int(atomId[-1]) - 1]]
+            _atomId = []
+            if not isPolySeq and atomId[0] in ('Q', 'M') and coordAtomSite is not None:
+                pattern = re.compile(fr'H{atomId[1:]}\d+') if compId in monDict3 else re.compile(fr'H{atomId[1:]}\S?$')
+                atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
+                if len(atomIdList) > 1:
+                    hvyAtomIdList = [a for a in coordAtomSite['atom_id'] if a[0] in ('C', 'N')]
+                    hvyAtomId = None
+                    for canHvyAtomId in hvyAtomIdList:
+                        if isStructConn(cR, authChainId, cifSeqId, canHvyAtomId, authChainId, cifSeqId, atomIdList[0],
+                                        representativeModelId=representativeModelId, representativeAltId=representativeAltId,
+                                        modelNumName=modelNumName):
+                            hvyAtomId = canHvyAtomId
+                            break
+                    if hvyAtomId is not None:
+                        for _atomId_ in atomIdList:
+                            if isStructConn(cR, authChainId, cifSeqId, hvyAtomId, authChainId, cifSeqId, _atomId_,
+                                            representativeModelId=representativeModelId, representativeAltId=representativeAltId,
+                                            modelNumName=modelNumName):
+                                _atomId.append(_atomId_)
+            if len(_atomId) > 1:
+                details = None
+            else:
+                _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
+                if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                    _atomId, _, details = nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
+                    if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                        _atomId = [_atomId[int(atomId[-1]) - 1]]
 
             if details is not None or atomId.endswith('"'):
                 ccU = nefT.get_ccu()
@@ -8020,8 +8125,10 @@ def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
 
         if lenAtomId == 0:
             if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
-                return selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
-                                        allowAmbig, enableWarning, preferAuthAtomName, offset=1)
+                return selectCoordAtoms(cR, caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
+                                        allowAmbig, enableWarning, preferAuthAtomName,
+                                        representativeModelId=representativeModelId, representativeAltId=representativeAltId,
+                                        modelNumName=modelNumName, offset=1)
             if enableWarning:
                 warningMessage = f"[Invalid atom nomenclature] "\
                     f"{seqId}:{compId}:{atomId} is invalid atom nomenclature."
@@ -8039,6 +8146,9 @@ def selectCoordAtoms(caC, nefT, chainAssign, authChainId, seqId, compId, atomId,
                 atomSelection.append(_atomSelection)
 
             warningMessage = testCoordAtomIdConsistency(caC, nefT.get_ccu(), authChainId, chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, enableWarning)
+            if warningMessage is not None and warningMessage.startswith('Ignorable'):
+                warningMessage = None
+                atomSelection.pop()
 
     return atomSelection, warningMessage
 
@@ -8161,6 +8271,8 @@ def testCoordAtomIdConsistency(caC, ccU, authChainId, chainId, seqId, compId, at
                             return f"[Hydrogen not instantiated] "\
                                 f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "\
                                 "Please re-upload the model file."
+                        if bondedTo[0][0] == 'O':
+                            return 'Ignorable hydroxyl group'
                 if enableWarning:
                     if chainId in LARGE_ASYM_ID:
                         return f"[Atom not found] "\

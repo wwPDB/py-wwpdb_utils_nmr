@@ -71,6 +71,7 @@ pseProBeginCode = ('H', 'Q', 'M', '1', '2', '3')
 aminoProtonCode = ('H', 'HN', 'H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3', 'H1*', 'H2*', 'H3*', 'HT', 'HT*')
 jcoupBbPairCode = ('N', 'H', 'CA', 'C')
 rdcBbPairCode = ('N', 'H', 'CA')
+zincIonCode = ('ZN', 'ME', 'Z1', 'Z2')
 
 LARGE_ASYM_ID = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')

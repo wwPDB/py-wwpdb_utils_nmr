@@ -456,6 +456,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
+        self.__preferAuthSeqCount = 0
         self.__preferLabelSeqCount = 0
 
         self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
@@ -2470,7 +2471,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
 
-        if len(chainAssign) == 0:
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
             for ps in self.__polySeq:
                 if preferNonPoly:
                     continue
@@ -2518,12 +2519,18 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(self.__polySeq) == 1\
                and (seqId < 1
                     or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
-                    or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
+                    or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)
+                    or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT)):
                 refChainId = self.__polySeq[0]['auth_chain_id']
-                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
-                                f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
-                                "Please update the sequence in the Macromolecules page.")
+                if compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                    self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
+                else:
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
             else:
                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                 f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
@@ -2905,7 +2912,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
 
-        if len(chainAssign) == 0:
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
             for ps in self.__polySeq:
                 if preferNonPoly:
                     continue
@@ -2966,12 +2973,18 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(self.__polySeq) == 1\
                    and (seqId < 1
                         or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
-                        or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
+                        or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)
+                        or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT)):
                     refChainId = self.__polySeq[0]['auth_chain_id']
-                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
-                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
-                                    "Please update the sequence in the Macromolecules page.")
+                    if compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                        self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                        f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                        "Please update the sequence in the Macromolecules page.")
+                    else:
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
+                                        f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                        "Please update the sequence in the Macromolecules page.")
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
@@ -3157,7 +3170,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
-        if len(chainAssign) == 0:
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
             for ps in self.__polySeq:
                 chainId = ps['chain_id']
                 if fixedChainId is not None:
@@ -3379,7 +3392,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
-        if len(chainAssign) == 0:
+        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
             for ps in self.__polySeq:
                 chainId = ps['chain_id']
                 if chainId != fixedChainId:
@@ -3813,6 +3826,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.__preferAuthSeq = False
 
         if found:
+            if self.__preferAuthSeq:
+                self.__preferAuthSeqCount += 1
             return atomId
 
         if self.__preferAuthSeq:
@@ -3868,6 +3883,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.__preferAuthSeq = False
 
         if found:
+            if self.__preferAuthSeq:
+                self.__preferAuthSeqCount += 1
             return atomId
 
         if self.__ccU.updateChemCompDict(compId):

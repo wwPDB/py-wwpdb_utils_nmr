@@ -36,7 +36,7 @@ try:
                                            retrieveAtomIdentFromMRMap,
                                            alignPolymerSequenceWithConflicts,
                                            getRestraintFormatName,
-                                           getOneLetterCodeSequence)
+                                           getOneLetterCodeCanSequence)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.AmberPTParser import AmberPTParser
@@ -59,7 +59,7 @@ except ImportError:
                                retrieveAtomIdentFromMRMap,
                                alignPolymerSequenceWithConflicts,
                                getRestraintFormatName,
-                               getOneLetterCodeSequence)
+                               getOneLetterCodeCanSequence)
 
 
 def chunk_string(line, length=4):
@@ -765,8 +765,8 @@ class AmberPTParserListener(ParseTreeListener):
                 mrFormatName = getRestraintFormatName(self.__file_type)
                 _a_mr_format_name = 'the ' + mrFormatName
 
-                ref_code = getOneLetterCodeSequence(self.__polySeqModel[0]['comp_id'])
-                test_code = getOneLetterCodeSequence(self.__polySeqPrmTop[0]['comp_id'])
+                ref_code = getOneLetterCodeCanSequence(self.__polySeqModel[0]['comp_id'])
+                test_code = getOneLetterCodeCanSequence(self.__polySeqPrmTop[0]['comp_id'])
 
                 hint = ''
                 if abs(len(ref_code) - len(test_code)) < 20 and len(ref_code) > 40:

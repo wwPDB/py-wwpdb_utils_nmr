@@ -3221,7 +3221,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                 offset = -_offset
                                                 break
 
-                                    if offset is not None:
+                                    if offset is not None and cif_auth_seq_ids[i + offset] is not None:
                                         cif_label_seq_id = cif_label_seq_ids[i + offset] - offset - offset_2
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
 
@@ -4106,7 +4106,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                             entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
                                                    'entity_type': entityType, 'entity_src_method': entitySrcMethod,
-                                                   'entity_desc': entityDesc, 'entity_fw': round(entityFW + ext_fw, 3),
+                                                   'entity_desc': entityDesc, 'entity_fw': entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
                                                    'entity_copies': entityCopies, 'entity_ec': entityEC,
                                                    'entity_parent': entityParent,
                                                    'entity_mutation': entityMutation,
@@ -4163,7 +4163,6 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                             if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
                                                 _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
                                                 authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
-
                                         ext_mappings = 0
                                         ext_fw = 0.0
                                         for extSeq in nmrExtPolySeq:
@@ -4202,7 +4201,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                                         entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
                                                                'entity_type': entityType, 'entity_src_method': entitySrcMethod,
-                                                               'entity_desc': entityDesc, 'entity_fw': round(entityFW + ext_fw, 3),
+                                                               'entity_desc': entityDesc, 'entity_fw': entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
                                                                'entity_copies': entityCopies, 'entity_ec': entityEC,
                                                                'entity_parent': entityParent,
                                                                'entity_mutation': entityMutation,
@@ -4274,7 +4273,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                             entityAssembly.append({'entity_assembly_id': entityAssemblyId, 'entity_id': entityId,
                                                    'entity_type': entityType, 'entity_src_method': entitySrcMethod,
-                                                   'entity_desc': entityDesc, 'entity_fw': round(entityFW + ext_fw, 3),
+                                                   'entity_desc': entityDesc, 'entity_fw': entityFW if ext_mappings == 0 else round(entityFW + ext_fw, 3),
                                                    'entity_copies': 1, 'entity_ec': entityEC,
                                                    'entity_parent': entityParent,
                                                    'entity_mutation': entityMutation,

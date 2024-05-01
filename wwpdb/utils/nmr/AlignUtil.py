@@ -72,6 +72,7 @@ aminoProtonCode = ('H', 'HN', 'H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3', 'H1*', 'H2*
 jcoupBbPairCode = ('N', 'H', 'CA', 'C')
 rdcBbPairCode = ('N', 'H', 'CA')
 zincIonCode = ('ZN', 'ME', 'Z1', 'Z2')
+unknownResidue = ('UNK', 'DN', 'N')
 
 LARGE_ASYM_ID = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')
@@ -497,8 +498,8 @@ def getScoreOfSeqAlign(myAlign):
     return matched, unmapped, conflict, offset1, offset2
 
 
-def getOneLetterCode(compId):
-    """ Convert comp_ID to 1-letter code.
+def getOneLetterCodeCan(compId):
+    """ Convert comp_ID to canonical one-letter code.
     """
 
     compId = compId.upper()
@@ -512,8 +513,8 @@ def getOneLetterCode(compId):
     return 'X'
 
 
-def getCanOneLetterCode(compId):
-    """ Convert comp_ID to canonical 1-letter code.
+def getOneLetterCode(compId):
+    """ Convert comp_ID to one-letter code.
     """
 
     compId = compId.upper()
@@ -527,26 +528,26 @@ def getCanOneLetterCode(compId):
     return f'({compId})'
 
 
+def getOneLetterCodeCanSequence(compIdList):
+    """ Convert array of comp_IDs to canonical one-letter code sequence.
+    """
+
+    f = []
+
+    for compId in compIdList:
+        f.append(getOneLetterCodeCan(compId))
+
+    return ''.join(f)
+
+
 def getOneLetterCodeSequence(compIdList):
-    """ Convert array of comp_IDs to 1-letter code sequence.
+    """ Convert array of comp_IDs to one-letter code sequence.
     """
 
     f = []
 
     for compId in compIdList:
         f.append(getOneLetterCode(compId))
-
-    return ''.join(f)
-
-
-def getCanOneLetterCodeSequence(compIdList):
-    """ Convert array of comp_IDs to canonical 1-letter code sequence.
-    """
-
-    f = []
-
-    for compId in compIdList:
-        f.append(getCanOneLetterCode(compId))
 
     return ''.join(f)
 
@@ -1094,8 +1095,8 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
 
             ref_length = len(s1[seq_id_name])
 
-            ref_code = getOneLetterCodeSequence(_s1['comp_id'])
-            test_code = getOneLetterCodeSequence(_s2['comp_id'])
+            ref_code = getOneLetterCodeCanSequence(_s1['comp_id'])
+            test_code = getOneLetterCodeCanSequence(_s2['comp_id'])
             mid_code = getMiddleCode(ref_code, test_code)
             ref_gauge_code = getGaugeCode(_s1['seq_id'])
             test_gauge_code = getGaugeCode(_s2['seq_id'])
@@ -1160,8 +1161,8 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                         comp_id2.append('.')
                         if has_auth_comp_id2:
                             auth_comp_id2.append('.')
-                ref_code = getOneLetterCodeSequence(comp_id1)
-                test_code = getOneLetterCodeSequence(comp_id2)
+                ref_code = getOneLetterCodeCanSequence(comp_id1)
+                test_code = getOneLetterCodeCanSequence(comp_id2)
                 mid_code = getMiddleCode(ref_code, test_code)
                 ref_gauge_code = getGaugeCode(seq_id1, offset_1)
                 test_gauge_code = getGaugeCode(seq_id2, offset_2)
@@ -1440,8 +1441,8 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
 
             ref_length = len(s1[seq_id_name])
 
-            ref_code = getOneLetterCodeSequence(_s1['comp_id'])
-            test_code = getOneLetterCodeSequence(_s2['comp_id'])
+            ref_code = getOneLetterCodeCanSequence(_s1['comp_id'])
+            test_code = getOneLetterCodeCanSequence(_s2['comp_id'])
             mid_code = getMiddleCode(ref_code, test_code)
             ref_gauge_code = getGaugeCode(_s1['seq_id'])
             test_gauge_code = getGaugeCode(_s2['seq_id'])
@@ -1505,8 +1506,8 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
                         comp_id2.append('.')
                         if has_auth_comp_id2:
                             auth_comp_id2.append('.')
-                ref_code = getOneLetterCodeSequence(comp_id1)
-                test_code = getOneLetterCodeSequence(comp_id2)
+                ref_code = getOneLetterCodeCanSequence(comp_id1)
+                test_code = getOneLetterCodeCanSequence(comp_id2)
                 mid_code = getMiddleCode(ref_code, test_code)
                 ref_gauge_code = getGaugeCode(seq_id1, offset_1)
                 test_gauge_code = getGaugeCode(seq_id2, offset_2)
@@ -1816,7 +1817,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
                         if ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] != 'REL':
                             continue
 
-                        if getOneLetterCode(cif_comp_id) == 'X':
+                        if getOneLetterCodeCan(cif_comp_id) == 'X':
                             continue
 
                     warnings.append(f"[Sequence mismatch] Sequence alignment error between the coordinate ({cif_seq_code}) "
@@ -2834,7 +2835,7 @@ def splitPolySeqRstForNonPoly(ccU, nonPolyModel, polySeqRst, seqAlign, chainAssi
                                                            for seq_id, comp_id, auth_comp_id
                                                            in zip(test_ps['seq_id'], test_ps['comp_id'], test_ps['auth_comp_id'])
                                                            if seq_id == test_seq_id)
-                    if getOneLetterCode(test_auth_comp_id) == 'X':
+                    if getOneLetterCodeCan(test_auth_comp_id) == 'X':
                         _test_auth_comp_id = alt_ref_comp_id_dict.get(test_comp_id, test_auth_comp_id)
                         candidate = []
                         for np in nonPolyModel:

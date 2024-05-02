@@ -1300,7 +1300,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     for np in self.__nonPoly:
                         if 'alt_comp_id' in np:
                             ligands += np['alt_comp_id'].count(_compId)
-                if ligands == 0:
+                if ligands == 0 and len(chainAssign) == 0:
                     __compId = None
                     for np in self.__nonPoly:
                         for ligand in np['comp_id']:

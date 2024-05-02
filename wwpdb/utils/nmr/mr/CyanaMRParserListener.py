@@ -822,11 +822,11 @@ class CyanaMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['local_seq_scheme']
                 elif 'ext_chain_seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
-
-            if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-                if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
-                    del self.reasonsForReParsing['seq_id_remap']
-
+            # """
+            # if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
+            #     if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
+            #         del self.reasonsForReParsing['seq_id_remap']
+            # """
             if self.__remediate:
                 if self.__dihed_lb_greater_than_ub and self.__dihed_ub_always_positive:
                     if 'dihed_unusual_order' not in self.reasonsForReParsing:
@@ -2233,23 +2233,24 @@ class CyanaMRParserListener(ParseTreeListener):
             if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
                 preferNonPoly = True
-            if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
-                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
-            elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
-                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
-            elif 'seq_id_remap' in self.__reasons\
-                    or 'chain_seq_id_remap' in self.__reasons\
-                    or 'ext_chain_seq_id_remap' in self.__reasons:
-                if 'ext_chain_seq_id_remap' in self.__reasons:
-                    fixedChainId, fixedSeqId, fixedCompId =\
-                        retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], None, seqId,
-                                                       compId if compId in monDict3 else None)
-                    self.__allow_ext_seq = fixedCompId is not None
-                if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
-                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], None, seqId,
-                                                                     compId if compId in monDict3 else None)
-                if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
-                    _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
+            if not preferNonPoly:
+                if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                elif 'seq_id_remap' in self.__reasons\
+                        or 'chain_seq_id_remap' in self.__reasons\
+                        or 'ext_chain_seq_id_remap' in self.__reasons:
+                    if 'ext_chain_seq_id_remap' in self.__reasons:
+                        fixedChainId, fixedSeqId, fixedCompId =\
+                            retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], None, seqId,
+                                                           compId if compId in monDict3 else None)
+                        self.__allow_ext_seq = fixedCompId is not None
+                    if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                        fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], None, seqId,
+                                                                         compId if compId in monDict3 else None)
+                    if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
+                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 
@@ -2636,29 +2637,30 @@ class CyanaMRParserListener(ParseTreeListener):
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
                 refChainId = fixedChainId
                 preferNonPoly = True
-            if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
-                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
-                refChainId = fixedChainId
-            elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
-                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
-                refChainId = fixedChainId
-            elif 'seq_id_remap' in self.__reasons\
-                    or 'chain_seq_id_remap' in self.__reasons\
-                    or 'ext_chain_seq_id_remap' in self.__reasons:
-                if 'ext_chain_seq_id_remap' in self.__reasons:
-                    fixedChainId, fixedSeqId, fixedCompId =\
-                        retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], str(refChainId), seqId,
-                                                       compId if compId in monDict3 else None)
-                    self.__allow_ext_seq = fixedCompId is not None
-                    if fixedSeqId is not None:
-                        refChainId = fixedChainId
-                if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
-                    fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], str(refChainId), seqId,
-                                                                     compId if compId in monDict3 else None)
-                    if fixedSeqId is not None:
-                        refChainId = fixedChainId
-                if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
-                    _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
+            if not preferNonPoly:
+                if 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
+                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
+                    refChainId = fixedChainId
+                elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
+                    fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
+                    refChainId = fixedChainId
+                elif 'seq_id_remap' in self.__reasons\
+                        or 'chain_seq_id_remap' in self.__reasons\
+                        or 'ext_chain_seq_id_remap' in self.__reasons:
+                    if 'ext_chain_seq_id_remap' in self.__reasons:
+                        fixedChainId, fixedSeqId, fixedCompId =\
+                            retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], str(refChainId), seqId,
+                                                           compId if compId in monDict3 else None)
+                        self.__allow_ext_seq = fixedCompId is not None
+                        if fixedSeqId is not None:
+                            refChainId = fixedChainId
+                    if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                        fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], str(refChainId), seqId,
+                                                                         compId if compId in monDict3 else None)
+                        if fixedSeqId is not None:
+                            refChainId = fixedChainId
+                    if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
+                        _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], str(refChainId), seqId)
             if fixedSeqId is not None:
                 _seqId = fixedSeqId
 

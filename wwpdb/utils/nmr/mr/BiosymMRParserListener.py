@@ -1323,11 +1323,15 @@ class BiosymMRParserListener(ParseTreeListener):
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
                 if seqId in np['auth_seq_id']:
+                    if ligands == 1 and cifCompId is None:
+                        cifCompId = _compId
                     idx = -1
                     try:
                         if cifCompId is not None:
                             idx = next(_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(np['auth_seq_id'], np['comp_id']))
-                                       if _seqId_ == seqId and _cifCompId_ == cifCompId)
+                                       if (_seqId_ == seqId or ligands == 1) and _cifCompId_ == cifCompId)
+                            if ligands == 1:
+                                seqId = np['auth_seq_id'][idx]
                     except StopIteration:
                         pass
                     if idx == -1:

@@ -43328,12 +43328,12 @@ class NmrDpUtility:
 
                         if result is not None:
                             cost[nmr_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
-                            if not self.__combined_mode and result['length'] >= len(s1['seq_id']) - result['unmapped']:
+                            if not self.__native_combined and result['length'] >= len(s1['seq_id']) - result['unmapped']:
                                 indices.append((cif_polymer_sequence.index(s1), nmr_polymer_sequence.index(s2)))
 
                     mat.append(cost)
 
-                if self.__combined_mode:
+                if self.__native_combined:
                     indices = m.compute(mat)
 
                 concatenated_nmr_chain = {}
@@ -43342,7 +43342,7 @@ class NmrDpUtility:
 
                     if mat[row][col] >= 0:
 
-                        if self.__combined_mode:
+                        if self.__native_combined:
                             continue
 
                         # DAOTHER-8751
@@ -43488,7 +43488,7 @@ class NmrDpUtility:
                             else:
                                 break
 
-                        if not self.__combined_mode:
+                        if not self.__native_combined:
 
                             _conflicts = 0
 
@@ -43571,12 +43571,12 @@ class NmrDpUtility:
 
                         if result is not None:
                             cost[cif_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
-                            if not self.__combined_mode and result['length'] >= len(s2['seq_id']) - result['unmapped']:
+                            if not self.__native_combined and result['length'] >= len(s2['seq_id']) - result['unmapped']:
                                 indices.append((nmr_polymer_sequence.index(s1), cif_polymer_sequence.index(s2)))
 
                     mat.append(cost)
 
-                if self.__combined_mode:
+                if self.__native_combined:
                     indices = m.compute(mat)
 
                 chain_assign = []
@@ -43585,7 +43585,7 @@ class NmrDpUtility:
 
                     if mat[row][col] >= 0:
 
-                        if self.__combined_mode:
+                        if self.__native_combined:
                             continue
 
                         # DAOTHER-8751
@@ -43780,7 +43780,7 @@ class NmrDpUtility:
                                             or (i + 1 < len(seq_id1) and seq_id1[i + 1] is not None and seq_id1[i + 1] - 1 == seq_id1[i])):
                                         aligned[i] = False
 
-                        if not self.__combined_mode:
+                        if not self.__native_combined:
 
                             _conflicts = 0
 
@@ -43826,7 +43826,7 @@ class NmrDpUtility:
 
                                 if not aligned[i]:
 
-                                    if self.__combined_mode or chain_id not in concatenated_nmr_chain or chain_id2 not in concatenated_nmr_chain[chain_id]:
+                                    if self.__native_combined or chain_id not in concatenated_nmr_chain or chain_id2 not in concatenated_nmr_chain[chain_id]:
 
                                         warn = f"{chain_id}:{_seq_id1}:{nmr_comp_id} is not present in the coordinates (chain_id {chain_id2}). "\
                                             "Please update the sequence in the Macromolecules page."
@@ -43931,7 +43931,10 @@ class NmrDpUtility:
                                 ref_chain_id = ca['ref_chain_id']
                                 test_chain_id = ca['test_chain_id']
 
-                                if any(_ca for _ca in chain_assign if _ca['ref_chain_id'] == ref_chain_id and _ca['test_chain_id'] != test_chain_id and _ca['conflict'] == 0):
+                                if any(_ca for _ca in chain_assign
+                                       if ((_ca['ref_chain_id'] == ref_chain_id and _ca['test_chain_id'] != test_chain_id)
+                                           or (_ca['ref_chain_id'] != ref_chain_id and _ca['test_chain_id'] == test_chain_id))
+                                       and _ca['conflict'] == 0):
                                     _del_ca_idx.append(ca_idx)
 
                             if len(_del_ca_idx) > 0:
@@ -44027,12 +44030,12 @@ class NmrDpUtility:
 
                         if result is not None:
                             cost[nmr_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
-                            if not self.__combined_mode and result['length'] >= len(s1['seq_id']) - result['unmapped']:
+                            if not self.__native_combined and result['length'] >= len(s1['seq_id']) - result['unmapped']:
                                 indices.append((cif_polymer_sequence.index(s1), nmr_polymer_sequence.index(s2)))
 
                     mat.append(cost)
 
-                if self.__combined_mode:
+                if self.__native_combined:
                     indices = m.compute(mat)
 
                 chain_assign = []
@@ -44043,7 +44046,7 @@ class NmrDpUtility:
 
                     if mat[row][col] >= 0:
 
-                        if self.__combined_mode:
+                        if self.__native_combined:
                             continue
 
                         # DAOTHER-8751
@@ -44252,7 +44255,7 @@ class NmrDpUtility:
                             else:
                                 break
 
-                        if not self.__combined_mode:
+                        if not self.__native_combined:
 
                             _conflicts = 0
 
@@ -44409,7 +44412,10 @@ class NmrDpUtility:
                                 ref_chain_id = ca['ref_chain_id']
                                 test_chain_id = ca['test_chain_id']
 
-                                if any(_ca for _ca in chain_assign if _ca['ref_chain_id'] == ref_chain_id and _ca['test_chain_id'] != test_chain_id and _ca['conflict'] == 0):
+                                if any(_ca for _ca in chain_assign
+                                       if ((_ca['ref_chain_id'] == ref_chain_id and _ca['test_chain_id'] != test_chain_id)
+                                           or (_ca['ref_chain_id'] != ref_chain_id and _ca['test_chain_id'] == test_chain_id))
+                                       and _ca['conflict'] == 0):
                                     _del_ca_idx.append(ca_idx)
 
                             if len(_del_ca_idx) > 0:

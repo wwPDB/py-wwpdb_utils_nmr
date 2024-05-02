@@ -23,6 +23,7 @@ try:
                                                        coordAssemblyChecker,
                                                        translateToStdAtomName,
                                                        translateToStdResName,
+                                                       translateToLigandName,
                                                        guessCompIdFromAtomIdWoLimit,
                                                        isIdenticalRestraint,
                                                        isLongRangeRestraint,
@@ -87,6 +88,7 @@ except ImportError:
                                            coordAssemblyChecker,
                                            translateToStdAtomName,
                                            translateToStdResName,
+                                           translateToLigandName,
                                            guessCompIdFromAtomIdWoLimit,
                                            isIdenticalRestraint,
                                            isLongRangeRestraint,
@@ -4923,6 +4925,15 @@ class AmberMRParserListener(ParseTreeListener):
                     for np in self.__nonPoly:
                         if 'alt_comp_id' in np:
                             ligands += np['alt_comp_id'].count(authCompId)
+                if ligands == 0:
+                    __compId = None
+                    for np in self.__nonPoly:
+                        for ligand in np['comp_id']:
+                            __compId = translateToLigandName(authCompId, ligand, self.__ccU)
+                            if __compId == ligand:
+                                ligands += 1
+                    if ligands == 1:
+                        authCompId = __compId
 
             for np in self.__nonPolySeq:
                 chainId = np['auth_chain_id']

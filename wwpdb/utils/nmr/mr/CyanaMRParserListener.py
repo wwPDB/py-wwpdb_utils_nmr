@@ -22,6 +22,7 @@ try:
                                                        extendCoordChainsForExactNoes,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
+                                                       translateToLigandName,
                                                        getRdcCode,
                                                        isIdenticalRestraint,
                                                        isLongRangeRestraint,
@@ -110,6 +111,7 @@ except ImportError:
                                            extendCoordChainsForExactNoes,
                                            translateToStdResName,
                                            translateToStdAtomName,
+                                           translateToLigandName,
                                            getRdcCode,
                                            isIdenticalRestraint,
                                            isLongRangeRestraint,
@@ -2353,6 +2355,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     for np in self.__nonPoly:
                         if 'alt_comp_id' in np:
                             ligands += np['alt_comp_id'].count(_compId)
+                if ligands == 0:
+                    __compId = None
+                    for np in self.__nonPoly:
+                        for ligand in np['comp_id']:
+                            __compId = translateToLigandName(_compId, ligand, self.__ccU)
+                            if __compId == ligand:
+                                ligands += 1
+                    if ligands == 1:
+                        compId = _compId = __compId
             for np in self.__nonPolySeq:
                 chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if self.__reasons is not None:
@@ -2761,6 +2772,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     for np in self.__nonPoly:
                         if 'alt_comp_id' in np:
                             ligands += np['alt_comp_id'].count(_compId)
+                if ligands == 0:
+                    __compId = None
+                    for np in self.__nonPoly:
+                        for ligand in np['comp_id']:
+                            __compId = translateToLigandName(_compId, ligand, self.__ccU)
+                            if __compId == ligand:
+                                ligands += 1
+                    if ligands == 1:
+                        compId = _compId = __compId
             for np in self.__nonPolySeq:
                 chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:

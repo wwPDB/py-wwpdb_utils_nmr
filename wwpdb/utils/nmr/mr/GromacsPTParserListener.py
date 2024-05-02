@@ -20,6 +20,7 @@ try:
                                                        translateToStdAtomName,
                                                        translateToStdAtomNameOfDmpc,
                                                        translateToStdResName,
+                                                       translateToLigandName,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -43,6 +44,7 @@ except ImportError:
                                            translateToStdAtomName,
                                            translateToStdAtomNameOfDmpc,
                                            translateToStdResName,
+                                           translateToLigandName,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
     from nmr.ChemCompUtil import ChemCompUtil
@@ -381,6 +383,15 @@ class GromacsPTParserListener(ParseTreeListener):
                                     for np in self.__nonPolyModel:
                                         if authCompId in np['alt_comp_id']:
                                             compId = np['comp_id'][0]
+                                if ligands == 0:
+                                    __compId = None
+                                    for np in self.__nonPolyModel:
+                                        for ligand in np['comp_id']:
+                                            __compId = translateToLigandName(authCompId, ligand, self.__ccU)
+                                            if __compId == ligand:
+                                                ligands += 1
+                                    if ligands == 1:
+                                        compId = __compId
 
                             if compId is not None:
                                 compIdList.append(compId + '?')  # decide when coordinate is available
@@ -429,6 +440,15 @@ class GromacsPTParserListener(ParseTreeListener):
                                 for np in self.__nonPolyModel:
                                     if authCompId in np['alt_comp_id']:
                                         compId = np['comp_id'][0]
+                            if ligands == 0:
+                                __compId = None
+                                for np in self.__nonPolyModel:
+                                    for ligand in np['comp_id']:
+                                        __compId = translateToLigandName(authCompId, ligand, self.__ccU)
+                                        if __compId == ligand:
+                                            ligands += 1
+                                if ligands == 1:
+                                    compId = __compId
 
                         if compId is not None:
                             compIdList.append(compId + '?')  # decide when coordinate is available

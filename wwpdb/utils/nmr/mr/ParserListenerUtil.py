@@ -2945,7 +2945,7 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
 
 
 def translateToStdResName(compId, refCompId=None, ccU=None):
-    """ Translate software specific residue name for standard residues to the CCD one.
+    """ Translate software specific residue name to standard residue name of CCD.
     """
 
     if len(compId) > 3:
@@ -3020,6 +3020,20 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
     if compId in ('H2O', 'WAT'):
         return 'HOH'
 
+    return compId
+
+
+def translateToLigandName(compId, refCompId, ccU):
+    """ Translate software specific ligand name if possible.
+    """
+
+    if ccU.updateChemCompDict(refCompId):
+        _compId = translateToStdResName(compId, refCompId, ccU)
+        if '_chem_comp.mon_nstd_parent_comp_id' in ccU.lastChemCompDict:  # matches with comp_id in CCD
+            if ccU.lastChemCompDict['_chem_comp.mon_nstd_parent_comp_id'] == _compId:
+                return refCompId
+        if compId.lower() in ccU.lastChemCompDict['_chem_comp.name'].lower():
+            return refCompId
     return compId
 
 

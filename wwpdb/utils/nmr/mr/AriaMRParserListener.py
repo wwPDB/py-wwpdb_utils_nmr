@@ -490,7 +490,7 @@ class AriaMRParserListener(ParseTreeListener):
                         if any(ps for ps in self.__polySeq if 'identical_chain_id' in ps):
                             polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
 
-                            if polySeqRst is not None:
+                            if polySeqRst is not None and (not self.__hasNonPoly or len(self.__polySeq) // len(self.__nonPoly) in (1, 2)):
                                 self.__polySeqRst = polySeqRst
                                 if 'chain_id_remap' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['chain_id_remap'] = chainIdMapping

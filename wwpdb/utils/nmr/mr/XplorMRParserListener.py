@@ -854,7 +854,7 @@ class XplorMRParserListener(ParseTreeListener):
                         if any(ps for ps in self.__polySeq if 'identical_chain_id' in ps):
                             polySeqRst, chainIdMapping = splitPolySeqRstForMultimers(self.__pA, self.__polySeq, self.__polySeqRst, self.__chainAssign)
 
-                            if polySeqRst is not None:
+                            if polySeqRst is not None and (not self.__hasNonPoly or len(self.__polySeq) // len(self.__nonPoly) in (1, 2)):
                                 self.__polySeqRst = polySeqRst
                                 if 'chain_id_remap' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
@@ -992,12 +992,11 @@ class XplorMRParserListener(ParseTreeListener):
             #         del self.reasonsForReParsing['seq_id_remap']
             # """
             if 'local_seq_scheme' in self.reasonsForReParsing:
-                if 'non_poly_remap' in self.reasonsForReParsing or 'branched_remap' in self.reasonsForReParsing:
+                if 'non_poly_remap' in self.reasonsForReParsing or 'branched_remap' in self.reasonsForReParsing\
+                   or 'np_seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
                 if 'seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['seq_id_remap']
-                if 'np_seq_id_remap' in self.reasonsForReParsing:
-                    del self.reasonsForReParsing['np_seq_id_remap']
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
                 if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
@@ -8399,7 +8398,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             # for the case dist -> pre transition occurs
             if self.__cur_subtype == 'dist'\
-               and 'atom_id' in _factor and _factor['atom_id'][0] != 'CA'\
+               and 'atom_id' in _factor and _factor['atom_id'][0] not in ('CA', 'CE')\
                and (_factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS or _factor['atom_id'][0] == 'OO'):
                 self.__with_para = True
 
@@ -8819,7 +8818,9 @@ class XplorMRParserListener(ParseTreeListener):
                         for realSeqId in np['auth_seq_id']:
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
-                                    continue
+                                    if _factor['seq_id'][0] not in np['seq_id']:
+                                        continue
+                                    realSeqId = np['auth_seq_id'][np['seq_id'].index(_factor['seq_id'][0])]
                             idx = np['auth_seq_id'].index(realSeqId)
                             realCompId = np['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -8874,7 +8875,9 @@ class XplorMRParserListener(ParseTreeListener):
                             for realSeqId in np['auth_seq_id']:
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
-                                        continue
+                                        if _factor['seq_id'][0] not in np['seq_id']:
+                                            continue
+                                        realSeqId = np['auth_seq_id'][np['seq_id'].index(_factor['seq_id'][0])]
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = np['comp_id'][idx]
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -8993,22 +8996,27 @@ class XplorMRParserListener(ParseTreeListener):
                                         ligands += len(np['seq_id'])
                                 if len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1:
                                     if ligands == 1:
-                                        if 'np_seq_id_remap' not in self.reasonsForReParsing:
-                                            self.reasonsForReParsing['np_seq_id_remap'] = {}
-                                        chainId = _factor['chain_id'][0]
-                                        srcSeqId = _factor['seq_id'][0]
-                                        dstSeqId = self.__nonPoly[0]['auth_seq_id'][0]
-                                        if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
-                                            self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
-                                        if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
-                                            if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] is not None:
-                                                if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
-                                                    self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = None
-                                                    ligands = 0
+                                        for np in self.__nonPoly:
+                                            _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
+                                            if _coordAtomSite is not None and len(_factor['atom_id']) == 1 and _factor['atom_id'][0].upper() in _coordAtomSite['atom_id']:
+                                                if 'np_seq_id_remap' not in self.reasonsForReParsing:
+                                                    self.reasonsForReParsing['np_seq_id_remap'] = {}
+                                                chainId = _factor['chain_id'][0]
+                                                srcSeqId = _factor['seq_id'][0]
+                                                dstSeqId = self.__nonPoly[0]['seq_id'][0]
+                                                if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
+                                                    self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
+                                                if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
+                                                    if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] is not None:
+                                                        if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
+                                                            self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = None
+                                                            ligands = 0
+                                                    else:
+                                                        ligands = 0
+                                                else:
+                                                    self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
                                             else:
                                                 ligands = 0
-                                        else:
-                                            self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
                                     if len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
                                         compIds = guessCompIdFromAtomId(_factor['atom_id'], self.__polySeq, self.__nefT)
                                         if compIds is not None:
@@ -9106,6 +9114,8 @@ class XplorMRParserListener(ParseTreeListener):
                                 continue
                         if not isPolySeq and 'np_seq_id_remap' in self.__reasons:
                             _, seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
+                            if seqId is not None:
+                                _seqId_ = seqId
                         elif 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                             fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                             if fixedChainId != chainId:
@@ -9199,7 +9209,8 @@ class XplorMRParserListener(ParseTreeListener):
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
 
                     if not isPolySeq and isChainSpecified and self.doesNonPolySeqIdMatchWithPolySeqUnobs(_factor['chain_id'][0], _seqId_):
-                        continue
+                        if coordAtomSite is None or _factor['atom_id'][0] not in coordAtomSite['atom_id']:
+                            continue
 
                     foundCompId = True
 
@@ -9715,6 +9726,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                         continue
                                                     # 2mgt
                                                     if self.__hasNonPoly and self.__cur_subtype == 'dist' and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1:
+                                                        _coordAtomSite = None
                                                         ligands = 0
                                                         for np in self.__nonPoly:
                                                             if np['auth_chain_id'] == chainId and _factor['atom_id'][0].upper() == np['comp_id'][0]:
@@ -9722,6 +9734,11 @@ class XplorMRParserListener(ParseTreeListener):
                                                         if ligands == 0:
                                                             for np in self.__nonPoly:
                                                                 if 'alt_comp_id' in np and np['auth_chain_id'] == chainId and _factor['atom_id'][0].upper() == np['alt_comp_id'][0]:
+                                                                    ligands += len(np['seq_id'])
+                                                        if ligands == 0:
+                                                            for np in self.__nonPoly:
+                                                                _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
+                                                                if _coordAtomSite is not None and _factor['atom_id'][0] in _coordAtomSite['atom_id']:
                                                                     ligands += len(np['seq_id'])
                                                         if ligands == 1:
                                                             checked = False
@@ -9731,7 +9748,21 @@ class XplorMRParserListener(ParseTreeListener):
                                                             for np in self.__nonPoly:
                                                                 if _factor['atom_id'][0].upper() == np['comp_id'][0]\
                                                                    or ('alt_comp_id' in np and _factor['atom_id'][0].upper() == np['alt_comp_id'][0]):
-                                                                    dstSeqId = np['auth_seq_id'][0]
+                                                                    dstSeqId = np['seq_id'][0]
+                                                                    if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
+                                                                        self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
+                                                                    if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
+                                                                        if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] is not None:
+                                                                            if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
+                                                                                self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = None
+                                                                            else:
+                                                                                checked = True
+                                                                    else:
+                                                                        self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
+                                                                        checked = True
+                                                            for np in self.__nonPoly:
+                                                                if _coordAtomSite is not None and _factor['atom_id'][0] in _coordAtomSite['atom_id']:
+                                                                    dstSeqId = np['seq_id'][0]
                                                                     if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
                                                                         self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
                                                                     if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:

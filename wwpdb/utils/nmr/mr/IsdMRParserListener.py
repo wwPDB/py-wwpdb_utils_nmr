@@ -1095,8 +1095,19 @@ class IsdMRParserListener(ParseTreeListener):
                     ligands += np['comp_id'].count(_compId)
                 if ligands == 0:
                     for np in self.__nonPoly:
+                        ligands += np['comp_id'].count(compId)
+                    if ligands == 1:
+                        _compId = compId
+                if ligands == 0:
+                    for np in self.__nonPoly:
                         if 'alt_comp_id' in np:
                             ligands += np['alt_comp_id'].count(_compId)
+                if ligands == 0:
+                    for np in self.__nonPoly:
+                        if 'alt_comp_id' in np:
+                            ligands += np['alt_comp_id'].count(compId)
+                    if ligands == 1:
+                        _compId = compId
                 if ligands == 0 and len(chainAssign) == 0:
                     __compId = None
                     for np in self.__nonPoly:

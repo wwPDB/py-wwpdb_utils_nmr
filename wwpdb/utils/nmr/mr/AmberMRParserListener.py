@@ -4923,8 +4923,19 @@ class AmberMRParserListener(ParseTreeListener):
                     ligands += np['comp_id'].count(authCompId)
                 if ligands == 0:
                     for np in self.__nonPoly:
+                        ligands += np['comp_id'].count(_compId)
+                    if ligands == 1:
+                        authCompId = _compId
+                if ligands == 0:
+                    for np in self.__nonPoly:
                         if 'alt_comp_id' in np:
                             ligands += np['alt_comp_id'].count(authCompId)
+                if ligands == 0:
+                    for np in self.__nonPoly:
+                        if 'alt_comp_id' in np:
+                            ligands += np['alt_comp_id'].count(_compId)
+                    if ligands == 1:
+                        authCompId = _compId
                 if ligands == 0:
                     __compId = None
                     for np in self.__nonPoly:

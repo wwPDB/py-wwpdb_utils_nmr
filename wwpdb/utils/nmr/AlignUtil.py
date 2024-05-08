@@ -1900,10 +1900,13 @@ def trimSequenceAlignment(seqAlign, chainAssign):
             del seqAlign[idx]
 
 
-def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId,
+def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
                                cifCompId=None, coordAtomSite=None, ignoreSeqId=False):
     """ Retrieve atom identifiers from atom name mapping of public MR file.
     """
+
+    if atomId.endswith('"'):
+        atomId = atomId[:-1] + "''"
 
     elemName = atomId[0]
 
@@ -1925,8 +1928,14 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId,
             if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                 return seqId, compId, atomId
 
-            return item['auth_seq_id'], item['auth_comp_id'], \
-                item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+            authAtomId = item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+            if not authAtomId.startswith('%'):
+                methyl = ccU.getMethylAtoms(item['auth_comp_id'])
+                if item['auth_atom_id'] in methyl:
+                    authAtomId = 'M' + authAtomId[1:-1]
+
+            return item['auth_seq_id'], item['auth_comp_id'], authAtomId
 
         if len(atomId) > 1:
 
@@ -1938,8 +1947,30 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId,
                 if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                     return seqId, compId, atomId
 
-                return item['auth_seq_id'], item['auth_comp_id'], \
-                    item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+                authAtomId = item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+                if not authAtomId.startswith('%'):
+                    methyl = ccU.getMethylAtoms(item['auth_comp_id'])
+                    if item['auth_atom_id'] in methyl:
+                        authAtomId = 'M' + authAtomId[1:-1]
+
+                return item['auth_seq_id'], item['auth_comp_id'], authAtomId
+
+            if atomId[1] == 'H' and len(atomId) > 2:
+
+                item = next((item for item in mapping if item['original_atom_id'] == atomId[1:] + '2'), None)
+
+                if item is not None:
+
+                    if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                        return seqId, compId, atomId
+
+                    authAtomId = item['auth_atom_id'][:len(atomId)] + '%'
+                    methyl = ccU.getMethylAtoms(item['auth_comp_id'])
+                    if item['auth_atom_id'] in methyl:
+                        authAtomId = 'M' + authAtomId[1:-1]
+
+                    return item['auth_seq_id'], item['auth_comp_id'], authAtomId
 
     if elemName == 'H' and atomId[-1] in ('1', '2', '3'):
 
@@ -2119,9 +2150,13 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId,
     return seqId, compId, atomId
 
 
-def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite=None, ignoreSeqId=False):
+def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
+                            coordAtomSite=None, ignoreSeqId=False):
     """ Retrieve atom_id from atom name mapping of public MR file.
     """
+
+    if atomId.endswith('"'):
+        atomId = atomId[:-1] + "''"
 
     elemName = atomId[0]
 
@@ -2142,7 +2177,14 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
             if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                 return atomId
 
-            return item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+            authAtomId = item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+            if not authAtomId.startswith('%'):
+                methyl = ccU.getMethylAtoms(item['auth_comp_id'])
+                if item['auth_atom_id'] in methyl:
+                    authAtomId = 'M' + authAtomId[1:-1]
+
+            return authAtomId
 
         if len(atomId) > 1:
 
@@ -2154,7 +2196,31 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
                 if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                     return atomId
 
-                return item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+                authAtomId = item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+                if not authAtomId.startswith('%'):
+                    methyl = ccU.getMethylAtoms(item['auth_comp_id'])
+                    if item['auth_atom_id'] in methyl:
+                        authAtomId = 'M' + authAtomId[1:-1]
+
+                return authAtomId
+
+            if atomId[1] == 'H' and len(atomId) > 2:
+
+                item = next((item for item in mapping if item['original_atom_id'] == atomId[1:] + '2'), None)
+
+                if item is not None:
+
+                    if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                        return atomId
+
+                    authAtomId = item['auth_atom_id'][:len(atomId)] + '%'
+
+                    methyl = ccU.getMethylAtoms(item['auth_comp_id'])
+                    if item['auth_atom_id'] in methyl:
+                        authAtomId = 'M' + authAtomId[1:-1]
+
+                    return authAtomId
 
     if elemName == 'H' and atomId[-1] in ('1', '2', '3'):
 

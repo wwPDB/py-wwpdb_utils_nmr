@@ -1267,7 +1267,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=self.__hasCoord)
                     origCompId = ps['auth_comp_id'][idx]
-                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                    atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                 if atomId is None\
                    or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                     chainAssign.add((chainId, seqId, cifCompId, True))
@@ -1297,7 +1297,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                 if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
                                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, cifCheck=self.__hasCoord)
                                     origCompId = ps['auth_comp_id'][idx]
-                                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                                    atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                                 if atomId is None\
                                    or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                                     chainAssign.add((chainId, seqId_, cifCompId, True))
@@ -1329,7 +1329,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=self.__hasCoord)
                         origCompId = np['auth_comp_id'][idx]
-                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                        atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                     if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                     if atomId is None\
@@ -1351,7 +1351,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCheck=self.__hasCoord)
                             origCompId = ps['auth_comp_id'][idx]
-                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                            atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if atomId is None\
                            or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                             chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
@@ -1373,7 +1373,7 @@ class RosettaMRParserListener(ParseTreeListener):
                             if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
                                 _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCheck=self.__hasCoord)
                                 origCompId = np['auth_comp_id'][idx]
-                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                                atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if atomId is None\
                                or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                                 chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
@@ -1405,7 +1405,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=self.__hasCoord)
                             origCompId = ps['auth_comp_id'][idx]
-                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                            atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if atomId is None\
                            or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                             chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
@@ -1464,14 +1464,14 @@ class RosettaMRParserListener(ParseTreeListener):
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, asis=self.__preferAuthSeq)
 
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                _atomId_ = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
+                _atomId_ = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
                 if atomId != _atomId_ and coordAtomSite is not None\
                    and (_atomId_ in coordAtomSite['atom_id'] or (_atomId_.endswith('%') and _atomId_[:-1] + '2' in coordAtomSite['atom_id'])):
                     atomId = _atomId_
                 elif self.__reasons is not None and 'branched_remap' in self.__reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, cifSeqId)
                     if _seqId != cifSeqId:
-                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
+                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
 
             _atomId = []
             if not isPolySeq and atomId[0] in ('Q', 'M') and coordAtomSite is not None:

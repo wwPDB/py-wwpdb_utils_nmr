@@ -4948,8 +4948,12 @@ class NEFTranslator:
                                     _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
                                     atom_list.extend(_atom_list)
                                 return (atom_list, ambiguity_code, details)
+                        if details is None and len(atom_list) == 1:
+                            atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
                         return (atom_list, ambiguity_code, details)
                     atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:-1] + '*', details, leave_unmatched, methyl_only)
+                    if details is None and len(atom_list) == 1:
+                        atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
                     return (atom_list, ambiguity_code, details)
 
             if len(atom_id) > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):

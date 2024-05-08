@@ -3405,6 +3405,9 @@ class TestNEFTranslator(unittest.TestCase):
     def test_is_mandatory_tag(self):
         self.assertEqual(self.neft.is_mandatory_tag("_nef_rdc_restraint_list.potential_type", "nef"), True)
 
+    def test_atom_name_conversion(self):
+        self.assertEqual(self.neft.get_valid_star_atom('6MZ', 'M9'), (['H9C1', 'H9C2', 'H9'], 1, None))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -9250,14 +9250,14 @@ class XplorMRParserListener(ParseTreeListener):
                                 authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId)]
                             else:
                                 authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId_)]
-                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, _seqId, authCompId, atomId, coordAtomSite)
+                            atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, authCompId, atomId, coordAtomSite)
                             if coordAtomSite is not None and atomId not in atomSiteAtomId:
                                 if self.__reasons is not None and 'branched_remap' in self.__reasons:
                                     _seqId_ = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, seqId)
                                     if _seqId_ != seqId:
-                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId_, authCompId, atomId, compId, coordAtomSite)
+                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId_, authCompId, atomId, compId, coordAtomSite)
                                 elif seqId != _seqId:
-                                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, authCompId, atomId, coordAtomSite)
+                                    atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, authCompId, atomId, coordAtomSite)
 
                         atomIds = self.getAtomIdList(_factor, compId, atomId)
                         if atomSiteAtomId is not None and not any(_atomId in atomSiteAtomId for _atomId in atomIds):

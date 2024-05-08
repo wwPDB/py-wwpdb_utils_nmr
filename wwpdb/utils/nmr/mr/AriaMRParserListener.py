@@ -990,7 +990,7 @@ class AriaMRParserListener(ParseTreeListener):
                 for idx, lig in enumerate(ligList):
                     _atomId = atomId
                     if self.__mrAtomNameMapping is not None and compId not in monDict3:
-                        _, _, _atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+                        _, _, _atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, compId, atomId)
 
                     if _atomId in lig['atom_ids']:
                         seqId = _seqId = lig['auth_seq_id']
@@ -1003,7 +1003,7 @@ class AriaMRParserListener(ParseTreeListener):
                     break
 
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
-            seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+            seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, compId, atomId)
 
         compId = translateToStdResName(_compId, ccU=self.__ccU)
 
@@ -1076,7 +1076,7 @@ class AriaMRParserListener(ParseTreeListener):
                                           if _seqId == seqId and _compId == compId)
                 if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
-                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                    atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.add((chainId, seqId, cifCompId, True))
@@ -1118,7 +1118,7 @@ class AriaMRParserListener(ParseTreeListener):
                                                           if _seqId == seqId and _compId == compId)
                                 if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, cifCompId, cifCheck=self.__hasCoord)
-                                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                                    atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
@@ -1175,7 +1175,7 @@ class AriaMRParserListener(ParseTreeListener):
                     origCompId = np['auth_comp_id'][idx]
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
-                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                        atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                     if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                     if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
@@ -1208,7 +1208,7 @@ class AriaMRParserListener(ParseTreeListener):
                                                   if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.__hasCoord)
-                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                            atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
@@ -1236,7 +1236,7 @@ class AriaMRParserListener(ParseTreeListener):
                             origCompId = np['auth_comp_id'][idx]
                             if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                                 _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.__hasCoord)
-                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                                atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
@@ -1289,7 +1289,7 @@ class AriaMRParserListener(ParseTreeListener):
                                                   if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
-                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                            atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
@@ -1378,7 +1378,7 @@ class AriaMRParserListener(ParseTreeListener):
                 for idx, lig in enumerate(ligList):
                     _atomId = atomId
                     if self.__mrAtomNameMapping is not None and compId not in monDict3:
-                        _, _, _atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+                        _, _, _atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, compId, atomId)
 
                     if _atomId in lig['atom_ids']:
                         seqId = _seqId = lig['auth_seq_id']
@@ -1391,7 +1391,7 @@ class AriaMRParserListener(ParseTreeListener):
                     break
 
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
-            seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+            seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, compId, atomId)
 
         compId = translateToStdResName(_compId, ccU=self.__ccU)
 
@@ -1482,7 +1482,7 @@ class AriaMRParserListener(ParseTreeListener):
                                           if _seqId == seqId and _compId == compId)
                 if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
-                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                    atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.add((chainId, seqId, cifCompId, True))
@@ -1528,7 +1528,7 @@ class AriaMRParserListener(ParseTreeListener):
                                                           if _seqId == seqId and _compId == compId)
                                 if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                                     _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId_, cifCompId, cifCheck=self.__hasCoord)
-                                    atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                                    atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
@@ -1588,7 +1588,7 @@ class AriaMRParserListener(ParseTreeListener):
                     origCompId = np['auth_comp_id'][idx]
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
-                        atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                        atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                     if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                     if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
@@ -1629,7 +1629,7 @@ class AriaMRParserListener(ParseTreeListener):
                                                   if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.__hasCoord)
-                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                            atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
@@ -1665,7 +1665,7 @@ class AriaMRParserListener(ParseTreeListener):
                             origCompId = np['auth_comp_id'][idx]
                             if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                                 _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.__hasCoord)
-                                atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                                atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                             if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
@@ -1736,7 +1736,7 @@ class AriaMRParserListener(ParseTreeListener):
                                                   if _seqId == seqId and _compId == compId)
                         if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
-                            atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
+                            atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
@@ -1808,7 +1808,7 @@ class AriaMRParserListener(ParseTreeListener):
         __atomId = atomId
 
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
-            __atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, seqId, compId, atomId)
+            __atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, compId, atomId)
 
         compId = translateToStdResName(__compId, ccU=self.__ccU)
 
@@ -1849,14 +1849,14 @@ class AriaMRParserListener(ParseTreeListener):
                     atomId = 'CA'
 
             if self.__mrAtomNameMapping is not None and cifCompId not in monDict3:
-                __atomId = retrieveAtomIdFromMRMap(self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
+                __atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite)
                 if atomId != __atomId and coordAtomSite is not None\
                    and (__atomId in coordAtomSite['atom_id'] or (__atomId.endswith('%') and __atomId[:-1] + '2' in coordAtomSite['atom_id'])):
                     atomId = __atomId
                 elif self.__reasons is not None and 'branched_remap' in self.__reasons:
                     _seqId = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, cifSeqId)
                     if _seqId != cifSeqId:
-                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
+                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, cifCompId, atomId, None, coordAtomSite)
 
             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, cifSeqId, cifCompId)
             if atomId != __atomId and coordAtomSite is not None and __atomId in coordAtomSite['atom_id']:
@@ -1891,10 +1891,13 @@ class AriaMRParserListener(ParseTreeListener):
                 details = None
             else:
                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId, leave_unmatched=True)
-                if details is not None and len(atomId) > 1 and not atomId[-1].isalpha() and (atomId[0] in pseProBeginCode or atomId[0] in ('C', 'N', 'P', 'F')):
-                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
-                    if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
-                        _atomId = [_atomId[int(atomId[-1]) - 1]]
+                if details is not None:
+                    if atomId != __atomId:
+                        _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, __atomId, leave_unmatched=True)
+                    elif len(atomId) > 1 and not atomId[-1].isalpha() and (atomId[0] in pseProBeginCode or atomId[0] in ('C', 'N', 'P', 'F')):
+                        _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
+                        if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                            _atomId = [_atomId[int(atomId[-1]) - 1]]
 
             if details is not None or atomId.endswith('"'):
                 _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)

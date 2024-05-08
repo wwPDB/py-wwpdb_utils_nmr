@@ -2481,6 +2481,10 @@ class NEFTranslator:
 
             for loop in loops:
 
+                _test_on_index = test_on_index
+                if self.__remediation_mode and len(loop.data) > MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
+                    _test_on_index = False
+
                 if allowed_tags is not None:
 
                     if 'Details' in loop.tags and 'Details' not in allowed_tags:
@@ -2694,7 +2698,7 @@ class NEFTranslator:
 
                 tag_data = get_lp_tag(loop, tags)
 
-                if test_on_index and len(idx_tag_ids) > 0 and len(tag_data) <= MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
+                if _test_on_index:  # and len(idx_tag_ids) > 0 and len(tag_data) <= MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
 
                     for idx, idx_tag_id in enumerate(idx_tag_ids):
 
@@ -2738,7 +2742,7 @@ class NEFTranslator:
                                         raise ValueError(f"{name} must not be empty. "
                                                          f"#_of_row {idx + 1}, data_of_row {r}.")
 
-                if test_on_index and key_len > 0:
+                if _test_on_index and key_len > 0:
                     keys = set()
 
                     rechk = False
@@ -2926,7 +2930,7 @@ class NEFTranslator:
 
                     tag_data = get_lp_tag(loop, tags)
 
-                    if test_on_index and key_len > 0:
+                    if _test_on_index and key_len > 0:
                         keys = set()
 
                         rechk = False
@@ -3221,7 +3225,7 @@ class NEFTranslator:
                                                      + f"{name} {val!r} must be {self.readableItemType[type]}.")
                                 if static_val[name] is None:
                                     static_val[name] = val
-                                elif val != static_val[name] and test_on_index:
+                                elif val != static_val[name] and _test_on_index:
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                      + f"{name} {val} vs {static_val[name]} must be {self.readableItemType[type]}.")
                             elif type == 'float':
@@ -3575,7 +3579,7 @@ class NEFTranslator:
                                                              + f"{name} {val!r} must be {self.readableItemType[type]}.")
                                         if static_val[name] is None:
                                             static_val[name] = val
-                                        elif val != static_val[name] and test_on_index:
+                                        elif val != static_val[name] and _test_on_index:
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                              + f"{name} {val} vs {static_val[name]} must be {self.readableItemType[type]}.")
                                     elif type == 'float':

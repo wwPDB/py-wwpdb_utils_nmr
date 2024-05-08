@@ -18989,6 +18989,10 @@ class NmrDpUtility:
                                 if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                     continue
 
+                                if self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
+                                   and atom_id == "HO5'":
+                                    continue
+
                                 err = f"Invalid atom_id {atom_id!r} (comp_id {comp_id!r}) in a loop {lp_category}."
 
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -19066,6 +19070,10 @@ class NmrDpUtility:
                                 pass
 
                             elif self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                                pass
+
+                            elif self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
+                                    and atom_id == "HO5'":
                                 pass
 
                             else:
@@ -19216,6 +19224,10 @@ class NmrDpUtility:
                                     if self.__remediation_mode and _auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                         continue
 
+                                    if self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
+                                       and atom_id == "HO5'":
+                                        continue
+
                                     auth_atom_ids = self.__getAtomIdListInXplor(comp_id, _auth_atom_id)
 
                                     if len(auth_atom_ids) > 0:
@@ -19248,6 +19260,10 @@ class NmrDpUtility:
                                         continue
 
                                     if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                                        continue
+
+                                    if self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
+                                       and atom_id == "HO5'":
                                         continue
 
                                     warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {auth_comp_id})."
@@ -19287,6 +19303,10 @@ class NmrDpUtility:
                                         if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                             continue
 
+                                        if self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
+                                           and atom_id == "HO5'":
+                                            continue
+
                                         warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id}, non-standard residue)."
 
                                         self.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
@@ -19311,6 +19331,10 @@ class NmrDpUtility:
                                         continue
 
                                     if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                                        continue
+
+                                    if self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
+                                       and atom_id == "HO5'":
                                         continue
 
                                     warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {comp_id}, non-standard residue)."

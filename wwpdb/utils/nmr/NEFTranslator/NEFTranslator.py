@@ -113,7 +113,8 @@ from packaging import version
 from operator import itemgetter
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue, monDict3,
+    from wwpdb.utils.nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
+                                           emptyValue, trueValue, monDict3,
                                            protonBeginCode, pseProBeginCode, aminoProtonCode,
                                            letterToDigit, indexToLetter)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -122,7 +123,8 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        ALLOWED_AMBIGUITY_CODES)
 except ImportError:
-    from nmr.AlignUtil import (emptyValue, trueValue, monDict3,
+    from nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
+                               emptyValue, trueValue, monDict3,
                                protonBeginCode, pseProBeginCode, aminoProtonCode,
                                letterToDigit, indexToLetter)
     from nmr.ChemCompUtil import ChemCompUtil
@@ -1496,7 +1498,8 @@ class NEFTranslator:
 
             len_loop_data = len(loop.data)
 
-            if lp_category == '_Atom_chem_shift' and self.__remediation_mode and set(tags) & set(loop.tags) == set(tags) and set(tags__) & set(loop.tags) == set(tags__):
+            if lp_category == '_Atom_chem_shift' and self.__remediation_mode\
+               and set(tags) & set(loop.tags) == set(tags) and set(tags__) & set(loop.tags) == set(tags__):
                 if seq_id != alt_seq_id and alt_seq_id in loop.tags:
                     pre_tag = [seq_id, alt_seq_id]
                     pre_seq_data = get_lp_tag(loop, pre_tag)
@@ -1521,6 +1524,20 @@ class NEFTranslator:
                             alt_seq_id_col = loop.tags.index('Auth_seq_ID')
                             for r in loop.data:
                                 r[seq_id_col] = r[alt_seq_id_col]
+                if chain_id != alt_chain_id and alt_chain_id in loop.tags:
+                    pre_tag = [chain_id, alt_chain_id]
+                    pre_chain_data = get_lp_tag(loop, pre_tag)
+                    chain_id_set = set()
+                    alt_chain_id_set = set()
+                    for row in pre_chain_data:
+                        if row[0] not in emptyValue and row[1] not in emptyValue:
+                            chain_id_set.add(row[0])
+                            alt_chain_id_set.add(row[1])
+                    if len(alt_chain_id_set) > 0 and len(chain_id_set) > LEN_LARGE_ASYM_ID:  # 2lpk
+                        chain_id_col = loop.tags.index('Entity_assembly_ID')
+                        alt_chain_id_col = loop.tags.index('Auth_asym_ID')
+                        for r in loop.data:
+                            r[chain_id_col] = r[alt_chain_id_col]
 
                 seq_data = get_lp_tag(loop, tags)
                 has_valid_chain_id = True
@@ -2464,6 +2481,10 @@ class NEFTranslator:
 
             for loop in loops:
 
+                _test_on_index = test_on_index
+                if self.__remediation_mode and len(loop.data) > MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
+                    _test_on_index = False
+
                 if allowed_tags is not None:
 
                     if 'Details' in loop.tags and 'Details' not in allowed_tags:
@@ -2490,30 +2511,45 @@ class NEFTranslator:
                             col = loop.tags.index('Folding_type')
                             loop.tags[col] = 'Under_sampling_type'
 
-                if lp_category == '_Atom_chem_shift' and self.__remediation_mode and 'Comp_index_ID' in loop.tags and 'Seq_ID' in loop.tags:
-                    pre_tag = ['Comp_index_ID', 'Seq_ID']
-                    pre_seq_data = get_lp_tag(loop, pre_tag)
-                    seq_id_set = set()
-                    alt_seq_id_set = set()
-                    for row in pre_seq_data:
-                        seq_id_set.add(row[0])
-                        alt_seq_id_set.add(row[1])
-                    if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:  # 2kyb
-                        seq_id_col = loop.tags.index('Comp_index_ID')
-                        alt_seq_id_col = loop.tags.index('Seq_ID')
-                        for r in loop.data:
-                            r[seq_id_col] = r[alt_seq_id_col]
-                    elif 'Auth_seq_ID' in loop.tags:
-                        pre_tag = ['Auth_seq_ID']
+                if lp_category == '_Atom_chem_shift' and self.__remediation_mode:
+                    if 'Comp_index_ID' in loop.tags and 'Seq_ID' in loop.tags:
+                        pre_tag = ['Comp_index_ID', 'Seq_ID']
                         pre_seq_data = get_lp_tag(loop, pre_tag)
+                        seq_id_set = set()
                         alt_seq_id_set = set()
                         for row in pre_seq_data:
-                            alt_seq_id_set.add(row[0])
-                        if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:  # 6wux
+                            seq_id_set.add(row[0])
+                            alt_seq_id_set.add(row[1])
+                        if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:  # 2kyb
                             seq_id_col = loop.tags.index('Comp_index_ID')
-                            alt_seq_id_col = loop.tags.index('Auth_seq_ID')
+                            alt_seq_id_col = loop.tags.index('Seq_ID')
                             for r in loop.data:
                                 r[seq_id_col] = r[alt_seq_id_col]
+                        elif 'Auth_seq_ID' in loop.tags:
+                            pre_tag = ['Auth_seq_ID']
+                            pre_seq_data = get_lp_tag(loop, pre_tag)
+                            alt_seq_id_set = set()
+                            for row in pre_seq_data:
+                                alt_seq_id_set.add(row[0])
+                            if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:  # 6wux
+                                seq_id_col = loop.tags.index('Comp_index_ID')
+                                alt_seq_id_col = loop.tags.index('Auth_seq_ID')
+                                for r in loop.data:
+                                    r[seq_id_col] = r[alt_seq_id_col]
+                    if 'Entity_assembly_ID' in loop.tags and 'Auth_asym_ID' in loop.tags:
+                        pre_tag = ['Entity_assembly_ID', 'Auth_asym_ID']
+                        pre_chain_data = get_lp_tag(loop, pre_tag)
+                        chain_id_set = set()
+                        alt_chain_id_set = set()
+                        for row in pre_chain_data:
+                            if row[0] not in emptyValue and row[1] not in emptyValue:
+                                chain_id_set.add(row[0])
+                                alt_chain_id_set.add(row[1])
+                            if len(alt_chain_id_set) > 0 and len(chain_id_set) > LEN_LARGE_ASYM_ID:  # 2lpk
+                                chain_id_col = loop.tags.index('Entity_assembly_ID')
+                                alt_chain_id_col = loop.tags.index('Auth_asym_ID')
+                                for r in loop.data:
+                                    r[chain_id_col] = r[alt_chain_id_col]
 
                 tag_data = []
 
@@ -2662,7 +2698,7 @@ class NEFTranslator:
 
                 tag_data = get_lp_tag(loop, tags)
 
-                if test_on_index and len(idx_tag_ids) > 0 and len(tag_data) <= MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
+                if _test_on_index:  # and len(idx_tag_ids) > 0 and len(tag_data) <= MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
 
                     for idx, idx_tag_id in enumerate(idx_tag_ids):
 
@@ -2706,7 +2742,7 @@ class NEFTranslator:
                                         raise ValueError(f"{name} must not be empty. "
                                                          f"#_of_row {idx + 1}, data_of_row {r}.")
 
-                if test_on_index and key_len > 0:
+                if _test_on_index and key_len > 0:
                     keys = set()
 
                     rechk = False
@@ -2894,7 +2930,7 @@ class NEFTranslator:
 
                     tag_data = get_lp_tag(loop, tags)
 
-                    if test_on_index and key_len > 0:
+                    if _test_on_index and key_len > 0:
                         keys = set()
 
                         rechk = False
@@ -3189,7 +3225,7 @@ class NEFTranslator:
                                                      + f"{name} {val!r} must be {self.readableItemType[type]}.")
                                 if static_val[name] is None:
                                     static_val[name] = val
-                                elif val != static_val[name] and test_on_index:
+                                elif val != static_val[name] and _test_on_index:
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                      + f"{name} {val} vs {static_val[name]} must be {self.readableItemType[type]}.")
                             elif type == 'float':
@@ -3543,7 +3579,7 @@ class NEFTranslator:
                                                              + f"{name} {val!r} must be {self.readableItemType[type]}.")
                                         if static_val[name] is None:
                                             static_val[name] = val
-                                        elif val != static_val[name] and test_on_index:
+                                        elif val != static_val[name] and _test_on_index:
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                              + f"{name} {val} vs {static_val[name]} must be {self.readableItemType[type]}.")
                                     elif type == 'float':
@@ -4948,8 +4984,12 @@ class NEFTranslator:
                                     _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
                                     atom_list.extend(_atom_list)
                                 return (atom_list, ambiguity_code, details)
+                        if details is None and len(atom_list) == 1:
+                            atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
                         return (atom_list, ambiguity_code, details)
                     atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:-1] + '*', details, leave_unmatched, methyl_only)
+                    if details is None and len(atom_list) == 1:
+                        atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
                     return (atom_list, ambiguity_code, details)
 
             if len(atom_id) > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):

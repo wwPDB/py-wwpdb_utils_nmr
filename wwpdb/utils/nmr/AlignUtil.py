@@ -72,6 +72,7 @@ aminoProtonCode = ('H', 'HN', 'H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3', 'H1*', 'H2*
 jcoupBbPairCode = ('N', 'H', 'CA', 'C')
 rdcBbPairCode = ('N', 'H', 'CA')
 zincIonCode = ('ZN', 'ME', 'Z1', 'Z2')
+unknownResidue = ('UNK', 'DN', 'N')
 
 LARGE_ASYM_ID = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')
@@ -497,8 +498,8 @@ def getScoreOfSeqAlign(myAlign):
     return matched, unmapped, conflict, offset1, offset2
 
 
-def getOneLetterCode(compId):
-    """ Convert comp_ID to 1-letter code.
+def getOneLetterCodeCan(compId):
+    """ Convert comp_ID to canonical one-letter code.
     """
 
     compId = compId.upper()
@@ -512,8 +513,8 @@ def getOneLetterCode(compId):
     return 'X'
 
 
-def getCanOneLetterCode(compId):
-    """ Convert comp_ID to canonical 1-letter code.
+def getOneLetterCode(compId):
+    """ Convert comp_ID to one-letter code.
     """
 
     compId = compId.upper()
@@ -527,26 +528,26 @@ def getCanOneLetterCode(compId):
     return f'({compId})'
 
 
+def getOneLetterCodeCanSequence(compIdList):
+    """ Convert array of comp_IDs to canonical one-letter code sequence.
+    """
+
+    f = []
+
+    for compId in compIdList:
+        f.append(getOneLetterCodeCan(compId))
+
+    return ''.join(f)
+
+
 def getOneLetterCodeSequence(compIdList):
-    """ Convert array of comp_IDs to 1-letter code sequence.
+    """ Convert array of comp_IDs to one-letter code sequence.
     """
 
     f = []
 
     for compId in compIdList:
         f.append(getOneLetterCode(compId))
-
-    return ''.join(f)
-
-
-def getCanOneLetterCodeSequence(compIdList):
-    """ Convert array of comp_IDs to canonical 1-letter code sequence.
-    """
-
-    f = []
-
-    for compId in compIdList:
-        f.append(getCanOneLetterCode(compId))
 
     return ''.join(f)
 
@@ -1094,8 +1095,8 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
 
             ref_length = len(s1[seq_id_name])
 
-            ref_code = getOneLetterCodeSequence(_s1['comp_id'])
-            test_code = getOneLetterCodeSequence(_s2['comp_id'])
+            ref_code = getOneLetterCodeCanSequence(_s1['comp_id'])
+            test_code = getOneLetterCodeCanSequence(_s2['comp_id'])
             mid_code = getMiddleCode(ref_code, test_code)
             ref_gauge_code = getGaugeCode(_s1['seq_id'])
             test_gauge_code = getGaugeCode(_s2['seq_id'])
@@ -1160,8 +1161,8 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                         comp_id2.append('.')
                         if has_auth_comp_id2:
                             auth_comp_id2.append('.')
-                ref_code = getOneLetterCodeSequence(comp_id1)
-                test_code = getOneLetterCodeSequence(comp_id2)
+                ref_code = getOneLetterCodeCanSequence(comp_id1)
+                test_code = getOneLetterCodeCanSequence(comp_id2)
                 mid_code = getMiddleCode(ref_code, test_code)
                 ref_gauge_code = getGaugeCode(seq_id1, offset_1)
                 test_gauge_code = getGaugeCode(seq_id2, offset_2)
@@ -1440,8 +1441,8 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
 
             ref_length = len(s1[seq_id_name])
 
-            ref_code = getOneLetterCodeSequence(_s1['comp_id'])
-            test_code = getOneLetterCodeSequence(_s2['comp_id'])
+            ref_code = getOneLetterCodeCanSequence(_s1['comp_id'])
+            test_code = getOneLetterCodeCanSequence(_s2['comp_id'])
             mid_code = getMiddleCode(ref_code, test_code)
             ref_gauge_code = getGaugeCode(_s1['seq_id'])
             test_gauge_code = getGaugeCode(_s2['seq_id'])
@@ -1505,8 +1506,8 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
                         comp_id2.append('.')
                         if has_auth_comp_id2:
                             auth_comp_id2.append('.')
-                ref_code = getOneLetterCodeSequence(comp_id1)
-                test_code = getOneLetterCodeSequence(comp_id2)
+                ref_code = getOneLetterCodeCanSequence(comp_id1)
+                test_code = getOneLetterCodeCanSequence(comp_id2)
                 mid_code = getMiddleCode(ref_code, test_code)
                 ref_gauge_code = getGaugeCode(seq_id1, offset_1)
                 test_gauge_code = getGaugeCode(seq_id2, offset_2)
@@ -1816,7 +1817,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
                         if ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] != 'REL':
                             continue
 
-                        if getOneLetterCode(cif_comp_id) == 'X':
+                        if getOneLetterCodeCan(cif_comp_id) == 'X':
                             continue
 
                     warnings.append(f"[Sequence mismatch] Sequence alignment error between the coordinate ({cif_seq_code}) "
@@ -1899,10 +1900,13 @@ def trimSequenceAlignment(seqAlign, chainAssign):
             del seqAlign[idx]
 
 
-def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId,
+def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
                                cifCompId=None, coordAtomSite=None, ignoreSeqId=False):
     """ Retrieve atom identifiers from atom name mapping of public MR file.
     """
+
+    if atomId.endswith('"'):
+        atomId = atomId[:-1] + "''"
 
     elemName = atomId[0]
 
@@ -1924,8 +1928,14 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId,
             if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                 return seqId, compId, atomId
 
-            return item['auth_seq_id'], item['auth_comp_id'], \
-                item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+            authAtomId = item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+            if not authAtomId.startswith('%'):
+                methyl = ccU.getMethylAtoms(item['auth_comp_id'])
+                if item['auth_atom_id'] in methyl:
+                    authAtomId = 'M' + authAtomId[1:-1]
+
+            return item['auth_seq_id'], item['auth_comp_id'], authAtomId
 
         if len(atomId) > 1:
 
@@ -1937,8 +1947,30 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId,
                 if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                     return seqId, compId, atomId
 
-                return item['auth_seq_id'], item['auth_comp_id'], \
-                    item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+                authAtomId = item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+                if not authAtomId.startswith('%'):
+                    methyl = ccU.getMethylAtoms(item['auth_comp_id'])
+                    if item['auth_atom_id'] in methyl:
+                        authAtomId = 'M' + authAtomId[1:-1]
+
+                return item['auth_seq_id'], item['auth_comp_id'], authAtomId
+
+            if atomId[1] == 'H' and len(atomId) > 2:
+
+                item = next((item for item in mapping if item['original_atom_id'] == atomId[1:] + '2'), None)
+
+                if item is not None:
+
+                    if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                        return seqId, compId, atomId
+
+                    authAtomId = item['auth_atom_id'][:len(atomId)] + '%'
+                    methyl = ccU.getMethylAtoms(item['auth_comp_id'])
+                    if item['auth_atom_id'] in methyl:
+                        authAtomId = 'M' + authAtomId[1:-1]
+
+                    return item['auth_seq_id'], item['auth_comp_id'], authAtomId
 
     if elemName == 'H' and atomId[-1] in ('1', '2', '3'):
 
@@ -2118,9 +2150,13 @@ def retrieveAtomIdentFromMRMap(mrAtomNameMapping, seqId, compId, atomId,
     return seqId, compId, atomId
 
 
-def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coordAtomSite=None, ignoreSeqId=False):
+def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
+                            coordAtomSite=None, ignoreSeqId=False):
     """ Retrieve atom_id from atom name mapping of public MR file.
     """
+
+    if atomId.endswith('"'):
+        atomId = atomId[:-1] + "''"
 
     elemName = atomId[0]
 
@@ -2141,7 +2177,14 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
             if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                 return atomId
 
-            return item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+            authAtomId = item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+            if not authAtomId.startswith('%'):
+                methyl = ccU.getMethylAtoms(item['auth_comp_id'])
+                if item['auth_atom_id'] in methyl:
+                    authAtomId = 'M' + authAtomId[1:-1]
+
+            return authAtomId
 
         if len(atomId) > 1:
 
@@ -2153,7 +2196,31 @@ def retrieveAtomIdFromMRMap(mrAtomNameMapping, cifSeqId, cifCompId, atomId, coor
                 if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                     return atomId
 
-                return item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+                authAtomId = item['auth_atom_id'][:-1] + '%' if item['auth_atom_id'][0].isalpha() else '%' + item['auth_atom_id'][1:]
+
+                if not authAtomId.startswith('%'):
+                    methyl = ccU.getMethylAtoms(item['auth_comp_id'])
+                    if item['auth_atom_id'] in methyl:
+                        authAtomId = 'M' + authAtomId[1:-1]
+
+                return authAtomId
+
+            if atomId[1] == 'H' and len(atomId) > 2:
+
+                item = next((item for item in mapping if item['original_atom_id'] == atomId[1:] + '2'), None)
+
+                if item is not None:
+
+                    if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
+                        return atomId
+
+                    authAtomId = item['auth_atom_id'][:len(atomId)] + '%'
+
+                    methyl = ccU.getMethylAtoms(item['auth_comp_id'])
+                    if item['auth_atom_id'] in methyl:
+                        authAtomId = 'M' + authAtomId[1:-1]
+
+                    return authAtomId
 
     if elemName == 'H' and atomId[-1] in ('1', '2', '3'):
 
@@ -2834,7 +2901,7 @@ def splitPolySeqRstForNonPoly(ccU, nonPolyModel, polySeqRst, seqAlign, chainAssi
                                                            for seq_id, comp_id, auth_comp_id
                                                            in zip(test_ps['seq_id'], test_ps['comp_id'], test_ps['auth_comp_id'])
                                                            if seq_id == test_seq_id)
-                    if getOneLetterCode(test_auth_comp_id) == 'X':
+                    if getOneLetterCodeCan(test_auth_comp_id) == 'X':
                         _test_auth_comp_id = alt_ref_comp_id_dict.get(test_comp_id, test_auth_comp_id)
                         candidate = []
                         for np in nonPolyModel:

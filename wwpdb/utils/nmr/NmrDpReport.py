@@ -83,6 +83,7 @@
 # 17-Jan-2024  M. Yokochi - add 'coordinate_issue' error (DAOTHER-9084)
 # 29-Jan-2024  M. Yokochi - add 'ambiguous_dihedral_angle' warning type (NMR restraint remediation, 6sy2)
 # 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
+# 01-May-2024  M. Yokochi - merge cs/mr sequence extensions containing unknown residues (e.g UNK, DN, N) if necessary (NMR restraint remediation, 6fw4)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -95,9 +96,9 @@ import re
 from operator import itemgetter
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import emptyValue, monDict3, getPrettyJson
+    from wwpdb.utils.nmr.AlignUtil import emptyValue, monDict3, unknownResidue, getPrettyJson
 except ImportError:
-    from nmr.AlignUtil import emptyValue, monDict3, getPrettyJson
+    from nmr.AlignUtil import emptyValue, monDict3, unknownResidue, getPrettyJson
 
 
 def get_value_safe(d=None, key=None):
@@ -1078,6 +1079,8 @@ class NmrDpReport:
                 f.append(monDict3[comp_id])
             elif comp_id in emptyValue:
                 f.append('.')
+            elif comp_id in unknownResidue:
+                f.append('UNK')
             else:
                 f.append(f'({comp_id})')
 
@@ -1106,6 +1109,8 @@ class NmrDpReport:
                 f.append(monDict3[comp_id])
             elif comp_id in emptyValue:
                 f.append('.')
+            elif comp_id in unknownResidue:
+                f.append('UNK')
             else:
                 f.append(f'({comp_id})')
 

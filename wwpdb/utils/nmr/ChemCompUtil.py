@@ -469,7 +469,12 @@ class ChemCompUtil:
         if '_chem_comp.formula_weight' not in self.lastChemCompDict:
             return 0.0
 
-        fw = float(self.lastChemCompDict['_chem_comp.formula_weight'])
+        try:
+
+            fw = float(self.lastChemCompDict['_chem_comp.formula_weight'])
+
+        except ValueError:
+            return 0.0
 
         peptide_like = self.peptideLike()
 

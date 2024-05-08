@@ -4002,6 +4002,13 @@ class CharmmMRParserListener(ParseTreeListener):
         if self.__sel_expr_debug:
             print("  " * self.depth + f"enter_factor, concatenation: {bool(ctx.factor())}")
 
+        if ctx.Not_op():
+            if len(self.factor) > 0:
+                self.factor = self.__consumeFactor_expressions(self.factor, cifCheck=True)
+                if 'atom_selection' in self.factor:
+                    self.stackTerms.append(self.factor['atom_selection'])
+                self.factor = {}
+
         self.depth += 1
 
     # Exit a parse tree produced by CharmmMRParser#factor.

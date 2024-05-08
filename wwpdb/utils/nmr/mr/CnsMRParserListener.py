@@ -6244,7 +6244,14 @@ class CnsMRParserListener(ParseTreeListener):
         if self.__sel_expr_debug:
             print("  " * self.depth + f"enter_factor, concatenation: {bool(ctx.factor())}")
 
-        if ctx.Point():
+        if ctx.Not_op():
+            if len(self.factor) > 0:
+                self.factor = self.__consumeFactor_expressions(self.factor, cifCheck=True)
+                if 'atom_selection' in self.factor:
+                    self.stackTerms.append(self.factor['atom_selection'])
+                self.factor = {}
+
+        elif ctx.Point():
             self.inVector3D = True
             self.inVector3D_columnSel = -1
             self.inVector3D_tail = None

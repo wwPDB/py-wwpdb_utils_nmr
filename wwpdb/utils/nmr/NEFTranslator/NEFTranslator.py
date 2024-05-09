@@ -1704,6 +1704,18 @@ class NEFTranslator:
                     cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
                     seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
 
+                has_alt_comp_id = False
+                if lp_category == '_Atom_chem_shift' and self.__remediation_mode\
+                   and ('Auth_comp_ID' in loop.tags or 'Original_PDB_residue_name' in loop.tags):
+                    comp_tags = ['Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID']
+                    if 'Auth_comp_ID' in loop.tags:
+                        comp_tags.append('Auth_comp_ID')
+                    if 'Original_PDB_residue_name' in loop.tags:
+                        comp_tags.append('Original_PDB_residue_name')
+                    comp_data = get_lp_tag(loop, comp_tags)
+                    if len(comp_data) > 0:
+                        has_alt_comp_id = True
+
                 asm = []  # assembly of a loop
 
                 for c in chain_ids:
@@ -1715,6 +1727,8 @@ class NEFTranslator:
                     if allow_gap:
                         ent['seq_id'] = []
                         ent['comp_id'] = []
+                        if has_alt_comp_id:
+                            ent['alt_comp_id'] = []
 
                         _seq_id_ = None
 
@@ -1724,14 +1738,57 @@ class NEFTranslator:
                                 for s in range(_seq_id_ + 1, _seq_id):
                                     ent['seq_id'].append(s)
                                     ent['comp_id'].append('.')
+                                    if has_alt_comp_id:
+                                        ent['alt_comp_id'].append('.')
                             ent['seq_id'].append(_seq_id)
                             ent['comp_id'].append(_comp_id)
+                            if has_alt_comp_id:
+                                try:
+                                    r = next(r for r in comp_data if r[0] == c and r[1].isdigit() and int(r[1]) == _seq_id and r[2] == _comp_id)
+                                    if len(r) == 5:
+                                        if r[4] not in emptyValue:
+                                            ent['alt_comp_id'].append(r[4])
+                                        elif r[3] not in emptyValue:
+                                            ent['alt_comp_id'].append(r[3])
+                                        else:
+                                            del ent['alt_comp_id']
+                                            has_alt_comp_id = False
+                                    else:
+                                        if r[3] not in emptyValue:
+                                            ent['alt_comp_id'].append(r[3])
+                                        else:
+                                            del ent['alt_comp_id']
+                                            has_alt_comp_id = False
+                                except StopIteration:
+                                    del ent['alt_comp_id']
+                                    has_alt_comp_id = False
 
                             _seq_id_ = _seq_id
 
                     else:
                         ent['seq_id'] = seq_dict[c]
                         ent['comp_id'] = cmp_dict[c]
+                        if has_alt_comp_id:
+                            for _seq_id, _comp_id in zip(seq_dict[c], cmp_dict[c]):
+                                try:
+                                    r = next(r for r in comp_data if r[0] == c and r[1].isdigit() and int(r[1]) == _seq_id and r[2] == _comp_id)
+                                    if len(r) == 5:
+                                        if r[4] not in emptyValue:
+                                            ent['alt_comp_id'].append(r[4])
+                                        elif r[3] not in emptyValue:
+                                            ent['alt_comp_id'].append(r[3])
+                                        else:
+                                            del ent['alt_comp_id']
+                                            has_alt_comp_id = False
+                                    else:
+                                        if r[3] not in emptyValue:
+                                            ent['alt_comp_id'].append(r[3])
+                                        else:
+                                            del ent['alt_comp_id']
+                                            has_alt_comp_id = False
+                                except StopIteration:
+                                    del ent['alt_comp_id']
+                                    has_alt_comp_id = False
 
                     if len(chain_ids) > 1 and check_identity:
                         identity = []

@@ -44875,10 +44875,10 @@ class NmrDpUtility:
                 continue
 
             if row[auth_chain_id_col] in emptyValue or row[auth_chain_id_col] == 'UNMAPPED':
-                row[auth_chain_id_col] = cif_ps['auth_chain_id']
+                row[auth_chain_id_col] = cif_ps['auth_chain_id' if 'auth_chain_id' in cif_ps else 'chain_id']
                 if auth_seq_id_col != -1:
                     row[auth_seq_id_col] = str(next(_cif_seq_id for _cif_seq_id, _nmr_seq_id
-                                                    in zip(_cif_ps['auth_seq_id'], _nmr_ps['seq_id'])
+                                                    in zip(_cif_ps['auth_seq_id' if 'auth_seq_id' in cif_ps else 'seq_id'], _nmr_ps['seq_id'])
                                                     if _nmr_seq_id == nmr_seq_id))
 
                 modified = True

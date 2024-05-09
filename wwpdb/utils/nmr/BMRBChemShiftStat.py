@@ -808,7 +808,13 @@ class BMRBChemShiftStat:
 
                 _atom_id = row['atom_id']
 
-                if comp_id == 'THR' and _atom_id == 'MG':
+                if comp_id == 'ILE':
+                    if _atom_id == 'MG':
+                        _atom_id = 'MG2'
+                    elif _atom_id == 'MD':
+                        _atom_id = 'MD1'
+
+                elif comp_id == 'THR' and _atom_id == 'MG':
                     _atom_id = 'MG2'
 
                 # methyl proton group
@@ -1120,6 +1126,12 @@ class BMRBChemShiftStat:
                 non_rep_methylene_protons = self.__ccU.getNonRepMethyleneOrAminoProtons(comp_id)
 
                 _atom_id = row['atom_id']
+
+                if comp_id == 'ILE':
+                    if _atom_id == 'MG':
+                        _atom_id = 'MG2'
+                    elif _atom_id == 'MD':
+                        _atom_id = 'MD1'
 
                 if comp_id == 'THR' and _atom_id == 'MG':
                     _atom_id = 'MG2'

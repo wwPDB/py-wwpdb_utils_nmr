@@ -1518,7 +1518,7 @@ class NEFTranslator:
                         pre_seq_data = get_lp_tag(loop, pre_tag)
                         alt_seq_id_set = set()
                         for row in pre_seq_data:
-                            alt_seq_id_set.add(row[0])
+                            alt_seq_id_set.add(row)
                         if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:  # 6wux
                             seq_id_col = loop.tags.index('Comp_index_ID')
                             alt_seq_id_col = loop.tags.index('Auth_seq_ID')
@@ -1538,6 +1538,21 @@ class NEFTranslator:
                         alt_chain_id_col = loop.tags.index('Auth_asym_ID')
                         for r in loop.data:
                             r[chain_id_col] = r[alt_chain_id_col]
+                    elif 'Entity_ID' in loop.tags:
+                        pre_tag = ['Entity_ID', alt_chain_id]
+                        pre_chain_data = get_lp_tag(loop, pre_tag)
+                        entity_id_set = set()
+                        alt_chain_id_set = set()
+                        for row in pre_chain_data:
+                            if row[0] not in emptyValue and row[1] not in emptyValue:
+                                entity_id_set.add(row[0])
+                                alt_chain_id_set.add(row[1])
+                        if len(entity_id_set) > 0 and len(entity_id_set) == len(alt_chain_id_set):  # 2kxc
+                            entity_id_col = loop.tags.index('Entity_ID')
+                            chain_id_col = loop.tags.index('Entity_assembly_ID')
+                            alt_chain_id_col = loop.tags.index('Auth_asym_ID')
+                            for r in loop.data:
+                                r[chain_id_col] = r[entity_id_col]
 
                 seq_data = get_lp_tag(loop, tags)
                 has_valid_chain_id = True
@@ -2587,7 +2602,7 @@ class NEFTranslator:
                             pre_seq_data = get_lp_tag(loop, pre_tag)
                             alt_seq_id_set = set()
                             for row in pre_seq_data:
-                                alt_seq_id_set.add(row[0])
+                                alt_seq_id_set.add(row)
                             if 0 < len(seq_id_set) < len(alt_seq_id_set) / 2:  # 6wux
                                 seq_id_col = loop.tags.index('Comp_index_ID')
                                 alt_seq_id_col = loop.tags.index('Auth_seq_ID')
@@ -2602,11 +2617,26 @@ class NEFTranslator:
                             if row[0] not in emptyValue and row[1] not in emptyValue:
                                 chain_id_set.add(row[0])
                                 alt_chain_id_set.add(row[1])
-                            if len(alt_chain_id_set) > 0 and len(chain_id_set) > LEN_LARGE_ASYM_ID:  # 2lpk
+                        if len(alt_chain_id_set) > 0 and len(chain_id_set) > LEN_LARGE_ASYM_ID:  # 2lpk
+                            chain_id_col = loop.tags.index('Entity_assembly_ID')
+                            alt_chain_id_col = loop.tags.index('Auth_asym_ID')
+                            for r in loop.data:
+                                r[chain_id_col] = r[alt_chain_id_col]
+                        elif 'Entity_ID' in loop.tags:
+                            pre_tag = ['Entity_ID', 'Auth_asym_ID']
+                            pre_chain_data = get_lp_tag(loop, pre_tag)
+                            entity_id_set = set()
+                            alt_chain_id_set = set()
+                            for row in pre_chain_data:
+                                if row[0] not in emptyValue and row[1] not in emptyValue:
+                                    entity_id_set.add(row[0])
+                                    alt_chain_id_set.add(row[1])
+                            if len(entity_id_set) > 0 and len(entity_id_set) == len(alt_chain_id_set):  # 2kxc
+                                entity_id_col = loop.tags.index('Entity_ID')
                                 chain_id_col = loop.tags.index('Entity_assembly_ID')
                                 alt_chain_id_col = loop.tags.index('Auth_asym_ID')
                                 for r in loop.data:
-                                    r[chain_id_col] = r[alt_chain_id_col]
+                                    r[chain_id_col] = r[entity_id_col]
 
                 tag_data = []
 

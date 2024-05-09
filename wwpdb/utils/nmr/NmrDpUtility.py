@@ -16153,7 +16153,7 @@ class NmrDpUtility:
 
                 else:
 
-                    for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+                    for list_id, sf in enumerate(self.__star_data[fileListId].get_saveframes_by_category(sf_category), start=1):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                         if not any(loop for loop in sf.loops if loop.category == lp_category):
@@ -16161,8 +16161,6 @@ class NmrDpUtility:
 
                         has_poly_seq |= self.__extractPolymerSequenceInLoop__(fileListId, file_name, file_type, content_subtype, sf,
                                                                               list_id, sf_framecode, lp_category, poly_seq_list_set)
-
-                        list_id += 1
 
                 if not has_poly_seq:
                     poly_seq_list_set.pop(content_subtype)
@@ -23945,7 +23943,7 @@ class NmrDpUtility:
 
             else:
 
-                for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+                for list_id, sf in enumerate(self.__star_data[fileListId].get_saveframes_by_category(sf_category), start=1):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                     if not any(loop for loop in sf.loops if loop.category == lp_category):
@@ -23962,8 +23960,6 @@ class NmrDpUtility:
                         set_sf_tag(sf, 'Data_file_name', original_file_name)
 
                     modified |= self.__remediateCsLoop__(fileListId, file_type, content_subtype, sf, list_id, sf_framecode, lp_category)
-
-                    list_id += 1
 
             if modified:
 
@@ -26182,7 +26178,6 @@ class NmrDpUtility:
 
                                     if not found:
                                         _row[24] = 'UNMAPPED'
-                                        print('PASS A')
                                         # DAOTHER-9065
                                         if __offset != 0:
                                             _row[3] += __offset
@@ -26242,7 +26237,6 @@ class NmrDpUtility:
                                                         _row[23] = _row[19]
                                                     if _row[24] in emptyValue:
                                                         _row[24] = 'UNMAPPED'
-                                                        print('PASS B')
 
                                                     _index, _row = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
                                                                                coord_atom_site, None,
@@ -26790,13 +26784,11 @@ class NmrDpUtility:
                 modified = False
 
                 if self.__star_data_type[fileListId] == 'Loop':
-
                     sf = self.__star_data[fileListId]
 
                     modified |= self.__syncMrLoop__(fileListId, file_type, content_subtype, sf, lp_category)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
-
                     sf = self.__star_data[fileListId]
 
                     modified |= self.__syncMrLoop__(fileListId, file_type, content_subtype, sf, lp_category)
@@ -35932,15 +35924,13 @@ class NmrDpUtility:
 
                 else:
 
-                    for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+                    for list_id, sf in enumerate(self.__star_data[fileListId].get_saveframes_by_category(sf_category), start=1):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                         if not any(loop for loop in sf.loops if loop.category == lp_category):
                             continue
 
                         self.__calculateStatsOfExptlData__(fileListId, file_name, file_type, content_subtype, sf, list_id, sf_framecode, lp_category, seq_align_dic, asm)
-
-                        list_id += 1
 
                 if len(asm) > 0:
                     stats[content_subtype] = asm
@@ -43503,6 +43493,7 @@ class NmrDpUtility:
                             result['conflict'] = 0
                             s2 = __s2
 
+                    # update residue name in CS loop to follow CCD replacement (6vu1)
                     if conflict > 0 and ('alt_comp_id' in s1 or 'alt_comp_id' in s2) and len(s1['seq_id']) == len(s2['seq_id']):
                         for (k1, k2) in zip(['alt_comp_id', 'comp_id'], ['alt_comp_id', 'comp_id']):
 
@@ -43526,6 +43517,10 @@ class NmrDpUtility:
                                 s2['comp_id'] = s1['comp_id']
 
                                 break
+
+                    if conflict == 0:
+                        # resolve unmapped author sequence in CS loop based on sequence alignment (2kxc)
+                        self.__resolveUnmappedAuthSequenceInCsLoop(fileListId, s1, s2)
 
                     ref_code = getOneLetterCodeCanSequence(s1['comp_id'])
                     test_code = getOneLetterCodeCanSequence(s2['comp_id'])
@@ -44677,7 +44672,7 @@ class NmrDpUtility:
 
         else:
 
-            for sf in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+            for list_id, sf in enumerate(self.__star_data[file_list_id].get_saveframes_by_category(sf_category), start=1):
 
                 if not any(loop for loop in sf.loops if loop.category == lp_category):
                     continue
@@ -44691,8 +44686,6 @@ class NmrDpUtility:
                 allow_chain_id_mismatch = len(ps) == 1
 
                 modified |= self.__updateCompIdInCsLoop__(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
-
-                list_id += 1
 
         return modified
 
@@ -44739,6 +44732,156 @@ class NmrDpUtility:
                 row[auth_comp_id_col] = cif_comp_id
 
             modified = True
+
+        return modified
+
+    def __resolveUnmappedAuthSequenceInCsLoop(self, file_list_id, cif_ps, nmr_ps):
+        """ Resolve unmapped author sequence in CS loop based on sequence alignment.
+        """
+
+        input_source = self.report.input_sources[file_list_id]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if file_type == 'nef' or file_list_id >= len(self.__star_data) or self.__star_data[file_list_id] is None:
+            return False
+
+        if input_source_dic['content_subtype'] is None:
+            return False
+
+        content_subtype = 'chem_shift'
+
+        if content_subtype not in input_source_dic['content_subtype']:
+            return False
+
+        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+        has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+
+        if (not has_poly_seq) or (not has_poly_seq_in_loop):
+            return False
+
+        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+
+        if content_subtype not in polymer_sequence_in_loop:
+            return False
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        ps_in_loop = polymer_sequence_in_loop[content_subtype]
+
+        modified = False
+
+        list_id = 1
+
+        if self.__star_data_type[file_list_id] == 'Loop':
+            sf = self.__star_data[file_list_id]
+
+            try:
+                ps = next(ps['polymer_sequence'] for ps in ps_in_loop if ps['list_id'] == list_id)
+                next(s for s in ps if s['chain_id'] == nmr_ps['chain_id'])
+            except StopIteration:
+                return False
+
+            allow_chain_id_mismatch = len(ps) == 1
+
+            modified |= self.__resolveUnmappedAuthSequenceInCsLoop__(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
+
+        elif self.__star_data_type[file_list_id] == 'Saveframe':
+            sf = self.__star_data[file_list_id]
+
+            try:
+                ps = next(ps['polymer_sequence'] for ps in ps_in_loop if ps['list_id'] == list_id)
+                next(s for s in ps if s['chain_id'] == nmr_ps['chain_id'])
+            except StopIteration:
+                return False
+
+            allow_chain_id_mismatch = len(ps) == 1
+
+            modified |= self.__resolveUnmappedAuthSequenceInCsLoop__(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
+
+        else:
+
+            for list_id, sf in enumerate(self.__star_data[file_list_id].get_saveframes_by_category(sf_category), start=1):
+
+                if not any(loop for loop in sf.loops if loop.category == lp_category):
+                    continue
+
+                try:
+                    ps = next(ps['polymer_sequence'] for ps in ps_in_loop if ps['list_id'] == list_id)
+                    next(s for s in ps if s['chain_id'] == nmr_ps['chain_id'])
+                except StopIteration:
+                    continue
+
+                allow_chain_id_mismatch = len(ps) == 1
+
+                modified |= self.__resolveUnmappedAuthSequenceInCsLoop__(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
+
+        return modified
+
+    def __resolveUnmappedAuthSequenceInCsLoop__(self, file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch):
+        """ Resolve unmapped author sequence in CS loop based on sequence alignment.
+        """
+
+        if __pynmrstar_v3_2__:
+            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
+        else:
+            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
+
+        chain_id_col = loop.tags.index('Entity_assembly_ID')
+        seq_id_col = loop.tags.index('Comp_index_ID')
+        auth_chain_id_col = loop.tags.index('Auth_asym_ID') if 'Auth_asym_ID' in loop.tags else -1
+        auth_seq_id_col = loop.tags.index('Auth_seq_ID') if 'Auth_seq_ID' in loop.tags else -1
+
+        if auth_chain_id_col == -1:
+            return False
+
+        chain_id = cif_ps['chain_id']
+
+        self.__pA.setReferenceSequence(cif_ps['comp_id'], 'REF' + chain_id)
+        self.__pA.addTestSequence(nmr_ps['comp_id'], chain_id)
+        self.__pA.doAlign()
+
+        myAlign = self.__pA.getAlignment(chain_id)
+
+        length = len(myAlign)
+
+        if length == 0:
+            return False
+
+        _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+        if length == unmapped + conflict or conflict > 0:
+            return False
+
+        _cif_ps = cif_ps if offset_1 == 0 else fillBlankCompIdWithOffset(cif_ps, offset_1)
+        _nmr_ps = nmr_ps if offset_2 == 0 else fillBlankCompIdWithOffset(nmr_ps, offset_2)
+
+        nmr_chain_id = nmr_ps['chain_id']
+
+        modified = False
+
+        for row in loop.data:
+            if (not allow_chain_id_mismatch and row[chain_id_col] != nmr_chain_id) or row[seq_id_col] in emptyValue:
+                continue
+
+            try:
+                nmr_seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+            except ValueError:
+                continue
+
+            if nmr_seq_id not in nmr_ps['seq_id']:
+                continue
+
+            if row[auth_chain_id_col] in emptyValue or row[auth_chain_id_col] == 'UNMAPPED':
+                row[auth_chain_id_col] = cif_ps['auth_chain_id']
+                if auth_seq_id_col != -1:
+                    row[auth_seq_id_col] = str(next(_cif_seq_id for _cif_seq_id, _nmr_seq_id
+                                                    in zip(_cif_ps['auth_seq_id'], _nmr_ps['seq_id'])
+                                                    if _nmr_seq_id == nmr_seq_id))
+
+                modified = True
 
         return modified
 
@@ -44843,7 +44986,7 @@ class NmrDpUtility:
 
                 else:
 
-                    for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+                    for list_id, sf in enumerate(self.__star_data[fileListId].get_saveframes_by_category(sf_category), start=1):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                         if not any(loop for loop in sf.loops if loop.category == lp_category):
@@ -44852,8 +44995,6 @@ class NmrDpUtility:
                         modified |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype,
                                                                         sf, list_id, sf_framecode, lp_category, cif_polymer_sequence,
                                                                         seq_align_dic, nmr2ca, ref_chain_id)
-
-                        list_id += 1
 
             if modified:
                 self.__depositNmrData()

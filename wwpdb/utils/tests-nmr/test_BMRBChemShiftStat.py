@@ -179,6 +179,10 @@ class TestBMRBChemShiftStat(unittest.TestCase):
     def test_daother_9317(self):
         self.assertEqual([stat['atom_id'] for stat in self.bmrb_cs_stat.get('MEA') if 'avg' in stat], ['H', 'HA', 'HB1', 'HB2', 'HD1', 'HD2', 'HE1', 'HE2'])
 
+    def test_get_ile_cs_stat(self):
+        self.assertEqual([stat['atom_id'] for stat in self.bmrb_cs_stat.get('ILE') if 'avg' in stat and stat['desc'] == 'methyl' and stat['atom_id'][0] == 'H'],
+                         ['HD11', 'HD12', 'HD13', 'HG21', 'HG22', 'HG23'])
+
 
 if __name__ == '__main__':
     unittest.main()

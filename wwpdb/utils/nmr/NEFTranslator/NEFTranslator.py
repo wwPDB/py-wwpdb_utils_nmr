@@ -1524,8 +1524,8 @@ class NEFTranslator:
                             alt_seq_id_col = loop.tags.index('Auth_seq_ID')
                             for r in loop.data:
                                 r[seq_id_col] = r[alt_seq_id_col]
-                if chain_id != alt_chain_id and alt_chain_id in loop.tags:
-                    pre_tag = [chain_id, alt_chain_id]
+                if 'Entity_assembly_ID' in loop.tags and 'Auth_asym_ID' in loop.tags:
+                    pre_tag = ['Entity_assembly_ID', 'Auth_asym_ID']
                     pre_chain_data = get_lp_tag(loop, pre_tag)
                     chain_id_set = set()
                     alt_chain_id_set = set()
@@ -1538,8 +1538,8 @@ class NEFTranslator:
                         alt_chain_id_col = loop.tags.index('Auth_asym_ID')
                         for r in loop.data:
                             r[chain_id_col] = r[alt_chain_id_col]
-                    elif 'Entity_ID' in loop.tags:
-                        pre_tag = ['Entity_ID', alt_chain_id]
+                    elif len(chain_id_set) == 0 and 'Entity_ID' in loop.tags:
+                        pre_tag = ['Entity_ID', 'Auth_asym_ID']
                         pre_chain_data = get_lp_tag(loop, pre_tag)
                         entity_id_set = set()
                         alt_chain_id_set = set()
@@ -1721,6 +1721,7 @@ class NEFTranslator:
 
                 has_alt_comp_id = False
                 if lp_category == '_Atom_chem_shift' and self.__remediation_mode\
+                   and 'Entity_assembly_ID' in loop.tags and 'Comp_index_ID' in loop.tags\
                    and ('Auth_comp_ID' in loop.tags or 'Original_PDB_residue_name' in loop.tags):
                     comp_tags = ['Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID']
                     if 'Auth_comp_ID' in loop.tags:
@@ -2622,7 +2623,7 @@ class NEFTranslator:
                             alt_chain_id_col = loop.tags.index('Auth_asym_ID')
                             for r in loop.data:
                                 r[chain_id_col] = r[alt_chain_id_col]
-                        elif 'Entity_ID' in loop.tags:
+                        elif len(chain_id_set) == 0 and 'Entity_ID' in loop.tags:
                             pre_tag = ['Entity_ID', 'Auth_asym_ID']
                             pre_chain_data = get_lp_tag(loop, pre_tag)
                             entity_id_set = set()

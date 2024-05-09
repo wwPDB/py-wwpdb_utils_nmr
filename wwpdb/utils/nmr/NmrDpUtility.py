@@ -37955,11 +37955,8 @@ class NmrDpUtility:
                     else:
                         continue
 
-                if target_value > max_val:
-                    max_val = target_value
-
-                if target_value < min_val:
-                    min_val = target_value
+                max_val = max(max_val, target_value)
+                min_val = min(min_val, target_value)
 
                 data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, idx, target_value, upper_limit, lower_limit,
                                                               member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
@@ -38400,8 +38397,7 @@ class NmrDpUtility:
 
                             discrepancy = abs(target_value_1 - target_value_2) / abs(target_value_1 + target_value_2) * 100.0
 
-                            if discrepancy > max_val:
-                                max_val = discrepancy
+                            max_val = max(max_val, discrepancy)
 
                             if discrepancy >= self.r_inconsistent_dist_restraint * 100.0:
                                 ann = {}
@@ -40095,8 +40091,7 @@ class NmrDpUtility:
 
                             if data_type.startswith('phi') or data_type.startswith('psi') or data_type.startswith('omega'):
 
-                                if discrepancy > max_val:
-                                    max_val = discrepancy
+                                max_val = max(max_val, discrepancy)
 
                                 if discrepancy > max_inclusive * self.inconsist_over_conflicted:
                                     ann = {}
@@ -40396,17 +40391,11 @@ class NmrDpUtility:
                     else:
                         continue
 
-                if target_value > max_val:
-                    max_val = target_value
+                max_val = max(max_val, target_value)
+                min_val = min(min_val, target_value)
 
-                elif target_value < min_val:
-                    min_val = target_value
-
-                if target_value > max_val_:
-                    max_val_ = target_value
-
-                if target_value < min_val_:
-                    min_val_ = target_value
+                max_val_ = max(max_val_, target_value)
+                min_val_ = min(min_val_, target_value)
 
             item_names = self.item_names_in_rdc_loop[file_type]
             combination_id_name = item_names['combination_id']
@@ -40733,8 +40722,7 @@ class NmrDpUtility:
 
                             discrepancy = abs(target_value_1 - target_value_2)
 
-                            if discrepancy > max_val:
-                                max_val = discrepancy
+                            max_val = max(max_val, discrepancy)
 
                             if discrepancy > max_inclusive * self.inconsist_over_conflicted:
                                 ann = {}

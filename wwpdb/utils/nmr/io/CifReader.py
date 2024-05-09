@@ -1139,10 +1139,7 @@ class CifReader:
 
         d_var = np.multiply(d_var, factor)
 
-        max_d_var = np.max(d_var)
-
-        if max_d_var > self.__d_cutoff:
-            max_d_var = self.__d_cutoff
+        max_d_var = min(np.max(d_var), self.__d_cutoff)
 
         d_ord = np.ones(matrix_size, dtype=float)
 

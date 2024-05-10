@@ -24520,6 +24520,7 @@ class NmrDpUtility:
             details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
 
             def fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
+                _src_idx = src_idx
                 if src_idx > 0:
                     src_idx -= 1
                 fill_auth_atom_id = self.__annotation_mode or (_row[19] in emptyValue and _row[18] not in emptyValue)
@@ -24655,24 +24656,69 @@ class NmrDpUtility:
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
-                            ambig_id = _row[12]
-                            if ambig_id == 0:
+                            ambig_code = _row[12]
+                            if ambig_code == 0:
                                 _row[12] = None
-                            elif ambig_id in (2, 3):
-                                _ambig_id = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
-                                if _ambig_id not in (0, ambig_id):
-                                    if _ambig_id != 1:
-                                        _row[12] = _ambig_id
-                                    else:
-                                        _row[12] = ambig_id = 4
 
-                            elif ambig_id == 6:
+                            elif ambig_code in (2, 3):
+                                _ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
+                                if _ambig_code not in (0, ambig_code):
+                                    if _ambig_code != 1:
+                                        _row[12] = _ambig_code
+                                    else:
+                                        _row[12] = ambig_code = 4
+
+                            elif ambig_code == 4:
+                                if not self.__annotation_mode:
+                                    row_src = src_lp.data[_src_idx]
+                                    for offset in range(1, 10):
+                                        if src_idx + offset < len(src_lp.data):
+                                            row = src_lp.data[src_idx + offset]
+                                            if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
+                                               and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
+                                                if row[chain_id_col] != _row[1]:
+                                                    _row[12] = ambig_code = 6
+                                                    break
+                                                _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+                                                if _seq_id != _row[3]:
+                                                    _row[12] = ambig_code = 5
+                                        if src_idx - offset >= 0:
+                                            row = src_lp.data[src_idx - offset]
+                                            if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
+                                               and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
+                                                if row[chain_id_col] != _row[1]:
+                                                    _row[12] = ambig_code = 6
+                                                    break
+                                                _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+                                                if _seq_id != _row[3]:
+                                                    _row[12] = ambig_code = 5
+
+                            elif ambig_code == 5:
+                                if not self.__annotation_mode:
+                                    row_src = src_lp.data[_src_idx]
+                                    for offset in range(1, 10):
+                                        if src_idx + offset < len(src_lp.data):
+                                            row = src_lp.data[src_idx + offset]
+                                            if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
+                                               and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
+                                                if row[chain_id_col] != _row[1]:
+                                                    _row[12] = ambig_code = 6
+                                                    break
+                                        if src_idx - offset >= 0:
+                                            row = src_lp.data[src_idx - offset]
+                                            if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
+                                               and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
+                                                if row[chain_id_col] != _row[1]:
+                                                    _row[12] = ambig_code = 6
+                                                    break
+
+                            elif ambig_code == 6:
                                 if len([item for item in entity_assembly
                                         if item['entity_type'] not in ('non-polymer', 'water')]) == 1\
                                    and len(entity_assembly[0]['label_asym_id'].split(',')) == 1:
-                                    _row[12] = ambig_id = 5
+                                    _row[12] = ambig_code = 5
 
-                            if ambig_id in (1, 2, 3):
+                            if ambig_code in (1, 2, 3):
                                 if _row[13] is not None:
                                     _row[13] = None
 
@@ -24805,24 +24851,69 @@ class NmrDpUtility:
                             if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
 
-                        ambig_id = _row[12]
-                        if ambig_id == 0:
+                        ambig_code = _row[12]
+                        if ambig_code == 0:
                             _row[12] = None
-                        elif ambig_id in (2, 3):
-                            _ambig_id = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
-                            if _ambig_id not in (0, ambig_id):
-                                if _ambig_id != 1:
-                                    _row[12] = _ambig_id
-                                else:
-                                    _row[12] = ambig_id = 4
 
-                        elif ambig_id == 6:
+                        elif ambig_code in (2, 3):
+                            _ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
+                            if _ambig_code not in (0, ambig_code):
+                                if _ambig_code != 1:
+                                    _row[12] = _ambig_code
+                                else:
+                                    _row[12] = ambig_code = 4
+
+                        elif ambig_code == 4:
+                            if not self.__annotation_mode:
+                                row_src = src_lp.data[_src_idx]
+                                for offset in range(1, 10):
+                                    if src_idx + offset < len(src_lp.data):
+                                        row = src_lp.data[src_idx + offset]
+                                        if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
+                                           and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
+                                            if row[chain_id_col] != _row[1]:
+                                                _row[12] = ambig_code = 6
+                                                break
+                                            _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+                                            if _seq_id != _row[3]:
+                                                _row[12] = ambig_code = 5
+                                    if src_idx - offset >= 0:
+                                        row = src_lp.data[src_idx - offset]
+                                        if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
+                                           and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
+                                            if row[chain_id_col] != _row[1]:
+                                                _row[12] = ambig_code = 6
+                                                break
+                                            _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+                                            if _seq_id != _row[3]:
+                                                _row[12] = ambig_code = 5
+
+                        elif ambig_code == 5:
+                            if not self.__annotation_mode:
+                                row_src = src_lp.data[_src_idx]
+                                for offset in range(1, 10):
+                                    if src_idx + offset < len(src_lp.data):
+                                        row = src_lp.data[src_idx + offset]
+                                        if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
+                                           and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
+                                            if row[chain_id_col] != _row[1]:
+                                                _row[12] = ambig_code = 6
+                                                break
+                                    if src_idx - offset >= 0:
+                                        row = src_lp.data[src_idx - offset]
+                                        if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
+                                           and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
+                                            if row[chain_id_col] != _row[1]:
+                                                _row[12] = ambig_code = 6
+                                                break
+
+                        elif ambig_code == 6:
                             if len([item for item in entity_assembly
                                     if item['entity_type'] not in ('non-polymer', 'water')]) == 1\
                                and len(entity_assembly[0]['label_asym_id'].split(',')) == 1:
-                                _row[12] = ambig_id = 5
+                                _row[12] = ambig_code = 5
 
-                        if ambig_id in (1, 2, 3):
+                        if ambig_code in (1, 2, 3):
                             if _row[13] is not None:
                                 _row[13] = None
 
@@ -26421,30 +26512,72 @@ class NmrDpUtility:
                     if isinstance(_row[12], int):
                         comp_id = _row[5]
                         atom_id = _row[6]
-                        ambig_id = _row[12]
+                        ambig_code = _row[12]
 
-                        if ambig_id == 0:
+                        if ambig_code == 0:
                             _row[12] = None
 
-                        elif ambig_id in (2, 3):
-                            _ambig_id = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
-                            if _ambig_id not in (0, ambig_id):
-                                if _ambig_id != 1:
-                                    _row[12] = _ambig_id
+                        elif ambig_code in (2, 3):
+                            _ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                            if _ambig_code not in (0, ambig_code):
+                                if _ambig_code != 1:
+                                    _row[12] = _ambig_code
                                 else:
-                                    _row[12] = ambig_id = 4
+                                    _row[12] = ambig_code = 4
 
-                        elif ambig_id == 6:
+                        elif ambig_code == 4:
+                            if not self.__annotation_mode:
+                                _idx = idx
+                                for offset in range(1, 10):
+                                    if _idx + offset < len(loop.data):
+                                        row_ = loop.data[_idx + offset]
+                                        if row_[comp_id_col] == row[comp_id_col] and row_[atom_id_col] == row[atom_id_col]\
+                                           and row_[ambig_code_col] == str(ambig_code):
+                                            if row_[chain_id_col] != row[chain_id_col]:
+                                                _row[12] = ambig_code = 6
+                                                break
+                                            if row_[seq_id_col] != row[seq_id_col]:
+                                                _row[12] = ambig_code = 5
+                                    if _idx - offset >= 0:
+                                        row_ = loop.data[_idx - offset]
+                                        if row_[comp_id_col] == row[comp_id_col] and row_[atom_id_col] == row[atom_id_col]\
+                                           and row_[ambig_code_col] == str(ambig_code):
+                                            if row_[chain_id_col] != row[chain_id_col]:
+                                                _row[12] = ambig_code = 6
+                                                break
+                                            if row_[seq_id_col] != row[seq_id_col]:
+                                                _row[12] = ambig_code = 5
+
+                        elif ambig_code == 5:
+                            if not self.__annotation_mode:
+                                _idx = idx
+                                for offset in range(1, 10):
+                                    if _idx + offset < len(loop.data):
+                                        row_ = loop.data[_idx + offset]
+                                        if row_[comp_id_col] == row[comp_id_col] and row_[atom_id_col] == row[atom_id_col]\
+                                           and row_[ambig_code_col] == str(ambig_code):
+                                            if row_[chain_id_col] != row[chain_id_col]:
+                                                _row[12] = ambig_code = 6
+                                                break
+                                    if _idx - offset >= 0:
+                                        row_ = loop.data[_idx - offset]
+                                        if row_[comp_id_col] == row[comp_id_col] and row_[atom_id_col] == row[atom_id_col]\
+                                           and row_[ambig_code_col] == str(ambig_code):
+                                            if row_[chain_id_col] != row[chain_id_col]:
+                                                _row[12] = ambig_code = 6
+                                                break
+
+                        elif ambig_code == 6:
                             if len([item for item in entity_assembly
                                     if item['entity_type'] not in ('non-polymer', 'water')]) == 1\
                                and len(entity_assembly[0]['label_asym_id'].split(',')) == 1:
-                                _row[12] = ambig_id = 5
+                                _row[12] = ambig_code = 5
 
-                        if ambig_id in (1, 2, 3):
+                        if ambig_code in (1, 2, 3):
                             if _row[13] is not None:
                                 _row[13] = None
 
-                        elif ambig_id in (4, 5, 6, 9):
+                        elif ambig_code in (4, 5, 6, 9):
                             has_genuine_ambig_code = True
 
                     lp.add_data(_row)
@@ -26509,10 +26642,10 @@ class NmrDpUtility:
                     if _row[12] not in (4, 5):
                         continue
 
-                    ambig_id = _row[12]
+                    ambig_code = _row[12]
 
                     if _row[13] not in emptyValue:
-                        ambig_id = copy.copy(_row[12])
+                        ambig_code = copy.copy(_row[12])
                         ambig_set_id = copy.copy(_row[13])
                         chain_id = _row[1]
                         seq_id = _row[3]
@@ -26523,12 +26656,12 @@ class NmrDpUtility:
                         if atom_type == 'H':
                             atom_in_same_group = self.__csStat.getProtonsInSameGroup(comp_id, atom_id)
 
-                            if not any(((ambig_id == 5 and (__row[1] != chain_id or __row[3] != seq_id))
-                                        or (ambig_id == 4 and __row[6] not in atom_in_same_group))
-                                       for __row in lp if __row[12] == ambig_id and __row[13] == ambig_set_id):
+                            if not any(((ambig_code == 5 and (__row[1] != chain_id or __row[3] != seq_id))
+                                        or (ambig_code == 4 and __row[6] not in atom_in_same_group))
+                                       for __row in lp if __row[12] == ambig_code and __row[13] == ambig_set_id):
 
                                 for __row in lp:
-                                    if __row[12] == ambig_id and __row[13] == ambig_set_id:
+                                    if __row[12] == ambig_code and __row[13] == ambig_set_id:
                                         __row[12] = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id, None)
                                         __row[13] = None
 
@@ -26562,8 +26695,8 @@ class NmrDpUtility:
                     if _row[12] not in (4, 5, 6, 9):
                         continue
 
-                    ambig_id = _row[12]
-                    _ambig_id = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                    ambig_code = _row[12]
+                    _ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
 
                     chain_id = _row[1]
                     seq_id = _row[3]
@@ -26571,34 +26704,34 @@ class NmrDpUtility:
                     atom_id = _row[6]
                     atom_type = _row[7]
 
-                    if ambig_id == 4:
-                        _atom_id_set_w_same_ambig_id = set(_row_[6] for _row_ in lp
-                                                           if _row != _row_ and _row_[1] == chain_id and _row_[3] == seq_id
-                                                           and _row_[7] == atom_type and _row_[12] == ambig_id)
+                    if ambig_code == 4:
+                        _atom_id_set_w_same_ambig_code = set(_row_[6] for _row_ in lp
+                                                             if _row != _row_ and _row_[1] == chain_id and _row_[3] == seq_id
+                                                             and _row_[7] == atom_type and _row_[12] == ambig_code)
 
                         if atom_type == 'H':
                             atom_in_same_group = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
 
-                            if len(_atom_id_set_w_same_ambig_id - set(atom_in_same_group)) == 0:
-                                if _ambig_id > 1:
-                                    _row[12] = _ambig_id
+                            if len(_atom_id_set_w_same_ambig_code - set(atom_in_same_group)) == 0:
+                                if _ambig_code > 1:
+                                    _row[12] = _ambig_code
                                     _row[13] = None
 
                         else:
                             geminal_atom = self.__csStat.getGeminalAtom(comp_id, atom_id)
 
-                            if geminal_atom is not None and len(_atom_id_set_w_same_ambig_id - set([geminal_atom])) == 0:
-                                if _ambig_id > 1:
-                                    _row[12] = _ambig_id
+                            if geminal_atom is not None and len(_atom_id_set_w_same_ambig_code - set([geminal_atom])) == 0:
+                                if _ambig_code > 1:
+                                    _row[12] = _ambig_code
                                     _row[13] = None
 
-                    elif ambig_id == 5:
-                        _atom_id_set_w_same_ambig_id = set(_row_[6] for _row_ in lp
-                                                           if _row != _row_ and _row_[1] == chain_id and _row_[3] != seq_id
-                                                           and _row_[7] == atom_type and _row_[12] == ambig_id)
+                    elif ambig_code == 5:
+                        _atom_id_set_w_same_ambig_code = set(_row_[6] for _row_ in lp
+                                                             if _row != _row_ and _row_[1] == chain_id and _row_[3] != seq_id
+                                                             and _row_[7] == atom_type and _row_[12] == ambig_code)
 
-                        if len(_atom_id_set_w_same_ambig_id) == 0 and _ambig_id != 0:
-                            _row[12] = _ambig_id
+                        if len(_atom_id_set_w_same_ambig_code) == 0 and _ambig_code != 0:
+                            _row[12] = _ambig_code
                             _row[13] = None
 
                     else:
@@ -26657,7 +26790,7 @@ class NmrDpUtility:
                         if _row[12] not in (4, 5):
                             continue
 
-                        ambig_id = _row[12]
+                        ambig_code = _row[12]
 
                         chain_id = _row[1]
                         seq_id = _row[3]
@@ -26665,10 +26798,10 @@ class NmrDpUtility:
                         atom_id = _row[6]
                         atom_type = _row[7]
 
-                        if ambig_id == 4:
-                            key = (chain_id, str(seq_id), atom_type, ambig_id)
+                        if ambig_code == 4:
+                            key = (chain_id, str(seq_id), atom_type, ambig_code)
                         else:
-                            key = (chain_id, str(inter_residue_seq_id[chain_id]), atom_type, ambig_id)
+                            key = (chain_id, str(inter_residue_seq_id[chain_id]), atom_type, ambig_code)
 
                         if key not in ambig_shift_set_id:
                             ambig_shift_set_id[key] = aux_index_id
@@ -46405,7 +46538,8 @@ class NmrDpUtility:
         details = ''
         for item in self.__caC['entity_assembly']:
             if 'entity_details' in item and item['entity_details'] not in emptyValue and item['entity_details'] + '\n' not in details:
-                details += details + '\n'
+                if len(details.strip()) > 0:
+                    details += details + '\n'
         if len(details) == 0:
             details = '.'
         else:

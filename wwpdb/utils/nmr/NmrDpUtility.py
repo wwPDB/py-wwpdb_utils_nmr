@@ -22306,6 +22306,45 @@ class NmrDpUtility:
 
                 details_col = loop.tags.index('Details') if 'Details' in loop.tags and self.__leave_intl_note else -1
 
+                if ambig_code_name in loop.tags:
+                    ambig_code_col = loop.tags.index(ambig_code_name)
+                    ambig_code_dat = get_lp_tag(loop, ambig_code_name)
+                    if len(ambig_code_dat) > 0:
+                        ambig_code_set = set()
+                        invalid_ambig_code_set = set()
+                        for row in ambig_code_dat:
+                            if row not in emptyValue:
+                                if row.isdigit() and int(row) in ALLOWED_AMBIGUITY_CODES:
+                                    ambig_code_set.add(int(row))
+                                else:
+                                    invalid_ambig_code_set.add(row)
+                        if len(invalid_ambig_code_set) > 0:
+                            if seq_id_name in loop.tags and comp_id_name in loop.tags:
+                                seq_key_set = set()
+                                seq_key_dat = get_lp_tag(loop, [seq_id_name, comp_id_name])
+                                for row in seq_key_dat:
+                                    seq_key = (row[0], row[1])
+                                    seq_key_set.add(seq_key)
+                                if len(invalid_ambig_code_set) > len(seq_key_set) * 2:
+                                    for row in loop.data:
+                                        row[ambig_code_col] = '.'
+                                else:
+                                    for row in loop.data:
+                                        if row[ambig_code_col] in invalid_ambig_code_set:
+                                            row[ambig_code_col] = '.'
+                        if len(ambig_code_set) == 1:
+                            if 1 not in ambig_code_set:  # 2lrk
+                                comp_id_col = loop.tags.index(comp_id_name)
+                                atom_id_col = loop.tags.index(atom_id_name)
+                                for row in loop.data:
+                                    comp_id = row[comp_id_col]
+                                    _atom_id = atom_id = row[atom_id_col]
+                                    if self.__isNmrAtomName(comp_id, atom_id):
+                                        _atom_id = self.__getRepAtomId(comp_id, atom_id)
+                                    allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _atom_id)
+                                    if allowed_ambig_code in (0, 1):
+                                        row[ambig_code_col] = '1'
+
             if file_type == 'nef' or (not self.__nonblk_anomalous_cs):
                 lp_data = next(lp['data'] for lp in self.__lp_data[content_subtype]
                                if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode)
@@ -23766,36 +23805,84 @@ class NmrDpUtility:
 
                                     if _atom_id[0] != _atom_id2[0] and _atom_id < _atom_id2:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
-                                            + f", {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
-                                            "However, observation nucleus of "\
-                                            + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2)\
-                                            + f" is different in the set that share the same ambiguity code ({_atom_id[0]!r} vs {_atom_id2[0]!r})."
+                                        if self.__remediation_mode:
 
-                                        self.report.error.appendDescription('invalid_ambiguity_code',
-                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                             'description': err})
-                                        self.report.setError()
+                                            chain_id_col = loop.tags.index(chain_id_name)
+                                            seq_id_col = loop.tags.index(seq_id_name)
+                                            comp_id_col = loop.tags.index(comp_id_name)
+                                            atom_id_col = loop.tags.index(atom_id_name)
+                                            ambig_code_col = loop.tags.index(ambig_code_name)
 
-                                        if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                            row = next(row for row in loop
+                                                       if row[chain_id_col] in alt_chain_id and int(row[seq_id_col]) == seq_id
+                                                       and row[comp_id_col] == comp_id and row[atom_id_col] == atom_id)
+
+                                            row[ambig_code_col] = allowed_ambig_code
+
+                                            row = next(row for row in loop
+                                                       if row[chain_id_col] in alt_chain_id and int(row[seq_id_col]) == seq_id2
+                                                       and row[comp_id_col] == comp_id2 and row[atom_id_col] == atom_id2)
+
+                                            row[ambig_code_col] = allowed_ambig_code
+
+                                            modified = True
+
+                                        else:
+
+                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                                + f", {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
+                                                "However, observation nucleus of "\
+                                                + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2)\
+                                                + f" is different in the set that share the same ambiguity code ({_atom_id[0]!r} vs {_atom_id2[0]!r})."
+
+                                            self.report.error.appendDescription('invalid_ambiguity_code',
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                                 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
 
                                     elif abs(value2 - value) > CS_UNCERT_MAX and value < value2 and ambig_code <= 4:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
-                                            + f", {value_name} {value}, {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
-                                            f"However, {value_name} {value2} of "\
-                                            + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2)\
-                                            + " is noticeably diffrent from others in the set that share the same ambiguity code "\
-                                            f"by {value2 - value:.3f} (tolerance {CS_UNCERT_MAX})."
+                                        if self.__remediation_mode:
 
-                                        self.report.error.appendDescription('invalid_ambiguity_code',
-                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                             'description': err})
-                                        self.report.setError()
+                                            chain_id_col = loop.tags.index(chain_id_name)
+                                            seq_id_col = loop.tags.index(seq_id_name)
+                                            comp_id_col = loop.tags.index(comp_id_name)
+                                            atom_id_col = loop.tags.index(atom_id_name)
+                                            ambig_code_col = loop.tags.index(ambig_code_name)
 
-                                        if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                            row = next(row for row in loop
+                                                       if row[chain_id_col] in alt_chain_id and int(row[seq_id_col]) == seq_id
+                                                       and row[comp_id_col] == comp_id and row[atom_id_col] == atom_id)
+
+                                            row[ambig_code_col] = allowed_ambig_code
+
+                                            row = next(row for row in loop
+                                                       if row[chain_id_col] in alt_chain_id and int(row[seq_id_col]) == seq_id2
+                                                       and row[comp_id_col] == comp_id2 and row[atom_id_col] == atom_id2)
+
+                                            row[ambig_code_col] = allowed_ambig_code
+
+                                            modified = True
+
+                                        else:
+
+                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                                + f", {value_name} {value}, {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
+                                                f"However, {value_name} {value2} of "\
+                                                + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2)\
+                                                + " is noticeably diffrent from others in the set that share the same ambiguity code "\
+                                                f"by {value2 - value:.3f} (tolerance {CS_UNCERT_MAX})."
+
+                                            self.report.error.appendDescription('invalid_ambiguity_code',
+                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                                 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
 
                     else:
 
@@ -24562,7 +24649,7 @@ class NmrDpUtility:
                                         break
                     if atom_id in _coord_atom_site['atom_id'] and valid and len(missing_ch3) == 0:
                         _row[6] = atom_id
-                        if fill_auth_atom_id:
+                        if fill_auth_atom_id or _row[6] != _row[19]:
                             _row[19] = _row[6]
                         _row[7] = _coord_atom_site['type_symbol'][_coord_atom_site['atom_id'].index(atom_id)]
                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -24669,14 +24756,14 @@ class NmrDpUtility:
                                         _row[12] = ambig_code = 4
 
                             elif ambig_code == 4:
-                                if not self.__annotation_mode:
+                                if not self.__annotation_mode and _row[24] != 'UNMAPPED':
                                     row_src = src_lp.data[_src_idx]
                                     for offset in range(1, 10):
                                         if src_idx + offset < len(src_lp.data):
                                             row = src_lp.data[src_idx + offset]
                                             if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
                                                and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
-                                                if row[chain_id_col] != _row[1]:
+                                                if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == row_src[chain_id_col])):
                                                     _row[12] = ambig_code = 6
                                                     break
                                                 _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -24686,7 +24773,7 @@ class NmrDpUtility:
                                             row = src_lp.data[src_idx - offset]
                                             if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
                                                and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
-                                                if row[chain_id_col] != _row[1]:
+                                                if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == row_src[chain_id_col])):
                                                     _row[12] = ambig_code = 6
                                                     break
                                                 _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -24694,21 +24781,21 @@ class NmrDpUtility:
                                                     _row[12] = ambig_code = 5
 
                             elif ambig_code == 5:
-                                if not self.__annotation_mode:
+                                if not self.__annotation_mode and _row[24] != 'UNMAPPED':
                                     row_src = src_lp.data[_src_idx]
                                     for offset in range(1, 10):
                                         if src_idx + offset < len(src_lp.data):
                                             row = src_lp.data[src_idx + offset]
                                             if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
                                                and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
-                                                if row[chain_id_col] != _row[1]:
+                                                if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == row_src[chain_id_col])):
                                                     _row[12] = ambig_code = 6
                                                     break
                                         if src_idx - offset >= 0:
                                             row = src_lp.data[src_idx - offset]
                                             if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
                                                and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
-                                                if row[chain_id_col] != _row[1]:
+                                                if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == row_src[chain_id_col])):
                                                     _row[12] = ambig_code = 6
                                                     break
 
@@ -24826,7 +24913,7 @@ class NmrDpUtility:
                     len_atom_ids = len(atom_ids)
                     if len_atom_ids == 0:
                         _row[6] = atom_id
-                        if fill_auth_atom_id:
+                        if fill_auth_atom_id or _row[6] != _row[19]:
                             _row[19] = _row[6]
                         _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -24864,14 +24951,14 @@ class NmrDpUtility:
                                     _row[12] = ambig_code = 4
 
                         elif ambig_code == 4:
-                            if not self.__annotation_mode:
+                            if not self.__annotation_mode and _row[24] != 'UNMAPPED':
                                 row_src = src_lp.data[_src_idx]
                                 for offset in range(1, 10):
                                     if src_idx + offset < len(src_lp.data):
                                         row = src_lp.data[src_idx + offset]
                                         if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
                                            and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
-                                            if row[chain_id_col] != _row[1]:
+                                            if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == row_src[chain_id_col])):
                                                 _row[12] = ambig_code = 6
                                                 break
                                             _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -24881,7 +24968,7 @@ class NmrDpUtility:
                                         row = src_lp.data[src_idx - offset]
                                         if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
                                            and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
-                                            if row[chain_id_col] != _row[1]:
+                                            if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == row_src[chain_id_col])):
                                                 _row[12] = ambig_code = 6
                                                 break
                                             _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -24889,21 +24976,21 @@ class NmrDpUtility:
                                                 _row[12] = ambig_code = 5
 
                         elif ambig_code == 5:
-                            if not self.__annotation_mode:
+                            if not self.__annotation_mode and _row[24] != 'UNMAPPED':
                                 row_src = src_lp.data[_src_idx]
                                 for offset in range(1, 10):
                                     if src_idx + offset < len(src_lp.data):
                                         row = src_lp.data[src_idx + offset]
                                         if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
                                            and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
-                                            if row[chain_id_col] != _row[1]:
+                                            if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == row_src[chain_id_col])):
                                                 _row[12] = ambig_code = 6
                                                 break
                                     if src_idx - offset >= 0:
                                         row = src_lp.data[src_idx - offset]
                                         if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
                                            and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
-                                            if row[chain_id_col] != _row[1]:
+                                            if not (row[chain_id_col] == str(_row[1]) or (_row[1] != row_src[1] and row[chain_id_col] == row_src[chain_id_col])):
                                                 _row[12] = ambig_code = 6
                                                 break
 
@@ -26526,7 +26613,7 @@ class NmrDpUtility:
                                     _row[12] = ambig_code = 4
 
                         elif ambig_code == 4:
-                            if not self.__annotation_mode:
+                            if not self.__annotation_mode and _row[24] != 'UNMAPPED':
                                 _idx = idx
                                 for offset in range(1, 10):
                                     if _idx + offset < len(loop.data):
@@ -26549,7 +26636,7 @@ class NmrDpUtility:
                                                 _row[12] = ambig_code = 5
 
                         elif ambig_code == 5:
-                            if not self.__annotation_mode:
+                            if not self.__annotation_mode and _row[24] != 'UNMAPPED':
                                 _idx = idx
                                 for offset in range(1, 10):
                                     if _idx + offset < len(loop.data):
@@ -45057,9 +45144,34 @@ class NmrDpUtility:
             if row[auth_chain_id_col] in emptyValue or row[auth_chain_id_col] == 'UNMAPPED':
                 row[auth_chain_id_col] = cif_ps['auth_chain_id' if 'auth_chain_id' in cif_ps else 'chain_id']
                 if auth_seq_id_col != -1:
-                    row[auth_seq_id_col] = str(next(_cif_seq_id for _cif_seq_id, _nmr_seq_id
-                                                    in zip(_cif_ps['auth_seq_id' if 'auth_seq_id' in cif_ps else 'seq_id'], _nmr_ps['seq_id'])
-                                                    if _nmr_seq_id == nmr_seq_id))
+                    try:
+                        str(next(_cif_seq_id for _cif_seq_id, _nmr_seq_id
+                                 in zip(_cif_ps['auth_seq_id' if 'auth_seq_id' in _cif_ps else 'seq_id'],
+                                        _nmr_ps['seq_id'])
+                                 if _nmr_seq_id == nmr_seq_id))
+                    except StopIteration:  # D_1300044764
+                        return False
+
+        for row in loop.data:
+            if (not allow_chain_id_mismatch and row[chain_id_col] != nmr_chain_id) or row[seq_id_col] in emptyValue:
+                continue
+
+            try:
+                nmr_seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+            except ValueError:
+                continue
+
+            if nmr_seq_id not in nmr_ps['seq_id']:
+                continue
+
+            if row[auth_chain_id_col] in emptyValue or row[auth_chain_id_col] == 'UNMAPPED':
+                row[auth_chain_id_col] = cif_ps['auth_chain_id' if 'auth_chain_id' in cif_ps else 'chain_id']
+                if auth_seq_id_col != -1:
+                    row[auth_seq_id_col] =\
+                        str(next(_cif_seq_id for _cif_seq_id, _nmr_seq_id
+                                 in zip(_cif_ps['auth_seq_id' if 'auth_seq_id' in _cif_ps else 'seq_id'],
+                                        _nmr_ps['seq_id'])
+                                 if _nmr_seq_id == nmr_seq_id))
 
                 modified = True
 

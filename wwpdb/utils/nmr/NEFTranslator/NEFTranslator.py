@@ -1500,15 +1500,15 @@ class NEFTranslator:
 
             if lp_category == '_Atom_chem_shift' and self.__remediation_mode\
                and set(tags) & set(loop.tags) == set(tags) and set(tags__) & set(loop.tags) == set(tags__):
+                alt_chain_id_set = set()
+                if 'Auth_asym_ID' in loop.tags:
+                    pre_tag = ['Auth_asym_ID']
+                    pre_chain_data = get_lp_tag(loop, pre_tag)
+                    for row in pre_chain_data:
+                        if row not in emptyValue:
+                            alt_chain_id_set.add(row)
+                factor = max(len(alt_chain_id_set), 2)  # 2lnh
                 if seq_id != alt_seq_id and alt_seq_id in loop.tags:
-                    alt_chain_id_set = set()
-                    if 'Auth_asym_ID' in loop.tags:
-                        pre_tag = ['Auth_asym_ID']
-                        pre_chain_data = get_lp_tag(loop, pre_tag)
-                        for row in pre_chain_data:
-                            if row not in emptyValue:
-                                alt_chain_id_set.add(row)
-                    factor = max(len(alt_chain_id_set), 2)  # 2lnh
                     pre_tag = [seq_id, alt_seq_id]
                     pre_seq_data = get_lp_tag(loop, pre_tag)
                     seq_id_set = set()

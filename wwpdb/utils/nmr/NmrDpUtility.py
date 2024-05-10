@@ -23440,36 +23440,38 @@ class NmrDpUtility:
                         if ambig_code != allowed_ambig_code:
 
                             if allowed_ambig_code == 1:
-
-                                try:
-
-                                    _row = next(_row for _row in lp_data
-                                                if _row[chain_id_name] == chain_id
-                                                and _row[seq_id_name] == seq_id
-                                                and _row[comp_id_name] == comp_id
-                                                and _row[atom_id_name] == _atom_id2)
-
-                                    loop.data[lp_data.index(_row)][loop.tags.index(ambig_code_name)] = 1
-
-                                except StopIteration:
-                                    pass
-
-                                chain_id_col = loop.tags.index(chain_id_name)
-                                seq_id_col = loop.tags.index(seq_id_name)
-                                comp_id_col = loop.tags.index(comp_id_name)
-                                atom_id_col = loop.tags.index(atom_id_name)
-                                ambig_code_col = loop.tags.index(ambig_code_name)
-
-                                try:
-                                    row = next(row for row in loop
-                                               if row[chain_id_col] in alt_chain_id and int(row[seq_id_col]) == seq_id
-                                               and row[comp_id_col] == comp_id and row[atom_id_col] == atom_id)
-
-                                    row[ambig_code_col] = 1
-                                    modified = True
-                                except ValueError:
-                                    pass
-
+                                pass
+                                # """
+                                # @deprecated: This functionality has been inherited by __remediateCsLoop()
+                                # try:
+                                #
+                                #     _row = next(_row for _row in lp_data
+                                #                 if _row[chain_id_name] == chain_id
+                                #                 and _row[seq_id_name] == seq_id
+                                #                 and _row[comp_id_name] == comp_id
+                                #                 and _row[atom_id_name] == _atom_id2)
+                                #
+                                #     loop.data[lp_data.index(_row)][loop.tags.index(ambig_code_name)] = 1
+                                #
+                                # except StopIteration:
+                                #     pass
+                                #
+                                # chain_id_col = loop.tags.index(chain_id_name)
+                                # seq_id_col = loop.tags.index(seq_id_name)
+                                # comp_id_col = loop.tags.index(comp_id_name)
+                                # atom_id_col = loop.tags.index(atom_id_name)
+                                # ambig_code_col = loop.tags.index(ambig_code_name)
+                                #
+                                # try:
+                                #     row = next(row for row in loop
+                                #                if row[chain_id_col] in alt_chain_id and int(row[seq_id_col]) == seq_id
+                                #                and row[comp_id_col] == comp_id and row[atom_id_col] == atom_id)
+                                #
+                                #     row[ambig_code_col] = 1
+                                #     modified = True
+                                # except ValueError:
+                                #     pass
+                                # """
                             elif allowed_ambig_code > 0:
 
                                 if self.__remediation_mode:
@@ -24652,6 +24654,28 @@ class NmrDpUtility:
                                 _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+
+                            ambig_id = _row[12]
+                            if ambig_id == 0:
+                                _row[12] = None
+                            elif ambig_id in (2, 3):
+                                _ambig_id = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
+                                if _ambig_id not in (0, ambig_id):
+                                    if _ambig_id != 1:
+                                        _row[12] = _ambig_id
+                                    else:
+                                        _row[12] = ambig_id = 4
+
+                            elif ambig_id == 6:
+                                if len([item for item in entity_assembly
+                                        if item['entity_type'] not in ('non-polymer', 'water')]) == 1\
+                                   and len(entity_assembly[0]['label_asym_id'].split(',')) == 1:
+                                    _row[12] = ambig_id = 5
+
+                            if ambig_id in (1, 2, 3):
+                                if _row[13] is not None:
+                                    _row[13] = None
+
                             if len_atom_ids > 1:
                                 if _row[12] == 1 or _row[12] in emptyValue:
                                     if _row[6] not in methyl_atoms\
@@ -24662,6 +24686,7 @@ class NmrDpUtility:
                                 __row = copy.copy(_row)
                                 if fill_auth_atom_id:
                                     __row[19] = __row[6]
+
                                 lp.add_data(__row)
 
                                 for _atom_id in atom_ids[1:]:
@@ -24779,6 +24804,28 @@ class NmrDpUtility:
                             _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
                             if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+
+                        ambig_id = _row[12]
+                        if ambig_id == 0:
+                            _row[12] = None
+                        elif ambig_id in (2, 3):
+                            _ambig_id = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
+                            if _ambig_id not in (0, ambig_id):
+                                if _ambig_id != 1:
+                                    _row[12] = _ambig_id
+                                else:
+                                    _row[12] = ambig_id = 4
+
+                        elif ambig_id == 6:
+                            if len([item for item in entity_assembly
+                                    if item['entity_type'] not in ('non-polymer', 'water')]) == 1\
+                               and len(entity_assembly[0]['label_asym_id'].split(',')) == 1:
+                                _row[12] = ambig_id = 5
+
+                        if ambig_id in (1, 2, 3):
+                            if _row[13] is not None:
+                                _row[13] = None
+
                         if len_atom_ids > 1:
                             if _row[12] == 1 or _row[12] in emptyValue:
                                 if _row[6] not in methyl_atoms\

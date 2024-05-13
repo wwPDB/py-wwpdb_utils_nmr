@@ -15875,11 +15875,16 @@ class NmrDpUtility:
                                             allow_gap=True,
                                             check_identity=check_identity)
 
+        if not self.__bmrb_only or not self.__internal_mode:
+            if self.__caC is None:
+                self.__retrieveCoordAssemblyChecker()
+
         # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
         return self.__nefT.get_star_seq(sf, lp_category=self.lp_categories[file_type][content_subtype],
                                         allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')),
                                         allow_gap=(content_subtype not in ('poly_seq', 'entity')),
-                                        check_identity=check_identity)
+                                        check_identity=check_identity,
+                                        coord_assembly_checker=self.__caC)
 
     def __extractPolymerSequence(self):
         """ Extract reference polymer sequence.
@@ -25752,7 +25757,7 @@ class NmrDpUtility:
                     else:
                         resolved = False
 
-                    if not resolved and has_auth_seq and row[auth_asym_id_col] == 'UNMAPPED':  # 2kny: leave data as is
+                    if not resolved and has_auth_seq:
 
                         is_valid, cc_name, _ = self.__getChemCompNameAndStatusOf(comp_id)
                         comp_id_bmrb_only = not is_valid and cc_name is not None and 'processing site' in cc_name
@@ -25775,6 +25780,9 @@ class NmrDpUtility:
 
                         _row[1], _row[2], _row[5] = chain_id, entity_id, comp_id
                         _row[3] = _row[4] = seq_id
+
+                        if row[auth_asym_id_col] == 'UNMAPPED':
+                            _row[24] = 'UNMAPPED'
 
                         # DAOTHER-9065
                         if details_col != -1 and row[details_col] == 'UNMAPPED':
@@ -25867,6 +25875,9 @@ class NmrDpUtility:
                             seq_id = int(row[seq_id_col])
                         except (ValueError, TypeError):
                             seq_id = None
+
+                        if row[auth_asym_id_col] == 'UNMAPPED':
+                            _row[24] = 'UNMAPPED'
 
                         auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
 
@@ -53243,7 +53254,7 @@ class NmrDpUtility:
                 atom_id = row[atom_id_name]
                 idx = row[idx_name]
 
-                atoms.append((chain_id if isinstance(chain_id, int) else int(chain_id),
+                atoms.append((chain_id if isinstance(chain_id, int) or not chain_id.isdigit() else int(chain_id),
                               seq_id - min_seq_ids[chain_id],
                               iso_number, atom_id, idx))
 
@@ -55360,9 +55371,10 @@ class NmrDpUtility:
 
                         dat = get_lp_tag(lp, ['Atom_isotope_number', 'Atom_type'])
                         for row in dat:
-                            t = f'{row[0]}{row[1].title()} chemical shifts'
-                            if t in datum_counter:
-                                datum_counter[t] += 1
+                            if row[0] not in emptyValue and row[1] not in emptyValue:
+                                t = f'{row[0]}{row[1].title()} chemical shifts'
+                                if t in datum_counter:
+                                    datum_counter[t] += 1
                     except KeyError:
                         continue
             elif content_subtype == 'dist_restraint':

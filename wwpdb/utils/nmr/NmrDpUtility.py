@@ -24482,12 +24482,12 @@ class NmrDpUtility:
 
             has_auth_seq = valid_auth_seq = has_auth_chain = False
             aux_auth_seq_id_col = aux_auth_comp_id_col = aux_auth_atom_id_col = -1
+            auth_asym_id_col = loop.tags.index('Auth_asym_ID') if 'Auth_asym_ID' in loop.tags else -1
 
             valid_auth_seq_per_chain = []
 
             # if self.__remediation_mode or self.__annotation_mode:
             if set(auth_pdb_tags) & set(loop.tags) == set(auth_pdb_tags):
-                auth_asym_id_col = loop.tags.index('Auth_asym_ID')
                 auth_dat = get_lp_tag(loop, auth_pdb_tags)
                 if len(auth_dat) > 0:
                     has_auth_seq = valid_auth_seq = True
@@ -24503,9 +24503,8 @@ class NmrDpUtility:
                                 break
 
             # DAOTHER-9281
-            elif 'Auth_asym_ID' in loop.tags:
+            elif auth_asym_id_col != -1:
                 has_auth_chain = True
-                auth_asym_id_col = loop.tags.index('Auth_asym_ID')
                 _auth_pdb_tags = ['Auth_asym_ID']
                 if 'Auth_seq_ID' in loop.tags:
                     _auth_pdb_tags.append('Auth_seq_ID')
@@ -25876,7 +25875,7 @@ class NmrDpUtility:
                         except (ValueError, TypeError):
                             seq_id = None
 
-                        if row[auth_asym_id_col] == 'UNMAPPED':
+                        if auth_asym_id_col != -1 and row[auth_asym_id_col] == 'UNMAPPED':
                             _row[24] = 'UNMAPPED'
 
                         auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
@@ -53254,7 +53253,9 @@ class NmrDpUtility:
                 atom_id = row[atom_id_name]
                 idx = row[idx_name]
 
-                atoms.append((chain_id if isinstance(chain_id, int) or not chain_id.isdigit() else int(chain_id),
+                atoms.append((chain_id if isinstance(chain_id, int)
+                              else int(chain_id) if chain_id.isdigit()
+                              else letterToDigit(chain_id),
                               seq_id - min_seq_ids[chain_id],
                               iso_number, atom_id, idx))
 

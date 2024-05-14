@@ -15875,11 +15875,16 @@ class NmrDpUtility:
                                             allow_gap=True,
                                             check_identity=check_identity)
 
+        if not self.__bmrb_only or not self.__internal_mode:
+            if self.__caC is None:
+                self.__retrieveCoordAssemblyChecker()
+
         # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
         return self.__nefT.get_star_seq(sf, lp_category=self.lp_categories[file_type][content_subtype],
                                         allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')),
                                         allow_gap=(content_subtype not in ('poly_seq', 'entity')),
-                                        check_identity=check_identity)
+                                        check_identity=check_identity,
+                                        coord_assembly_checker=self.__caC)
 
     def __extractPolymerSequence(self):
         """ Extract reference polymer sequence.
@@ -24477,12 +24482,12 @@ class NmrDpUtility:
 
             has_auth_seq = valid_auth_seq = has_auth_chain = False
             aux_auth_seq_id_col = aux_auth_comp_id_col = aux_auth_atom_id_col = -1
+            auth_asym_id_col = loop.tags.index('Auth_asym_ID') if 'Auth_asym_ID' in loop.tags else -1
 
             valid_auth_seq_per_chain = []
 
             # if self.__remediation_mode or self.__annotation_mode:
             if set(auth_pdb_tags) & set(loop.tags) == set(auth_pdb_tags):
-                auth_asym_id_col = loop.tags.index('Auth_asym_ID')
                 auth_dat = get_lp_tag(loop, auth_pdb_tags)
                 if len(auth_dat) > 0:
                     has_auth_seq = valid_auth_seq = True
@@ -24498,9 +24503,8 @@ class NmrDpUtility:
                                 break
 
             # DAOTHER-9281
-            elif 'Auth_asym_ID' in loop.tags:
+            elif auth_asym_id_col != -1:
                 has_auth_chain = True
-                auth_asym_id_col = loop.tags.index('Auth_asym_ID')
                 _auth_pdb_tags = ['Auth_asym_ID']
                 if 'Auth_seq_ID' in loop.tags:
                     _auth_pdb_tags.append('Auth_seq_ID')
@@ -25752,109 +25756,7 @@ class NmrDpUtility:
                     else:
                         resolved = False
 
-                    if not resolved and has_auth_seq and row[auth_asym_id_col] == 'UNMAPPED':  # 2kny: leave data as is
-
-                        is_valid, cc_name, _ = self.__getChemCompNameAndStatusOf(comp_id)
-                        comp_id_bmrb_only = not is_valid and cc_name is not None and 'processing site' in cc_name
-
-                        chain_id = row[chain_id_col]
-                        if chain_id in emptyValue:
-                            chain_id = 'A'
-
-                        if chain_id in copied_chain_ids:
-                            continue
-
-                        entity_id = None
-                        if (self.__combined_mode or (self.__bmrb_only and self.__internal_mode)) and entity_id_col != -1:
-                            try:
-                                entity_id = int(row[entity_id_col])
-                            except (ValueError, TypeError):
-                                entity_id = None
-
-                        seq_id = auth_seq_id
-
-                        _row[1], _row[2], _row[5] = chain_id, entity_id, comp_id
-                        _row[3] = _row[4] = seq_id
-
-                        # DAOTHER-9065
-                        if details_col != -1 and row[details_col] == 'UNMAPPED':
-                            if isinstance(_row[1], int) and str(_row[1]) in seq_id_offset_for_unmapped:
-                                __offset = seq_id_offset_for_unmapped[str(_row[1])]
-                            elif isinstance(_row[1], str) and _row[1] in seq_id_offset_for_unmapped:
-                                __offset = seq_id_offset_for_unmapped[_row[1]]
-                            else:
-                                __offset = None
-
-                            if __offset is not None:
-                                offset = None
-                                if isinstance(_row[17], int):
-                                    offset = _row[3] - _row[17]
-                                elif isinstance(_row[17], str) and _row[17].isdigit():
-                                    offset = _row[3] - int(_row[17])
-                                if offset is not None and offset != __offset:
-                                    if isinstance(_row[17], int):
-                                        _row[3] = _row[17] + __offset
-                                        _row[4] = _row[3]
-                                    else:
-                                        _row[3] = int(_row[17]) + __offset
-                                        _row[4] = _row[3]
-                            elif trial == 0:
-                                regenerate_request = True
-
-                        fill_auth_atom_id = _row[18] not in emptyValue
-
-                        atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
-                        if len(atom_ids) == 0 or atom_ids[0] not in self.__csStat.getAllAtoms(comp_id):
-                            atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
-                        len_atom_ids = len(atom_ids)
-                        if len_atom_ids == 0 or comp_id_bmrb_only or _row[24] == 'UNMAPPED':
-                            _row[6] = atom_id
-                            _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
-                            if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                            if fill_auth_atom_id:
-                                _row[19] = _row[6]
-                        else:
-                            _row[6] = atom_ids[0]
-                            _row[19] = None
-                            if self.__ccU.updateChemCompDict(comp_id):
-                                cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _row[6]), None)
-                                if cca is not None:
-                                    _row[7] = cca[self.__ccU.ccaTypeSymbol]
-                                    if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                        _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                                else:
-                                    _row[7] = 'H' if _row[6][0] in protonBeginCode else atom_id[0]
-                                    if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                        _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                            else:
-                                _row[7] = 'H' if atom_id[0] in pseProBeginCode else atom_id[0]
-                                if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                    _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-
-                            if len_atom_ids > 1:
-                                __row = copy.copy(_row)
-                                lp.add_data(__row)
-
-                                for _atom_id in atom_ids[1:]:
-                                    __row = copy.copy(_row)
-
-                                    index += 1
-
-                                    __row[0] = index
-                                    __row[6] = _atom_id
-
-                                    lp.add_data(__row)
-
-                                index += 1
-
-                                _row[0] = index
-                                _row[6] = atom_ids[-1]
-
-                            if fill_auth_atom_id:
-                                _row[19] = _row[6]
-
-                    elif not resolved:
+                    if not resolved:
 
                         chain_id = row[chain_id_col]
                         if chain_id in emptyValue:
@@ -25867,6 +25769,9 @@ class NmrDpUtility:
                             seq_id = int(row[seq_id_col])
                         except (ValueError, TypeError):
                             seq_id = None
+
+                        if auth_asym_id_col != -1 and row[auth_asym_id_col] == 'UNMAPPED':
+                            _row[24] = 'UNMAPPED'
 
                         auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
 
@@ -53243,7 +53148,9 @@ class NmrDpUtility:
                 atom_id = row[atom_id_name]
                 idx = row[idx_name]
 
-                atoms.append((chain_id if isinstance(chain_id, int) else int(chain_id),
+                atoms.append((chain_id if isinstance(chain_id, int)
+                              else int(chain_id) if chain_id.isdigit()
+                              else letterToDigit(chain_id),
                               seq_id - min_seq_ids[chain_id],
                               iso_number, atom_id, idx))
 
@@ -55360,9 +55267,10 @@ class NmrDpUtility:
 
                         dat = get_lp_tag(lp, ['Atom_isotope_number', 'Atom_type'])
                         for row in dat:
-                            t = f'{row[0]}{row[1].title()} chemical shifts'
-                            if t in datum_counter:
-                                datum_counter[t] += 1
+                            if row[0] not in emptyValue and row[1] not in emptyValue:
+                                t = f'{row[0]}{row[1].title()} chemical shifts'
+                                if t in datum_counter:
+                                    datum_counter[t] += 1
                     except KeyError:
                         continue
             elif content_subtype == 'dist_restraint':

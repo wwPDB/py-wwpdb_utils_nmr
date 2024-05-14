@@ -6567,7 +6567,7 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             row[key_size + 1] = dstFunc['target_value_uncertainty']
             float_row_idx.append(key_size + 1)
         if hasKeyValue(dstFunc, 'lower_limit'):
-            row[key_size + 2] = dstFunc['linear_limit']
+            row[key_size + 2] = dstFunc['lower_limit']
             float_row_idx.append(key_size + 2)
         if hasKeyValue(dstFunc, 'upper_limit'):
             row[key_size + 3] = dstFunc['upper_limit']

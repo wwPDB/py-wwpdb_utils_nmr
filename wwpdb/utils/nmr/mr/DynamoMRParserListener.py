@@ -1354,6 +1354,9 @@ class DynamoMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
                                 f"The upper limit value='{upper_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
+
         return dstFunc
 
     def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
@@ -3185,6 +3188,9 @@ class DynamoMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
                                 f"The upper limit value='{upper_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
+
         return dstFunc
 
     # Enter a parse tree produced by DynamoMRParser#rdc_restraints.
@@ -4003,6 +4009,9 @@ class DynamoMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
+
         return dstFunc
 
     def areUniqueCoordAtoms(self, subtype_name, allow_ambig=False, allow_ambig_warn_title=''):
@@ -4537,6 +4546,9 @@ class DynamoMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
                                 f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
 
         return dstFunc
 

@@ -599,6 +599,9 @@ class GromacsMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
                                 f"The upper linear limit value='{upper_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
 
+        if lower_limit is None and upper_limit is None and upper_linear_limit is None:
+            return None
+
         return dstFunc
 
     def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
@@ -1100,6 +1103,9 @@ class GromacsMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
+
         return dstFunc
 
     # Enter a parse tree produced by GromacsMRParser#orientation_restraints.
@@ -1360,6 +1366,9 @@ class GromacsMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"
                                 f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
 
         return dstFunc
 

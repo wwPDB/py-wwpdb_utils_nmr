@@ -3845,6 +3845,10 @@ class AmberMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper linear limit value 'r4={self.upperLinearLimit}' should be within range {DIST_RESTRAINT_RANGE}.")
 
+        if self.lowerLimit is None and self.upperLimit is None and self.lowerLinearLimit is None and self.upperLinearLimit is None:
+            self.lastComment = None
+            return None
+
         return dstFunc
 
     def validateAngleRange(self, wt):
@@ -3952,6 +3956,10 @@ class AmberMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper linear limit value 'r4={self.upperLinearLimit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
+        if self.lowerLimit is None and self.upperLimit is None and self.lowerLinearLimit is None and self.upperLinearLimit is None:
+            self.lastComment = None
+            return None
+
         return dstFunc
 
     def validatePcsRange(self, n, wt, tolpro, mltpro):
@@ -3981,6 +3989,10 @@ class AmberMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.nmpmc,n)}"
                                 f"The target value 'obs({n})={obs}' should be within range {PCS_RESTRAINT_RANGE}.")
+
+        if obs is None:
+            self.lastComment = None
+            return None
 
         return dstFunc
 
@@ -4031,6 +4043,10 @@ class AmberMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.dataset,n)}"
                                 f"The upper limit value 'dobsu({n})={dobsu}' should be within range {RDC_RESTRAINT_RANGE}.")
 
+        if dobsl is None and dobsu is None:
+            self.lastComment = None
+            return None
+
         return dstFunc
 
     def validateCsaRange(self, n, wt):
@@ -4079,6 +4095,10 @@ class AmberMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.datasetc,n)}"
                                 f"The upper limit value 'cobsu({n})={cobsu}' should be within range {CSA_RESTRAINT_RANGE}.")
+
+        if cobsl is None and cobsu is None:
+            self.lastComment = None
+            return None
 
         return dstFunc
 
@@ -7086,6 +7106,9 @@ class AmberMRParserListener(ParseTreeListener):
 
         dstFunc['target_value'] = f"{aexp}"
 
+        if aexp is None:
+            return None
+
         return dstFunc
 
     # Enter a parse tree produced by AmberMRParser#noeexp_factor.
@@ -7485,6 +7508,10 @@ class AmberMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=n)}"
                                 f"The target value 'obs({n})={obs}' should be within range {CS_RESTRAINT_RANGE}.")
+
+        if obs is None:
+            self.lastComment = None
+            return None
 
         return dstFunc
 

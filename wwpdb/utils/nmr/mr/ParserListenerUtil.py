@@ -2097,6 +2097,8 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'H' + atomId[2:]
             if atomId == 'NH':  # 2jwu
                 return 'N'
+            if atomId.startswith('HQ'):  # 1e8e
+                return atomId[1:]
 
         if refCompId == 'ASN' and atomId.startswith('HND'):  # 2kg1
             if atomId == 'HND1':
@@ -2954,6 +2956,11 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
         if compId3 in monDict3:
             return compId3
 
+        compId3 = compId[1:]  # 1e8e
+
+        if compId3 in monDict3:
+            return compId3
+
     if compId[-1] in ('5', '3'):
 
         if compId[-1] == '5' and refCompId in ('DCZ', 'THM', 'OOB'):  # 7png
@@ -2981,6 +2988,12 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
 
     if compId in ('HIE', 'HIP', 'HID', 'HIZ'):
         return 'HIS'
+
+    if refCompId is not None:
+        if compId.startswith('HI') and refCompId == 'HIS':  # 1e8e
+            return 'HIS'
+        if compId.endswith('PR') and refCompId == 'PRO':  # 1e8e
+            return 'PRO'
 
     if compId.startswith('CY'):
         if refCompId == 'CYS':  # 6xyv
@@ -3019,6 +3032,10 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
 
     if len(compId) > 3 and compId[:3] in ('H2O', 'WAT'):
         return 'HOH'
+
+    if len(compId) > 3 and compId[3] in ('_', '+', '-'):  # 1e8e
+        if ccU is not None and ccU.updateChemCompDict(compId[:3]):
+            return compId[:3]
 
     return compId
 

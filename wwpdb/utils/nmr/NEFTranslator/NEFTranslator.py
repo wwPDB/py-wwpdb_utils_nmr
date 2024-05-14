@@ -124,7 +124,8 @@ try:
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                                       ALLOWED_AMBIGUITY_CODES)
+                                                       ALLOWED_AMBIGUITY_CODES,
+                                                       translateToStdResName)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
@@ -137,7 +138,8 @@ except ImportError:
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.CifToNmrStar import CifToNmrStar
     from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                           ALLOWED_AMBIGUITY_CODES)
+                                           ALLOWED_AMBIGUITY_CODES,
+                                           translateToStdResName)
 
 
 __package_name__ = 'wwpdb.utils.nmr'
@@ -1638,6 +1640,34 @@ class NEFTranslator:
                             alt_chain_id_col = loop.tags.index('Auth_asym_ID')
                             for r in loop.data:
                                 r[chain_id_col] = r[entity_id_col]
+                if 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags:
+                    pre_comp_data = get_lp_tag(loop, ['Auth_asym_ID', 'Auth_seq_ID', 'Comp_ID'])
+                    comp_id_col = loop.tags.index('Comp_ID')
+                    for idx, row in enumerate(pre_comp_data):
+                        if row[2] in emptyValue:
+                            continue
+                        if len(row[2]) not in (1, 2, 3, 5):
+                            ref_comp_id = None
+                            if coord_assembly_checker is not None:
+                                ps = next((ps for ps in coord_assembly_checker['polymer_sequence'] if ps['auth_chain_id'] == row[0]), None)
+                                if ps is not None:
+                                    if row[1].isdigit() and int(row[1]) in ps['auth_seq_id']:
+                                        ref_comp_id = ps['comp_id'][ps['auth_seq_id'].index(int(row[1]))]
+                            loop.data[idx][comp_id_col] = translateToStdResName(row[2].upper(), refCompId=ref_comp_id, ccU=self.__ccU)
+                    if 'Auth_comp_ID' in loop.tags:
+                        pre_comp_data = get_lp_tag(loop, ['Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID'])
+                        auth_comp_id_col = loop.tags.index('Auth_comp_ID')
+                        for idx, row in enumerate(pre_comp_data):
+                            if row[2] in emptyValue:
+                                continue
+                            if len(row[2]) not in (1, 2, 3, 5):
+                                ref_comp_id = None
+                                if coord_assembly_checker is not None:
+                                    ps = next((ps for ps in coord_assembly_checker['polymer_sequence'] if ps['auth_chain_id'] == row[0]), None)
+                                    if ps is not None:
+                                        if row[1].isdigit() and int(row[1]) in ps['auth_seq_id']:
+                                            ref_comp_id = ps['comp_id'][ps['auth_seq_id'].index(int(row[1]))]
+                                loop.data[idx][auth_comp_id_col] = translateToStdResName(row[2].upper(), refCompId=ref_comp_id, ccU=self.__ccU)
 
                 seq_data = get_lp_tag(loop, tags)
                 has_valid_chain_id = True

@@ -893,6 +893,9 @@ class SybylMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper limit value='{upper_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
+
         return dstFunc
 
     def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):

@@ -2289,6 +2289,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+            return None
+
         return dstFunc
 
     # Enter a parse tree produced by XplorMRParser#predict_statement.
@@ -2590,6 +2593,9 @@ class XplorMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+
+        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+            return None
 
         return dstFunc
 
@@ -3031,6 +3037,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+            return None
+
         return dstFunc
 
     # Enter a parse tree produced by XplorMRParser#xdip_statement.
@@ -3387,6 +3396,12 @@ class XplorMRParserListener(ParseTreeListener):
             self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                             f"The upper limit value(2)='{upper_limit_2:.6f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
+        if target_value_1 is None and lower_limit_1 is None and upper_limit_1 is None:
+            return None
+
+        if target_value_2 is None and lower_limit_2 is None and upper_limit_2 is None:
+            return None
+
         return dstFunc
 
     # Enter a parse tree produced by XplorMRParser#vean_statement.
@@ -3647,6 +3662,12 @@ class XplorMRParserListener(ParseTreeListener):
         else:
             self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                             f"The upper limit value(2)='{upper_limit_2:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+
+        if target_value_1 is None and lower_limit_1 is None and upper_limit_1 is None:
+            return None
+
+        if target_value_2 is None and lower_limit_2 is None and upper_limit_2 is None:
+            return None
 
         return dstFunc
 
@@ -5702,6 +5723,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {T1T2_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+            return None
+
         return dstFunc
 
     # Enter a parse tree produced by XplorMRParser#orientation_statement.
@@ -6338,6 +6362,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {CSA_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+            return None
+
         return dstFunc
 
     # Enter a parse tree produced by XplorMRParser#pcsa_statement.
@@ -6714,6 +6741,9 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {PRE_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+            return None
+
         return dstFunc
 
     # Enter a parse tree produced by XplorMRParser#pcs_statement.
@@ -6992,6 +7022,9 @@ class XplorMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
+
+        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+            return None
 
         return dstFunc
 
@@ -7615,6 +7648,9 @@ class XplorMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper linear limit value='{upper_linear_limit:.6f}' should be within range {CCR_RESTRAINT_RANGE}.")
+
+        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+            return None
 
         return dstFunc
 

@@ -9156,11 +9156,20 @@ class NmrDpUtility:
 
                     tag = 'Original_PDB_atom_name_' + str(i)
                     if tag in loop.tags:
-                        _dat = get_lp_tag(loop, [tag])
+
                         _tag = 'Auth_atom_name_' + str(i)
                         if _tag not in loop.tags:
+                            _dat = get_lp_tag(loop, [tag])
+
+                            for idx, row in enumerate(loop):
+                                row.append(_dat[idx])
+
                             loop.add_tag(_tag)
-                            loop.add_data(_dat)
+
+                        if __pynmrstar_v3_2__:
+                            loop.remove_tag(tag)
+                        else:
+                            loop.delete_tag(tag)
 
             elif content_subtype == 'dihed_restraint':
 

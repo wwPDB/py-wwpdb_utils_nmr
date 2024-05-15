@@ -3007,13 +3007,22 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
         return 'CYS'
 
     if len(compId) == 3:
-        if compId == 'ADE' or compId.startswith('DA'):
+        if compId.startswith('DA'):
             return 'DA'
-        if compId == 'CYT' or compId.startswith('DC'):
+        if compId.startswith('DC'):
             return 'DC'
-        if compId == 'GUA' or compId.startswith('DG'):
+        if compId.startswith('DG'):
             return 'DG'
-        if compId == 'THY' or compId.startswith('DT'):
+        if compId.startswith('DT'):
+            return 'DT'
+
+        if compId == 'ADE':
+            return 'A' if refCompId == 'A' else 'DA'
+        if compId == 'CYT':
+            return 'C' if refCompId == 'C' else 'DA'
+        if compId == 'GUA':
+            return 'G' if refCompId == 'G' else 'DG'
+        if compId == 'THY':
             return 'DT'
 
     if compId == 'RADE':
@@ -3022,7 +3031,7 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
         return 'C'
     if compId == 'RGUA':
         return 'G'
-    if compId == 'URA':
+    if compId in ('URA', 'URI'):
         return 'U'
 
     if compId == 'HEMB':

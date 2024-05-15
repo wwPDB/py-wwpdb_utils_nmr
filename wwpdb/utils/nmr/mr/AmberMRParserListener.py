@@ -1854,7 +1854,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                   'auth_atom_id': atomId,
                                                   'iat': iat
                                                   }
-                                        compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
+                                        compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                         chainIds = self.guessChainIdFromCompId(seqId, compId)
                                         if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
                                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -1900,7 +1900,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     else:
                                                         factor2 = factor
                                                     seqId = factor['auth_seq_id']
-                                                    compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
+                                                    compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                     chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                     for chainId in chainIds:
                                                         updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
@@ -1920,7 +1920,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     else:
                                                         factor2 = factor
                                                     seqId = factor['auth_seq_id']
-                                                    compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
+                                                    compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                     chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                     for chainId in chainIds:
                                                         updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
@@ -1979,7 +1979,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                         else:
                                                             factor2 = factor
                                                         seqId = factor['auth_seq_id']
-                                                        compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
+                                                        compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                         chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                         for chainId in chainIds:
                                                             updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
@@ -1999,7 +1999,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                         else:
                                                             factor2 = factor
                                                         seqId = factor['auth_seq_id']
-                                                        compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
+                                                        compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                         chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                         for chainId in chainIds:
                                                             updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
@@ -2089,7 +2089,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                             if factor2 is None:
                                                                 factor2 = factor
                                                         seqId = factor['auth_seq_id']
-                                                        compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
+                                                        compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                         chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                         for chainId in chainIds:
                                                             updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
@@ -2137,7 +2137,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                         if factor2 is None:
                                                             factor2 = factor
                                                     seqId = factor['auth_seq_id']
-                                                    compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
+                                                    compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                                     chainIds = self.guessChainIdFromCompId(seqId, compId)
                                                     for chainId in chainIds:
                                                         updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
@@ -2145,8 +2145,8 @@ class AmberMRParserListener(ParseTreeListener):
                         if failed and factor1 is not None and factor2 is not None\
                            and factor1['auth_seq_id'] != factor2['auth_seq_id']\
                            and factor1['auth_comp_id'] != factor2['auth_comp_id']:
-                            compId1 = translateToStdResName(factor1['auth_comp_id'], ccU=self.__ccU)
-                            compId2 = translateToStdResName(factor2['auth_comp_id'], ccU=self.__ccU)
+                            compId1 = self.translateToStdResNameWrapper(factor1['auth_seq_id'], factor1['auth_comp_id'])
+                            compId2 = self.translateToStdResNameWrapper(factor2['auth_seq_id'], factor2['auth_comp_id'])
                             if compId1 in monDict3 and compId2 in monDict3\
                                and self.__csStat.peptideLike(compId1) and self.__csStat.peptideLike(compId2):
                                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId1, factor1['auth_atom_id'])
@@ -2202,7 +2202,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                   'auth_atom_id': atomId,
                                                   'iat': iat
                                                   }
-                                        compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
+                                        compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                         chainIds = self.guessChainIdFromCompId(seqId, compId)
                                         if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
                                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -2256,17 +2256,17 @@ class AmberMRParserListener(ParseTreeListener):
                                                                     break
                                                         if _factor is not None:
                                                             break
-                                            if _factor is None:
-                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
-                                                                f"based on Sander comment {self.lastComment!r}.")
-                                                continue
+                                        if _factor is None:
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.lastComment!r}.")
+                                            continue
                                         factor = {'auth_seq_id': seqId,
                                                   'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
                                                   'auth_atom_id': atomId,
                                                   'iat': iat
                                                   }
-                                        compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
+                                        compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                         chainIds = self.guessChainIdFromCompId(seqId, compId)
                                         if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
                                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -2318,17 +2318,17 @@ class AmberMRParserListener(ParseTreeListener):
                                                                     break
                                                         if _factor is not None:
                                                             break
-                                            if _factor is None:
-                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
-                                                                f"based on Sander comment {self.lastComment!r}.")
-                                                continue
+                                        if _factor is None:
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.lastComment!r}.")
+                                            continue
                                         factor = {'auth_seq_id': seqId,
                                                   'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
                                                   'auth_atom_id': atomId,
                                                   'iat': iat
                                                   }
-                                        compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
+                                        compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                         chainIds = self.guessChainIdFromCompId(seqId, compId)
                                         if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
                                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -2503,7 +2503,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                   'auth_atom_id': atomId,
                                                   'iat': iat
                                                   }
-                                        compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
+                                        compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                         chainIds = self.guessChainIdFromCompId(seqId, compId)
                                         if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
                                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -2555,17 +2555,17 @@ class AmberMRParserListener(ParseTreeListener):
                                                                     break
                                                         if _factor is not None:
                                                             break
-                                            if _factor is None:
-                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
-                                                                f"based on Sander comment {self.lastComment!r}.")
-                                                continue
+                                        if _factor is None:
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.lastComment!r}.")
+                                            continue
                                         factor = {'auth_seq_id': seqId,
                                                   'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
                                                   'auth_atom_id': atomId,
                                                   'iat': iat
                                                   }
-                                        compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
+                                        compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                         chainIds = self.guessChainIdFromCompId(seqId, compId)
                                         if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
                                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -2627,7 +2627,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                   'auth_atom_id': atomId,
                                                   'iat': iat
                                                   }
-                                        compId = translateToStdResName(factor['auth_comp_id'], ccU=self.__ccU)
+                                        compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
                                         chainIds = self.guessChainIdFromCompId(seqId, compId)
                                         if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
                                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -9638,22 +9638,46 @@ class AmberMRParserListener(ParseTreeListener):
 
                     ambig['atom_id_list'] = [dict(s) for s in set(frozenset(atom.items()) for atom in ambig['atom_id_list'])]
 
+    def translateToStdResNameWrapper(self, seqId, compId):
+        _compId = compId
+        refCompId = None
+        for ps in self.__polySeq:
+            _, _, refCompId = self.getRealChainSeqId(ps, seqId, _compId)
+            if refCompId is not None:
+                compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
+                break
+        if refCompId is None and self.__hasNonPolySeq:
+            for np in self.__nonPolySeq:
+                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId, False)
+                if refCompId is not None:
+                    compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
+                    break
+        if refCompId is None:
+            compId = translateToStdResName(_compId, ccU=self.__ccU)
+        return compId
+
     def getRealChainSeqId(self, ps, seqId, compId=None, isPolySeq=True):  # pylint: disable=no-self-use
         if compId is not None:
-            compId = translateToStdResName(compId, ccU=self.__ccU)
+            compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
+            if len(_compId) == 2 and _compId.startswith('D'):
+                _compId = compId[1]
         if seqId in ps['auth_seq_id']:
-            if compId is None:
-                return ps['auth_chain_id'], seqId
             idx = ps['auth_seq_id'].index(seqId)
+            if compId is None:
+                return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
             if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
-                return ps['auth_chain_id'], seqId
+                return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
+            if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
+                return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
         if seqId in ps['seq_id']:
             idx = ps['seq_id'].index(seqId)
             if compId is None:
-                return ps['auth_chain_id'], ps['auth_seq_id'][idx]
+                return ps['auth_chain_id'], ps['auth_seq_id'][idx], ps['comp_id'][idx]
             if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
-                return ps['auth_chain_id'], ps['auth_seq_id'][idx]
-        return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId
+                return ps['auth_chain_id'], ps['auth_seq_id'][idx], ps['comp_id'][idx]
+            if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
+                return ps['auth_chain_id'], ps['auth_seq_id'][idx], ps['comp_id'][idx]
+        return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequenceWithoutCompId(self, seqId, atomId=None):
         """ Assign polymer sequences of the coordinates.
@@ -9663,10 +9687,8 @@ class AmberMRParserListener(ParseTreeListener):
         _seqId = seqId
 
         for ps in self.__polySeq:
-            chainId, seqId = self.getRealChainSeqId(ps, _seqId)
+            chainId, seqId, cifCompId = self.getRealChainSeqId(ps, _seqId)
             if seqId in ps['auth_seq_id']:
-                idx = ps['auth_seq_id'].index(seqId)
-                cifCompId = ps['comp_id'][idx]
                 if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.add((chainId, seqId, cifCompId, True))
             elif 'gap_in_auth_seq' in ps:
@@ -9698,10 +9720,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.__hasNonPolySeq:
             for np in self.__nonPolySeq:
-                chainId, seqId = self.getRealChainSeqId(np, _seqId, isPolySeq=False)
+                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, isPolySeq=False)
                 if seqId in np['auth_seq_id']:
-                    idx = np['auth_seq_id'].index(seqId)
-                    cifCompId = np['comp_id'][idx]
                     if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.add((chainId, seqId, cifCompId, False))
 

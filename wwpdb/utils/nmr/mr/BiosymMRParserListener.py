@@ -1063,8 +1063,30 @@ class BiosymMRParserListener(ParseTreeListener):
 
         return dstFunc
 
+    def translateToStdResNameWrapper(self, seqId, compId, preferNonPoly=False):
+        _compId = compId
+        refCompId = None
+        for ps in self.__polySeq:
+            if preferNonPoly:
+                continue
+            _, _, refCompId = self.getRealChainSeqId(ps, seqId, _compId)
+            if refCompId is not None:
+                compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
+                break
+        if refCompId is None and self.__hasNonPolySeq:
+            for np in self.__nonPolySeq:
+                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId, False)
+                if refCompId is not None:
+                    compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
+                    break
+        if refCompId is None:
+            compId = translateToStdResName(_compId, ccU=self.__ccU)
+        return compId
+
     def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
-        compId = translateToStdResName(compId, ccU=self.__ccU)
+        compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
+        if len(_compId) == 2 and _compId.startswith('D'):
+            _compId = compId[1]
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
         if not self.__preferAuthSeq:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
@@ -1077,7 +1099,11 @@ class BiosymMRParserListener(ParseTreeListener):
                 if 'alt_comp_id' in ps and idx < len(ps['alt_comp_id']):
                     if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], ps['alt_comp_id'][idx], 'MTS', 'ORI'):
                         return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
-                elif compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
+                    if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], ps['alt_comp_id'][idx], 'MTS', 'ORI'):
+                        return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
+                if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
+                    return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
+                if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
                     return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
         # if seqId in ps['seq_id']:
         #     idx = ps['seq_id'].index(seqId)
@@ -1147,7 +1173,7 @@ class BiosymMRParserListener(ParseTreeListener):
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, compId, atomId)
 
-        compId = translateToStdResName(_compId, ccU=self.__ccU)
+        compId = self.translateToStdResNameWrapper(_seqId, _compId, preferNonPoly)
 
         if len(self.__modResidue) > 0:
             modRes = next((modRes for modRes in self.__modResidue
@@ -1565,7 +1591,7 @@ class BiosymMRParserListener(ParseTreeListener):
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             __atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, compId, atomId)
 
-        compId = translateToStdResName(__compId, ccU=self.__ccU)
+        compId = self.translateToStdResNameWrapper(seqId, __compId)
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 

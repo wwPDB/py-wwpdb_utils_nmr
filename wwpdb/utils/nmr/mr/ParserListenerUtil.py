@@ -3015,11 +3015,13 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
             return 'DG'
         if compId.startswith('DT'):
             return 'DT'
+        if compId.startswith('DU'):
+            return 'DU'
 
         if compId == 'ADE':
             return 'A' if refCompId == 'A' else 'DA'
         if compId == 'CYT':
-            return 'C' if refCompId == 'C' else 'DA'
+            return 'C' if refCompId == 'C' else 'DC'
         if compId == 'GUA':
             return 'G' if refCompId == 'G' else 'DG'
         if compId == 'THY':

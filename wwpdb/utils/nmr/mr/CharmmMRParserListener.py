@@ -3209,9 +3209,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                                         self.reasonsForReParsing['label_seq_scheme'] = {}
                                                     self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                                 else:
-                                                    _atom = {}
-                                                    _atom['comp_id'] = _compId
-                                                    _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                    # _atom = {}
+                                                    # _atom['comp_id'] = _compId
+                                                    # _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                     if self.__ccU.updateChemCompDict(compId):
                                                         cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                                         if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):

@@ -1625,7 +1625,7 @@ class NEFTranslator:
                                                     if entity_id_col != -1:
                                                         r[entity_id_col] = str(_entity_id)
                                     # 2ksi
-                                    if len(cif_np) > 0:
+                                    if cif_np is not None:
                                         seq_align, _ = alignPolymerSequence(pa, cif_np, nmr_ps)
                                         chain_assign, _ = assignPolymerSequence(pa, self.__ccU, 'nmr-star', cif_np, nmr_ps, seq_align)
                                         for ca in chain_assign:
@@ -1700,14 +1700,17 @@ class NEFTranslator:
                         if len(row[2]) not in (1, 2, 3, 5):
                             ref_comp_id = None
                             if coord_assembly_checker is not None:
-                                ps = next((ps for ps in coord_assembly_checker['polymer_sequence'] if ps['auth_chain_id'] == row[0]), None)
+                                cif_ps = coord_assembly_checker['polymer_sequence']
+                                cif_np = coord_assembly_checker['non_polymer']
+                                ps = next((ps for ps in cif_ps if ps['auth_chain_id'] == row[0]), None)
                                 if ps is not None:
                                     if row[1].isdigit() and int(row[1]) in ps['auth_seq_id']:
                                         ref_comp_id = ps['comp_id'][ps['auth_seq_id'].index(int(row[1]))]
-                                np = next((np for np in coord_assembly_checker['non_polymer'] if np['auth_chain_id'] == row[0]), None)
-                                if np is not None:
-                                    if row[1].isdigit() and int(row[1]) in np['auth_seq_id']:
-                                        ref_comp_id = np['comp_id'][np['auth_seq_id'].index(int(row[1]))]
+                                if cif_np is not None:
+                                    np = next((np for np in cif_np if np['auth_chain_id'] == row[0]), None)
+                                    if np is not None:
+                                        if row[1].isdigit() and int(row[1]) in np['auth_seq_id']:
+                                            ref_comp_id = np['comp_id'][np['auth_seq_id'].index(int(row[1]))]
                             loop.data[idx][comp_id_col] = translateToStdResName(row[2].upper(), refCompId=ref_comp_id, ccU=self.__ccU)
                     if 'Auth_comp_ID' in loop.tags:
                         pre_comp_data = get_lp_tag(loop, ['Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID'])
@@ -1718,14 +1721,17 @@ class NEFTranslator:
                             if len(row[2]) not in (1, 2, 3, 5):
                                 ref_comp_id = None
                                 if coord_assembly_checker is not None:
-                                    ps = next((ps for ps in coord_assembly_checker['polymer_sequence'] if ps['auth_chain_id'] == row[0]), None)
+                                    cif_ps = coord_assembly_checker['polymer_sequence']
+                                    cif_np = coord_assembly_checker['non_polymer']
+                                    ps = next((ps for ps in cif_ps if ps['auth_chain_id'] == row[0]), None)
                                     if ps is not None:
                                         if row[1].isdigit() and int(row[1]) in ps['auth_seq_id']:
                                             ref_comp_id = ps['comp_id'][ps['auth_seq_id'].index(int(row[1]))]
-                                    np = next((np for np in coord_assembly_checker['non_polymer'] if np['auth_chain_id'] == row[0]), None)
-                                    if np is not None:
-                                        if row[1].isdigit() and int(row[1]) in np['auth_seq_id']:
-                                            ref_comp_id = np['comp_id'][np['auth_seq_id'].index(int(row[1]))]
+                                    if cif_np is not None:
+                                        np = next((np for np in cif_np if np['auth_chain_id'] == row[0]), None)
+                                        if np is not None:
+                                            if row[1].isdigit() and int(row[1]) in np['auth_seq_id']:
+                                                ref_comp_id = np['comp_id'][np['auth_seq_id'].index(int(row[1]))]
                                 loop.data[idx][auth_comp_id_col] = translateToStdResName(row[2].upper(), refCompId=ref_comp_id, ccU=self.__ccU)
 
                 seq_data = get_lp_tag(loop, tags)

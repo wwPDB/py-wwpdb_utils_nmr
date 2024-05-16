@@ -6071,7 +6071,8 @@ class RCI:
                                 L_chem_shift_diff = L_item[4]
                                 L_chem_shift_diff_abs = L_item[5]
                                 L_atom_type = L_item[6]
-                                L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift, L_chem_shift_diff, L_chem_shift_diff_abs, L_atom_type])
+                                L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift,
+                                              L_chem_shift_diff, L_chem_shift_diff_abs, L_atom_type])
 
                         if L_residue_number_found == 0 and L_residue_number not in self.__excluded_residues:
 
@@ -6088,7 +6089,8 @@ class RCI:
                                             L_chem_shift_diff = L_item[4]
                                             L_chem_shift_diff_abs = L_item[5]
                                             L_atom_type = L_item[6]
-                                            L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift, L_chem_shift_diff, L_chem_shift_diff_abs, L_atom_type])
+                                            L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift,
+                                                          L_chem_shift_diff, L_chem_shift_diff_abs, L_atom_type])
 
                                     if positive_found == 0:
                                         for L_item in L_list:
@@ -6100,7 +6102,8 @@ class RCI:
                                                 L_chem_shift_diff = L_item[4]
                                                 L_chem_shift_diff_abs = L_item[5]
                                                 L_atom_type = L_item[6]
-                                                L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift, L_chem_shift_diff, L_chem_shift_diff_abs, L_atom_type])  # noqa: E501
+                                                L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift,
+                                                              L_chem_shift_diff, L_chem_shift_diff_abs, L_atom_type])
 
                                     else:
                                         L_residue_number_found = 1
@@ -6132,9 +6135,11 @@ class RCI:
                                 L_chem_shift_diff = L_item[4]
                                 L_chem_shift_diff_abs = L_item[5]
                                 L_atom_type = L_item[6]
-                                L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift, L_chem_shift_diff, L_chem_shift_diff_abs, L_atom_type])
+                                L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift,
+                                              L_chem_shift_diff, L_chem_shift_diff_abs, L_atom_type])
 
-                        if L_residue_number_found == 0 and self.__real_BMRB_first_res <= L_residue_number <= self.__real_BMRB_last_res and L_residue_number not in self.__excluded_residues:  # noqa: E501
+                        if L_residue_number_found == 0 and self.__real_BMRB_first_res <= L_residue_number <= self.__real_BMRB_last_res\
+                           and L_residue_number not in self.__excluded_residues:
                             positive_found = 0
                             negative_found = 0
                             pos_neg_list_true = []
@@ -6171,7 +6176,8 @@ class RCI:
                                 L_chem_shift_diff = pos_neg_list_true_ave
                                 L_chem_shift_diff_abs = pos_neg_list_abs_ave
                                 L_atom_type = L_item[6]
-                                L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift, L_chem_shift_diff, L_chem_shift_diff_abs, L_atom_type])
+                                L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift,
+                                              L_chem_shift_diff, L_chem_shift_diff_abs, L_atom_type])
 
                             else:
                                 L_residue_number_found = 1
@@ -6588,6 +6594,8 @@ class RCI:
         if self.Np_exclude == 1:  # If 1, exclude from grid search
             lNp_list = zero_list
 
+        coefCApos = coefCBpos = coefCOpos = coefNpos = coefHpos = coefHApos = None
+
         all_the_same_switch = 0
         for coefCApos in lCAp_list:
             for coefCAneg in [1]:  # pylint: disable=unused-variable
@@ -6743,10 +6751,12 @@ class RCI:
                                                                             else:
                                                                                 if true_diff_mean > 0:
                                                                                     residue_data_abs.append([resnumber, resname, true_diff_mean,
-                                                                                                             self.coef_for_pos_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])  # noqa: E501
+                                                                                                             self.coef_for_pos_H * coefHpos,
+                                                                                                             atom_type, self.Hp_exclude, self.H_Hertz_corr])
                                                                                 else:
                                                                                     residue_data_abs.append([resnumber, resname, true_diff_mean,
-                                                                                                             self.coef_for_neg_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])  # noqa: E501
+                                                                                                             self.coef_for_neg_H * coefHpos,
+                                                                                                             atom_type, self.Hp_exclude, self.H_Hertz_corr])
 
                                                                         elif atom_type == "NH":
                                                                             NH_found = 1
@@ -6756,10 +6766,12 @@ class RCI:
                                                                             else:
                                                                                 if true_diff_mean > 0:
                                                                                     residue_data_abs.append([resnumber, resname, true_diff_mean,
-                                                                                                             self.coef_for_pos_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])  # noqa: E501
+                                                                                                             self.coef_for_pos_H * coefHpos,
+                                                                                                             atom_type, self.Hp_exclude, self.H_Hertz_corr])
                                                                                 else:
                                                                                     residue_data_abs.append([resnumber, resname, true_diff_mean,
-                                                                                                             self.coef_for_neg_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])  # noqa: E501
+                                                                                                             self.coef_for_neg_H * coefHpos,
+                                                                                                             atom_type, self.Hp_exclude, self.H_Hertz_corr])
 
                                                                 atoms_abs = []
 
@@ -6785,8 +6797,7 @@ class RCI:
                                                                         coeffabs = item[3]
                                                                         atomabs = item[4]
                                                                         l_exclude = item[5]
-                                                                        if valueabs < self.floor_value:
-                                                                            valueabs = self.floor_value
+                                                                        valueabs = max(valueabs, self.floor_value)
                                                                         if l_exclude != 1 and coeffabs > 0.01:
                                                                             value_abs *= pow(valueabs, -coeffabs)
                                                                         atoms_abs.append(atomabs)
@@ -6811,9 +6822,7 @@ class RCI:
                                                                         coeffabs = item[3]
                                                                         atomabs = item[4]
                                                                         l_exclude = item[5]
-
-                                                                        if valueabs < self.floor_value:
-                                                                            valueabs = self.floor_value
+                                                                        valueabs = max(valueabs, self.floor_value)
                                                                         if l_exclude != 1 and coeffabs > 0.01:
                                                                             value_abs += pow(valueabs, -coeffabs)
                                                                         atoms_abs.append(atomabs)
@@ -6826,8 +6835,7 @@ class RCI:
                                                                         coeffabs = item[3]
                                                                         atomabs = item[4]
                                                                         l_exclude = item[5]
-                                                                        if valueabs < self.floor_value:
-                                                                            valueabs = self.floor_value
+                                                                        valueabs = max(valueabs, self.floor_value)
                                                                         if l_exclude != 1 and coeffabs > 0.01:
                                                                             value_abs += coeffabs / valueabs
                                                                         atoms_abs.append(atomabs)
@@ -6840,8 +6848,7 @@ class RCI:
                                                                         coeffabs = item[3]
                                                                         atomabs = item[4]
                                                                         l_exclude = item[5]
-                                                                        if valueabs < self.floor_value:
-                                                                            valueabs = self.floor_value
+                                                                        valueabs = max(valueabs, self.floor_value)
                                                                         if l_exclude != 1 and coeffabs > 0.01:
                                                                             value_abs += coeffabs / log(1 + valueabs)
                                                                         atoms_abs.append(atomabs)
@@ -6854,8 +6861,7 @@ class RCI:
                                                                         coeffabs = item[3]
                                                                         atomabs = item[4]
                                                                         l_exclude = item[5]
-                                                                        if valueabs < self.floor_value:
-                                                                            valueabs = self.floor_value
+                                                                        valueabs = max(valueabs, self.floor_value)
                                                                         if l_exclude != 1 and coeffabs > 0.01:
                                                                             value_abs *= coeffabs / log(1 + valueabs)
                                                                         atoms_abs.append(atomabs)
@@ -6868,8 +6874,7 @@ class RCI:
                                                                         coeffabs = item[3]
                                                                         atomabs = item[4]
                                                                         l_exclude = item[5]
-                                                                        if valueabs < self.floor_value:
-                                                                            valueabs = self.floor_value
+                                                                        valueabs = max(valueabs, self.floor_value)
                                                                         if l_exclude != 1 and coeffabs > 0.01:
                                                                             value_abs *= exp(pow(valueabs, -coeffabs))
                                                                         atoms_abs.append(atomabs)
@@ -6878,7 +6883,7 @@ class RCI:
                                                                     valueabs_list = []
                                                                     valueabs_origin = None
                                                                     valueabs = None
-                                                                    coef_trigger = "%s%s%s%s%s%s" % (CA_found, CB_found, CO_found, NH_found, N_found, HA_found)
+                                                                    coef_trigger = f"{CA_found}{CB_found}{CO_found}{NH_found}{N_found}{HA_found}"
                                                                     coef_list = []
                                                                     for item in residue_data_abs:
                                                                         resid_name_abs = item[1]
@@ -6906,8 +6911,7 @@ class RCI:
                                                                             valueabs_mean *= coef_offset
                                                                         if valueabs_mean != 0:
                                                                             value_abs += 1 / (abs(valueabs_mean) ** 1.5)
-                                                                        if value_abs > self.floor_value:
-                                                                            value_abs = self.floor_value
+                                                                        value_abs = min(value_abs, self.floor_value)
                                                                     else:
                                                                         value_abs = None
 
@@ -6942,14 +6946,13 @@ class RCI:
                                                                     CA_CB_CO_HA_all_residues_abs_fsmooth = CA_CB_CO_HA_all_residues_abs_new2
                                                                 if s_final_again == 1:
                                                                     s_final_smooth = 3
-                                                                    CA_CB_CO_HA_all_residues_abs_fsmooth = self.__final_smoothing(s_final_smooth, CA_CB_CO_HA_all_residues_abs_fsmooth)  # noqa: E501
-                                                                CA_CB_CO_HA_all_residues_abs_corr, list_of_files, _d_Pearson_coeff, _d_Spearman_coeff = self.__combo(CA_CB_CO_HA_all_residues_abs_fsmooth,  # noqa: E501
-                                                                                                                                                                     CA_CB_CO_HA_all_residues_abs_corr,  # noqa: E501
-                                                                                                                                                                     coeff_list)  # noqa: E501
+                                                                    CA_CB_CO_HA_all_residues_abs_fsmooth =\
+                                                                        self.__final_smoothing(s_final_smooth, CA_CB_CO_HA_all_residues_abs_fsmooth)
+                                                                CA_CB_CO_HA_all_residues_abs_corr, list_of_files, _d_Pearson_coeff, _d_Spearman_coeff =\
+                                                                    self.__combo(CA_CB_CO_HA_all_residues_abs_fsmooth, CA_CB_CO_HA_all_residues_abs_corr, coeff_list)
                                                             else:
-                                                                CA_CB_CO_HA_all_residues_abs_corr, list_of_files, _d_Pearson_coeff, _d_Spearman_coeff = self.__combo(CA_CB_CO_HA_all_residues_abs_new,  # noqa: E501
-                                                                                                                                                                     CA_CB_CO_HA_all_residues_abs_corr,  # noqa: E501
-                                                                                                                                                                     coeff_list)  # noqa: E501
+                                                                CA_CB_CO_HA_all_residues_abs_corr, list_of_files, _d_Pearson_coeff, _d_Spearman_coeff =\
+                                                                    self.__combo(CA_CB_CO_HA_all_residues_abs_new, CA_CB_CO_HA_all_residues_abs_corr, coeff_list)
 
         all_lists = [CA_CB_CO_HA_all_residues_abs_corr]
 
@@ -6964,7 +6967,7 @@ class RCI:
                 for each in item:
                     if each[0] is file:
                         smoothing = each[4]
-                        treatmrent = each[3]
+                        treatment = each[3]
                         atoms_for_plot = ''.join(self.__atom_list)
                         for entry in each[1]:
                             comparison_paramter = entry[0]
@@ -6977,14 +6980,12 @@ class RCI:
                             dynamr_plot_data = entry[6]
                             dynamr_2_md = entry[7]
                             for coef_name in entry[4]:
-                                coef_value = "%s" % coef_dictionary[coef_name]
+                                coef_value = f"{coef_dictionary[coef_name]}"
                                 coefficients += coef_name + " " + coef_value + " "
                                 coefficients_for_plot += coef_name + coef_value
-                            out_title = "%.2fvs %s %s%s CA%.2fCB%.2fCO%.2fN%.2fH%.2fHA%.2f" % (float(parameter), self.function_flag,
-                                                                                               treatmrent, smoothing, coefCApos,  # pylint: disable=undefined-loop-variable
-                                                                                               coefCBpos, coefCOpos, coefNpos, coefHpos,  # pylint: disable=undefined-loop-variable
-                                                                                               coefHApos)  # pylint: disable=undefined-loop-variable
-                            plot_file_name = "%s_%s_%s_%s_%s_%s" % (file, atoms_for_plot, comparison_method, smoothing, treatmrent, coefficients_for_plot)
+                            out_title = f"{float(parameter):.2f}vs {self.function_flag} {treatment}{smoothing} "\
+                                f"CA{coefCApos:.2f}CB{coefCBpos:.2f}CO%{coefCOpos:.2f}N{coefNpos:.2f}H{coefHpos:.2f}HA{coefHApos:.2f}"
+                            plot_file_name = f"{file}_{atoms_for_plot}_{comparison_method}_{smoothing}_{treatment}_{coefficients_for_plot}"
                             if comparison_method == "correlation":
                                 correlation_sorted.append([comparison_paramter, out_title, md_plot_data, dynamr_plot_data, plot_file_name, dynamr_2_md, coefficients])
             correlation_sorted.sort()
@@ -7186,8 +7187,7 @@ class RCI:
                 if l_N_max is not None and l_sigma < l_N_max and l_res_num < l_N_max_place:
                     l_N_diff = l_sigma - l_N_max
                     l_sigma += abs(l_N_diff) * 2
-                    if l_sigma > self.floor_value2:
-                        l_sigma = self.floor_value2
+                    l_sigma = min(l_sigma, self.floor_value2)
                     l_item[2] = l_sigma
                     result_list.append(l_item)
                 else:
@@ -7196,8 +7196,7 @@ class RCI:
                 if l_C_max is not None and l_sigma < l_C_max and l_res_num > l_C_max_place:
                     l_C_diff = l_sigma - l_C_max
                     l_sigma += abs(l_C_diff) * 2
-                    if l_sigma > self.floor_value2:
-                        l_sigma = self.floor_value2
+                    l_sigma = min(l_sigma, self.floor_value2)
                     l_item[2] = l_sigma
                     result_list.append(l_item)
                 else:
@@ -7724,6 +7723,7 @@ class RCI:
         """ Function to create a list of RCI values for further analysis.
         """
 
+        m_atoms_real = m_data_type = m_smooth_type = None
         for filename in m_list_of_files:
             correlation_true_MD = []
             correlation_true_Dynamr = []
@@ -7895,7 +7895,8 @@ class RCI:
                                 res_i_csi_sec_str = csi_sec_str
                                 res_num_i_sec_str_found = 1
                             elif csi_res_num == dyna_simp_res_num_i and csi_res_name != dyna_simp_res_name_i:
-                                logwrite = "Residue %s is %s in CSI index whereas it is %s in Simpred output of Dynamr\n" % (csi_res_num, csi_res_name, dyna_simp_res_name_i)
+                                logwrite = f"Residue {csi_res_num} is {csi_res_name} in CSI index "\
+                                    f"whereas it is {dyna_simp_res_name_i} in Simpred output of Dynamr\n"
                                 if self.__verbose:
                                     self.__lfh.write(logwrite)
 
@@ -7916,7 +7917,8 @@ class RCI:
                                 res_i_minus_1_csi_sec_str = csi_sec_str
                                 res_num_i_minus_1_sec_str_found = 1
                             elif csi_res_num == dyna_simp_res_num_i_minus_1 and csi_res_name != dyna_simp_res_name_i_minus_1:
-                                logwrite = "Residue %s is %s in CSI index whereas it is %s in Simpred output of Dynamr\n" % (csi_res_num, csi_res_name, dyna_simp_res_name_i_minus_1)  # noqa: E501
+                                logwrite = f"Residue {csi_res_num} is {csi_res_name} in CSI index "\
+                                    f"whereas it is {dyna_simp_res_name_i_minus_1} in Simpred output of Dynamr\n"
                                 if self.__verbose:
                                     self.__lfh.write(logwrite)
 
@@ -7937,7 +7939,8 @@ class RCI:
                                 res_i_minus_2_csi_sec_str = csi_sec_str
                                 res_num_i_minus_2_sec_str_found = 1
                             elif csi_res_num == dyna_simp_res_num_i_minus_2 and csi_res_name != dyna_simp_res_name_i_minus_2:
-                                logwrite = "Residue %s is %s in CSI index whereas it is %s in Simpred output of Dynamr\n" % (csi_res_num, csi_res_name, dyna_simp_res_name_i_minus_2)  # noqa: E501
+                                logwrite = f"Residue {csi_res_num} is {csi_res_name} in CSI index "\
+                                    f"whereas it is {dyna_simp_res_name_i_minus_2} in Simpred output of Dynamr\n"
                                 if self.__verbose:
                                     self.__lfh.write(logwrite)
 
@@ -7958,7 +7961,8 @@ class RCI:
                                 res_i_plus_1_csi_sec_str = csi_sec_str
                                 res_num_i_plus_1_sec_str_found = 1
                             elif csi_res_num == dyna_simp_res_num_i_plus_1 and csi_res_name != dyna_simp_res_name_i_plus_1:
-                                logwrite = "Residue %s is %s in CSI index whereas it is %s in Simpred output of Dynamr\n" % (csi_res_num, csi_res_name, dyna_simp_res_name_i_plus_1)
+                                logwrite = f"Residue {csi_res_num} is {csi_res_name} in CSI index "\
+                                    f"whereas it is {dyna_simp_res_name_i_plus_1} in Simpred output of Dynamr\n"
                                 if self.__verbose:
                                     self.__lfh.write(logwrite)
 
@@ -7979,12 +7983,16 @@ class RCI:
                                 res_i_plus_2_csi_sec_str = csi_sec_str
                                 res_num_i_plus_2_sec_str_found = 1
                             elif csi_res_num == dyna_simp_res_num_i_plus_2 and csi_res_name != dyna_simp_res_name_i_plus_2:
-                                logwrite = "Residue %s is %s in CSI index whereas it is %s in Simpred output of Dynamr\n" % (csi_res_num, csi_res_name, dyna_simp_res_name_i_plus_2)
+                                logwrite = f"Residue {csi_res_num} is {csi_res_name} in CSI index "\
+                                    f"whereas it is {dyna_simp_res_name_i_plus_2} in Simpred output of Dynamr\n"
                                 if self.__verbose:
                                     self.__lfh.write(logwrite)
 
-            if self.NoNextProPro_flag == 1 and ((dyna_simp_res_name_i_plus_1 == dyna_simp_res_name_i == "P") or (dyna_simp_res_name_i_plus_1 == dyna_simp_res_name_i_plus_2 == "P")):  # noqa: E501
+            if self.NoNextProPro_flag == 1 and ((dyna_simp_res_name_i_plus_1 == dyna_simp_res_name_i == "P")
+                                                or (dyna_simp_res_name_i_plus_1 == dyna_simp_res_name_i_plus_2 == "P")):
                 NoNextProPro = 1
+
+            N_coil_value = CO_coil_value = CA_coil_value = CB_coil_value = NH_coil_value = HA_coil_value = None
 
             if dyna_simp_res_num_i is not None and dyna_simp_res_name_i is not None:
                 N_coil_value = self.random_coil_dic[dyna_simp_res_name_i][self.__N_place]
@@ -8039,7 +8047,8 @@ class RCI:
                 preceed_res_cor_NH = 0.0
                 preceed_res_cor_HA = 0.0
 
-            if self.preceed_res_effect_flag == 1 and self.preceed_preceed_res_effect_flag == 1 and dyna_simp_res_num_i_minus_2 is not None and dyna_simp_res_name_i_minus_2 is not None:  # noqa: E501
+            if self.preceed_res_effect_flag == 1 and self.preceed_preceed_res_effect_flag == 1\
+               and dyna_simp_res_num_i_minus_2 is not None and dyna_simp_res_name_i_minus_2 is not None:
                 if res_i_csi_sec_str == res_i_minus_2_csi_sec_str and res_num_i_minus_2_sec_str_found == 1 and res_num_i_sec_str_found == 1:
                     preceed_preceed_res_cor_N = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__N_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
                     preceed_preceed_res_cor_CO = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__CO_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
@@ -8129,7 +8138,8 @@ class RCI:
                 next_res_cor_NH = 0.0
                 next_res_cor_HA = 0.0
 
-            if self.next_res_effect_flag == 1 and self.next_next_res_effect_flag == 1 and dyna_simp_res_num_i_plus_2 is not None and dyna_simp_res_name_i_plus_2 is not None and NoNextProPro != 1:  # noqa: E501
+            if self.next_res_effect_flag == 1 and self.next_next_res_effect_flag == 1\
+               and dyna_simp_res_num_i_plus_2 is not None and dyna_simp_res_name_i_plus_2 is not None and NoNextProPro != 1:
                 if res_i_csi_sec_str == res_i_plus_2_csi_sec_str and res_num_i_plus_2_sec_str_found == 1 and res_num_i_sec_str_found == 1:
                     next_next_res_cor_N = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__N_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
                     next_next_res_cor_CO = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__CO_place][self.__sec_str_place[res_i_plus_2_csi_sec_str]]
@@ -8190,27 +8200,27 @@ class RCI:
             self.__simpred_lines.append([dyna_simp_res_num_i, dyna_simp_res_name_i, final_CA, final_CB, final_CO, final_N, final_NH, final_HA])
 
             if res_i_found == 0:
-                logwrite = "Warning. Residue i,%s, has not been found\n" % res_i
+                logwrite = f"Warning. Residue i,{res_i}, has not been found\n"
                 if self.__verbose:
                     self.__lfh.write(logwrite)
             if res_i_minus_1_found == 0:
-                logwrite = "Warning. Residue i-1,%s, for residue %s has not been found\n" % (res_i_minus_1, res_i)
+                logwrite = f"Warning. Residue i-1,{res_i_minus_1}, for residue {res_i} has not been found\n"
                 if self.__verbose:
                     self.__lfh.write(logwrite)
             if res_i_plus_1_found == 0:
-                logwrite = "Warning. Residue i+1,%s, for residue %s has not been found\n" % (res_i_plus_1, res_i)
+                logwrite = f"Warning. Residue i+1,{res_i_plus_1}, for residue {res_i} has not been found\n"
                 if self.__verbose:
                     self.__lfh.write(logwrite)
             if res_num_i_minus_1_sec_str_found == 0:
-                logwrite = "Warning. Secondary structure type of residue i-1,%s,(for residue %s) has not been found. Random coil type is used.\n" % (res_i_plus_1, res_i)
+                logwrite = f"Warning. Secondary structure type of residue i-1,{res_i_plus_1},(for residue {res_i}) has not been found. Random coil type is used.\n"
                 if self.__verbose:
                     self.__lfh.write(logwrite)
             if res_num_i_plus_1_sec_str_found == 0:
-                logwrite = "Warning. Secondary structure type of residue i+1,%s,(for residue %s) has not been found. Random coil type is used.\n" % (res_i_minus_1, res_i)
+                logwrite = f"Warning. Secondary structure type of residue i+1,{res_i_minus_1},(for residue {res_i}) has not been found. Random coil type is used.\n"
                 if self.__verbose:
                     self.__lfh.write(logwrite)
             if res_num_i_sec_str_found == 0:
-                logwrite = "Warning. Secondary structure type of residue i,%s, has not been found. Random coil type is used.\n" % res_i
+                logwrite = f"Warning. Secondary structure type of residue i,{res_i}, has not been found. Random coil type is used.\n"
                 if self.__verbose:
                     self.__lfh.write(logwrite)
 
@@ -8243,10 +8253,8 @@ class RCI:
 
                 if bmrb_atom_name == atom_type or ("HA" in bmrb_atom_name and atom_type == "HA"):
 
-                    if residue_number < self.__real_BMRB_first_res:
-                        self.__real_BMRB_first_res = residue_number
-                    if residue_number > self.__real_BMRB_last_res:
-                        self.__real_BMRB_last_res = residue_number
+                    self.__real_BMRB_first_res = min(self.__real_BMRB_first_res, residue_number)
+                    self.__real_BMRB_last_res = max(self.__real_BMRB_last_res, residue_number)
 
                     if residue_number in self.__B_Cys and self.B_Cys_switch == 1:
                         residue_name = "B"
@@ -8303,10 +8311,12 @@ class RCI:
                     three_point_smooth_list.append(lists)
 
         if self.five_point_smooth_flag == 1:
-            return self.__grid_search(five_point_smooth_list, "5_pnt_smooth", self.COp_list, self.CAp_list, self.CBp_list, self.HAp_list, self.Hp_list, self.Np_list, self.final_smooth)  # noqa: E501
+            return self.__grid_search(five_point_smooth_list, "5_pnt_smooth", self.COp_list, self.CAp_list, self.CBp_list, self.HAp_list,
+                                      self.Hp_list, self.Np_list, self.final_smooth)
 
         if self.three_point_smooth_flag == 1:
-            return self.__grid_search(three_point_smooth_list, "3_pnt_smooth", self.COp_list, self.CAp_list, self.CBp_list, self.HAp_list, self.Hp_list, self.Np_list, self.final_smooth)  # noqa: E501
+            return self.__grid_search(three_point_smooth_list, "3_pnt_smooth", self.COp_list, self.CAp_list, self.CBp_list, self.HAp_list,
+                                      self.Hp_list, self.Np_list, self.final_smooth)
 
         if self.no_smoothing_flag == 1:
             return self.__grid_search(self.__all_atoms_no_smooth_gap_fill,

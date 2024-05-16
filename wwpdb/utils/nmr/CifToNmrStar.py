@@ -286,6 +286,9 @@ class CifToNmrStar:
 
             category_order = _category_order
 
+            _sf_category = ''
+            cur_list_id = 1
+
             reserved_block_names = []
             sf = None
             for item in category_order:
@@ -294,10 +297,15 @@ class CifToNmrStar:
 
                 sf_category = item['sf_category']
 
-                cur_list_id = 1
                 if item['sf_category_flag'] or ('missing_sf_category' in item and item['missing_sf_category']):
-                    if sf_category in sf_category_counter:
+                    if sf_category not in sf_category_counter:
+                        cur_list_id = 1
+                    else:
                         cur_list_id = sf_category_counter[sf_category] + 1
+                elif sf_category != _sf_category:
+                    cur_list_id = 1
+
+                _sf_category = sf_category
 
                 sf_tag_prefix = next(v['Tag category'] for k, v in self.schema.items()
                                      if v['SFCategory'] == sf_category and v['Tag field'] == 'Sf_category')

@@ -8970,7 +8970,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                                   isPolySeq=False, isChainSpecified=True,
                                                                   altPolySeq=self.__nonPolySeq, resolved=foundCompId)
 
-            if not foundCompId and len(_factor['chain_id']) == 1 and len(self.__polySeq) > 1:
+            if not foundCompId and len(_factor['chain_id']) == 1 and len(self.__polySeq) > 1\
+               and 'global_sequence_offset' not in self.reasonsForReParsing:
                 foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
                                                                   isPolySeq=True, isChainSpecified=False)
                 if self.__hasNonPolySeq:
@@ -9497,9 +9498,9 @@ class XplorMRParserListener(ParseTreeListener):
                                             _compId = _coordAtomSite['comp_id']
                                             _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
                                             if _atomId in _coordAtomSite['atom_id']:
-                                                _atom = {}
-                                                _atom['comp_id'] = _compId
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                # _atom = {}
+                                                # _atom['comp_id'] = _compId
+                                                # _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                 if self.__ccU.updateChemCompDict(compId):
                                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                                     if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):

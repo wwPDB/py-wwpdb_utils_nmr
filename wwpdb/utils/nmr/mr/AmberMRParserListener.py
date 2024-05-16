@@ -1206,6 +1206,7 @@ class AmberMRParserListener(ParseTreeListener):
                     chk_dihed = mis_dihed = False
 
                     subtype_name = ''
+                    dihed_factors = None
                     if self.__cur_subtype == 'dist':
                         subtype_name = ' as a distance restraint'
                     elif self.__cur_subtype == 'geo':
@@ -1349,6 +1350,7 @@ class AmberMRParserListener(ParseTreeListener):
                         # simple distance
                         if lenIat == COL_DIST:
 
+                            memberId = '.'
                             if self.__createSfDict:
                                 sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
                                                                                        self.__csStat, self.__originalFileName),
@@ -1356,7 +1358,6 @@ class AmberMRParserListener(ParseTreeListener):
                                 sf['id'] += 1
                                 memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
-                                memberId = '.'
                                 if memberLogicCode == 'OR':
                                     if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
                                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
@@ -2362,6 +2363,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"based on Sander comment {' '.join(g[offset:offset+3])!r}.")
 
                         else:
+                            firstCompId = firstSeqId = None
                             if g2 is not None:
                                 firstCompId = g2[0]
                                 firstSeqId = int(g2[2])
@@ -9944,8 +9946,7 @@ class AmberMRParserListener(ParseTreeListener):
             if cca is not None and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                 checked = False
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
-                if ps is not None:
-                    auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or (ps is not None and min(auth_seq_id_list) == seqId):
                     if atomId in aminoProtonCode and atomId != 'H1':
                         self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)

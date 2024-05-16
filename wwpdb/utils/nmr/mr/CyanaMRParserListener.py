@@ -4042,8 +4042,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if cca is not None and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                 checked = False
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
-                if ps is not None:
-                    auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or (ps is not None and min(auth_seq_id_list) == seqId):
                     if atomId in aminoProtonCode and atomId != 'H1':
                         return self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
@@ -5794,6 +5793,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 value = self.numberSelection[num_col]
                 value2 = self.numberSelection[num_col + 1]
+                weight = 1.0
 
                 delta = None
                 has_square = False
@@ -5801,16 +5801,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if value2 <= 1.0 or value2 < value:
                     delta = abs(value2)
                 else:
-                    weight = 1.0
                     has_square = True
-
-                if weight < 0.0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                    f"The relative weight value of '{weight}' must not be a negative value.")
-                    return
-                if weight == 0.0:
-                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                    f"The relative weight value of '{weight}' should be a positive value.")
 
                 target_value = None
                 lower_limit = None
@@ -5922,6 +5913,14 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
                         self.__local_dist_types.append(self.__cur_dist_type)
+
+                    if weight < 0.0:
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The relative weight value of '{weight}' must not be a negative value.")
+                        return
+                    if weight == 0.0:
+                        self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                        f"The relative weight value of '{weight}' should be a positive value.")
 
                     if self.__hasPolySeq:
 
@@ -6662,22 +6661,14 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 value = self.numberSelection[num_col]
                 value2 = self.numberSelection[num_col + 1]
+                weight = 1.0
 
                 delta = None
                 has_square = False
 
-                if value2 < 0.0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                    f"The relative weight value of '{value2}' must not be a negative value.")
-                    return
-                if value2 == 0.0:
-                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                    f"The relative weight value of '{value2}' should be a positive value.")
-
                 if value2 <= 1.0 or value2 < value:
                     delta = abs(value2)
                 else:
-                    weight = 1.0
                     has_square = True
 
                 target_value = None
@@ -6790,6 +6781,14 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
                         self.__local_dist_types.append(self.__cur_dist_type)
+
+                    if weight < 0.0:
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The relative weight value of '{weight}' must not be a negative value.")
+                        return
+                    if weight == 0.0:
+                        self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                        f"The relative weight value of '{weight}' should be a positive value.")
 
                     if self.__hasPolySeq:
 
@@ -7311,11 +7310,11 @@ class CyanaMRParserListener(ParseTreeListener):
 
             has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
+            memberId = '.'
             if self.__createSfDict:
                 if memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
                     memberLogicCode = '.'
 
-                memberId = '.'
                 if memberLogicCode == 'OR':
                     if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)

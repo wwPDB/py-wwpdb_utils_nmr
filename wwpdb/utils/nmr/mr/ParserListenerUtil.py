@@ -6247,6 +6247,7 @@ def getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom, aux_atom=None)
                 return starAtom
 
     _seqKey = next((_seqKey for _seqKey in authToStarSeq if chainId == _seqKey[0] and seqId == _seqKey[1]), None)
+    _auxSeqKey = None
     if has_aux_atom:
         _auxSeqKey = next((_auxSeqKey for _auxSeqKey in authToStarSeq if auxChainId == _auxSeqKey[0] and auxSeqId == _auxSeqKey[1]), None)
 
@@ -8296,8 +8297,7 @@ def testCoordAtomIdConsistency(caC, ccU, authChainId, chainId, seqId, compId, at
         if cca is not None and seqKey not in caC['coord_unobs_res'] and ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
             checked = False
             ps = next((ps for ps in caC['polymer_sequence'] if ps['auth_chain_id'] == chainId), None)
-            if ps is not None:
-                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+            auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
             if seqId == 1 or (chainId, seqId - 1) in caC['coord_unobs_res'] or (ps is not None and min(auth_seq_id_list) == seqId):
                 if aminoProtonCode and atomId != 'H1':
                     testCoordAtomIdConsistency(caC, ccU, authChainId, chainId, seqId, compId, 'H1', seqKey, coordAtomSite)

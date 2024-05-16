@@ -753,7 +753,7 @@ class AriaMRParserListener(ParseTreeListener):
             if total == 0:
                 return
 
-            combinationId = memberId = '.'
+            combinationId = memberId = memberLogicCode = '.'
             if self.__createSfDict:
                 sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
                                                                        self.__csStat, self.__originalFileName),
@@ -2255,8 +2255,7 @@ class AriaMRParserListener(ParseTreeListener):
             if cca is not None and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                 checked = False
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
-                if ps is not None:
-                    auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or (ps is not None and min(auth_seq_id_list) == seqId):
                     if atomId in aminoProtonCode and atomId != 'H1':
                         return self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)

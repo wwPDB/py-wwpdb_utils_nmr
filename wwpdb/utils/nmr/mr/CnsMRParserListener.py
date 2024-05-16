@@ -1553,7 +1553,7 @@ class CnsMRParserListener(ParseTreeListener):
                     self.__f.extend(self.__g)
                 return
 
-            combinationId = memberId = '.'
+            combinationId = memberId = memberLogicCode = '.'
             if self.__createSfDict:
                 sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
                                                                        self.__csStat, self.__originalFileName),
@@ -1962,6 +1962,7 @@ class CnsMRParserListener(ParseTreeListener):
                     fixedAngleName = angleName
                     break
 
+            sf = None
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
 
@@ -5032,7 +5033,8 @@ class CnsMRParserListener(ParseTreeListener):
                                                                   altPolySeq=self.__nonPolySeq, resolved=foundCompId)
 
             if not foundCompId and len(_factor['chain_id']) == 1 and len(self.__polySeq) > 1\
-               and 'global_sequence_offset' not in self.reasonsForReParsing:
+               and 'global_sequence_offset' not in self.reasonsForReParsing\
+               and (self.__reasons is None or 'global_sequence_offset' not in self.__reasons):
                 foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
                                                                   isPolySeq=True, isChainSpecified=False)
                 if self.__hasNonPolySeq:
@@ -7416,6 +7418,7 @@ class CnsMRParserListener(ParseTreeListener):
                     print("  " * self.depth + "--> name")
 
                 eval_factor = False
+                __factor = None
                 if 'atom_id' in self.factor or 'atom_ids' in self.factor:
                     __factor = copy.copy(self.factor)
                     self.consumeFactor_expressions("'name' clause", False)

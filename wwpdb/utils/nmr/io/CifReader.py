@@ -524,6 +524,7 @@ class CifReader:
             if d['type'] not in self.itemTypes:
                 raise TypeError(f"Type {d['type']} of data item {d['name']} must be one of {self.itemTypes}.")
 
+        filterNames = None
         if filterItems is not None:
             filterNames = [f['name'] for f in filterItems]
 
@@ -555,7 +556,7 @@ class CifReader:
             for idxIt, itName in enumerate(itNameList):
                 if itName in dataNames:
                     colDict[itName] = idxIt
-                if filterItems is not None and itName in filterNames:
+                if filterNames is not None and itName in filterNames:
                     fcolDict[itName] = idxIt
 
             if set(dataNames) & set(itNameList) != set(dataNames):

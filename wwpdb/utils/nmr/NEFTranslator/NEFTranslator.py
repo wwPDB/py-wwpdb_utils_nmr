@@ -732,7 +732,7 @@ class NEFTranslator:
         """
 
         is_ok = True
-        star_data = None
+        data_type = star_data = None
 
         try:
 
@@ -6556,6 +6556,9 @@ class NEFTranslator:
 
         seq_ident_tags = self.get_seq_ident_tags(nef_tags, 'nef')
 
+        chain_tag_1 = chain_tag_2 = None
+        seq_tag_1 = seq_tag_2 = None
+
         for tag in seq_ident_tags:
             chain_tag = tag['chain_tag']
             seq_tag = tag['seq_tag']
@@ -6725,6 +6728,9 @@ class NEFTranslator:
         star_value_order_index = star_tags.index('_Bond.Value_order')
 
         seq_ident_tags = self.get_seq_ident_tags(in_star_tags, 'nmr-star')
+
+        chain_tag_1 = chain_tag_2 = None
+        seq_tag_1 = seq_tag_2 = None
 
         for tag in seq_ident_tags:
             chain_tag = tag['chain_tag']
@@ -7336,6 +7342,9 @@ class NEFTranslator:
 
         seq_ident_tags = self.get_seq_ident_tags(nef_tags, 'nef')
 
+        chain_tag_1 = chain_tag_2 = None
+        seq_tag_1 = seq_tag_2 = None
+
         for tag in seq_ident_tags:
             chain_tag = tag['chain_tag']
             seq_tag = tag['seq_tag']
@@ -7519,6 +7528,8 @@ class NEFTranslator:
 
         seq_ident_tags = self.get_seq_ident_tags(star_tags, 'nmr-star')
 
+        chain_tag_1 = None
+
         for tag in seq_ident_tags:
             chain_tag = tag['chain_tag']
             seq_tag = tag['seq_tag']
@@ -7565,6 +7576,8 @@ class NEFTranslator:
                 for row in in_row:
 
                     tag_map = {}
+
+                    seq_key_1 = seq_key_2 = None
 
                     for tag in seq_ident_tags:
                         chain_tag = tag['chain_tag']
@@ -7696,6 +7709,9 @@ class NEFTranslator:
                 if '_Gen_dist_constraint.Auth_atom_name_2' in in_star_tags else -1
 
         seq_ident_tags = self.get_seq_ident_tags(in_star_tags, 'nmr-star')
+
+        chain_tag_1 = chain_tag_2 = None
+        seq_tag_1 = seq_tag_2 = None
 
         for tag in seq_ident_tags:
             chain_tag = tag['chain_tag']
@@ -7880,6 +7896,9 @@ class NEFTranslator:
         nef_atom_index_4 = nef_tags.index('_nef_dihedral_restraint.atom_name_4')
 
         seq_ident_tags = self.get_seq_ident_tags(nef_tags, 'nef')
+
+        chain_tag_1 = chain_tag_2 = chain_tag_3 = chain_tag_4 = None
+        seq_tag_1 = seq_tag_2 = seq_tag_3 = seq_tag_4 = None
 
         for tag in seq_ident_tags:
             chain_tag = tag['chain_tag']
@@ -8104,6 +8123,9 @@ class NEFTranslator:
 
         seq_ident_tags = self.get_seq_ident_tags(in_star_tags, 'nmr-star')
 
+        chain_tag_1 = chain_tag_2 = chain_tag_3 = chain_tag_4 = None
+        seq_tag_1 = seq_tag_2 = seq_tag_3 = seq_tag_4 = None
+
         for tag in seq_ident_tags:
             chain_tag = tag['chain_tag']
             seq_tag = tag['seq_tag']
@@ -8323,6 +8345,9 @@ class NEFTranslator:
 
         seq_ident_tags = self.get_seq_ident_tags(nef_tags, 'nef')
 
+        chain_tag_1 = chain_tag_2 = None
+        seq_tag_1 = seq_tag_2 = None
+
         for tag in seq_ident_tags:
             chain_tag = tag['chain_tag']
             seq_tag = tag['seq_tag']
@@ -8493,6 +8518,9 @@ class NEFTranslator:
                 if '_RDC_constraint.Auth_atom_name_2' in in_star_tags else -1
 
         seq_ident_tags = self.get_seq_ident_tags(in_star_tags, 'nmr-star')
+
+        chain_tag_1 = chain_tag_2 = None
+        seq_tag_1 = seq_tag_2 = None
 
         for tag in seq_ident_tags:
             chain_tag = tag['chain_tag']
@@ -9625,7 +9653,7 @@ class NEFTranslator:
                         out[col + 1] = nef_seq
 
                         comp_id = pk_assign[pk_assign_comp_id_col]
-                        atom_id = pk_assign[pk_assign_atom_id_col]
+                        atom_id = _atom_id = pk_assign[pk_assign_atom_id_col]
 
                         try:
                             if self.atomIdMap is not None:
@@ -9635,8 +9663,6 @@ class NEFTranslator:
                                                           [{'atom_id': atom_id, 'ambig_code': None, 'value': None}])[0]
                             if len(atom_list) > 0:
                                 _atom_id = atom_list[0]
-                            else:
-                                _atom_id = atom_id
 
                         out[col + 2] = comp_id
                         out[col + 3] = _atom_id

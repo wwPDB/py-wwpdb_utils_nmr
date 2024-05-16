@@ -2015,7 +2015,7 @@ class XplorMRParserListener(ParseTreeListener):
                     self.__f.extend(self.__g)
                 return
 
-            combinationId = memberId = '.'
+            combinationId = memberId = memberLogicCode = '.'
             if self.__createSfDict:
                 sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
                                                                        self.__csStat, self.__originalFileName),
@@ -2424,6 +2424,7 @@ class XplorMRParserListener(ParseTreeListener):
                     fixedAngleName = angleName
                     break
 
+            sf = None
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
 
@@ -3448,9 +3449,9 @@ class XplorMRParserListener(ParseTreeListener):
             lower_limit_2 = center_2 - range_2
             upper_limit_2 = center_2 + range_2
 
-            dstFunc = self.validateAngleRange2(self.scale,
-                                               target_value_1, lower_limit_1, upper_limit_1,
-                                               target_value_2, lower_limit_2, upper_limit_2)
+            dstFunc = dstFunc2 = self.validateAngleRange2(self.scale,
+                                                          target_value_1, lower_limit_1, upper_limit_1,
+                                                          target_value_2, lower_limit_2, upper_limit_2)
 
             if self.__createSfDict:
                 dstFunc = self.validateAngleRange(self.scale, {'potential': self.potential},
@@ -8971,7 +8972,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                                   altPolySeq=self.__nonPolySeq, resolved=foundCompId)
 
             if not foundCompId and len(_factor['chain_id']) == 1 and len(self.__polySeq) > 1\
-               and 'global_sequence_offset' not in self.reasonsForReParsing:
+               and 'global_sequence_offset' not in self.reasonsForReParsing\
+               and (self.__reasons is None or 'global_sequence_offset' not in self.__reasons):
                 foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
                                                                   isPolySeq=True, isChainSpecified=False)
                 if self.__hasNonPolySeq:
@@ -11270,6 +11272,7 @@ class XplorMRParserListener(ParseTreeListener):
                     print("  " * self.depth + "--> name")
 
                 eval_factor = False
+                __factor = None
                 if 'atom_id' in self.factor or 'atom_ids' in self.factor:
                     __factor = copy.copy(self.factor)
                     self.consumeFactor_expressions("'name' clause", False)

@@ -2400,7 +2400,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
         if atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit():  # DAOTHER-9198: DNR(DC):H3+ -> HN3
             if 'HN' + atomId[1] in refAtomIdList:
                 return 'HN' + atomId[1]
-        if len(atomId) > 1 and atomId[-1] not in ('*', '%'):
+        if len(atomId) > 1 and atomId[-1] not in ('*', '%') and refCompId not in monDict3:
             canAtomIdList = [_atomId for _atomId in refAtomIdList if _atomId[0] == atomId[0]]
             if len(canAtomIdList) > 0:
                 pA = PairwiseAlign()
@@ -2423,7 +2423,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                         conflict = _conflict
                     elif _score == score and _conflict == conflict:
                         _atomId_.append(_atomId)
-                if len(_atomId_) == 1 and (score >= 2 or len(canAtomIdList) == 1):
+                if len(_atomId_) == 1 and (score > 1 or len(canAtomIdList) == 1):
                     return _atomId_[0]
 
     if atomId.endswith('+1') or atomId.endswith('+2') or atomId.endswith('+3'):

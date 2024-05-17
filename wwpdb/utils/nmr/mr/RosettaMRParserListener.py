@@ -69,6 +69,7 @@ try:
                                            monDict3,
                                            emptyValue,
                                            protonBeginCode,
+                                           pseProBeginCode,
                                            aminoProtonCode,
                                            rdcBbPairCode,
                                            zincIonCode,
@@ -146,6 +147,7 @@ except ImportError:
                                monDict3,
                                emptyValue,
                                protonBeginCode,
+                               pseProBeginCode,
                                aminoProtonCode,
                                rdcBbPairCode,
                                zincIonCode,
@@ -1547,10 +1549,15 @@ class RosettaMRParserListener(ParseTreeListener):
                 except ValueError:
                     pass
 
-            if coordAtomSite is not None and len(_atomId) == 0 and authAtomId in zincIonCode\
-               and 'ZN' in coordAtomSite['atom_id']:
-                atomId = 'ZN'
-                _atomId = [atomId]
+            if coordAtomSite is not None:
+                atomSiteAtomId = coordAtomSite['atom_id']
+                if len(_atomId) == 0 and authAtomId in zincIonCode and 'ZN' in atomSiteAtomId:
+                    atomId = 'ZN'
+                    _atomId = [atomId]
+                elif not any(_atomId_ in atomSiteAtomId for _atomId_ in _atomId):
+                    pass
+                elif atomId[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in _atomId):
+                    _atomId = [_atomId_ for _atomId_ in _atomId if _atomId_ in atomSiteAtomId]
 
             lenAtomId = len(_atomId)
             if lenAtomId == 0:

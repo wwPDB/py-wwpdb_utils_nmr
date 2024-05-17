@@ -69,6 +69,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
                                            protonBeginCode,
+                                           pseProBeginCode,
                                            aminoProtonCode,
                                            rdcBbPairCode,
                                            updatePolySeqRst,
@@ -134,6 +135,7 @@ except ImportError:
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
                                protonBeginCode,
+                               pseProBeginCode,
                                aminoProtonCode,
                                rdcBbPairCode,
                                updatePolySeqRst,
@@ -4208,6 +4210,13 @@ class AmberMRParserListener(ParseTreeListener):
                    and atomId in coordAtomSite['atom_id']:
                     atomIds = [atomId]
 
+                if coordAtomSite is not None:
+                    atomSiteAtomId = coordAtomSite['atom_id']
+                    if not any(_atomId in atomSiteAtomId for _atomId in atomIds):
+                        pass
+                    elif authAtomId[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in atomIds):
+                        atomIds = [_atomId for _atomId in atomIds if _atomId in atomSiteAtomId]
+
                 for idx, _atomId in enumerate(atomIds):
 
                     if idx != order:
@@ -4383,6 +4392,13 @@ class AmberMRParserListener(ParseTreeListener):
                            and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
                            and atomId in coordAtomSite['atom_id']:
                             atomIds = [atomId]
+
+                        if coordAtomSite is not None:
+                            atomSiteAtomId = coordAtomSite['atom_id']
+                            if not any(_atomId in atomSiteAtomId for _atomId in atomIds):
+                                pass
+                            elif authAtomId[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in atomIds):
+                                atomIds = [_atomId for _atomId in atomIds if _atomId in atomSiteAtomId]
 
                         for idx, _atomId in enumerate(atomIds):
 
@@ -4683,6 +4699,13 @@ class AmberMRParserListener(ParseTreeListener):
                        and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
                        and authAtomId in coordAtomSite['atom_id']:
                         atomIds = [authAtomId]
+
+                    if coordAtomSite is not None:
+                        atomSiteAtomId = coordAtomSite['atom_id']
+                        if not any(_atomId in atomSiteAtomId for _atomId in atomIds):
+                            pass
+                        elif authAtomId[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in atomIds):
+                            atomIds = [_atomId for _atomId in atomIds if _atomId in atomSiteAtomId]
 
                     if 'iat' in factor:
                         iat = factor['iat']
@@ -9830,6 +9853,13 @@ class AmberMRParserListener(ParseTreeListener):
                and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
                and atomId in coordAtomSite['atom_id']:
                 _atomId = [atomId]
+
+            if coordAtomSite is not None:
+                atomSiteAtomId = coordAtomSite['atom_id']
+                if not any(_atomId_ in atomSiteAtomId for _atomId_ in _atomId):
+                    pass
+                elif atomId[0] not in pseProBeginCode and not all(_atomId_ in atomSiteAtomId for _atomId_ in _atomId):
+                    _atomId = [_atomId_ for _atomId_ in _atomId if _atomId_ in atomSiteAtomId]
 
             lenAtomId = len(_atomId)
             if lenAtomId == 0:

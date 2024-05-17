@@ -100,6 +100,7 @@ try:
                                            monDict3,
                                            emptyValue,
                                            protonBeginCode,
+                                           pseProBeginCode,
                                            aminoProtonCode,
                                            jcoupBbPairCode,
                                            rdcBbPairCode,
@@ -206,6 +207,7 @@ except ImportError:
                                monDict3,
                                emptyValue,
                                protonBeginCode,
+                               pseProBeginCode,
                                aminoProtonCode,
                                jcoupBbPairCode,
                                rdcBbPairCode,
@@ -9299,8 +9301,12 @@ class XplorMRParserListener(ParseTreeListener):
                                     atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, authCompId, atomId, coordAtomSite)
 
                         atomIds = self.getAtomIdList(_factor, compId, atomId)
-                        if atomSiteAtomId is not None and not any(_atomId in atomSiteAtomId for _atomId in atomIds):
-                            atomId = translateToStdAtomName(atomId, compId, atomSiteAtomId, self.__ccU, False)
+                        if atomSiteAtomId is not None:
+                            if not any(_atomId in atomSiteAtomId for _atomId in atomIds):
+                                atomId = translateToStdAtomName(atomId, compId, atomSiteAtomId, self.__ccU, False)
+                                atomIds = self.getAtomIdList(_factor, compId, atomId)
+                            elif atomId[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in atomIds):
+                                atomIds = [_atomId for _atomId in atomIds if _atomId in atomSiteAtomId]
 
                         # @see: https://bmrb.io/ref_info/atom_nom.tbl
                         if self.__trust_bmrb_ref_info:

@@ -23,6 +23,8 @@ import pynmrstar
 from operator import itemgetter
 
 try:
+    from wwpdb.utils.align.alignlib import PairwiseAlign
+    from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            emptyValue,
                                            protonBeginCode,
@@ -34,8 +36,10 @@ try:
                                            alignPolymerSequence,
                                            assignPolymerSequence,
                                            getScoreOfSeqAlign)
-    from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 except ImportError:
+    from nmr.align.alignlib import PairwiseAlign
+    from nmr.io.CifReader import SYMBOLS_ELEMENT
     from nmr.AlignUtil import (monDict3,
                                emptyValue,
                                protonBeginCode,
@@ -47,7 +51,7 @@ except ImportError:
                                alignPolymerSequence,
                                assignPolymerSequence,
                                getScoreOfSeqAlign)
-    from nmr.io.CifReader import SYMBOLS_ELEMENT
+    from nmr.ChemCompUtil import ChemCompUtil
 
 MAX_ERROR_REPORT = 1
 MAX_ERR_LINENUM_REPORT = 20
@@ -2396,6 +2400,31 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
         if atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit():  # DAOTHER-9198: DNR(DC):H3+ -> HN3
             if 'HN' + atomId[1] in refAtomIdList:
                 return 'HN' + atomId[1]
+        if len(atomId) > 1 and atomId[-1] not in ('*', '%'):
+            canAtomIdList = [_atomId for _atomId in refAtomIdList if _atomId[0] == atomId[0]]
+            if len(canAtomIdList) > 0:
+                pA = PairwiseAlign()
+                score = -1
+                conflict = 0
+                _atomId_ = []
+                iterAtomId = list(atomId)
+                for _atomId in canAtomIdList:
+                    pA.setReferenceSequence(iterAtomId, 'REF' + refCompId)
+                    pA.addTestSequence(list(_atomId), refCompId)
+                    pA.doAlign()
+
+                    myAlign = pA.getAlignment(refCompId)
+
+                    _matched, _, _conflict, _, _ = getScoreOfSeqAlign(myAlign)
+                    _score = _matched - _conflict
+                    if _score > score or (_score == score and conflict > _conflict):
+                        _atomId_ = [_atomId]
+                        score = _score
+                        conflict = _conflict
+                    elif _score == score and _conflict == conflict:
+                        _atomId_.append(_atomId)
+                if len(_atomId_) == 1 and (score >= 2 or len(canAtomIdList) == 1):
+                    return _atomId_[0]
 
     if atomId.endswith('+1') or atomId.endswith('+2') or atomId.endswith('+3'):
         if atomId[:-2] in SYMBOLS_ELEMENT:
@@ -3182,14 +3211,6 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                     polySeq = []
 
             if nmrPolySeq is not None:
-
-                try:
-                    from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module,import-outside-toplevel
-                    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil  # pylint: disable=import-outside-toplevel
-                except ImportError:
-                    from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module,import-outside-toplevel
-                    from nmr.ChemCompUtil import ChemCompUtil  # pylint: disable=import-outside-toplevel
-
                 pA = PairwiseAlign()
                 ccU = ChemCompUtil()
                 seqAlign, _ = alignPolymerSequence(pA, polySeq, nmrPolySeq)

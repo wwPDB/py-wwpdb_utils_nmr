@@ -287,6 +287,7 @@ class CifToNmrStar:
             category_order = _category_order
 
             _sf_category = ''
+            cur_list_id = 1
 
             reserved_block_names = []
             sf = None

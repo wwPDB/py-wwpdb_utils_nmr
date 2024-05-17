@@ -802,8 +802,8 @@ class GromacsPTParserListener(ParseTreeListener):
                                 chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                                 leavingAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
                                                   if cca[self.__ccU.ccaLeavingAtomFlag] == 'Y']
-                            if atomNum['atom_id'] not in chemCompAtomIds or atomNum['atom_id'] in leavingAtomIds:
-                                delete_atom_nums.append(atom_num)
+                                if atomNum['atom_id'] not in chemCompAtomIds or atomNum['atom_id'] in leavingAtomIds:
+                                    delete_atom_nums.append(atom_num)
 
             while True:
 

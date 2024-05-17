@@ -864,6 +864,8 @@ class CyanaMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CyanaMRParser#distance_restraints.
     def enterDistance_restraints(self, ctx: CyanaMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dist' if self.__file_ext is None or self.__file_ext != 'cco' else 'jcoup'
+        if (self.__file_ext is not None and self.__file_ext in ('upv', 'lov')) or (self.__reasons is not None and 'noepk' in self.__reasons):
+            self.__cur_subtype = 'noepk'
 
         self.__cur_subtype_altered = False
 
@@ -877,15 +879,20 @@ class CyanaMRParserListener(ParseTreeListener):
             self.distRestraints += 1
         elif self.__cur_subtype == 'jcoup':
             self.jcoupRestraints += 1
+        elif self.__cur_subtype == 'noepk':
+            self.noepkRestraints += 1
 
         self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by CyanaMRParser#distance_restraint.
     def exitDistance_restraint(self, ctx: CyanaMRParser.Distance_restraintContext):
 
-        if self.__cur_subtype == 'dist' and (self.__cur_dist_type == 'cco' or len(self.numberSelection) == 6):
+        if self.__cur_subtype in ('dist', 'noepk') and (self.__cur_dist_type == 'cco' or len(self.numberSelection) == 6):
+            if self.__cur_subtype == 'dist':
+                self.distRestraints -= 1
+            elif self.__cur_subtype == 'noepk':
+                self.noepkRestraints -= 1
             self.__cur_subtype = 'jcoup'
-            self.distRestraints -= 1
             self.jcoupRestraints += 1
 
         try:
@@ -895,6 +902,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.distRestraints -= 1
                 elif self.__cur_subtype == 'jcoup':
                     self.jcoupRestraints -= 1
+                elif self.__cur_subtype == 'noepk':
+                    self.noepkRestraints -= 1
                 return
 
             seqId1 = int(str(ctx.Integer(0)))
@@ -938,9 +947,11 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.distRestraints -= 1
                 elif self.__cur_subtype == 'jcoup':
                     self.jcoupRestraints -= 1
+                elif self.__cur_subtype == 'noepk':
+                    self.noepkRestraints -= 1
                 return
 
-            if self.__cur_subtype == 'dist':
+            if self.__cur_subtype in ('dist', 'noepk'):
 
                 value = self.numberSelection[0]
                 weight = 1.0
@@ -970,21 +981,25 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                     f"The relative weight value of '{weight}' should be a positive value.")
 
-                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered:
+                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered and self.__cur_subtype == 'dist':
                     self.__max_dist_value = max(self.__max_dist_value, value)
                     self.__min_dist_value = min(self.__min_dist_value, value)
 
                 if has_square:
 
-                    if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                    if 'upl' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'upv':
                         upper_limit = value
                         if len(self.numberSelection) > 1:
                             weight = abs(value2)
 
-                    elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                    elif 'lol' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'lov':
                         lower_limit = value
                         if len(self.numberSelection) > 1:
                             weight = abs(value2)
+
+                    elif self.__cur_subtype == 'noepk':
+                        upper_limit = value2
+                        lower_limit = value
 
                     elif value2 > DIST_RANGE_MAX:  # lol_only
                         lower_limit = value
@@ -1006,15 +1021,21 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 elif delta is not None:
 
-                    if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                    if 'upl' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'upv':
                         upper_limit = value
                         if len(self.numberSelection) > 1:
                             weight = abs(value2)
 
-                    elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                    elif 'lol' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'lov':
                         lower_limit = value
                         if len(self.numberSelection) > 1:
                             weight = abs(value2)
+
+                    elif self.__cur_subtype == 'noepk':
+                        target_value = value
+                        if delta > 0.0:
+                            lower_limit = value - delta
+                            upper_limit = value + delta
 
                     else:
                         if self.__applyPdbStatCap:
@@ -1030,11 +1051,14 @@ class CyanaMRParserListener(ParseTreeListener):
                             if value2 > 0.0:
                                 target_value_uncertainty = value2
 
-                elif 'upl' in (self.__file_ext, self.__cur_dist_type):
+                elif 'upl' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'upv':
                     upper_limit = value
 
-                elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                elif 'lol' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'lov':
                     lower_limit = value
+
+                elif self.__cur_subtype == 'noepk':
+                    target_value = value
 
                 elif self.__upl_or_lol is None:
                     if self.__cur_dist_type == 'upl':
@@ -1154,8 +1178,11 @@ class CyanaMRParserListener(ParseTreeListener):
                             isRdc = True
 
                         if isRdc:
+                            if self.__cur_subtype == 'dist':
+                                self.distRestraints -= 1
+                            elif self.__cur_subtype == 'noepk':
+                                self.noepkRestraints -= 1
                             self.__cur_subtype = 'rdc'
-                            self.rdcRestraints += 1
                             self.distRestraints -= 1
 
                             target_value = value
@@ -1217,9 +1244,15 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.__allowZeroUpperLimit = True
                 self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
-                dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
-                                                     target_value_uncertainty,
-                                                     self.__omitDistLimitOutlier)
+                if self.__cur_subtype == 'noepk':
+                    dstFunc = self.validatePeakVolumeRange(weight, target_value, lower_limit, upper_limit)
+                else:
+                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
+                                                         target_value_uncertainty,
+                                                         self.__omitDistLimitOutlier)
+
+                if self.__cur_subtype == 'dist' and dstFunc is None and abs(value) > DIST_ERROR_MAX * 10.0:
+                    self.reasonsForReParsing['noepk'] = True
 
                 if dstFunc is None:
                     return
@@ -1264,7 +1297,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints if self.__cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -1279,6 +1312,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                      self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
                         sf['loop'].add_data(row)
+
+                        if self.__cur_subtype == 'noepk':
+                            break
 
                         if sf['constraint_subsubtype'] == 'ambi':
                             continue
@@ -1446,6 +1482,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.distRestraints -= 1
             elif self.__cur_subtype == 'jcoup':
                 self.jcoupRestraints -= 1
+            elif self.__cur_subtype == 'noepk':
+                self.noepkRestraints -= 1
         finally:
             self.numberSelection.clear()
             self.genAtomNameSelection.clear()
@@ -1465,9 +1503,11 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.distRestraints -= 1
                 elif self.__cur_subtype == 'jcoup':
                     self.jcoupRestraints -= 1
+                elif self.__cur_subtype == 'noepk':
+                    self.noepkRestraints -= 1
                 return
 
-            if self.__cur_subtype == 'dist':
+            if self.__cur_subtype in ('dist', 'noepk'):
 
                 value = self.numberSelection[0]
                 weight = 1.0
@@ -1497,21 +1537,25 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                     f"The relative weight value of '{weight}' should be a positive value.")
 
-                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered:
+                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered and self.__cur_subtype == 'dist':
                     self.__max_dist_value = max(self.__max_dist_value, value)
                     self.__min_dist_value = min(self.__min_dist_value, value)
 
                 if has_square:
 
-                    if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                    if 'upl' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'upv':
                         upper_limit = value
                         if len(self.numberSelection) > 1:
                             weight = abs(value2)
 
-                    elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                    elif 'lol' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'lov':
                         lower_limit = value
                         if len(self.numberSelection) > 1:
                             weight = abs(value2)
+
+                    elif self.__cur_subtype == 'noepk':
+                        upper_limit = value2
+                        lower_limit = value
 
                     elif value2 > DIST_RANGE_MAX:  # lol_only
                         lower_limit = value
@@ -1533,15 +1577,21 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 elif delta is not None:
 
-                    if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                    if 'upl' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'upv':
                         upper_limit = value
                         if len(self.numberSelection) > 1:
                             weight = abs(value2)
 
-                    elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                    elif 'lol' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'lov':
                         lower_limit = value
                         if len(self.numberSelection) > 1:
                             weight = abs(value2)
+
+                    elif self.__cur_subtype == 'noepk':
+                        target_value = value
+                        if delta > 0.0:
+                            lower_limit = value - delta
+                            upper_limit = value + delta
 
                     else:
                         if self.__applyPdbStatCap:
@@ -1554,11 +1604,14 @@ class CyanaMRParserListener(ParseTreeListener):
                             if value2 > 0.0:
                                 target_value_uncertainty = value2
 
-                elif 'upl' in (self.__file_ext, self.__cur_dist_type):
+                elif 'upl' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'upv':
                     upper_limit = value
 
-                elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                elif 'lol' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'lov':
                     lower_limit = value
+
+                elif self.__cur_subtype == 'noepk':
+                    target_value = value
 
                 elif self.__upl_or_lol is None:
                     if self.__cur_dist_type == 'upl':
@@ -1678,9 +1731,12 @@ class CyanaMRParserListener(ParseTreeListener):
                             isRdc = True
 
                         if isRdc:
+                            if self.__cur_subtype == 'dist':
+                                self.distRestraints -= 1
+                            elif self.__cur_subtype == 'noepk':
+                                self.noepkRestraints -= 1
                             self.__cur_subtype = 'rdc'
                             self.rdcRestraints += 1
-                            self.distRestraints -= 1
 
                             target_value = value
                             lower_limit = upper_limit = None
@@ -1741,9 +1797,15 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.__allowZeroUpperLimit = True
                 self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
-                dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
-                                                     target_value_uncertainty,
-                                                     self.__omitDistLimitOutlier)
+                if self.__cur_subtype == 'noepk':
+                    dstFunc = self.validatePeakVolumeRange(weight, target_value, lower_limit, upper_limit)
+                else:
+                    dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
+                                                         target_value_uncertainty,
+                                                         self.__omitDistLimitOutlier)
+
+                if self.__cur_subtype == 'dist' and dstFunc is None and abs(value) > DIST_ERROR_MAX * 10.0:
+                    self.reasonsForReParsing['noepk'] = True
 
                 if dstFunc is None:
                     return
@@ -1788,7 +1850,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints if self.__cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -1803,6 +1865,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                      self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
                         sf['loop'].add_data(row)
+
+                        if self.__cur_subtype == 'noepk':
+                            break
 
                         if sf['constraint_subsubtype'] == 'ambi':
                             continue
@@ -1970,6 +2035,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.distRestraints -= 1
             elif self.__cur_subtype == 'jcoup':
                 self.jcoupRestraints -= 1
+            elif self.__cur_subtype == 'noepk':
+                self.noepkRestraints -= 1
         finally:
             self.numberSelection.clear()
 
@@ -2085,6 +2152,9 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper limit value='{upper_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
+
         return dstFunc
 
     def validatePeakVolumeRange(self, weight, target_value, lower_limit, upper_limit):
@@ -2120,13 +2190,38 @@ class CyanaMRParserListener(ParseTreeListener):
         if not validRange:
             return None
 
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
+
         return dstFunc
+
+    def translateToStdResNameWrapper(self, seqId, compId, preferNonPoly=False):
+        _compId = compId
+        refCompId = None
+        for ps in self.__polySeq:
+            if preferNonPoly:
+                continue
+            _, _, refCompId = self.getRealChainSeqId(ps, seqId, _compId)
+            if refCompId is not None:
+                compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
+                break
+        if refCompId is None and self.__hasNonPolySeq:
+            for np in self.__nonPolySeq:
+                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId, False)
+                if refCompId is not None:
+                    compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
+                    break
+        if refCompId is None:
+            compId = translateToStdResName(_compId, ccU=self.__ccU)
+        return compId
 
     def getRealChainSeqId(self, ps, seqId, compId=None, isPolySeq=True):
         if compId in ('MTS', 'ORI'):
-            compId = None
+            compId = _compId = None
         if compId is not None:
-            compId = translateToStdResName(compId, ccU=self.__ccU)
+            compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
+            if len(_compId) == 2 and _compId.startswith('D'):
+                _compId = compId[1]
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
         if not self.__preferAuthSeq:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
@@ -2141,7 +2236,11 @@ class CyanaMRParserListener(ParseTreeListener):
                 if 'alt_comp_id' in ps and idx < len(ps['alt_comp_id']):
                     if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], ps['alt_comp_id'][idx]):
                         return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
-                elif compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
+                    if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], ps['alt_comp_id'][idx]):
+                        return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
+                if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
+                    return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
+                if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
                     return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
         # if seqId in ps['seq_id']:
         #     idx = ps['seq_id'].index(seqId)
@@ -2204,7 +2303,7 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, compId, atomId)
 
-        compId = translateToStdResName(_compId, ccU=self.__ccU)
+        compId = self.translateToStdResNameWrapper(_seqId, _compId, preferNonPoly)
 
         if len(self.__modResidue) > 0:
             modRes = next((modRes for modRes in self.__modResidue
@@ -2617,7 +2716,7 @@ class CyanaMRParserListener(ParseTreeListener):
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, compId, atomId)
 
-        compId = translateToStdResName(_compId, ccU=self.__ccU)
+        compId = self.translateToStdResNameWrapper(_seqId, _compId, preferNonPoly)
 
         if len(self.__modResidue) > 0:
             modRes = next((modRes for modRes in self.__modResidue
@@ -3552,7 +3651,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         self.atomSelectionSet.append(atomSelection)
                     return
 
-            compId = translateToStdResName(__compId, ccU=self.__ccU)
+            compId = self.translateToStdResNameWrapper(seqId, __compId)
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 
@@ -3943,8 +4042,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if cca is not None and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                 checked = False
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
-                if ps is not None:
-                    auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or (ps is not None and min(auth_seq_id_list) == seqId):
                     if atomId in aminoProtonCode and atomId != 'H1':
                         return self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
@@ -4833,6 +4931,9 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
+
         return dstFunc
 
     # Enter a parse tree produced by CyanaMRParser#rdc_restraints.
@@ -5135,6 +5236,9 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
+
         return dstFunc
 
     def areUniqueCoordAtoms(self, subtype_name, allow_ambig=False, allow_ambig_warn_title=''):
@@ -5365,6 +5469,9 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper limit value='{upper_limit:.6f}' should be within range {PCS_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
+
         return dstFunc
 
     # Enter a parse tree produced by CyanaMRParser#fixres_distance_restraints.
@@ -5515,7 +5622,12 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 else:  # 'noepk'
 
-                    target_value = value
+                    if self.__file_ext == 'upv':
+                        upper_limit = value
+                    elif self.__file_ext == 'lov':
+                        lower_limit = value
+                    else:
+                        target_value = value
 
                     dstFunc = self.validatePeakVolumeRange(1.0, target_value, lower_limit, upper_limit)
 
@@ -5581,7 +5693,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints if self.__cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -5681,6 +5793,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 value = self.numberSelection[num_col]
                 value2 = self.numberSelection[num_col + 1]
+                weight = 1.0
 
                 delta = None
                 has_square = False
@@ -5688,16 +5801,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if value2 <= 1.0 or value2 < value:
                     delta = abs(value2)
                 else:
-                    weight = 1.0
                     has_square = True
-
-                if weight < 0.0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                    f"The relative weight value of '{weight}' must not be a negative value.")
-                    return
-                if weight == 0.0:
-                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                    f"The relative weight value of '{weight}' should be a positive value.")
 
                 target_value = None
                 lower_limit = None
@@ -5810,6 +5914,14 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
                         self.__local_dist_types.append(self.__cur_dist_type)
 
+                    if weight < 0.0:
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The relative weight value of '{weight}' must not be a negative value.")
+                        return
+                    if weight == 0.0:
+                        self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                        f"The relative weight value of '{weight}' should be a positive value.")
+
                     if self.__hasPolySeq:
 
                         self.__retrieveLocalSeqScheme()
@@ -5853,7 +5965,11 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 else:  # 'noepk'
 
-                    if has_square:
+                    if self.__file_ext == 'upv':
+                        upper_limit = value
+                    elif self.__file_ext == 'lov':
+                        lower_limit = value
+                    elif has_square:
                         lower_limit = value
                         upper_limit = value2
                     else:
@@ -5923,7 +6039,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints if self.__cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -6104,8 +6220,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 else:  # 'noepk'
 
-                    lower_limit = value
-                    upper_limit = value2
+                    if self.__file_ext == 'upv':
+                        upper_limit = value
+                    elif self.__file_ext == 'lov':
+                        lower_limit = value
+                    else:
+                        lower_limit = value
+                        upper_limit = value2
 
                     dstFunc = self.validatePeakVolumeRange(weight, target_value, lower_limit, upper_limit)
 
@@ -6171,7 +6292,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints if self.__cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -6369,7 +6490,12 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 else:  # 'noepk'
 
-                    target_value = value
+                    if self.__file_ext == 'upv':
+                        upper_limit = value
+                    elif self.__file_ext == 'lov':
+                        lower_limit = value
+                    else:
+                        target_value = value
 
                     dstFunc = self.validatePeakVolumeRange(1.0, target_value, lower_limit, upper_limit)
 
@@ -6435,7 +6561,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints if self.__cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -6535,22 +6661,14 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 value = self.numberSelection[num_col]
                 value2 = self.numberSelection[num_col + 1]
+                weight = 1.0
 
                 delta = None
                 has_square = False
 
-                if value2 < 0.0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                    f"The relative weight value of '{value2}' must not be a negative value.")
-                    return
-                if value2 == 0.0:
-                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                    f"The relative weight value of '{value2}' should be a positive value.")
-
                 if value2 <= 1.0 or value2 < value:
                     delta = abs(value2)
                 else:
-                    weight = 1.0
                     has_square = True
 
                 target_value = None
@@ -6664,6 +6782,14 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.__cur_dist_type) > 0 and self.__cur_dist_type not in self.__local_dist_types:
                         self.__local_dist_types.append(self.__cur_dist_type)
 
+                    if weight < 0.0:
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                        f"The relative weight value of '{weight}' must not be a negative value.")
+                        return
+                    if weight == 0.0:
+                        self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                        f"The relative weight value of '{weight}' should be a positive value.")
+
                     if self.__hasPolySeq:
 
                         self.__retrieveLocalSeqScheme()
@@ -6707,7 +6833,11 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 else:  # 'noepk'
 
-                    if has_square:
+                    if self.__file_ext == 'upv':
+                        upper_limit = value
+                    elif self.__file_ext == 'lov':
+                        lower_limit = value
+                    elif has_square:
                         lower_limit = value
                         upper_limit = value2
                     else:
@@ -6777,7 +6907,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints if self.__cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -6958,8 +7088,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 else:  # 'noepk'
 
-                    lower_limit = value
-                    upper_limit = value2
+                    if self.__file_ext == 'upv':
+                        upper_limit = value
+                    elif self.__file_ext == 'lov':
+                        lower_limit = value
+                    else:
+                        lower_limit = value
+                        upper_limit = value2
 
                     dstFunc = self.validatePeakVolumeRange(weight, target_value, lower_limit, upper_limit)
 
@@ -7025,7 +7160,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                    altAtomId1, altAtomId2,
                                                                    dstFunc)
                     if self.__debug:
-                        print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                        print(f"subtype={self.__cur_subtype} id={self.distRestraints if self.__cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
@@ -7175,11 +7310,11 @@ class CyanaMRParserListener(ParseTreeListener):
 
             has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
+            memberId = '.'
             if self.__createSfDict:
                 if memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
                     memberLogicCode = '.'
 
-                memberId = '.'
                 if memberLogicCode == 'OR':
                     if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
@@ -7245,6 +7380,8 @@ class CyanaMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain_restraints.
     def enterDistance_w_chain_restraints(self, ctx: CyanaMRParser.Distance_w_chain_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dist'
+        if (self.__file_ext is not None and self.__file_ext in ('upv', 'lov')) or (self.__reasons is not None and 'noepk_w_chain' in self.__reasons):
+            self.__cur_subtype = 'noepk'
 
         self.__cur_subtype_altered = False
 
@@ -7254,7 +7391,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain_restraint.
     def enterDistance_w_chain_restraint(self, ctx: CyanaMRParser.Distance_w_chain_restraintContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
+        if self.__cur_subtype == 'dist':
+            self.distRestraints += 1
+        else:
+            self.noepkRestraints += 1
 
         self.atomSelectionSet.clear()
 
@@ -7380,11 +7520,17 @@ class CyanaMRParserListener(ParseTreeListener):
             if len(self.__col_order_of_dist_w_chain) != 6:
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                 "Failed to identify columns for comp_id_1, atom_id_1, chain_id_1, comp_id_2, atom_id_2, chain_id_2.")
-                self.distRestraints -= 1
+                if self.__cur_subtype == 'dist':
+                    self.distRestraints -= 1
+                else:
+                    self.noepkRestraints -= 1
                 return
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
-                self.distRestraints -= 1
+                if self.__cur_subtype == 'dist':
+                    self.distRestraints -= 1
+                else:
+                    self.noepkRestraints -= 1
                 return
 
             target_value = None
@@ -7420,21 +7566,25 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The relative weight value of '{weight}' should be a positive value.")
 
-            if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered:
+            if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX and not self.__cur_subtype_altered and self.__cur_subtype == 'dist':
                 self.__max_dist_value = max(self.__max_dist_value, value)
                 self.__min_dist_value = min(self.__min_dist_value, value)
 
             if has_square:
 
-                if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                if 'upl' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'upv':
                     upper_limit = value
                     if len(self.numberSelection) > 1:
                         weight = abs(value2)
 
-                elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                elif 'lol' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'lov':
                     lower_limit = value
                     if len(self.numberSelection) > 1:
                         weight = abs(value2)
+
+                elif self.__cur_subtype == 'noepk':
+                    upper_limit = value2
+                    lower_limit = value
 
                 elif value2 > DIST_RANGE_MAX:  # lol_only
                     lower_limit = value
@@ -7456,15 +7606,21 @@ class CyanaMRParserListener(ParseTreeListener):
 
             elif delta is not None:
 
-                if 'upl' in (self.__file_ext, self.__cur_dist_type):
+                if 'upl' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'upv':
                     upper_limit = value
                     if len(self.numberSelection) > 1:
                         weight = abs(value2)
 
-                elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+                elif 'lol' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'lov':
                     lower_limit = value
                     if len(self.numberSelection) > 1:
                         weight = abs(value2)
+
+                elif self.__cur_subtype == 'noepk':
+                    target_value = value
+                    if delta > 0.0:
+                        lower_limit = value - delta
+                        upper_limit = value + delta
 
                 else:
                     if self.__applyPdbStatCap:
@@ -7477,11 +7633,14 @@ class CyanaMRParserListener(ParseTreeListener):
                         if value2 > 0.0:
                             target_value_uncertainty = value2
 
-            elif 'upl' in (self.__file_ext, self.__cur_dist_type):
+            elif 'upl' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'upv':
                 upper_limit = value
 
-            elif 'lol' in (self.__file_ext, self.__cur_dist_type):
+            elif 'lol' in (self.__file_ext, self.__cur_dist_type) or self.__file_ext == 'lov':
                 lower_limit = value
+
+            elif self.__cur_subtype == 'noepk':
+                target_value = value
 
             elif self.__upl_or_lol is None:
                 if self.__cur_dist_type == 'upl':
@@ -7608,9 +7767,12 @@ class CyanaMRParserListener(ParseTreeListener):
                         isRdc = True
 
                     if isRdc:
+                        if self.__cur_subtype == 'dist':
+                            self.distRestraints -= 1
+                        else:
+                            self.noepkRestraints -= 1
                         self.__cur_subtype = 'rdc'
                         self.rdcRestraints += 1
-                        self.distRestraints -= 1
 
                         target_value = value
                         lower_limit = upper_limit = None
@@ -7671,9 +7833,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.__allowZeroUpperLimit = True
             self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
 
-            dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
-                                                 target_value_uncertainty,
-                                                 self.__omitDistLimitOutlier)
+            if self.__cur_subtype == 'noepk':
+                dstFunc = self.validatePeakVolumeRange(weight, target_value, lower_limit, upper_limit)
+            else:
+                dstFunc = self.validateDistanceRange(weight, target_value, lower_limit, upper_limit,
+                                                     target_value_uncertainty,
+                                                     self.__omitDistLimitOutlier)
+
+            if self.__cur_subtype == 'dist' and dstFunc is None and abs(value) > DIST_ERROR_MAX * 10.0:
+                self.reasonsForReParsing['noepk_w_chain'] = True
 
             if dstFunc is None:
                 return
@@ -7726,7 +7894,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                altAtomId1, altAtomId2,
                                                                dstFunc)
                 if self.__debug:
-                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                    print(f"subtype={self.__cur_subtype} id={self.distRestraints if self.__cur_subtype == 'dist' else self.noepkRestraints} "
                           f"atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     if isinstance(memberId, int):
@@ -7741,6 +7909,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
+
+                    if self.__cur_subtype == 'noepk':
+                        break
 
                     if sf['constraint_subsubtype'] == 'ambi':
                         continue
@@ -7758,13 +7929,18 @@ class CyanaMRParserListener(ParseTreeListener):
                 sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
 
         except ValueError:
-            self.distRestraints -= 1
+            if self.__cur_subtype == 'dist':
+                self.distRestraints -= 1
+            else:
+                self.noepkRestraints -= 1
         finally:
             self.numberSelection.clear()
 
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain2_restraints.
     def enterDistance_w_chain2_restraints(self, ctx: CyanaMRParser.Distance_w_chain2_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dist'
+        if (self.__file_ext is not None and self.__file_ext in ('upv', 'lov')) or (self.__reasons is not None and 'noepk_w_chain' in self.__reasons):
+            self.__cur_subtype = 'noepk'
 
         self.__cur_subtype_altered = False
 
@@ -7774,7 +7950,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain2_restraint.
     def enterDistance_w_chain2_restraint(self, ctx: CyanaMRParser.Distance_w_chain2_restraintContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
+        if self.__cur_subtype == 'dist':
+            self.distRestraints += 1
+        else:
+            self.noepkRestraints -= 1
 
         self.atomSelectionSet.clear()
 
@@ -7785,6 +7964,8 @@ class CyanaMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain3_restraints.
     def enterDistance_w_chain3_restraints(self, ctx: CyanaMRParser.Distance_w_chain3_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'dist'
+        if (self.__file_ext is not None and self.__file_ext in ('upv', 'lov')) or (self.__reasons is not None and 'noepk_w_chain' in self.__reasons):
+            self.__cur_subtype = 'noepk'
 
         self.__cur_subtype_altered = False
 
@@ -7794,7 +7975,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CyanaMRParser#distance_w_chain3_restraint.
     def enterDistance_w_chain3_restraint(self, ctx: CyanaMRParser.Distance_w_chain3_restraintContext):  # pylint: disable=unused-argument
-        self.distRestraints += 1
+        if self.__cur_subtype == 'dist':
+            self.distRestraints += 1
+        else:
+            self.noepkRestraints += 1
 
         self.atomSelectionSet.clear()
 

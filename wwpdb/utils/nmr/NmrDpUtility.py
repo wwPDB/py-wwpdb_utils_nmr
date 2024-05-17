@@ -7600,8 +7600,7 @@ class NmrDpUtility:
             if not self.__has_legacy_sf_issue and fileSubType in ('S', 'R', 'O'):
                 return False
 
-        if self.__has_legacy_sf_issue:
-            star_data_type = self.__nefT.read_input_file(srcPath)[1]
+        star_data_type = self.__nefT.read_input_file(srcPath)[1] if self.__has_legacy_sf_issue else None
 
         _srcPath = srcPath
         if tmpPaths is None:
@@ -8627,6 +8626,22 @@ class NmrDpUtility:
                 if not format_version.startswith('0.'):
                     sf.format_version = NEF_VERSION
 
+            for content_subtype in self.nmr_content_subtypes:
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                if sf_category is None or lp_category is None:
+                    continue
+
+                for sf in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+
+                    if not any(loop for loop in sf.loops if loop.category == lp_category):
+                        continue
+
+                    self.__rescueFormerNef__(file_name, file_type, content_subtype, sf, sf_framecode, sf_category, lp_category)
+
         else:
 
             self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(self.__star_data[file_list_id])
@@ -8641,41 +8656,31 @@ class NmrDpUtility:
 
             content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
-        for content_subtype in self.nmr_content_subtypes:
+            for content_subtype in self.nmr_content_subtypes:
 
-            sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.lp_categories[file_type][content_subtype]
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
 
-            if sf_category is None or lp_category is None:
-                continue
-
-            if self.__star_data_type[file_list_id] == 'Loop':
-
-                if content_subtype not in content_subtypes:
+                if sf_category is None or lp_category is None:
                     continue
 
-                sf = self.__star_data[file_list_id]
-                sf_framecode = ''
+                if self.__star_data_type[file_list_id] == 'Loop':
 
-                self.__rescueFormerNef__(file_name, file_type, content_subtype, sf, sf_framecode, sf_category, lp_category)
-
-            elif self.__star_data_type[file_list_id] == 'Saveframe':
-
-                if content_subtype not in content_subtypes:
-                    continue
-
-                sf = self.__star_data[file_list_id]
-                sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
-
-                self.__rescueFormerNef__(file_name, file_type, content_subtype, sf, sf_framecode, sf_category, lp_category)
-
-            else:
-
-                for sf in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
-                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
-
-                    if not any(loop for loop in sf.loops if loop.category == lp_category):
+                    if content_subtype not in content_subtypes:
                         continue
+
+                    sf = self.__star_data[file_list_id]
+                    sf_framecode = ''
+
+                    self.__rescueFormerNef__(file_name, file_type, content_subtype, sf, sf_framecode, sf_category, lp_category)
+
+                else:  # if self.__star_data_type[file_list_id] == 'Saveframe':
+
+                    if content_subtype not in content_subtypes:
+                        continue
+
+                    sf = self.__star_data[file_list_id]
+                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                     self.__rescueFormerNef__(file_name, file_type, content_subtype, sf, sf_framecode, sf_category, lp_category)
 
@@ -9156,11 +9161,20 @@ class NmrDpUtility:
 
                     tag = 'Original_PDB_atom_name_' + str(i)
                     if tag in loop.tags:
-                        _dat = get_lp_tag(loop, [tag])
+
                         _tag = 'Auth_atom_name_' + str(i)
                         if _tag not in loop.tags:
+                            _dat = get_lp_tag(loop, [tag])
+
+                            for idx, row in enumerate(loop):
+                                row.append(_dat[idx])
+
                             loop.add_tag(_tag)
-                            loop.add_data(_dat)
+
+                        if __pynmrstar_v3_2__:
+                            loop.remove_tag(tag)
+                        else:
+                            loop.delete_tag(tag)
 
             elif content_subtype == 'dihed_restraint':
 
@@ -11428,6 +11442,8 @@ class NmrDpUtility:
                         self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
 
                     continue
+
+                message = None
 
                 # split STAR and others
                 if has_str_format:
@@ -20574,10 +20590,10 @@ class NmrDpUtility:
         index_tag = self.index_tags[file_type][content_subtype]
         id_tag = self.consist_id_tags[file_type][content_subtype]
 
+        data_unit_name = 'atom pair'
+
         if content_subtype == 'dist_restraint':
             max_inclusive = DIST_UNCERT_MAX
-
-            data_unit_name = 'atom pair'
 
         elif content_subtype == 'dihed_restraint':
             max_inclusive = ANGLE_UNCERT_MAX
@@ -20825,6 +20841,13 @@ class NmrDpUtility:
             atom_id_1_name = item_names['atom_id_1']
             atom_id_2_name = item_names['atom_id_2']
 
+            auth_chain_id_1_name = 'Auth_asym_ID_1'
+            auth_chain_id_2_name = 'Auth_asym_ID_2'
+            auth_seq_id_1_name = 'Auth_seq_ID_1'
+            auth_seq_id_2_name = 'Auth_seq_ID_2'
+            auth_atom_id_1_name = 'Auth_atom_ID_1'
+            auth_atom_id_2_name = 'Auth_atom_ID_2'
+
             content_subtype = 'chem_shift'
 
             cs_sf_category = self.sf_categories[file_type][content_subtype]
@@ -20887,14 +20910,6 @@ class NmrDpUtility:
                             comp_id_2_name = item_names['comp_id_2']
                             atom_id_1_name = item_names['atom_id_1']
                             atom_id_2_name = item_names['atom_id_2']
-
-                            if file_type == 'nmr-star':
-                                auth_chain_id_1_name = 'Auth_asym_ID_1'
-                                auth_chain_id_2_name = 'Auth_asym_ID_2'
-                                auth_seq_id_1_name = 'Auth_seq_ID_1'
-                                auth_seq_id_2_name = 'Auth_seq_ID_2'
-                                auth_atom_id_1_name = 'Auth_atom_ID_1'
-                                auth_atom_id_2_name = 'Auth_atom_ID_2'
 
                             for row in aux_data:
                                 chain_id_1 = row[chain_id_1_name]
@@ -22302,6 +22317,8 @@ class NmrDpUtility:
 
         try:
 
+            details_col = -1
+
             if file_type == 'nmr-star':
 
                 if __pynmrstar_v3_2__:
@@ -22309,7 +22326,8 @@ class NmrDpUtility:
                 else:
                     loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
 
-                details_col = loop.tags.index('Details') if 'Details' in loop.tags and self.__leave_intl_note else -1
+                if 'Details' in loop.tags:
+                    details_col = loop.tags.index('Details')
 
                 if ambig_code_name in loop.tags:
                     ambig_code_col = loop.tags.index(ambig_code_name)
@@ -24483,6 +24501,9 @@ class NmrDpUtility:
             has_auth_seq = valid_auth_seq = has_auth_chain = False
             aux_auth_seq_id_col = aux_auth_comp_id_col = aux_auth_atom_id_col = -1
             auth_asym_id_col = loop.tags.index('Auth_asym_ID') if 'Auth_asym_ID' in loop.tags else -1
+            auth_seq_id_col = loop.tags.index('Auth_seq_ID') if 'Auth_seq_ID' in loop.tags else -1
+            auth_comp_id_col = loop.tags.index('Auth_comp_ID') if 'Auth_comp_ID' in loop.tags else -1
+            auth_atom_id_col = loop.tags.index('Auth_atom_ID') if 'Auth_atom_ID' in loop.tags else -1
 
             valid_auth_seq_per_chain = []
 
@@ -25060,10 +25081,6 @@ class NmrDpUtility:
             copied_chain_ids = set()
 
             if has_auth_seq:
-                auth_seq_id_col = loop.tags.index('Auth_seq_ID')
-                auth_comp_id_col = loop.tags.index('Auth_comp_ID')
-                auth_atom_id_col = loop.tags.index('Auth_atom_ID')
-
                 auth_asym_ids = [row[0] for row in auth_dat]
 
                 common_auth_asym_ids = collections.Counter(auth_asym_ids).most_common()
@@ -26109,6 +26126,7 @@ class NmrDpUtility:
 
                                         seq_key = next((k for k, v in auth_to_star_seq.items()
                                                         if v[0] == entity_assembly_id and v[1] == seq_id + offset and v[2] == entity_id), None)
+                                        _seq_key = None
                                         if seq_key is not None and comp_id == seq_key[2]:
                                             _seq_key = (seq_key[0], seq_key[1])
                                             _row[16], _row[17], _row[18], _row[19] =\
@@ -27713,7 +27731,7 @@ class NmrDpUtility:
                                 chain_id = row.get(chain_id_names[d])
                                 seq_id = row.get(seq_id_names[d])
                                 comp_id = row.get(comp_id_names[d])
-                                atom_id = row.get(atom_id_names[d])
+                                atom_id = _atom_id = row.get(atom_id_names[d])
 
                                 if chain_id in emptyValue or seq_id in emptyValue or comp_id in emptyValue or atom_id in emptyValue:
                                     continue
@@ -27751,7 +27769,7 @@ class NmrDpUtility:
                                 else:
                                     for atom_id_w_cs in atom_ids_w_cs:
                                         _atom_id_w_cs = self.__getAtomIdList(comp_id, atom_id_w_cs)
-                                        if any(_atom_id for _atom_id in _atom_ids if _atom_id in _atom_id_w_cs):
+                                        if any(_atom_id_ for _atom_id_ in _atom_ids if _atom_id_ in _atom_id_w_cs):
                                             cs_idx = atom_ids_w_cs.index(atom_id_w_cs)
                                             break
 
@@ -27854,7 +27872,7 @@ class NmrDpUtility:
                                             chain_id2 = row[chain_id_names[d2]]
                                             seq_id2 = row[seq_id_names[d2]]
                                             comp_id2 = row[comp_id_names[d2]]
-                                            atom_id2 = row[atom_id_names[d2]]
+                                            atom_id2 = _atom_id2 = row[atom_id_names[d2]]
 
                                             if atom_id2 is not None:
                                                 diff = len(atom_id) != len(atom_id2)
@@ -28184,7 +28202,7 @@ class NmrDpUtility:
                             if comp_id in emptyValue:
                                 continue
 
-                            atom_id = row[cs_atom_id_name]
+                            atom_id = _atom_id = row[cs_atom_id_name]
                             if atom_id in emptyValue:
                                 continue
 
@@ -28246,7 +28264,7 @@ class NmrDpUtility:
                             else:
                                 for atom_id_w_cs in atom_ids_w_cs:
                                     _atom_id_w_cs = self.__getAtomIdList(comp_id, atom_id_w_cs)
-                                    if any(_atom_id for _atom_id in _atom_ids if _atom_id in _atom_id_w_cs):
+                                    if any(_atom_id_ for _atom_id_ in _atom_ids if _atom_id_ in _atom_id_w_cs):
                                         cs_idx = atom_ids_w_cs.index(atom_id_w_cs)
                                         break
 
@@ -28357,7 +28375,7 @@ class NmrDpUtility:
                                         chain_id2 = _row[cs_chain_id_name]
                                         seq_id2 = _row[cs_seq_id_name]
                                         comp_id2 = _row[cs_comp_id_name]
-                                        atom_id2 = _row[cs_atom_id_name]
+                                        atom_id2 = _atom_id2 = _row[cs_atom_id_name]
 
                                         if atom_id2 is not None:
                                             diff = len(atom_id) != len(atom_id2)
@@ -38039,9 +38057,8 @@ class NmrDpUtility:
         comp_id_2_name = item_names['comp_id_2']
         atom_id_1_name = item_names['atom_id_1']
         atom_id_2_name = item_names['atom_id_2']
-        if file_type == 'nmr-star':
-            member_id_name = item_names['member_id']
-            member_logic_code_name = item_names['member_logic_code']
+        member_id_name = item_names['member_id'] if file_type == 'nmr-star' else None
+        member_logic_code_name = item_names['member_logic_code'] if file_type == 'nmr-star' else None
         target_value_name = item_names['target_value']
         if 'target_value_alt' in item_names and target_value_name not in lp_data[0].keys():
             target_value_name = item_names['target_value_alt']
@@ -45353,6 +45370,8 @@ class NmrDpUtility:
             if file_type == 'nmr-star':
                 alt_seq_id_names.append(item_names[j]['alt_seq_id'])
 
+        details_col = -1
+
         if file_type == 'nmr-star':
 
             if __pynmrstar_v3_2__:
@@ -45360,7 +45379,8 @@ class NmrDpUtility:
             else:
                 loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
 
-            details_col = loop.tags.index('Details') if 'Details' in loop.tags and self.__leave_intl_note else -1
+            if 'Details' in loop.tags:
+                details_col = loop.tags.index('Details')
 
         def get_coord_atom_site_of(chain_id, seq_id, comp_id):
 
@@ -45411,11 +45431,11 @@ class NmrDpUtility:
 
             for j in range(num_dim):
                 chain_id = row[chain_id_names[j]]
-                seq_id = row[seq_id_names[j]]
+                seq_id = alt_seq_id = row[seq_id_names[j]]
                 comp_id = row[comp_id_names[j]]
                 atom_id = row[atom_id_names[j]]
-                if file_type == 'nmr-star':
-                    alt_seq_id = row[alt_seq_id_names[j]] if alt_seq_id_names[j] in row else seq_id
+                if file_type == 'nmr-star' and alt_seq_id_names[j] in row:
+                    alt_seq_id = row[alt_seq_id_names[j]]
 
                 if content_subtype.startswith('spectral_peak')\
                    and (chain_id in emptyValue or seq_id in emptyValue or comp_id in emptyValue or atom_id in emptyValue):
@@ -47894,6 +47914,7 @@ class NmrDpUtility:
                 auth_asym_id_list = auth_asym_id_list[:max_len] + last_asym_id
             ent_sf.add_tag('Polymer_strand_ID', auth_asym_id_list)
 
+            one_letter_code_can = one_letter_code = None
             nmr_ext_monomers = 0
             nmr_ext_fw = 0.0
             if entity_type == 'polymer':
@@ -48131,6 +48152,9 @@ class NmrDpUtility:
             for chain_id in item['label_asym_id'].split(','):
                 if chain_id not in label_asym_ids:
                     label_asym_ids.append(chain_id)
+
+            min_auth_seq_id = max_auth_seq_id = max_seq_id = -1
+
             for chain_id in label_asym_ids:
                 if entity_type == 'polymer':
                     ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)

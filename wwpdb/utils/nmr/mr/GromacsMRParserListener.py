@@ -453,6 +453,7 @@ class GromacsMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 2:
                 return
 
+            memberId = '.'
             if self.__createSfDict:
                 sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
                                                                        self.__csStat, self.__originalFileName),
@@ -460,7 +461,6 @@ class GromacsMRParserListener(ParseTreeListener):
                 sf['id'] += 1
                 memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
-                memberId = '.'
                 if memberLogicCode == 'OR':
                     if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
@@ -598,6 +598,9 @@ class GromacsMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
                                 f"The upper linear limit value='{upper_linear_limit}' should be within range {DIST_RESTRAINT_RANGE}.")
+
+        if lower_limit is None and upper_limit is None and upper_linear_limit is None:
+            return None
 
         return dstFunc
 
@@ -982,6 +985,7 @@ class GromacsMRParserListener(ParseTreeListener):
             if len(self.atomSelectionSet) < 4:
                 return
 
+            sf = None
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
 
@@ -1099,6 +1103,9 @@ class GromacsMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper limit value='{upper_limit}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
 
         return dstFunc
 
@@ -1360,6 +1367,9 @@ class GromacsMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"
                                 f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
 
         return dstFunc
 

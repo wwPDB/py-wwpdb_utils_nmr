@@ -2097,6 +2097,8 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'H' + atomId[2:]
             if atomId == 'NH':  # 2jwu
                 return 'N'
+            if atomId.startswith('HQ'):  # 1e8e
+                return atomId[1:]
 
         if refCompId == 'ASN' and atomId.startswith('HND'):  # 2kg1
             if atomId == 'HND1':
@@ -2954,6 +2956,11 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
         if compId3 in monDict3:
             return compId3
 
+        compId3 = compId[1:]  # 1e8e
+
+        if compId3 in monDict3:
+            return compId3
+
     if compId[-1] in ('5', '3'):
 
         if compId[-1] == '5' and refCompId in ('DCZ', 'THM', 'OOB'):  # 7png
@@ -2982,6 +2989,12 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
     if compId in ('HIE', 'HIP', 'HID', 'HIZ'):
         return 'HIS'
 
+    if refCompId is not None:
+        if compId.startswith('HI') and refCompId == 'HIS':  # 1e8e
+            return 'HIS'
+        if compId.endswith('PR') and refCompId == 'PRO':  # 1e8e
+            return 'PRO'
+
     if compId.startswith('CY'):
         if refCompId == 'CYS':  # 6xyv
             return 'CYS'
@@ -2994,13 +3007,24 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
         return 'CYS'
 
     if len(compId) == 3:
-        if compId == 'ADE' or compId.startswith('DA'):
+        if compId.startswith('DA'):
             return 'DA'
-        if compId == 'CYT' or compId.startswith('DC'):
+        if compId.startswith('DC'):
             return 'DC'
-        if compId == 'GUA' or compId.startswith('DG'):
+        if compId.startswith('DG'):
             return 'DG'
-        if compId == 'THY' or compId.startswith('DT'):
+        if compId.startswith('DT'):
+            return 'DT'
+        if compId.startswith('DU'):
+            return 'DU'
+
+        if compId == 'ADE':
+            return 'A' if refCompId == 'A' else 'DA'
+        if compId == 'CYT':
+            return 'C' if refCompId == 'C' else 'DC'
+        if compId == 'GUA':
+            return 'G' if refCompId == 'G' else 'DG'
+        if compId == 'THY':
             return 'DT'
 
     if compId == 'RADE':
@@ -3009,7 +3033,7 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
         return 'C'
     if compId == 'RGUA':
         return 'G'
-    if compId == 'URA':
+    if compId in ('URA', 'URI'):
         return 'U'
 
     if compId == 'HEMB':
@@ -3019,6 +3043,10 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
 
     if len(compId) > 3 and compId[:3] in ('H2O', 'WAT'):
         return 'HOH'
+
+    if len(compId) > 3 and compId[3] in ('_', '+', '-'):  # 1e8e
+        if ccU is not None and ccU.updateChemCompDict(compId[:3]):
+            return compId[:3]
 
     return compId
 
@@ -6219,6 +6247,7 @@ def getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom, aux_atom=None)
                 return starAtom
 
     _seqKey = next((_seqKey for _seqKey in authToStarSeq if chainId == _seqKey[0] and seqId == _seqKey[1]), None)
+    _auxSeqKey = None
     if has_aux_atom:
         _auxSeqKey = next((_auxSeqKey for _auxSeqKey in authToStarSeq if auxChainId == _auxSeqKey[0] and auxSeqId == _auxSeqKey[1]), None)
 
@@ -6550,7 +6579,7 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             row[key_size + 1] = dstFunc['target_value_uncertainty']
             float_row_idx.append(key_size + 1)
         if hasKeyValue(dstFunc, 'lower_limit'):
-            row[key_size + 2] = dstFunc['linear_limit']
+            row[key_size + 2] = dstFunc['lower_limit']
             float_row_idx.append(key_size + 2)
         if hasKeyValue(dstFunc, 'upper_limit'):
             row[key_size + 3] = dstFunc['upper_limit']
@@ -8268,8 +8297,7 @@ def testCoordAtomIdConsistency(caC, ccU, authChainId, chainId, seqId, compId, at
         if cca is not None and seqKey not in caC['coord_unobs_res'] and ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
             checked = False
             ps = next((ps for ps in caC['polymer_sequence'] if ps['auth_chain_id'] == chainId), None)
-            if ps is not None:
-                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+            auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
             if seqId == 1 or (chainId, seqId - 1) in caC['coord_unobs_res'] or (ps is not None and min(auth_seq_id_list) == seqId):
                 if aminoProtonCode and atomId != 'H1':
                     testCoordAtomIdConsistency(caC, ccU, authChainId, chainId, seqId, compId, 'H1', seqKey, coordAtomSite)

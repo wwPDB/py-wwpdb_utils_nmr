@@ -844,11 +844,11 @@ class DynamoMRParserListener(ParseTreeListener):
 
             has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
 
+            memberId = '.'
             if self.__createSfDict:
                 if memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1:
                     memberLogicCode = '.'
 
-                memberId = '.'
                 if memberLogicCode == 'OR':
                     if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
@@ -1013,6 +1013,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
+            memberId = '.'
             if self.__createSfDict:
                 sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
                                                                        self.__csStat, self.__originalFileName),
@@ -1021,7 +1022,6 @@ class DynamoMRParserListener(ParseTreeListener):
                 sf['id'] += 1
                 memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
-                memberId = '.'
                 if memberLogicCode == 'OR':
                     if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
@@ -1185,6 +1185,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
+            memberId = '.'
             if self.__createSfDict:
                 sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
                                                                        self.__csStat, self.__originalFileName),
@@ -1193,7 +1194,6 @@ class DynamoMRParserListener(ParseTreeListener):
                 sf['id'] += 1
                 memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
 
-                memberId = '.'
                 if memberLogicCode == 'OR':
                     if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
@@ -1354,10 +1354,15 @@ class DynamoMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
                                 f"The upper limit value='{upper_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
+
         return dstFunc
 
     def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
-        compId = translateToStdResName(compId, ccU=self.__ccU)
+        compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
+        if len(_compId) == 2 and _compId.startswith('D'):
+            _compId = compId[1]
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
         if not self.__preferAuthSeq:
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
@@ -1370,13 +1375,37 @@ class DynamoMRParserListener(ParseTreeListener):
                 if 'alt_comp_id' in ps and idx < len(ps['alt_comp_id']):
                     if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], ps['alt_comp_id'][idx], 'MTS', 'ORI'):
                         return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
-                elif compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
+                    if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], ps['alt_comp_id'][idx], 'MTS', 'ORI'):
+                        return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
+                if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
+                    return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
+                if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
                     return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
         # if seqId in ps['seq_id']:
         #     idx = ps['seq_id'].index(seqId)
         #     if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
         #         return ps['auth_chain_id'], ps['auth_seq_id'][idx]
         return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId, None
+
+    def translateToStdResNameWrapper(self, seqId, compId, preferNonPoly=False):
+        _compId = compId
+        refCompId = None
+        for ps in self.__polySeq:
+            if preferNonPoly:
+                continue
+            _, _, refCompId = self.getRealChainSeqId(ps, seqId, _compId)
+            if refCompId is not None:
+                compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
+                break
+        if refCompId is None and self.__hasNonPolySeq:
+            for np in self.__nonPolySeq:
+                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId, False)
+                if refCompId is not None:
+                    compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
+                    break
+        if refCompId is None:
+            compId = translateToStdResName(_compId, ccU=self.__ccU)
+        return compId
 
     def assignCoordPolymerSequence(self, refChainId, seqId, compId, atomId, index=None, group=None):
         """ Assign polymer sequences of the coordinates.
@@ -1460,7 +1489,7 @@ class DynamoMRParserListener(ParseTreeListener):
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             seqId, compId, _ = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, compId, atomId)
 
-        compId = translateToStdResName(_compId, ccU=self.__ccU)
+        compId = self.translateToStdResNameWrapper(_seqId, _compId, preferNonPoly)
 
         if len(self.__modResidue) > 0:
             modRes = next((modRes for modRes in self.__modResidue
@@ -1879,7 +1908,7 @@ class DynamoMRParserListener(ParseTreeListener):
         if self.__mrAtomNameMapping is not None and compId not in monDict3:
             __atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, compId, atomId)
 
-        compId = translateToStdResName(__compId, ccU=self.__ccU)
+        compId = self.translateToStdResNameWrapper(seqId, __compId)
 
         for chainId, cifSeqId, cifCompId, isPolySeq in chainAssign:
 
@@ -2335,8 +2364,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if cca is not None and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                 checked = False
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
-                if ps is not None:
-                    auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or (ps is not None and min(auth_seq_id_list) == seqId):
                     if atomId in aminoProtonCode and atomId != 'H1':
                         return self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
@@ -2765,6 +2793,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     fixedAngleName = angleName
                     break
 
+            sf = None
             if self.__createSfDict:
                 sf = self.__getSf(constraintType='backbone chemical shifts',
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
@@ -2914,6 +2943,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     fixedAngleName = angleName
                     break
 
+            sf = None
             if self.__createSfDict:
                 sf = self.__getSf(constraintType='backbone chemical shifts',
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
@@ -3063,6 +3093,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     fixedAngleName = angleName
                     break
 
+            sf = None
             if self.__createSfDict:
                 sf = self.__getSf(constraintType='backbone chemical shifts',
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
@@ -3184,6 +3215,9 @@ class DynamoMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
                                 f"The upper limit value='{upper_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
 
         return dstFunc
 
@@ -4003,6 +4037,9 @@ class DynamoMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
+
         return dstFunc
 
     def areUniqueCoordAtoms(self, subtype_name, allow_ambig=False, allow_ambig_warn_title=''):
@@ -4112,6 +4149,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if not self.areUniqueCoordAtoms('a scalar coupling'):
                 return
 
+            sf = None
             if self.__createSfDict:
                 sf = self.__getSf(constraintType='backbone chemical shifts',
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
@@ -4258,6 +4296,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if not self.areUniqueCoordAtoms('a scalar coupling'):
                 return
 
+            sf = None
             if self.__createSfDict:
                 sf = self.__getSf(constraintType='backbone chemical shifts',
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
@@ -4404,6 +4443,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if not self.areUniqueCoordAtoms('a scalar coupling'):
                 return
 
+            sf = None
             if self.__createSfDict:
                 sf = self.__getSf(constraintType='backbone chemical shifts',
                                   potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
@@ -4537,6 +4577,9 @@ class DynamoMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
                                 f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
+
+        if target_value is None and lower_limit is None and upper_limit is None:
+            return None
 
         return dstFunc
 

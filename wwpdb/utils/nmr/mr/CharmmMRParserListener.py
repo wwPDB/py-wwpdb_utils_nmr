@@ -867,7 +867,7 @@ class CharmmMRParserListener(ParseTreeListener):
                     self.__f.extend(self.__g)
                 return
 
-            memberId = '.'
+            memberId = memberLogicCode = '.'
             if self.__createSfDict:
                 sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
                                                                        self.__csStat, self.__originalFileName),
@@ -1002,6 +1002,7 @@ class CharmmMRParserListener(ParseTreeListener):
                     fixedAngleName = angleName
                     break
 
+            sf = None
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
 
@@ -1493,6 +1494,9 @@ class CharmmMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
+        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+            return None
+
         return dstFunc
 
     # Enter a parse tree produced by CharmmMRParser#pnoe_statement.
@@ -1691,6 +1695,9 @@ class CharmmMRParserListener(ParseTreeListener):
             else:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The upper linear limit value='{upper_linear_limit:.3f}' should be within range {ANGLE_RESTRAINT_RANGE}.")
+
+        if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
+            return None
 
         return dstFunc
 
@@ -2827,7 +2834,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                   isPolySeq=False, isChainSpecified=True,
                                                                   altPolySeq=self.__nonPolySeq, resolved=foundCompId)
 
-            if not foundCompId and len(_factor['chain_id']) == 1 and len(self.__polySeq) > 1:
+            if not foundCompId and len(_factor['chain_id']) == 1 and len(self.__polySeq) > 1\
+               and 'global_sequence_offset' not in self.reasonsForReParsing\
+               and (self.__reasons is None or 'global_sequence_offset' not in self.__reasons):
                 foundCompId |= self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
                                                                   isPolySeq=True, isChainSpecified=False)
                 if self.__hasNonPolySeq:
@@ -3203,9 +3212,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                                         self.reasonsForReParsing['label_seq_scheme'] = {}
                                                     self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                                 else:
-                                                    _atom = {}
-                                                    _atom['comp_id'] = _compId
-                                                    _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                    # _atom = {}
+                                                    # _atom['comp_id'] = _compId
+                                                    # _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                     if self.__ccU.updateChemCompDict(compId):
                                                         cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                                         if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
@@ -3283,9 +3292,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                             _compId = _coordAtomSite['comp_id']
                                             _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
                                             if _atomId in _coordAtomSite['atom_id']:
-                                                _atom = {}
-                                                _atom['comp_id'] = _compId
-                                                _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
+                                                # _atom = {}
+                                                # _atom['comp_id'] = _compId
+                                                # _atom['type_symbol'] = _coordAtomSite['type_symbol'][_coordAtomSite['atom_id'].index(_atomId)]
                                                 if self.__ccU.updateChemCompDict(compId):
                                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                                     if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
@@ -5145,6 +5154,7 @@ class CharmmMRParserListener(ParseTreeListener):
                     print("  " * self.depth + "--> residue")
 
                 eval_factor = False
+                __factor = None
                 if 'seq_id' in self.factor or 'seq_ids' in self.factor:
                     __factor = copy.copy(self.factor)
                     self.consumeFactor_expressions("'residue' clause", False)

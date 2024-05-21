@@ -1000,6 +1000,10 @@ class XplorMRParserListener(ParseTreeListener):
                 if 'seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['seq_id_remap']
 
+            if 'local_seq_scheme' in self.reasonsForReParsing:
+                if 'label_seq_offset' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['local_seq_scheme']
+
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
                 if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
                     del self.reasonsForReParsing['seq_id_remap']
@@ -2009,7 +2013,7 @@ class XplorMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if not self.__hasPolySeq and not self.__hasNonPoly:
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
             if len(self.atomSelectionSet[0]) == 0 or len(self.atomSelectionSet[1]) == 0:
@@ -2999,8 +3003,8 @@ class XplorMRParserListener(ParseTreeListener):
             if upper_limit is not None and upper_linear_limit is not None:
                 if upper_limit > upper_linear_limit:
                     validRange = False
-                    self. __f.append(f"[Range value error] {self.__getCurrentRestraint()}"
-                                     f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                    f"The upper limit value='{upper_limit:.6f}' must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
 
         if not validRange:
             return None
@@ -4413,7 +4417,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                    f"Non-magnetic susceptible spin appears in J-coupling vector; "
+                                    "Non-magnetic susceptible spin appears in J-coupling vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                     f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
@@ -8072,7 +8076,7 @@ class XplorMRParserListener(ParseTreeListener):
                 sf['tags'].append(['weight', self.ncsWeight])
 
         for atom1 in self.atomSelectionSet[0]:
-            if atom1['atom_id'] == 'H':
+            if atom1['atom_id'][0] in protonBeginCode:
                 continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (NCS/GROUP) id={self.geoRestraints} "
@@ -8444,7 +8448,7 @@ class XplorMRParserListener(ParseTreeListener):
             if self.__with_para:
                 self.paramagCenter = copy.copy(_factor)
 
-            self.__retrieveLocalSeqScheme()
+        self.__retrieveLocalSeqScheme()
 
         if 'atom_id' in _factor and len(_factor['atom_id']) == 1:
             self.__cur_auth_atom_id = _factor['atom_id'][0]
@@ -9832,7 +9836,8 @@ class XplorMRParserListener(ParseTreeListener):
         offset = 0
         if not self.__preferAuthSeq:
             chainId = ps['chain_id']
-            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
+            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\
+               and chainId in self.__reasons['label_seq_offset']:
                 offset = self.__reasons['label_seq_offset'][chainId]
             if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
@@ -9855,11 +9860,10 @@ class XplorMRParserListener(ParseTreeListener):
                             return None
                 if seqId + offset in ps['auth_seq_id']:
                     return seqId + offset
-            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
-            if seqKey in self.__authToLabelSeq:
-                _chainId, _seqId = self.__authToLabelSeq[seqKey]
-                if _seqId in ps['seq_id']:
-                    return _seqId + offset
+            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
+            if seqKey in self.__labelToAuthSeq:
+                _, _seqId = self.__labelToAuthSeq[seqKey]
+                return _seqId
         else:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
@@ -9889,7 +9893,8 @@ class XplorMRParserListener(ParseTreeListener):
         if not self.__preferAuthSeq:
             chainId = ps['chain_id']
             offset = 0
-            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
+            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\
+               and chainId in self.__reasons['label_seq_offset']:
                 offset = self.__reasons['label_seq_offset'][chainId]
             if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
@@ -9914,7 +9919,7 @@ class XplorMRParserListener(ParseTreeListener):
                     return seqId + offset, ps['comp_id'][ps['auth_seq_id'].index(seqId + offset)]
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
             if seqKey in self.__labelToAuthSeq:
-                _chainId, _seqId = self.__labelToAuthSeq[seqKey]
+                _, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
                     return _seqId, ps['comp_id'][ps['seq_id'].index(seqId + offset)
                                                  if seqId + offset in ps['seq_id']
@@ -13284,15 +13289,21 @@ class XplorMRParserListener(ParseTreeListener):
 
     def __retrieveLocalSeqScheme(self):
         if self.__reasons is None\
-           or ('label_seq_scheme' not in self.__reasons and 'local_seq_scheme' not in self.__reasons and 'inhibit_label_seq_scheme' not in self.__reasons):
+           or ('label_seq_scheme' not in self.__reasons and 'local_seq_scheme' not in self.__reasons
+               and 'inhibit_label_seq_scheme' not in self.__reasons):
             return
         if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']\
-           and self.__cur_subtype in self.__reasons['label_seq_scheme']\
-           and self.__reasons['label_seq_scheme'][self.__cur_subtype]\
            and 'segment_id_mismatch' not in self.__reasons:
-            self.__preferAuthSeq = False
-            self.__authSeqId = 'label_seq_id'
-            return
+            if self.__cur_subtype in self.__reasons['label_seq_scheme']\
+               and self.__reasons['label_seq_scheme'][self.__cur_subtype]:
+                self.__preferAuthSeq = False
+                self.__authSeqId = 'label_seq_id'
+                return
+            if self.__cur_subtype != 'dist' and 'dist' in self.__reasons['label_seq_scheme']\
+               and self.__reasons['label_seq_scheme']['dist']:
+                self.__preferAuthSeq = False
+                self.__authSeqId = 'label_seq_id'
+                return
         if 'local_seq_scheme' not in self.__reasons:
             return
         if self.__cur_subtype == 'dist':

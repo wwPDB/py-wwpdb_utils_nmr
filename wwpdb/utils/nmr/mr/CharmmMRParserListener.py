@@ -742,6 +742,10 @@ class CharmmMRParserListener(ParseTreeListener):
                 if 'seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['seq_id_remap']
 
+            if 'local_seq_scheme' in self.reasonsForReParsing:
+                if 'label_seq_offset' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['local_seq_scheme']
+
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
                 if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
                     del self.reasonsForReParsing['seq_id_remap']
@@ -2308,8 +2312,7 @@ class CharmmMRParserListener(ParseTreeListener):
                 _factor['atom_selection'] = ['*']
                 return _factor
 
-        if len(self.atomSelectionSet) == 0:
-            self.__retrieveLocalSeqScheme()
+        self.__retrieveLocalSeqScheme()
 
         if 'atom_id' in _factor and len(_factor['atom_id']) == 1:
             self.__cur_auth_atom_id = _factor['atom_id'][0]
@@ -3636,7 +3639,8 @@ class CharmmMRParserListener(ParseTreeListener):
         offset = 0
         if not self.__preferAuthSeq:
             chainId = ps['chain_id']
-            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
+            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\
+               and chainId in self.__reasons['label_seq_offset']:
                 offset = self.__reasons['label_seq_offset'][chainId]
             if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
@@ -3659,11 +3663,10 @@ class CharmmMRParserListener(ParseTreeListener):
                             return None
                 if seqId + offset in ps['auth_seq_id']:
                     return seqId + offset
-            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
-            if seqKey in self.__authToLabelSeq:
-                _chainId, _seqId = self.__authToLabelSeq[seqKey]
-                if _seqId in ps['seq_id']:
-                    return _seqId + offset
+            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
+            if seqKey in self.__labelToAuthSeq:
+                _, _seqId = self.__labelToAuthSeq[seqKey]
+                return _seqId
         else:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
@@ -3693,7 +3696,8 @@ class CharmmMRParserListener(ParseTreeListener):
         if not self.__preferAuthSeq:
             chainId = ps['chain_id']
             offset = 0
-            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
+            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\
+               and chainId in self.__reasons['label_seq_offset']:
                 offset = self.__reasons['label_seq_offset'][chainId]
             if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
@@ -3718,7 +3722,7 @@ class CharmmMRParserListener(ParseTreeListener):
                     return seqId + offset, ps['comp_id'][ps['auth_seq_id'].index(seqId + offset)]
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
             if seqKey in self.__labelToAuthSeq:
-                _chainId, _seqId = self.__labelToAuthSeq[seqKey]
+                _, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
                     return _seqId, ps['comp_id'][ps['seq_id'].index(seqId + offset)
                                                  if seqId + offset in ps['seq_id']
@@ -5756,15 +5760,21 @@ class CharmmMRParserListener(ParseTreeListener):
 
     def __retrieveLocalSeqScheme(self):
         if self.__reasons is None\
-           or ('label_seq_scheme' not in self.__reasons and 'local_seq_scheme' not in self.__reasons and 'inhibit_label_seq_scheme' not in self.__reasons):
+           or ('label_seq_scheme' not in self.__reasons and 'local_seq_scheme' not in self.__reasons
+               and 'inhibit_label_seq_scheme' not in self.__reasons):
             return
         if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']\
-           and self.__cur_subtype in self.__reasons['label_seq_scheme']\
-           and self.__reasons['label_seq_scheme'][self.__cur_subtype]\
            and 'segment_id_mismatch' not in self.__reasons:
-            self.__preferAuthSeq = False
-            self.__authSeqId = 'label_seq_id'
-            return
+            if self.__cur_subtype in self.__reasons['label_seq_scheme']\
+               and self.__reasons['label_seq_scheme'][self.__cur_subtype]:
+                self.__preferAuthSeq = False
+                self.__authSeqId = 'label_seq_id'
+                return
+            if self.__cur_subtype != 'dist' and 'dist' in self.__reasons['label_seq_scheme']\
+               and self.__reasons['label_seq_scheme']['dist']:
+                self.__preferAuthSeq = False
+                self.__authSeqId = 'label_seq_id'
+                return
         if 'local_seq_scheme' not in self.__reasons:
             return
         if self.__cur_subtype == 'dist':

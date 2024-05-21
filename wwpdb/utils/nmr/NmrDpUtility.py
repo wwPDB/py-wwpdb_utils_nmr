@@ -32278,7 +32278,11 @@ class NmrDpUtility:
 
             self.__cur_original_ar_file_name = original_file_name
 
-            reasons = _reasons = None if 'dist_restraint' not in content_subtype and file_type != 'nm-res-amb' else reasons_dict.get(file_type)
+            _reasons = reasons_dict.get(file_type)
+            if _reasons is not None:
+                if 'label_seq_scheme' not in _reasons and 'dist_restraint' not in content_subtype and file_type != 'nm-res-amb':
+                    _reasons = None
+            reasons = _reasons
 
             if file_type == 'nm-res-xpl':
                 reader = XplorMRReader(self.__verbose, self.__lfh,
@@ -32291,6 +32295,7 @@ class NmrDpUtility:
                 reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
+                __list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -32338,7 +32343,7 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
 
@@ -32505,6 +32510,7 @@ class NmrDpUtility:
                                      reasons)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
+                __list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -32550,7 +32556,7 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
 
@@ -32912,6 +32918,7 @@ class NmrDpUtility:
                 reader.setRemediateMode(self.__remediation_mode)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
+                __list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -32959,7 +32966,7 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
 
@@ -33134,6 +33141,7 @@ class NmrDpUtility:
                 reader.setRemediateMode(self.__remediation_mode)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
+                __list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -33181,7 +33189,7 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
 
@@ -34254,6 +34262,7 @@ class NmrDpUtility:
                                         reasons)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
+                __list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -34299,7 +34308,7 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
 

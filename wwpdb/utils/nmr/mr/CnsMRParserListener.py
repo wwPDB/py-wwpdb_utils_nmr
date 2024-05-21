@@ -881,6 +881,10 @@ class CnsMRParserListener(ParseTreeListener):
                 if 'seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['seq_id_remap']
 
+            if 'local_seq_scheme' in self.reasonsForReParsing:
+                if 'label_seq_offset' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['local_seq_scheme']
+
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
                 if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
                     del self.reasonsForReParsing['seq_id_remap']
@@ -2923,7 +2927,7 @@ class CnsMRParserListener(ParseTreeListener):
                                      '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc,
                                      self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                                     atom1, atom2)
+                                     atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[4],
@@ -3364,7 +3368,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#proton_shift_amides.
     def exitProton_shift_amides(self, ctx: CnsMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument
         for atom1 in self.atomSelectionSet[0]:
-            if atom1['atom_id'] not in protonBeginCode:
+            if atom1['atom_id'] != 'H':
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                 f"Not a backbone amide proton; {atom1}.")
                 return
@@ -4145,7 +4149,7 @@ class CnsMRParserListener(ParseTreeListener):
                 sf['tags'].append(['weight', self.ncsWeight])
 
         for atom1 in self.atomSelectionSet[0]:
-            if atom1['atom_id'] in protonBeginCode:
+            if atom1['atom_id'][0] in protonBeginCode:
                 continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (NCS/GROUP) id={self.geoRestraints} "
@@ -4504,8 +4508,7 @@ class CnsMRParserListener(ParseTreeListener):
                 _factor['atom_selection'] = ['*']
                 return _factor
 
-        if len(self.atomSelectionSet) == 0:
-            self.__retrieveLocalSeqScheme()
+        self.__retrieveLocalSeqScheme()
 
         if 'atom_id' in _factor and len(_factor['atom_id']) == 1:
             self.__cur_auth_atom_id = _factor['atom_id'][0]
@@ -5884,7 +5887,8 @@ class CnsMRParserListener(ParseTreeListener):
         offset = 0
         if not self.__preferAuthSeq:
             chainId = ps['chain_id']
-            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
+            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\
+               and chainId in self.__reasons['label_seq_offset']:
                 offset = self.__reasons['label_seq_offset'][chainId]
             if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
@@ -5907,11 +5911,10 @@ class CnsMRParserListener(ParseTreeListener):
                             return None
                 if seqId + offset in ps['auth_seq_id']:
                     return seqId + offset
-            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
-            if seqKey in self.__authToLabelSeq:
-                _chainId, _seqId = self.__authToLabelSeq[seqKey]
-                if _seqId in ps['seq_id']:
-                    return _seqId + offset
+            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
+            if seqKey in self.__labelToAuthSeq:
+                _, _seqId = self.__labelToAuthSeq[seqKey]
+                return _seqId
         else:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
@@ -5941,7 +5944,8 @@ class CnsMRParserListener(ParseTreeListener):
         if not self.__preferAuthSeq:
             chainId = ps['chain_id']
             offset = 0
-            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
+            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\
+               and chainId in self.__reasons['label_seq_offset']:
                 offset = self.__reasons['label_seq_offset'][chainId]
             if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
@@ -5966,7 +5970,7 @@ class CnsMRParserListener(ParseTreeListener):
                     return seqId + offset, ps['comp_id'][ps['auth_seq_id'].index(seqId + offset)]
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
             if seqKey in self.__labelToAuthSeq:
-                _chainId, _seqId = self.__labelToAuthSeq[seqKey]
+                _, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
                     return _seqId, ps['comp_id'][ps['seq_id'].index(seqId + offset)
                                                  if seqId + offset in ps['seq_id']
@@ -9086,15 +9090,21 @@ class CnsMRParserListener(ParseTreeListener):
 
     def __retrieveLocalSeqScheme(self):
         if self.__reasons is None\
-           or ('label_seq_scheme' not in self.__reasons and 'local_seq_scheme' not in self.__reasons and 'inhibit_label_seq_scheme' not in self.__reasons):
+           or ('label_seq_scheme' not in self.__reasons and 'local_seq_scheme' not in self.__reasons
+               and 'inhibit_label_seq_scheme' not in self.__reasons):
             return
         if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']\
-           and self.__cur_subtype in self.__reasons['label_seq_scheme']\
-           and self.__reasons['label_seq_scheme'][self.__cur_subtype]\
            and 'segment_id_mismatch' not in self.__reasons:
-            self.__preferAuthSeq = False
-            self.__authSeqId = 'label_seq_id'
-            return
+            if self.__cur_subtype in self.__reasons['label_seq_scheme']\
+               and self.__reasons['label_seq_scheme'][self.__cur_subtype]:
+                self.__preferAuthSeq = False
+                self.__authSeqId = 'label_seq_id'
+                return
+            if self.__cur_subtype != 'dist' and 'dist' in self.__reasons['label_seq_scheme']\
+               and self.__reasons['label_seq_scheme']['dist']:
+                self.__preferAuthSeq = False
+                self.__authSeqId = 'label_seq_id'
+                return
         if 'local_seq_scheme' not in self.__reasons:
             return
         if self.__cur_subtype == 'dist':

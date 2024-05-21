@@ -188,6 +188,7 @@
 # 07-Mar-2024  M. Yokochi - extract pdbx_poly_seq_scheme.auth_mon_id as alt_cmop_id to prevent sequence mismatch due to 5-letter CCD ID (DAOTHER-9158 vs D_1300043061)
 # 22-Mar-2024  M. Yokochi - test tautomeric states of histidine-like residue across models (DAOTHER-9252)
 # 01-May-2024  M. Yokochi - merge cs/mr sequence extensions containing unknown residues (e.g UNK, DN, N) if necessary (NMR restraint remediation, 6fw4)
+# 21-May-2024  M. Yokochi - block deposition using a peak list file in any binary format (DAOTHER-9425)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -11327,6 +11328,19 @@ class NmrDpUtility:
                     original_file_name = os.path.basename(input_source_dic['original_file_name'])
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
+
+            if is_binary_file(file_path):
+
+                err = f"The spectal peak list file {file_name!r} is not plain text file."
+
+                self.report.error.appendDescription('format_issue',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+
+                continue
 
             has_spectral_peak = False
 
@@ -31681,6 +31695,9 @@ class NmrDpUtility:
                     original_file_name = os.path.basename(input_source_dic['original_file_name'])
 
             file_path = ar['file_name']
+
+            if is_binary_file(file_path):
+                continue
 
             content_subtype = 'spectral_peak'
 

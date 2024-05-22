@@ -46839,7 +46839,7 @@ class NmrDpUtility:
                 if self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
                    and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id):
                     for d in self.__nmr_ext_poly_seq:
-                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id and 'done' not in d:
+                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id and 'touch' not in d:
                             _seq_key = (entity_assembly_id, d['auth_seq_id'])
                             if _seq_key in seq_keys:
                                 continue
@@ -46851,7 +46851,7 @@ class NmrDpUtility:
 
                             loop.add_data(row)
 
-                            d['done'] = True
+                            d['touch'] = True
 
                             nef_index += 1
                             index += 1
@@ -46944,7 +46944,7 @@ class NmrDpUtility:
                 if row[seq_link_col] == 'end' and self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
                    and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id):
                     for d in self.__nmr_ext_poly_seq:
-                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id and 'done' not in  d:
+                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id and 'touch' not in d:
                             if loop.data[-1][seq_link_col] == 'end':
                                 loop.data[-1][seq_link_col] = 'middle'
                             row = [None] * len(loop.tags)
@@ -46954,7 +46954,7 @@ class NmrDpUtility:
 
                             loop.add_data(row)
 
-                            d['done'] = True
+                            d['touch'] = True
 
                             nef_index += 1
 
@@ -46977,6 +46977,11 @@ class NmrDpUtility:
                                     nef_index += 1
 
             asm_sf.add_loop(loop)
+
+            if self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0:
+                for d in self.__nmr_ext_poly_seq:
+                    if 'touch' in d:
+                        del d['touch']
 
             # Refresh _nef_covalent_links loop
 
@@ -47097,7 +47102,7 @@ class NmrDpUtility:
                 if self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
                    and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id):
                     for d in self.__nmr_ext_poly_seq:
-                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id and 'done' not in d:
+                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id and 'touch' not in d:
                             _offset = seq_id - auth_seq_id
                             _seq_id = d['auth_seq_id'] + _offset
                             _seq_key = (entity_assembly_id, _seq_id)
@@ -47118,7 +47123,7 @@ class NmrDpUtility:
 
                             loop.add_data(row)
 
-                            d['done'] = True
+                            d['touch'] = True
 
                             nef_index += 1
                             index += 1
@@ -47222,7 +47227,7 @@ class NmrDpUtility:
                 if row[seq_link_col] == 'end' and self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
                    and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id):
                     for d in self.__nmr_ext_poly_seq:
-                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id and 'done' not in d:
+                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id and 'touch' not in d:
                             if loop.data[-1][seq_link_col] == 'end':
                                 loop.data[-1][seq_link_col] = 'middle'
                             _offset = seq_id - auth_seq_id
@@ -47241,7 +47246,7 @@ class NmrDpUtility:
 
                             loop.add_data(row)
 
-                            d['done'] = True
+                            d['touch'] = True
 
                             nef_index += 1
 
@@ -47270,6 +47275,11 @@ class NmrDpUtility:
                                     nef_index += 1
 
             asm_sf.add_loop(loop)
+
+            if self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0:
+                for d in self.__nmr_ext_poly_seq:
+                    if 'touch' in d:
+                        del d['touch']
 
             self.__cca_dat = get_lp_tag(loop, ['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'])
 

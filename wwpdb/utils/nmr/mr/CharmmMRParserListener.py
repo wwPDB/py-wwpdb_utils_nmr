@@ -5767,11 +5767,11 @@ class CharmmMRParserListener(ParseTreeListener):
 
     def __retrieveLocalSeqScheme(self):
         if self.__reasons is None\
-           or ('label_seq_scheme' not in self.__reasons and 'local_seq_scheme' not in self.__reasons
-               and 'inhibit_label_seq_scheme' not in self.__reasons):
+           or ('label_seq_scheme' not in self.__reasons and 'local_seq_scheme' not in self.__reasons):
+            #    and 'inhibit_label_seq_scheme' not in self.__reasons):
             return
-        if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']\
-           and 'segment_id_mismatch' not in self.__reasons:
+        if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:  # \
+            # and 'segment_id_mismatch' not in self.__reasons:
             if self.__cur_subtype in self.__reasons['label_seq_scheme']\
                and self.__reasons['label_seq_scheme'][self.__cur_subtype]:
                 self.__preferAuthSeq = False

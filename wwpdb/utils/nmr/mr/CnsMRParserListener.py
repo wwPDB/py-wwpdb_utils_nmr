@@ -5336,6 +5336,13 @@ class CnsMRParserListener(ParseTreeListener):
                             seqKey = _seqKey
                             coordAtomSite = _coordAtomSite
                             atomSiteAtomId = _coordAtomSite['atom_id']
+                        elif 'split_comp_id' in coordAtomSite and 'NH2' in coordAtomSite['split_comp_id']:
+                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, 'NH2', cifCheck=cifCheck)
+                            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == 'NH2':
+                                compId = 'NH2'
+                                seqKey = _seqKey
+                                coordAtomSite = _coordAtomSite
+                                atomSiteAtomId = _coordAtomSite['atom_id']
 
                     for atomId in _factor['atom_id']:
                         _atomId = atomId.upper() if len(atomId) <= 2 else atomId[:2].upper()

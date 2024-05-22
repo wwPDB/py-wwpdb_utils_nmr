@@ -167,7 +167,7 @@
 # 15-Dec-2022  M. Yokochi - merge CS and MR as a single NMR data file in CIF format with comprehensive molecular assembly information (DAOTHER-7407, NMR restraint remediation)
 # 13-Jan-2023  M. Yokochi - add support for small angle X-ray scattering restraints (NMR restraint remediation)
 # 24-Jan-2023  M. Yokochi - add support for heteronuclear relaxation data (NOE, T1, T2, T1rho, Order parameter) (NMR restraint remediation)
-# 23-Feb-2023  M. Yokochi - combine spectral peak lists in any format into single NMR-STAR until Phase 2 release (DAOTHER-7407)
+# 23-Feb-2023  M. Yokochi - combine spectral peak lists in any plain text format into single NMR-STAR until Phase 2 release (DAOTHER-7407)
 # 24-Mar-2023  M. Yokochi - add 'nmr-nef2cif-deposit' and 'nmr-str2cif-deposit' workflow operations (DAOTHER-7407)
 # 22-Jun-2023  M. Yokochi - convert model file when pdbx_poly_seq category is missing for reuploading nmr_data after unlock (DAOTHER-8580)
 # 19-Jul-2023  M. Yokochi - fix not to merge restraint id (_Gen_dist_constraint.ID) if lower and upper bounds are different (DAOTHER-8705)
@@ -188,7 +188,7 @@
 # 07-Mar-2024  M. Yokochi - extract pdbx_poly_seq_scheme.auth_mon_id as alt_cmop_id to prevent sequence mismatch due to 5-letter CCD ID (DAOTHER-9158 vs D_1300043061)
 # 22-Mar-2024  M. Yokochi - test tautomeric states of histidine-like residue across models (DAOTHER-9252)
 # 01-May-2024  M. Yokochi - merge cs/mr sequence extensions containing unknown residues (e.g UNK, DN, N) if necessary (NMR restraint remediation, 6fw4)
-# 21-May-2024  M. Yokochi - block deposition using a peak list file in any binary format (DAOTHER-9425)
+# 22-May-2024  M. Yokochi - block deposition using a peak list file in any binary format and prevent 'nm-pea-any' occasionally matches with 'nm-res-cya' (DAOTHER-9425)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -1131,7 +1131,7 @@ class NmrDpUtility:
         self.__release_mode = False
         # whether to allow to raise internal error
         self.__internal_mode = False
-        # whether to combine spectral peak list in any format into single NMR-STAR file (must be trued off after Phase 2, DAOTHER-7407)
+        # whether to combine spectral peak list in any plain text format into single NMR-STAR file (must be trued off after Phase 2, DAOTHER-7407)
         self.__merge_any_pk_as_is = False
 
         # whether to allow empty coordinate file path
@@ -11329,7 +11329,23 @@ class NmrDpUtility:
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
 
-            if is_binary_file(file_path):
+            has_spectral_peak = False
+
+            try:
+
+                with open(file_path, 'r', encoding='utf-8') as ifh:
+                    has_header = False
+                    for idx, line in enumerate(ifh):
+                        if line.isspace() or comment_pattern.match(line):
+                            if line.startswith('#INAME'):
+                                has_header = True
+                            continue
+                        if is_peak_list(line, has_header):
+                            has_spectral_peak = True
+                        if has_spectral_peak or idx >= self.mr_max_spacer_lines:
+                            break
+
+            except UnicodeDecodeError:  # catch exception due to binary format (DAOTHER-9425)
 
                 err = f"The spectal peak list file {file_name!r} is not plain text file."
 
@@ -11341,20 +11357,6 @@ class NmrDpUtility:
                     self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
 
                 continue
-
-            has_spectral_peak = False
-
-            with open(file_path, 'r', encoding='utf-8') as ifh:
-                has_header = False
-                for idx, line in enumerate(ifh):
-                    if line.isspace() or comment_pattern.match(line):
-                        if line.startswith('#INAME'):
-                            has_header = True
-                        continue
-                    if is_peak_list(line, has_header):
-                        has_spectral_peak = True
-                    if has_spectral_peak or idx >= self.mr_max_spacer_lines:
-                        break
 
             if has_spectral_peak:
                 continue
@@ -11432,7 +11434,7 @@ class NmrDpUtility:
                     has_str_format = has_cif_format = False
 
                 if has_pdb_format:
-                    err = f"The spectral peak list file {file_name!r} (any format) is identified as coordinate file. "\
+                    err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as coordinate file. "\
                         "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
 
                     self.report.error.appendDescription('content_mismatch',
@@ -11445,7 +11447,7 @@ class NmrDpUtility:
                     continue
 
                 if has_mr_header:
-                    err = f"The spectral peak list file {file_name!r} (any format) is identified as {getRestraintFormatName('nm-res-mr')}. "\
+                    err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as {getRestraintFormatName('nm-res-mr')}. "\
                         "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
 
                     self.report.error.appendDescription('content_mismatch',
@@ -11492,7 +11494,7 @@ class NmrDpUtility:
                         mr_str = True
 
                 if cs_str:
-                    err = f"The spectral peak list file {file_name!r} (any format) is identified as "\
+                    err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as "\
                         f"{self.readable_file_type[message['file_type']]} formatted assigned chemical shift file. "\
                         "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
 
@@ -11506,7 +11508,7 @@ class NmrDpUtility:
                     continue
 
                 if mr_str:
-                    err = f"The spectral peak list file {file_name!r} (any format) is identified as "\
+                    err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as "\
                         f"{self.readable_file_type[message['file_type']]} formatted restraint file. "\
                         "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
 
@@ -11539,7 +11541,7 @@ class NmrDpUtility:
 
             if len_possible_types == 0:
 
-                err = f"The spectral peak list file {file_name!r} (any format) is identified as {getRestraintFormatNames(valid_types)} file. "\
+                err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as {getRestraintFormatNames(valid_types)} file. "\
                     "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
 
                 self.report.error.appendDescription('content_mismatch',
@@ -11551,7 +11553,7 @@ class NmrDpUtility:
 
             elif len_valid_types == 0:
 
-                err = f"The spectral peak list file {file_name!r} (any format) can be {possible_types}. "\
+                err = f"The spectral peak list file {file_name!r} (any plain text format) can be {possible_types}. "\
                     "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
 
                 self.report.error.appendDescription('content_mismatch',
@@ -11563,7 +11565,7 @@ class NmrDpUtility:
 
             else:
 
-                err = f"The spectral peak list file {file_name!r} (any format) is identified as {getRestraintFormatNames(valid_types)} file"\
+                err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as {getRestraintFormatNames(valid_types)} file"\
                     f"and can be {getRestraintFormatNames(possible_types)} file as well. "\
                     "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
 
@@ -13770,7 +13772,8 @@ class NmrDpUtility:
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
-        if (not is_valid or multiple_check) and file_type != 'nm-res-cya':
+        # prevent 'nm-pea-any' occasionally matches with 'nm-res-cya' (DAOTHER-9425)
+        if (not is_valid or multiple_check) and file_type not in ('nm-res-cya', 'nm-pea-any'):
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cya')
 
@@ -13920,7 +13923,7 @@ class NmrDpUtility:
             has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
 
             if (has_lexer_error or has_parser_error) and sll_pred\
-               and _file_type in ('nm-res-xml', 'nm-res-cns', 'nm-res-cha'):
+               and _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cha'):
                 sll_pred = False
 
                 reader.setSllPredMode(sll_pred)
@@ -31656,7 +31659,7 @@ class NmrDpUtility:
         return True
 
     def __mergeAnyPkAsIs(self):
-        """ Merge spectral peak list file(s) in any format (file type: nm-pea-any) into a single NMR-STAR file as is.
+        """ Merge spectral peak list file(s) in any plain text format (file type: nm-pea-any) into a single NMR-STAR file as is.
         """
 
         if self.__combined_mode:
@@ -31696,7 +31699,12 @@ class NmrDpUtility:
 
             file_path = ar['file_name']
 
-            if is_binary_file(file_path):
+            try:
+
+                with open(file_path, 'r', encoding='utf-8') as ifh:
+                    ifh.read()
+
+            except UnicodeDecodeError:  # catch exception due to binary format (DAOTHER-9425)
                 continue
 
             content_subtype = 'spectral_peak'

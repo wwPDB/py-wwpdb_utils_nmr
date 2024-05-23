@@ -2455,7 +2455,7 @@ class TestNEFTranslator(unittest.TestCase):
                         "chain_id": "1",
                         "seq_id": list(range(1, 70)),
                         "auth_asym_id": ["A" for i in range(1, 70)],
-                        "auth_seq_id": ["%s" % i for i in range(1, 70)],
+                        "auth_seq_id": [str(i) for i in range(1, 70)],
                         "auth_comp_id": [
                             "MET",
                             "GLY",

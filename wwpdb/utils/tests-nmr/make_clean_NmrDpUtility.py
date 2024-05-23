@@ -40,7 +40,7 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(self.data_dir_path + entry_id + '-clean-nef-consistency-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        if not report['error'] is None:
+        if report['error'] is not None:
             self.assertNotIn('internal_error', report['error'])
 
     def __test_nmr_nef2str_deposit(self, entry_id):
@@ -67,13 +67,13 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(self.data_dir_path + entry_id + '-clean-deposit-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        if not report['error'] is None and os.path.exists(self.data_dir_path + entry_id + '-clean.nef'):
+        if report['error'] is not None and os.path.exists(self.data_dir_path + entry_id + '-clean.nef'):
             os.remove(self.data_dir_path + entry_id + '-clean.nef')
 
         with open(self.data_dir_path + entry_id + '-clean-str-deposit-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        if not report['error'] is None and os.path.exists(self.data_dir_path + entry_id + '-clean.str'):
+        if report['error'] is not None and os.path.exists(self.data_dir_path + entry_id + '-clean.str'):
             os.remove(self.data_dir_path + entry_id + '-clean.str')
 
     def test_nmr_nef2str_deposit_check_1nk2(self):

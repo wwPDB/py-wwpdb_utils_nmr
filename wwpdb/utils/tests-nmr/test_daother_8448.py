@@ -74,7 +74,7 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(report_file, 'r') as file:
             report = json.loads(file.read())
 
-        if not report['error'] is None:
+        if report['error'] is not None:
             self.assertNotIn('internal_error', report['error'])
 
         if entry_id == 'daother-8448':
@@ -87,7 +87,8 @@ class TestNmrDpUtility(unittest.TestCase):
         elif 'format_issue' in report['error']:
             print('========>>>> %s: %s\n format_issue: %s' % (entry_id, report['information']['status'], report['error']['format_issue'][0]['description']))
         elif 'missing_mandatory_content' in report['error']:
-            print('========>>>> %s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
+            print('========>>>> %s: %s\n missing_mandatory_content: %s'
+                  % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print('========>>>> %s: %s, %s' % (entry_id, report['information']['status'], error_type))
@@ -149,7 +150,7 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(self.data_dir_path + entry_id + '-str2str-deposit-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        if not report['error'] is None:
+        if report['error'] is not None:
             self.assertNotIn('internal_error', report['error'])
 
         if report['error'] is None:

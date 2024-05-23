@@ -62,7 +62,7 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(self.data_dir_path + cs_type + '-cs-str-consistency-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        if not report['error'] is None:
+        if report['error'] is not None:
             self.assertNotIn('internal_error', report['error'])
 
         if report['error'] is None:

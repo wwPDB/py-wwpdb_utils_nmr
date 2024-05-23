@@ -14743,7 +14743,7 @@ class NmrDpUtility:
 
                 dst_file_list = [os.path.join(dir_path, div_name) for div_name in div_file_names if div_name.startswith(dst_name_prefix)]
 
-                if not file_name.endswith('str') and len(dst_file_list) == 0:
+                if (not file_name.endswith('str') or mr_file_path.endswith('-remediated.mr')) and len(dst_file_list) == 0:
                     dst_file_list.append(dst_file)
 
                 for dst_file in dst_file_list:
@@ -29803,6 +29803,7 @@ class NmrDpUtility:
                 index_tag = self.index_tags[file_type][content_subtype]
                 id_col = loop.tags.index('ID') if 'ID' in loop.tags else -1
                 combination_id_col = member_id_col = member_logic_code_col = upper_limit_col = -1
+                auth_comp_id_1_col = auth_comp_id_2_col = torsion_angle_name_col = -1
                 if content_subtype == 'dist_restraint':
                     if 'Combination_ID' in loop.tags:
                         combination_id_col = loop.tags.index('Combination_ID')
@@ -29812,6 +29813,13 @@ class NmrDpUtility:
                         member_logic_code_col = loop.tags.index('Member_logic_code')
                     if 'Distance_upper_bound_val' in loop.tags:
                         upper_limit_col = loop.tags.index('Distance_upper_bound_val')
+                    if 'Auth_comp_ID_1' in loop.tags:
+                        auth_comp_id_1_col = loop.tags.index('Auth_comp_ID_1')
+                    if 'Auth_comp_ID_2' in loop.tags:
+                        auth_comp_id_2_col = loop.tags.index('Auth_comp_ID_2')
+                elif content_subtype == 'dihed_restraint':
+                    if 'Torsion_angle_name' in loop.tags:
+                        torsion_angle_name_col = loop.tags.index('Torsion_angle_name')
 
                 key_items = [item['name'] for item in NMR_STAR_LP_KEY_ITEMS[content_subtype]]
 
@@ -30082,8 +30090,18 @@ class NmrDpUtility:
                                         rescued = True
 
                                 if not rescued:
+                                    enableWarning = True
+                                    if content_subtype == 'dist_restraint':
+                                        if (auth_comp_id_1_col != -1 and loop.data[idx][auth_comp_id_1_col] == 'HOH')\
+                                           or (auth_comp_id_2_col != -1 and loop.data[idx][auth_comp_id_2_col] == 'HOH'):
+                                            enableWarning = False
+                                    elif content_subtype == 'dihed_restraint':
+                                        if torsion_angle_name_col != -1 and loop.data[idx][torsion_angle_name_col] == 'PPA':
+                                            enableWarning = False
+
                                     atom_sels[d], warn = selectCoordAtoms(self.__cR, self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
                                                                           allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
+                                                                          enableWarning=enableWarning,
                                                                           preferAuthAtomName=prefer_auth_atom_name,
                                                                           representativeModelId=self.__representative_model_id, representativeAltId=self.__representative_alt_id,
                                                                           modelNumName=model_num_name)
@@ -30470,8 +30488,18 @@ class NmrDpUtility:
 
                                     continue
 
+                                enableWarning = True
+                                if content_subtype == 'dist_restraint':
+                                    if (auth_comp_id_1_col != -1 and loop.data[idx][auth_comp_id_1_col] == 'HOH')\
+                                       or (auth_comp_id_2_col != -1 and loop.data[idx][auth_comp_id_2_col] == 'HOH'):
+                                        enableWarning = False
+                                elif content_subtype == 'dihed_restraint':
+                                    if torsion_angle_name_col != -1 and loop.data[idx][torsion_angle_name_col] == 'PPA':
+                                        enableWarning = False
+
                                 atom_sels[d], warn = selectCoordAtoms(self.__cR, self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
                                                                       allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
+                                                                      enableWarning=enableWarning,
                                                                       preferAuthAtomName=prefer_auth_atom_name,
                                                                       representativeModelId=self.__representative_model_id, representativeAltId=self.__representative_alt_id,
                                                                       modelNumName=model_num_name)

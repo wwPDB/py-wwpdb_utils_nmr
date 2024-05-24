@@ -14773,6 +14773,9 @@ class NmrDpUtility:
 
                 remediated = True
 
+            elif not has_content:
+                continue
+
             mr_core_path = dst_file
 
             # has no MR haeder

@@ -14771,9 +14771,16 @@ class NmrDpUtility:
             if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
                 dst_file = cor_dst_file
 
+                with open(dst_file, 'r') as ifh:
+                    for line in ifh:
+                        if line.isspace() or comment_pattern.match(line):
+                            continue
+                        has_content = True
+                        break
+
                 remediated = True
 
-            elif not has_content:
+            if not has_content:
                 continue
 
             mr_core_path = dst_file

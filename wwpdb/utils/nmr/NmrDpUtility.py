@@ -11369,6 +11369,7 @@ class NmrDpUtility:
             try:
 
                 header = True
+                in_header = False
                 pdb_record = False
                 cs_str = False
                 mr_str = False
@@ -11395,6 +11396,14 @@ class NmrDpUtility:
                             if startsWithPdbRecord(line):
                                 continue
                             header = False
+
+                        if line.startswith('*') and startsWithPdbRecord(line[1:]):
+                            in_header = True
+                            continue
+
+                        if in_header and line.startswith('*END'):
+                            in_header = False
+                            continue
 
                         if mr_file_header_pattern.match(line):
                             has_mr_header = True
@@ -14212,6 +14221,7 @@ class NmrDpUtility:
             try:
 
                 header = True
+                in_header = False
                 pdb_record = False
                 footer = False
 
@@ -14241,6 +14251,17 @@ class NmrDpUtility:
                             if startsWithPdbRecord(line):
                                 continue
                             header = False
+
+                        if not footer:
+                            if line.startswith('*') and startsWithPdbRecord(line[1:]):
+                                hofh.write(line)
+                                in_header = True
+                                continue
+
+                            if in_header and line.startswith('*END'):
+                                hofh.write(line)
+                                in_header = False
+                                continue
 
                         if mr_file_header_pattern.match(line):
                             has_mr_header = True
@@ -14373,6 +14394,7 @@ class NmrDpUtility:
                         mrPath = os.path.splitext(src_file)[0] + '-trimmed.str'
 
                         header = True
+                        in_header = False
                         pdb_record = False
 
                         i = 0
@@ -14388,6 +14410,14 @@ class NmrDpUtility:
                                     if line.startswith('*'):
                                         continue
                                     header = False
+
+                                if line.startswith('*') and startsWithPdbRecord(line[1:]):
+                                    in_header = True
+                                    continue
+
+                                if in_header and line.startswith('*END'):
+                                    in_header = False
+                                    continue
 
                                 # skip legacy PDB
                                 if has_pdb_format:
@@ -14540,6 +14570,7 @@ class NmrDpUtility:
                         mrPath = os.path.splitext(src_file)[0] + '-trimmed.cif'
 
                         header = True
+                        in_header = False
                         pdb_record = False
                         has_sharp = False
 
@@ -14556,6 +14587,14 @@ class NmrDpUtility:
                                     if line.startswith('*'):
                                         continue
                                     header = False
+
+                                if line.startswith('*') and startsWithPdbRecord(line[1:]):
+                                    in_header = True
+                                    continue
+
+                                if in_header and line.startswith('*END'):
+                                    in_header = False
+                                    continue
 
                                 if first_str_line_num <= i and not has_sharp:
                                     if i <= last_str_line_num:

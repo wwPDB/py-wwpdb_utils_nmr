@@ -27254,6 +27254,10 @@ class NmrDpUtility:
             file_name = input_source_dic['file_name']
             file_type = input_source_dic['file_type']
 
+            # DAOTHER-9405
+            if file_type == 'nef':
+                continue
+
             if input_source_dic['content_subtype'] is None\
                or 'chem_shift' not in input_source_dic['content_subtype']:
                 continue

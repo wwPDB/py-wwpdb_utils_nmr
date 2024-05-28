@@ -72,6 +72,7 @@ try:
                                            protonBeginCode,
                                            pseProBeginCode,
                                            aminoProtonCode,
+                                           zincIonCode,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
@@ -147,6 +148,7 @@ except ImportError:
                                protonBeginCode,
                                pseProBeginCode,
                                aminoProtonCode,
+                               zincIonCode,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
@@ -3140,6 +3142,23 @@ class CharmmMRParserListener(ParseTreeListener):
                                 seqKey = _seqKey
                                 coordAtomSite = _coordAtomSite
                                 atomSiteAtomId = _coordAtomSite['atom_id']
+
+                    if compId == 'CYS' and _factor['atom_id'][0] in zincIonCode and self.__hasNonPolySeq:
+                        znCount = 0
+                        znSeqId = None
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == 'ZN':
+                                znSeqId = np['auth_seq_id'][0]
+                                znCount += 1
+                        if znCount > 0:
+                            if znCount == 1:
+                                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, znSeqId, 'ZN', cifCheck=cifCheck)
+                                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == 'ZN':
+                                    compId = 'ZN'
+                                    seqId = znSeqId
+                                    seqKey = _seqKey
+                                    coordAtomSite = _coordAtomSite
+                                    atomSiteAtomId = _coordAtomSite['atom_id']
 
                     for atomId in _factor['atom_id']:
                         origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']

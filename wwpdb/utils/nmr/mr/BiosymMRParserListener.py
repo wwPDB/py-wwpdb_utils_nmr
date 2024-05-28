@@ -1141,7 +1141,6 @@ class BiosymMRParserListener(ParseTreeListener):
                 compId = _compId = 'ZN'
                 if znCount == 1:
                     seqId = _seqId = znSeqId
-                if atomId in zincIonCode:
                     atomId = 'ZN'
                 preferNonPoly = True
 

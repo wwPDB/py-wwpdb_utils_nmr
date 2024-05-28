@@ -55378,8 +55378,8 @@ class NmrDpUtility:
                 if len(mr_file_names) > 0:
 
                     desc = 'uploaded restraint file'\
-                         + (f's, {mr_file_names}, are' if len(mr_file_names) > 1 else f', {mr_file_names[0]!r}, is')\
-                         + ' consistent with the coordinates'
+                        + (f's, {mr_file_names}, are' if len(mr_file_names) > 1 else f', {mr_file_names[0]!r}, is')\
+                        + ' consistent with the coordinates'
 
                     err = "Deposition of NMR restraints used for the structure determination is mandatory. "\
                         f"Please verify {desc} and re-upload valid restraint file(s)."

@@ -9179,8 +9179,11 @@ class CnsMRParserListener(ParseTreeListener):
 
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
-        if key not in self.sfDict:
-            self.sfDict[key] = []
+        if key in self.sfDict:
+            decListIdCounter(self.__cur_subtype, self.__listIdCounter)
+            return
+
+        self.sfDict[key] = []
 
         list_id = self.__listIdCounter[content_subtype]
 

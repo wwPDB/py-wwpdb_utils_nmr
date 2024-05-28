@@ -13399,7 +13399,11 @@ class XplorMRParserListener(ParseTreeListener):
 
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None if alignCenter is None else str(alignCenter))
 
-        if self.__cur_subtype not in self.sfDict:
+        if key in self.sfDict:
+            if len(self.sfDict[key]) > 0:
+                decListIdCounter(self.__cur_subtype, self.__listIdCounter)
+                return
+        else:
             self.sfDict[key] = []
 
         list_id = self.__listIdCounter[content_subtype]

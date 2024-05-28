@@ -55359,21 +55359,23 @@ class NmrDpUtility:
 
                 ar_file_path_list = 'atypical_restraint_file_path_list'
 
-                fileListId = self.__file_path_list_len
+                if ar_file_path_list in self.__inputParamDict:
 
-                for ar in self.__inputParamDict[ar_file_path_list]:
+                    fileListId = self.__file_path_list_len
 
-                    input_source = self.report.input_sources[fileListId]
-                    input_source_dic = input_source.get()
+                    for ar in self.__inputParamDict[ar_file_path_list]:
 
-                    file_type = input_source_dic['file_type']
+                        input_source = self.report.input_sources[fileListId]
+                        input_source_dic = input_source.get()
 
-                    fileListId += 1
+                        file_type = input_source_dic['file_type']
 
-                    if file_type == 'nm-res-mr':
-                        continue
+                        fileListId += 1
 
-                    mr_file_names.append(input_source_dic['file_name'])
+                        if file_type == 'nm-res-mr':
+                            continue
+
+                        mr_file_names.append(input_source_dic['file_name'])
 
                 if len(mr_file_names) > 0:
 

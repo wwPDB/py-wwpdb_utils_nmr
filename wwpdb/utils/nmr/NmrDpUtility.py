@@ -22451,7 +22451,7 @@ class NmrDpUtility:
 
                 except Exception:
 
-                    err = f"Assigned chemical shifts of {sf_framecode!r} saveframe did not parsed properly. Please fix problems reported."
+                    err = f"Assigned chemical shifts of {sf_framecode!r} saveframe was not parsed properly. Please fix problems reported."
 
                     self.report.error.appendDescription('missing_mandatory_content',
                                                         {'file_name': file_name, 'description': err})
@@ -23988,7 +23988,7 @@ class NmrDpUtility:
 
         except StopIteration:
 
-            err = f"Assigned chemical shifts of {sf_framecode!r} saveframe did not parsed properly. Please fix problems reported."
+            err = f"Assigned chemical shifts of {sf_framecode!r} saveframe was not parsed properly. Please fix problems reported."
 
             self.report.error.appendDescription('missing_mandatory_content',
                                                 {'file_name': file_name, 'description': err})
@@ -24399,7 +24399,7 @@ class NmrDpUtility:
 
             if not all(tag in loop.tags for tag in mandatory_items):
 
-                err = f"Assigned chemical shifts of {sf_framecode!r} saveframe did not parsed properly. Please fix problems reported."
+                err = f"Assigned chemical shifts of {sf_framecode!r} saveframe was not parsed properly. Please fix problems reported."
 
                 self.report.error.appendDescription('missing_mandatory_content',
                                                     {'file_name': file_name, 'description': err})
@@ -24530,7 +24530,7 @@ class NmrDpUtility:
 
             if not all(tag in loop.tags for tag in mandatory_items):
 
-                err = f"Assigned chemical shifts of {sf_framecode!r} saveframe did not parsed properly. Please fix problems reported."
+                err = f"Assigned chemical shifts of {sf_framecode!r} saveframe was not parsed properly. Please fix problems reported."
 
                 self.report.error.appendDescription('missing_mandatory_content',
                                                     {'file_name': file_name, 'description': err})
@@ -55322,6 +55322,74 @@ class NmrDpUtility:
         self.__list_id_counter = None
         self.__mr_sf_dict_holder = None
         self.__pk_sf_holder = None
+
+        # check inventory again
+
+        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
+
+        lp_counts = {t: 0 for t in self.nmr_content_subtypes}
+
+        for lp_category in self.__lp_category_list:
+            if lp_category in self.lp_categories[file_type].values():
+                lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
+
+        mr_loops = 0
+
+        for content_subtype in self.mr_content_subtypes:
+            if content_subtype in lp_counts:
+                mr_loops += lp_counts[content_subtype]
+
+        if mr_loops == 0 and not self.__validation_server:
+
+            if 'other_data_types' not in self.__sf_category_list:
+
+                mr_file_names = []
+
+                for fileListId in range(self.__cs_file_path_list_len, self.__file_path_list_len):
+
+                    input_source = self.report.input_sources[fileListId]
+                    input_source_dic = input_source.get()
+
+                    file_type = input_source_dic['file_type']
+
+                    if file_type != 'nmr-star':
+                        continue
+
+                    mr_file_names.append(input_source_dic['file_name'])
+
+                ar_file_path_list = 'atypical_restraint_file_path_list'
+
+                fileListId = self.__file_path_list_len
+
+                for ar in self.__inputParamDict[ar_file_path_list]:
+
+                    input_source = self.report.input_sources[fileListId]
+                    input_source_dic = input_source.get()
+
+                    file_type = input_source_dic['file_type']
+
+                    fileListId += 1
+
+                    if file_type == 'nm-res-mr':
+                        continue
+
+                    mr_file_names.append(input_source_dic['file_name'])
+
+                if len(mr_file_names) > 0:
+
+                    desc = 'uploaded restraint file'\
+                         + (f's, {mr_file_names}, are' if len(mr_file_names) > 1 else f', {mr_file_names[0]!r}, is')\
+                         + ' consistent with the coordinates'
+
+                    err = "Deposition of NMR restraints used for the structure determination is mandatory. "\
+                        f"Please verify {desc} and re-upload valid restraint file(s)."
+
+                    self.report.error.appendDescription('missing_mandatory_content',
+                                                        {'file_name': os.path.basename(self.__dstPath), 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {err}\n")
 
         return True
 

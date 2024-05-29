@@ -83,7 +83,7 @@
 # 02-Mar-2022  M. Yokochi - revise logging and overall code revision (v3.1.0)
 # 12-Apr-2022  M. Yokochi - add get_valid_star_atom_in_xplor(), which translates XPLOR atom name to IUPAC one (v3.1.1, NMR restraint remediation, DAOTHER-7407)
 # 13-Apr-2022  M. Yokochi - use auth_*_id scheme preferentially in combined format translation (v3.1.2, NMR restraint remediation)
-# 02-May-2022  M. Yokochi - remediate inconsistent _Atom_chem_shift.Chem_comp_ID tag values in reference to _Atom_chem_shift.Seq_ID (v3.1.3, NMR restraint remediation)
+# 02-May-2022  M. Yokochi - remediate inconsistent _Atom_chem_shift.Comp_index_ID tag values in reference to _Atom_chem_shift.Seq_ID (v3.1.3, NMR restraint remediation)
 # 04-Jul-2022  M. Yokochi - add support for old XPLOR atom nomenclature, e.g. 1HB (v3.1.4, NMR restraint remediation)
 # 01-Sep-2022  M. Yokochi - fix NEF atom name conversion for excess wild card (v3.1.5, NMR restraint remediation)
 # 09-Sep-2022  M. Yokochi - add support for NEF atom name conversion starting with wild card, e.g. '%HN' (v3.2.0, NMR restraint remediation)
@@ -114,11 +114,12 @@ from operator import itemgetter
 
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
-    from wwpdb.utils.nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
+    from wwpdb.utils.nmr.AlignUtil import (LEN_LARGE_ASYM_ID, LOW_SEQ_COVERAGE,
                                            emptyValue, trueValue, monDict3,
                                            protonBeginCode, pseProBeginCode, aminoProtonCode,
                                            letterToDigit, indexToLetter,
                                            alignPolymerSequence,
+                                           alignPolymerSequenceWithConflicts,
                                            assignPolymerSequence)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -128,11 +129,12 @@ try:
                                                        translateToStdResName)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
-    from nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
+    from nmr.AlignUtil import (LEN_LARGE_ASYM_ID, LOW_SEQ_COVERAGE,
                                emptyValue, trueValue, monDict3,
                                protonBeginCode, pseProBeginCode, aminoProtonCode,
                                letterToDigit, indexToLetter,
                                alignPolymerSequence,
+                               alignPolymerSequenceWithConflicts,
                                assignPolymerSequence)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -1585,6 +1587,8 @@ class NEFTranslator:
                                     if valid:
                                         rev_seq = {}
                                         for ca in chain_assign:
+                                            if ca['matched'] == 0 or ca['conflict'] > 0:
+                                                continue
                                             ref_chain_id = ca['ref_chain_id']
                                             test_chain_id = ca['test_chain_id']
                                             sa = next(sa for sa in seq_align
@@ -1606,7 +1610,7 @@ class NEFTranslator:
                                         auth_seq_id_col = loop.tags.index('Auth_seq_ID')
                                         comp_id_col = loop.tags.index('Comp_ID')
                                         entity_id_col = loop.tags.index('Entity_ID') if 'Entity_ID' in loop.tags else -1
-                                        seq_id_col = loop.tags.index('Chem_comp_ID') if 'Chem_comp_ID' in loop.tags else -1
+                                        seq_id_col = loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in loop.tags else -1
                                         alt_seq_id_col = loop.tags.index('Seq_ID') if 'Seq_ID' in loop.tags else -1
                                         auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
                                         for r in loop.data:
@@ -1635,6 +1639,8 @@ class NEFTranslator:
                                         if valid:
                                             rev_seq = {}
                                             for ca in chain_assign:
+                                                if ca['matched'] == 0 or ca['conflict'] > 0:
+                                                    continue
                                                 ref_chain_id = ca['ref_chain_id']
                                                 test_chain_id = ca['test_chain_id']
                                                 sa = next(sa for sa in seq_align
@@ -1656,7 +1662,7 @@ class NEFTranslator:
                                             auth_seq_id_col = loop.tags.index('Auth_seq_ID')
                                             comp_id_col = loop.tags.index('Comp_ID')
                                             entity_id_col = loop.tags.index('Entity_ID') if 'Entity_ID' in loop.tags else -1
-                                            seq_id_col = loop.tags.index('Chem_comp_ID') if 'Chem_comp_ID' in loop.tags else -1
+                                            seq_id_col = loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in loop.tags else -1
                                             alt_seq_id_col = loop.tags.index('Seq_ID') if 'Seq_ID' in loop.tags else -1
                                             auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
                                             for r in loop.data:
@@ -1771,6 +1777,232 @@ class NEFTranslator:
                     seq_data = get_lp_tag(loop, tags__)
                     for row in seq_data:
                         row[2] = def_chain_id if row[2] in emptyValue else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
+
+            elif lp_category == '_Atom_chem_shift' and self.__remediation_mode and set(tags) & set(loop.tags) == set(tags):
+                factor = 2
+                if seq_id != alt_seq_id and alt_seq_id in loop.tags:
+                    pre_tag = [seq_id, alt_seq_id]
+                    pre_seq_data = get_lp_tag(loop, pre_tag)
+                    seq_id_set = set()
+                    alt_seq_id_set = set()
+                    for row in pre_seq_data:
+                        seq_id_set.add(row[0])
+                        alt_seq_id_set.add(row[1])
+                    if 0 < len(seq_id_set) < len(alt_seq_id_set) // factor:  # 2kyb
+                        seq_id_col = loop.tags.index('Comp_index_ID')
+                        alt_seq_id_col = loop.tags.index('Seq_ID')
+                        for r in loop.data:
+                            r[seq_id_col] = r[alt_seq_id_col]
+                    elif 'Auth_seq_ID' in loop.tags:
+                        pre_tag = ['Auth_seq_ID']
+                        pre_seq_data = get_lp_tag(loop, pre_tag)
+                        alt_seq_id_set = set()
+                        for row in pre_seq_data:
+                            alt_seq_id_set.add(row)
+                        if 0 < len(seq_id_set) < len(alt_seq_id_set) // factor:  # 6wux, 2lnh
+                            seq_id_col = loop.tags.index('Comp_index_ID')
+                            alt_seq_id_col = loop.tags.index('Auth_seq_ID')
+                            for r in loop.data:
+                                r[seq_id_col] = r[alt_seq_id_col]
+                pre_tag = ['Entity_assembly_ID']
+                pre_chain_data = get_lp_tag(loop, pre_tag)
+                chain_id_set = set()
+                for row in pre_chain_data:
+                    if row not in emptyValue:
+                        chain_id_set.add(row)
+                if len(chain_id_set) == 1:
+                    pre_tag = ['Comp_index_ID', 'Comp_ID']
+                    pre_seq_data = get_lp_tag(loop, pre_tag)
+                    cif_ps = coord_assembly_checker['polymer_sequence']
+                    cif_np = coord_assembly_checker['non_polymer']
+                    nmr_chain_id = list(chain_id_set)[0]
+                    nmr_ps = [{'chain_id': nmr_chain_id, 'seq_id': [], 'comp_id': []}]
+                    seq = set()
+                    valid = True
+                    for row in pre_seq_data:
+                        if row[0] in emptyValue or row[1] in emptyValue or not row[0].isdigit():
+                            valid = False
+                            break
+                        seq.add((nmr_chain_id, int(row[0]), row[1]))
+                    if valid:
+                        sorted_seq = sorted(seq, key=itemgetter(0, 1))
+                        for row in sorted_seq:
+                            _nmr_ps = nmr_ps[0]
+                            _nmr_ps['seq_id'].append(row[1])
+                            _nmr_ps['comp_id'].append(row[2])
+                        pa = PairwiseAlign()
+                        # 2c34
+                        seq_align, _ = alignPolymerSequence(pa, cif_ps, nmr_ps)
+                        chain_assign, _ = assignPolymerSequence(pa, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
+                        for ca in chain_assign:
+                            if ca['matched'] == 0 or ca['conflict'] > 0:
+                                valid = False
+                                break
+                        if valid:
+                            rev_seq = {}
+                            ref_chain_id = test_chain_id = None
+                            for ca in chain_assign:
+                                if ca['matched'] == 0 or ca['conflict'] > 0:
+                                    continue
+                                ref_chain_id = ca['ref_chain_id']
+                                test_chain_id = ca['test_chain_id']
+                                sa = next(sa for sa in seq_align
+                                          if sa['ref_chain_id'] == ref_chain_id
+                                          and sa['test_chain_id'] == test_chain_id)
+                                ps = next(ps for ps in cif_ps if ps['auth_chain_id'] == ref_chain_id)
+                                for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                    if mid_code == '|' and test_seq_id is not None:
+                                        try:
+                                            rev_seq[(test_chain_id, test_seq_id)] =\
+                                                (ps['auth_chain_id'],
+                                                 next(auth_seq_id for auth_seq_id, _seq_id
+                                                      in zip(ps['auth_seq_id'], ps['seq_id'])
+                                                      if _seq_id == ref_seq_id and isinstance(auth_seq_id, int)))
+                                        except StopIteration:
+                                            rev_seq[(test_chain_id, test_seq_id)] = (ps['auth_chain_id'], ref_seq_id)
+                                break
+                            if test_chain_id is not None:
+                                chain_id_col = loop.tags.index('Entity_assembly_ID')
+                                auth_seq_id_col = loop.tags.index('Auth_seq_ID')
+                                comp_id_col = loop.tags.index('Comp_ID')
+                                entity_id_col = loop.tags.index('Entity_ID') if 'Entity_ID' in loop.tags else -1
+                                seq_id_col = loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in loop.tags else -1
+                                alt_seq_id_col = loop.tags.index('Seq_ID') if 'Seq_ID' in loop.tags else -1
+                                auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
+                                for r in loop.data:
+                                    k = (test_chain_id, int(r[seq_id_col]))
+                                    if k in rev_seq:
+                                        _rev_seq = rev_seq[k]
+                                        r[auth_seq_id_col] = str(_rev_seq[1])
+                                        _k = (_rev_seq[0], _rev_seq[1], r[comp_id_col])
+                                        if _k in auth_to_star_seq:
+                                            _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
+                                            r[chain_id_col] = str(_entity_assembly_id)
+                                            if seq_id_col != -1:
+                                                r[seq_id_col] = str(_seq_id)
+                                            if alt_seq_id_col != -1:
+                                                r[alt_seq_id_col] = str(_seq_id)
+                                            if entity_id_col != -1:
+                                                r[entity_id_col] = str(_entity_id)
+
+                            else:
+
+                                valid = False
+                                for c in range(1, 5):
+                                    seq_align, _ = alignPolymerSequenceWithConflicts(pa, cif_ps, nmr_ps, c)
+                                    if len(seq_align) > 0:
+                                        chain_assign, _ = assignPolymerSequence(pa, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
+                                        for ca in chain_assign:
+                                            if ca['matched'] > 0 and ca['conflict'] <= c and ca['sequence_coverage'] >= LOW_SEQ_COVERAGE:
+                                                valid = True
+                                                break
+                                        break
+
+                                if valid:
+                                    rev_seq = {}
+                                    ref_chain_id = test_chain_id = None
+                                    for ca in chain_assign:
+                                        if ca['matched'] == 0 or ca['conflict'] > c or ca['sequence_coverage'] < LOW_SEQ_COVERAGE:
+                                            continue
+                                        ref_chain_id = ca['ref_chain_id']
+                                        test_chain_id = ca['test_chain_id']
+                                        sa = next(sa for sa in seq_align
+                                                  if sa['ref_chain_id'] == ref_chain_id
+                                                  and sa['test_chain_id'] == test_chain_id)
+                                        ps = next(ps for ps in cif_ps if ps['auth_chain_id'] == ref_chain_id)
+                                        for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                            if mid_code == '|' and test_seq_id is not None:
+                                                try:
+                                                    rev_seq[(test_chain_id, test_seq_id)] =\
+                                                        (ps['auth_chain_id'],
+                                                         next(auth_seq_id for auth_seq_id, _seq_id
+                                                              in zip(ps['auth_seq_id'], ps['seq_id'])
+                                                              if _seq_id == ref_seq_id and isinstance(auth_seq_id, int)))
+                                                except StopIteration:
+                                                    rev_seq[(test_chain_id, test_seq_id)] = (ps['auth_chain_id'], ref_seq_id)
+                                        break
+                                    if test_chain_id is not None:
+                                        chain_id_col = loop.tags.index('Entity_assembly_ID')
+                                        auth_seq_id_col = loop.tags.index('Auth_seq_ID')
+                                        comp_id_col = loop.tags.index('Comp_ID')
+                                        entity_id_col = loop.tags.index('Entity_ID') if 'Entity_ID' in loop.tags else -1
+                                        seq_id_col = loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in loop.tags else -1
+                                        alt_seq_id_col = loop.tags.index('Seq_ID') if 'Seq_ID' in loop.tags else -1
+                                        auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
+                                        _offset = _entity_assembly_id = _entity_id = None
+                                        for r in loop.data:
+                                            k = (test_chain_id, int(r[seq_id_col]))
+                                            if k in rev_seq:
+                                                _rev_seq = rev_seq[k]
+                                                r[auth_seq_id_col] = str(_rev_seq[1])
+                                                _k = (_rev_seq[0], _rev_seq[1], r[comp_id_col])
+                                                if _k in auth_to_star_seq:
+                                                    _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
+                                                    _offset = _seq_id - int(r[seq_id_col])
+                                                    break
+                                        for r in loop.data:
+                                            k = (test_chain_id, int(r[seq_id_col]))
+                                            if k in rev_seq:
+                                                _rev_seq = rev_seq[k]
+                                                r[auth_seq_id_col] = str(_rev_seq[1])
+                                                _k = (_rev_seq[0], _rev_seq[1], r[comp_id_col])
+                                                if _k in auth_to_star_seq:
+                                                    _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
+                                                    r[chain_id_col] = str(_entity_assembly_id)
+                                                    if seq_id_col != -1:
+                                                        r[seq_id_col] = str(_seq_id)
+                                                    if alt_seq_id_col != -1:
+                                                        r[alt_seq_id_col] = str(_seq_id)
+                                                    if entity_id_col != -1:
+                                                        r[entity_id_col] = str(_entity_id)
+                                            else:
+                                                r[chain_id_col] = str(_entity_assembly_id)
+                                                _seq_id = int(r[seq_id_col]) + _offset
+                                                if seq_id_col != -1:
+                                                    r[seq_id_col] = str(_seq_id)
+                                                if alt_seq_id_col != -1:
+                                                    r[alt_seq_id_col] = str(_seq_id)
+                                                if entity_id_col != -1:
+                                                    r[entity_id_col] = str(_entity_id)
+
+                seq_data = get_lp_tag(loop, tags)
+                has_valid_chain_id = True
+                for row in seq_data:
+                    if row[2] in emptyValue:
+                        has_valid_chain_id = False
+                        break
+                if has_valid_chain_id:
+                    wrong_chain_id_anno = True
+                    for row in seq_data:
+                        if row[0] != row[2]:
+                            wrong_chain_id_anno = False
+                            break
+                    if not wrong_chain_id_anno:
+                        wrong_chain_id_anno = True
+                        offset = None
+                        _seq_id_set = set()
+                        for row in seq_data:
+                            if not row[2].isdigit():
+                                wrong_chain_id_anno = False
+                                break
+                            _seq_id = int(row[0])
+                            _chain_id = int(row[2])
+                            _seq_id_set.add(_seq_id)
+                            if offset is None:
+                                offset = _seq_id - _chain_id
+                                continue
+                            if _seq_id - _chain_id != offset:
+                                wrong_chain_id_anno = False
+                                break
+                        if len(_seq_id_set) < 2:
+                            wrong_chain_id_anno = False
+                    if wrong_chain_id_anno:
+                        has_valid_chain_id = False
+                if not has_valid_chain_id:
+                    seq_data = get_lp_tag(loop, tags__)
+                    for row in seq_data:
+                        row[2] = def_chain_id if row[2] in emptyValue else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
+
             elif set(tags) & set(loop.tags) == set(tags):
                 seq_data = get_lp_tag(loop, tags)
                 for row in seq_data:

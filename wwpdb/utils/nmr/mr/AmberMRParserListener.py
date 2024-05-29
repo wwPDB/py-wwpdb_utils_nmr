@@ -4696,9 +4696,11 @@ class AmberMRParserListener(ParseTreeListener):
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
 
                     if coordAtomSite is not None\
-                       and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
-                       and authAtomId in coordAtomSite['atom_id']:
-                        atomIds = [authAtomId]
+                       and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id']):
+                        if authAtomId in coordAtomSite['atom_id']:
+                            atomIds = [authAtomId]
+                        elif seqId == 1 and authAtomId == 'H1' and self.__csStat.peptideLike(compId) and 'H' in coordAtomSite['atom_id']:
+                            atomIds = ['H']
 
                     if coordAtomSite is not None:
                         atomSiteAtomId = coordAtomSite['atom_id']
@@ -5033,9 +5035,11 @@ class AmberMRParserListener(ParseTreeListener):
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
 
                     if coordAtomSite is not None\
-                       and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
-                       and authAtomId in coordAtomSite['atom_id']:
-                        atomIds = [authAtomId]
+                       and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id']):
+                        if authAtomId in coordAtomSite['atom_id']:
+                            atomIds = [authAtomId]
+                        elif seqId == 1 and authAtomId == 'H1' and self.__csStat.peptideLike(compId) and 'H' in coordAtomSite['atom_id']:
+                            atomIds = ['H']
 
                     if 'iat' in factor:
                         iat = factor['iat']
@@ -5437,9 +5441,11 @@ class AmberMRParserListener(ParseTreeListener):
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
 
                         if coordAtomSite is not None\
-                           and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
-                           and authAtomId in coordAtomSite['atom_id']:
-                            atomIds = [authAtomId]
+                           and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id']):
+                            if authAtomId in coordAtomSite['atom_id']:
+                                atomIds = [authAtomId]
+                            elif seqId == 1 and authAtomId == 'H1' and self.__csStat.peptideLike(compId) and 'H' in coordAtomSite['atom_id']:
+                                atomIds = ['H']
 
                         if 'iat' in factor:
                             iat = factor['iat']
@@ -5703,9 +5709,11 @@ class AmberMRParserListener(ParseTreeListener):
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
 
                         if coordAtomSite is not None\
-                           and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id'])\
-                           and authAtomId in coordAtomSite['atom_id']:
-                            atomIds = [authAtomId]
+                           and not any(_atomId for _atomId in atomIds if _atomId in coordAtomSite['atom_id']):
+                            if authAtomId in coordAtomSite['atom_id']:
+                                atomIds = [authAtomId]
+                            elif seqId == 1 and authAtomId == 'H1' and self.__csStat.peptideLike(compId) and 'H' in coordAtomSite['atom_id']:
+                                atomIds = ['H']
 
                         if 'iat' in factor:
                             iat = factor['iat']

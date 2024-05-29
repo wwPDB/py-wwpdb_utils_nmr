@@ -3220,6 +3220,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                 _atomIds_ = [_atomId for _atomId in atomSiteAtomId if re.match(_atomId_, _atomId)]
                                 if len(_atomIds_) > 0:
                                     atomIds = _atomIds_
+                            elif seqId == 1 and atomId == 'H1' and self.__csStat.peptideLike(compId) and 'H' in atomSiteAtomId:
+                                atomIds = ['H']
 
                         for _atomId in atomIds:
                             ccdCheck = not cifCheck

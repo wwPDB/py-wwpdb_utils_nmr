@@ -1530,9 +1530,11 @@ class RosettaMRParserListener(ParseTreeListener):
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
 
             if coordAtomSite is not None\
-               and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
-               and atomId in coordAtomSite['atom_id']:
-                _atomId = [atomId]
+               and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id']):
+                if atomId in coordAtomSite['atom_id']:
+                    _atomId = [atomId]
+                elif seqId == 1 and atomId == 'H1' and self.__csStat.peptideLike(cifCompId) and 'H' in coordAtomSite['atom_id']:
+                    _atomId = ['H']
 
             if authAtomId == 'CEN' and len(_atomId) == 0:
                 peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(cifCompId)

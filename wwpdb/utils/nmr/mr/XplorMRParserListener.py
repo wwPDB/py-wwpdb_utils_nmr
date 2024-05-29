@@ -9377,6 +9377,8 @@ class XplorMRParserListener(ParseTreeListener):
                                 _atomIds_ = [_atomId for _atomId in atomSiteAtomId if re.match(_atomId_, _atomId)]
                                 if len(_atomIds_) > 0:
                                     atomIds = _atomIds_
+                            elif seqId == 1 and atomId == 'H1' and self.__csStat.peptideLike(compId) and 'H' in atomSiteAtomId:
+                                atomIds = ['H']
 
                         has_nx_local = has_nx_anchor = False
                         if self.__cur_subtype == 'dist' and atomId in XPLOR_NITROXIDE_NAMES:  # and coordAtomSite is not None and atomId not in atomSiteAtomId:

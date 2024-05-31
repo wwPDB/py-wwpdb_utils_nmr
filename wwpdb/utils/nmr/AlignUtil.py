@@ -73,6 +73,7 @@ jcoupBbPairCode = ('N', 'H', 'CA', 'C')
 rdcBbPairCode = ('N', 'H', 'CA')
 zincIonCode = ('ZN', 'ME', 'Z1', 'Z2')
 unknownResidue = ('UNK', 'DN', 'N')
+reservedLigCode = ('LIG', 'DRG', 'INH')  # DAOTHER-7204, 7388: reserved ligand codes for new ligands, which must include 2 digits 01-99
 
 LARGE_ASYM_ID = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')
@@ -80,6 +81,16 @@ LEN_LARGE_ASYM_ID = len(LARGE_ASYM_ID)
 
 # maximum number of magnetically identifiable chain IDs
 MAX_MAG_IDENT_ASYM_ID = 2
+
+
+def isReservedLigCode(compId):
+    """ Return a given comp_id is reserved for new ligands. (DAOTHER-7204, 7388)
+    """
+    if compId in reservedLigCode:
+        return True
+    if len(compId) == 2 and compId[0].isdigit() and compId[1].digit() and compId != '00':
+        return True
+    return False
 
 
 def hasLargeInnerSeqGap(polySeq, seqIdName='seq_id'):

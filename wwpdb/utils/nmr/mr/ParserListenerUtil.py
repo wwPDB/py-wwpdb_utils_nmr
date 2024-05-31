@@ -33,6 +33,7 @@ try:
                                            LARGE_ASYM_ID,
                                            LEN_LARGE_ASYM_ID,
                                            MAX_MAG_IDENT_ASYM_ID,
+                                           isReservedLigCode,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
                                            getScoreOfSeqAlign)
@@ -48,6 +49,7 @@ except ImportError:
                                LARGE_ASYM_ID,
                                LEN_LARGE_ASYM_ID,
                                MAX_MAG_IDENT_ASYM_ID,
+                               isReservedLigCode,
                                alignPolymerSequence,
                                assignPolymerSequence,
                                getScoreOfSeqAlign)
@@ -3076,6 +3078,12 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
     if len(compId) > 3 and compId[3] in ('_', '+', '-'):  # 1e8e
         if ccU is not None and ccU.updateChemCompDict(compId[:3]):
             return compId[:3]
+
+    if ccU is not None and ccU.updateChemCompDict(compId) and not isReservedLigCode(compId):
+        if ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' and '_chem_comp.pdbx_replaced_by' in ccU.lastChemCompDict:
+            replaced_by = ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
+            if replaced_by not in emptyValue and ccU.updateChemCompDict(replaced_by):
+                compId = replaced_by
 
     return compId
 

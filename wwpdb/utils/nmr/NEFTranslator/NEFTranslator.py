@@ -5413,7 +5413,7 @@ class NEFTranslator:
                                     atom_list, ambiguity_code, details = protons, 2 if aliphatic else 3, None
                                     resolved = True
                         # 5lig, comp_id=6XM, atom_id=HA' -> ["HA1'", "HA2'"]
-                        elif details is not None and atom_id.endswith("'"):
+                        elif details is not None and atom_id.endswith("'") and not atom_id.endswith("''"):
                             _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, atom_id[:-1] + "%'", details, leave_unmatched, methyl_only)
                             if _details is None:
                                 atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details

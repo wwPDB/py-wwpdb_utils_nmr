@@ -2095,7 +2095,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'H' + atomId[2:]
 
         if len(refCompId) == 3 and refCompId in monDict3:
-            if atomId == 'O1':
+            if atomId in ('O1', 'OT1'):
                 return 'O'
             if atomId == 'O2' or atomId.startswith('OT'):
                 return 'OXT'

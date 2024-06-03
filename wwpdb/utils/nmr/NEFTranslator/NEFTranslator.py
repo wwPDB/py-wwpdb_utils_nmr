@@ -5374,6 +5374,44 @@ class NEFTranslator:
                                     atom_list, ambiguity_code, details = protons, 1, None
                                 elif len_protons == 2:
                                     atom_list, ambiguity_code, details = protons, 2, None
+                            if atom_id.startswith('QQ') and self.__ccU.updateChemCompDict(comp_id):
+                                root = []
+                                _branch = []
+                                _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:], exclProton=True)
+                                if len(_root) > 0:
+                                    _branch.append('C' + atom_id[2:])
+                                    root.extend(_root)
+                                for e in '123ABC':
+                                    _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:] + e, exclProton=True)
+                                    if len(_root) > 0:
+                                        _branch.append('C' + atom_id[2:] + e)
+                                        root.extend(_root)
+                                _root = self.__ccU.getBondedAtoms(comp_id, 'N' + atom_id[2:], exclProton=True)
+                                if len(_root) > 0:
+                                    _branch.append('N' + atom_id[2:])
+                                    root.extend(_root)
+                                for e in '123ABC':
+                                    _root = self.__ccU.getBondedAtoms(comp_id, 'N' + atom_id[2:] + e, exclProton=True)
+                                    if len(_root) > 0:
+                                        _branch.append('N' + atom_id[2:] + e)
+                                        root.extend(_root)
+                                protons = []
+                                aliphatic = True
+                                for k, v in collections.Counter(root).most_common():
+                                    if v != 2:
+                                        continue
+                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == k and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
+                                    if cca is not None:
+                                        if cca[self.__ccU.ccaAromaticFlag] == 'Y':
+                                            aliphatic = False
+                                    branch = [branch for branch in self.__ccU.getBondedAtoms(comp_id, k, exclProton=True) if branch in _branch]
+                                    if len(branch) == 2:
+                                        for b in branch:
+                                            protons.extend(self.__ccU.getBondedAtoms(comp_id, b, onlyProton=True))
+                                len_protons = len(protons)
+                                if len_protons in (4, 6):
+                                    atom_list, ambiguity_code, details = protons, 2 if aliphatic else 3, None
+                                    resolved = True
                         # 5lig, comp_id=6XM, atom_id=HA' -> ["HA1'", "HA2'"]
                         elif details is not None and atom_id.endswith("'"):
                             _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, atom_id[:-1] + "%'", details, leave_unmatched, methyl_only)

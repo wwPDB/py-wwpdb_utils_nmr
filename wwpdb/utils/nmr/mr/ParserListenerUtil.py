@@ -5013,7 +5013,7 @@ def guessCompIdFromAtomId(atoms, polySeq, nefT):
     return list(candidates)
 
 
-def guessCompIdFromAtomIdWoLimit(atoms, polySeq, nefT):
+def guessCompIdFromAtomIdWoLimit(atoms, polySeq, nefT, isPolySeq=True):
     """ Try to find candidate comp_id that matches with a given atom_id.
     """
 
@@ -5023,7 +5023,7 @@ def guessCompIdFromAtomIdWoLimit(atoms, polySeq, nefT):
         compIds = ps['comp_id']
 
         for _compId in set(compIds):
-            if _compId in monDict3:
+            if _compId in monDict3 or not isPolySeq:
                 failed = False
                 for atom in atoms:
                     _atom = translateToStdAtomName(atom, _compId, ccU=nefT.get_ccu())

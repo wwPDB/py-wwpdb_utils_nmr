@@ -5538,7 +5538,7 @@ class CnsMRParserListener(ParseTreeListener):
                                         may_exist = False
                                         if self.__ccU.updateChemCompDict(compId):
                                             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                            if cca is not None and (cca[self.__ccU.ccaLeavingAtomFlag] != 'Y' or (atomSpecified and seqSpecified)):
+                                            if cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                 may_exist = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None and not may_exist:
@@ -5643,7 +5643,7 @@ class CnsMRParserListener(ParseTreeListener):
                                         may_exist = False
                                         if self.__ccU.updateChemCompDict(compId):
                                             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                            if cca is not None and (cca[self.__ccU.ccaLeavingAtomFlag] != 'Y' or (atomSpecified and seqSpecified)):
+                                            if cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                                 may_exist = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None and not may_exist:

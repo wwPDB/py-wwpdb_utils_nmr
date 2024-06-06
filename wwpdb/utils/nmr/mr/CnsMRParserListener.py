@@ -5535,8 +5535,13 @@ class CnsMRParserListener(ParseTreeListener):
                                         _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['alt_atom_id'].index(_atomId)]
                                         self.__authAtomId = 'auth_atom_id'
                                     elif self.__preferAuthSeq and atomSpecified:
+                                        may_exist = False
+                                        if self.__ccU.updateChemCompDict(compId):
+                                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                            if cca is not None and (cca[self.__ccU.ccaLeavingAtomFlag] != 'Y' or (atomSpecified and seqSpecified)):
+                                                may_exist = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
-                                        if _coordAtomSite is not None:
+                                        if _coordAtomSite is not None and not may_exist:
                                             _compId = _coordAtomSite['comp_id']
                                             _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
                                             if _atomId in _coordAtomSite['atom_id']:
@@ -5635,8 +5640,13 @@ class CnsMRParserListener(ParseTreeListener):
 
                                 elif self.__preferAuthSeq and atomSpecified:
                                     if len(self.atomSelectionSet) == 0:
+                                        may_exist = False
+                                        if self.__ccU.updateChemCompDict(compId):
+                                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                            if cca is not None and (cca[self.__ccU.ccaLeavingAtomFlag] != 'Y' or (atomSpecified and seqSpecified)):
+                                                may_exist = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
-                                        if _coordAtomSite is not None:
+                                        if _coordAtomSite is not None and not may_exist:
                                             _compId = _coordAtomSite['comp_id']
                                             _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
                                             if _atomId in _coordAtomSite['atom_id']:

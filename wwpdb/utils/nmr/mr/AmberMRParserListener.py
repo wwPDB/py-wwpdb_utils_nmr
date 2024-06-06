@@ -3024,7 +3024,6 @@ class AmberMRParserListener(ParseTreeListener):
                                             atomId = gl[col]
                                             refAtomIds = [gl[_col] for _col in range(4)]
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, self.__nonPoly, self.__nefT, isPolySeq=False)
-                                            print(f'{atomId=} {refAtomIds=} {_compIds=}')
                                             _factor = None
                                             ligands = 0
                                             for np in self.__nonPoly:

@@ -42,7 +42,7 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(self.data_dir_path + entry_id + '-nef-consistency-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        if not report['error'] is None:
+        if report['error'] is not None:
             self.assertNotIn('internal_error', report['error'])
 
         self.assertIn('anomalous_chemical_shift', report['warning'])
@@ -61,7 +61,7 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(self.data_dir_path + entry_id + '-str-consistency-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        if not report['error'] is None:
+        if report['error'] is not None:
             self.assertNotIn('internal_error', report['error'])
 
         self.assertIn('anomalous_chemical_shift', report['warning'])

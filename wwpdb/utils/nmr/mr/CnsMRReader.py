@@ -217,6 +217,46 @@ if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2lwe/2lwe-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2lwe/2lwe.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6ttc/ambig.tbl',
+                     '../../tests-nmr/mock-data-remediation/6ttc/6ttc.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/4cyk/4cyk-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/4cyk/4cyk.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6vl2/restraint_file-corrected',
+                     '../../tests-nmr/mock-data-remediation/6vl2/6vl2.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2ljc/2ljc-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2ljc/2ljc.cif')
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2ljc/2ljc-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2ljc/2ljc.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/5y95/5y95-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/5y95/5y95.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/7mqu/ambig.tbl',
                      '../../tests-nmr/mock-data-remediation/7mqu/7mqu.cif')
 

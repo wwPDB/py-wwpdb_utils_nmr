@@ -56,15 +56,16 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.assertIsNone(report['error'])
 
+        status = report['information']['status']
         if report['error'] is None:
-            print('%s: %s' % (entry_id, report['information']['status']))
+            print(f"{entry_id}: {status}")
         elif 'format_issue' in report['error']:
-            print('%s: %s\n format_issue: %s' % (entry_id, report['information']['status'], report['error']['format_issue'][0]['description']))
+            print(f"{entry_id}: {status}\n format_issue: {report['error']['format_issue'][0]['description']}")
         elif 'missing_mandatory_content' in report['error']:
-            print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
+            print(f"{entry_id}: {status}\n missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
         else:
-            error_type = {str(k): len(v) for k, v in report['error'].items() if v is not None and str(k) != 'total'}
-            print('%s: %s, %s' % (entry_id.lower(), report['information']['status'], error_type))
+            error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
+            print(f"{entry_id}: {status}, {error_type}")
 
     def __test_nmr_str2str_deposit(self, entry_id):
         entry_dir = self.data_dir_path
@@ -101,15 +102,16 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.assertIsNone(report['error'])
 
+        status = report['information']['status']
         if report['error'] is None:
-            print('%s: %s' % (entry_id, report['information']['status']))
+            print(f"{entry_id}: {status}")
         elif 'format_issue' in report['error']:
-            print('%s: %s\n format_issue: %s' % (entry_id, report['information']['status'], report['error']['format_issue'][0]['description']))
+            print(f"{entry_id}: {status}\n format_issue: {report['error']['format_issue'][0]['description']}")
         elif 'missing_mandatory_content' in report['error']:
-            print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
+            print(f"{entry_id}: {status}\n missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
         else:
-            error_type = {str(k): len(v) for k, v in report['error'].items() if v is not None and str(k) != 'total'}
-            print('%s: %s, %s' % (entry_id.lower(), report['information']['status'], error_type))
+            error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
+            print(f"{entry_id}: {status}, {error_type}")
 
     def test_nmr_str2str_deposit_daother_8817_ann_4th(self):
         self.__test_nmr_str_consistency('daother-8817-ann-4th')

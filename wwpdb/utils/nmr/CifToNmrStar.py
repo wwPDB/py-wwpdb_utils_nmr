@@ -8,6 +8,7 @@
 # 28-Jul-2022  M. Yokochi - enable to fix format issue of CIF formatted NMR-STAR (You cannot have two loops with the same category in one saveframe. Category: '_Audit')
 # 27-Sep-2022  M. Yokochi - auto fill list ID and entry ID (NMR restraint remediation)
 # 13-Jun-2023  M. Yokochi - sort loops in a saveframe based on schema
+# 30-May-2024  M. Yokochi - resolve duplication of data block/saveframe name (DAOTHER-9437)
 ##
 """ Wrapper class for CIF to NMR-STAR converter.
     @author: Masashi Yokochi
@@ -19,6 +20,7 @@ import pynmrstar
 import pickle
 import logging
 import hashlib
+import collections
 
 from packaging import version
 from operator import itemgetter
@@ -143,6 +145,15 @@ class CifToNmrStar:
             if len(block_name_list) == 0:  # single loop
                 return False
 
+            dup_block_name_list = []
+            if len(block_name_list) > 1:
+                c = collections.Counter(block_name_list).most_common()
+                dup_block_name_list = [k for k, v in c if v > 1]
+
+            block_name_pat_w_list_0 = [block_name[:-1] for block_name in block_name_list if block_name.endswith('list_0')]
+
+            block_name_counter = {n: 0 for n in block_name_list}
+
             entry_id = None
 
             strData = pynmrstar.Entry.from_scratch(datablockName if datablockName is not None else os.path.basename(cifPath))
@@ -154,8 +165,10 @@ class CifToNmrStar:
             sf_category_counter = {}
 
             for block_name in block_name_list:
+                block_name_counter[block_name] += 1
+                ext = block_name_counter[block_name]
 
-                dict_list = cifObj.GetDataBlock(block_name)
+                dict_list = cifObj.GetDataBlock(block_name, ext)
 
                 ordered_block = True
                 sf_category = ''
@@ -167,7 +180,8 @@ class CifToNmrStar:
                         continue
                     # print(f"{block_name} {category} {current_order}")
                     item = {'block_name': block_name, 'category': category,
-                            'category_order': current_order}
+                            'category_order': current_order,
+                            'block_name_ext': ext}
                     if current_order < previous_order:
                         ordered_block = False
                         for item2 in category_order:
@@ -231,9 +245,23 @@ class CifToNmrStar:
             prev_sf_category = ''
             prev_sf_block_name = ''
             for item in category_order:
+                block_name = item['block_name']
+                split_block_name = block_name.split('_')
+
+                if block_name in dup_block_name_list:
+                    if split_block_name[-1].isdigit():
+                        split_block_name.pop()
+                    item['new_block_name'] = '_'.join(split_block_name) + '_' + str(item['block_name_ext'])
+
+                elif any(block_name.startswith(pat) for pat in block_name_pat_w_list_0):  # STARCh output
+                    if split_block_name[-1].isdigit():
+                        list_id = int(split_block_name[-1]) + 1
+                        split_block_name.pop()
+                        item['new_block_name'] = '_'.join(split_block_name) + '_' + str(list_id)
+
                 if item['ordered']:
                     continue
-                block_name = item['block_name']
+
                 if item['sf_category_flag']:
                     if item['sf_category'] == item['super_category']:
                         block_name = item['sf_category']
@@ -262,7 +290,9 @@ class CifToNmrStar:
                                 list_id += 1
                         prev_sf_category = item['sf_category']
                         prev_sf_block_name = block_name
-                item['new_block_name'] = block_name
+
+                if 'new_block_name' not in item:
+                    item['new_block_name'] = block_name
 
             ordered_block_names = []
             for item in category_order:
@@ -294,8 +324,8 @@ class CifToNmrStar:
             for item in category_order:
                 block_name = item['block_name']
                 category = item['category']
-
                 sf_category = item['sf_category']
+                ext = item['block_name_ext']
 
                 if item['sf_category_flag'] or ('missing_sf_category' in item and item['missing_sf_category']):
                     if sf_category not in sf_category_counter:
@@ -345,7 +375,7 @@ class CifToNmrStar:
                     reserved_block_names.append(new_block_name)
                     sf.set_tag_prefix(category)
 
-                    dict_list = cifObj.GetDataBlock(block_name)
+                    dict_list = cifObj.GetDataBlock(block_name, ext)
                     itVals = next(v for k, v in dict_list.items() if k == category)
 
                     sf.add_tag('Sf_category', sf_category)
@@ -363,7 +393,7 @@ class CifToNmrStar:
                 if not item['sf_category_flag']:
                     lp = pynmrstar.Loop.from_scratch(category)
 
-                    dict_list = cifObj.GetDataBlock(block_name)
+                    dict_list = cifObj.GetDataBlock(block_name, ext)
                     itVals = next(v for k, v in dict_list.items() if k == category)
 
                     list_id_idx = -1
@@ -388,7 +418,8 @@ class CifToNmrStar:
                             _value[entry_id_idx] = _entry_id
                         lp.add_data(_value)
 
-                    sf.add_loop(lp)
+                    if sf is not None:
+                        sf.add_loop(lp)
 
             if sf is not None:
                 strData.add_saveframe(sf)

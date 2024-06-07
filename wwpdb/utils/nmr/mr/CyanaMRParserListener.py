@@ -2276,7 +2276,6 @@ class CyanaMRParserListener(ParseTreeListener):
                 compId = _compId = 'ZN'
                 if znCount == 1:
                     seqId = _seqId = znSeqId
-                if atomId in zincIonCode:
                     atomId = 'ZN'
                 preferNonPoly = True
 
@@ -2689,7 +2688,6 @@ class CyanaMRParserListener(ParseTreeListener):
                 compId = _compId = 'ZN'
                 if znCount == 1:
                     seqId = _seqId = znSeqId
-                if atomId in zincIonCode:
                     atomId = 'ZN'
                 preferNonPoly = True
 
@@ -3754,9 +3752,11 @@ class CyanaMRParserListener(ParseTreeListener):
             # _atomId = self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]
 
             if coordAtomSite is not None\
-               and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id'])\
-               and atomId in coordAtomSite['atom_id']:
-                _atomId = [atomId]
+               and not any(_atomId_ for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id']):
+                if atomId in coordAtomSite['atom_id']:
+                    _atomId = [atomId]
+                elif seqId == 1 and atomId == 'H1' and self.__csStat.peptideLike(compId) and 'H' in coordAtomSite['atom_id']:
+                    _atomId = ['H']
 
             if coordAtomSite is None and not isPolySeq and self.__hasNonPolySeq:
                 try:
@@ -3769,10 +3769,15 @@ class CyanaMRParserListener(ParseTreeListener):
                 except ValueError:
                     pass
 
-            if coordAtomSite is not None and len(_atomId) == 0 and __atomId in zincIonCode\
-               and 'ZN' in coordAtomSite['atom_id']:
-                compId = atomId = 'ZN'
-                _atomId = [atomId]
+            if coordAtomSite is not None:
+                atomSiteAtomId = coordAtomSite['atom_id']
+                if len(_atomId) == 0 and __atomId in zincIonCode and 'ZN' in atomSiteAtomId:
+                    compId = atomId = 'ZN'
+                    _atomId = [atomId]
+                elif not any(_atomId_ in atomSiteAtomId for _atomId_ in _atomId):
+                    pass
+                elif atomId[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in _atomId):
+                    _atomId = [_atomId_ for _atomId_ in _atomId if _atomId_ in atomSiteAtomId]
 
             lenAtomId = len(_atomId)
             if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
@@ -9601,7 +9606,11 @@ class CyanaMRParserListener(ParseTreeListener):
 
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, orientationId)
 
-        if key not in self.sfDict:
+        if key in self.sfDict:
+            if len(self.sfDict[key]) > 0:
+                decListIdCounter(self.__cur_subtype, self.__listIdCounter)
+                return
+        else:
             self.sfDict[key] = []
 
         list_id = self.__listIdCounter[content_subtype]

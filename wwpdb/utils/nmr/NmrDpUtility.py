@@ -167,7 +167,7 @@
 # 15-Dec-2022  M. Yokochi - merge CS and MR as a single NMR data file in CIF format with comprehensive molecular assembly information (DAOTHER-7407, NMR restraint remediation)
 # 13-Jan-2023  M. Yokochi - add support for small angle X-ray scattering restraints (NMR restraint remediation)
 # 24-Jan-2023  M. Yokochi - add support for heteronuclear relaxation data (NOE, T1, T2, T1rho, Order parameter) (NMR restraint remediation)
-# 23-Feb-2023  M. Yokochi - combine spectral peak lists in any format into single NMR-STAR until Phase 2 release (DAOTHER-7407)
+# 23-Feb-2023  M. Yokochi - combine spectral peak lists in any plain text format into single NMR-STAR until Phase 2 release (DAOTHER-7407)
 # 24-Mar-2023  M. Yokochi - add 'nmr-nef2cif-deposit' and 'nmr-str2cif-deposit' workflow operations (DAOTHER-7407)
 # 22-Jun-2023  M. Yokochi - convert model file when pdbx_poly_seq category is missing for reuploading nmr_data after unlock (DAOTHER-8580)
 # 19-Jul-2023  M. Yokochi - fix not to merge restraint id (_Gen_dist_constraint.ID) if lower and upper bounds are different (DAOTHER-8705)
@@ -188,6 +188,7 @@
 # 07-Mar-2024  M. Yokochi - extract pdbx_poly_seq_scheme.auth_mon_id as alt_cmop_id to prevent sequence mismatch due to 5-letter CCD ID (DAOTHER-9158 vs D_1300043061)
 # 22-Mar-2024  M. Yokochi - test tautomeric states of histidine-like residue across models (DAOTHER-9252)
 # 01-May-2024  M. Yokochi - merge cs/mr sequence extensions containing unknown residues (e.g UNK, DN, N) if necessary (NMR restraint remediation, 6fw4)
+# 22-May-2024  M. Yokochi - block deposition using a peak list file in any binary format and prevent 'nm-pea-any' occasionally matches with 'nm-res-cya' (DAOTHER-9425)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -1130,7 +1131,7 @@ class NmrDpUtility:
         self.__release_mode = False
         # whether to allow to raise internal error
         self.__internal_mode = False
-        # whether to combine spectral peak list in any format into single NMR-STAR file (must be trued off after Phase 2, DAOTHER-7407)
+        # whether to combine spectral peak list in any plain text format into single NMR-STAR file (must be trued off after Phase 2, DAOTHER-7407)
         self.__merge_any_pk_as_is = False
 
         # whether to allow empty coordinate file path
@@ -11330,17 +11331,32 @@ class NmrDpUtility:
 
             has_spectral_peak = False
 
-            with open(file_path, 'r', encoding='utf-8') as ifh:
-                has_header = False
-                for idx, line in enumerate(ifh):
-                    if line.isspace() or comment_pattern.match(line):
-                        if line.startswith('#INAME'):
-                            has_header = True
-                        continue
-                    if is_peak_list(line, has_header):
-                        has_spectral_peak = True
-                    if has_spectral_peak or idx >= self.mr_max_spacer_lines:
-                        break
+            try:
+
+                with open(file_path, 'r', encoding='utf-8') as ifh:
+                    has_header = False
+                    for idx, line in enumerate(ifh):
+                        if line.isspace() or comment_pattern.match(line):
+                            if line.startswith('#INAME'):
+                                has_header = True
+                            continue
+                        if is_peak_list(line, has_header):
+                            has_spectral_peak = True
+                        if has_spectral_peak or idx >= self.mr_max_spacer_lines:
+                            break
+
+            except UnicodeDecodeError:  # catch exception due to binary format (DAOTHER-9425)
+
+                err = f"The spectal peak list file {file_name!r} is not plain text file."
+
+                self.report.error.appendDescription('format_issue',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+
+                continue
 
             if has_spectral_peak:
                 continue
@@ -11353,6 +11369,7 @@ class NmrDpUtility:
             try:
 
                 header = True
+                in_header = False
                 pdb_record = False
                 cs_str = False
                 mr_str = False
@@ -11379,6 +11396,14 @@ class NmrDpUtility:
                             if startsWithPdbRecord(line):
                                 continue
                             header = False
+
+                        if line.startswith('*') and startsWithPdbRecord(line[1:]):
+                            in_header = True
+                            continue
+
+                        if in_header and line.startswith('*END'):
+                            in_header = False
+                            continue
 
                         if mr_file_header_pattern.match(line):
                             has_mr_header = True
@@ -11418,7 +11443,7 @@ class NmrDpUtility:
                     has_str_format = has_cif_format = False
 
                 if has_pdb_format:
-                    err = f"The spectral peak list file {file_name!r} (any format) is identified as coordinate file. "\
+                    err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as coordinate file. "\
                         "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
 
                     self.report.error.appendDescription('content_mismatch',
@@ -11431,7 +11456,7 @@ class NmrDpUtility:
                     continue
 
                 if has_mr_header:
-                    err = f"The spectral peak list file {file_name!r} (any format) is identified as {getRestraintFormatName('nm-res-mr')}. "\
+                    err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as {getRestraintFormatName('nm-res-mr')}. "\
                         "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
 
                     self.report.error.appendDescription('content_mismatch',
@@ -11478,7 +11503,7 @@ class NmrDpUtility:
                         mr_str = True
 
                 if cs_str:
-                    err = f"The spectral peak list file {file_name!r} (any format) is identified as "\
+                    err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as "\
                         f"{self.readable_file_type[message['file_type']]} formatted assigned chemical shift file. "\
                         "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
 
@@ -11492,7 +11517,7 @@ class NmrDpUtility:
                     continue
 
                 if mr_str:
-                    err = f"The spectral peak list file {file_name!r} (any format) is identified as "\
+                    err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as "\
                         f"{self.readable_file_type[message['file_type']]} formatted restraint file. "\
                         "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
 
@@ -11525,7 +11550,7 @@ class NmrDpUtility:
 
             if len_possible_types == 0:
 
-                err = f"The spectral peak list file {file_name!r} (any format) is identified as {getRestraintFormatNames(valid_types)} file. "\
+                err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as {getRestraintFormatNames(valid_types)} file. "\
                     "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
 
                 self.report.error.appendDescription('content_mismatch',
@@ -11537,7 +11562,7 @@ class NmrDpUtility:
 
             elif len_valid_types == 0:
 
-                err = f"The spectral peak list file {file_name!r} (any format) can be {possible_types}. "\
+                err = f"The spectral peak list file {file_name!r} (any plain text format) can be {possible_types}. "\
                     "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
 
                 self.report.error.appendDescription('content_mismatch',
@@ -11549,7 +11574,7 @@ class NmrDpUtility:
 
             else:
 
-                err = f"The spectral peak list file {file_name!r} (any format) is identified as {getRestraintFormatNames(valid_types)} file"\
+                err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as {getRestraintFormatNames(valid_types)} file"\
                     f"and can be {getRestraintFormatNames(possible_types)} file as well. "\
                     "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
 
@@ -13756,7 +13781,8 @@ class NmrDpUtility:
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
-        if (not is_valid or multiple_check) and file_type != 'nm-res-cya':
+        # prevent 'nm-pea-any' occasionally matches with 'nm-res-cya' (DAOTHER-9425)
+        if (not is_valid or multiple_check) and file_type not in ('nm-res-cya', 'nm-pea-any'):
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cya')
 
@@ -13906,7 +13932,7 @@ class NmrDpUtility:
             has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
 
             if (has_lexer_error or has_parser_error) and sll_pred\
-               and _file_type in ('nm-res-xml', 'nm-res-cns', 'nm-res-cha'):
+               and _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cha'):
                 sll_pred = False
 
                 reader.setSllPredMode(sll_pred)
@@ -14195,6 +14221,7 @@ class NmrDpUtility:
             try:
 
                 header = True
+                in_header = False
                 pdb_record = False
                 footer = False
 
@@ -14224,6 +14251,17 @@ class NmrDpUtility:
                             if startsWithPdbRecord(line):
                                 continue
                             header = False
+
+                        if not footer:
+                            if line.startswith('*') and startsWithPdbRecord(line[1:]):
+                                hofh.write(line)
+                                in_header = True
+                                continue
+
+                            if in_header and line.startswith('*END'):
+                                hofh.write(line)
+                                in_header = False
+                                continue
 
                         if mr_file_header_pattern.match(line):
                             has_mr_header = True
@@ -14356,6 +14394,7 @@ class NmrDpUtility:
                         mrPath = os.path.splitext(src_file)[0] + '-trimmed.str'
 
                         header = True
+                        in_header = False
                         pdb_record = False
 
                         i = 0
@@ -14371,6 +14410,14 @@ class NmrDpUtility:
                                     if line.startswith('*'):
                                         continue
                                     header = False
+
+                                if line.startswith('*') and startsWithPdbRecord(line[1:]):
+                                    in_header = True
+                                    continue
+
+                                if in_header and line.startswith('*END'):
+                                    in_header = False
+                                    continue
 
                                 # skip legacy PDB
                                 if has_pdb_format:
@@ -14523,6 +14570,7 @@ class NmrDpUtility:
                         mrPath = os.path.splitext(src_file)[0] + '-trimmed.cif'
 
                         header = True
+                        in_header = False
                         pdb_record = False
                         has_sharp = False
 
@@ -14539,6 +14587,14 @@ class NmrDpUtility:
                                     if line.startswith('*'):
                                         continue
                                     header = False
+
+                                if line.startswith('*') and startsWithPdbRecord(line[1:]):
+                                    in_header = True
+                                    continue
+
+                                if in_header and line.startswith('*END'):
+                                    in_header = False
+                                    continue
 
                                 if first_str_line_num <= i and not has_sharp:
                                     if i <= last_str_line_num:
@@ -14715,7 +14771,17 @@ class NmrDpUtility:
             if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
                 dst_file = cor_dst_file
 
+                with open(dst_file, 'r') as ifh:
+                    for line in ifh:
+                        if line.isspace() or comment_pattern.match(line):
+                            continue
+                        has_content = True
+                        break
+
                 remediated = True
+
+            if not has_content:
+                continue
 
             mr_core_path = dst_file
 
@@ -14726,7 +14792,7 @@ class NmrDpUtility:
 
                 dst_file_list = [os.path.join(dir_path, div_name) for div_name in div_file_names if div_name.startswith(dst_name_prefix)]
 
-                if not file_name.endswith('str') and len(dst_file_list) == 0:
+                if (not file_name.endswith('str') or mr_file_path.endswith('-remediated.mr')) and len(dst_file_list) == 0:
                     dst_file_list.append(dst_file)
 
                 for dst_file in dst_file_list:
@@ -22385,7 +22451,7 @@ class NmrDpUtility:
 
                 except Exception:
 
-                    err = f"Assigned chemical shifts of {sf_framecode!r} saveframe did not parsed properly. Please fix problems reported."
+                    err = f"Assigned chemical shifts of {sf_framecode!r} saveframe was not parsed properly. Please fix problems reported."
 
                     self.report.error.appendDescription('missing_mandatory_content',
                                                         {'file_name': file_name, 'description': err})
@@ -23922,7 +23988,7 @@ class NmrDpUtility:
 
         except StopIteration:
 
-            err = f"Assigned chemical shifts of {sf_framecode!r} saveframe did not parsed properly. Please fix problems reported."
+            err = f"Assigned chemical shifts of {sf_framecode!r} saveframe was not parsed properly. Please fix problems reported."
 
             self.report.error.appendDescription('missing_mandatory_content',
                                                 {'file_name': file_name, 'description': err})
@@ -24333,7 +24399,7 @@ class NmrDpUtility:
 
             if not all(tag in loop.tags for tag in mandatory_items):
 
-                err = f"Assigned chemical shifts of {sf_framecode!r} saveframe did not parsed properly. Please fix problems reported."
+                err = f"Assigned chemical shifts of {sf_framecode!r} saveframe was not parsed properly. Please fix problems reported."
 
                 self.report.error.appendDescription('missing_mandatory_content',
                                                     {'file_name': file_name, 'description': err})
@@ -24464,7 +24530,7 @@ class NmrDpUtility:
 
             if not all(tag in loop.tags for tag in mandatory_items):
 
-                err = f"Assigned chemical shifts of {sf_framecode!r} saveframe did not parsed properly. Please fix problems reported."
+                err = f"Assigned chemical shifts of {sf_framecode!r} saveframe was not parsed properly. Please fix problems reported."
 
                 self.report.error.appendDescription('missing_mandatory_content',
                                                     {'file_name': file_name, 'description': err})
@@ -27188,6 +27254,10 @@ class NmrDpUtility:
             file_name = input_source_dic['file_name']
             file_type = input_source_dic['file_type']
 
+            # DAOTHER-9405
+            if file_type == 'nef':
+                continue
+
             if input_source_dic['content_subtype'] is None\
                or 'chem_shift' not in input_source_dic['content_subtype']:
                 continue
@@ -29786,6 +29856,7 @@ class NmrDpUtility:
                 index_tag = self.index_tags[file_type][content_subtype]
                 id_col = loop.tags.index('ID') if 'ID' in loop.tags else -1
                 combination_id_col = member_id_col = member_logic_code_col = upper_limit_col = -1
+                auth_comp_id_1_col = auth_comp_id_2_col = torsion_angle_name_col = -1
                 if content_subtype == 'dist_restraint':
                     if 'Combination_ID' in loop.tags:
                         combination_id_col = loop.tags.index('Combination_ID')
@@ -29795,6 +29866,13 @@ class NmrDpUtility:
                         member_logic_code_col = loop.tags.index('Member_logic_code')
                     if 'Distance_upper_bound_val' in loop.tags:
                         upper_limit_col = loop.tags.index('Distance_upper_bound_val')
+                    if 'Auth_comp_ID_1' in loop.tags:
+                        auth_comp_id_1_col = loop.tags.index('Auth_comp_ID_1')
+                    if 'Auth_comp_ID_2' in loop.tags:
+                        auth_comp_id_2_col = loop.tags.index('Auth_comp_ID_2')
+                elif content_subtype == 'dihed_restraint':
+                    if 'Torsion_angle_name' in loop.tags:
+                        torsion_angle_name_col = loop.tags.index('Torsion_angle_name')
 
                 key_items = [item['name'] for item in NMR_STAR_LP_KEY_ITEMS[content_subtype]]
 
@@ -30065,8 +30143,18 @@ class NmrDpUtility:
                                         rescued = True
 
                                 if not rescued:
+                                    enableWarning = True
+                                    if content_subtype == 'dist_restraint':
+                                        if (auth_comp_id_1_col != -1 and loop.data[idx][auth_comp_id_1_col] == 'HOH')\
+                                           or (auth_comp_id_2_col != -1 and loop.data[idx][auth_comp_id_2_col] == 'HOH'):
+                                            enableWarning = False
+                                    elif content_subtype == 'dihed_restraint':
+                                        if torsion_angle_name_col != -1 and loop.data[idx][torsion_angle_name_col] == 'PPA':
+                                            enableWarning = False
+
                                     atom_sels[d], warn = selectCoordAtoms(self.__cR, self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
                                                                           allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
+                                                                          enableWarning=enableWarning,
                                                                           preferAuthAtomName=prefer_auth_atom_name,
                                                                           representativeModelId=self.__representative_model_id, representativeAltId=self.__representative_alt_id,
                                                                           modelNumName=model_num_name)
@@ -30453,8 +30541,18 @@ class NmrDpUtility:
 
                                     continue
 
+                                enableWarning = True
+                                if content_subtype == 'dist_restraint':
+                                    if (auth_comp_id_1_col != -1 and loop.data[idx][auth_comp_id_1_col] == 'HOH')\
+                                       or (auth_comp_id_2_col != -1 and loop.data[idx][auth_comp_id_2_col] == 'HOH'):
+                                        enableWarning = False
+                                elif content_subtype == 'dihed_restraint':
+                                    if torsion_angle_name_col != -1 and loop.data[idx][torsion_angle_name_col] == 'PPA':
+                                        enableWarning = False
+
                                 atom_sels[d], warn = selectCoordAtoms(self.__cR, self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
                                                                       allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
+                                                                      enableWarning=enableWarning,
                                                                       preferAuthAtomName=prefer_auth_atom_name,
                                                                       representativeModelId=self.__representative_model_id, representativeAltId=self.__representative_alt_id,
                                                                       modelNumName=model_num_name)
@@ -31642,7 +31740,7 @@ class NmrDpUtility:
         return True
 
     def __mergeAnyPkAsIs(self):
-        """ Merge spectral peak list file(s) in any format (file type: nm-pea-any) into a single NMR-STAR file as is.
+        """ Merge spectral peak list file(s) in any plain text format (file type: nm-pea-any) into a single NMR-STAR file as is.
         """
 
         if self.__combined_mode:
@@ -31681,6 +31779,14 @@ class NmrDpUtility:
                     original_file_name = os.path.basename(input_source_dic['original_file_name'])
 
             file_path = ar['file_name']
+
+            try:
+
+                with open(file_path, 'r', encoding='utf-8') as ifh:
+                    ifh.read()
+
+            except UnicodeDecodeError:  # catch exception due to binary format (DAOTHER-9425)
+                continue
 
             content_subtype = 'spectral_peak'
 
@@ -32278,7 +32384,11 @@ class NmrDpUtility:
 
             self.__cur_original_ar_file_name = original_file_name
 
-            reasons = _reasons = None if 'dist_restraint' not in content_subtype and file_type != 'nm-res-amb' else reasons_dict.get(file_type)
+            _reasons = reasons_dict.get(file_type)
+            if _reasons is not None:
+                if 'label_seq_scheme' not in _reasons and 'dist_restraint' not in content_subtype and file_type != 'nm-res-amb':
+                    _reasons = None
+            reasons = _reasons
 
             if file_type == 'nm-res-xpl':
                 reader = XplorMRReader(self.__verbose, self.__lfh,
@@ -32291,6 +32401,7 @@ class NmrDpUtility:
                 reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
+                __list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -32338,7 +32449,7 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
 
@@ -32505,6 +32616,7 @@ class NmrDpUtility:
                                      reasons)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
+                __list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -32550,7 +32662,7 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
 
@@ -32912,6 +33024,7 @@ class NmrDpUtility:
                 reader.setRemediateMode(self.__remediation_mode)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
+                __list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -32959,7 +33072,7 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
 
@@ -33134,6 +33247,7 @@ class NmrDpUtility:
                 reader.setRemediateMode(self.__remediation_mode)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
+                __list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -33181,7 +33295,7 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
 
@@ -34254,6 +34368,7 @@ class NmrDpUtility:
                                         reasons)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
+                __list_id_counter = copy.copy(self.__list_id_counter)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -34299,7 +34414,7 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
                     if listener.warningMessage is not None:
 
@@ -46805,7 +46920,7 @@ class NmrDpUtility:
                 if self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
                    and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id):
                     for d in self.__nmr_ext_poly_seq:
-                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id:
+                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id and 'touch' not in d:
                             _seq_key = (entity_assembly_id, d['auth_seq_id'])
                             if _seq_key in seq_keys:
                                 continue
@@ -46816,6 +46931,8 @@ class NmrDpUtility:
                             row[seq_link_col] = 'start' if index == 1 else 'middle' if d['auth_comp_id'] not in unknownResidue else 'dummy'
 
                             loop.add_data(row)
+
+                            d['touch'] = True
 
                             nef_index += 1
                             index += 1
@@ -46908,7 +47025,7 @@ class NmrDpUtility:
                 if row[seq_link_col] == 'end' and self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
                    and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id):
                     for d in self.__nmr_ext_poly_seq:
-                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id:
+                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id and 'touch' not in d:
                             if loop.data[-1][seq_link_col] == 'end':
                                 loop.data[-1][seq_link_col] = 'middle'
                             row = [None] * len(loop.tags)
@@ -46917,6 +47034,8 @@ class NmrDpUtility:
                             row[seq_link_col] = 'end' if d['auth_comp_id'] not in unknownResidue else 'dummy'
 
                             loop.add_data(row)
+
+                            d['touch'] = True
 
                             nef_index += 1
 
@@ -46939,6 +47058,11 @@ class NmrDpUtility:
                                     nef_index += 1
 
             asm_sf.add_loop(loop)
+
+            if self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0:
+                for d in self.__nmr_ext_poly_seq:
+                    if 'touch' in d:
+                        del d['touch']
 
             # Refresh _nef_covalent_links loop
 
@@ -47059,7 +47183,7 @@ class NmrDpUtility:
                 if self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
                    and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id):
                     for d in self.__nmr_ext_poly_seq:
-                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id:
+                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id and 'touch' not in d:
                             _offset = seq_id - auth_seq_id
                             _seq_id = d['auth_seq_id'] + _offset
                             _seq_key = (entity_assembly_id, _seq_id)
@@ -47079,6 +47203,8 @@ class NmrDpUtility:
                                 row[entry_id_col] = self.__entry_id
 
                             loop.add_data(row)
+
+                            d['touch'] = True
 
                             nef_index += 1
                             index += 1
@@ -47182,7 +47308,7 @@ class NmrDpUtility:
                 if row[seq_link_col] == 'end' and self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
                    and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id):
                     for d in self.__nmr_ext_poly_seq:
-                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id:
+                        if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id and 'touch' not in d:
                             if loop.data[-1][seq_link_col] == 'end':
                                 loop.data[-1][seq_link_col] = 'middle'
                             _offset = seq_id - auth_seq_id
@@ -47200,6 +47326,8 @@ class NmrDpUtility:
                                 row[entry_id_col] = self.__entry_id
 
                             loop.add_data(row)
+
+                            d['touch'] = True
 
                             nef_index += 1
 
@@ -47228,6 +47356,11 @@ class NmrDpUtility:
                                     nef_index += 1
 
             asm_sf.add_loop(loop)
+
+            if self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0:
+                for d in self.__nmr_ext_poly_seq:
+                    if 'touch' in d:
+                        del d['touch']
 
             self.__cca_dat = get_lp_tag(loop, ['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'])
 
@@ -55189,6 +55322,76 @@ class NmrDpUtility:
         self.__list_id_counter = None
         self.__mr_sf_dict_holder = None
         self.__pk_sf_holder = None
+
+        # check inventory again
+
+        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
+
+        lp_counts = {t: 0 for t in self.nmr_content_subtypes}
+
+        for lp_category in self.__lp_category_list:
+            if lp_category in self.lp_categories[file_type].values():
+                lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
+
+        mr_loops = 0
+
+        for content_subtype in self.mr_content_subtypes:
+            if content_subtype in lp_counts:
+                mr_loops += lp_counts[content_subtype]
+
+        if mr_loops == 0 and not self.__validation_server:
+
+            if 'other_data_types' not in self.__sf_category_list:
+
+                mr_file_names = []
+
+                for fileListId in range(self.__cs_file_path_list_len, self.__file_path_list_len):
+
+                    input_source = self.report.input_sources[fileListId]
+                    input_source_dic = input_source.get()
+
+                    file_type = input_source_dic['file_type']
+
+                    if file_type != 'nmr-star':
+                        continue
+
+                    mr_file_names.append(input_source_dic['file_name'])
+
+                ar_file_path_list = 'atypical_restraint_file_path_list'
+
+                if ar_file_path_list in self.__inputParamDict:
+
+                    fileListId = self.__file_path_list_len
+
+                    for ar in self.__inputParamDict[ar_file_path_list]:
+
+                        input_source = self.report.input_sources[fileListId]
+                        input_source_dic = input_source.get()
+
+                        file_type = input_source_dic['file_type']
+
+                        fileListId += 1
+
+                        if file_type == 'nm-res-mr':
+                            continue
+
+                        mr_file_names.append(input_source_dic['file_name'])
+
+                if len(mr_file_names) > 0:
+
+                    desc = 'uploaded restraint file'\
+                        + (f's, {mr_file_names}, are' if len(mr_file_names) > 1 else f', {mr_file_names[0]!r}, is')\
+                        + ' consistent with the coordinates'
+
+                    err = "Deposition of NMR restraints used for the structure determination is mandatory. "\
+                        f"Please verify {desc} and re-upload valid restraint file(s)."
+
+                    self.report.error.appendDescription('missing_mandatory_content',
+                                                        {'file_name': os.path.basename(self.__dstPath), 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {err}\n")
 
         return True
 

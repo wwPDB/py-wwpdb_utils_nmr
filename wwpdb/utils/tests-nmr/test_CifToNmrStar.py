@@ -56,6 +56,18 @@ class TestCifToNmrStar(unittest.TestCase):
     def test_convert_1d2b(self):
         self.assertTrue(self.cif_to_nmr_star.convert('mock-data/1d2b_cs.str', 'mock-data/1d2b_cs.str.cif2str'))
 
+    def test_convert_4apd(self):
+        if os.path.exists('mock-data-remediation'):
+            self.assertTrue(self.cif_to_nmr_star.convert('mock-data-remediation/4apd/4apd_cs.str', 'mock-data-remediation/4apd/4apd_cs.str.cif2str'))
+
+    def test_convert_7kaa(self):
+        if os.path.exists('mock-data-remediation'):
+            self.assertTrue(self.cif_to_nmr_star.convert('mock-data-remediation/7kaa/7kaa_cs.str', 'mock-data-remediation/7kaa/7kaa_cs.str.cif2str'))
+
+    def test_convert_daother_9437(self):
+        if os.path.exists('mock-data-daother-9437'):
+            self.assertTrue(self.cif_to_nmr_star.convert('mock-data-daother-9437/test2.str', 'mock-data-daother-9437/test2.cif2str'))
+
 
 if __name__ == "__main__":
     unittest.main()

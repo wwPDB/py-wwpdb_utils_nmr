@@ -74,7 +74,7 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(report_file, 'r') as file:
             report = json.loads(file.read())
 
-        if not report['error'] is None:
+        if report['error'] is not None:
             self.assertNotIn('internal_error', report['error'])
 
         if entry_id == 'daother-8448':
@@ -82,15 +82,16 @@ class TestNmrDpUtility(unittest.TestCase):
         elif entry_id == 'daother-8448-rev':
             self.assertEqual(report['error'], None)
 
+        status = report['information']['status']
         if report['error'] is None:
-            print('========>>>> %s: %s' % (entry_id, report['information']['status']))
+            print(f"========>>>> {entry_id}: {status}")
         elif 'format_issue' in report['error']:
-            print('========>>>> %s: %s\n format_issue: %s' % (entry_id, report['information']['status'], report['error']['format_issue'][0]['description']))
+            print(f"========>>>> {entry_id}: {status}\n format_issue: {report['error']['format_issue'][0]['description']}")
         elif 'missing_mandatory_content' in report['error']:
-            print('========>>>> %s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
+            print(f"========>>>> {entry_id}: {status}\n missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
-            print('========>>>> %s: %s, %s' % (entry_id, report['information']['status'], error_type))
+            print(f"========>>>> {entry_id}: {status}, {error_type}")
 
         if os.path.exists(self.data_dir_path + entry_id + '_cs_mr_merged.str'):
             self.__test_nmr_str2str_deposit(entry_id)
@@ -116,15 +117,16 @@ class TestNmrDpUtility(unittest.TestCase):
         if report['error'] is not None:
             self.assertNotIn('internal_error', report['error'])
 
+        status = report['information']['status']
         if report['error'] is None:
-            print('%s: %s' % (entry_id, report['information']['status']))
+            print(f"{entry_id}: {status}")
         elif 'format_issue' in report['error']:
-            print('%s: %s\n format_issue: %s' % (entry_id, report['information']['status'], report['error']['format_issue'][0]['description']))
+            print(f"{entry_id}: {status}\n format_issue: {report['error']['format_issue'][0]['description']}")
         elif 'missing_mandatory_content' in report['error']:
-            print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
+            print(f"{entry_id}: {status}\n missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
         else:
-            error_type = {str(k): len(v) for k, v in report['error'].items() if v is not None and str(k) != 'total'}
-            print('%s: %s, %s' % (entry_id.lower(), report['information']['status'], error_type))
+            error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
+            print(f"{entry_id}: {status}, {error_type}")
 
     def __test_nmr_str2str_deposit(self, entry_id):
         if not os.access(self.data_dir_path + entry_id + '-str-consistency-log.json', os.F_OK):
@@ -149,18 +151,19 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(self.data_dir_path + entry_id + '-str2str-deposit-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        if not report['error'] is None:
+        if report['error'] is not None:
             self.assertNotIn('internal_error', report['error'])
 
+        status = report['information']['status']
         if report['error'] is None:
-            print('%s: %s' % (entry_id, report['information']['status']))
+            print(f"{entry_id}: {status}")
         elif 'format_issue' in report['error']:
-            print('%s: %s\n format_issue: %s' % (entry_id, report['information']['status'], report['error']['format_issue'][0]['description']))
+            print(f"{entry_id}: {status}\n format_issue: {report['error']['format_issue'][0]['description']}")
         elif 'missing_mandatory_content' in report['error']:
-            print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
+            print(f"{entry_id}: {status}\n missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
         else:
-            error_type = {str(k): len(v) for k, v in report['error'].items() if v is not None and str(k) != 'total'}
-            print('%s: %s, %s' % (entry_id.lower(), report['information']['status'], error_type))
+            error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
+            print(f"{entry_id}: {status}, {error_type}")
 
     def test_nmr_cs_mr_merge_daother_8448(self):
         self.__test_nmr_cs_mr_merge('daother-8448')

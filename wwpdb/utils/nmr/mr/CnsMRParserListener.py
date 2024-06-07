@@ -87,9 +87,12 @@ try:
                                            monDict3,
                                            emptyValue,
                                            protonBeginCode,
+                                           pseProBeginCode,
                                            aminoProtonCode,
                                            jcoupBbPairCode,
                                            rdcBbPairCode,
+                                           zincIonCode,
+                                           isReservedLigCode,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
@@ -180,9 +183,12 @@ except ImportError:
                                monDict3,
                                emptyValue,
                                protonBeginCode,
+                               pseProBeginCode,
                                aminoProtonCode,
                                jcoupBbPairCode,
                                rdcBbPairCode,
+                               zincIonCode,
+                               isReservedLigCode,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
@@ -878,6 +884,10 @@ class CnsMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['local_seq_scheme']
                 if 'seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['seq_id_remap']
+
+            if 'local_seq_scheme' in self.reasonsForReParsing:
+                if 'label_seq_offset' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['local_seq_scheme']
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
                 if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
@@ -2921,7 +2931,7 @@ class CnsMRParserListener(ParseTreeListener):
                                      '.', None, None,
                                      sf['list_id'], self.__entryId, dstFunc,
                                      self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                                     atom1, atom2)
+                                     atom1, atom2, atom3, atom4)
                         sf['loop'].add_data(row)
 
                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[4],
@@ -3362,7 +3372,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#proton_shift_amides.
     def exitProton_shift_amides(self, ctx: CnsMRParser.Proton_shift_amidesContext):  # pylint: disable=unused-argument
         for atom1 in self.atomSelectionSet[0]:
-            if atom1['atom_id'] not in protonBeginCode:
+            if atom1['atom_id'] != 'H':
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                 f"Not a backbone amide proton; {atom1}.")
                 return
@@ -4143,7 +4153,7 @@ class CnsMRParserListener(ParseTreeListener):
                 sf['tags'].append(['weight', self.ncsWeight])
 
         for atom1 in self.atomSelectionSet[0]:
-            if atom1['atom_id'] in protonBeginCode:
+            if atom1['atom_id'][0] in protonBeginCode:
                 continue
             if self.__debug:
                 print(f"subtype={self.__cur_subtype} (NCS/GROUP) id={self.geoRestraints} "
@@ -4502,8 +4512,7 @@ class CnsMRParserListener(ParseTreeListener):
                 _factor['atom_selection'] = ['*']
                 return _factor
 
-        if len(self.atomSelectionSet) == 0:
-            self.__retrieveLocalSeqScheme()
+        self.__retrieveLocalSeqScheme()
 
         if 'atom_id' in _factor and len(_factor['atom_id']) == 1:
             self.__cur_auth_atom_id = _factor['atom_id'][0]
@@ -4570,7 +4579,7 @@ class CnsMRParserListener(ParseTreeListener):
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
                                 idx = np['auth_seq_id'].index(realSeqId)
-                                realCompId = np['comp_id'][idx]
+                                realCompId = self.getRealCompId(np['comp_id'][idx])
                                 origCompId = np['auth_comp_id'][idx]
                                 if (lenCompIds == 1
                                     and (re.match(toRegEx(translateToStdResName(_factor['comp_ids'][0], realCompId, self.__ccU)), realCompId)
@@ -4626,7 +4635,7 @@ class CnsMRParserListener(ParseTreeListener):
                         for realSeqId in np['auth_seq_id']:
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = np['auth_seq_id'].index(realSeqId)
-                                realCompId = np['comp_id'][idx]
+                                realCompId = self.getRealCompId(np['comp_id'][idx])
                                 origCompId = np['auth_comp_id'][idx]
                                 _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
@@ -4638,7 +4647,7 @@ class CnsMRParserListener(ParseTreeListener):
                             for realSeqId in np['auth_seq_id']:
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                     idx = np['auth_seq_id'].index(realSeqId)
-                                    realCompId = np['comp_id'][idx]
+                                    realCompId = self.getRealCompId(np['comp_id'][idx])
                                     origCompId = np['auth_comp_id'][idx]
                                     _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                     if realCompId not in _compIdList and origCompId not in _compIdList:
@@ -4672,7 +4681,7 @@ class CnsMRParserListener(ParseTreeListener):
                         for realSeqId in np['auth_seq_id']:
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = np['auth_seq_id'].index(realSeqId)
-                                realCompId = np['comp_id'][idx]
+                                realCompId = self.getRealCompId(np['comp_id'][idx])
                                 origCompId = np['auth_comp_id'][idx]
                                 _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
@@ -4757,7 +4766,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                     continue
                             idx = np['auth_seq_id'].index(realSeqId)
-                            realCompId = np['comp_id'][idx]
+                            realCompId = self.getRealCompId(np['comp_id'][idx])
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = np['auth_comp_id'][idx]
                                 _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
@@ -4832,7 +4841,7 @@ class CnsMRParserListener(ParseTreeListener):
                                     if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                         continue
                                 idx = np['auth_seq_id'].index(realSeqId)
-                                realCompId = np['comp_id'][idx]
+                                realCompId = self.getRealCompId(np['comp_id'][idx])
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                     origCompId = np['auth_comp_id'][idx]
                                     _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
@@ -4920,7 +4929,7 @@ class CnsMRParserListener(ParseTreeListener):
                                         continue
                                     realSeqId = np['auth_seq_id'][np['seq_id'].index(_factor['seq_id'][0])]
                             idx = np['auth_seq_id'].index(realSeqId)
-                            realCompId = np['comp_id'][idx]
+                            realCompId = self.getRealCompId(np['comp_id'][idx])
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 origCompId = np['auth_comp_id'][idx]
                                 _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
@@ -4941,18 +4950,33 @@ class CnsMRParserListener(ParseTreeListener):
             for nonPolyCompId in _nonPolyCompIdSelect:
                 _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], nonPolyCompId['seq_id'], cifCheck=cifCheck)
                 if coordAtomSite is not None:
-                    for realAtomId in coordAtomSite['atom_id']:
-                        _atomIdSelect.add(realAtomId)
+                    if coordAtomSite['comp_id'] == nonPolyCompId['comp_id']:
+                        for realAtomId in coordAtomSite['atom_id']:
+                            _atomIdSelect.add(realAtomId)
+                    else:
+                        compId = nonPolyCompId['comp_id']
+                        if self.__ccU.updateChemCompDict(compId):
+                            for cca in self.__ccU.lastAtomList:
+                                if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                    realAtomId = cca[self.__ccU.ccaAtomId]
+                                    _atomIdSelect.add(realAtomId)
                 else:
                     for np in self.__nonPolySeq:
                         if nonPolyCompId['seq_id'] == np['auth_seq_id'][0]:
                             _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], np['seq_id'][0], cifCheck=cifCheck)
                             if coordAtomSite is not None:
-                                for realAtomId in coordAtomSite['atom_id']:
-                                    _atomIdSelect.add(realAtomId)
+                                if coordAtomSite['comp_id'] == nonPolyCompId['comp_id']:
+                                    for realAtomId in coordAtomSite['atom_id']:
+                                        _atomIdSelect.add(realAtomId)
+                                else:
+                                    compId = nonPolyCompId['comp_id']
+                                    if self.__ccU.updateChemCompDict(compId):
+                                        for cca in self.__ccU.lastAtomList:
+                                            if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                                realAtomId = cca[self.__ccU.ccaAtomId]
+                                                _atomIdSelect.add(realAtomId)
 
             _factor['atom_id'] = list(_atomIdSelect)
-
             if len(_factor['atom_id']) == 0:
                 self.__preferAuthSeq = not self.__preferAuthSeq
 
@@ -4984,7 +5008,7 @@ class CnsMRParserListener(ParseTreeListener):
                                             continue
                                         realSeqId = np['auth_seq_id'][np['seq_id'].index(_factor['seq_id'][0])]
                                 idx = np['auth_seq_id'].index(realSeqId)
-                                realCompId = np['comp_id'][idx]
+                                realCompId = self.getRealCompId(np['comp_id'][idx])
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                     origCompId = np['auth_comp_id'][idx]
                                     _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
@@ -5005,8 +5029,31 @@ class CnsMRParserListener(ParseTreeListener):
                 for nonPolyCompId in _nonPolyCompIdSelect:
                     _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], nonPolyCompId['seq_id'], cifCheck=cifCheck)
                     if coordAtomSite is not None:
-                        for realAtomId in coordAtomSite['atom_id']:
-                            _atomIdSelect.add(realAtomId)
+                        if coordAtomSite['comp_id'] == nonPolyCompId['comp_id']:
+                            for realAtomId in coordAtomSite['atom_id']:
+                                _atomIdSelect.add(realAtomId)
+                        else:
+                            compId = nonPolyCompId['comp_id']
+                            if self.__ccU.updateChemCompDict(compId):
+                                for cca in self.__ccU.lastAtomList:
+                                    if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                        realAtomId = cca[self.__ccU.ccaAtomId]
+                                        _atomIdSelect.add(realAtomId)
+                    else:
+                        for np in self.__nonPolySeq:
+                            if nonPolyCompId['seq_id'] == np['auth_seq_id'][0]:
+                                _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], np['seq_id'][0], cifCheck=cifCheck)
+                                if coordAtomSite is not None:
+                                    if coordAtomSite['comp_id'] == nonPolyCompId['comp_id']:
+                                        for realAtomId in coordAtomSite['atom_id']:
+                                            _atomIdSelect.add(realAtomId)
+                                    else:
+                                        compId = nonPolyCompId['comp_id']
+                                        if self.__ccU.updateChemCompDict(compId):
+                                            for cca in self.__ccU.lastAtomList:
+                                                if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                                    realAtomId = cca[self.__ccU.ccaAtomId]
+                                                    _atomIdSelect.add(realAtomId)
 
                 _factor['atom_id'] = list(_atomIdSelect)
 
@@ -5308,6 +5355,18 @@ class CnsMRParserListener(ParseTreeListener):
                         if coordAtomSite is None or _factor['atom_id'][0] not in coordAtomSite['atom_id']:
                             continue
 
+                    if not isPolySeq:
+                        replacedBy = self.getRealCompId(compId)
+                        if replacedBy != compId:
+                            compId = replacedBy
+                            _coordAtomSite = copy.deepcopy(coordAtomSite)
+                            _coordAtomSite['comp_id'] = compId
+                            _coordAtomSite['atom_id'] = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
+                            _coordAtomSite['alt_atom_id'] = [cca[self.__ccU.ccaAltAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
+                            _coordAtomSite['type_symbol'] = [cca[self.__ccU.ccaTypeSymbol] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
+                            _coordAtomSite['alt_comp_id'] = [coordAtomSite['alt_comp_id'][0]] * len(_coordAtomSite['atom_id'])
+                            coordAtomSite = _coordAtomSite
+
                     foundCompId = True
 
                     if not self.__with_axis:
@@ -5325,6 +5384,30 @@ class CnsMRParserListener(ParseTreeListener):
                             seqKey = _seqKey
                             coordAtomSite = _coordAtomSite
                             atomSiteAtomId = _coordAtomSite['atom_id']
+                        elif 'split_comp_id' in coordAtomSite and 'NH2' in coordAtomSite['split_comp_id']:
+                            _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, 'NH2', cifCheck=cifCheck)
+                            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == 'NH2':
+                                compId = 'NH2'
+                                seqKey = _seqKey
+                                coordAtomSite = _coordAtomSite
+                                atomSiteAtomId = _coordAtomSite['atom_id']
+
+                    if compId == 'CYS' and _factor['atom_id'][0] in zincIonCode and self.__hasNonPolySeq:
+                        znCount = 0
+                        znSeqId = None
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == 'ZN':
+                                znSeqId = np['auth_seq_id'][0]
+                                znCount += 1
+                        if znCount > 0:
+                            if znCount == 1:
+                                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, znSeqId, 'ZN', cifCheck=cifCheck)
+                                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == 'ZN':
+                                    compId = 'ZN'
+                                    seqId = znSeqId
+                                    seqKey = _seqKey
+                                    coordAtomSite = _coordAtomSite
+                                    atomSiteAtomId = _coordAtomSite['atom_id']
 
                     for atomId in _factor['atom_id']:
                         _atomId = atomId.upper() if len(atomId) <= 2 else atomId[:2].upper()
@@ -5352,8 +5435,11 @@ class CnsMRParserListener(ParseTreeListener):
                                     atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, authCompId, atomId, coordAtomSite)
 
                         atomIds = self.getAtomIdList(_factor, compId, atomId)
-                        if atomSiteAtomId is not None and not any(_atomId in atomSiteAtomId for _atomId in atomIds):
-                            atomId = translateToStdAtomName(atomId, compId, atomSiteAtomId, self.__ccU, False)
+                        if atomSiteAtomId is not None:
+                            if not any(_atomId in atomSiteAtomId for _atomId in atomIds):
+                                atomId = translateToStdAtomName(atomId, compId, atomSiteAtomId, self.__ccU, False)
+                            elif atomId[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in atomIds):
+                                atomIds = [_atomId for _atomId in atomIds if _atomId in atomSiteAtomId]
 
                         # @see: https://bmrb.io/ref_info/atom_nom.tbl
                         if self.__trust_bmrb_ref_info:
@@ -5389,6 +5475,8 @@ class CnsMRParserListener(ParseTreeListener):
                                 _atomIds_ = [_atomId for _atomId in atomSiteAtomId if re.match(_atomId_, _atomId)]
                                 if len(_atomIds_) > 0:
                                     atomIds = _atomIds_
+                            elif seqId == 1 and atomId == 'H1' and self.__csStat.peptideLike(compId) and 'H' in atomSiteAtomId:
+                                atomIds = ['H']
 
                         has_nx_local = has_nx_anchor = False
                         if self.__cur_subtype == 'dist' and atomId in XPLOR_NITROXIDE_NAMES:  # and coordAtomSite is not None and atomId not in atomSiteAtomId:
@@ -5447,8 +5535,13 @@ class CnsMRParserListener(ParseTreeListener):
                                         _atom['type_symbol'] = coordAtomSite['type_symbol'][coordAtomSite['alt_atom_id'].index(_atomId)]
                                         self.__authAtomId = 'auth_atom_id'
                                     elif self.__preferAuthSeq and atomSpecified:
+                                        may_exist = False
+                                        if self.__ccU.updateChemCompDict(compId):
+                                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                            if cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                                may_exist = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
-                                        if _coordAtomSite is not None:
+                                        if _coordAtomSite is not None and not may_exist:
                                             _compId = _coordAtomSite['comp_id']
                                             _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
                                             if _atomId in _coordAtomSite['atom_id']:
@@ -5547,8 +5640,13 @@ class CnsMRParserListener(ParseTreeListener):
 
                                 elif self.__preferAuthSeq and atomSpecified:
                                     if len(self.atomSelectionSet) == 0:
+                                        may_exist = False
+                                        if self.__ccU.updateChemCompDict(compId):
+                                            cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
+                                            if cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
+                                                may_exist = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
-                                        if _coordAtomSite is not None:
+                                        if _coordAtomSite is not None and not may_exist:
                                             _compId = _coordAtomSite['comp_id']
                                             _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
                                             if _atomId in _coordAtomSite['atom_id']:
@@ -5874,12 +5972,21 @@ class CnsMRParserListener(ParseTreeListener):
 
         return foundCompId
 
+    def getRealCompId(self, compId):
+        if self.__ccU.updateChemCompDict(compId) and not isReservedLigCode(compId):
+            if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' and '_chem_comp.pdbx_replaced_by' in self.__ccU.lastChemCompDict:
+                replacedBy = self.__ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
+                if replacedBy not in emptyValue and self.__ccU.updateChemCompDict(replacedBy):
+                    return replacedBy
+        return compId
+
     def getOrigSeqId(self, ps, seqId, isPolySeq=True):
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
         offset = 0
         if not self.__preferAuthSeq:
             chainId = ps['chain_id']
-            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
+            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\
+               and chainId in self.__reasons['label_seq_offset']:
                 offset = self.__reasons['label_seq_offset'][chainId]
             if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
@@ -5902,11 +6009,10 @@ class CnsMRParserListener(ParseTreeListener):
                             return None
                 if seqId + offset in ps['auth_seq_id']:
                     return seqId + offset
-            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
-            if seqKey in self.__authToLabelSeq:
-                _chainId, _seqId = self.__authToLabelSeq[seqKey]
-                if _seqId in ps['seq_id']:
-                    return _seqId + offset
+            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
+            if seqKey in self.__labelToAuthSeq:
+                _, _seqId = self.__labelToAuthSeq[seqKey]
+                return _seqId
         else:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
@@ -5936,7 +6042,8 @@ class CnsMRParserListener(ParseTreeListener):
         if not self.__preferAuthSeq:
             chainId = ps['chain_id']
             offset = 0
-            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons and chainId in self.__reasons['label_seq_offset']:
+            if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\
+               and chainId in self.__reasons['label_seq_offset']:
                 offset = self.__reasons['label_seq_offset'][chainId]
             if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
@@ -5961,7 +6068,7 @@ class CnsMRParserListener(ParseTreeListener):
                     return seqId + offset, ps['comp_id'][ps['auth_seq_id'].index(seqId + offset)]
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
             if seqKey in self.__labelToAuthSeq:
-                _chainId, _seqId = self.__labelToAuthSeq[seqKey]
+                _, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
                     return _seqId, ps['comp_id'][ps['seq_id'].index(seqId + offset)
                                                  if seqId + offset in ps['seq_id']
@@ -9081,15 +9188,21 @@ class CnsMRParserListener(ParseTreeListener):
 
     def __retrieveLocalSeqScheme(self):
         if self.__reasons is None\
-           or ('label_seq_scheme' not in self.__reasons and 'local_seq_scheme' not in self.__reasons and 'inhibit_label_seq_scheme' not in self.__reasons):
+           or ('label_seq_scheme' not in self.__reasons and 'local_seq_scheme' not in self.__reasons):
+            #    and 'inhibit_label_seq_scheme' not in self.__reasons):
             return
-        if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']\
-           and self.__cur_subtype in self.__reasons['label_seq_scheme']\
-           and self.__reasons['label_seq_scheme'][self.__cur_subtype]\
-           and 'segment_id_mismatch' not in self.__reasons:
-            self.__preferAuthSeq = False
-            self.__authSeqId = 'label_seq_id'
-            return
+        if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:  # \
+            # and 'segment_id_mismatch' not in self.__reasons:
+            if self.__cur_subtype in self.__reasons['label_seq_scheme']\
+               and self.__reasons['label_seq_scheme'][self.__cur_subtype]:
+                self.__preferAuthSeq = False
+                self.__authSeqId = 'label_seq_id'
+                return
+            if self.__cur_subtype != 'dist' and 'dist' in self.__reasons['label_seq_scheme']\
+               and self.__reasons['label_seq_scheme']['dist']:
+                self.__preferAuthSeq = False
+                self.__authSeqId = 'label_seq_id'
+                return
         if 'local_seq_scheme' not in self.__reasons:
             return
         if self.__cur_subtype == 'dist':
@@ -9132,8 +9245,11 @@ class CnsMRParserListener(ParseTreeListener):
 
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
-        if key not in self.sfDict:
-            self.sfDict[key] = []
+        if key in self.sfDict:
+            decListIdCounter(self.__cur_subtype, self.__listIdCounter)
+            return
+
+        self.sfDict[key] = []
 
         list_id = self.__listIdCounter[content_subtype]
 

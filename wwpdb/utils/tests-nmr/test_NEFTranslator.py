@@ -2455,7 +2455,7 @@ class TestNEFTranslator(unittest.TestCase):
                         "chain_id": "1",
                         "seq_id": list(range(1, 70)),
                         "auth_asym_id": ["A" for i in range(1, 70)],
-                        "auth_seq_id": ["%s" % i for i in range(1, 70)],
+                        "auth_seq_id": [str(i) for i in range(1, 70)],
                         "auth_comp_id": [
                             "MET",
                             "GLY",
@@ -3407,6 +3407,10 @@ class TestNEFTranslator(unittest.TestCase):
 
     def test_atom_name_conversion(self):
         self.assertEqual(self.neft.get_valid_star_atom('6MZ', 'M9'), (['H9C1', 'H9C2', 'H9'], 1, None))
+        self.assertEqual(self.neft.get_valid_star_atom_in_xplor('48L', 'QM1'), (['HM11', 'HM12', 'HM13'], 1, None))
+        self.assertEqual(self.neft.get_valid_star_atom_in_xplor('48L', 'QM2'), (['HM21', 'HM22', 'HM23'], 1, None))
+        self.assertEqual(self.neft.get_valid_star_atom_in_xplor('48L', 'QM3'), (['HM31', 'HM32', 'HM33'], 1, None))
+        self.assertEqual(self.neft.get_valid_star_atom_in_xplor('48L', 'QQM'), (['HM21', 'HM22', 'HM23', 'HM31', 'HM32', 'HM33'], 2, None))
 
 
 if __name__ == "__main__":

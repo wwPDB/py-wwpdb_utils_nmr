@@ -38,18 +38,19 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(self.data_dir_path + entry_id + '-unlocked-nef-consistency-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        if not report['error'] is None:
+        if report['error'] is not None:
             self.assertNotIn('internal_error', report['error'])
 
+        status = report['information']['status']
         if report['error'] is None:
-            print('%s: %s' % (entry_id, report['information']['status']))
+            print(f"{entry_id}: {status}")
         elif 'format_issue' in report['error']:
-            print('%s: %s\n format_issue: %s' % (entry_id, report['information']['status'], report['error']['format_issue'][0]['description']))
+            print(f"{entry_id}: {status}\n format_issue: {report['error']['format_issue'][0]['description']}")
         elif 'missing_mandatory_content' in report['error']:
-            print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
+            print(f"{entry_id}: {status}\n missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
-            print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
+            print(f"{entry_id}: {status}, {error_type}")
 
     def __test_nmr_nef2str_deposit(self, entry_id):  # pylint: disable=unused-private-member
         if not os.access(self.data_dir_path + entry_id + '-nef-consistency-log.json', os.F_OK):
@@ -74,7 +75,7 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(self.data_dir_path + entry_id + '-unlocked-nef2str-str-deposit-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        if not report['error'] is None:
+        if report['error'] is not None:
             self.assertNotIn('internal_error', report['error'])
 
     def test_nmr_nef_consistency_check_2loy(self):

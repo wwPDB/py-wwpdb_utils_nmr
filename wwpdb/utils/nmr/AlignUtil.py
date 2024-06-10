@@ -668,6 +668,11 @@ def updatePolySeqRst(polySeqRst, chainId, seqId, compId: str, authCompId=None):
     if seqId is None or compId in emptyValue:
         return
 
+    if authCompId is None:
+        for ps in polySeqRst:
+            if 'auth_comp_id' not in ps:
+                ps['auth_comp_id'] = copy.deepcopy(ps['comp_id'])
+
     ps = next((ps for ps in polySeqRst if ps['chain_id'] == chainId), None)
     if ps is None:
         polySeqRst.append({'chain_id': chainId, 'seq_id': [], 'comp_id': [], 'auth_comp_id': []})

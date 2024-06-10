@@ -24709,6 +24709,10 @@ class NmrDpUtility:
                     if row[details_col] == 'UNMAPPED':
                         row[details_col] = None
 
+            trial = 0
+
+            incomplete_comp_id_annotation = []  # DAOTHER-9286
+
             def fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
                 _src_idx = src_idx
                 if src_idx > 0:
@@ -24750,7 +24754,8 @@ class NmrDpUtility:
                                     missing_ch3.remove(row[atom_id_col])
                                     if len(missing_ch3) == 0:
                                         break
-                    if atom_id in _coord_atom_site['atom_id'] and valid and len(missing_ch3) == 0:
+                    if atom_id in _coord_atom_site['atom_id'] and valid and len(missing_ch3) == 0\
+                       and (not self.__annotation_mode or comp_id not in incomplete_comp_id_annotation):
                         _row[6] = atom_id
                         if fill_auth_atom_id or _row[6] != _row[19]:
                             _row[19] = _row[6]
@@ -24806,12 +24811,16 @@ class NmrDpUtility:
                         if (valid and atom_id in _coord_atom_site['atom_id'])\
                            or ((prefer_auth_atom_name or _row[24] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M')):
                             atom_ids = [atom_id]
+                            if self.__annotation_mode and comp_id in incomplete_comp_id_annotation and trial > 0:
+                                atom_ids = self.__getAtomIdListInXplorWithCoordAtomSite(comp_id, _row[23] if fill_orig_atom_id else atom_id, _coord_atom_site)
                         else:
                             atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                             if len(atom_ids) == 0 or atom_ids[0] not in _coord_atom_site['atom_id']:
                                 atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
                             if self.__annotation_mode and atom_ids[0] not in _coord_atom_site['atom_id']:
                                 atom_ids = self.__getAtomIdListInXplorWithCoordAtomSite(comp_id, atom_id, _coord_atom_site)
+                                if comp_id not in incomplete_comp_id_annotation:
+                                    incomplete_comp_id_annotation.append(comp_id)
                         if valid and len(missing_ch3) > 0:
                             if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23])\
                                and len(self.__getAtomIdListInXplor(comp_id, _row[23])) > 1 and _row[24] != 'UNMAPPED':
@@ -25302,8 +25311,6 @@ class NmrDpUtility:
             can_auth_asym_id_mapping = {}  # DAOTHER-8751
             seq_id_offset_for_unmapped = {}  # DAOTHER-9065
             label_seq_id_offset_for_extended = {}  # D_1300044764
-
-            trial = 0
 
             while True:
 
@@ -26673,6 +26680,9 @@ class NmrDpUtility:
                     lp.add_data(_row)
 
                     index += 1
+
+                if trial == 0 and len(incomplete_comp_id_annotation) > 0:
+                    regenerate_request = True
 
                 if not regenerate_request:
                     break

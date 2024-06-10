@@ -19067,6 +19067,13 @@ class NmrDpUtility:
 
         return self.__nefT.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)[0]
 
+    def __getAtomIdListInXplorWithCoordAtomSite(self, comp_id, atom_id, coord_atom_site):
+        """ Return atom ID list in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclature
+            in reference to coordinates' alternative atom IDs.
+        """
+
+        return self.__nefT.get_valid_star_atom_in_xplor_w_coord_atom_site(comp_id, atom_id, coord_atom_site)[0]
+
     def __getRepAtomId(self, comp_id, atom_id):
         """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id.
         """
@@ -24697,6 +24704,11 @@ class NmrDpUtility:
             reson_id_col = loop.tags.index('Resonance_ID') if 'Resonance_ID' in loop.tags else -1
             details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
 
+            if self.__annotation_mode and details_col != -1:
+                for row in loop.data:
+                    if row[details_col] == 'UNMAPPED':
+                        row[details_col] = None
+
             def fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
                 _src_idx = src_idx
                 if src_idx > 0:
@@ -24798,6 +24810,8 @@ class NmrDpUtility:
                             atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                             if len(atom_ids) == 0 or atom_ids[0] not in _coord_atom_site['atom_id']:
                                 atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
+                            if self.__annotation_mode and atom_ids[0] not in _coord_atom_site['atom_id']:
+                                atom_ids = self.__getAtomIdListInXplorWithCoordAtomSite(comp_id, atom_id, _coord_atom_site)
                         if valid and len(missing_ch3) > 0:
                             if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23])\
                                and len(self.__getAtomIdListInXplor(comp_id, _row[23])) > 1 and _row[24] != 'UNMAPPED':
@@ -30289,7 +30303,7 @@ class NmrDpUtility:
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
                                                               loop.tags, loop.data[idx],
                                                               auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                              [atom1, atom2])
+                                                              [atom1, atom2], self.__annotation_mode)
                                         lp.add_data(_row)
 
                                 elif atom_sels[0] is not None:
@@ -30300,7 +30314,7 @@ class NmrDpUtility:
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
                                                               loop.tags, loop.data[idx],
                                                               auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                              [atom1, atom2])
+                                                              [atom1, atom2], self.__annotation_mode)
                                         lp.add_data(_row)
 
                                 elif atom_sels[1] is not None:
@@ -30311,7 +30325,7 @@ class NmrDpUtility:
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
                                                               loop.tags, loop.data[idx],
                                                               auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                              [atom1, atom2])
+                                                              [atom1, atom2], self.__annotation_mode)
                                         lp.add_data(_row)
 
                                 else:
@@ -30321,7 +30335,7 @@ class NmrDpUtility:
                                                           memberId, memberLogicCode, list_id, self.__entry_id,
                                                           loop.tags, loop.data[idx],
                                                           auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                          [atom1, atom2])
+                                                          [atom1, atom2], self.__annotation_mode)
                                     lp.add_data(_row)
 
                             else:
@@ -30331,7 +30345,7 @@ class NmrDpUtility:
                                                       None, None, list_id, self.__entry_id,
                                                       loop.tags, loop.data[idx],
                                                       auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                      atom_sels)
+                                                      atom_sels, self.__annotation_mode)
                                 lp.add_data(_row)
 
                     else:
@@ -30687,7 +30701,7 @@ class NmrDpUtility:
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
                                                               loop.tags, loop.data[idx],
                                                               auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                              [atom1, atom2])
+                                                              [atom1, atom2], self.__annotation_mode)
                                         lp.add_data(_row)
 
                                 elif atom_sels[0] is not None:
@@ -30698,7 +30712,7 @@ class NmrDpUtility:
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
                                                               loop.tags, loop.data[idx],
                                                               auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                              [atom1, atom2])
+                                                              [atom1, atom2], self.__annotation_mode)
                                         lp.add_data(_row)
 
                                 elif atom_sels[1] is not None:
@@ -30709,7 +30723,7 @@ class NmrDpUtility:
                                                               memberId, memberLogicCode, list_id, self.__entry_id,
                                                               loop.tags, loop.data[idx],
                                                               auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                              [atom1, atom2])
+                                                              [atom1, atom2], self.__annotation_mode)
                                         lp.add_data(_row)
 
                                 else:
@@ -30719,7 +30733,7 @@ class NmrDpUtility:
                                                           memberId, memberLogicCode, list_id, self.__entry_id,
                                                           loop.tags, loop.data[idx],
                                                           auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                          [atom1, atom2])
+                                                          [atom1, atom2], self.__annotation_mode)
                                     lp.add_data(_row)
 
                             else:
@@ -30729,7 +30743,7 @@ class NmrDpUtility:
                                                       None, None, list_id, self.__entry_id,
                                                       loop.tags, loop.data[idx],
                                                       auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                      atom_sels)
+                                                      atom_sels, self.__annotation_mode)
                                 lp.add_data(_row)
 
                 else:  # nothing to do because of insufficient sequence tags

@@ -6947,7 +6947,7 @@ def getDstFuncForSsBond(atom1, atom2):
 def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
                    originalTagNames, originalRow,
                    authToStarSeq, authToOrigSeq, authToInsCode, offsetHolder,
-                   atoms):
+                   atoms, annotationMode):
     """ Return row data for a given constraint subtype and corresponding NMR-STAR row.
         @return: data array
     """
@@ -7113,12 +7113,20 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if atom1 is not None:
             row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        if hasKeyValue(atom1, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_1')
+            if val is not None:
+                row[key_size + 16] = val
+        elif hasKeyValue(atom1, 'auth_atom_id'):
             row[key_size + 16] = atom1['auth_atom_id']
         if atom2 is not None:
             row[key_size + 17], row[key_size + 18], row[key_size + 19], row[key_size + 20] =\
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-        if hasKeyValue(atom2, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_2')
+            if val is not None:
+                row[key_size + 21] = val
+        elif hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 21] = atom2['auth_atom_id']
 
         if authToInsCode is not None:
@@ -7170,22 +7178,38 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if atom1 is not None:
             row[key_size + 10], row[key_size + 11], row[key_size + 12], row[key_size + 13] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        if hasKeyValue(atom1, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_1')
+            if val is not None:
+                row[key_size + 14] = val
+        elif hasKeyValue(atom1, 'auth_atom_id'):
             row[key_size + 14] = atom1['auth_atom_id']
         if atom2 is not None:
             row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-        if hasKeyValue(atom2, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_2')
+            if val is not None:
+                row[key_size + 19] = val
+        elif hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 19] = atom2['auth_atom_id']
         if atom3 is not None:
             row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
                 atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
-        if hasKeyValue(atom3, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_3')
+            if val is not None:
+                row[key_size + 24] = val
+        elif hasKeyValue(atom3, 'auth_atom_id'):
             row[key_size + 24] = atom3['auth_atom_id']
         if atom4 is not None:
             row[key_size + 25], row[key_size + 26], row[key_size + 27], row[key_size + 28] =\
                 atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
-        if hasKeyValue(atom4, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_4')
+            if val is not None:
+                row[key_size + 29] = val
+        elif hasKeyValue(atom4, 'auth_atom_id'):
             row[key_size + 29] = atom4['auth_atom_id']
 
         if authToInsCode is not None:
@@ -7243,12 +7267,20 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if atom1 is not None:
             row[key_size + 13], row[key_size + 14], row[key_size + 15], row[key_size + 16] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        if hasKeyValue(atom1, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_1')
+            if val is not None:
+                row[key_size + 17] = val
+        elif hasKeyValue(atom1, 'auth_atom_id'):
             row[key_size + 17] = atom1['auth_atom_id']
         if atom2 is not None:
             row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-        if hasKeyValue(atom2, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_2')
+            if val is not None:
+                row[key_size + 22] = val
+        elif hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 22] = atom2['auth_atom_id']
 
         if authToInsCode is not None:

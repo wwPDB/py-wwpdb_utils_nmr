@@ -2411,6 +2411,18 @@ class AriaMRParserListener(ParseTreeListener):
                     if _seqKey in self.__coordAtomSite:
                         return seqKey, self.__coordAtomSite[_seqKey]
                 if seqKey in self.__coordAtomSite:
+                    if compId is None:
+                        return seqKey, self.__coordAtomSite[seqKey]
+                    _compId = self.__coordAtomSite[seqKey]['comp_id']
+                    if compId == _compId:
+                        return seqKey, self.__coordAtomSite[seqKey]
+                    if self.__hasNonPoly:
+                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                        for np in npList:
+                            if np['comp_id'][0] == compId and np['auth_seq_id'][0] == seqId:
+                                _seqKey = (chainId, np['seq_id'][0])
+                                if _seqKey in self.__coordAtomSite and self.__coordAtomSite[_seqKey]['comp_id'] == compId:
+                                    return _seqKey, self.__coordAtomSite[_seqKey]
                     return seqKey, self.__coordAtomSite[seqKey]
             else:
                 if seqKey in self.__labelToAuthSeq:

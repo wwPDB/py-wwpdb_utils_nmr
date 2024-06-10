@@ -3368,6 +3368,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                 withStructConf=False,
                                                 withRmsd=False)
 
+                internal_conflict = False
+
                 for np in nonPoly:
                     conflict = False
 
@@ -3375,28 +3377,47 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                     for authSeqId, labelSeqId in zip(np['auth_seq_id'], np['seq_id']):
 
-                        ps = next((ps for ps in polySeq if ps['auth_chain_id'] == np['auth_chain_id']), None)
+                        for _np in nonPoly:
 
-                        if ps is None:
-                            continue
+                            if _np == np:
+                                continue
 
-                        if authSeqId in ps['auth_seq_id'] and labelSeqId not in ps['auth_seq_id']:
-                            altAuthSeqIds.append(labelSeqId)
+                            if _np['auth_chain_id'] != np['auth_chain_id']:
+                                continue
 
-                            if 'ambig_auth_seq_id' not in ps:
-                                ps['ambig_auth_seq_id'] = []
-                            ps['ambig_auth_seq_id'].append(authSeqId)
+                            if labelSeqId in _np['auth_seq_id'] or authSeqId in _np['seq_id'] and labelSeqId != authSeqId:
+                                altAuthSeqIds.append(labelSeqId)
+                                conflict = internal_conflict = True
+                                break
 
-                            conflict = True
+                        if not conflict:
+                            ps = next((ps for ps in polySeq if ps['auth_chain_id'] == np['auth_chain_id']), None)
 
-                        else:
-                            altAuthSeqIds.append(authSeqId)
+                            if ps is None:
+                                continue
+
+                            if authSeqId in ps['auth_seq_id'] and labelSeqId not in ps['auth_seq_id']:
+                                altAuthSeqIds.append(labelSeqId)
+
+                                if 'ambig_auth_seq_id' not in ps:
+                                    ps['ambig_auth_seq_id'] = []
+                                ps['ambig_auth_seq_id'].append(authSeqId)
+
+                                conflict = True
+
+                            elif authSeqId not in altAuthSeqIds:
+                                altAuthSeqIds.append(authSeqId)
 
                     if conflict:
                         np['alt_auth_seq_id'] = altAuthSeqIds
 
                     if 'ins_code' in np and len(collections.Counter(np['ins_code']).most_common()) == 1:
                         del np['ins_code']
+
+                if internal_conflict:
+                    for np in nonPoly:
+                        if 'alt_auth_seq_id' in np:
+                            np['auth_seq_id'], np['alt_auth_seq_id'] = np['alt_auth_seq_id'], np['auth_seq_id']
 
             except KeyError:
                 nonPoly = None

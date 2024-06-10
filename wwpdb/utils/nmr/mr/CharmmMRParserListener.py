@@ -64,7 +64,8 @@ try:
                                                        PTNR2_AUTH_ATOM_DATA_ITEMS)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
+                                                             PARAMAGNETIC_ELEMENTS)
     from wwpdb.utils.nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
                                            LARGE_ASYM_ID,
                                            monDict3,
@@ -141,7 +142,8 @@ except ImportError:
                                            PTNR2_AUTH_ATOM_DATA_ITEMS)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
+                                                 PARAMAGNETIC_ELEMENTS)
     from nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
                                LARGE_ASYM_ID,
                                monDict3,
@@ -536,7 +538,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
                     if self.__reasons is None\
                        and (any(f for f in self.__f if '[Atom not found]' in f or '[Sequence mismatch]' in f)
-                            or (not self.hasAnyRestraints() and any(f for f in self.__f if '[Insufficient atom selection]' in f))):
+                            or any(f for f in self.__f if '[Insufficient atom selection]' in f)):
 
                         seqIdRemap = []
 
@@ -773,7 +775,8 @@ class CharmmMRParserListener(ParseTreeListener):
                 if 'label_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_scheme']
 
-            if not any(f for f in self.__f if '[Atom not found]' in f) and self.hasAnyRestraints():
+            if not any(f for f in self.__f if '[Atom not found]' in f) and self.hasAnyRestraints()\
+               and 'non_poly_remap' not in self.reasonsForReParsing and 'branch_remap' not in self.reasonsForReParsing:
 
                 if len(self.reasonsForReParsing) > 0:
                     self.reasonsForReParsing = {}
@@ -3139,13 +3142,13 @@ class CharmmMRParserListener(ParseTreeListener):
 
                     if self.__reasons is not None:
                         if 'non_poly_remap' in self.__reasons and compId in self.__reasons['non_poly_remap']\
-                           and seqId in self.__reasons['non_poly_remap'][compId]:
-                            fixedChainId, seqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], chainId, seqId, compId)
+                           and _factor['seq_id'][0] in self.__reasons['non_poly_remap'][compId]:
+                            fixedChainId, seqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], chainId, _factor['seq_id'][0], compId)
                             if fixedChainId != chainId:
                                 continue
 
                     _seqId = seqId
-                    if not isPolySeq and 'alt_auth_seq_id' in ps and seqId in ps['auth_seq_id'] and seqId not in ps['alt_auth_seq_id']:
+                    if self.__reasons is None and not isPolySeq and 'alt_auth_seq_id' in ps and seqId in ps['auth_seq_id'] and seqId not in ps['alt_auth_seq_id']:
                         seqId = next(_altSeqId for _seqId, _altSeqId in zip(ps['auth_seq_id'], ps['alt_auth_seq_id']) if _seqId == seqId)
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
 
@@ -3210,6 +3213,12 @@ class CharmmMRParserListener(ParseTreeListener):
                         origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
 
                         atomId = atomId.upper()
+
+                        if not isPolySeq and compId in PARAMAGNETIC_ELEMENTS:
+                            if compId not in atomId:
+                                continue
+                            if compId != atomId:
+                                atomId = compId
 
                         if compId not in monDict3 and self.__mrAtomNameMapping is not None and (_seqId in ps['auth_seq_id'] or _seqId_ in ps['auth_seq_id']):
                             if _seqId in ps['auth_seq_id']:
@@ -3884,6 +3893,17 @@ class CharmmMRParserListener(ParseTreeListener):
                 _seqKey = (chainId, seqId, compId)
                 if _seqKey in self.__coordAtomSite:
                     return seqKey, self.__coordAtomSite[_seqKey]
+                if cifCheck and seqKey in self.__coordAtomSite:
+                    _compId = self.__coordAtomSite[seqKey]['comp_id']
+                    if compId == _compId:
+                        return seqKey, self.__coordAtomSite[seqKey]
+                    if self.__hasNonPoly:
+                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                        for np in npList:
+                            if np['comp_id'][0] == compId and np['auth_seq_id'][0] == seqId:
+                                _seqKey = (chainId, np['seq_id'][0])
+                                if _seqKey in self.__coordAtomSite and self.__coordAtomSite[_seqKey]['comp_id'] == compId:
+                                    return _seqKey, self.__coordAtomSite[_seqKey]
             return seqKey, self.__coordAtomSite[seqKey] if cifCheck and seqKey in self.__coordAtomSite else None
         if seqKey in self.__labelToAuthSeq:
             seqKey = self.__labelToAuthSeq[seqKey]

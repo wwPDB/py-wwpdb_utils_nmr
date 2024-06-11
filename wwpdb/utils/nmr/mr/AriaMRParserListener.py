@@ -1194,6 +1194,8 @@ class AriaMRParserListener(ParseTreeListener):
                             seqId = fixedSeqId
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
+                if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
+                    seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                 if seqId in np['auth_seq_id']\
                    or (ligands == 1 and (_compId in np['comp_id'] or ('alt_comp_id' in np and _compId in np['alt_comp_id']))):
                     if ligands == 1 and cifCompId is None:
@@ -1215,8 +1217,6 @@ class AriaMRParserListener(ParseTreeListener):
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                    if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
-                        seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                     if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((chainId, seqId, cifCompId, False))
@@ -1617,6 +1617,8 @@ class AriaMRParserListener(ParseTreeListener):
                             seqId = fixedSeqId
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
+                if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
+                    seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                 if seqId in np['auth_seq_id']\
                    or (ligands == 1 and (_compId in np['comp_id'] or ('alt_comp_id' in np and _compId in np['alt_comp_id']))):
                     if ligands == 1 and cifCompId is None:
@@ -1638,8 +1640,6 @@ class AriaMRParserListener(ParseTreeListener):
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                    if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
-                        seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
                     if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((chainId, seqId, cifCompId, False))

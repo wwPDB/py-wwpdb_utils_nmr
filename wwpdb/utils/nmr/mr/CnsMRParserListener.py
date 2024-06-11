@@ -5350,8 +5350,8 @@ class CnsMRParserListener(ParseTreeListener):
                                 continue
 
                     _seqId = seqId
-                    if self.__reasons is None and not isPolySeq and 'alt_auth_seq_id' in ps and seqId in ps['auth_seq_id'] and seqId not in ps['alt_auth_seq_id']:
-                        seqId = next(_altSeqId for _seqId, _altSeqId in zip(ps['auth_seq_id'], ps['alt_auth_seq_id']) if _seqId == seqId)
+                    if self.__reasons is None and not isPolySeq and 'alt_auth_seq_id' in ps and seqId not in ps['auth_seq_id'] and seqId in ps['alt_auth_seq_id']:
+                        seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(ps['auth_seq_id'], ps['alt_auth_seq_id']) if _altSeqId_ == seqId)
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
 
                     if not isPolySeq and isChainSpecified and self.doesNonPolySeqIdMatchWithPolySeqUnobs(_factor['chain_id'][0], _seqId_):

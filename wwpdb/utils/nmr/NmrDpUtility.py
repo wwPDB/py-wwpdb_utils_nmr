@@ -189,6 +189,7 @@
 # 22-Mar-2024  M. Yokochi - test tautomeric states of histidine-like residue across models (DAOTHER-9252)
 # 01-May-2024  M. Yokochi - merge cs/mr sequence extensions containing unknown residues (e.g UNK, DN, N) if necessary (NMR restraint remediation, 6fw4)
 # 22-May-2024  M. Yokochi - block deposition using a peak list file in any binary format and prevent 'nm-pea-any' occasionally matches with 'nm-res-cya' (DAOTHER-9425)
+# 11-Jun-2024  M. Yokcohi - add support for ligand remapping in annotation process (DAOTHER-9286)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -19067,12 +19068,12 @@ class NmrDpUtility:
 
         return self.__nefT.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)[0]
 
-    def __getAtomIdListInXplorWithCoordAtomSite(self, comp_id, atom_id, coord_atom_site):
+    def __getAtomIdListInXplorForLigandRemap(self, comp_id, atom_id, coord_atom_site):
         """ Return atom ID list in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclature
-            in reference to coordinates' alternative atom IDs.
+            in reference to coordinates' alternative atom IDs. (DAOTHER-9286)
         """
 
-        return self.__nefT.get_valid_star_atom_in_xplor_w_coord_atom_site(comp_id, atom_id, coord_atom_site)[0]
+        return self.__nefT.get_valid_star_atom_in_xplor_for_ligand_remap(comp_id, atom_id, coord_atom_site)[0]
 
     def __getRepAtomId(self, comp_id, atom_id):
         """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id.
@@ -24811,14 +24812,14 @@ class NmrDpUtility:
                         if (valid and atom_id in _coord_atom_site['atom_id'])\
                            or ((prefer_auth_atom_name or _row[24] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M')):
                             atom_ids = [atom_id]
-                            if self.__annotation_mode and comp_id in incomplete_comp_id_annotation and trial > 0:
-                                atom_ids = self.__getAtomIdListInXplorWithCoordAtomSite(comp_id, _row[23] if fill_orig_atom_id else atom_id, _coord_atom_site)
+                            if self.__annotation_mode and comp_id in incomplete_comp_id_annotation and trial > 0:  # DAOTHER-9286
+                                atom_ids = self.__getAtomIdListInXplorForLigandRemap(comp_id, _row[23] if fill_orig_atom_id else atom_id, _coord_atom_site)
                         else:
                             atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
                             if len(atom_ids) == 0 or atom_ids[0] not in _coord_atom_site['atom_id']:
                                 atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
-                            if self.__annotation_mode and atom_ids[0] not in _coord_atom_site['atom_id']:
-                                atom_ids = self.__getAtomIdListInXplorWithCoordAtomSite(comp_id, atom_id, _coord_atom_site)
+                            if self.__annotation_mode and atom_ids[0] not in _coord_atom_site['atom_id']:  # DAOTHER-9286
+                                atom_ids = self.__getAtomIdListInXplorForLigandRemap(comp_id, atom_id, _coord_atom_site)
                                 if comp_id not in incomplete_comp_id_annotation:
                                     incomplete_comp_id_annotation.append(comp_id)
                         if valid and len(missing_ch3) > 0:
@@ -26681,7 +26682,7 @@ class NmrDpUtility:
 
                     index += 1
 
-                if trial == 0 and len(incomplete_comp_id_annotation) > 0:
+                if trial == 0 and len(incomplete_comp_id_annotation) > 0:  # DAOTHER-9286
                     regenerate_request = True
 
                 if not regenerate_request:

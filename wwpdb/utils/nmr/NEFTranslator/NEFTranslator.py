@@ -93,6 +93,7 @@
 # 13-Mar-2023  M. Yokochi - preserve the original atom nomenclature of NMR restraints into Auth_atom_name_* data items (v3.4.0)
 # 13-Sep-2023  M. Yokochi - fix/improve NEF atom nomenclature mapping (v3.5.0, DAOTHER-8817)
 # 02-Oct-2023  M. Yokochi - do not reorganize _Gen_dist_constraint.ID (v3.5.1, DAOTHER-8855)
+# 11-Jun-2024  M. Yokochi - add support for ligand remapping in annotation process (v3.6.0, DAOTHER-9286)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -145,7 +146,7 @@ except ImportError:
 
 
 __package_name__ = 'wwpdb.utils.nmr'
-__version__ = '3.5.1'
+__version__ = '3.6.0'
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
@@ -5271,12 +5272,12 @@ class NEFTranslator:
 
         return out_tag
 
-    def get_valid_star_atom_in_xplor_w_coord_atom_site(self, comp_id, atom_id, coord_atom_site):
+    def get_valid_star_atom_in_xplor_for_ligand_remap(self, comp_id, atom_id, coord_atom_site):
         """ Return lists of atom ID in IUPAC atom nomenclature for a given atom name in XPLOR atom nomenclature
             in reference to coordinates' alternative atom IDs.
             @author: Masashi Yokochi
             @return: list of instanced atom_id, ambiguity_code, and description
-            @note: used only for annotation
+            @note: used only for annotation (DAOTHER-9286)
         """
 
         if comp_id in emptyValue:
@@ -5295,7 +5296,7 @@ class NEFTranslator:
             atom_id = atom_id.replace('#', '%')
 
         if atom_id[0] in ('1', '2', '3'):
-            atom_list, ambiguity_code, details = self.get_valid_star_atom_w_coord_atom_site(comp_id, atom_id, coord_atom_site, methyl_only)
+            atom_list, ambiguity_code, details = self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id, coord_atom_site, methyl_only)
             if details is None:
                 return (atom_list, ambiguity_code, details)
             atom_id = atom_id[1:] + atom_id[0]
@@ -5306,21 +5307,21 @@ class NEFTranslator:
 
             if atom_id[-1] == '+' and atom_id[1].isdigit() and len(atom_id) > 2 and self.__ccU.updateChemCompDict(comp_id):
                 if self.__ccU.lastChemCompDict['_chem_comp.type'] in ('DNA LINKING', 'RNA LINKING'):  # DAOTHER-9198
-                    _atom_list, _ambiguity_code, _details = self.get_valid_star_atom_w_coord_atom_site(comp_id, 'HN' + atom_id[1:-1], coord_atom_site, methyl_only)
+                    _atom_list, _ambiguity_code, _details = self.get_valid_star_atom_for_ligand_remap(comp_id, 'HN' + atom_id[1:-1], coord_atom_site, methyl_only)
                     if _details is None:
                         atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                         return (atom_list, ambiguity_code, details)
 
-        atom_list, ambiguity_code, details = self.get_valid_star_atom_w_coord_atom_site(comp_id, atom_id, coord_atom_site, methyl_only)
+        atom_list, ambiguity_code, details = self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id, coord_atom_site, methyl_only)
 
         if details is not None and atom_id[-1] not in ('%', '*'):
-            _atom_list, _ambiguity_code, _details = self.get_valid_star_atom_w_coord_atom_site(comp_id, atom_id + '%', coord_atom_site, methyl_only)
+            _atom_list, _ambiguity_code, _details = self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id + '%', coord_atom_site, methyl_only)
             if _details is None:
                 atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
             elif atom_id[0] in protonBeginCode or len(atom_id) > 1:
-                atom_list, ambiguity_code, details = self.get_valid_star_atom_w_coord_atom_site(comp_id, atom_id + '*', coord_atom_site, methyl_only)
+                atom_list, ambiguity_code, details = self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id + '*', coord_atom_site, methyl_only)
                 if details is not None:
-                    atom_list, ambiguity_code, details = self.get_valid_star_atom_w_coord_atom_site(comp_id, atom_id, coord_atom_site, methyl_only)
+                    atom_list, ambiguity_code, details = self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id, coord_atom_site, methyl_only)
                     # 2l8r, comp_id=APR, atom_id=Q5D -> ['H5R1', 'H5R2']
                     if details is not None and atom_id[0] in ('Q', 'M'):
                         protons = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[1:], onlyProton=True)
@@ -5379,18 +5380,18 @@ class NEFTranslator:
                                 resolved = True
                     # 5lig, comp_id=6XM, atom_id=HA' -> ["HA1'", "HA2'"]
                     elif details is not None and atom_id.endswith("'") and not atom_id.endswith("''"):
-                        _atom_list, _ambiguity_code, _details = self.get_valid_star_atom_w_coord_atom_site(comp_id, atom_id[:-1] + "%'", coord_atom_site, methyl_only)
+                        _atom_list, _ambiguity_code, _details = self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id[:-1] + "%'", coord_atom_site, methyl_only)
                         if _details is None:
                             atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
 
         return (atom_list, ambiguity_code, details)
 
-    def get_valid_star_atom_w_coord_atom_site(self, comp_id, atom_id, coord_atom_site, methyl_only=False):
+    def get_valid_star_atom_for_ligand_remap(self, comp_id, atom_id, coord_atom_site, methyl_only=False):
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name
             in reference to coordinates' alternative atom IDs.
             @author: Masashi Yokochi
             @return: list of instanced atom_id, ambiguity_code, and description
-            @note: used only for annotation
+            @note: used only for annotation (DAOTHER-9286)
         """
 
         if comp_id in emptyValue:
@@ -5406,13 +5407,13 @@ class NEFTranslator:
             atom_id = atom_id.replace('#', '%')
 
         if atom_id == 'HN' or atom_id.endswith('%') or atom_id.endswith('*'):
-            atom_list, ambiguity_code, details = self.get_star_atom_w_coord_atom_site(comp_id, atom_id, details, coord_atom_site, methyl_only)
+            atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, atom_id, details, coord_atom_site, methyl_only)
             return (atom_list, ambiguity_code, details)
 
         if atom_id[0] in ('M', 'Q'):
 
             if atom_id.startswith('QQ'):
-                atom_list, ambiguity_code, details = self.get_star_atom_w_coord_atom_site(comp_id, 'H' + atom_id[2:] + '*', details, coord_atom_site, methyl_only)
+                atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[2:] + '*', details, coord_atom_site, methyl_only)
                 if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id)\
                    and atom_id[2] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
                     grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[2])
@@ -5420,7 +5421,7 @@ class NEFTranslator:
                         atom_list = []
                         details = None
                         for grk_atom in sorted(list(grk_atoms)):
-                            _atom_list, ambiguity_code, details = self.get_star_atom_w_coord_atom_site(comp_id, grk_atom, details, coord_atom_site, methyl_only)
+                            _atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, grk_atom, details, coord_atom_site, methyl_only)
                             atom_list.extend(_atom_list)
                         return (atom_list, ambiguity_code, details)
                 return (atom_list, ambiguity_code, details)
@@ -5433,13 +5434,13 @@ class NEFTranslator:
                 atom_list = []
                 details = None
                 for qr_atom in qr_atoms:
-                    _atom_list, ambiguity_code, details = self.get_star_atom_w_coord_atom_site(comp_id, qr_atom, details, coord_atom_site, methyl_only)
+                    _atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, qr_atom, details, coord_atom_site, methyl_only)
                     atom_list.extend(_atom_list)
                 return (atom_list, ambiguity_code, details)
 
             if atom_id.startswith('Q') or atom_id.startswith('M'):
                 if atom_id[-1].isalnum():
-                    atom_list, ambiguity_code, details = self.get_star_atom_w_coord_atom_site(comp_id, 'H' + atom_id[1:] + '%', details, coord_atom_site, methyl_only)
+                    atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[1:] + '%', details, coord_atom_site, methyl_only)
                     if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and len(atom_id) > 1\
                        and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
                         grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[1])
@@ -5447,25 +5448,25 @@ class NEFTranslator:
                             atom_list = []
                             details = None
                             for grk_atom in sorted(list(grk_atoms)):
-                                _atom_list, ambiguity_code, details = self.get_star_atom_w_coord_atom_site(comp_id, grk_atom, details, coord_atom_site, methyl_only)
+                                _atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, grk_atom, details, coord_atom_site, methyl_only)
                                 atom_list.extend(_atom_list)
                             return (atom_list, ambiguity_code, details)
                     if details is None and len(atom_list) == 1:
                         atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
                     return (atom_list, ambiguity_code, details)
-                atom_list, ambiguity_code, details = self.get_star_atom_w_coord_atom_site(comp_id, 'H' + atom_id[1:-1] + '*', details, coord_atom_site, methyl_only)
+                atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[1:-1] + '*', details, coord_atom_site, methyl_only)
                 if details is None and len(atom_list) == 1:
                     atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
                 return (atom_list, ambiguity_code, details)
 
         if len(atom_id) > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
-            atom_list, ambiguity_code, details = self.get_star_atom_w_coord_atom_site(comp_id, atom_id + '%', details, coord_atom_site, methyl_only)
+            atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, atom_id + '%', details, coord_atom_site, methyl_only)
             return (atom_list, ambiguity_code, details)
 
-        atom_list, ambiguity_code, details = self.get_star_atom_w_coord_atom_site(comp_id, atom_id, details, coord_atom_site, methyl_only)
+        atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, atom_id, details, coord_atom_site, methyl_only)
 
         if details is not None and atom_id[-1] not in ('%', '*'):
-            _atom_list, _ambiguity_code, _details = self.get_star_atom_w_coord_atom_site(comp_id, atom_id + '%', details, coord_atom_site, methyl_only)
+            _atom_list, _ambiguity_code, _details = self.get_star_atom_for_ligand_remap(comp_id, atom_id + '%', details, coord_atom_site, methyl_only)
             if _details is None:
                 atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
 
@@ -5477,16 +5478,16 @@ class NEFTranslator:
                 atom_list = []
                 details = None
                 for grk_atom in sorted(list(grk_atoms)):
-                    _atom_list, ambiguity_code, details = self.get_star_atom_w_coord_atom_site(comp_id, grk_atom, details, coord_atom_site, methyl_only)
+                    _atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, grk_atom, details, coord_atom_site, methyl_only)
                     atom_list.extend(_atom_list)
 
         return (atom_list, ambiguity_code, details)
 
-    def get_star_atom_w_coord_atom_site(self, comp_id, nef_atom, details, coord_atom_site, methyl_only=False):
+    def get_star_atom_for_ligand_remap(self, comp_id, nef_atom, details, coord_atom_site, methyl_only=False):
         """ Return list of instanced atom_id of a given NEF atom (including wildcard codes) and its ambiguity code.
             @change: support non-standard residue by Masashi Yokochi
             @return: list of instanced atom_id of a given NEF atom, ambiguity_code, and description
-            @note: used only for annotation
+            @note: used only for annotation (DAOTHER-9286)
         """
 
         if comp_id in emptyValue:
@@ -5622,13 +5623,13 @@ class NEFTranslator:
                         elif wc_code == '*':
                             pattern = re.compile(fr'{_atom_type}\S+')
                         elif self.__verbose:
-                            self.__lfh.write(f"+NEFTranslator.get_star_atom_w_coord_atom_site() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                            self.__lfh.write(f"+NEFTranslator.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
                     elif wc_code == '%':
                         pattern = re.compile(fr'{atom_type}\d+') if is_std_comp_id else re.compile(fr'{atom_type}\S?$')
                     elif wc_code == '*':
                         pattern = re.compile(fr'{atom_type}\S+')
                     elif self.__verbose:
-                        self.__lfh.write(f"+NEFTranslator.get_star_atom_w_coord_atom_site() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                        self.__lfh.write(f"+NEFTranslator.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
                 else:
                     _wc_code = atom_type[0]
                     atom_type = atom_type[1:]
@@ -5639,16 +5640,16 @@ class NEFTranslator:
                         elif wc_code == '*':
                             pattern = re.compile(fr'\d+{atom_type}\S+') if is_std_comp_id else re.compile(fr'\S?{atom_type}\S+$')
                         elif self.__verbose:
-                            self.__lfh.write(f"+NEFTranslator.get_star_atom_w_coord_atom_site() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                            self.__lfh.write(f"+NEFTranslator.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
                     elif _wc_code == '*':
                         if wc_code == '%':
                             pattern = re.compile(fr'\S+{atom_type}\d+') if is_std_comp_id else re.compile(fr'\S+{atom_type}\S?$')
                         elif wc_code == '*':
                             pattern = re.compile(fr'\S+{atom_type}\S+')
                         elif self.__verbose:
-                            self.__lfh.write(f"+NEFTranslator.get_star_atom_w_coord_atom_site() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                            self.__lfh.write(f"+NEFTranslator.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
                     elif self.__verbose:
-                        self.__lfh.write(f"+NEFTranslator.get_star_atom_w_coord_atom_site() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                        self.__lfh.write(f"+NEFTranslator.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
                 atom_list = [a for a in atoms if re.search(pattern, a) and nef_atom[0] in ('H', '1', '2', '3', a[0])]
 
@@ -5691,7 +5692,7 @@ class NEFTranslator:
                 elif xy_code == 'x':
                     atom_list = atom_list[:1]
                 elif self.__verbose:
-                    self.__lfh.write(f"+NEFTranslator.get_star_atom_w_coord_atom_site() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                    self.__lfh.write(f"+NEFTranslator.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
                 ambiguity_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
@@ -5709,7 +5710,7 @@ class NEFTranslator:
                 elif wc_code == '*':
                     pattern = re.compile(fr'\S+{atom_type}')
                 elif self.__verbose:
-                    self.__lfh.write(f"+NEFTranslator.get_star_atom_w_coord_atom_site() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                    self.__lfh.write(f"+NEFTranslator.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
                 atom_list = [a for a in atoms if re.search(pattern, a)]
 
@@ -5724,7 +5725,7 @@ class NEFTranslator:
                     ambiguity_code = guess_ambiguity_code(atom_list)
 
             elif self.__verbose:
-                self.__lfh.write(f"+NEFTranslator.get_star_atom_w_coord_atom_site() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                self.__lfh.write(f"+NEFTranslator.get_star_atom_for_ligand_remap() ++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
         except IndexError:
             pass
@@ -5732,31 +5733,31 @@ class NEFTranslator:
         if len(atom_list) == 0:
 
             if nef_atom == 'HN' and self.__csStat.peptideLike(comp_id):
-                atom_list, ambiguity_code, details = self.get_star_atom_w_coord_atom_site(comp_id, 'H', None, coord_atom_site)
+                atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'H', None, coord_atom_site)
                 return (atom_list, ambiguity_code, details)
 
             if self.__csStat.hasCompId(comp_id):
 
                 if is_std_comp_id and not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
                     atom_list, ambiguity_code, details =\
-                        self.get_star_atom_w_coord_atom_site(comp_id, nef_atom + '%', None, coord_atom_site, methyl_only)
+                        self.get_star_atom_for_ligand_remap(comp_id, nef_atom + '%', None, coord_atom_site, methyl_only)
                     return (atom_list, ambiguity_code, details)
 
                 if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
                     atom_list, ambiguity_code, details =\
-                        self.get_star_atom_w_coord_atom_site(comp_id, nef_atom[:-1] + '%', None, coord_atom_site, methyl_only)
+                        self.get_star_atom_for_ligand_remap(comp_id, nef_atom[:-1] + '%', None, coord_atom_site, methyl_only)
                     return (atom_list, ambiguity_code, details)
 
                 if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and (nef_atom[:-1] + '1' not in methyl_atoms) and\
                    len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
                     atom_list, ambiguity_code, details =\
-                        self.get_star_atom_w_coord_atom_site(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%', None,
-                                                             coord_atom_site, methyl_only)
+                        self.get_star_atom_for_ligand_remap(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%', None,
+                                                            coord_atom_site, methyl_only)
                     return (atom_list, ambiguity_code, details)
 
                 if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and nef_atom[:-1] in atoms:
                     atom_list, ambiguity_code, details =\
-                        self.get_star_atom_w_coord_atom_site(comp_id, nef_atom[:-1], None, coord_atom_site, methyl_only)
+                        self.get_star_atom_for_ligand_remap(comp_id, nef_atom[:-1], None, coord_atom_site, methyl_only)
                     return (atom_list, ambiguity_code, details)
 
             if nef_atom in atoms:

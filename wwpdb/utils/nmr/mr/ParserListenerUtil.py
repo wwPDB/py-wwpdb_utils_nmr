@@ -3638,28 +3638,28 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                 for np in nonPoly:
                     if 'alt_comp_id' in np and 'alt_auth_seq_id' in np:
                         authChainId = np['auth_chain_id']
-                        for authSeqId, compId, altAuthSeqId, altCompId in zip(np['alt_auth_seq_id'], np['comp_id'], np['auth_seq_id'], np['alt_comp_id']):
+                        for authSeqId, compId, altAuthSeqId, altCompId in zip(np['auth_seq_id'], np['comp_id'], np['alt_auth_seq_id'], np['alt_comp_id']):
                             for ps in polySeq:
                                 if ps['auth_chain_id'] == authChainId and 'alt_comp_id' in ps:
                                     for _authSeqId, _compId, _altCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['alt_comp_id']):
-                                        if _authSeqId == authSeqId and _altCompId == altCompId and compId != _compId:
-                                            seqKey = (authChainId, authSeqId, altCompId)
+                                        if _authSeqId == altAuthSeqId and _altCompId == altCompId and compId != _compId:
+                                            seqKey = (authChainId, altAuthSeqId, altCompId)
                                             if seqKey not in splitLigand:
-                                                splitLigand[seqKey] = [{'auth_seq_id': authSeqId, 'comp_id': _compId, 'atom_ids': []}]
-                                            splitLigand[seqKey].append({'auth_seq_id': altAuthSeqId, 'comp_id': compId, 'atom_ids': []})
+                                                splitLigand[seqKey] = [{'auth_seq_id': altAuthSeqId, 'comp_id': _compId, 'atom_ids': []}]
+                                            splitLigand[seqKey].append({'auth_seq_id': authSeqId, 'comp_id': compId, 'atom_ids': []})
             if branched is not None and len(branched) > 0:
                 for br in branched:
                     if 'alt_comp_id' in br and 'alt_auth_seq_id' in br:
                         authChainId = br['auth_chain_id']
-                        for authSeqId, compId, altAuthSeqId, altCompId in zip(br['alt_auth_seq_id'], br['comp_id'], br['auth_seq_id'], br['alt_comp_id']):
+                        for authSeqId, compId, altAuthSeqId, altCompId in zip(br['auth_seq_id'], br['comp_id'], br['alt_auth_seq_id'], br['alt_comp_id']):
                             for ps in polySeq:
                                 if ps['auth_chain_id'] == authChainId and 'alt_comp_id' in ps:
                                     for _authSeqId, _compId, _altCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['alt_comp_id']):
-                                        if _authSeqId == authSeqId and _altCompId == altCompId and compId != _compId:
-                                            seqKey = (authChainId, authSeqId, altCompId)
+                                        if _authSeqId == altAuthSeqId and _altCompId == altCompId and compId != _compId:
+                                            seqKey = (authChainId, altAuthSeqId, altCompId)
                                             if seqKey not in splitLigand:
-                                                splitLigand[seqKey] = [{'auth_seq_id': authSeqId, 'comp_id': _compId, 'atom_ids': []}]
-                                            splitLigand[seqKey].append({'auth_seq_id': altAuthSeqId, 'comp_id': compId, 'atom_ids': []})
+                                                splitLigand[seqKey] = [{'auth_seq_id': altAuthSeqId, 'comp_id': _compId, 'atom_ids': []}]
+                                            splitLigand[seqKey].append({'auth_seq_id': authSeqId, 'comp_id': compId, 'atom_ids': []})
 
     if not fullCheck:
         if not changed:

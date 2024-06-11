@@ -5418,11 +5418,15 @@ class AmberMRParserListener(ParseTreeListener):
 
             for np in self.__nonPolySeq:
                 chainId = np['auth_chain_id']
+                seqId = factor['auth_seq_id']
 
                 if authChainId is not None and chainId != authChainId:
                     continue
 
-                if factor['auth_seq_id'] in np['auth_seq_id']\
+                if 'alt_auth_seq_id' in np and seqId not in np['auth_seq_id'] and seqId in np['alt_auth_seq_id']:
+                    seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _altSeqId_ == seqId)
+
+                if seqId in np['auth_seq_id']\
                    or (ligands == 1 and (authCompId in np['comp_id'] or ('alt_comp_id' in np and authCompId in np['alt_comp_id']))):
                     if ligands == 1 and authCompId in np['comp_id']:
                         idx = np['comp_id'].index(authCompId)
@@ -5443,7 +5447,8 @@ class AmberMRParserListener(ParseTreeListener):
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
 
                     if compId not in monDict3 and self.__mrAtomNameMapping is not None:
-                        _, _, authAtomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, authCompId, authAtomId, compId, coordAtomSite)
+                        _, _, authAtomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, factor['auth_seq_id'],
+                                                                      authCompId, authAtomId, compId, coordAtomSite)
 
                     fixed = False
                     if self.__reasons is not None:

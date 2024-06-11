@@ -3220,11 +3220,18 @@ class CharmmMRParserListener(ParseTreeListener):
                             if compId != atomId:
                                 atomId = compId
 
-                        if compId not in monDict3 and self.__mrAtomNameMapping is not None and (_seqId in ps['auth_seq_id'] or _seqId_ in ps['auth_seq_id']):
+                        if compId not in monDict3 and self.__mrAtomNameMapping is not None\
+                           and ((_seqId in ps['auth_seq_id'] or _seqId_ in ps['auth_seq_id'])
+                                or ('alt_auth_seq_id' in ps
+                                    and (_seqId in ps['alt_auth_seq_id'] or _seqId_ in ps['alt_auth_seq_id']))):
                             if _seqId in ps['auth_seq_id']:
                                 authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId)]
-                            else:
+                            elif _seqId_ in ps['auth_seq_id']:
                                 authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId_)]
+                            elif _seqId in ps['alt_auth_seq_id']:
+                                authCompId = ps['auth_comp_id'][ps['alt_auth_seq_id'].index(_seqId)]
+                            else:
+                                authCompId = ps['auth_comp_id'][ps['alt_auth_seq_id'].index(_seqId_)]
                             atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, authCompId, atomId, coordAtomSite)
                             if coordAtomSite is not None and atomId not in atomSiteAtomId:
                                 if self.__reasons is not None and 'branched_remap' in self.__reasons:

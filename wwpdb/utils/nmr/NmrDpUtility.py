@@ -29530,6 +29530,17 @@ class NmrDpUtility:
                                                self.__caC['chem_comp_topo'])
                 return
 
+        if self.__cR.hasItem('atom_site', 'label_alt_id'):
+            alt_ids = self.__cR.getDictListWithFilter('atom_site',
+                                                      [{'name': 'label_alt_id', 'type': 'str'}
+                                                       ])
+
+            if len(alt_ids) > 0:
+                for a in alt_ids:
+                    if a['label_alt_id'] not in emptyValue:
+                        self.__representative_alt_id = a['label_alt_id']
+                        break
+
         self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
                                           self.__representative_model_id,
                                           self.__representative_alt_id,

@@ -668,6 +668,11 @@ def updatePolySeqRst(polySeqRst, chainId, seqId, compId: str, authCompId=None):
     if seqId is None or compId in emptyValue:
         return
 
+    if authCompId is None:
+        for ps in polySeqRst:
+            if 'auth_comp_id' not in ps:
+                ps['auth_comp_id'] = copy.deepcopy(ps['comp_id'])
+
     ps = next((ps for ps in polySeqRst if ps['chain_id'] == chainId), None)
     if ps is None:
         polySeqRst.append({'chain_id': chainId, 'seq_id': [], 'comp_id': [], 'auth_comp_id': []})
@@ -3015,10 +3020,10 @@ def splitPolySeqRstForBranched(pA, polySeqModel, branchedModel, polySeqRst, chai
             if test_ps is None:
                 continue
 
-            for bp in branchedModel:
-                b_ref_chain_id = bp['auth_chain_id']
+            for br in branchedModel:
+                b_ref_chain_id = br['auth_chain_id']
 
-                pA.setReferenceSequence(bp['comp_id'], 'REF' + b_ref_chain_id)
+                pA.setReferenceSequence(br['comp_id'], 'REF' + b_ref_chain_id)
                 pA.addTestSequence(test_ps['comp_id'], b_ref_chain_id)
                 pA.doAlign()
 
@@ -3096,9 +3101,9 @@ def splitPolySeqRstForBranched(pA, polySeqModel, branchedModel, polySeqRst, chai
 
             if b_ref_chain_id is not None:
 
-                ref_bp = next(bp for bp in branchedModel if bp['auth_chain_id'] == b_ref_chain_id)
+                ref_br = next(br for br in branchedModel if br['auth_chain_id'] == b_ref_chain_id)
 
-                pA.setReferenceSequence(ref_bp['comp_id'], 'REF' + b_ref_chain_id)
+                pA.setReferenceSequence(ref_br['comp_id'], 'REF' + b_ref_chain_id)
                 pA.addTestSequence(_test_ps['comp_id'], b_ref_chain_id)
                 pA.doAlign()
 
@@ -3158,9 +3163,9 @@ def splitPolySeqRstForBranched(pA, polySeqModel, branchedModel, polySeqRst, chai
                     myPr0 = str(myPr[0])
                     myPr1 = str(myPr[1])
                     if myPr0 != '.':
-                        while b_idx1 < len(ref_bp['auth_seq_id']):
-                            if ref_bp['comp_id'][b_idx1] == myPr0:
-                                b_ref_seq_ids.append(ref_bp['seq_id'][b_idx1])
+                        while b_idx1 < len(ref_br['auth_seq_id']):
+                            if ref_br['comp_id'][b_idx1] == myPr0:
+                                b_ref_seq_ids.append(ref_br['seq_id'][b_idx1])
                                 b_idx1 += 1
                                 break
                             b_idx1 += 1

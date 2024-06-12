@@ -1362,6 +1362,8 @@ class BiosymMRParserListener(ParseTreeListener):
                             seqId = fixedSeqId
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
+                if 'alt_auth_seq_id' in np and seqId not in np['auth_seq_id'] and seqId in np['alt_auth_seq_id']:
+                    seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _altSeqId_ == seqId)
                 if seqId in np['auth_seq_id']:
                     if ligands == 1 and cifCompId is None:
                         cifCompId = _compId
@@ -1381,9 +1383,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     origCompId = np['auth_comp_id'][idx]
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
-                        atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
-                    if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
-                        seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
+                        atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
                     if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((chainId, seqId, cifCompId, False))
@@ -2310,6 +2310,18 @@ class BiosymMRParserListener(ParseTreeListener):
                     if _seqKey in self.__coordAtomSite:
                         return seqKey, self.__coordAtomSite[_seqKey]
                 if seqKey in self.__coordAtomSite:
+                    if compId is None:
+                        return seqKey, self.__coordAtomSite[seqKey]
+                    _compId = self.__coordAtomSite[seqKey]['comp_id']
+                    if compId == _compId:
+                        return seqKey, self.__coordAtomSite[seqKey]
+                    if self.__hasNonPoly:
+                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                        for np in npList:
+                            if np['comp_id'][0] == compId and np['auth_seq_id'][0] == seqId:
+                                _seqKey = (chainId, np['seq_id'][0])
+                                if _seqKey in self.__coordAtomSite and self.__coordAtomSite[_seqKey]['comp_id'] == compId:
+                                    return _seqKey, self.__coordAtomSite[_seqKey]
                     return seqKey, self.__coordAtomSite[seqKey]
             else:
                 if seqKey in self.__labelToAuthSeq:

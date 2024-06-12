@@ -794,7 +794,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if self.__reasons is None\
                        and (any(f for f in self.__f if '[Atom not found]' in f or '[Sequence mismatch]' in f)
-                            or (not self.hasAnyRestraints() and any(f for f in self.__f if '[Insufficient atom selection]' in f))):
+                            or any(f for f in self.__f if '[Insufficient atom selection]' in f)):
 
                         seqIdRemap = []
 
@@ -1031,7 +1031,8 @@ class XplorMRParserListener(ParseTreeListener):
                 if 'label_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_scheme']
 
-            if not any(f for f in self.__f if '[Atom not found]' in f) and self.hasAnyRestraints():
+            if not any(f for f in self.__f if '[Atom not found]' in f) and self.hasAnyRestraints()\
+               and 'non_poly_remap' not in self.reasonsForReParsing and 'branch_remap' not in self.reasonsForReParsing:
 
                 if len(self.reasonsForReParsing) > 0:
                     self.reasonsForReParsing = {}
@@ -9180,6 +9181,8 @@ class XplorMRParserListener(ParseTreeListener):
             if len(psList) == 0:
                 continue
 
+            pref_alt_auth_seq_id = False
+
             for ps in psList:
 
                 for seqId in _factor['seq_id']:
@@ -9246,15 +9249,19 @@ class XplorMRParserListener(ParseTreeListener):
                     else:
                         compId = None
 
-                    if not isPolySeq and compId is None:
-                        if 'alt_auth_seq_id' in ps and seqId in ps['alt_auth_seq_id']:
-                            idx = ps['alt_auth_seq_id'].index(seqId)
-                            seqId = ps['seq_id'][idx]
-                            compId = ps['comp_id'][idx]
-                        elif seqId in ps['seq_id']:
-                            idx = ps['seq_id'].index(seqId)
-                            compId = ps['comp_id'][idx]
-                            _seqId_ = ps['auth_seq_id'][idx]
+                    if not isPolySeq:
+                        if compId is None:
+                            if 'alt_auth_seq_id' in ps and seqId in ps['alt_auth_seq_id']:
+                                idx = ps['alt_auth_seq_id'].index(seqId)
+                                seqId = ps['seq_id'][idx]
+                                compId = ps['comp_id'][idx]
+                                pref_alt_auth_seq_id = True
+                            elif seqId in ps['seq_id']:
+                                idx = ps['seq_id'].index(seqId)
+                                compId = ps['comp_id'][idx]
+                                _seqId_ = ps['auth_seq_id'][idx]
+                        elif pref_alt_auth_seq_id:
+                            continue
 
                     if self.__authToInsCode is None or len(self.__authToInsCode) == 0 or _compId_ is None:
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, cifCheck=cifCheck)
@@ -9285,14 +9292,14 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if self.__reasons is not None:
                         if 'non_poly_remap' in self.__reasons and compId in self.__reasons['non_poly_remap']\
-                           and seqId in self.__reasons['non_poly_remap'][compId]:
-                            fixedChainId, seqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], chainId, seqId, compId)
+                           and _factor['seq_id'][0] in self.__reasons['non_poly_remap'][compId]:
+                            fixedChainId, seqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], chainId, _factor['seq_id'][0], compId)
                             if fixedChainId != chainId:
                                 continue
 
                     _seqId = seqId
-                    if not isPolySeq and 'alt_auth_seq_id' in ps and seqId in ps['auth_seq_id'] and seqId not in ps['alt_auth_seq_id']:
-                        seqId = next(_altSeqId for _seqId, _altSeqId in zip(ps['auth_seq_id'], ps['alt_auth_seq_id']) if _seqId == seqId)
+                    if self.__reasons is None and not isPolySeq and 'alt_auth_seq_id' in ps and seqId not in ps['auth_seq_id'] and seqId in ps['alt_auth_seq_id']:
+                        seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(ps['auth_seq_id'], ps['alt_auth_seq_id']) if _altSeqId_ == seqId)
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
 
                     if not isPolySeq and isChainSpecified and self.doesNonPolySeqIdMatchWithPolySeqUnobs(_factor['chain_id'][0], _seqId_):
@@ -9368,11 +9375,24 @@ class XplorMRParserListener(ParseTreeListener):
 
                         atomId = atomId.upper()
 
-                        if compId not in monDict3 and self.__mrAtomNameMapping is not None and (_seqId in ps['auth_seq_id'] or _seqId_ in ps['auth_seq_id']):
+                        if not isPolySeq and compId in PARAMAGNETIC_ELEMENTS:
+                            if compId not in atomId:
+                                continue
+                            if compId != atomId:
+                                atomId = compId
+
+                        if compId not in monDict3 and self.__mrAtomNameMapping is not None\
+                           and ((_seqId in ps['auth_seq_id'] or _seqId_ in ps['auth_seq_id'])
+                                or ('alt_auth_seq_id' in ps
+                                    and (_seqId in ps['alt_auth_seq_id'] or _seqId_ in ps['alt_auth_seq_id']))):
                             if _seqId in ps['auth_seq_id']:
                                 authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId)]
-                            else:
+                            elif _seqId_ in ps['auth_seq_id']:
                                 authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId_)]
+                            elif _seqId in ps['alt_auth_seq_id']:
+                                authCompId = ps['auth_comp_id'][ps['alt_auth_seq_id'].index(_seqId)]
+                            else:
+                                authCompId = ps['auth_comp_id'][ps['alt_auth_seq_id'].index(_seqId_)]
                             atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, authCompId, atomId, coordAtomSite)
                             if coordAtomSite is not None and atomId not in atomSiteAtomId:
                                 if self.__reasons is not None and 'branched_remap' in self.__reasons:
@@ -10080,6 +10100,17 @@ class XplorMRParserListener(ParseTreeListener):
                 _seqKey = (chainId, seqId, compId)
                 if _seqKey in self.__coordAtomSite:
                     return seqKey, self.__coordAtomSite[_seqKey]
+                if cifCheck and seqKey in self.__coordAtomSite:
+                    _compId = self.__coordAtomSite[seqKey]['comp_id']
+                    if compId == _compId:
+                        return seqKey, self.__coordAtomSite[seqKey]
+                    if self.__hasNonPoly:
+                        npList = [np for np in self.__nonPoly if np['auth_chain_id'] == chainId]
+                        for np in npList:
+                            if np['comp_id'][0] == compId and np['auth_seq_id'][0] == seqId:
+                                _seqKey = (chainId, np['seq_id'][0])
+                                if _seqKey in self.__coordAtomSite and self.__coordAtomSite[_seqKey]['comp_id'] == compId:
+                                    return _seqKey, self.__coordAtomSite[_seqKey]
             return seqKey, self.__coordAtomSite[seqKey] if cifCheck and seqKey in self.__coordAtomSite else None
         if seqKey in self.__labelToAuthSeq:
             seqKey = self.__labelToAuthSeq[seqKey]

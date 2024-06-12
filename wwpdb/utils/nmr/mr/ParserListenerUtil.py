@@ -3368,35 +3368,55 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                 withStructConf=False,
                                                 withRmsd=False)
 
-                for np in nonPoly:
-                    conflict = False
+                internal_conflict = False
+                conflict_per_chain = [False] * len(nonPoly)
 
+                for idx, np in enumerate(nonPoly):
                     altAuthSeqIds = []
 
                     for authSeqId, labelSeqId in zip(np['auth_seq_id'], np['seq_id']):
 
-                        ps = next((ps for ps in polySeq if ps['auth_chain_id'] == np['auth_chain_id']), None)
+                        for _np in nonPoly:
 
-                        if ps is None:
-                            continue
+                            if _np == np:
+                                continue
 
-                        if authSeqId in ps['auth_seq_id'] and labelSeqId not in ps['auth_seq_id']:
-                            altAuthSeqIds.append(labelSeqId)
+                            if _np['auth_chain_id'] != np['auth_chain_id']:
+                                continue
 
-                            if 'ambig_auth_seq_id' not in ps:
-                                ps['ambig_auth_seq_id'] = []
-                            ps['ambig_auth_seq_id'].append(authSeqId)
+                            if labelSeqId in _np['auth_seq_id'] or authSeqId in _np['seq_id'] and labelSeqId != authSeqId:
+                                altAuthSeqIds.append(labelSeqId)
+                                conflict_per_chain[idx] = internal_conflict = True
+                                break
 
-                            conflict = True
+                        if not conflict_per_chain[idx]:
+                            ps = next((ps for ps in polySeq if ps['auth_chain_id'] == np['auth_chain_id']), None)
 
-                        else:
-                            altAuthSeqIds.append(authSeqId)
+                            if ps is None:
+                                continue
 
-                    if conflict:
+                            if authSeqId in ps['auth_seq_id'] and labelSeqId not in ps['auth_seq_id']:
+                                altAuthSeqIds.append(labelSeqId)
+
+                                if 'ambig_auth_seq_id' not in ps:
+                                    ps['ambig_auth_seq_id'] = []
+                                ps['ambig_auth_seq_id'].append(authSeqId)
+
+                                conflict_per_chain[idx] = True
+
+                            elif authSeqId not in altAuthSeqIds:
+                                altAuthSeqIds.append(authSeqId)
+
+                    if conflict_per_chain[idx]:
                         np['alt_auth_seq_id'] = altAuthSeqIds
 
                     if 'ins_code' in np and len(collections.Counter(np['ins_code']).most_common()) == 1:
                         del np['ins_code']
+
+                if internal_conflict or any(conflict for conflict in conflict_per_chain):
+                    for idx, np in enumerate(nonPoly):
+                        if (internal_conflict or conflict_per_chain[idx]) and 'alt_auth_seq_id' in np:
+                            np['auth_seq_id'], np['alt_auth_seq_id'] = np['alt_auth_seq_id'], np['auth_seq_id']
 
             except KeyError:
                 nonPoly = None
@@ -3560,35 +3580,55 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                  withStructConf=False,
                                                  withRmsd=False)
 
-                for bp in branched:
-                    conflict = False
+                internal_conflict = False
+                conflict_per_chain = [False] * len(branched)
 
+                for idx, br in enumerate(branched):
                     altAuthSeqIds = []
 
-                    for authSeqId, labelSeqId in zip(bp['auth_seq_id'], bp['seq_id']):
+                    for authSeqId, labelSeqId in zip(br['auth_seq_id'], br['seq_id']):
 
-                        ps = next((ps for ps in polySeq if ps['auth_chain_id'] == bp['auth_chain_id']), None)
+                        for _br in branched:
 
-                        if ps is None:
-                            continue
+                            if _br == br:
+                                continue
 
-                        if authSeqId in ps['auth_seq_id'] and labelSeqId not in ps['auth_seq_id']:
-                            altAuthSeqIds.append(labelSeqId)
+                            if _br['auth_chain_id'] != br['auth_chain_id']:
+                                continue
 
-                            if 'ambig_auth_seq_id' not in ps:
-                                ps['ambig_auth_seq_id'] = []
-                            ps['ambig_auth_seq_id'].append(authSeqId)
+                            if labelSeqId in _br['auth_seq_id'] or authSeqId in _br['seq_id'] and labelSeqId != authSeqId:
+                                altAuthSeqIds.append(labelSeqId)
+                                conflict_per_chain[idx] = internal_conflict = True
+                                break
 
-                            conflict = True
+                        if not conflict_per_chain[idx]:
+                            ps = next((ps for ps in polySeq if ps['auth_chain_id'] == br['auth_chain_id']), None)
 
-                        else:
-                            altAuthSeqIds.append(authSeqId)
+                            if ps is None:
+                                continue
 
-                    if conflict:
-                        bp['alt_auth_seq_id'] = altAuthSeqIds
+                            if authSeqId in ps['auth_seq_id'] and labelSeqId not in ps['auth_seq_id']:
+                                altAuthSeqIds.append(labelSeqId)
 
-                    if 'ins_code' in bp and len(collections.Counter(bp['ins_code']).most_common()) == 1:
-                        del bp['ins_code']
+                                if 'ambig_auth_seq_id' not in ps:
+                                    ps['ambig_auth_seq_id'] = []
+                                ps['ambig_auth_seq_id'].append(authSeqId)
+
+                                conflict_per_chain[idx] = True
+
+                            elif authSeqId not in altAuthSeqIds:
+                                altAuthSeqIds.append(authSeqId)
+
+                    if conflict_per_chain[idx]:
+                        br['alt_auth_seq_id'] = altAuthSeqIds
+
+                    if 'ins_code' in br and len(collections.Counter(br['ins_code']).most_common()) == 1:
+                        del br['ins_code']
+
+                if internal_conflict or any(conflict for conflict in conflict_per_chain):
+                    for idx, br in enumerate(branched):
+                        if (internal_conflict or conflict_per_chain[idx]) and 'alt_auth_seq_id' in br:
+                            br['auth_seq_id'], br['alt_auth_seq_id'] = br['alt_auth_seq_id'], br['auth_seq_id']
 
             except KeyError:
                 branched = None
@@ -3602,24 +3642,24 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             for ps in polySeq:
                                 if ps['auth_chain_id'] == authChainId and 'alt_comp_id' in ps:
                                     for _authSeqId, _compId, _altCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['alt_comp_id']):
-                                        if _authSeqId == authSeqId and _altCompId == altCompId and compId != _compId:
-                                            seqKey = (authChainId, authSeqId, altCompId)
+                                        if _authSeqId == altAuthSeqId and _altCompId == altCompId and compId != _compId:
+                                            seqKey = (authChainId, altAuthSeqId, altCompId)
                                             if seqKey not in splitLigand:
-                                                splitLigand[seqKey] = [{'auth_seq_id': authSeqId, 'comp_id': _compId, 'atom_ids': []}]
-                                            splitLigand[seqKey].append({'auth_seq_id': altAuthSeqId, 'comp_id': compId, 'atom_ids': []})
+                                                splitLigand[seqKey] = [{'auth_seq_id': altAuthSeqId, 'comp_id': _compId, 'atom_ids': []}]
+                                            splitLigand[seqKey].append({'auth_seq_id': authSeqId, 'comp_id': compId, 'atom_ids': []})
             if branched is not None and len(branched) > 0:
                 for br in branched:
                     if 'alt_comp_id' in br and 'alt_auth_seq_id' in br:
                         authChainId = br['auth_chain_id']
-                        for authSeqId, compId, altAuthSeqId, altCompId in zip(br['auth_seq_id'], br['comp_id'], br['alt_auth_seq_id'], np['alt_comp_id']):
+                        for authSeqId, compId, altAuthSeqId, altCompId in zip(br['auth_seq_id'], br['comp_id'], br['alt_auth_seq_id'], br['alt_comp_id']):
                             for ps in polySeq:
                                 if ps['auth_chain_id'] == authChainId and 'alt_comp_id' in ps:
                                     for _authSeqId, _compId, _altCompId in zip(ps['auth_seq_id'], ps['comp_id'], ps['alt_comp_id']):
-                                        if _authSeqId == authSeqId and _altCompId == altCompId and compId != _compId:
-                                            seqKey = (authChainId, authSeqId, altCompId)
+                                        if _authSeqId == altAuthSeqId and _altCompId == altCompId and compId != _compId:
+                                            seqKey = (authChainId, altAuthSeqId, altCompId)
                                             if seqKey not in splitLigand:
-                                                splitLigand[seqKey] = [{'auth_seq_id': authSeqId, 'comp_id': _compId, 'atom_ids': []}]
-                                            splitLigand[seqKey].append({'auth_seq_id': altAuthSeqId, 'comp_id': compId, 'atom_ids': []})
+                                                splitLigand[seqKey] = [{'auth_seq_id': altAuthSeqId, 'comp_id': _compId, 'atom_ids': []}]
+                                            splitLigand[seqKey].append({'auth_seq_id': authSeqId, 'comp_id': compId, 'atom_ids': []})
 
     if not fullCheck:
         if not changed:
@@ -6926,7 +6966,7 @@ def getDstFuncForSsBond(atom1, atom2):
 def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
                    originalTagNames, originalRow,
                    authToStarSeq, authToOrigSeq, authToInsCode, offsetHolder,
-                   atoms):
+                   atoms, annotationMode):
     """ Return row data for a given constraint subtype and corresponding NMR-STAR row.
         @return: data array
     """
@@ -7092,12 +7132,20 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if atom1 is not None:
             row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        if hasKeyValue(atom1, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_1')
+            if val is not None:
+                row[key_size + 16] = val
+        elif hasKeyValue(atom1, 'auth_atom_id'):
             row[key_size + 16] = atom1['auth_atom_id']
         if atom2 is not None:
             row[key_size + 17], row[key_size + 18], row[key_size + 19], row[key_size + 20] =\
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-        if hasKeyValue(atom2, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_2')
+            if val is not None:
+                row[key_size + 21] = val
+        elif hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 21] = atom2['auth_atom_id']
 
         if authToInsCode is not None:
@@ -7149,22 +7197,38 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if atom1 is not None:
             row[key_size + 10], row[key_size + 11], row[key_size + 12], row[key_size + 13] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        if hasKeyValue(atom1, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_1')
+            if val is not None:
+                row[key_size + 14] = val
+        elif hasKeyValue(atom1, 'auth_atom_id'):
             row[key_size + 14] = atom1['auth_atom_id']
         if atom2 is not None:
             row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-        if hasKeyValue(atom2, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_2')
+            if val is not None:
+                row[key_size + 19] = val
+        elif hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 19] = atom2['auth_atom_id']
         if atom3 is not None:
             row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
                 atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
-        if hasKeyValue(atom3, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_3')
+            if val is not None:
+                row[key_size + 24] = val
+        elif hasKeyValue(atom3, 'auth_atom_id'):
             row[key_size + 24] = atom3['auth_atom_id']
         if atom4 is not None:
             row[key_size + 25], row[key_size + 26], row[key_size + 27], row[key_size + 28] =\
                 atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
-        if hasKeyValue(atom4, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_4')
+            if val is not None:
+                row[key_size + 29] = val
+        elif hasKeyValue(atom4, 'auth_atom_id'):
             row[key_size + 29] = atom4['auth_atom_id']
 
         if authToInsCode is not None:
@@ -7222,12 +7286,20 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if atom1 is not None:
             row[key_size + 13], row[key_size + 14], row[key_size + 15], row[key_size + 16] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        if hasKeyValue(atom1, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_1')
+            if val is not None:
+                row[key_size + 17] = val
+        elif hasKeyValue(atom1, 'auth_atom_id'):
             row[key_size + 17] = atom1['auth_atom_id']
         if atom2 is not None:
             row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-        if hasKeyValue(atom2, 'auth_atom_id'):
+        if annotationMode:
+            val = getRowValue('Auth_atom_name_2')
+            if val is not None:
+                row[key_size + 22] = val
+        elif hasKeyValue(atom2, 'auth_atom_id'):
             row[key_size + 22] = atom2['auth_atom_id']
 
         if authToInsCode is not None:
@@ -7948,8 +8020,8 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
                     else np['seq_id'].index(seqId) if seqId in np['seq_id'] else 0
                 cifCompId = np['comp_id'][idx]
                 origCompId = np['auth_comp_id'][idx]
-                if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
-                    seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
+                if 'alt_auth_seq_id' in np and seqId not in np['auth_seq_id'] and seqId in np['alt_auth_seq_id']:
+                    seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _altSeqId_ == seqId)
                 if compId in (cifCompId, origCompId):
                     if len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.add((chainId, seqId, cifCompId, False))

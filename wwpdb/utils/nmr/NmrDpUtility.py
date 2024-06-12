@@ -41933,8 +41933,6 @@ class NmrDpUtility:
         if self.__cifChecked:
             return True
 
-        self.__cifChecked = True
-
         file_type = 'pdbx'
 
         if not self.__parseCoordFilePath():
@@ -42164,6 +42162,8 @@ class NmrDpUtility:
                     self.report.setError()
 
                     return False
+
+            self.__cifChecked = True
 
             if self.__caC is None:
                 self.__retrieveCoordAssemblyChecker()

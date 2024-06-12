@@ -5239,6 +5239,8 @@ class CnsMRParserListener(ParseTreeListener):
             if len(psList) == 0:
                 continue
 
+            pref_alt_auth_seq_id = False
+
             for ps in psList:
 
                 for seqId in _factor['seq_id']:
@@ -5305,15 +5307,19 @@ class CnsMRParserListener(ParseTreeListener):
                     else:
                         compId = None
 
-                    if not isPolySeq and compId is None:
-                        if 'alt_auth_seq_id' in ps and seqId in ps['alt_auth_seq_id']:
-                            idx = ps['alt_auth_seq_id'].index(seqId)
-                            seqId = ps['seq_id'][idx]
-                            compId = ps['comp_id'][idx]
-                        elif seqId in ps['seq_id']:
-                            idx = ps['seq_id'].index(seqId)
-                            compId = ps['comp_id'][idx]
-                            _seqId_ = ps['auth_seq_id'][idx]
+                    if not isPolySeq:
+                        if compId is None:
+                            if 'alt_auth_seq_id' in ps and seqId in ps['alt_auth_seq_id']:
+                                idx = ps['alt_auth_seq_id'].index(seqId)
+                                seqId = ps['seq_id'][idx]
+                                compId = ps['comp_id'][idx]
+                                pref_alt_auth_seq_id = True
+                            elif seqId in ps['seq_id']:
+                                idx = ps['seq_id'].index(seqId)
+                                compId = ps['comp_id'][idx]
+                                _seqId_ = ps['auth_seq_id'][idx]
+                        elif pref_alt_auth_seq_id:
+                            continue
 
                     if self.__authToInsCode is None or len(self.__authToInsCode) == 0 or _compId_ is None:
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, cifCheck=cifCheck)

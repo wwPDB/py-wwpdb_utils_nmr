@@ -1228,6 +1228,9 @@ class NmrDpUtility:
         # hash code of the coordinate file
         self.__cifHashCode = None
 
+        # whether coordinate file is already examined
+        self.__cifChecked = False
+
         # auxiliary input resource
         self.__inputParamDict = {}
 
@@ -6343,6 +6346,7 @@ class NmrDpUtility:
                 self.__file_path_list_len += len(self.__inputParamDict[mr_file_path_list])
 
         self.__cifPath = self.__cifHashCode = None
+        self.__cifChecked = False
 
         # incomplete assignments are edited by biocurators for conventional assigned cemical shifts (DAOTHER-7662)
         for key in self.key_items['nmr-star']['chem_shift']:
@@ -29531,16 +29535,7 @@ class NmrDpUtility:
                                                self.__caC['chem_comp_topo'])
                 return
 
-        if self.__cR.hasItem('atom_site', 'label_alt_id'):
-            alt_ids = self.__cR.getDictListWithFilter('atom_site',
-                                                      [{'name': 'label_alt_id', 'type': 'str'}
-                                                       ])
-
-            if len(alt_ids) > 0:
-                for a in alt_ids:
-                    if a['label_alt_id'] not in emptyValue:
-                        self.__representative_alt_id = a['label_alt_id']
-                        break
+        self.__parseCoordinate()  # need to set representative_model/alt_id values
 
         self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
                                           self.__representative_model_id,
@@ -41935,6 +41930,11 @@ class NmrDpUtility:
         """ Parse coordinate file.
         """
 
+        if self.__cifChecked:
+            return True
+
+        self.__cifChecked = True
+
         file_type = 'pdbx'
 
         if not self.__parseCoordFilePath():
@@ -42154,6 +42154,7 @@ class NmrDpUtility:
 
                     self.__inputParamDict['coordinate_file_path'] = dstCifPath
                     self.__cifPath = None
+                    self.__cifChecked = False
 
                     return self.__parseCoordinate()
 

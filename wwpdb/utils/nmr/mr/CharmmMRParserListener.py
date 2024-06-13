@@ -2928,6 +2928,9 @@ class CharmmMRParserListener(ParseTreeListener):
                         else:
                             self.__f.append(f"[{error_type}] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {__factor}.")
+                            if 'alt_chain_id' in _factor:  # 2mnz
+                                for chainId in _factor['chain_id']:
+                                    self.updateSegmentIdDict(_factor, chainId, False)
                             if foundCompId and len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
                                 compIds = guessCompIdFromAtomId(_factor['atom_id'], self.__polySeq, self.__nefT)
                                 if compIds is not None:
@@ -3814,7 +3817,16 @@ class CharmmMRParserListener(ParseTreeListener):
     def getRealSeqId(self, ps, seqId, isPolySeq=True):
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
         offset = 0
-        if not self.__preferAuthSeq:
+        preferLabelSeq = False
+        if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and 'segment_id_match_stats' in self.__reasons:
+            for k, v in self.__reasons['segment_id_mismatch'].items():
+                if v == ps['auth_chain_id']:
+                    if k in self.__reasons['segment_id_match_stats']:
+                        if v in self.__reasons['segment_id_match_stats'][k] and self.__reasons['segment_id_match_stats'][k][v] == 0:
+                            # no hope for auth sequence scheme (2mnz)
+                            preferLabelSeq = True
+                            break
+        if not self.__preferAuthSeq or preferLabelSeq:
             chainId = ps['chain_id']
             offset = 0
             if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\

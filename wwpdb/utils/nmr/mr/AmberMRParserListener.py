@@ -5440,7 +5440,7 @@ class AmberMRParserListener(ParseTreeListener):
                         seqId = np['seq_id'][idx]
                         compId = np['comp_id'][idx]
                     else:
-                        idx = np['auth_seq_id'].index(factor['auth_seq_id'])
+                        idx = np['auth_seq_id'].index(seqId)
                         seqId = np['seq_id'][idx]
                         compId = np['comp_id'][idx]
 

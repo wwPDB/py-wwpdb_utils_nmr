@@ -20,7 +20,6 @@ options { tokenVocab=XplorMRLexer; }
 
 xplor_nih_mr:
 	(
-	comment |
 	distance_restraint |
 	dihedral_angle_restraint |
 	rdc_restraint |
@@ -80,9 +79,6 @@ xplor_nih_mr:
 	parameter_statement		// allowing bare parameter statement
 	)*
 	EOF;
-
-comment:
-	COMMENT Any_name* (RETURN_CM | EOF);
 
 distance_restraint:
 	Noe noe_statement* End;

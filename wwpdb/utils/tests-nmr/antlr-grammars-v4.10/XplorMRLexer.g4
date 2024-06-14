@@ -664,10 +664,8 @@ fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
-COMMENT:		('#' | '!')+ ~[ \t\r\n]* -> mode(COMMENT_MODE);
-
-//SHARP_COMMENT:	'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
-//EXCLM_COMMENT:	'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
+SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
+EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
 Simple_name:		SIMPLE_NAME;
@@ -715,8 +713,8 @@ Symbol_name:		SYMBOL_NAME;
 
 SPACE:			[ \t\r\n]+ -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	(';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT:		(';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
+SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
+LINE_COMMENT:		('#' | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
 SET_VARIABLE:		Set ([\r\n]*)? ~[\r\n]* ([\r\n]*)? End -> channel(HIDDEN);
 
 mode ATTR_MODE; // Inside of Attribute tag
@@ -865,11 +863,4 @@ mode LOOP_LABEL_MODE; // loop label
 Simple_name_LL:		SIMPLE_NAME -> mode(DEFAULT_MODE);
 
 SPACE_LL:		[ \t\r\n]+ -> skip;
-
-mode COMMENT_MODE;
-
-Any_name:		~[ \t\r\n]+;
-
-SPACE_CM:		[ \t]+ -> skip;
-RETURN_CM:		[\r\n]+ -> mode(DEFAULT_MODE);
 

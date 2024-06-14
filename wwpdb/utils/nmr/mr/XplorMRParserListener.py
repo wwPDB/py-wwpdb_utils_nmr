@@ -340,7 +340,7 @@ class XplorMRParserListener(ParseTreeListener):
     # reasons for re-parsing request from the previous trial
     __reasons = None
 
-    __cont_coment = False
+    # __cont_coment = False
     __in_hbdb_statement = False
     __cur_dist_type = False
 
@@ -1051,7 +1051,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
-
+    """
     # Enter a parse tree produced by XplorMRParser#comment.
     def enterComment(self, ctx: XplorMRParser.CommentContext):  # pylint: disable=unused-argument
         pass
@@ -1081,7 +1081,7 @@ class XplorMRParserListener(ParseTreeListener):
                     return
             else:
                 break
-
+    """
     # Enter a parse tree produced by XplorMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: XplorMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
         self.__in_block = True
@@ -7888,6 +7888,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#hbond_db_statement.
     def enterHbond_db_statement(self, ctx: XplorMRParser.Hbond_db_statementContext):  # pylint: disable=unused-argument
         self.__in_hbdb_statement = True
+        self.__cur_dist_type = False
 
     # Exit a parse tree produced by XplorMRParser#hbond_db_statement.
     def exitHbond_db_statement(self, ctx: XplorMRParser.Hbond_db_statementContext):  # pylint: disable=unused-argument
@@ -7905,6 +7906,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.__cur_subtype = 'dist'
         else:
             self.hbondRestraints += 1
+            self.__cur_subtype_altered = self.__cur_subtype != 'hbond'
             if self.__cur_subtype != 'hbond':
                 self.hbondStatements += 1
             self.__cur_subtype = 'hbond'
@@ -7919,9 +7921,99 @@ class XplorMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
+        def proc_as_if_noe_assign():
+
+            try:
+
+                dstFunc = getDstFuncAsNoe()
+
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                    return
+
+                if len(self.atomSelectionSet[0]) == 0 or len(self.atomSelectionSet[1]) == 0:
+                    if len(self.__g) > 0:
+                        self.__f.extend(self.__g)
+                    return
+
+                combinationId = memberId = memberLogicCode = '.'
+                if self.__createSfDict:
+                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
+                                                                           self.__csStat, self.__originalFileName),
+                                      potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                    sf['id'] += 1
+                    if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
+                       and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                            or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                        memberId = 0
+
+                if isinstance(memberId, int):
+                    memberId = 0
+                    _atom1 = _atom2 = None
+                if self.__createSfDict:
+                    memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[0], self.atomSelectionSet[1]):
+                    if isIdenticalRestraint([atom1, atom2], self.__nefT):
+                        continue
+                    if self.__createSfDict and isinstance(memberId, int):
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
+                        if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                            continue
+                    if self.__createSfDict and memberLogicCode == '.':
+                        altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
+                        if altAtomId1 is not None or altAtomId2 is not None:
+                            atom1, atom2 =\
+                                self.selectRealisticBondConstraint(atom1, atom2,
+                                                                   altAtomId1, altAtomId2,
+                                                                   dstFunc)
+                    if len(self.__fibril_chain_ids) > 0\
+                       and atom1['chain_id'] in self.__fibril_chain_ids\
+                       and atom2['chain_id'] in self.__fibril_chain_ids\
+                       and not self.isRealisticDistanceRestraint(atom1, atom2, dstFunc):
+                        continue
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
+                              f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        if isinstance(memberId, int):
+                            if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                               or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                memberId += 1
+                                _atom1, _atom2 = atom1, atom2
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     combinationId, memberId, memberLogicCode,
+                                     sf['list_id'], self.__entryId, dstFunc,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                     atom1, atom2)
+                        sf['loop'].add_data(row)
+
+                        if sf['constraint_subsubtype'] == 'ambi':
+                            continue
+
+                        if isinstance(combinationId, int)\
+                           or (memberLogicCode == 'OR'
+                               and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                                    or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat))):
+                            sf['constraint_subsubtype'] = 'ambi'
+                        if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
+                            upperLimit = float(dstFunc['upper_limit'])
+                            if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
+                                sf['constraint_subsubtype'] = 'ambi'
+
+                if self.__createSfDict and sf is not None:
+                    if isinstance(memberId, int) and memberId == 1:
+                        sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
+                        memberId = '.'
+                    if isinstance(memberId, str) and isinstance(combinationId, int) and combinationId == 1:
+                        sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
+            finally:
+                self.numberSelection.clear()
+
         if self.__cur_dist_type:
 
-            if self.donor_columnSel >= 0 or self.acceptor_columnSel >= 0:
+            if self.donor_columnSel >= 0 or self.acceptor_columnSel >= 0 or len(self.atomSelectionSet) != 2:
                 self.distRestraints -= 1
                 self.hbondRestraints += 1
                 if self.__cur_subtype_altered:
@@ -7929,102 +8021,33 @@ class XplorMRParserListener(ParseTreeListener):
                     if self.hbondStatements == 0:
                         self.hbondStatements += 1
                 self.__cur_subtype = 'hbond'
+                self.__cur_dist_type = False
 
             else:
+                proc_as_if_noe_assign()
 
-                try:
+                return
 
-                    dstFunc = getDstFuncAsNoe()
+        elif len(self.atomSelectionSet) == 2:
 
-                    if not self.__hasPolySeq and not self.__hasNonPolySeq:
-                        return
+            is_hbond = False
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0], self.atomSelectionSet[1]):
+                _dstFunc = getDstFuncForHBond(atom1, atom2)
+                if 'upper_limit' in _dstFunc:
+                    is_hbond = True
+                    break
 
-                    if len(self.atomSelectionSet[0]) == 0 or len(self.atomSelectionSet[1]) == 0:
-                        if len(self.__g) > 0:
-                            self.__f.extend(self.__g)
-                        return
+            if not is_hbond:
+                self.hbondRestraints -= 1
+                self.distRestraints += 1
+                if self.__cur_subtype_altered:
+                    self.hbondStatements -= 1
+                    if self.distStatements == 0:
+                        self.distStatements += 1
+                self.__cur_subtype = 'dist'
+                self.__cur_dist_type = True
 
-                    combinationId = memberId = memberLogicCode = '.'
-                    if self.__createSfDict:
-                        sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
-                                                                               self.__csStat, self.__originalFileName),
-                                          potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
-                        sf['id'] += 1
-                        if len(self.atomSelectionSet) > 2:
-                            combinationId = 0
-                        if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
-                           and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
-                                or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
-                            memberId = 0
-
-                    for i in range(0, len(self.atomSelectionSet), 2):
-                        if isinstance(combinationId, int):
-                            combinationId += 1
-                        if isinstance(memberId, int):
-                            memberId = 0
-                            _atom1 = _atom2 = None
-                        if self.__createSfDict:
-                            memberLogicCode = 'OR' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else '.'
-                        for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
-                                                              self.atomSelectionSet[i + 1]):
-                            if isIdenticalRestraint([atom1, atom2], self.__nefT):
-                                continue
-                            if self.__createSfDict and isinstance(memberId, int):
-                                star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
-                                star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
-                                if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
-                                    continue
-                            if self.__createSfDict and memberLogicCode == '.':
-                                altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
-                                if altAtomId1 is not None or altAtomId2 is not None:
-                                    atom1, atom2 =\
-                                        self.selectRealisticBondConstraint(atom1, atom2,
-                                                                           altAtomId1, altAtomId2,
-                                                                           dstFunc)
-                            if len(self.__fibril_chain_ids) > 0\
-                               and atom1['chain_id'] in self.__fibril_chain_ids\
-                               and atom2['chain_id'] in self.__fibril_chain_ids\
-                               and not self.isRealisticDistanceRestraint(atom1, atom2, dstFunc):
-                                continue
-                            if self.__debug:
-                                print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
-                                      f"atom1={atom1} atom2={atom2} {dstFunc}")
-                            if self.__createSfDict and sf is not None:
-                                if isinstance(memberId, int):
-                                    if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
-                                       or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
-                                        memberId += 1
-                                        _atom1, _atom2 = atom1, atom2
-                                sf['index_id'] += 1
-                                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                             combinationId, memberId, memberLogicCode,
-                                             sf['list_id'], self.__entryId, dstFunc,
-                                             self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                                             atom1, atom2)
-                                sf['loop'].add_data(row)
-
-                                if sf['constraint_subsubtype'] == 'ambi':
-                                    continue
-
-                                if isinstance(combinationId, int)\
-                                   or (memberLogicCode == 'OR'
-                                       and (isAmbigAtomSelection(self.atomSelectionSet[i], self.__csStat)
-                                            or isAmbigAtomSelection(self.atomSelectionSet[i + 1], self.__csStat))):
-                                    sf['constraint_subsubtype'] = 'ambi'
-                                if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
-                                    upperLimit = float(dstFunc['upper_limit'])
-                                    if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
-                                        sf['constraint_subsubtype'] = 'ambi'
-
-                    if self.__createSfDict and sf is not None:
-                        if isinstance(memberId, int) and memberId == 1:
-                            sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
-                            memberId = '.'
-                        if isinstance(memberId, str) and isinstance(combinationId, int) and combinationId == 1:
-                            sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
-
-                finally:
-                    self.numberSelection.clear()
+                proc_as_if_noe_assign()
 
                 return
 
@@ -8258,7 +8281,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.stackTerms = []
             self.factor = {}
 
-            self.__cont_coment = False
+            # self.__cont_coment = False
 
     # Exit a parse tree produced by XplorMRParser#selection.
     def exitSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument

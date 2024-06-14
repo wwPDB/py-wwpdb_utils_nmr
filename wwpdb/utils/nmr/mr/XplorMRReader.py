@@ -222,20 +222,27 @@ if __name__ == "__main__":
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/5ggm/dis.txt',
-                     '../../tests-nmr/mock-data-remediation/5ggm/5ggm.cif')
+        reader.parse('../../tests-nmr/mock-data-remediation/2n05/2n05-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2n05/2n05.cif')
+    reader = XplorMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2n05/2n05-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2n05/2n05.cif')
 
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
-    reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/5y95/5y95-trimmed.mr',
-                     '../../tests-nmr/mock-data-remediation/5y95/5y95.cif')
+    reader.parse('../../tests-nmr/mock-data-remediation/5ggm/dis.txt',
+                 '../../tests-nmr/mock-data-remediation/5ggm/5ggm.cif')
 
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
-    reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/2lai/2lai-trimmed.mr',
-                     '../../tests-nmr/mock-data-remediation/2lai/2lai.cif')
+    reader.parse('../../tests-nmr/mock-data-remediation/5y95/5y95-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/5y95/5y95.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2lai/2lai-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2lai/2lai.cif')
 
     reader = XplorMRReader(True)
     reader.setDebugMode(True)

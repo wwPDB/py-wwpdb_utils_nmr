@@ -2266,7 +2266,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'HN2'
 
         if refCompId == 'ACE':
-            if atomId in ('HA*', 'HA%', 'HA1', 'HA2', 'HA3', 'QH', 'MH', 'QA', 'MA') and not unambig:
+            if atomId in ('HA', 'HA*', 'HA%', 'HA1', 'HA2', 'HA3', 'QH', 'MH', 'QA', 'MA') and not unambig:
                 return 'H%'
             if atomId == 'CA':
                 return 'CH3'

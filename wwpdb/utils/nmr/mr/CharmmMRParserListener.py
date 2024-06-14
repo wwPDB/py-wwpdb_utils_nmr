@@ -3185,7 +3185,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
                     if atomSiteAtomId is not None and isPolySeq and self.__csStat.peptideLike(compId)\
                        and not any(atomId in atomSiteAtomId for atomId in _factor['atom_id'])\
-                       and all(atomId in ('H1', 'H2', 'HN1', 'HN2') for atomId in _factor['atom_id']):
+                       and all(atomId in ('H1', 'H2', 'HN1', 'HN2', 'NT') for atomId in _factor['atom_id']):
                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId + 1, cifCheck=cifCheck)
                         if _coordAtomSite is not None and _coordAtomSite['comp_id'] == 'NH2':
                             compId = 'NH2'

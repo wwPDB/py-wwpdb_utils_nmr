@@ -340,7 +340,6 @@ class XplorMRParserListener(ParseTreeListener):
     # reasons for re-parsing request from the previous trial
     __reasons = None
 
-    # __cont_coment = False
     __in_hbdb_statement = False
     __cur_dist_type = False
 
@@ -1051,37 +1050,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
-    """
-    # Enter a parse tree produced by XplorMRParser#comment.
-    def enterComment(self, ctx: XplorMRParser.CommentContext):  # pylint: disable=unused-argument
-        pass
 
-    # Exit a parse tree produced by XplorMRParser#comment.
-    def exitComment(self, ctx: XplorMRParser.CommentContext):
-        if self.__cont_coment:
-            return
-
-        self.__cur_dist_type = False
-
-        if self.__in_hbdb_statement:
-            return
-
-        def is_dist_type(text):
-            return 'noe' in text or 'csp' in text or 'distance' in text or 'haddock' in text or 'air' in text\
-                   or 'interaction' in text or 'purturb' in text
-
-        if is_dist_type(str(ctx.COMMENT()).lower()):
-            self.__cur_dist_type = self.__cont_coment = True
-            return
-
-        for col in range(20):
-            if ctx.Any_name(col):
-                if is_dist_type(str(ctx.Any_name(col)).lower()):
-                    self.__cur_dist_type = self.__cont_coment = True
-                    return
-            else:
-                break
-    """
     # Enter a parse tree produced by XplorMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: XplorMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
         self.__in_block = True
@@ -8025,10 +7994,9 @@ class XplorMRParserListener(ParseTreeListener):
 
             else:
                 proc_as_if_noe_assign()
-
                 return
 
-        elif len(self.atomSelectionSet) == 2:
+        elif len(self.atomSelectionSet) == 2 and not self.__in_hbdb_statement:
 
             is_hbond = False
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0], self.atomSelectionSet[1]):
@@ -8048,7 +8016,6 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__cur_dist_type = True
 
                 proc_as_if_noe_assign()
-
                 return
 
         if not self.areUniqueCoordAtoms('a hydrogen bond database (HBDB)'):

@@ -340,6 +340,7 @@ class XplorMRParserListener(ParseTreeListener):
     # reasons for re-parsing request from the previous trial
     __reasons = None
 
+    __cont_coment = False
     __in_hbdb_statement = False
     __cur_dist_type = False
 
@@ -1057,6 +1058,9 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#comment.
     def exitComment(self, ctx: XplorMRParser.CommentContext):
+        if self.__cont_coment:
+            return
+
         self.__cur_dist_type = False
 
         if self.__in_hbdb_statement:
@@ -1067,13 +1071,13 @@ class XplorMRParserListener(ParseTreeListener):
                    or 'interaction' in text or 'purturb' in text
 
         if is_dist_type(str(ctx.COMMENT()).lower()):
-            self.__cur_dist_type = True
+            self.__cur_dist_type = self.__cont_coment = True
             return
 
         for col in range(20):
             if ctx.Any_name(col):
                 if is_dist_type(str(ctx.Any_name(col)).lower()):
-                    self.__cur_dist_type = True
+                    self.__cur_dist_type = self.__cont_coment = True
                     return
             else:
                 break
@@ -8253,6 +8257,8 @@ class XplorMRParserListener(ParseTreeListener):
             self.stackSelections = []
             self.stackTerms = []
             self.factor = {}
+
+            self.__cont_coment = False
 
     # Exit a parse tree produced by XplorMRParser#selection.
     def exitSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument

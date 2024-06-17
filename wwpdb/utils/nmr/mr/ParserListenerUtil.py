@@ -1965,6 +1965,8 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return 'H7' + atomId[-1]
                 if atomId in 'H5':
                     return 'H7'
+            elif refCompId in ('DT', 'T') and atomId.startswith('C5'):  # 7dju
+                return 'C7'
             elif refCompId == 'THM' and refAtomIdList is not None and 'HM51' in refAtomIdList:
                 if atomId.startswith('Q7'):
                     return 'HM5'

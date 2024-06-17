@@ -2021,6 +2021,12 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                         return "H4'"
                 if "H4'" in _refAtomIdList:
                     return "H4'"
+            if atomId[0] == 'R' and len(atomId) > 1:  # 2lkk
+                _atomId = 'H' + atomId[1:]
+                if _atomId in _refAtomIdList:
+                    return _atomId
+                if _atomId + '2' in _refAtomIdList:
+                    return _atomId + '%'
 
             if not unambig:
 

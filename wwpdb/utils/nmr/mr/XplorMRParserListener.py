@@ -1027,14 +1027,19 @@ class XplorMRParserListener(ParseTreeListener):
                     if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
                         del self.reasonsForReParsing['global_sequence_offset']
 
-            if 'global_sequence_offset' in self.reasonsForReParsing and 'local_seq_scheme' in self.reasonsForReParsing:
-                del self.reasonsForReParsing['local_seq_scheme']
+            if 'global_sequence_offset' in self.reasonsForReParsing:
+                if 'local_seq_scheme' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['local_seq_scheme']
+                if 'label_seq_offset' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['label_seq_offset']
 
             if 'global_auth_sequence_offset' in self.reasonsForReParsing:
                 if 'local_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
                 if 'label_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_scheme']
+                if 'label_seq_offset' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['label_seq_offset']
 
             if not any(f for f in self.__f if '[Atom not found]' in f) and self.hasAnyRestraints()\
                and 'non_poly_remap' not in self.reasonsForReParsing and 'branch_remap' not in self.reasonsForReParsing:

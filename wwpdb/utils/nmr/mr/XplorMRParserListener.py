@@ -1844,6 +1844,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.paramagCenter = None
         self.__has_nx = False
 
+        self.donor_columnSel = self.acceptor_columnSel = -1
+
     # Exit a parse tree produced by XplorMRParser#noe_assign.
     def exitNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):  # pylint: disable=unused-argument
 
@@ -1909,6 +1911,17 @@ class XplorMRParserListener(ParseTreeListener):
                             self.__cur_subtype = 'rdc'
                             self.exitTenso_assign(ctx)
                             return
+
+            if self.donor_columnSel != -1 and self.acceptor_columnSel != -1 and len(self.atomSelectionSet) == 2:
+                self.distRestraints -= 1
+                self.hbondRestraints += 1
+                if self.__cur_subtype_altered:
+                    self.distStatements -= 1
+                    if self.hbondStatements == 0:
+                        self.hbondStatements += 1
+                self.__cur_subtype = 'hbond'
+                self.exitHbond_db_assign(ctx)
+                return
 
             self.__cur_subtype = 'dist'  # to get consistent number of statement
 

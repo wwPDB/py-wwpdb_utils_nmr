@@ -29,6 +29,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            protonBeginCode,
                                            aminoProtonCode,
+                                           isReservedLigCode,
                                            letterToDigit, indexToLetter,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
@@ -53,6 +54,7 @@ except ImportError:
     from nmr.AlignUtil import (monDict3,
                                protonBeginCode,
                                aminoProtonCode,
+                               isReservedLigCode,
                                letterToDigit, indexToLetter,
                                alignPolymerSequence,
                                assignPolymerSequence,
@@ -392,6 +394,9 @@ class GromacsPTParserListener(ParseTreeListener):
                                                 ligands += 1
                                     if ligands == 1:
                                         compId = __compId
+                                    elif len(self.__nonPolyModel) == 1 and self.__ccU.updateChemCompDict(authCompId):
+                                        if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' or isReservedLigCode(authCompId):
+                                            compId = self.__nonPolyModel[0]['comp_id'][0]
 
                             if compId is not None:
                                 compIdList.append(compId + '?')  # decide when coordinate is available
@@ -449,6 +454,9 @@ class GromacsPTParserListener(ParseTreeListener):
                                             ligands += 1
                                 if ligands == 1:
                                     compId = __compId
+                                elif len(self.__nonPolyModel) == 1 and self.__ccU.updateChemCompDict(authCompId):
+                                    if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' or isReservedLigCode(authCompId):
+                                        compId = self.__nonPolyModel[0]['comp_id'][0]
 
                         if compId is not None:
                             compIdList.append(compId + '?')  # decide when coordinate is available

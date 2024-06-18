@@ -4610,7 +4610,7 @@ class AmberMRParserListener(ParseTreeListener):
                 cifSeqId = None if useDefault and not enforceAuthSeq else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
 
                 asis = not hasAuthSeqScheme or enforceAuthSeq or not self.__preferAuthSeq
-                if enableWarning != self.__preferAuthSeq and asis:
+                if enforceAuthSeq != self.__preferAuthSeq and asis:
                     asis = False
 
                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,

@@ -2144,7 +2144,9 @@ class CharmmMRParserListener(ParseTreeListener):
             if _term is not None:
                 _atomSelection.extend(_term)
 
-        atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)] if len(_atomSelection) > 1 else _atomSelection
+        atomSelection = [dict(s) for s in set(frozenset(atom.items())
+                                              for atom in _atomSelection
+                                              if isinstance(atom, dict))] if len(_atomSelection) > 1 else _atomSelection
 
         if len(atomSelection) > 0:
             self.stackSelections.append(atomSelection)
@@ -2195,7 +2197,9 @@ class CharmmMRParserListener(ParseTreeListener):
                 if _term is not None and not isinstance(_term, str):
                     _atomSelection.extend(_term)
 
-            atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)] if len(_atomSelection) > 1 else _atomSelection
+            atomSelection = [dict(s) for s in set(frozenset(atom.items())
+                                                  for atom in _atomSelection
+                                                  if isinstance(atom, dict))] if len(_atomSelection) > 1 else _atomSelection
 
             if len(atomSelection) > 0:
                 self.stackSelections.append(atomSelection)
@@ -2373,6 +2377,8 @@ class CharmmMRParserListener(ParseTreeListener):
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         for realSeqId in ps['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
@@ -2390,6 +2396,8 @@ class CharmmMRParserListener(ParseTreeListener):
                         npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
+                                if realSeqId is None:
+                                    continue
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = self.getRealCompId(np['comp_id'][idx])
                                 origCompId = np['auth_comp_id'][idx]
@@ -2415,6 +2423,8 @@ class CharmmMRParserListener(ParseTreeListener):
                 if ps is not None:
                     found = False
                     for realSeqId in ps['auth_seq_id']:
+                        if realSeqId is None:
+                            continue
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
@@ -2427,6 +2437,8 @@ class CharmmMRParserListener(ParseTreeListener):
                             found = True
                     if not found:
                         for realSeqId in ps['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = ps['auth_seq_id'].index(realSeqId)
                                 realCompId = ps['comp_id'][idx]
@@ -2445,6 +2457,8 @@ class CharmmMRParserListener(ParseTreeListener):
                     for np in npList:
                         found = False
                         for realSeqId in np['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = self.getRealCompId(np['comp_id'][idx])
@@ -2457,6 +2471,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                 found = True
                         if not found:
                             for realSeqId in np['auth_seq_id']:
+                                if realSeqId is None:
+                                    continue
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                     idx = np['auth_seq_id'].index(realSeqId)
                                     realCompId = self.getRealCompId(np['comp_id'][idx])
@@ -2478,6 +2494,8 @@ class CharmmMRParserListener(ParseTreeListener):
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
+                        if realSeqId is None:
+                            continue
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
@@ -2491,6 +2509,8 @@ class CharmmMRParserListener(ParseTreeListener):
                     npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         for realSeqId in np['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = self.getRealCompId(np['comp_id'][idx])
@@ -2558,6 +2578,8 @@ class CharmmMRParserListener(ParseTreeListener):
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
+                        if realSeqId is None:
+                            continue
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                             if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                 continue
@@ -2574,6 +2596,8 @@ class CharmmMRParserListener(ParseTreeListener):
                     npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         for realSeqId in np['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                     continue
@@ -2633,6 +2657,8 @@ class CharmmMRParserListener(ParseTreeListener):
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         for realSeqId in ps['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                     continue
@@ -2649,6 +2675,8 @@ class CharmmMRParserListener(ParseTreeListener):
                         npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
+                                if realSeqId is None:
+                                    continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                         continue
@@ -2719,6 +2747,8 @@ class CharmmMRParserListener(ParseTreeListener):
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
+                        if realSeqId is None:
+                            continue
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                             if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                 continue
@@ -2735,6 +2765,8 @@ class CharmmMRParserListener(ParseTreeListener):
                     npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         for realSeqId in np['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                     if _factor['seq_id'][0] not in np['seq_id']:
@@ -2799,6 +2831,8 @@ class CharmmMRParserListener(ParseTreeListener):
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         for realSeqId in ps['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                     continue
@@ -2815,6 +2849,8 @@ class CharmmMRParserListener(ParseTreeListener):
                         npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
+                                if realSeqId is None:
+                                    continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                         if _factor['seq_id'][0] not in np['seq_id']:
@@ -2907,7 +2943,9 @@ class CharmmMRParserListener(ParseTreeListener):
         if 'seq_not_specified' in _factor:
             del _factor['seq_not_specified']
 
-        atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+        atomSelection = [dict(s) for s in set(frozenset(atom.items())
+                                              for atom in _atomSelection
+                                              if isinstance(atom, dict))]
 
         valid = len(self.__f) == len_warn_msg
 
@@ -4321,7 +4359,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                 self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
                     if len(self.factor['atom_selection']) > 0:
-                        self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+                        self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
+                                                                              for atom in _atomSelection
+                                                                              if isinstance(atom, dict))]
 
                         if len(self.factor['atom_selection']) == 0:
                             self.factor['atom_id'] = [None]
@@ -4389,12 +4429,16 @@ class CharmmMRParserListener(ParseTreeListener):
                         if ps is not None:
                             found = False
                             for realSeqId in ps['auth_seq_id']:
+                                if realSeqId is None:
+                                    continue
                                 realSeqId = self.getRealSeqId(ps, realSeqId)[0]
                                 if re.match(_seqId, str(realSeqId)):
                                     _seqIdSelect.add(realSeqId)
                                     found = True
                             if not found:
                                 for realSeqId in ps['auth_seq_id']:
+                                    if realSeqId is None:
+                                        continue
                                     realSeqId = self.getRealSeqId(ps, realSeqId)[0]
                                     seqKey = (chainId, realSeqId)
                                     if seqKey in self.__authToLabelSeq:
@@ -4407,12 +4451,16 @@ class CharmmMRParserListener(ParseTreeListener):
                             for np in npList:
                                 found = False
                                 for realSeqId in np['auth_seq_id']:
+                                    if realSeqId is None:
+                                        continue
                                     realSeqId = self.getRealSeqId(np, realSeqId, False)[0]
                                     if re.match(_seqId, str(realSeqId)):
                                         _seqIdSelect.add(realSeqId)
                                         found = True
                                 if not found:
                                     for realSeqId in np['auth_seq_id']:
+                                        if realSeqId is None:
+                                            continue
                                         realSeqId = self.getRealSeqId(np, realSeqId, False)[0]
                                         seqKey = (chainId, realSeqId)
                                         if seqKey in self.__authToLabelSeq:
@@ -4847,7 +4895,9 @@ class CharmmMRParserListener(ParseTreeListener):
                         if len(_atom) == 1:
                             _atomSelection.append(_atom[0])
 
-                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
+                                                                          for atom in _atomSelection
+                                                                          if isinstance(atom, dict))]
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
@@ -4947,7 +4997,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 if distance(to_np_array(_neighbor), origin) < 2.0:
                                                     _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
-                    atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+                    atomSelection = [dict(s) for s in set(frozenset(atom.items())
+                                                          for atom in _atomSelection
+                                                          if isinstance(atom, dict))]
 
                     if len(atomSelection) <= len(self.factor['atom_selection']):
                         self.factor['atom_id'] = [None]
@@ -5014,7 +5066,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                             for atomId in atomIds:
                                                 _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
 
-                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
+                                                                          for atom in _atomSelection
+                                                                          if isinstance(atom, dict))]
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]

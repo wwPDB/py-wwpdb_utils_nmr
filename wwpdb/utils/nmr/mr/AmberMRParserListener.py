@@ -4980,6 +4980,9 @@ class AmberMRParserListener(ParseTreeListener):
         authCompId = factor['auth_comp_id'].upper() if 'auth_comp_id' in factor else 'None'
         authAtomId = _authAtomId = factor['auth_atom_id']
 
+        if authCompId == 'AMB' and factor['auth_seq_id'] == 0:
+            return False
+
         if self.__reasons is not None and 'ambig_atom_id_remap' in self.__reasons\
            and authCompId in self.__reasons['ambig_atom_id_remap'] and authAtomId in self.__reasons['ambig_atom_id_remap'][authCompId]:
             return self.updateSanderAtomNumberDictWithAmbigCode(factor, cifCheck, useDefault)
@@ -5102,6 +5105,10 @@ class AmberMRParserListener(ParseTreeListener):
                    or compId == translateToStdResName(authCompId, compId, self.__ccU) or asis:
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
                                                                     asis=(not hasAuthSeqScheme or enforceAuthSeq or not self.__preferAuthSeq))
+
+                    if authCompId in (compId, origCompId) and compId in monDict3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
+                        continue
+
                     if coordAtomSite is not None and _authAtomId in coordAtomSite['atom_id']:
                         authAtomId = _authAtomId
 
@@ -5737,6 +5744,9 @@ class AmberMRParserListener(ParseTreeListener):
         authCompId = factor['auth_comp_id'].upper() if 'auth_comp_id' in factor else 'None'
         authAtomId = _authAtomId = factor['auth_atom_id']
 
+        if authCompId == 'AMB' and factor['auth_seq_id'] == 0:
+            return False
+
         atomIdList = None
 
         try:
@@ -5880,6 +5890,10 @@ class AmberMRParserListener(ParseTreeListener):
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
                                                                         asis=(not hasAuthSeqScheme or enforceAuthSeq or not self.__preferAuthSeq))
+
+                        if authCompId in (compId, origCompId) and compId in monDict3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
+                            continue
+
                         if coordAtomSite is not None and _authAtomId_ in coordAtomSite['atom_id']:
                             authAtomId = _authAtomId_
 

@@ -1965,6 +1965,8 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return 'H7' + atomId[-1]
                 if atomId in 'H5':
                     return 'H7'
+            elif refCompId in ('DT', 'T') and atomId.startswith('C5'):  # 7dju
+                return 'C7'
             elif refCompId == 'THM' and refAtomIdList is not None and 'HM51' in refAtomIdList:
                 if atomId.startswith('Q7'):
                     return 'HM5'
@@ -2019,6 +2021,12 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                         return "H4'"
                 if "H4'" in _refAtomIdList:
                     return "H4'"
+            if atomId[0] == 'R' and len(atomId) > 1:  # 2lkk
+                _atomId = 'H' + atomId[1:]
+                if _atomId in _refAtomIdList:
+                    return _atomId
+                if _atomId + '2' in _refAtomIdList:
+                    return _atomId + '%'
 
             if not unambig:
 
@@ -2266,7 +2274,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'HN2'
 
         if refCompId == 'ACE':
-            if atomId in ('HA*', 'HA%', 'HA1', 'HA2', 'HA3', 'QH', 'MH', 'QA', 'MA') and not unambig:
+            if atomId in ('HA', 'HA*', 'HA%', 'HA1', 'HA2', 'HA3', 'QH', 'MH', 'QA', 'MA') and not unambig:
                 return 'H%'
             if atomId == 'CA':
                 return 'CH3'
@@ -6904,38 +6912,38 @@ def getDstFuncForHBond(atom1, atom2):
     """ Return default upper/lower limits for a hydrogen bond.
     """
 
-    dstFunc = {"weight": "1.0"}
+    dstFunc = {'weight': '1.0'}
 
     atom_id_1_ = atom1['atom_id'][0]
     atom_id_2_ = atom2['atom_id'][0]
 
     if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
-        dstFunc['lower_limit'] = "1.2"
-        dstFunc['upper_limit'] = "1.5"
+        dstFunc['lower_limit'] = '1.2'
+        dstFunc['upper_limit'] = '1.5'
 
     elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
-        dstFunc['lower_limit'] = "2.2"
-        dstFunc['upper_limit'] = "2.5"
+        dstFunc['lower_limit'] = '2.2'
+        dstFunc['upper_limit'] = '2.5'
 
     elif (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
-        dstFunc['lower_limit'] = "1.5"
-        dstFunc['upper_limit'] = "2.5"
+        dstFunc['lower_limit'] = '1.5'
+        dstFunc['upper_limit'] = '2.5'
 
     elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
-        dstFunc['lower_limit'] = "2.5"
-        dstFunc['upper_limit'] = "3.5"
+        dstFunc['lower_limit'] = '2.5'
+        dstFunc['upper_limit'] = '3.5'
 
     elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
-        dstFunc['lower_limit'] = "2.5"
-        dstFunc['upper_limit'] = "3.5"
+        dstFunc['lower_limit'] = '2.5'
+        dstFunc['upper_limit'] = '3.5'
 
     elif (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
-        dstFunc['lower_limit'] = "1.5"
-        dstFunc['upper_limit'] = "2.5"
+        dstFunc['lower_limit'] = '1.5'
+        dstFunc['upper_limit'] = '2.5'
 
     elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
-        dstFunc['lower_limit'] = "2.5"
-        dstFunc['upper_limit'] = "3.5"
+        dstFunc['lower_limit'] = '2.5'
+        dstFunc['upper_limit'] = '3.5'
 
     return dstFunc
 
@@ -6944,7 +6952,7 @@ def getDstFuncForSsBond(atom1, atom2):
     """ Return default upper/lower limits for a disulfide bond.
     """
 
-    dstFunc = {"weight": "1.0"}
+    dstFunc = {'weight': '1.0'}
 
     atom_id_1 = atom1['atom_id']
     atom_id_2 = atom2['atom_id']
@@ -6953,14 +6961,20 @@ def getDstFuncForSsBond(atom1, atom2):
     atom_id_2_ = atom_id_2[0]
 
     if atom_id_1_ == 'S' and atom_id_2_ == 'S' and not atom_id_1.startswith('SE') and not atom_id_2.startswith('SE'):
-        dstFunc['lower_limit'] = "1.9"
-        dstFunc['upper_limit'] = "2.3"
+        dstFunc['lower_limit'] = '1.9'
+        dstFunc['upper_limit'] = '2.3'
 
     elif atom_id_1.startswith('SE') and atom_id_2.startswith('SE'):
-        dstFunc['lower_limit'] = "2.1"
-        dstFunc['upper_limit'] = "2.6"
+        dstFunc['lower_limit'] = '2.1'
+        dstFunc['upper_limit'] = '2.6'
 
     return dstFunc
+
+
+def getDstFuncAsNoe():
+    """ Return default upper/lower limits as an NOE.
+    """
+    return {'weight': '1.0', 'lower_limit': '2.0', 'upper_limit': '6.0'}
 
 
 def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,

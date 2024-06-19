@@ -50,6 +50,7 @@ try:
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        getDstFuncForHBond,
+                                                       getDstFuncAsNoe,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
@@ -159,6 +160,7 @@ except ImportError:
                                            getDistConstraintType,
                                            getPotentialType,
                                            getDstFuncForHBond,
+                                           getDstFuncAsNoe,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
@@ -337,6 +339,9 @@ class XplorMRParserListener(ParseTreeListener):
 
     # reasons for re-parsing request from the previous trial
     __reasons = None
+
+    __in_hbdb_statement = False
+    __cur_dist_type = False
 
     # CIF reader
     __cR = None
@@ -1022,14 +1027,19 @@ class XplorMRParserListener(ParseTreeListener):
                     if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
                         del self.reasonsForReParsing['global_sequence_offset']
 
-            if 'global_sequence_offset' in self.reasonsForReParsing and 'local_seq_scheme' in self.reasonsForReParsing:
-                del self.reasonsForReParsing['local_seq_scheme']
+            if 'global_sequence_offset' in self.reasonsForReParsing:
+                if 'local_seq_scheme' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['local_seq_scheme']
+                if 'label_seq_offset' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['label_seq_offset']
 
             if 'global_auth_sequence_offset' in self.reasonsForReParsing:
                 if 'local_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
                 if 'label_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_scheme']
+                if 'label_seq_offset' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['label_seq_offset']
 
             if not any(f for f in self.__f if '[Atom not found]' in f) and self.hasAnyRestraints()\
                and 'non_poly_remap' not in self.reasonsForReParsing and 'branch_remap' not in self.reasonsForReParsing:
@@ -1839,6 +1849,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.paramagCenter = None
         self.__has_nx = False
 
+        self.donor_columnSel = self.acceptor_columnSel = -1
+
     # Exit a parse tree produced by XplorMRParser#noe_assign.
     def exitNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):  # pylint: disable=unused-argument
 
@@ -1904,6 +1916,17 @@ class XplorMRParserListener(ParseTreeListener):
                             self.__cur_subtype = 'rdc'
                             self.exitTenso_assign(ctx)
                             return
+
+            if self.donor_columnSel != -1 and self.acceptor_columnSel != -1 and len(self.atomSelectionSet) == 2:
+                self.distRestraints -= 1
+                self.hbondRestraints += 1
+                if self.__cur_subtype_altered:
+                    self.distStatements -= 1
+                    if self.hbondStatements == 0:
+                        self.hbondStatements += 1
+                self.__cur_subtype = 'hbond'
+                self.exitHbond_db_assign(ctx)
+                return
 
             self.__cur_subtype = 'dist'  # to get consistent number of statement
 
@@ -6133,13 +6156,13 @@ class XplorMRParserListener(ParseTreeListener):
                                         f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                         return
 
-                elif abs(seq_id_2 - seq_id_3) == 1:
+                elif abs(seq_id_3 - seq_id_1) == 1:
 
-                    if self.__csStat.peptideLike(comp_id_2) and self.__csStat.peptideLike(comp_id_3) and\
-                            ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in rdcBbPairCode)
-                             or (seq_id_2 > seq_id_3 and atom_id_2 in rdcBbPairCode and atom_id_3 == 'C')
-                             or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
-                             or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
+                    if self.__csStat.peptideLike(comp_id_3) and self.__csStat.peptideLike(comp_id_1) and\
+                            ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in rdcBbPairCode)
+                             or (seq_id_3 > seq_id_1 and atom_id_3 in rdcBbPairCode and atom_id_1 == 'C')
+                             or (seq_id_3 < seq_id_1 and atom_id_3.startswith('HA') and atom_id_1 == 'H')
+                             or (seq_id_3 > seq_id_1 and atom_id_3 == 'H' and atom_id_1.startswith('HA'))):
                         pass
 
                     else:
@@ -6150,11 +6173,13 @@ class XplorMRParserListener(ParseTreeListener):
                                         f"{chain_id_3}:{seq_id_3}:{comp_id_3}:{atom_id_3}).")
                         return
 
-                elif abs(seq_id_3 - seq_id_1) == 1:
+                elif abs(seq_id_2 - seq_id_3) == 1:
 
-                    if self.__csStat.peptideLike(comp_id_3) and self.__csStat.peptideLike(comp_id_1) and\
-                            ((seq_id_3 < seq_id_1 and atom_id_3 == 'C' and atom_id_1 in rdcBbPairCode)
-                             or (seq_id_3 > seq_id_1 and atom_id_3 in rdcBbPairCode and atom_id_1 == 'C')):
+                    if self.__csStat.peptideLike(comp_id_2) and self.__csStat.peptideLike(comp_id_3) and\
+                            ((seq_id_2 < seq_id_3 and atom_id_2 == 'C' and atom_id_3 in rdcBbPairCode)
+                             or (seq_id_2 > seq_id_3 and atom_id_2 in rdcBbPairCode and atom_id_3 == 'C')
+                             or (seq_id_2 < seq_id_3 and atom_id_2.startswith('HA') and atom_id_3 == 'H')
+                             or (seq_id_2 > seq_id_3 and atom_id_2 == 'H' and atom_id_3.startswith('HA'))):
                         pass
 
                     else:
@@ -7851,19 +7876,29 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XplorMRParser#hbond_db_statement.
     def enterHbond_db_statement(self, ctx: XplorMRParser.Hbond_db_statementContext):  # pylint: disable=unused-argument
-        pass
+        self.__in_hbdb_statement = True
+        self.__cur_dist_type = False
 
     # Exit a parse tree produced by XplorMRParser#hbond_db_statement.
     def exitHbond_db_statement(self, ctx: XplorMRParser.Hbond_db_statementContext):  # pylint: disable=unused-argument
+        self.__in_hbdb_statement = False
         if self.__debug:
             print(f"subtype={self.__cur_subtype} (HBDB)")
 
     # Enter a parse tree produced by XplorMRParser#hbond_db_assign.
     def enterHbond_db_assign(self, ctx: XplorMRParser.Hbond_db_assignContext):  # pylint: disable=unused-argument
-        self.hbondRestraints += 1
-        if self.__cur_subtype != 'hbond':
-            self.hbondStatements += 1
-        self.__cur_subtype = 'hbond'
+        if self.__cur_dist_type:
+            self.distRestraints += 1
+            self.__cur_subtype_altered = self.__cur_subtype != 'dist'
+            if self.__cur_subtype != 'dist':
+                self.distStatements += 1
+            self.__cur_subtype = 'dist'
+        else:
+            self.hbondRestraints += 1
+            self.__cur_subtype_altered = self.__cur_subtype != 'hbond'
+            if self.__cur_subtype != 'hbond':
+                self.hbondStatements += 1
+            self.__cur_subtype = 'hbond'
 
         self.atomSelectionSet.clear()
         self.__g.clear()
@@ -7875,6 +7910,134 @@ class XplorMRParserListener(ParseTreeListener):
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return
 
+        def proc_as_if_noe_assign():
+
+            try:
+
+                dstFunc = getDstFuncAsNoe()
+
+                if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                    return
+
+                if len(self.atomSelectionSet[0]) == 0 or len(self.atomSelectionSet[1]) == 0:
+                    if len(self.__g) > 0:
+                        self.__f.extend(self.__g)
+                    return
+
+                combinationId = memberId = memberLogicCode = '.'
+                if self.__createSfDict:
+                    sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
+                                                                           self.__csStat, self.__originalFileName),
+                                      potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                    sf['id'] += 1
+                    if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
+                       and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                            or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                        memberId = 0
+
+                if isinstance(memberId, int):
+                    memberId = 0
+                    _atom1 = _atom2 = None
+                if self.__createSfDict:
+                    memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[0], self.atomSelectionSet[1]):
+                    if isIdenticalRestraint([atom1, atom2], self.__nefT):
+                        continue
+                    if self.__createSfDict and isinstance(memberId, int):
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
+                        if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                            continue
+                    if self.__createSfDict and memberLogicCode == '.':
+                        altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
+                        if altAtomId1 is not None or altAtomId2 is not None:
+                            atom1, atom2 =\
+                                self.selectRealisticBondConstraint(atom1, atom2,
+                                                                   altAtomId1, altAtomId2,
+                                                                   dstFunc)
+                    if len(self.__fibril_chain_ids) > 0\
+                       and atom1['chain_id'] in self.__fibril_chain_ids\
+                       and atom2['chain_id'] in self.__fibril_chain_ids\
+                       and not self.isRealisticDistanceRestraint(atom1, atom2, dstFunc):
+                        continue
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} (NOE) id={self.distRestraints} "
+                              f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        if isinstance(memberId, int):
+                            if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                               or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                memberId += 1
+                                _atom1, _atom2 = atom1, atom2
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     combinationId, memberId, memberLogicCode,
+                                     sf['list_id'], self.__entryId, dstFunc,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                     atom1, atom2)
+                        sf['loop'].add_data(row)
+
+                        if sf['constraint_subsubtype'] == 'ambi':
+                            continue
+
+                        if isinstance(combinationId, int)\
+                           or (memberLogicCode == 'OR'
+                               and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                                    or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat))):
+                            sf['constraint_subsubtype'] = 'ambi'
+                        if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
+                            upperLimit = float(dstFunc['upper_limit'])
+                            if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
+                                sf['constraint_subsubtype'] = 'ambi'
+
+                if self.__createSfDict and sf is not None:
+                    if isinstance(memberId, int) and memberId == 1:
+                        sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
+                        memberId = '.'
+                    if isinstance(memberId, str) and isinstance(combinationId, int) and combinationId == 1:
+                        sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
+            finally:
+                self.numberSelection.clear()
+
+        if self.__cur_dist_type:
+
+            if self.donor_columnSel >= 0 or self.acceptor_columnSel >= 0 or len(self.atomSelectionSet) != 2:
+                self.distRestraints -= 1
+                self.hbondRestraints += 1
+                if self.__cur_subtype_altered:
+                    self.distStatements -= 1
+                    if self.hbondStatements == 0:
+                        self.hbondStatements += 1
+                self.__cur_subtype = 'hbond'
+                self.__cur_dist_type = False
+
+            else:
+                proc_as_if_noe_assign()
+                return
+
+        elif len(self.atomSelectionSet) == 2 and not self.__in_hbdb_statement:
+
+            is_hbond = False
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0], self.atomSelectionSet[1]):
+                _dstFunc = getDstFuncForHBond(atom1, atom2)
+                if 'upper_limit' in _dstFunc:
+                    is_hbond = True
+                    break
+
+            if not is_hbond:
+                self.hbondRestraints -= 1
+                self.distRestraints += 1
+                if self.__cur_subtype_altered:
+                    self.hbondStatements -= 1
+                    if self.distStatements == 0:
+                        self.distStatements += 1
+                self.__cur_subtype = 'dist'
+                self.__cur_dist_type = True
+
+                proc_as_if_noe_assign()
+                return
+
         if not self.areUniqueCoordAtoms('a hydrogen bond database (HBDB)'):
             if len(self.__g) > 0:
                 self.__f.extend(self.__g)
@@ -7883,7 +8046,7 @@ class XplorMRParserListener(ParseTreeListener):
         if self.donor_columnSel < 0:
             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                             "The donor atom has not been selected. 'don' tag must be exist in an atom selection expression of each Hydrogen bond database (HBDB) statement. "
-                            "e.g. assign (acc and resid 2 and segid A and name O ) (don and resid 8 and segid A and name HN) "
+                            "e.g. assign (acc and segid A and resid 2 and name O) (don and segid A and resid 8 and name HN) "
                             "Or, did you forgot to add three numbers as a distance restraint after the second atom selection? "
                             "e.g. assign (selection) (selection) target delta-lower delta-upper "
                             "Perhaps, did you accidentally insert excess 'assign' clauses in a scalar J-coupling restraint? "
@@ -7894,7 +8057,7 @@ class XplorMRParserListener(ParseTreeListener):
         if self.acceptor_columnSel < 0:
             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                             "The acceptor atom has not been selected. 'acc' tag must be exist in an atom selection expression of each Hydrogen bond database (HBDB) statement. "
-                            "e.g. assign (acc and resid 2 and segid A and name O ) (don and resid 8 and segid A and name HN) "
+                            "e.g. assign (acc and resid 2 and segid A and name O) (don and resid 8 and segid A and name HN) "
                             "Or, did you forgot to add three numbers as a distance restraint after the second atom selection? "
                             "e.g. assign (selection) (selection) target delta-lower delta-upper "
                             "Perhaps, did you accidentally insert excess 'assign' clauses in a scalar J-coupling restraint? "
@@ -8105,6 +8268,8 @@ class XplorMRParserListener(ParseTreeListener):
             self.stackTerms = []
             self.factor = {}
 
+            # self.__cont_coment = False
+
     # Exit a parse tree produced by XplorMRParser#selection.
     def exitSelection(self, ctx: XplorMRParser.SelectionContext):  # pylint: disable=unused-argument
         if self.__sel_expr_debug:
@@ -8313,7 +8478,9 @@ class XplorMRParserListener(ParseTreeListener):
             if _term is not None:
                 _atomSelection.extend(_term)
 
-        atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)] if len(_atomSelection) > 1 else _atomSelection
+        atomSelection = [dict(s) for s in set(frozenset(atom.items())
+                                              for atom in _atomSelection
+                                              if isinstance(atom, dict))] if len(_atomSelection) > 1 else _atomSelection
 
         if len(atomSelection) > 0:
             self.stackSelections.append(atomSelection)
@@ -8364,7 +8531,9 @@ class XplorMRParserListener(ParseTreeListener):
                 if _term is not None and not isinstance(_term, str):
                     _atomSelection.extend(_term)
 
-            atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)] if len(_atomSelection) > 1 else _atomSelection
+            atomSelection = [dict(s) for s in set(frozenset(atom.items())
+                                                  for atom in _atomSelection
+                                                  if isinstance(atom, dict))] if len(_atomSelection) > 1 else _atomSelection
 
             if len(atomSelection) > 0:
                 self.stackSelections.append(atomSelection)
@@ -8502,6 +8671,8 @@ class XplorMRParserListener(ParseTreeListener):
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         for realSeqId in ps['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
@@ -8519,6 +8690,8 @@ class XplorMRParserListener(ParseTreeListener):
                         npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
+                                if realSeqId is None:
+                                    continue
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = self.getRealCompId(np['comp_id'][idx])
                                 origCompId = np['auth_comp_id'][idx]
@@ -8544,6 +8717,8 @@ class XplorMRParserListener(ParseTreeListener):
                 if ps is not None:
                     found = False
                     for realSeqId in ps['auth_seq_id']:
+                        if realSeqId is None:
+                            continue
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
@@ -8556,6 +8731,8 @@ class XplorMRParserListener(ParseTreeListener):
                             found = True
                     if not found:
                         for realSeqId in ps['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = ps['auth_seq_id'].index(realSeqId)
                                 realCompId = ps['comp_id'][idx]
@@ -8574,6 +8751,8 @@ class XplorMRParserListener(ParseTreeListener):
                     for np in npList:
                         found = False
                         for realSeqId in np['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = self.getRealCompId(np['comp_id'][idx])
@@ -8586,6 +8765,8 @@ class XplorMRParserListener(ParseTreeListener):
                                 found = True
                         if not found:
                             for realSeqId in np['auth_seq_id']:
+                                if realSeqId is None:
+                                    continue
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                     idx = np['auth_seq_id'].index(realSeqId)
                                     realCompId = self.getRealCompId(np['comp_id'][idx])
@@ -8607,6 +8788,8 @@ class XplorMRParserListener(ParseTreeListener):
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
+                        if realSeqId is None:
+                            continue
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
@@ -8620,6 +8803,8 @@ class XplorMRParserListener(ParseTreeListener):
                     npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         for realSeqId in np['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = self.getRealCompId(np['comp_id'][idx])
@@ -8687,6 +8872,8 @@ class XplorMRParserListener(ParseTreeListener):
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
+                        if realSeqId is None:
+                            continue
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                             if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                 continue
@@ -8703,6 +8890,8 @@ class XplorMRParserListener(ParseTreeListener):
                     npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         for realSeqId in np['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                     continue
@@ -8762,6 +8951,8 @@ class XplorMRParserListener(ParseTreeListener):
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         for realSeqId in ps['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                     continue
@@ -8778,6 +8969,8 @@ class XplorMRParserListener(ParseTreeListener):
                         npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
+                                if realSeqId is None:
+                                    continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                         continue
@@ -8848,6 +9041,8 @@ class XplorMRParserListener(ParseTreeListener):
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
+                        if realSeqId is None:
+                            continue
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                             if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                 continue
@@ -8864,6 +9059,8 @@ class XplorMRParserListener(ParseTreeListener):
                     npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         for realSeqId in np['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                     if _factor['seq_id'][0] not in np['seq_id']:
@@ -8927,6 +9124,8 @@ class XplorMRParserListener(ParseTreeListener):
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         for realSeqId in ps['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                     continue
@@ -8943,6 +9142,8 @@ class XplorMRParserListener(ParseTreeListener):
                         npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
+                                if realSeqId is None:
+                                    continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                         if _factor['seq_id'][0] not in np['seq_id']:
@@ -9037,7 +9238,9 @@ class XplorMRParserListener(ParseTreeListener):
         if 'seq_not_specified' in _factor:
             del _factor['seq_not_specified']
 
-        atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+        atomSelection = [dict(s) for s in set(frozenset(atom.items())
+                                              for atom in _atomSelection
+                                              if isinstance(atom, dict))]
 
         valid = len(self.__f) == len_warn_msg
 
@@ -9072,6 +9275,9 @@ class XplorMRParserListener(ParseTreeListener):
                         else:
                             self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {__factor}.")
+                            if 'alt_chain_id' in _factor:  # 2mnz
+                                for chainId in _factor['chain_id']:
+                                    self.updateSegmentIdDict(_factor, chainId, False)
                             if foundCompId and len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
                                 compIds = guessCompIdFromAtomId(_factor['atom_id'], self.__polySeq, self.__nefT)
                                 if compIds is not None:
@@ -9327,7 +9533,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if atomSiteAtomId is not None and isPolySeq and self.__csStat.peptideLike(compId)\
                        and not any(atomId in atomSiteAtomId for atomId in _factor['atom_id'])\
-                       and all(atomId in ('H1', 'H2', 'HN1', 'HN2') for atomId in _factor['atom_id']):
+                       and all(atomId in ('H1', 'H2', 'HN1', 'HN2', 'NT') for atomId in _factor['atom_id']):
                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId + 1, cifCheck=cifCheck)
                         if _coordAtomSite is not None and _coordAtomSite['comp_id'] == 'NH2':
                             compId = 'NH2'
@@ -10008,7 +10214,16 @@ class XplorMRParserListener(ParseTreeListener):
     def getRealSeqId(self, ps, seqId, isPolySeq=True):
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
         offset = 0
-        if not self.__preferAuthSeq:
+        preferLabelSeq = False
+        if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and 'segment_id_match_stats' in self.__reasons:
+            for k, v in self.__reasons['segment_id_mismatch'].items():
+                if v == ps['auth_chain_id']:
+                    if k in self.__reasons['segment_id_match_stats']:
+                        if v in self.__reasons['segment_id_match_stats'][k] and self.__reasons['segment_id_match_stats'][k][v] == 0:
+                            # no hope for auth sequence scheme (2mnz)
+                            preferLabelSeq = True
+                            break
+        if not self.__preferAuthSeq or preferLabelSeq:
             chainId = ps['chain_id']
             offset = 0
             if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\
@@ -10587,7 +10802,9 @@ class XplorMRParserListener(ParseTreeListener):
                                             self.__lfh.write(f"+XplorMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
                     if len(self.factor['atom_selection']) > 0:
-                        self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+                        self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
+                                                                              for atom in _atomSelection
+                                                                              if isinstance(atom, dict))]
 
                         if len(self.factor['atom_selection']) == 0:
                             self.factor['atom_id'] = [None]
@@ -10659,12 +10876,16 @@ class XplorMRParserListener(ParseTreeListener):
                         if ps is not None:
                             found = False
                             for realSeqId in ps['auth_seq_id']:
+                                if realSeqId is None:
+                                    continue
                                 realSeqId = self.getRealSeqId(ps, realSeqId)[0]
                                 if re.match(_seqId, str(realSeqId)):
                                     _seqIdSelect.add(realSeqId)
                                     found = True
                             if not found:
                                 for realSeqId in ps['auth_seq_id']:
+                                    if realSeqId is None:
+                                        continue
                                     realSeqId = self.getRealSeqId(ps, realSeqId)[0]
                                     seqKey = (chainId, realSeqId)
                                     if seqKey in self.__authToLabelSeq:
@@ -10677,12 +10898,16 @@ class XplorMRParserListener(ParseTreeListener):
                             for np in npList:
                                 found = False
                                 for realSeqId in np['auth_seq_id']:
+                                    if realSeqId is None:
+                                        continue
                                     realSeqId = self.getRealSeqId(np, realSeqId, False)[0]
                                     if re.match(_seqId, str(realSeqId)):
                                         _seqIdSelect.add(realSeqId)
                                         found = True
                                 if not found:
                                     for realSeqId in np['auth_seq_id']:
+                                        if realSeqId is None:
+                                            continue
                                         realSeqId = self.getRealSeqId(np, realSeqId, False)[0]
                                         seqKey = (chainId, realSeqId)
                                         if seqKey in self.__authToLabelSeq:
@@ -11168,7 +11393,9 @@ class XplorMRParserListener(ParseTreeListener):
                         if len(_atom) == 1:
                             _atomSelection.append(_atom[0])
 
-                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
+                                                                          for atom in _atomSelection
+                                                                          if isinstance(atom, dict))]
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
@@ -11268,7 +11495,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                 if distance(to_np_array(_neighbor), origin) < 2.0:
                                                     _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
-                    atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+                    atomSelection = [dict(s) for s in set(frozenset(atom.items())
+                                                          for atom in _atomSelection
+                                                          if isinstance(atom, dict))]
 
                     if len(atomSelection) <= len(self.factor['atom_selection']):
                         self.factor['atom_id'] = [None]
@@ -11335,7 +11564,9 @@ class XplorMRParserListener(ParseTreeListener):
                                             for atomId in atomIds:
                                                 _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
 
-                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
+                                                                          for atom in _atomSelection
+                                                                          if isinstance(atom, dict))]
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]

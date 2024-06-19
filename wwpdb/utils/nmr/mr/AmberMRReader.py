@@ -223,6 +223,8 @@ class AmberMRReader:
 
                 if reasons is not None:
 
+                    listener.getSfDict()  # rewind listIdCounter (6neb)
+
                     if listener.warningMessage is None\
                        or len(listener.warningMessage) == 0\
                        or not any(f for f in listener.warningMessage

@@ -905,14 +905,19 @@ class CnsMRParserListener(ParseTreeListener):
                     if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
                         del self.reasonsForReParsing['global_sequence_offset']
 
-            if 'global_sequence_offset' in self.reasonsForReParsing and 'local_seq_scheme' in self.reasonsForReParsing:
-                del self.reasonsForReParsing['local_seq_scheme']
+            if 'global_sequence_offset' in self.reasonsForReParsing:
+                if 'local_seq_scheme' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['local_seq_scheme']
+                if 'label_seq_offset' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['label_seq_offset']
 
             if 'global_auth_sequence_offset' in self.reasonsForReParsing:
                 if 'local_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
                 if 'label_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_scheme']
+                if 'label_seq_offset' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['label_seq_offset']
 
             if not any(f for f in self.__f if '[Atom not found]' in f) and self.hasAnyRestraints()\
                and 'non_poly_remap' not in self.reasonsForReParsing and 'branch_remap' not in self.reasonsForReParsing:
@@ -4388,7 +4393,9 @@ class CnsMRParserListener(ParseTreeListener):
             if _term is not None:
                 _atomSelection.extend(_term)
 
-        atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)] if len(_atomSelection) > 1 else _atomSelection
+        atomSelection = [dict(s) for s in set(frozenset(atom.items())
+                                              for atom in _atomSelection
+                                              if isinstance(atom, dict))] if len(_atomSelection) > 1 else _atomSelection
 
         if len(atomSelection) > 0:
             self.stackSelections.append(atomSelection)
@@ -4439,7 +4446,9 @@ class CnsMRParserListener(ParseTreeListener):
                 if _term is not None and not isinstance(_term, str):
                     _atomSelection.extend(_term)
 
-            atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)] if len(_atomSelection) > 1 else _atomSelection
+            atomSelection = [dict(s) for s in set(frozenset(atom.items())
+                                                  for atom in _atomSelection
+                                                  if isinstance(atom, dict))] if len(_atomSelection) > 1 else _atomSelection
 
             if len(atomSelection) > 0:
                 self.stackSelections.append(atomSelection)
@@ -4564,6 +4573,8 @@ class CnsMRParserListener(ParseTreeListener):
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         for realSeqId in ps['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
                             origCompId = ps['auth_comp_id'][idx]
@@ -4581,6 +4592,8 @@ class CnsMRParserListener(ParseTreeListener):
                         npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
+                                if realSeqId is None:
+                                    continue
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = self.getRealCompId(np['comp_id'][idx])
                                 origCompId = np['auth_comp_id'][idx]
@@ -4606,6 +4619,8 @@ class CnsMRParserListener(ParseTreeListener):
                 if ps is not None:
                     found = False
                     for realSeqId in ps['auth_seq_id']:
+                        if realSeqId is None:
+                            continue
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
@@ -4618,6 +4633,8 @@ class CnsMRParserListener(ParseTreeListener):
                             found = True
                     if not found:
                         for realSeqId in ps['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = ps['auth_seq_id'].index(realSeqId)
                                 realCompId = ps['comp_id'][idx]
@@ -4636,6 +4653,8 @@ class CnsMRParserListener(ParseTreeListener):
                     for np in npList:
                         found = False
                         for realSeqId in np['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = self.getRealCompId(np['comp_id'][idx])
@@ -4648,6 +4667,8 @@ class CnsMRParserListener(ParseTreeListener):
                                 found = True
                         if not found:
                             for realSeqId in np['auth_seq_id']:
+                                if realSeqId is None:
+                                    continue
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                     idx = np['auth_seq_id'].index(realSeqId)
                                     realCompId = self.getRealCompId(np['comp_id'][idx])
@@ -4669,6 +4690,8 @@ class CnsMRParserListener(ParseTreeListener):
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
+                        if realSeqId is None:
+                            continue
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
@@ -4682,6 +4705,8 @@ class CnsMRParserListener(ParseTreeListener):
                     npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         for realSeqId in np['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = self.getRealCompId(np['comp_id'][idx])
@@ -4749,6 +4774,8 @@ class CnsMRParserListener(ParseTreeListener):
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
+                        if realSeqId is None:
+                            continue
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                             if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                 continue
@@ -4765,6 +4792,8 @@ class CnsMRParserListener(ParseTreeListener):
                     npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         for realSeqId in np['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                     continue
@@ -4824,6 +4853,8 @@ class CnsMRParserListener(ParseTreeListener):
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         for realSeqId in ps['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                     continue
@@ -4840,6 +4871,8 @@ class CnsMRParserListener(ParseTreeListener):
                         npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
+                                if realSeqId is None:
+                                    continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                         continue
@@ -4910,6 +4943,8 @@ class CnsMRParserListener(ParseTreeListener):
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 if ps is not None:
                     for realSeqId in ps['auth_seq_id']:
+                        if realSeqId is None:
+                            continue
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                             if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                 continue
@@ -4926,6 +4961,8 @@ class CnsMRParserListener(ParseTreeListener):
                     npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                     for np in npList:
                         for realSeqId in np['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                     if _factor['seq_id'][0] not in np['seq_id']:
@@ -4989,6 +5026,8 @@ class CnsMRParserListener(ParseTreeListener):
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                     if ps is not None:
                         for realSeqId in ps['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                     continue
@@ -5005,6 +5044,8 @@ class CnsMRParserListener(ParseTreeListener):
                         npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
                         for np in npList:
                             for realSeqId in np['auth_seq_id']:
+                                if realSeqId is None:
+                                    continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
                                         if _factor['seq_id'][0] not in np['seq_id']:
@@ -5099,7 +5140,9 @@ class CnsMRParserListener(ParseTreeListener):
         if 'seq_not_specified' in _factor:
             del _factor['seq_not_specified']
 
-        atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+        atomSelection = [dict(s) for s in set(frozenset(atom.items())
+                                              for atom in _atomSelection
+                                              if isinstance(atom, dict))]
 
         valid = len(self.__f) == len_warn_msg
 
@@ -5130,6 +5173,9 @@ class CnsMRParserListener(ParseTreeListener):
                         else:
                             self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {__factor}.")
+                            if 'alt_chain_id' in _factor:  # 2mnz
+                                for chainId in _factor['chain_id']:
+                                    self.updateSegmentIdDict(_factor, chainId, False)
                             if foundCompId and len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
                                 compIds = guessCompIdFromAtomId(_factor['atom_id'], self.__polySeq, self.__nefT)
                                 if compIds is not None:
@@ -5385,7 +5431,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                     if atomSiteAtomId is not None and isPolySeq and self.__csStat.peptideLike(compId)\
                        and not any(atomId in atomSiteAtomId for atomId in _factor['atom_id'])\
-                       and all(atomId in ('H1', 'H2', 'HN1', 'HN2') for atomId in _factor['atom_id']):
+                       and all(atomId in ('H1', 'H2', 'HN1', 'HN2', 'NT') for atomId in _factor['atom_id']):
                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId + 1, cifCheck=cifCheck)
                         if _coordAtomSite is not None and _coordAtomSite['comp_id'] == 'NH2':
                             compId = 'NH2'
@@ -6061,7 +6107,16 @@ class CnsMRParserListener(ParseTreeListener):
     def getRealSeqId(self, ps, seqId, isPolySeq=True):
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
         offset = 0
-        if not self.__preferAuthSeq:
+        preferLabelSeq = False
+        if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and 'segment_id_match_stats' in self.__reasons:
+            for k, v in self.__reasons['segment_id_mismatch'].items():
+                if v == ps['auth_chain_id']:
+                    if k in self.__reasons['segment_id_match_stats']:
+                        if v in self.__reasons['segment_id_match_stats'][k] and self.__reasons['segment_id_match_stats'][k][v] == 0:
+                            # no hope for auth sequence scheme (2mnz)
+                            preferLabelSeq = True
+                            break
+        if not self.__preferAuthSeq or preferLabelSeq:
             chainId = ps['chain_id']
             offset = 0
             if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\
@@ -6640,7 +6695,9 @@ class CnsMRParserListener(ParseTreeListener):
                                             self.__lfh.write(f"+CnsMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
                     if len(self.factor['atom_selection']) > 0:
-                        self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+                        self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
+                                                                              for atom in _atomSelection
+                                                                              if isinstance(atom, dict))]
 
                         if len(self.factor['atom_selection']) == 0:
                             self.factor['atom_id'] = [None]
@@ -6712,12 +6769,16 @@ class CnsMRParserListener(ParseTreeListener):
                         if ps is not None:
                             found = False
                             for realSeqId in ps['auth_seq_id']:
+                                if realSeqId is None:
+                                    continue
                                 realSeqId = self.getRealSeqId(ps, realSeqId)[0]
                                 if re.match(_seqId, str(realSeqId)):
                                     _seqIdSelect.add(realSeqId)
                                     found = True
                             if not found:
                                 for realSeqId in ps['auth_seq_id']:
+                                    if realSeqId is None:
+                                        continue
                                     realSeqId = self.getRealSeqId(ps, realSeqId)[0]
                                     seqKey = (chainId, realSeqId)
                                     if seqKey in self.__authToLabelSeq:
@@ -6730,12 +6791,16 @@ class CnsMRParserListener(ParseTreeListener):
                             for np in npList:
                                 found = False
                                 for realSeqId in np['auth_seq_id']:
+                                    if realSeqId is None:
+                                        continue
                                     realSeqId = self.getRealSeqId(np, realSeqId, False)[0]
                                     if re.match(_seqId, str(realSeqId)):
                                         _seqIdSelect.add(realSeqId)
                                         found = True
                                 if not found:
                                     for realSeqId in np['auth_seq_id']:
+                                        if realSeqId is None:
+                                            continue
                                         realSeqId = self.getRealSeqId(np, realSeqId, False)[0]
                                         seqKey = (chainId, realSeqId)
                                         if seqKey in self.__authToLabelSeq:
@@ -7227,7 +7292,9 @@ class CnsMRParserListener(ParseTreeListener):
                         if len(_atom) == 1:
                             _atomSelection.append(_atom[0])
 
-                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
+                                                                          for atom in _atomSelection
+                                                                          if isinstance(atom, dict))]
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
@@ -7327,7 +7394,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                 if distance(to_np_array(_neighbor), origin) < 2.0:
                                                     _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId})
 
-                    atomSelection = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+                    atomSelection = [dict(s) for s in set(frozenset(atom.items())
+                                                          for atom in _atomSelection
+                                                          if isinstance(atom, dict))]
 
                     if len(atomSelection) <= len(self.factor['atom_selection']):
                         self.factor['atom_id'] = [None]
@@ -7394,7 +7463,9 @@ class CnsMRParserListener(ParseTreeListener):
                                             for atomId in atomIds:
                                                 _atomSelection.append({'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': atomId})
 
-                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+                    self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
+                                                                          for atom in _atomSelection
+                                                                          if isinstance(atom, dict))]
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
@@ -7538,7 +7609,9 @@ class CnsMRParserListener(ParseTreeListener):
                                 if self.__verbose:
                                     self.__lfh.write(f"+CnsMRParserListener.exitFactor() ++ Error  - {str(e)}")
 
-                self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items()) for atom in _atomSelection)]
+                self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
+                                                                      for atom in _atomSelection
+                                                                      if isinstance(atom, dict))]
 
                 if len(self.factor['atom_selection']) == 0:
                     self.factor['atom_id'] = [None]

@@ -84,6 +84,7 @@ try:
                                            aminoProtonCode,
                                            rdcBbPairCode,
                                            zincIonCode,
+                                           isReservedLigCode,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
@@ -173,6 +174,7 @@ except ImportError:
                                aminoProtonCode,
                                rdcBbPairCode,
                                zincIonCode,
+                               isReservedLigCode,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
@@ -2470,6 +2472,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                 ligands += 1
                     if ligands == 1:
                         compId = _compId = __compId
+                    elif len(self.__nonPoly) == 1 and self.__ccU.updateChemCompDict(_compId):
+                        if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' or isReservedLigCode(_compId):
+                            compId = _compId = self.__nonPoly[0]['comp_id'][0]
+                            ligands = 1
             for np in self.__nonPolySeq:
                 chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if self.__reasons is not None:
@@ -2902,6 +2908,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                 ligands += 1
                     if ligands == 1:
                         compId = _compId = __compId
+                    elif len(self.__nonPoly) == 1 and self.__ccU.updateChemCompDict(_compId):
+                        if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' or isReservedLigCode(_compId):
+                            compId = _compId = self.__nonPoly[0]['comp_id'][0]
+                            ligands = 1
             for np in self.__nonPolySeq:
                 chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:

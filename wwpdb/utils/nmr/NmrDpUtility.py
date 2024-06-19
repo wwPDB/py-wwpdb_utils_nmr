@@ -43363,9 +43363,10 @@ class NmrDpUtility:
 
                     length = len(myAlign)
 
-                    _matched, unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
+                    __matched, _unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if _conflict == 0:  # and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
+                    if __matched > 0 and _conflict == 0:  # and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
+                        _matched, unmapped = __matched, _unmapped
                         conflict = 0
                         offset_1 = _offset_1
                         offset_2 = _offset_2
@@ -43522,9 +43523,10 @@ class NmrDpUtility:
 
                     length = len(myAlign)
 
-                    _matched, unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
+                    __matched, _unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if _conflict == 0:  # and len(__s1['comp_id']) - len(s1['comp_id']) == conflict:
+                    if __matched > 0 and _conflict == 0:  # and len(__s1['comp_id']) - len(s1['comp_id']) == conflict:
+                        _matched, unmapped = __matched, _unmapped
                         conflict = 0
                         offset_1 = _offset_1
                         offset_2 = _offset_2

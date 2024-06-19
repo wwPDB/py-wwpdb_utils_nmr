@@ -875,7 +875,7 @@
             "minLength": 1
           }
         },
-       "identical_auth_chain_id": {
+        "identical_auth_chain_id": {
           "description": "List of auth chain IDs having the same sequence.",
           "type": "array",
           "items": {
@@ -4363,13 +4363,13 @@
         "unusual_chemical_shift": {
           "$ref": "#/definitions/common_message"
         },
-       "complemented_chemical_shift": {
+        "complemented_chemical_shift": {
           "$ref": "#/definitions/common_message"
         },
-       "incompletely_assigned_chemical_shift": {
+        "incompletely_assigned_chemical_shift": {
           "$ref": "#/definitions/common_message"
         },
-       "incompletely_assigned_spectral_peak": {
+        "incompletely_assigned_spectral_peak": {
           "$ref": "#/definitions/common_message"
         },
         "anomalous_data": {

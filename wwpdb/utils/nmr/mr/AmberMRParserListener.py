@@ -4647,7 +4647,7 @@ class AmberMRParserListener(ParseTreeListener):
             if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
                 idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
                 compId = ps['comp_id'][idx]
-                cifSeqId = None if useDefault and not enforceAuthSeq else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
+                cifSeqId = None if useDefault or enforceAuthSeq else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
 
                 asis = not hasAuthSeqScheme or enforceAuthSeq or not self.__preferAuthSeq
 

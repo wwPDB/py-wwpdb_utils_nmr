@@ -5302,13 +5302,15 @@ class AmberMRParserListener(ParseTreeListener):
 
                     elif 'igr' in factor:
 
-                        if authAtomId == 'H%' and _authAtomId.startswith('HT') and len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
-                            _atomIds = []
-                            for _atomId in coordAtomSite['atom_id']:
-                                if _atomId in aminoProtonCode:
-                                    _atomIds.append(_atomId)
-                            if len(_atomIds) >= len(factor['igr']):
-                                atomIds = _atomIds
+                        if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+
+                            if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                                _atomIds = []
+                                for _atomId in coordAtomSite['atom_id']:
+                                    if _atomId in aminoProtonCode:
+                                        _atomIds.append(_atomId)
+                                if len(_atomIds) >= len(factor['igr']):
+                                    atomIds = _atomIds
 
                         if any(_igr in self.__sanderAtomNumberDict for _igr in factor['igr']):
                             for _igr in factor['igr']:
@@ -5647,13 +5649,15 @@ class AmberMRParserListener(ParseTreeListener):
 
                     elif 'igr' in factor:
 
-                        if authAtomId == 'H%' and _authAtomId.startswith('HT') and len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
-                            _atomIds = []
-                            for _atomId in coordAtomSite['atom_id']:
-                                if _atomId in aminoProtonCode:
-                                    _atomIds.append(_atomId)
-                            if len(_atomIds) >= len(factor['igr']):
-                                atomIds = _atomIds
+                        if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+
+                            if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                                _atomIds = []
+                                for _atomId in coordAtomSite['atom_id']:
+                                    if _atomId in aminoProtonCode:
+                                        _atomIds.append(_atomId)
+                                if len(_atomIds) >= len(factor['igr']):
+                                    atomIds = _atomIds
 
                         ccdCheckOnly = False
                         for igr, _atomId in zip(sorted(factor['igr']), atomIds):
@@ -6061,13 +6065,15 @@ class AmberMRParserListener(ParseTreeListener):
 
                         elif 'igr' in factor:
 
-                            if authAtomId == 'H%' and _authAtomId.startswith('HT') and len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
-                                _atomIds = []
-                                for _atomId in coordAtomSite['atom_id']:
-                                    if _atomId in aminoProtonCode:
-                                        _atomIds.append(_atomId)
-                                if len(_atomIds) >= len(factor['igr']):
-                                    atomIds = _atomIds
+                            if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+
+                                if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                                    _atomIds = []
+                                    for _atomId in coordAtomSite['atom_id']:
+                                        if _atomId in aminoProtonCode:
+                                            _atomIds.append(_atomId)
+                                    if len(_atomIds) >= len(factor['igr']):
+                                        atomIds = _atomIds
 
                             ccdCheckOnly = False
                             for igr, _atomId in zip(sorted(factor['igr']), atomIds):
@@ -6331,13 +6337,15 @@ class AmberMRParserListener(ParseTreeListener):
 
                         elif 'igr' in factor:
 
-                            if authAtomId == 'H%' and _authAtomId.startswith('HT') and len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
-                                _atomIds = []
-                                for _atomId in coordAtomSite['atom_id']:
-                                    if _atomId in aminoProtonCode:
-                                        _atomIds.append(_atomId)
-                                if len(_atomIds) >= len(factor['igr']):
-                                    atomIds = _atomIds
+                            if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+
+                                if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                                    _atomIds = []
+                                    for _atomId in coordAtomSite['atom_id']:
+                                        if _atomId in aminoProtonCode:
+                                            _atomIds.append(_atomId)
+                                    if len(_atomIds) >= len(factor['igr']):
+                                        atomIds = _atomIds
 
                             ccdCheckOnly = False
                             for igr, _atomId in zip(sorted(factor['igr']), atomIds):

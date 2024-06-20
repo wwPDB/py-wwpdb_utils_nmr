@@ -2588,6 +2588,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     if cifCompId != compId:
+                        if cifCompId in monDict3 and compId in monDict3:
+                            continue
                         compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                         if compId in compIds:
                             cifCompId = compId
@@ -3055,6 +3057,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     if cifCompId != compId:
+                        if cifCompId in monDict3 and compId in monDict3:
+                            continue
                         compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                         if compId in compIds:
                             cifCompId = compId

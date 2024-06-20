@@ -5054,9 +5054,8 @@ def guessCompIdFromAtomId(atoms, polySeq, nefT):
                 _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, atoms[0])
                 if len(_atomId) > 0 and details is None:
                     candidates.add(_compId)
-
-    if len(candidates) > 2:
-        return None
+                    if len(candidates) > 2:
+                        return None
 
     return list(candidates)
 

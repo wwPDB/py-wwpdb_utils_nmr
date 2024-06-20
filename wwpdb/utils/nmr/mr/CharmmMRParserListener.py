@@ -798,6 +798,15 @@ class CharmmMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['local_seq_scheme']
                 if 'label_seq_offset' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_offset']
+                if 'label_seq_scheme' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['label_seq_scheme']
+                    if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
+                        self.reasonsForReParsing['global_auth_sequence_offset'] = self.reasonsForReParsing['global_sequence_offset']
+                        del self.reasonsForReParsing['global_sequence_offset']
+                if 'inhibit_label_seq_scheme' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['inhibit_label_seq_scheme']
+                if 'seq_id_remap' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['seq_id_remap']
 
             if 'global_auth_sequence_offset' in self.reasonsForReParsing:
                 if 'local_seq_scheme' in self.reasonsForReParsing:

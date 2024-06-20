@@ -214,6 +214,17 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6zbi/allNOEs.tbl',
+                     '../../tests-nmr/mock-data-remediation/6zbi/6zbi.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6zbi/allNOEs.tbl',
+                 '../../tests-nmr/mock-data-remediation/6zbi/6zbi.cif')
+
     reader = CnsMRReader(True, reasons={'global_auth_sequence_offset': {'B': 35}})
     reader.setDebugMode(True)
     reader_listener, _, _ =\

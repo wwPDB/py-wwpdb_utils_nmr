@@ -393,6 +393,7 @@ class XplorMRParserListener(ParseTreeListener):
 
     # polymer sequence of MR file
     __polySeqRst = None
+    __polySeqRstValid = None
     __polySeqRstFailed = None
     __polySeqRstFailedAmbig = None
 
@@ -751,6 +752,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#xplor_nih_mr.
     def enterXplor_nih_mr(self, ctx: XplorMRParser.Xplor_nih_mrContext):  # pylint: disable=unused-argument
         self.__polySeqRst = []
+        self.__polySeqRstValid = []
         self.__polySeqRstFailed = []
         self.__polySeqRstFailedAmbig = []
         self.__f = []
@@ -930,6 +932,11 @@ class XplorMRParserListener(ParseTreeListener):
 
                             if chainAssignFailed is not None:
 
+                                seqAlignValid = None
+                                if len(self.__polySeqRstValid) > 0:
+                                    sortPolySeqRst(self.__polySeqRstValid)
+                                    seqAlignValid, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstValid)
+
                                 for ca in chainAssignFailed:
                                     if ca['conflict'] > 0:
                                         continue
@@ -948,10 +955,30 @@ class XplorMRParserListener(ParseTreeListener):
                                         if mid_code == '|' and test_seq_id is not None:
                                             seq_id_mapping[test_seq_id] = ref_auth_seq_id
 
+                                    ref_seq_id_mapping = {}
+                                    if seqAlignValid is not None:
+                                        sa_ref = next((sa for sa in seqAlignValid
+                                                       if sa['ref_chain_id'] == ref_chain_id
+                                                       and sa['test_chain_id'] == test_chain_id), None)
+
+                                        if sa_ref is not None:
+                                            for ref_auth_seq_id, mid_code, test_seq_id in zip(sa_ref['ref_auth_seq_id'] if 'ref_auth_seq_id' in sa_ref else sa_ref['ref_seq_id'],
+                                                                                              sa_ref['mid_code'], sa_ref['test_seq_id']):
+                                                if mid_code == '|' and test_seq_id is not None:
+                                                    ref_seq_id_mapping[test_seq_id] = ref_auth_seq_id
+
                                     if len(seq_id_mapping) > 1:
                                         for k, v in seq_id_mapping.items():
                                             offset = v - k
                                             break
+
+                                        if len(ref_seq_id_mapping) > 1:
+                                            for k, v in ref_seq_id_mapping.items():
+                                                ref_offset = v - k
+                                                break
+
+                                            if offset != ref_offset:
+                                                continue
 
                                         if any(k for k, v in seq_id_mapping.items() if k != v):
                                             if not any(v - k != offset for k, v in seq_id_mapping.items()):
@@ -9337,6 +9364,12 @@ class XplorMRParserListener(ParseTreeListener):
                         if 'comp_id' in _factor and len(_factor['comp_id']) == 1 else ''
                     self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                     f"The {clauseName} has no effect for a factor {__factor}.{hint}")
+
+        elif len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
+            compIds = guessCompIdFromAtomId(_factor['atom_id'], self.__polySeq, self.__nefT)
+            if compIds is not None:
+                if len(compIds) == 1:
+                    updatePolySeqRst(self.__polySeqRstValid, _factor['chain_id'][0], _factor['seq_id'][0], compIds[0])
 
         if 'chain_id' in _factor:
             del _factor['chain_id']

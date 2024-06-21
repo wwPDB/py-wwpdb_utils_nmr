@@ -800,7 +800,54 @@ class XplorMRParserListener(ParseTreeListener):
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
                     if self.__reasons is None\
-                       and (any(f for f in self.__f if '[Atom not found]' in f or '[Sequence mismatch]' in f)
+                       and (any(f for f in self.__f if '[Anomalous data]' in f)):
+                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                        if self.distRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                        if self.dihedRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['dihed'] = True
+                        if self.rdcRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['rdc'] = True
+                        if self.planeRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['plane'] = True
+                        if self.adistRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['adist'] = True
+                        if self.jcoupRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['jcoup'] = True
+                        if self.hvycsRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['hvycs'] = True
+                        if self.procsRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['procs'] = True
+                        if self.ramaRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['rama'] = True
+                        if self.radiRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['radi'] = True
+                        if self.diffRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['diff'] = True
+                        if self.nbaseRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['nbase'] = True
+                        if self.csaRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['csa'] = True
+                        if self.preRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['pre'] = True
+                        if self.pcsRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['pcs'] = True
+                        if self.prdcRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['prdc'] = True
+                        if self.pangRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['pang'] = True
+                        if self.pccrRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['pccr'] = True
+                        if self.hbondRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['hbond'] = True
+                        if self.geoRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['geo'] = True
+                        if 'local_seq_scheme' in self.reasonsForReParsing:
+                            del self.reasonsForReParsing['local_seq_scheme']
+
+                    if self.__reasons is None\
+                       and (any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f or '[Sequence mismatch]' in f)
                             or any(f for f in self.__f if '[Insufficient atom selection]' in f)):
 
                         seqIdRemap = []
@@ -1077,8 +1124,10 @@ class XplorMRParserListener(ParseTreeListener):
                 if 'label_seq_offset' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_offset']
 
-            if not any(f for f in self.__f if '[Atom not found]' in f) and self.hasAnyRestraints()\
-               and 'non_poly_remap' not in self.reasonsForReParsing and 'branch_remap' not in self.reasonsForReParsing:
+            if not any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f)\
+               and self.hasAnyRestraints()\
+               and 'non_poly_remap' not in self.reasonsForReParsing\
+               and 'branch_remap' not in self.reasonsForReParsing:
 
                 if len(self.reasonsForReParsing) > 0:
                     self.reasonsForReParsing = {}
@@ -2858,7 +2907,7 @@ class XplorMRParserListener(ParseTreeListener):
                     ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                     ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                     if ps1 is None and ps2 is None:
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                        self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                         "Found inter-chain RDC vector; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
@@ -2866,7 +2915,8 @@ class XplorMRParserListener(ParseTreeListener):
             elif abs(seq_id_1 - seq_id_2) > 1:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                    warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Anomalous RDC vector'
+                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     "Found inter-residue RDC vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
@@ -2881,7 +2931,8 @@ class XplorMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                    warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Anomalous RDC vector'
+                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     "Found inter-residue RDC vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
@@ -3287,7 +3338,8 @@ class XplorMRParserListener(ParseTreeListener):
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                 f"Found inter-residue {spin_system} dipolar coupling vector; "
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
@@ -3302,7 +3354,8 @@ class XplorMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                    warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     f"Found inter-residue {spin_system} dipolar coupling vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
@@ -3570,7 +3623,8 @@ class XplorMRParserListener(ParseTreeListener):
                 elif abs(seq_id_1 - seq_id_2) > 1:
                     ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                     if ps1 is None:
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                        warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                        self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                         "Found inter-residue RDC vector; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
@@ -3585,7 +3639,8 @@ class XplorMRParserListener(ParseTreeListener):
                         pass
 
                     else:
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                        warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                        self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                         "Found inter-residue RDC vector; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
@@ -3850,7 +3905,8 @@ class XplorMRParserListener(ParseTreeListener):
             elif abs(seq_id_1 - seq_id_2) > 1:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                    warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     "Found inter-residue RDC vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
@@ -3865,7 +3921,8 @@ class XplorMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                    warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     "Found inter-residue RDC vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
@@ -4026,7 +4083,8 @@ class XplorMRParserListener(ParseTreeListener):
                 elif abs(seq_id_1 - seq_id_2) > 1:
                     ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                     if ps1 is None:
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                        warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                        self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                         "Found inter-residue RDC vector; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
@@ -4041,7 +4099,8 @@ class XplorMRParserListener(ParseTreeListener):
                         pass
 
                     else:
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                        warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                        self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                         "Found inter-residue RDC vector; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
@@ -4496,9 +4555,9 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
-
                     if abs(seq_id_1 - seq_id_2) > 2 or {atom_id_1, atom_id_2} != {'H', 'N'}:
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                        warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                        self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                         "Found inter-residue J-coupling vector; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
@@ -4514,7 +4573,8 @@ class XplorMRParserListener(ParseTreeListener):
                         pass
 
                     else:
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                        warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                        self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                         "Found inter-residue J-coupling vector; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                         return
@@ -5571,7 +5631,8 @@ class XplorMRParserListener(ParseTreeListener):
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                 "Found inter-residue diffusion anisotropy vector; "
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
@@ -5586,7 +5647,8 @@ class XplorMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                    warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     "Found inter-residue diffusion anisotropy vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
@@ -7194,7 +7256,8 @@ class XplorMRParserListener(ParseTreeListener):
             elif abs(seq_id_1 - seq_id_2) > 1:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                    warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     "Found inter-residue RDC vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
@@ -7209,7 +7272,8 @@ class XplorMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                    warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     "Found inter-residue RDC vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
@@ -7354,7 +7418,8 @@ class XplorMRParserListener(ParseTreeListener):
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                 "Found inter-residue orientation vector; "
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
@@ -7369,7 +7434,8 @@ class XplorMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                    warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     "Found inter-residue orientation vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
@@ -7510,7 +7576,8 @@ class XplorMRParserListener(ParseTreeListener):
                     return
 
             elif abs(seq_id_1 - seq_id_2) > 1:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                 "Found inter-residue CCR vector; "
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
@@ -7525,7 +7592,8 @@ class XplorMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                    warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
+                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                     "Found inter-residue CCR vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
@@ -9415,7 +9483,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         for chainId in chainIds:
 
-            if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']\
+            if self.__reasons is not None and 'label_seq_scheme' in self.__reasons\
+               and self.__reasons['label_seq_scheme'] is not None\
                and self.__cur_subtype in self.__reasons['label_seq_scheme']\
                and self.__reasons['label_seq_scheme'][self.__cur_subtype]\
                and 'inhibit_label_seq_scheme' in self.__reasons and chainId in self.__reasons['inhibit_label_seq_scheme']\
@@ -9814,7 +9883,11 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 self.reasonsForReParsing['label_seq_scheme'] = {}
                                                             if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
                                                                 self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
-                                    elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
+                                    elif _seqId_ in ps['auth_seq_id'] and atomSpecified\
+                                            and (self.__reasons is None or 'label_seq_scheme' not in self.__reasons
+                                                 or self.__reasons['label_seq_scheme'] is None
+                                                 or self.__cur_subtype not in self.__reasons['label_seq_scheme']
+                                                 or not self.__reasons['label_seq_scheme'][self.__cur_subtype]):
                                         self.__preferAuthSeq = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck=cifCheck)
                                         if _coordAtomSite is not None:
@@ -9902,7 +9975,11 @@ class XplorMRParserListener(ParseTreeListener):
                                                         if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
                                                             self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                 elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
-                                    if len(self.atomSelectionSet) == 0:
+                                    if len(self.atomSelectionSet) == 0\
+                                       and (self.__reasons is None or 'label_seq_scheme' not in self.__reasons
+                                            or self.__reasons['label_seq_scheme'] is None
+                                            or self.__cur_subtype not in self.__reasons['label_seq_scheme']
+                                            or not self.__reasons['label_seq_scheme'][self.__cur_subtype]):
                                         self.__preferAuthSeq = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck=cifCheck)
                                         if _coordAtomSite is not None:
@@ -10064,7 +10141,10 @@ class XplorMRParserListener(ParseTreeListener):
                                                             if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
                                                                and _factor['chain_id'][0] != chainId and compId in monDict3:
                                                                 continue
-                                                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                            warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId[0] in aminoProtonCode\
+                                                                and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
+                                                                else 'Atom not found'
+                                                            self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
                                         auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
@@ -10182,7 +10262,10 @@ class XplorMRParserListener(ParseTreeListener):
                                                                         checked = True
                                                             if checked and isPolySeq and self.__reasons is not None and 'np_seq_id_remap' in self.__reasons:
                                                                 continue
-                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                    warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId[0] in aminoProtonCode\
+                                                        and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
+                                                        else 'Atom not found'
+                                                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
                                                     if self.__cur_subtype == 'dist' and isPolySeq and isChainSpecified and compId in monDict3 and self.__csStat.peptideLike(compId):
                                                         self.checkDistSequenceOffset(chainId, seqId, compId, origAtomId)

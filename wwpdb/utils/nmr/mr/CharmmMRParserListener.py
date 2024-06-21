@@ -539,7 +539,20 @@ class CharmmMRParserListener(ParseTreeListener):
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
                     if self.__reasons is None\
-                       and (any(f for f in self.__f if '[Atom not found]' in f or '[Sequence mismatch]' in f)
+                       and (any(f for f in self.__f if '[Anomalous data]' in f)):
+                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                        if self.distRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                        if self.dihedRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['dihed'] = True
+                        if self.geoRestraints > 0:
+                            self.reasonsForReParsing['label_seq_scheme']['geo'] = True
+                        if 'local_seq_scheme' in self.reasonsForReParsing:
+                            del self.reasonsForReParsing['local_seq_scheme']
+
+                    if self.__reasons is None\
+                       and (any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f or '[Sequence mismatch]' in f)
                             or any(f for f in self.__f if '[Insufficient atom selection]' in f)):
 
                         seqIdRemap = []
@@ -816,8 +829,10 @@ class CharmmMRParserListener(ParseTreeListener):
                 if 'label_seq_offset' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_offset']
 
-            if not any(f for f in self.__f if '[Atom not found]' in f) and self.hasAnyRestraints()\
-               and 'non_poly_remap' not in self.reasonsForReParsing and 'branch_remap' not in self.reasonsForReParsing:
+            if not any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f)\
+               and self.hasAnyRestraints()\
+               and 'non_poly_remap' not in self.reasonsForReParsing\
+               and 'branch_remap' not in self.reasonsForReParsing:
 
                 if len(self.reasonsForReParsing) > 0:
                     self.reasonsForReParsing = {}
@@ -3111,7 +3126,8 @@ class CharmmMRParserListener(ParseTreeListener):
 
         for chainId in chainIds:
 
-            if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']\
+            if self.__reasons is not None and 'label_seq_scheme' in self.__reasons\
+               and self.__reasons['label_seq_scheme'] is not None\
                and self.__cur_subtype in self.__reasons['label_seq_scheme']\
                and self.__reasons['label_seq_scheme'][self.__cur_subtype]\
                and 'inhibit_label_seq_scheme' in self.__reasons and chainId in self.__reasons['inhibit_label_seq_scheme']\
@@ -3460,7 +3476,11 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                 self.reasonsForReParsing['label_seq_scheme'] = {}
                                                             if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
                                                                 self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
-                                    elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
+                                    elif _seqId_ in ps['auth_seq_id'] and atomSpecified\
+                                            and (self.__reasons is None or 'label_seq_scheme' not in self.__reasons
+                                                 or self.__reasons['label_seq_scheme'] is None
+                                                 or self.__cur_subtype not in self.__reasons['label_seq_scheme']
+                                                 or not self.__reasons['label_seq_scheme'][self.__cur_subtype]):
                                         self.__preferAuthSeq = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck=cifCheck)
                                         if _coordAtomSite is not None:
@@ -3536,7 +3556,11 @@ class CharmmMRParserListener(ParseTreeListener):
                                                         if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
                                                             self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                 elif _seqId_ in ps['auth_seq_id'] and atomSpecified:
-                                    if len(self.atomSelectionSet) == 0:
+                                    if len(self.atomSelectionSet) == 0\
+                                       and (self.__reasons is None or 'label_seq_scheme' not in self.__reasons
+                                            or self.__reasons['label_seq_scheme'] is None
+                                            or self.__cur_subtype not in self.__reasons['label_seq_scheme']
+                                            or not self.__reasons['label_seq_scheme'][self.__cur_subtype]):
                                         self.__preferAuthSeq = True
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck=cifCheck)
                                         if _coordAtomSite is not None:
@@ -3710,7 +3734,10 @@ class CharmmMRParserListener(ParseTreeListener):
                                                             if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
                                                                and _factor['chain_id'][0] != chainId and compId in monDict3:
                                                                 continue
-                                                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                            warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId[0] in aminoProtonCode\
+                                                                and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
+                                                                else 'Atom not found'
+                                                            self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
                                         auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
@@ -3828,7 +3855,10 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                         checked = True
                                                             if checked and isPolySeq and self.__reasons is not None and 'np_seq_id_remap' in self.__reasons:
                                                                 continue
-                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                    warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId[0] in aminoProtonCode\
+                                                        and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
+                                                        else 'Atom not found'
+                                                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
                                                     if self.__cur_subtype == 'dist' and isPolySeq and isChainSpecified and compId in monDict3 and self.__csStat.peptideLike(compId):
                                                         self.checkDistSequenceOffset(chainId, seqId, compId, origAtomId)

@@ -21,7 +21,7 @@ options { tokenVocab=CyanaMRLexer; }
 cyana_mr:
 	(
 	Orientation_header |
-	Tensor_header |
+	Tensor_header+ |
 	comment |
 	distance_restraints |
 	fixres_distance_restraints |
@@ -81,14 +81,12 @@ torsion_angle_restraint:
 */
 rdc_restraints:
 	rdc_parameter+
-	comment*
-	rdc_restraint+;
+	(Orientation_header | comment | rdc_restraint)+;
 
 rdc_parameter:
 	Integer number number Integer;
 
 rdc_restraint:
-	comment*
 	Integer Simple_name Simple_name
 	Integer Simple_name Simple_name
 	number number number Integer number?;
@@ -98,14 +96,12 @@ rdc_restraint:
 */
 pcs_restraints:
 	pcs_parameter+
-	comment*
-	pcs_restraint+;
+	(Orientation_header | comment | pcs_restraint)+;
 
 pcs_parameter:
 	Integer number number Integer;
 
 pcs_restraint:
-	comment*
 	Integer Simple_name Simple_name
 	number number number Integer;
 

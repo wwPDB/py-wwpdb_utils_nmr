@@ -842,6 +842,12 @@ class CnsMRParserListener(ParseTreeListener):
                                     sortPolySeqRst(self.__polySeqRstValid)
                                     seqAlignValid, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstValid)
 
+                                if seqAlignValid is not None and len(seqAlignValid) == 0 and len(seqAlignFailed) == 0:
+                                    if 'local_seq_scheme' in self.reasonsForReParsing:
+                                        del self.reasonsForReParsing['local_seq_scheme']
+                                    if 'label_seq_scheme' in self.reasonsForReParsing:
+                                        del self.reasonsForReParsing['label_seq_scheme']
+
                                 for ca in chainAssignFailed:
                                     if ca['conflict'] > 0:
                                         continue
@@ -5898,6 +5904,8 @@ class CnsMRParserListener(ParseTreeListener):
                             if isinstance(origAtomId, str) and origAtomId.startswith('*'):
                                 continue
 
+                            origAtomId0 = origAtomId[0] if isinstance(origAtomId, list) else origAtomId
+
                             if ccdCheck and compId is not None and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES and _atomId not in XPLOR_NITROXIDE_NAMES:
                                 _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, ccU=self.__ccU) for _compId in _factor['comp_id']]
                                 if self.__ccU.updateChemCompDict(compId) and ('comp_id' not in _factor or compId in _compIdList):
@@ -5943,7 +5951,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                 if len(origAtomId) == 1:
                                                                     _atomSelection[-1]['hydrogen_not_instantiated'] = True
                                                                     self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
-                                                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not properly instantiated in the coordinates. "
+                                                                                    f"{chainId}:{seqId}:{compId}:{origAtomId0} is not properly instantiated in the coordinates. "
                                                                                     "Please re-upload the model file.")
                                                         elif bondedTo[0][0] == 'O':
                                                             checked = True
@@ -5967,7 +5975,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                 or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
                                                                 or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                                            f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "
+                                                                            f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates. "
                                                                             f"The residue number '{seqId}' is not present "
                                                                             f"in polymer sequence of chain {chainId} of the coordinates. "
                                                                             "Please update the sequence in the Macromolecules page.")
@@ -6003,11 +6011,11 @@ class CnsMRParserListener(ParseTreeListener):
                                                             if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
                                                                and _factor['chain_id'][0] != chainId and compId in monDict3:
                                                                 continue
-                                                            warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId[0] in aminoProtonCode\
+                                                            warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                                 and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
                                                                 else 'Atom not found'
                                                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
-                                                                            f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
+                                                                            f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates.")
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
                                         auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                         if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
@@ -6035,7 +6043,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                         or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
                                                         or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates. "
+                                                                    f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates. "
                                                                     f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
                                                                     "Please update the sequence in the Macromolecules page.")
                                                 elif seqSpecified:
@@ -6124,13 +6132,13 @@ class CnsMRParserListener(ParseTreeListener):
                                                                         checked = True
                                                             if checked and isPolySeq and self.__reasons is not None and 'np_seq_id_remap' in self.__reasons:
                                                                 continue
-                                                    warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId[0] in aminoProtonCode\
+                                                    warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                         and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
                                                         else 'Atom not found'
                                                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
-                                                                    f"{chainId}:{seqId}:{compId}:{origAtomId} is not present in the coordinates.")
+                                                                    f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates.")
                                                     if self.__cur_subtype == 'dist' and isPolySeq and isChainSpecified and compId in monDict3 and self.__csStat.peptideLike(compId):
-                                                        self.checkDistSequenceOffset(chainId, seqId, compId, origAtomId)
+                                                        self.checkDistSequenceOffset(chainId, seqId, compId, origAtomId0)
 
         return foundCompId
 
@@ -6404,7 +6412,7 @@ class CnsMRParserListener(ParseTreeListener):
         for _compId in set(compIds):
             if compId == _compId:
                 continue
-            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(_compId, origAtomId[0])
+            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(_compId, origAtomId)
             if len(_atomId) > 0 and details is None:
                 candidates.append(_compId)
 

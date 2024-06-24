@@ -499,8 +499,8 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/2lrk/2lrk-corrected-div_src.mr',
                  '../../tests-nmr/mock-data-remediation/2lrk/2lrk.cif')
 
-    reader = XplorMRReader(False)
-    reader.setDebugMode(False)
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/1iio/1iio-trimmed.mr',
                      '../../tests-nmr/mock-data-remediation/1iio/1iio.cif')
@@ -521,7 +521,12 @@ if __name__ == "__main__":
 
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2ju5/2ju5-trimmed-div_src.mr-corrected',
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2ju5/2ju5-corrected-div_src.mr',
+                     '../../tests-nmr/mock-data-remediation/2ju5/2ju5.cif')
+    reader = XplorMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2ju5/2ju5-corrected-div_src.mr',
                  '../../tests-nmr/mock-data-remediation/2ju5/2ju5.cif')
 
     reader = XplorMRReader(True)

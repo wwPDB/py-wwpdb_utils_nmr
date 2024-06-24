@@ -82,6 +82,7 @@ try:
                                            protonBeginCode,
                                            pseProBeginCode,
                                            aminoProtonCode,
+                                           carboxylCode,
                                            rdcBbPairCode,
                                            zincIonCode,
                                            isReservedLigCode,
@@ -172,6 +173,7 @@ except ImportError:
                                protonBeginCode,
                                pseProBeginCode,
                                aminoProtonCode,
+                               carboxylCode,
                                rdcBbPairCode,
                                zincIonCode,
                                isReservedLigCode,
@@ -1185,7 +1187,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             elif self.__cur_subtype == 'noepk':
                                 self.noepkRestraints -= 1
                             self.__cur_subtype = 'rdc'
-                            self.distRestraints -= 1
+                            self.rdcRestraints += 1
 
                             target_value = value
                             lower_limit = upper_limit = None
@@ -4088,6 +4090,13 @@ class CyanaMRParserListener(ParseTreeListener):
                                     return atomId
                             if bondedTo[0][0] == 'O':
                                 return 'Ignorable hydroxyl group'
+                    if seqId == max(auth_seq_id_list) or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
+                        if coordAtomSite is not None and atomId in carboxylCode\
+                           and not isCyclicPolymer(self.__cR, self.__polySeq, chainId, self.__representativeModelId, self.__representativeAltId, self.__modelNumName):
+                            self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                            f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
+                                            "Please re-upload the model file.")
+                            return atomId
 
                     if enableWarning:
                         if chainId in LARGE_ASYM_ID:

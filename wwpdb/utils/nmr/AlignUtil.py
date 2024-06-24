@@ -69,6 +69,7 @@ monDict3 = {'ALA': 'A',
 protonBeginCode = ('H', '1', '2', '3')
 pseProBeginCode = ('H', 'Q', 'M', '1', '2', '3')
 aminoProtonCode = ('H', 'HN', 'H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3', 'H1*', 'H2*', 'H3*', 'HT', 'HT*')
+carboxylCode = ('C', 'O', 'O1', 'O2', 'OT1', 'OT2', 'OXT', 'HXT')
 jcoupBbPairCode = ('N', 'H', 'CA', 'C')
 rdcBbPairCode = ('N', 'H', 'CA')
 zincIonCode = ('ZN', 'ME', 'Z1', 'Z2')

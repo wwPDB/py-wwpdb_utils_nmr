@@ -73,6 +73,7 @@ try:
                                            protonBeginCode,
                                            pseProBeginCode,
                                            aminoProtonCode,
+                                           carboxylCode,
                                            zincIonCode,
                                            isReservedLigCode,
                                            updatePolySeqRst,
@@ -151,6 +152,7 @@ except ImportError:
                                protonBeginCode,
                                pseProBeginCode,
                                aminoProtonCode,
+                               carboxylCode,
                                zincIonCode,
                                isReservedLigCode,
                                updatePolySeqRst,
@@ -3689,6 +3691,14 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                                     "Please re-upload the model file.")
                                                         elif bondedTo[0][0] == 'O':
                                                             checked = True
+                                                if seqId == max(auth_seq_id_list) or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
+                                                    if coordAtomSite is not None and _atomId in carboxylCode\
+                                                       and not isCyclicPolymer(self.__cR, self.__polySeq, chainId, self.__representativeModelId,
+                                                                               self.__representativeAltId, self.__modelNumName):
+                                                        self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{origAtomId0} is not properly instantiated in the coordinates. "
+                                                                        "Please re-upload the model file.")
+                                                        checked = True
 
                                                 if not checked and not self.__cur_union_expr:
                                                     if chainId in LARGE_ASYM_ID:

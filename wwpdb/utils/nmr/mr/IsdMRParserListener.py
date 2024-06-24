@@ -58,6 +58,7 @@ try:
                                            protonBeginCode,
                                            pseProBeginCode,
                                            aminoProtonCode,
+                                           carboxylCode,
                                            zincIonCode,
                                            isReservedLigCode,
                                            updatePolySeqRst,
@@ -121,6 +122,7 @@ except ImportError:
                                protonBeginCode,
                                pseProBeginCode,
                                aminoProtonCode,
+                               carboxylCode,
                                zincIonCode,
                                isReservedLigCode,
                                updatePolySeqRst,
@@ -1778,6 +1780,13 @@ class IsdMRParserListener(ParseTreeListener):
                                     return atomId
                             if bondedTo[0][0] == 'O':
                                 return 'Ignorable hydroxyl group'
+                    if seqId == max(auth_seq_id_list) or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
+                        if coordAtomSite is not None and atomId in carboxylCode\
+                           and not isCyclicPolymer(self.__cR, self.__polySeq, chainId, self.__representativeModelId, self.__representativeAltId, self.__modelNumName):
+                            self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                            f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
+                                            "Please re-upload the model file.")
+                            return atomId
 
                     if chainId in LARGE_ASYM_ID:
                         if self.__allow_ext_seq:

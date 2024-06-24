@@ -32534,6 +32534,14 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Coordinate issue]'):
+                                self.report.error.appendDescription('coordinate_issue',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'description': warn})
@@ -32755,6 +32763,14 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Coordinate issue]'):
+                                self.report.error.appendDescription('coordinate_issue',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'description': warn})
@@ -32956,6 +32972,14 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Coordinate issue]'):
+                                self.report.error.appendDescription('coordinate_issue',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
@@ -33180,6 +33204,14 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Coordinate issue]'):
+                                self.report.error.appendDescription('coordinate_issue',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -33413,6 +33445,14 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Coordinate issue]'):
+                                self.report.error.appendDescription('coordinate_issue',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                     {'file_name': file_name, 'description': warn})
@@ -33616,6 +33656,14 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Coordinate issue]'):
+                                self.report.error.appendDescription('coordinate_issue',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -33956,6 +34004,14 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Coordinate issue]'):
+                                self.report.error.appendDescription('coordinate_issue',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                     {'file_name': file_name, 'description': warn})
@@ -34160,6 +34216,14 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Coordinate issue]'):
+                                self.report.error.appendDescription('coordinate_issue',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                     {'file_name': file_name, 'description': warn})
@@ -34347,6 +34411,14 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Coordinate issue]'):
+                                self.report.error.appendDescription('coordinate_issue',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -34558,6 +34630,14 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
+                            elif warn.startswith('[Coordinate issue]'):
+                                self.report.error.appendDescription('coordinate_issue',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
                             elif warn.startswith('[Invalid data]'):
                                 self.report.error.appendDescription('invalid_data',
                                                                     {'file_name': file_name, 'description': warn})
@@ -34753,6 +34833,14 @@ class NmrDpUtility:
 
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
+                            elif warn.startswith('[Coordinate issue]'):
+                                self.report.error.appendDescription('coordinate_issue',
+                                                                    {'file_name': file_name, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
                             elif warn.startswith('[Invalid atom nomenclature]'):
                                 self.report.error.appendDescription('invalid_atom_nomenclature',

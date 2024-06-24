@@ -17296,7 +17296,7 @@ class NmrDpUtility:
 
                 for chain_id in chain_ids:
                     ps = next(ps for ps in polymer_sequence if ps['chain_id'] == chain_id)
-                    if 'alt_comp_id' not in ps:
+                    if 'alt_comp_id' not in ps or len(ps['alt_comp_id']) != len(ps['comp_id']):
                         ps['alt_comp_id'] = copy.deepcopy(ps['comp_id'])
                     for ext_seq_key in ext_seq_key_set:
                         if ext_seq_key[0] != chain_id:

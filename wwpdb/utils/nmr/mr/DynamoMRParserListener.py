@@ -1685,7 +1685,10 @@ class DynamoMRParserListener(ParseTreeListener):
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
                 if 'alt_auth_seq_id' in np and seqId not in np['auth_seq_id'] and seqId in np['alt_auth_seq_id']:
-                    seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _altSeqId_ == seqId)
+                    try:
+                        seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _altSeqId_ == seqId)
+                    except StopIteration:
+                        pass
                 if seqId in np['auth_seq_id']\
                    or (ligands == 1 and (_compId in np['comp_id'] or ('alt_comp_id' in np and _compId in np['alt_comp_id']))):
                     if ligands == 1 and cifCompId is None:

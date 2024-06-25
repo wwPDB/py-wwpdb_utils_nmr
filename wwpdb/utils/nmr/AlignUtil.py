@@ -969,6 +969,25 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
 
             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
+            if _matched > 0 and conflict > 0 and not_decided_s2_comp_id and 'auth_comp_id' in s2:
+                pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                pA.addTestSequence(s2['auth_comp_id'], chain_id)
+                pA.doAlign()
+
+                _myAlign = pA.getAlignment(chain_id)
+
+                _length = len(_myAlign)
+
+                if _length > 0:
+                    __matched, _unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(_myAlign)
+
+                    if __matched > _matched and _conflict == 0:  # DAOTHER-9511: auth_comp_id does match with the coordinates sequence
+                        not_decided_s2_comp_id = False
+                        polySeqRst[i2]['comp_id'] = s2['comp_id'] = s2['auth_comp_id']
+                        myAlign = _myAlign
+                        length, _matched, unmapped, conflict, offset_1, offset_2 =\
+                            _length, __matched, _unmapped, _conflict, _offset_1, _offset_2
+
             if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0):
                 inhibitList.append({chain_id, chain_id2})
                 continue

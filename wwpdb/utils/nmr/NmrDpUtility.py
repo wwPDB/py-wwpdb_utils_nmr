@@ -32014,6 +32014,51 @@ class NmrDpUtility:
 
         fileListId = self.__file_path_list_len
 
+        def deal_aux_warn_message(listener):
+
+            if listener.warningMessage is not None:
+
+                for warn in listener.warningMessage:
+
+                    if warn.startswith('[Concatenated sequence]'):
+                        self.report.warning.appendDescription('concatenated_sequence',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Sequence mismatch]'):
+                        self.report.warning.appendDescription('sequence_mismatch',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Unknown atom name]'):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Unknown residue name]'):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    else:
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+
         for ar in self.__inputParamDict[ar_file_path_list]:
 
             file_path = ar['file_name']
@@ -32055,48 +32100,7 @@ class NmrDpUtility:
 
                     if listener is not None:
 
-                        if listener.warningMessage is not None:
-
-                            for warn in listener.warningMessage:
-
-                                if warn.startswith('[Concatenated sequence]'):
-                                    self.report.warning.appendDescription('concatenated_sequence',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                elif warn.startswith('[Sequence mismatch]'):
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                elif warn.startswith('[Unknown atom name]'):
-                                    self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                elif warn.startswith('[Unknown residue name]'):
-                                    self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                else:
-                                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                        deal_aux_warn_message(listener)
 
                         amberAtomNumberDict = listener.getAtomNumberDict()
 
@@ -32134,48 +32138,7 @@ class NmrDpUtility:
 
                     if listener is not None:
 
-                        if listener.warningMessage is not None:
-
-                            for warn in listener.warningMessage:
-
-                                if warn.startswith('[Concatenated sequence]'):
-                                    self.report.warning.appendDescription('concatenated_sequence',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                elif warn.startswith('[Sequence mismatch]'):
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                elif warn.startswith('[Unknown atom name]'):
-                                    self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                elif warn.startswith('[Unknown residue name]'):
-                                    self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                else:
-                                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                        deal_aux_warn_message(listener)
 
                         gromacsAtomNumberDict = listener.getAtomNumberDict()
 
@@ -32356,6 +32319,195 @@ class NmrDpUtility:
 
         reasons_dict = {}
 
+        def deal_res_warn_message(listener):
+
+            if listener.warningMessage is not None:
+
+                for warn in listener.warningMessage:
+
+                    if warn.startswith('[Concatenated sequence]'):
+                        self.report.warning.appendDescription('concatenated_sequence',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Sequence mismatch]'):
+                        self.report.error.appendDescription('sequence_mismatch',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Atom not found]'):
+                        if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                            self.report.error.appendDescription('atom_not_found',
+                                                                {'file_name': file_name, 'description': warn})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                        else:
+                            self.report.warning.appendDescription('sequence_mismatch',
+                                                                  {'file_name': file_name, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Hydrogen not instantiated]'):
+                        if self.__remediation_mode:
+                            self.report.warning.appendDescription('hydrogen_not_instantiated',
+                                                                  {'file_name': file_name, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                        else:
+                            self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                {'file_name': file_name, 'description': warn})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Coordinate issue]'):
+                        self.report.error.appendDescription('coordinate_issue',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Invalid atom nomenclature]'):
+                        self.report.error.appendDescription('invalid_atom_nomenclature',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                        self.report.error.appendDescription('invalid_data',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
+
+                    elif warn.startswith('[Sequence mismatch warning]'):
+                        self.report.warning.appendDescription('sequence_mismatch',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                        if seq_mismatch_warning_pattern.match(warn):
+                            g = seq_mismatch_warning_pattern.search(warn).groups()
+                            d = {'auth_chain_id': g[2],
+                                 'auth_seq_id': int(g[0]),
+                                 'auth_comp_id': g[1]}
+                            if d not in self.__nmr_ext_poly_seq:
+                                self.__nmr_ext_poly_seq.append(d)
+
+                    elif warn.startswith('[Missing data]'):
+                        self.report.error.appendDescription('missing_data',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
+
+                    elif warn.startswith('[Enum mismatch]'):
+                        self.report.warning.appendDescription('enum_mismatch',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Enum mismatch ignorable]'):
+                        self.report.warning.appendDescription('enum_mismatch_ignorable',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Range value error]') and not self.__remediation_mode:
+                        self.report.error.appendDescription('anomalous_data',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
+
+                    elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Insufficient atom selection]') or warn.startswith('[Insufficient angle selection]'):
+                        self.report.warning.appendDescription('insufficient_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Redundant data]'):
+                        self.report.warning.appendDescription('redundant_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Ambiguous dihedral angle]'):
+                        self.report.warning.appendDescription('ambiguous_dihedral_angle',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Anomalous RDC vector]'):
+                        self.report.warning.appendDescription('anomalous_rdc_vector',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Anomalous data]'):
+                        self.report.warning.appendDescription('anomalous_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Unsupported data]'):
+                        self.report.warning.appendDescription('unsupported_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    else:
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+
         for input_source, ar, _ in ar_file_order:
 
             file_path = ar['file_name']
@@ -32482,144 +32634,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Coordinate issue]'):
-                                self.report.error.appendDescription('coordinate_issue',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Insufficient atom selection]'):
-                                self.report.warning.appendDescription('insufficient_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Ambiguous dihedral angle]'):
-                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Anomalous data]'):
-                                self.report.warning.appendDescription('anomalous_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Anomalous RDC vector]'):
-                                self.report.warning.appendDescription('anomalous_rdc_vector',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Unsupported data]'):
-                                self.report.warning.appendDescription('unsupported_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -32711,144 +32726,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Coordinate issue]'):
-                                self.report.error.appendDescription('coordinate_issue',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Insufficient atom selection]'):
-                                self.report.warning.appendDescription('insufficient_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Ambiguous dihedral angle]'):
-                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Anomalous RDC vector]'):
-                                self.report.warning.appendDescription('anomalous_rdc_vector',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Anomalous data]'):
-                                self.report.warning.appendDescription('anomalous_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Unsupported data]'):
-                                self.report.warning.appendDescription('unsupported_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -32921,120 +32799,7 @@ class NmrDpUtility:
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Coordinate issue]'):
-                                self.report.error.appendDescription('coordinate_issue',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Missing data]'):
-                                self.report.error.appendDescription('missing_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Redundant data]'):
-                                self.report.warning.appendDescription('redundant_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Anomalous RDC vector]'):
-                                self.report.warning.appendDescription('anomalous_rdc_vector',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     cur_dict = listener.getAtomNumberDict()
                     if cur_dict is not None:
@@ -33153,152 +32918,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Coordinate issue]'):
-                                self.report.error.appendDescription('coordinate_issue',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom nomenclature]'):
-                                self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch warning]'):
-                                self.report.warning.appendDescription('sequence_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                if seq_mismatch_warning_pattern.match(warn):
-                                    g = seq_mismatch_warning_pattern.search(warn).groups()
-                                    d = {'auth_chain_id': g[2],
-                                         'auth_seq_id': int(g[0]),
-                                         'auth_comp_id': g[1]}
-                                    if d not in self.__nmr_ext_poly_seq:
-                                        self.__nmr_ext_poly_seq.append(d)
-
-                            elif warn.startswith('[Insufficient angle selection]'):
-                                self.report.warning.appendDescription('insufficient_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """ defer to sequence alignment error
-                            # elif warn.startswith('[Unmatched residue name]'):
-                            #     self.report.warning.appendDescription('conflicted_mr_data',
-                            #                                           {'file_name': file_name, 'description': warn})
-                            #     self.report.setWarning()
-
-                            #     if self.__verbose:
-                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """
-                            elif warn.startswith('[Ambiguous dihedral angle]'):
-                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Anomalous RDC vector]'):
-                                self.report.warning.appendDescription('anomalous_rdc_vector',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -33393,152 +33013,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Coordinate issue]'):
-                                self.report.error.appendDescription('coordinate_issue',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom nomenclature]'):
-                                self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch warning]'):
-                                self.report.warning.appendDescription('sequence_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                if seq_mismatch_warning_pattern.match(warn):
-                                    g = seq_mismatch_warning_pattern.search(warn).groups()
-                                    d = {'auth_chain_id': g[2],
-                                         'auth_seq_id': int(g[0]),
-                                         'auth_comp_id': g[1]}
-                                    if d not in self.__nmr_ext_poly_seq:
-                                        self.__nmr_ext_poly_seq.append(d)
-
-                            elif warn.startswith('[Enum mismatch]'):
-                                self.report.warning.appendDescription('enum_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Ambiguous dihedral angle]'):
-                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Anomalous RDC vector]'):
-                                self.report.warning.appendDescription('anomalous_rdc_vector',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Unsupported data]'):
-                                self.report.warning.appendDescription('unsupported_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -33605,144 +33080,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Coordinate issue]'):
-                                self.report.error.appendDescription('coordinate_issue',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom nomenclature]'):
-                                self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch warning]'):
-                                self.report.warning.appendDescription('sequence_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                if seq_mismatch_warning_pattern.match(warn):
-                                    g = seq_mismatch_warning_pattern.search(warn).groups()
-                                    d = {'auth_chain_id': g[2],
-                                         'auth_seq_id': int(g[0]),
-                                         'auth_comp_id': g[1]}
-                                    if d not in self.__nmr_ext_poly_seq:
-                                        self.__nmr_ext_poly_seq.append(d)
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """ defer to sequence alignment error
-                            # elif warn.startswith('[Unmatched residue name]'):
-                            #     self.report.warning.appendDescription('conflicted_mr_data',
-                            #                                           {'file_name': file_name, 'description': warn})
-                            #     self.report.setWarning()
-
-                            #     if self.__verbose:
-                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """
-                            elif warn.startswith('[Ambiguous dihedral angle]'):
-                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -33788,104 +33126,7 @@ class NmrDpUtility:
 
                 if listener is not None:
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Missing data]'):
-                                self.report.error.appendDescription('missing_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Anomalous RDC vector]'):
-                                self.report.warning.appendDescription('anomalous_rdc_vector',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -33952,152 +33193,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Coordinate issue]'):
-                                self.report.error.appendDescription('coordinate_issue',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom nomenclature]'):
-                                self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch warning]'):
-                                self.report.warning.appendDescription('sequence_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                if seq_mismatch_warning_pattern.match(warn):
-                                    g = seq_mismatch_warning_pattern.search(warn).groups()
-                                    d = {'auth_chain_id': g[2],
-                                         'auth_seq_id': int(g[0]),
-                                         'auth_comp_id': g[1]}
-                                    if d not in self.__nmr_ext_poly_seq:
-                                        self.__nmr_ext_poly_seq.append(d)
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """ defer to sequence alignment error
-                            # elif warn.startswith('[Unmatched residue name]'):
-                            #     self.report.warning.appendDescription('conflicted_mr_data',
-                            #                                           {'file_name': file_name, 'description': warn})
-                            #     self.report.setWarning()
-
-                            #     if self.__verbose:
-                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """
-                            elif warn.startswith('[Ambiguous dihedral angle]'):
-                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Anomalous RDC vector]'):
-                                self.report.warning.appendDescription('anomalous_rdc_vector',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -34164,136 +33260,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Coordinate issue]'):
-                                self.report.error.appendDescription('coordinate_issue',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom nomenclature]'):
-                                self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch warning]'):
-                                self.report.warning.appendDescription('sequence_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                if seq_mismatch_warning_pattern.match(warn):
-                                    g = seq_mismatch_warning_pattern.search(warn).groups()
-                                    d = {'auth_chain_id': g[2],
-                                         'auth_seq_id': int(g[0]),
-                                         'auth_comp_id': g[1]}
-                                    if d not in self.__nmr_ext_poly_seq:
-                                        self.__nmr_ext_poly_seq.append(d)
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """ defer to sequence alignment error
-                            # elif warn.startswith('[Unmatched residue name]'):
-                            #     self.report.warning.appendDescription('conflicted_mr_data',
-                            #                                           {'file_name': file_name, 'description': warn})
-                            #     self.report.setWarning()
-
-                            #     if self.__verbose:
-                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -34360,136 +33327,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Coordinate issue]'):
-                                self.report.error.appendDescription('coordinate_issue',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom nomenclature]'):
-                                self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch warning]'):
-                                self.report.warning.appendDescription('sequence_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                if seq_mismatch_warning_pattern.match(warn):
-                                    g = seq_mismatch_warning_pattern.search(warn).groups()
-                                    d = {'auth_chain_id': g[2],
-                                         'auth_seq_id': int(g[0]),
-                                         'auth_comp_id': g[1]}
-                                    if d not in self.__nmr_ext_poly_seq:
-                                        self.__nmr_ext_poly_seq.append(d)
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """ defer to sequence alignment error
-                            # elif warn.startswith('[Unmatched residue name]'):
-                            #     self.report.warning.appendDescription('conflicted_mr_data',
-                            #                                           {'file_name': file_name, 'description': warn})
-                            #     self.report.setWarning()
-
-                            #     if self.__verbose:
-                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -34578,144 +33416,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Coordinate issue]'):
-                                self.report.error.appendDescription('coordinate_issue',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Insufficient atom selection]'):
-                                self.report.warning.appendDescription('insufficient_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Ambiguous dihedral angle]'):
-                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Anomalous RDC vector]'):
-                                self.report.warning.appendDescription('anomalous_rdc_vector',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Anomalous data]'):
-                                self.report.warning.appendDescription('anomalous_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Unsupported data]'):
-                                self.report.warning.appendDescription('unsupported_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -34782,136 +33483,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Coordinate issue]'):
-                                self.report.error.appendDescription('coordinate_issue',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom nomenclature]'):
-                                self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch warning]'):
-                                self.report.warning.appendDescription('sequence_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                if seq_mismatch_warning_pattern.match(warn):
-                                    g = seq_mismatch_warning_pattern.search(warn).groups()
-                                    d = {'auth_chain_id': g[2],
-                                         'auth_seq_id': int(g[0]),
-                                         'auth_comp_id': g[1]}
-                                    if d not in self.__nmr_ext_poly_seq:
-                                        self.__nmr_ext_poly_seq.append(d)
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """ defer to sequence alignment error
-                            # elif warn.startswith('[Unmatched residue name]'):
-                            #     self.report.warning.appendDescription('conflicted_mr_data',
-                            #                                           {'file_name': file_name, 'description': warn})
-                            #     self.report.setWarning()
-
-                            #     if self.__verbose:
-                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:

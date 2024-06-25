@@ -5044,6 +5044,12 @@ def guessCompIdFromAtomId(atoms, polySeq, nefT):
     """ Try to find candidate comp_id that matches with a given atom_id.
     """
 
+    if atoms[0] in ('C', 'CA', 'CB', 'CO', 'H', 'HN', 'HA', 'N', 'O',
+                    "C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''",
+                    "H5'1", "H5'2", "H2'1", "H2'2", "HO2'", "H2'1", "HO'2", 'P', "O2'",
+                    'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'H1', 'H2', 'H3', 'H4', 'H5', 'H61', 'H62'):
+        return None
+
     candidates = set()
 
     for ps in polySeq:

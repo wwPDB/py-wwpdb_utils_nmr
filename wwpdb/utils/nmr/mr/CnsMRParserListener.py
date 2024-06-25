@@ -989,6 +989,10 @@ class CnsMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['label_seq_scheme']
                 if 'label_seq_offset' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_offset']
+                if 'inhibit_label_seq_scheme' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['inhibit_label_seq_scheme']
+                if 'seq_id_remap' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['seq_id_remap']
 
             if not any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f)\
                and self.hasAnyRestraints()\

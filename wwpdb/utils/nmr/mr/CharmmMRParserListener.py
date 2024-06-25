@@ -541,7 +541,7 @@ class CharmmMRParserListener(ParseTreeListener):
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
                     if self.__reasons is None\
-                       and (any(f for f in self.__f if '[Anomalous data]' in f)):
+                       and any(f for f in self.__f if '[Anomalous data]' in f):
                         if 'label_seq_scheme' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['label_seq_scheme'] = {}
                         if self.distRestraints > 0:
@@ -841,19 +841,28 @@ class CharmmMRParserListener(ParseTreeListener):
                 if 'seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['seq_id_remap']
 
-            if not any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f)\
-               and self.hasAnyRestraints()\
-               and 'non_poly_remap' not in self.reasonsForReParsing\
-               and 'branch_remap' not in self.reasonsForReParsing:
+            if self.hasAnyRestraints():
 
-                if len(self.reasonsForReParsing) > 0:
-                    self.reasonsForReParsing = {}
-
-                if any(f for f in self.__f if '[Sequence mismatch]' in f):
-                    __f = copy.copy(self.__f)
+                if all(f for f in self.__f if '[Anomalous data]' in f)\
+                   and 'label_seq_scheme' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['label_seq_scheme']
+                    __f = copy.deepcopy(self.__f)
+                    self.__f = []
                     for f in __f:
-                        if '[Sequence mismatch]' in f:
-                            self.__f.remove(f)
+                        self.__f.append(re.sub(r'\[Anomalous data\]', '[Atom not found]', f, 1))
+
+                elif not any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f)\
+                        and 'non_poly_remap' not in self.reasonsForReParsing\
+                        and 'branch_remap' not in self.reasonsForReParsing:
+
+                    if len(self.reasonsForReParsing) > 0:
+                        self.reasonsForReParsing = {}
+
+                    if any(f for f in self.__f if '[Sequence mismatch]' in f):
+                        __f = copy.copy(self.__f)
+                        for f in __f:
+                            if '[Sequence mismatch]' in f:
+                                self.__f.remove(f)
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)

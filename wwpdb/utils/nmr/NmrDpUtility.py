@@ -190,6 +190,7 @@
 # 01-May-2024  M. Yokochi - merge cs/mr sequence extensions containing unknown residues (e.g UNK, DN, N) if necessary (NMR restraint remediation, 6fw4)
 # 22-May-2024  M. Yokochi - block deposition using a peak list file in any binary format and prevent 'nm-pea-any' occasionally matches with 'nm-res-cya' (DAOTHER-9425)
 # 11-Jun-2024  M. Yokcohi - add support for ligand remapping in annotation process (DAOTHER-9286)
+# 25-Jun-2024  M. Yokochi - strip white spaces in a datablock name derived from the model file (DAOTHER-9511)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -6474,7 +6475,7 @@ class NmrDpUtility:
                         self.__bmrb_id = None
 
                 if self.__bmrb_id is not None:
-                    self.__entry_id = self.__bmrb_id
+                    self.__entry_id = self.__bmrb_id.strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 
         entity_name_item = next(item for item in self.sf_tag_items['nmr-star']['entity'] if item['name'] == 'Name')
         entity_name_item['mandatory'] = self.__bmrb_only
@@ -6582,7 +6583,7 @@ class NmrDpUtility:
                 self.rmsd_overlaid_exactly = self.__inputParamDict['rmsd_overlaid_exactly']
 
         if has_key_value(self.__outputParamDict, 'entry_id'):
-            self.__entry_id = self.__outputParamDict['entry_id']
+            self.__entry_id = self.__outputParamDict['entry_id'].strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 
         if has_key_value(self.__outputParamDict, 'insert_entry_id_to_loops'):
             if isinstance(self.__outputParamDict['insert_entry_id_to_loops'], bool):
@@ -40708,7 +40709,7 @@ class NmrDpUtility:
                 if len(entry) == 0 or ('id' not in entry[0]):
                     self.__entry_id = self.__entry_id__
                 else:
-                    self.__entry_id = entry[0]['id']
+                    self.__entry_id = entry[0]['id'].strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 
             exptl = self.__cR.getDictList('exptl')
 

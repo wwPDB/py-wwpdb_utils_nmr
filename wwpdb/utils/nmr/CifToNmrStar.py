@@ -9,6 +9,7 @@
 # 27-Sep-2022  M. Yokochi - auto fill list ID and entry ID (NMR restraint remediation)
 # 13-Jun-2023  M. Yokochi - sort loops in a saveframe based on schema
 # 30-May-2024  M. Yokochi - resolve duplication of data block/saveframe name (DAOTHER-9437)
+# 25-Jun-2024  M. Yokochi - strip white spaces in a datablock name derived from the model file (DAOTHER-9511)
 ##
 """ Wrapper class for CIF to NMR-STAR converter.
     @author: Masashi Yokochi
@@ -230,7 +231,7 @@ class CifToNmrStar:
                         previous_order = current_order
 
             if entry_id in emptyValue:
-                entry_id = block_name_list[0]
+                entry_id = block_name_list[0].strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 
             _entry_id = entry_id.upper()
 
@@ -476,6 +477,8 @@ class CifToNmrStar:
 
         if strData is None:
             return
+
+        entryId = entryId.strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 
         if isinstance(strData, pynmrstar.Entry):
 

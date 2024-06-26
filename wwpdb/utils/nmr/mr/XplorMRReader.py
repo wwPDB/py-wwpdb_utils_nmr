@@ -219,6 +219,17 @@ class XplorMRReader:
 
 
 if __name__ == "__main__":
+    reader = XplorMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/5w3n/fus_CC_PITHIRDSCT.tbl',
+                     '../../tests-nmr/mock-data-remediation/5w3n/5w3n.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = XplorMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5w3n/fus_CC_PITHIRDSCT.tbl',
+                 '../../tests-nmr/mock-data-remediation/5w3n/5w3n.cif')
+
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mnh/2mnh-trimmed-div_src.mr',

@@ -1021,6 +1021,30 @@ class CnsMRParserListener(ParseTreeListener):
                             if '[Sequence mismatch]' in f:
                                 self.__f.remove(f)
 
+            if 'segment_id_mismatch' in self.reasonsForReParsing:
+                for chainId, _chainId in self.reasonsForReParsing['segment_id_mismatch'].items():
+                    uniq = True
+                    for k, v in self.reasonsForReParsing['segment_id_mismatch'].items():
+                        if k == chainId:
+                            continue
+                        if v == _chainId:
+                            uniq = False
+                            break
+                    if not uniq:
+                        ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == _chainId and 'identical_auth_chain_id' in ps), None)
+                        if ps is not None:
+                            dst_chain_id_set = [_chainId]
+                            dst_chain_id_set.extend(ps['identical_auth_chain_id'])
+                            dst_chain_id_set.sort()
+                            src_chain_id_set = [chainId]
+                            for k, v in self.reasonsForReParsing['segment_id_mismatch'].items():
+                                if k == chainId or v not in dst_chain_id_set:
+                                    continue
+                                src_chain_id_set.append(k)
+                            src_chain_id_set.sort()
+                            for src_chain_id, dst_chain_id in zip(src_chain_id_set, dst_chain_id_set):
+                                self.reasonsForReParsing['segment_id_mismatch'][src_chain_id] = dst_chain_id
+
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 
@@ -6308,28 +6332,6 @@ class CnsMRParserListener(ParseTreeListener):
     def getRealChainId(self, chainId):
         if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and chainId in self.__reasons['segment_id_mismatch']:
             _chainId = self.__reasons['segment_id_mismatch'][chainId]
-            uniq = True
-            for k, v in self.__reasons['segment_id_mismatch'].items():
-                if k == chainId:
-                    continue
-                if v == _chainId:
-                    uniq = False
-                    break
-            if not uniq:
-                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == _chainId and 'identical_auth_chain_id' in ps), None)
-                if ps is not None:
-                    dst_chain_id_set = [_chainId]
-                    dst_chain_id_set.extend(ps['identical_auth_chain_id'])
-                    dst_chain_id_set.sort()
-                    src_chain_id_set = [chainId]
-                    for k, v in self.__reasons['segment_id_mismatch'].items():
-                        if k == chainId or v != _chainId:
-                            continue
-                        src_chain_id_set.append(k)
-                    src_chain_id_set.sort()
-                    for src_chain_id, dst_chain_id in zip(src_chain_id_set, dst_chain_id_set):
-                        self.__reasons['segment_id_mismatch'][src_chain_id] = dst_chain_id
-                    _chainId = self.__reasons['segment_id_mismatch'][chainId]
             if _chainId is not None:
                 chainId = _chainId
         return chainId

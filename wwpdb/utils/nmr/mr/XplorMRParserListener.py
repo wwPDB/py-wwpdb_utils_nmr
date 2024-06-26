@@ -1187,6 +1187,9 @@ class XplorMRParserListener(ParseTreeListener):
                             for src_chain_id, dst_chain_id in zip(src_chain_id_set, dst_chain_id_set):
                                 self.reasonsForReParsing['segment_id_mismatch'][src_chain_id] = dst_chain_id
 
+                if len(self.__f) == 0 and len(self.reasonsForReParsing) > 0:
+                    self.reasonsForReParsing = {}
+
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 
@@ -14106,13 +14109,15 @@ class XplorMRParserListener(ParseTreeListener):
     def hasAnyRestraints(self):
         """ Return whether any restraint is parsed successfully.
         """
-        if len(self.sfDict) == 0:
+        if self.__createSfDict:
+            if len(self.sfDict) == 0:
+                return False
+            for v in self.sfDict.values():
+                for item in v:
+                    if item['index_id'] > 0:
+                        return True
             return False
-        for v in self.sfDict.values():
-            for item in v:
-                if item['index_id'] > 0:
-                    return True
-        return False
+        return len(self.getContentSubtype()) > 0
 
     def getPolymerSequence(self):
         """ Return polymer sequence of XPLOR-NIH MR file.

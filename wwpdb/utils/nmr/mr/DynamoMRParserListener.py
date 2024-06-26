@@ -2384,7 +2384,8 @@ class DynamoMRParserListener(ParseTreeListener):
                 checked = False
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
-                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or (ps is not None and min(auth_seq_id_list) == seqId):
+                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes\
+                   or (auth_seq_id_list is not None and min(auth_seq_id_list) == seqId):
                     if atomId in aminoProtonCode and atomId != 'H1':
                         return self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     if atomId in aminoProtonCode or atomId == 'P' or atomId.startswith('HOP'):
@@ -2404,7 +2405,8 @@ class DynamoMRParserListener(ParseTreeListener):
                                     return atomId
                             if bondedTo[0][0] == 'O':
                                 return 'Ignorable hydroxyl group'
-                    if seqId == max(auth_seq_id_list) or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
+                    if (auth_seq_id_list is not None and seqId == max(auth_seq_id_list))\
+                       or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
                         if coordAtomSite is not None and atomId in carboxylCode\
                            and not isCyclicPolymer(self.__cR, self.__polySeq, chainId, self.__representativeModelId, self.__representativeAltId, self.__modelNumName):
                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"

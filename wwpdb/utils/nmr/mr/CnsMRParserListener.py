@@ -996,13 +996,17 @@ class CnsMRParserListener(ParseTreeListener):
 
             if self.hasAnyRestraints():
 
-                if all(f for f in self.__f if '[Anomalous data]' in f)\
+                if all('[Anomalous data]' in f for f in self.__f)\
+                   and all('distance' in f for f in self.__f)\
                    and 'label_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_scheme']
                     __f = copy.deepcopy(self.__f)
                     self.__f = []
                     for f in __f:
                         self.__f.append(re.sub(r'\[Anomalous data\]', '[Atom not found]', f, 1))
+
+                elif all('[Anomalous data]' in f for f in self.__f):
+                    pass
 
                 elif not any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f)\
                         and 'non_poly_remap' not in self.reasonsForReParsing\

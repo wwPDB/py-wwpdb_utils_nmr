@@ -980,15 +980,14 @@ class GromacsPTParserListener(ParseTreeListener):
                             ps = next((ps for ps in self.__polySeqModel if ps['auth_chain_id'] == ref_chain_id), None)
                             if ps is None:
                                 continue
-                            for auth_seq_id in ps['auth_seq_id']:
+                            for auth_seq_id, comp_id in zip(ps['auth_seq_id'], ps['comp_id']):
                                 seq_key = (ref_chain_id0, auth_seq_id)
-                                cmap[seq_key] = ref_chain_id
+                                cmap[seq_key] = (ref_chain_id, comp_id)
                     if len(cmap) > 0:
                         for atomNum in self.__atomNumberDict.values():
                             seq_key = (atomNum['chain_id'], atomNum['seq_id'])
                             if seq_key in cmap:
-                                atomNum['chain_id'] = cmap[seq_key]
-                                atomNum['comp_id'] = atomNum['auth_comp_id']
+                                atomNum['chain_id'], atomNum['comp_id'] = cmap[seq_key]
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)

@@ -191,7 +191,7 @@
 # 22-May-2024  M. Yokochi - block deposition using a peak list file in any binary format and prevent 'nm-pea-any' occasionally matches with 'nm-res-cya' (DAOTHER-9425)
 # 11-Jun-2024  M. Yokcohi - add support for ligand remapping in annotation process (DAOTHER-9286)
 # 25-Jun-2024  M. Yokochi - strip white spaces in a datablock name derived from the model file (DAOTHER-9511)
-# 27-Jun-2024  M. Yokochi - replace statistics of chemical shifts using remediated loop (DAOTHER-9520)
+# 27-Jun-2024  M. Yokochi - ignore extraneous input value for numeric tags and replace statistics of chemical shifts using remediated loop (DAOTHER-9520)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi

@@ -94,6 +94,7 @@
 # 13-Sep-2023  M. Yokochi - fix/improve NEF atom nomenclature mapping (v3.5.0, DAOTHER-8817)
 # 02-Oct-2023  M. Yokochi - do not reorganize _Gen_dist_constraint.ID (v3.5.1, DAOTHER-8855)
 # 11-Jun-2024  M. Yokochi - add support for ligand remapping in annotation process (v3.6.0, DAOTHER-9286)
+# 27-Jun-2024  M. Yokochi - do not evaluate value in case of ValueError exception (v3.6.1, DAOTHER-9520)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -146,7 +147,7 @@ except ImportError:
 
 
 __package_name__ = 'wwpdb.utils.nmr'
-__version__ = '3.6.0'
+__version__ = '3.6.1'
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
@@ -3577,19 +3578,21 @@ class NEFTranslator:
                                 try:
                                     ent[name] = val.lower() in trueValue
                                 except ValueError:
-                                    if excl_missing_data:
-                                        missing_mandatory_data = True
-                                        continue
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
                                     if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                         clear_bad_pattern = True
+                                        continue
+                                    if excl_missing_data:
+                                        missing_mandatory_data = True
                                         continue
                                     if skip_empty_value_error(loop, idx):
                                         continue
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                      + f"{name} {val!r} must be {self.readableItemType[type]}.")
+
                             elif type == 'int':
                                 try:
                                     ent[name] = int(val)
@@ -3600,20 +3603,22 @@ class NEFTranslator:
                                         row[j] = ent[name] = letterToDigit(row[tags.index(k['default-from'])])
                                     elif 'default' in k:
                                         row[j] = ent[name] = int(k['default'])
-                                    elif excl_missing_data:
-                                        missing_mandatory_data = True
-                                        continue
                                     elif 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
                                     elif 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                         clear_bad_pattern = True
+                                        continue
+                                    elif excl_missing_data:
+                                        missing_mandatory_data = True
                                         continue
                                     elif skip_empty_value_error(loop, idx):
                                         continue
                                     else:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                          + f"{name} {val!r} must be {self.readableItemType[type]}.")
+
                             elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
                                 try:
                                     ent[name] = int(val)
@@ -3628,20 +3633,23 @@ class NEFTranslator:
                                         row[j] = ent[name] = letterToDigit(val, 1)
                                     elif 'default' in k:
                                         row[j] = ent[name] = int(k['default'])
-                                    elif excl_missing_data:
-                                        missing_mandatory_data = True
-                                        continue
                                     elif 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
                                     elif 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                         clear_bad_pattern = True
+                                        continue
+                                    elif excl_missing_data:
+                                        missing_mandatory_data = True
                                         continue
                                     elif skip_empty_value_error(loop, idx):
                                         continue
                                     else:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                          + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                    continue
+
                                 if (type == 'index-int' and ent[name] <= 0)\
                                    or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
@@ -3669,20 +3677,23 @@ class NEFTranslator:
                                         row[j] = ent[name] = parent_pointer
                                     elif 'default' in k:
                                         row[j] = ent[name] = int(k['default'])
-                                    elif excl_missing_data:
-                                        missing_mandatory_data = True
-                                        continue
                                     elif 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
                                     elif 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                         clear_bad_pattern = True
+                                        continue
+                                    elif excl_missing_data:
+                                        missing_mandatory_data = True
                                         continue
                                     elif skip_empty_value_error(loop, idx):
                                         continue
                                     else:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                          + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                    continue
+
                                 if ent[name] <= 0:
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                      + f"{name} {val!r} must be {self.readableItemType[type]}.")
@@ -3695,36 +3706,40 @@ class NEFTranslator:
                                 try:
                                     ent[name] = float(val)
                                 except ValueError:
-                                    if excl_missing_data:
-                                        missing_mandatory_data = True
-                                        continue
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
                                     if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                         clear_bad_pattern = True
+                                        continue
+                                    if excl_missing_data:
+                                        missing_mandatory_data = True
                                         continue
                                     if skip_empty_value_error(loop, idx):
                                         continue
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                      + f"{name} {val!r} must be {self.readableItemType[type]}.")
+
                             elif type == 'positive-float':
                                 try:
                                     ent[name] = float(val)
                                 except ValueError:
-                                    if excl_missing_data:
-                                        missing_mandatory_data = True
-                                        continue
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
                                     if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                         clear_bad_pattern = True
+                                        continue
+                                    if excl_missing_data:
+                                        missing_mandatory_data = True
                                         continue
                                     if skip_empty_value_error(loop, idx):
                                         continue
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                      + f"{name} {val!r} must be {self.readableItemType[type]}.")
+
                                 if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']):
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                      + f"{name} {val!r} must be {self.readableItemType[type]}.")
@@ -3744,14 +3759,15 @@ class NEFTranslator:
                                 except KeyError:
                                     raise ValueError(f"Range of key item {name} is not defined")
                                 except ValueError:
-                                    if excl_missing_data:
-                                        missing_mandatory_data = True
-                                        continue
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
                                     if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                         clear_bad_pattern = True
+                                        continue
+                                    if excl_missing_data:
+                                        missing_mandatory_data = True
                                         continue
                                     if skip_empty_value_error(loop, idx):
                                         continue
@@ -3760,6 +3776,8 @@ class NEFTranslator:
                                         continue
                                     f.append(f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                              f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                    continue
+
                                 if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
                                    or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                     if ent[name] < 0.0:
@@ -3821,6 +3839,7 @@ class NEFTranslator:
                                                 remove_bad_pattern = True
                                                 continue
                                             if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                                ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                                 clear_bad_pattern = True
                                                 continue
                                             if skip_empty_value_error(loop, idx):
@@ -3850,19 +3869,21 @@ class NEFTranslator:
                                 except KeyError:
                                     raise ValueError(f"Enumeration of key item {name} is not defined")
                                 except ValueError:
-                                    if excl_missing_data:
-                                        missing_mandatory_data = True
-                                        continue
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
                                     if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                         clear_bad_pattern = True
+                                        continue
+                                    if excl_missing_data:
+                                        missing_mandatory_data = True
                                         continue
                                     if skip_empty_value_error(loop, idx):
                                         continue
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                      + f"{name} {val!r} must be {self.readableItemType[type]}.")
+
                             else:
                                 if val in emptyValue:
                                     if 'default-from' in k and k['default-from'] == 'self':
@@ -3887,6 +3908,7 @@ class NEFTranslator:
                                             remove_bad_pattern = True
                                             continue
                                         if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                            ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                             clear_bad_pattern = True
                                             continue
                                 if 'uppercase' in k and k['uppercase']:
@@ -3907,9 +3929,6 @@ class NEFTranslator:
                                         try:
                                             ent[name] = val.lower() in trueValue
                                         except ValueError:
-                                            if excl_missing_data:
-                                                ent[name] = None
-                                                continue
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 if val in emptyValue:
                                                     ent[name] = None
@@ -3920,12 +3939,17 @@ class NEFTranslator:
                                                 if val in emptyValue:
                                                     ent[name] = None
                                                     continue
+                                                ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                                 clear_bad_pattern = True
+                                                continue
+                                            if excl_missing_data:
+                                                ent[name] = None
                                                 continue
                                             if skip_empty_value_error(loop, idx):
                                                 continue
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                              + f"{name} {val!r} must be {self.readableItemType[type]}.")
+
                                     elif type == 'int':
                                         try:
                                             ent[name] = int(val)
@@ -3936,9 +3960,6 @@ class NEFTranslator:
                                                 row[j] = ent[name] = letterToDigit(row[tags.index(d['default-from'])])
                                             elif 'default' in d:
                                                 row[j] = ent[name] = int(d['default'])
-                                            elif excl_missing_data:
-                                                ent[name] = None
-                                                continue
                                             elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 if val in emptyValue:
                                                     ent[name] = None
@@ -3949,7 +3970,11 @@ class NEFTranslator:
                                                 if val in emptyValue:
                                                     ent[name] = None
                                                     continue
+                                                ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                                 clear_bad_pattern = True
+                                                continue
+                                            elif excl_missing_data:
+                                                ent[name] = None
                                                 continue
                                             elif skip_empty_value_error(loop, idx):
                                                 continue
@@ -3970,9 +3995,6 @@ class NEFTranslator:
                                                 row[j] = ent[name] = letterToDigit(val, 1)
                                             elif 'default' in d:
                                                 row[j] = ent[name] = int(d['default'])
-                                            elif excl_missing_data:
-                                                ent[name] = None
-                                                continue
                                             elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 if val in emptyValue:
                                                     ent[name] = None
@@ -3983,13 +4005,19 @@ class NEFTranslator:
                                                 if val in emptyValue:
                                                     ent[name] = None
                                                     continue
+                                                ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                                 clear_bad_pattern = True
+                                                continue
+                                            elif excl_missing_data:
+                                                ent[name] = None
                                                 continue
                                             elif skip_empty_value_error(loop, idx):
                                                 continue
                                             else:
                                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                                  + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                            continue
+
                                         if (type == 'index-int' and ent[name] <= 0)\
                                            or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
@@ -4017,9 +4045,6 @@ class NEFTranslator:
                                                 row[j] = ent[name] = parent_pointer
                                             elif 'default' in d:
                                                 row[j] = ent[name] = int(d['default'])
-                                            elif excl_missing_data:
-                                                ent[name] = None
-                                                continue
                                             elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 if val in emptyValue:
                                                     ent[name] = None
@@ -4030,13 +4055,19 @@ class NEFTranslator:
                                                 if val in emptyValue:
                                                     ent[name] = None
                                                     continue
+                                                ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                                 clear_bad_pattern = True
+                                                continue
+                                            elif excl_missing_data:
+                                                ent[name] = None
                                                 continue
                                             elif skip_empty_value_error(loop, idx):
                                                 continue
                                             else:
                                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                                  + f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                            continue
+
                                         if ent[name] <= 0:
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                              + f"{name} {val!r} must be {self.readableItemType[type]}.")
@@ -4049,9 +4080,6 @@ class NEFTranslator:
                                         try:
                                             ent[name] = float(val)
                                         except ValueError:
-                                            if excl_missing_data:
-                                                ent[name] = None
-                                                continue
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 if val in emptyValue:
                                                     ent[name] = None
@@ -4062,19 +4090,21 @@ class NEFTranslator:
                                                 if val in emptyValue:
                                                     ent[name] = None
                                                     continue
+                                                ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                                 clear_bad_pattern = True
+                                                continue
+                                            if excl_missing_data:
+                                                ent[name] = None
                                                 continue
                                             if skip_empty_value_error(loop, idx):
                                                 continue
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                              + f"{name} {val!r} must be {self.readableItemType[type]}.")
+
                                     elif type == 'positive-float':
                                         try:
                                             ent[name] = float(val)
                                         except ValueError:
-                                            if excl_missing_data:
-                                                ent[name] = None
-                                                continue
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 if val in emptyValue:
                                                     ent[name] = None
@@ -4085,7 +4115,11 @@ class NEFTranslator:
                                                 if val in emptyValue:
                                                     ent[name] = None
                                                     continue
+                                                ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                                 clear_bad_pattern = True
+                                                continue
+                                            if excl_missing_data:
+                                                ent[name] = None
                                                 continue
                                             if skip_empty_value_error(loop, idx):
                                                 continue
@@ -4103,6 +4137,7 @@ class NEFTranslator:
                                                 f.append(f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                          f"{name} {val!r} should not be zero, "
                                                          f"as defined by {self.readableItemType[type]}.")
+
                                     elif type == 'range-float':
                                         try:
                                             _range = d['range']
@@ -4110,12 +4145,6 @@ class NEFTranslator:
                                         except KeyError:
                                             raise ValueError(f"Range of data item {name} is not defined")
                                         except ValueError:
-                                            if excl_missing_data:
-                                                ent[name] = None
-                                                continue
-                                            if not enforce_range:
-                                                ent[name] = None
-                                                continue
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 if val in emptyValue:
                                                     ent[name] = None
@@ -4126,12 +4155,21 @@ class NEFTranslator:
                                                 if val in emptyValue:
                                                     ent[name] = None
                                                     continue
+                                                ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                                 clear_bad_pattern = True
+                                                continue
+                                            if excl_missing_data:
+                                                ent[name] = None
+                                                continue
+                                            if not enforce_range:
+                                                ent[name] = None
                                                 continue
                                             if skip_empty_value_error(loop, idx):
                                                 continue
                                             f.append(f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                      f"{name} {val!r} must be {self.readableItemType[type]}.")
+                                            continue
+
                                         if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0)\
                                            or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                             if ent[name] < 0.0:
@@ -4172,6 +4210,7 @@ class NEFTranslator:
                                                 if val in emptyValue:
                                                     ent[name] = None
                                                     continue
+                                                ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                                 clear_bad_pattern = True
                                                 continue
                                             elif skip_empty_value_error(loop, idx):
@@ -4196,6 +4235,7 @@ class NEFTranslator:
                                                 if val in emptyValue:
                                                     ent[name] = None
                                                     continue
+                                                ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                                 clear_bad_pattern = True
                                                 continue
                                             elif skip_empty_value_error(loop, idx):
@@ -4232,6 +4272,7 @@ class NEFTranslator:
                                                     if val in emptyValue:
                                                         ent[name] = None
                                                         continue
+                                                    ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                                     clear_bad_pattern = True
                                                     continue
                                                 elif skip_empty_value_error(loop, idx):
@@ -4249,22 +4290,24 @@ class NEFTranslator:
                                                 if 'enforce-enum' in d and d['enforce-enum']:
                                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                                      + f"{name} {val!r} must be one of {enum}.")
-                                                if enforce_enum:
-                                                    f.append(f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"
-                                                             f"{name} {val!r} should be one of {enum}.")
-                                                elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                     if val in emptyValue:
                                                         ent[name] = None
                                                         continue
                                                     remove_bad_pattern = True
                                                     continue
-                                                elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
                                                     if val in emptyValue:
                                                         ent[name] = None
                                                         continue
+                                                    ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                                     clear_bad_pattern = True
                                                     continue
-                                                elif skip_empty_value_error(loop, idx):
+                                                if enforce_enum:
+                                                    f.append(f"[Enumeration error] {get_idx_msg(idx_tag_ids, tags, ent)}"
+                                                             f"{name} {val!r} should be one of {enum}.")
+                                                    continue
+                                                if skip_empty_value_error(loop, idx):
                                                     continue
                                             ent[name] = int(val)
                                         except KeyError:
@@ -4288,6 +4331,7 @@ class NEFTranslator:
                                                     if val in emptyValue:
                                                         ent[name] = None
                                                         continue
+                                                    ent[name] = loop.data[idx][loop.tags.index(name)] = None
                                                     clear_bad_pattern = True
                                                     continue
                                         if 'uppercase' in d and d['uppercase']:
@@ -4362,14 +4406,6 @@ class NEFTranslator:
                             r[t] = loop.data[idx][j]
                         f.append(f"[Clear bad pattern] Found bad pattern. "
                                  f"#_of_row {idx + 1}, data_of_row {r}.")
-                        for k in key_items:
-                            if k in loop.tags and 'clear-bad-pattern' in k and k['clear-bad-pattern']:
-                                row[loop.tags.index(k)] = '?'
-                                ent[k] = None
-                        for d in data_items:
-                            if d in loop.tags and 'clear-bad-pattern' in d and d['clear-bad-pattern']:
-                                row[loop.tags.index(d)] = '?'
-                                ent[d] = None
 
                     asm.append(ent)
 

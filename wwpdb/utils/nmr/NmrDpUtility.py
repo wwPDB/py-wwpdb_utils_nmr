@@ -27920,7 +27920,7 @@ class NmrDpUtility:
 
                                         if abs(position - value) > error and sp_widths[d] is not None:
 
-                                            if CS_RANGE_MIN < sp_width[d] < CS_RANGE_MAX:
+                                            if CS_RANGE_MIN < sp_widths[d] < CS_RANGE_MAX:
 
                                                 err = f"[Check row of {index_tag} {row[index_tag]}] "\
                                                     f"Peak position of spectral peak {position_names[d]} {position} ("\
@@ -28415,7 +28415,7 @@ class NmrDpUtility:
 
                                     if abs(position - value) > error and sp_widths[d] is not None:
 
-                                        if CS_RANGE_MIN < sp_width[d] < CS_RANGE_MAX:
+                                        if CS_RANGE_MIN < sp_widths[d] < CS_RANGE_MAX:
 
                                             err = f"[Check row of {pk_id_name} {row[pk_id_name]}] Peak position of spectral peak {cs_value_name} {position} ("\
                                                 + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,

@@ -1701,7 +1701,8 @@ class BMRBChemShiftStat:
             return True, comp_id, atom_id[:-1]
 
         _atom_id = translateToStdAtomName(atom_id, comp_id, refAtomIdList=_ref_atom_ids, ccU=self.__ccU, unambig=False)
-        if _atom_id in _ref_atom_ids:
+        # prevent wrong atom_id mapping DC:H3 (extended imino proton) -> DC:H3' (DAOTHER-9317, 9511)
+        if _atom_id in _ref_atom_ids and (("'" not in atom_id and "'" not in _atom_id) or ("'" in atom_id and "'" in _atom_id)):
             # print(f'case 4. {_comp_id}:{atom_id} -> {comp_id}:{_atom_id}')
             return True, comp_id, _atom_id
 

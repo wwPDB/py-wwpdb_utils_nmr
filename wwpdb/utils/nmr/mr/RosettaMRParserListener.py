@@ -71,6 +71,7 @@ try:
                                            protonBeginCode,
                                            pseProBeginCode,
                                            aminoProtonCode,
+                                           carboxylCode,
                                            rdcBbPairCode,
                                            zincIonCode,
                                            updatePolySeqRst,
@@ -149,6 +150,7 @@ except ImportError:
                                protonBeginCode,
                                pseProBeginCode,
                                aminoProtonCode,
+                               carboxylCode,
                                rdcBbPairCode,
                                zincIonCode,
                                updatePolySeqRst,
@@ -1336,7 +1338,10 @@ class RosettaMRParserListener(ParseTreeListener):
                         origCompId = np['auth_comp_id'][idx]
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
                     if 'alt_auth_seq_id' in np and seqId in np['auth_seq_id'] and seqId not in np['alt_auth_seq_id']:
-                        seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
+                        try:
+                            seqId = next(_altSeqId for _seqId, _altSeqId in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _seqId == seqId)
+                        except StopIteration:
+                            pass
                     if atomId is None\
                        or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                         chainAssign.add((chainId, seqId, cifCompId, False))
@@ -1808,7 +1813,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 checked = False
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
-                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or (ps is not None and min(auth_seq_id_list) == seqId):
+                if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes\
+                   or (auth_seq_id_list is not None and min(auth_seq_id_list) == seqId):
                     if atomId in aminoProtonCode and atomId != 'H1':
                         return self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     if atomId in aminoProtonCode or atomId == 'P' or atomId.startswith('HOP'):
@@ -1828,6 +1834,14 @@ class RosettaMRParserListener(ParseTreeListener):
                                     return atomId
                             if bondedTo[0][0] == 'O':
                                 return 'Ignorable hydroxyl group'
+                    if (auth_seq_id_list is not None and seqId == max(auth_seq_id_list))\
+                       or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
+                        if coordAtomSite is not None and atomId in carboxylCode\
+                           and not isCyclicPolymer(self.__cR, self.__polySeq, chainId, self.__representativeModelId, self.__representativeAltId, self.__modelNumName):
+                            self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                            f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
+                                            "Please re-upload the model file.")
+                            return atomId
 
                     if chainId in LARGE_ASYM_ID:
                         if self.__allow_ext_seq:
@@ -4296,7 +4310,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                    self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                     "Found inter-chain RDC vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
@@ -4304,7 +4318,7 @@ class RosettaMRParserListener(ParseTreeListener):
             elif abs(seq_id_1 - seq_id_2) > 1:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                    self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                     "Found inter-residue RDC vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
@@ -4319,7 +4333,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                    self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                     "Found inter-residue RDC vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return

@@ -219,6 +219,40 @@ class XplorMRReader:
 
 
 if __name__ == "__main__":
+    reader = XplorMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2n1e/2n1e-corrected-div_src.mr',
+                     '../../tests-nmr/mock-data-remediation/2n1e/2n1e.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = XplorMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2n1e/2n1e-corrected-div_src.mr',
+                 '../../tests-nmr/mock-data-remediation/2n1e/2n1e.cif')
+
+    reader = XplorMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/5w3n/fus_CC_PITHIRDSCT.tbl',
+                     '../../tests-nmr/mock-data-remediation/5w3n/5w3n.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = XplorMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5w3n/fus_CC_PITHIRDSCT.tbl',
+                 '../../tests-nmr/mock-data-remediation/5w3n/5w3n.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2mnh/2mnh-trimmed-div_src.mr',
+                 '../../tests-nmr/mock-data-remediation/2mnh/2mnh.cif')
+
+    reader = XplorMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/7m3u/PDP-24_restraints.tbl',
+                     '../../tests-nmr/mock-data-remediation/7m3u/7m3u.cif')
+    print(reader_listener.getReasonsForReparsing())
+
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2n7j/2n7j-corrected.mr',
@@ -279,8 +313,8 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/2lck/2lck-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/2lck/2lck.cif')
 
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
+    reader = XplorMRReader(False)
+    reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2n1a/2n1a-corrected.mr',
                      '../../tests-nmr/mock-data-remediation/2n1a/2n1a.cif')
@@ -492,8 +526,8 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/2lrk/2lrk-corrected-div_src.mr',
                  '../../tests-nmr/mock-data-remediation/2lrk/2lrk.cif')
 
-    reader = XplorMRReader(False)
-    reader.setDebugMode(False)
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/1iio/1iio-trimmed.mr',
                      '../../tests-nmr/mock-data-remediation/1iio/1iio.cif')
@@ -514,7 +548,12 @@ if __name__ == "__main__":
 
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2ju5/2ju5-trimmed-div_src.mr-corrected',
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2ju5/2ju5-corrected-div_src.mr',
+                     '../../tests-nmr/mock-data-remediation/2ju5/2ju5.cif')
+    reader = XplorMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2ju5/2ju5-corrected-div_src.mr',
                  '../../tests-nmr/mock-data-remediation/2ju5/2ju5.cif')
 
     reader = XplorMRReader(True)

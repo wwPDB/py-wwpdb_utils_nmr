@@ -190,6 +190,9 @@
 # 01-May-2024  M. Yokochi - merge cs/mr sequence extensions containing unknown residues (e.g UNK, DN, N) if necessary (NMR restraint remediation, 6fw4)
 # 22-May-2024  M. Yokochi - block deposition using a peak list file in any binary format and prevent 'nm-pea-any' occasionally matches with 'nm-res-cya' (DAOTHER-9425)
 # 11-Jun-2024  M. Yokcohi - add support for ligand remapping in annotation process (DAOTHER-9286)
+# 25-Jun-2024  M. Yokochi - strip white spaces in a datablock name derived from the model file (DAOTHER-9511)
+# 28-Jun-2024  M. Yokochi - ignore extraneous input value for numeric tags and replace statistics of chemical shifts using remediated loop (DAOTHER-9520)
+# 28-Jun-2024  M. Yokochi - convert conventional NMR name of carbonyl carbon 'CO' to valid one 'C' (DAOTHER-9520, 2nd case)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -1177,7 +1180,7 @@ class NmrDpUtility:
         # bmrb id (internal use only)
         self.__bmrb_id = None
         # whether to insert entry_id (nmr-star specific)
-        self.__insert_entry_id_to_loops = True
+        # self.__insert_entry_id_to_loops = True
 
         # whether to retain original content if possible
         self.__retain_original = True
@@ -1313,9 +1316,9 @@ class NmrDpUtility:
                              self.__validateLegacyMr,
                              self.__validateSaxsMr,
                              self.__validateStrPk,
-                             self.__calculateStatsOfExptlData,
                              self.__updateConstraintStats,
-                             self.__detectSimpleDistanceRestraint
+                             self.__detectSimpleDistanceRestraint,
+                             self.__calculateStatsOfExptlData
                              ]
 
         # nmr-*-consistency-check tasks
@@ -1394,6 +1397,7 @@ class NmrDpUtility:
         __mergeCsAndMrTasks.append(self.__updatePolymerSequence)
         __mergeCsAndMrTasks.append(self.__mergeLegacyCsAndMr)
         __mergeCsAndMrTasks.append(self.__detectSimpleDistanceRestraint)
+        __mergeCsAndMrTasks.append(self.__calculateStatsOfExptlData)
 
         __annotateTasks = [self.__initializeDpReport,
                            self.__validateInputSource,
@@ -2656,8 +2660,10 @@ class NmrDpUtility:
                                                 ],
                                    'entity': None,
                                    'chem_shift': [{'name': 'value', 'type': 'range-float', 'mandatory': True,
+                                                   'remove-bad-patter': True,
                                                    'range': CS_RESTRAINT_RANGE},
                                                   {'name': 'value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                   'clear-bad-pattern': True,
                                                    'range': CS_UNCERTAINTY_RANGE},
                                                   {'name': 'element', 'type': 'enum', 'mandatory': True, 'default-from': 'atom_name',
                                                    'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
@@ -2676,32 +2682,38 @@ class NmrDpUtility:
                                                        'range': WEIGHT_RANGE},
                                                       # 'enforce-non-zero': True},
                                                       {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
+                                                       'clear-bad-pattern': True,
                                                        'range': DIST_RESTRAINT_RANGE,
                                                        'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                  'coexist-with': None,
                                                                  'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                  'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                       {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                       'clear-bad-pattern': True,
                                                        'range': DIST_UNCERTAINTY_RANGE},
                                                       {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
+                                                       'clear-bad-pattern': True,
                                                        'range': DIST_RESTRAINT_RANGE,
                                                        'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                  'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                  'smaller-than': None,
                                                                  'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
                                                       {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
+                                                       'clear-bad-pattern': True,
                                                        'range': DIST_RESTRAINT_RANGE,
                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                  'coexist-with': None,  # ['upper_limit'],
                                                                  'smaller-than': ['lower_linear_limit'],
                                                                  'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                       {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
+                                                       'clear-bad-pattern': True,
                                                        'range': DIST_RESTRAINT_RANGE,
                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                  'coexist-with': None,  # ['lower_limit'],
                                                                  'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                  'larger-than': ['upper_linear_limit']}},
                                                       {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
+                                                       'clear-bad-pattern': True,
                                                        'range': DIST_RESTRAINT_RANGE,
                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                  'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
@@ -2717,6 +2729,7 @@ class NmrDpUtility:
                                                         'range': WEIGHT_RANGE},
                                                        # 'enforce-non-zero': True},
                                                        {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                        'clear-bad-pattern': True,
                                                         'range': ANGLE_RESTRAINT_RANGE,
                                                         'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'coexist-with': None,
@@ -2724,8 +2737,10 @@ class NmrDpUtility:
                                                                   'larger-than': None,  # (DAOTHER-8442) ['upper_limit', 'upper_linear_limit'],
                                                                   'circular-shift': 360.0}},
                                                        {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                        'clear-bad-pattern': True,
                                                         'range': ANGLE_UNCERTAINTY_RANGE},
                                                        {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                        'clear-bad-pattern': True,
                                                         'range': ANGLE_RESTRAINT_RANGE,
                                                         'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
@@ -2734,6 +2749,7 @@ class NmrDpUtility:
                                                                   # (DAOTHER-8442) ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'circular-shift': 360.0}},
                                                        {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                        'clear-bad-pattern': True,
                                                         'range': ANGLE_RESTRAINT_RANGE,
                                                         'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'coexist-with': None,  # ['upper_limit'],
@@ -2741,6 +2757,7 @@ class NmrDpUtility:
                                                                   'larger-than': None,  # (DAOTHER-8442) ['upper_limit', 'upper_linear_limit'],
                                                                   'circular-shift': 360.0}},
                                                        {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                        'clear-bad-pattern': True,
                                                         'range': ANGLE_RESTRAINT_RANGE,
                                                         'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                   'coexist-with': None,  # ['lower_limit'],
@@ -2748,6 +2765,7 @@ class NmrDpUtility:
                                                                   'larger-than': ['upper_linear_limit'],
                                                                   'circular-shift': 360.0}},
                                                        {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                        'clear-bad-pattern': True,
                                                         'range': ANGLE_RESTRAINT_RANGE,
                                                         'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                   'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
@@ -2763,32 +2781,38 @@ class NmrDpUtility:
                                                      {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                       'enforce-non-zero': True},
                                                      {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                      'clear-bad-pattern': True,
                                                       'range': RDC_RESTRAINT_RANGE,
                                                       'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                 'coexist-with': None,
                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                 'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                      {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                      'clear-bad-pattern': True,
                                                       'range': RDC_UNCERTAINTY_RANGE},
                                                      {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                      'clear-bad-pattern': True,
                                                       'range': RDC_RESTRAINT_RANGE,
                                                       'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                 'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                 'smaller-than': None,
                                                                 'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
                                                      {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                      'clear-bad-pattern': True,
                                                       'range': RDC_RESTRAINT_RANGE,
                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                 'coexist-with': None,  # ['upper_limit'],
                                                                 'smaller-than': ['lower_linear_limit'],
                                                                 'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                      {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                      'clear-bad-pattern': True,
                                                       'range': RDC_RESTRAINT_RANGE,
                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                 'coexist-with': None,  # ['lower_limit'],
                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                 'larger-than': ['upper_linear_limit']}},
                                                      {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                      'clear-bad-pattern': True,
                                                       'range': RDC_RESTRAINT_RANGE,
                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                 'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
@@ -2801,13 +2825,17 @@ class NmrDpUtility:
                                                      ],
                                    'spectral_peak': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
                                                      {'name': 'volume', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                      'clear-bad-pattern': True,
                                                       'group': {'member-with': ['height'],
                                                                 'coexist-with': None}},
-                                                     {'name': 'volume_uncertainty', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
+                                                     {'name': 'volume_uncertainty', 'type': 'positive-float', 'mandatory': False, 'void-zero': True,
+                                                      'clear-bad-pattern': True},
                                                      {'name': 'height', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                      'clear-bad-pattern': True,
                                                       'group': {'member-with': ['volume'],
                                                                 'coexist-with': None}},
-                                                     {'name': 'height_uncertainty', 'type': 'positive-float', 'mandatory': False, 'void-zero': True}
+                                                     {'name': 'height_uncertainty', 'type': 'positive-float', 'mandatory': False, 'void-zero': True,
+                                                      'clear-bad-pattern': True}
                                                      ],
                                    'spectral_peak_alt': None,
                                    'noepk_restraint': None,
@@ -2851,8 +2879,10 @@ class NmrDpUtility:
                                                         'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                         'enforce-enum': True},
                                                        {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                                        'remove-bad-patter': True,
                                                         'range': CS_RESTRAINT_RANGE},
                                                        {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                        'clear-bad-pattern': True,
                                                         'range': CS_UNCERTAINTY_RANGE},
                                                        {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
                                                         'enum': ALLOWED_AMBIGUITY_CODES,
@@ -2906,6 +2936,7 @@ class NmrDpUtility:
                                                             'enum': ('OR', 'AND'),
                                                             'enforce-enum': True},
                                                            {'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
+                                                            'clear-bad-pattern': True,
                                                             'range': DIST_RESTRAINT_RANGE,
                                                             'group': {'member-with': ['Lower_linear_limit',
                                                                                       'Upper_linear_limit',
@@ -2915,8 +2946,10 @@ class NmrDpUtility:
                                                                       'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                       'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                            {'name': 'Target_val_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                            'clear-bad-pattern': True,
                                                             'range': DIST_UNCERTAINTY_RANGE},
                                                            {'name': 'Lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
+                                                            'clear-bad-pattern': True,
                                                             'range': DIST_RESTRAINT_RANGE,
                                                             'group': {'member-with': ['Target_val',
                                                                                       'Upper_linear_limit',
@@ -2927,6 +2960,7 @@ class NmrDpUtility:
                                                                       'larger-than': ['Distance_lower_bound_val', 'Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                            {'name': 'Distance_lower_bound_val', 'type': 'range-float', 'mandatory': False,
                                                             'group-mandatory': True, 'void-zero': True,
+                                                            'clear-bad-pattern': True,
                                                             'range': DIST_RESTRAINT_RANGE,
                                                             'group': {'member-with': ['Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_upper_bound_val'],
                                                                       'coexist-with': None,  # ['Distance_upper_bound_val'],
@@ -2934,12 +2968,14 @@ class NmrDpUtility:
                                                                       'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                            {'name': 'Distance_upper_bound_val', 'type': 'range-float', 'mandatory': False,
                                                             'group-mandatory': True, 'void-zero': True,
+                                                            'clear-bad-pattern': True,
                                                             'range': DIST_RESTRAINT_RANGE,
                                                             'group': {'member-with': ['Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val'],
                                                                       'coexist-with': None,  # ['Distance_lower_bound_val'],
                                                                       'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                       'larger-than': ['Upper_linear_limit']}},
                                                            {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True, 'void-zero': True,
+                                                            'clear-bad-pattern': True,
                                                             'range': DIST_RESTRAINT_RANGE,
                                                             'group': {'member-with': ['Target_val',
                                                                                       'Lower_linear_limit',
@@ -2971,6 +3007,7 @@ class NmrDpUtility:
                                                              'enforce-non-zero': True},
                                                             {'name': 'Torsion_angle_name', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Angle_target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': ANGLE_RESTRAINT_RANGE,
                                                              'group': {'member-with': ['Angle_lower_linear_limit',
                                                                                        'Angle_upper_linear_limit',
@@ -2981,8 +3018,10 @@ class NmrDpUtility:
                                                                        'larger-than': None,  # (DAOTHER-8442) ['Angle_upper_bound_val', 'Angle_upper_linear_limit'],
                                                                        'circular-shift': 360.0}},
                                                             {'name': 'Angle_target_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': ANGLE_UNCERTAINTY_RANGE},
                                                             {'name': 'Angle_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': ANGLE_RESTRAINT_RANGE,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_upper_linear_limit',
                                                                                        'Angle_lower_bound_val', 'Angle_upper_bound_val'],
@@ -2992,6 +3031,7 @@ class NmrDpUtility:
                                                                        # (DAOTHER-8442) ['Angle_lower_bound_val', 'Angle_upper_bound', 'Angle_upper_linear_limit'],
                                                                        'circular-shift': 360.0}},
                                                             {'name': 'Angle_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': ANGLE_RESTRAINT_RANGE,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
                                                                                        'Angle_upper_linear_limit', 'Angle_upper_bound_val'],
@@ -3000,6 +3040,7 @@ class NmrDpUtility:
                                                                        'larger-than': None,  # (DAOTHER-8442) ['Angle_upper_bound_val', 'Angle_upper_linear_limit'],
                                                                        'circular-shift': 360.0}},
                                                             {'name': 'Angle_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': ANGLE_RESTRAINT_RANGE,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
                                                                                        'Angle_upper_linear_limit', 'Angle_lower_bound_val'],
@@ -3008,6 +3049,7 @@ class NmrDpUtility:
                                                                        'larger-than': ['Angle_upper_linear_limit'],
                                                                        'circular-shift': 360.0}},
                                                             {'name': 'Angle_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': ANGLE_RESTRAINT_RANGE,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit',
                                                                                        'Angle_lower_bound_val', 'Angle_upper_bound_val'],
@@ -3046,32 +3088,38 @@ class NmrDpUtility:
                                                           {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                                            'enforce-non-zero': True},
                                                           {'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                           'clear-bad-pattern': True,
                                                            'range': RDC_RESTRAINT_RANGE,
                                                            'group': {'member-with': ['RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'coexist-with': None,
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                      'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                           {'name': 'Target_value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                           'clear-bad-pattern': True,
                                                            'range': RDC_UNCERTAINTY_RANGE},
                                                           {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                           'clear-bad-pattern': True,
                                                            'range': RDC_RESTRAINT_RANGE,
                                                            'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'smaller-than': None,
                                                                      'larger-than': ['RDC_lower_bound', 'RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                           {'name': 'RDC_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                           'clear-bad-pattern': True,
                                                            'range': RDC_RESTRAINT_RANGE,
                                                            'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_upper_bound'],
                                                                      'coexist-with': None,  # ['RDC_upper_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit'],
                                                                      'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                           {'name': 'RDC_upper_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                           'clear-bad-pattern': True,
                                                            'range': RDC_RESTRAINT_RANGE,
                                                            'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound'],
                                                                      'coexist-with': None,  # ['RDC_lower_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                      'larger-than': ['RDC_upper_linear_limit']}},
                                                           {'name': 'RDC_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                           'clear-bad-pattern': True,
                                                            'range': RDC_RESTRAINT_RANGE,
                                                            'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
@@ -3081,8 +3129,10 @@ class NmrDpUtility:
                                                            'range': WEIGHT_RANGE},
                                                           # 'enforce-non-zero': True},
                                                           {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False,
+                                                           'clear-bad-pattern': True,
                                                            'range': RDC_RESTRAINT_RANGE},
                                                           {'name': 'RDC_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                           'clear-bad-pattern': True,
                                                            'range': RDC_UNCERTAINTY_RANGE},
                                                           {'name': 'RDC_val_scale_factor', 'type': 'range-float', 'mandatory': False,
                                                            'range': SCALE_RANGE,
@@ -3102,13 +3152,17 @@ class NmrDpUtility:
                                                           ],
                                         'spectral_peak': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
                                                           {'name': 'Volume', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                           'clear-bad-pattern': True,
                                                            'group': {'member-with': ['Height'],
                                                                      'coexist-with': None}},
-                                                          {'name': 'Volume_uncertainty', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
+                                                          {'name': 'Volume_uncertainty', 'type': 'positive-float', 'mandatory': False, 'void-zero': True,
+                                                           'clear-bad-pattern': True},
                                                           {'name': 'Height', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                           'clear-bad-pattern': True,
                                                            'group': {'member-with': ['Volume'],
                                                                      'coexist-with': None}},
-                                                          {'name': 'Height_uncertainty', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
+                                                          {'name': 'Height_uncertainty', 'type': 'positive-float', 'mandatory': False, 'void-zero': True,
+                                                           'clear-bad-pattern': True},
                                                           {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
                                                           ],
                                         'spectral_peak_alt': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
@@ -3118,18 +3172,22 @@ class NmrDpUtility:
                                                                'enum': ('no', 'yes')}
                                                               ],
                                         'noepk_restraint': [{'name': 'Val', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                             'clear-bad-pattern': True,
                                                              'group': {'member-with': ['Val_min', 'Val_max'],
                                                                        'coexist-with': None,
                                                                        'smaller-than': None,
                                                                        'larger-than': None}},
                                                             {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': {'min_inclusive': 0.0}},
                                                             {'name': 'Val_min', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                             'clear-bad-pattern': True,
                                                              'group': {'member-with': ['Val', 'Val_max'],
                                                                        'coexist-with': None,
                                                                        'smaller-than': None,
                                                                        'larger-than': ['Val_max']}},
                                                             {'name': 'Val_max', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                             'clear-bad-pattern': True,
                                                              'group': {'member-with': ['Val', 'Val_min'],
                                                                        'coexist-with': None,
                                                                        'smaller-than': ['Val_min'],
@@ -3145,20 +3203,24 @@ class NmrDpUtility:
                                                             {'name': 'Homonucl_NOE_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
                                                             ],
                                         'jcoup_restraint': [{'name': 'Coupling_constant_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': RDC_RESTRAINT_RANGE,
                                                              'group': {'member-with': ['Coupling_constant_lower_bound', 'Coupling_constant_upper_bound'],
                                                                        'coexist-with': None,
                                                                        'smaller-than': None,
                                                                        'larger-than': None}},
                                                             {'name': 'Coupling_constant_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': {'min_inclusive': 0.0}},
                                                             {'name': 'Coupling_constant_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': RDC_RESTRAINT_RANGE,
                                                              'group': {'member-with': ['Coupling_constant_upper_bound'],
                                                                        'coexist-with': None,
                                                                        'smaller-than': None,
                                                                        'larger-than': ['Coupling_constant_upper_bound']}},
                                                             {'name': 'Coupling_constant_upper_bound', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': RDC_RESTRAINT_RANGE,
                                                              'group': {'member-with': ['Coupling_constant_lower_bound'],
                                                                        'coexist-with': None,
@@ -3203,24 +3265,28 @@ class NmrDpUtility:
                                                           'enum': ALLOWED_AMBIGUITY_CODES,
                                                           'enforce-enum': True},
                                                          {'name': 'Val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                          'clear-bad-pattern': True,
                                                           'range': RDC_RESTRAINT_RANGE,
                                                           'group': {'member-with': ['Val_min', 'Val_max'],
                                                                     'coexist-with': None,
                                                                     'smaller-than': None,
                                                                     'larger-than': None}},
                                                          {'name': 'Val_min', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                          'clear-bad-pattern': True,
                                                           'range': RDC_RESTRAINT_RANGE,
                                                           'group': {'member-with': ['Val_max'],
                                                                     'coexist-with': None,
                                                                     'smaller-than': None,
                                                                     'larger-than': ['Val_max']}},
                                                          {'name': 'Val_max', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                          'clear-bad-pattern': True,
                                                           'range': RDC_RESTRAINT_RANGE,
                                                           'group': {'member-with': ['Val_min'],
                                                                     'coexist-with': None,
                                                                     'smaller-than': ['Val_min'],
                                                                     'larger-than': None}},
                                                          {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                          'clear-bad-pattern': True,
                                                           'range': {'min_inclusive': 0.0}},
                                                          {'name': 'Val_bond_length', 'type': 'range-float', 'mandatory': False,
                                                           'range': DIST_RESTRAINT_RANGE},
@@ -3239,8 +3305,10 @@ class NmrDpUtility:
                                                            'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                            'enforce-enum': True},
                                                           {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                                           'clear-bad-pattern': True,
                                                            'range': CSA_RESTRAINT_RANGE},
                                                           {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                           'clear-bad-pattern': True,
                                                            'range': {'min_inclusive': 0.0}},
                                                           {'name': 'Principal_value_sigma_11_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': False,
                                                            'range': CSA_RESTRAINT_RANGE,
@@ -3295,18 +3363,22 @@ class NmrDpUtility:
                                                            'enum': ALLOWED_AMBIGUITY_CODES,
                                                            'enforce-enum': True},
                                                           {'name': 'Val', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                           'clear-bad-pattern': True,
                                                            'group': {'member-with': ['Val_min', 'Val_max'],
                                                                      'coexist-with': None,
                                                                      'smaller-than': None,
                                                                      'larger-than': None}},
                                                           {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                           'clear-bad-pattern': True,
                                                            'range': {'min_inclusive': 0.0}},
                                                           {'name': 'Val_min', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                           'clear-bad-pattern': True,
                                                            'group': {'member-with': ['Val_max'],
                                                                      'coexist-with': None,
                                                                      'smaller-than': None,
                                                                      'larger-than': ['Val_max']}},
                                                           {'name': 'Val_max', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                           'clear-bad-pattern': True,
                                                            'group': {'member-with': ['Val_min'],
                                                                      'coexist-with': None,
                                                                      'smaller-than': ['Val_min'],
@@ -3343,12 +3415,16 @@ class NmrDpUtility:
                                                            'default': '1', 'default-from': 'parent'}
                                                           ],
                                         'hvycs_restraint': [{'name': 'CA_chem_shift_val', 'type': 'range-float', 'mandatory': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': CS_RESTRAINT_RANGE},
                                                             {'name': 'CA_chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': CS_UNCERTAINTY_RANGE},
                                                             {'name': 'CB_chem_shift_val', 'type': 'range-float', 'mandatory': False,
+                                                             'clear-bad-pattern': True,
                                                              'range': CS_RESTRAINT_RANGE},
                                                             {'name': 'CB_chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': CS_UNCERTAINTY_RANGE},
                                                             {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
@@ -3380,8 +3456,10 @@ class NmrDpUtility:
                                                              'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                              'enforce-enum': True},
                                                             {'name': 'Chem_shift_val', 'type': 'range-float', 'mandatory': True,
+                                                             'remove-bad-patter': True,
                                                              'range': CS_RESTRAINT_RANGE},
                                                             {'name': 'Chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': CS_UNCERTAINTY_RANGE},
                                                             {'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
@@ -3397,12 +3475,16 @@ class NmrDpUtility:
                                                            'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                            'enforce-enum': True},
                                                           {'name': 'Chem_shift_val', 'type': 'range-float', 'mandatory': False,
+                                                           'clear-bad-pattern': True,
                                                            'range': CS_RESTRAINT_RANGE},
                                                           {'name': 'Chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                           'clear-bad-pattern': True,
                                                            'range': CS_UNCERTAINTY_RANGE},
                                                           {'name': 'Difference_chem_shift_val', 'type': 'range-float', 'mandatory': False,
+                                                           'clear-bad-pattern': True,
                                                            'range': CS_RESTRAINT_RANGE},
                                                           {'name': 'Difference_chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                           'clear-bad-pattern': True,
                                                            'range': CS_UNCERTAINTY_RANGE},
                                                           {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
                                                           {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
@@ -3418,12 +3500,16 @@ class NmrDpUtility:
                                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                                   'enforce-enum': True},
                                                                  {'name': 'Auto_relaxation_val', 'type': 'range-float', 'mandatory': True,
+                                                                  'remove-bad-patter': True,
                                                                   'range': PRE_RESTRAINT_RANGE},
                                                                  {'name': 'Auto_relaxation_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                  'clear-bad-pattern': True,
                                                                   'range': PRE_RESTRAINT_RANGE},
                                                                  {'name': 'Rex_val', 'type': 'range-float', 'mandatory': False,
+                                                                  'clear-bad-pattern': True,
                                                                   'range': PRE_RESTRAINT_RANGE},
                                                                  {'name': 'Rex_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                  'clear-bad-pattern': True,
                                                                   'range': PRE_RESTRAINT_RANGE},
                                                                  {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
                                                                  {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
@@ -3445,8 +3531,10 @@ class NmrDpUtility:
                                                                  'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                                  'enforce-enum': True},
                                                                 {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                                                 'remove-bad-patter': True,
                                                                  'range': PRE_RESTRAINT_RANGE},
                                                                 {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                 'clear-bad-pattern': True,
                                                                  'range': PRE_RESTRAINT_RANGE},
                                                                 {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
                                                                 {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
@@ -3466,8 +3554,10 @@ class NmrDpUtility:
                                                                 'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                                 'enforce-enum': True},
                                                                {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                                                'remove-bad-pattern': True,
                                                                 'range': PRE_RESTRAINT_RANGE},
                                                                {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                'clear-bad-pattern': True,
                                                                 'range': PRE_RESTRAINT_RANGE},
                                                                {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
                                                                {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
@@ -3483,12 +3573,16 @@ class NmrDpUtility:
                                                                 'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                                 'enforce-enum': True},
                                                                {'name': 'T2_val', 'type': 'range-float', 'mandatory': True,
+                                                                'remove-bad-patter': True,
                                                                 'range': PRE_RESTRAINT_RANGE},
                                                                {'name': 'T2_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                'clear-bad-pattern': True,
                                                                 'range': PRE_RESTRAINT_RANGE},
                                                                {'name': 'Rex_val', 'type': 'range-float', 'mandatory': False,
+                                                                'clear-bad-pattern': True,
                                                                 'range': PRE_RESTRAINT_RANGE},
                                                                {'name': 'Rex_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                'clear-bad-pattern': True,
                                                                 'range': PRE_RESTRAINT_RANGE},
                                                                {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
                                                                {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
@@ -3504,12 +3598,16 @@ class NmrDpUtility:
                                                                  'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                                  'enforce-enum': True},
                                                                 {'name': 'T1rho_val', 'type': 'range-float', 'mandatory': True,
+                                                                 'remove-bad-patter': True,
                                                                  'range': PRE_RESTRAINT_RANGE},
                                                                 {'name': 'T1rho_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                 'clear-bad-pattern': True,
                                                                  'range': PRE_RESTRAINT_RANGE},
                                                                 {'name': 'Rex_val', 'type': 'range-float', 'mandatory': False,
+                                                                 'clear-bad-pattern': True,
                                                                  'range': PRE_RESTRAINT_RANGE},
                                                                 {'name': 'Rex_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                 'clear-bad-pattern': True,
                                                                  'range': PRE_RESTRAINT_RANGE},
                                                                 {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
                                                                 {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
@@ -3525,39 +3623,58 @@ class NmrDpUtility:
                                                               'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                               'enforce-enum': True},
                                                              {'name': 'Order_param_val', 'type': 'range-float', 'mandatory': True,
+                                                              'clear-bad-pattern': True,
                                                               'range': PROBABILITY_RANGE},
                                                              {'name': 'Order_param_val_fit_err', 'type': 'range-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True,
                                                               'range': PROBABILITY_RANGE},
-                                                             {'name': 'Tau_e_val', 'type': 'positive-float', 'mandatory': False},
-                                                             {'name': 'Tau_e_val_fit_err', 'type': 'positive-float', 'mandatory': False},
-                                                             {'name': 'Tau_f_val', 'type': 'positive-float', 'mandatory': False},
-                                                             {'name': 'Tau_f_val_fit_err', 'type': 'positive-float', 'mandatory': False},
-                                                             {'name': 'Tau_s_val', 'type': 'positive-float', 'mandatory': False},
-                                                             {'name': 'Tau_s_val_fit_err', 'type': 'positive-float', 'mandatory': False},
+                                                             {'name': 'Tau_e_val', 'type': 'positive-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True},
+                                                             {'name': 'Tau_e_val_fit_err', 'type': 'positive-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True},
+                                                             {'name': 'Tau_f_val', 'type': 'positive-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True},
+                                                             {'name': 'Tau_f_val_fit_err', 'type': 'positive-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True},
+                                                             {'name': 'Tau_s_val', 'type': 'positive-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True},
+                                                             {'name': 'Tau_s_val_fit_err', 'type': 'positive-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True},
                                                              {'name': 'Rex_val', 'type': 'range-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True,
                                                               'range': PRE_RESTRAINT_RANGE},
                                                              {'name': 'Rex_val_fit_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                              'clear-bad-pattern': True,
                                                               'range': PRE_RESTRAINT_RANGE},
-                                                             {'name': 'Model_free_sum_squared_errs', 'type': 'positive-float', 'mandatory': False},
+                                                             {'name': 'Model_free_sum_squared_errs', 'type': 'positive-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True},
                                                              {'name': 'Model_fit', 'type': 'enum', 'mandatory': False,
                                                               'enum': ('Rex', 'S2', 'S2, te', 'S2, Rex', 'S2, te, Rex', 'S2f, S2, ts', 'S2f, S2s, ts',
                                                                        'S2f, tf, S2, ts', 'S2f, tf, S2s, ts', 'S2f, S2, ts, Rex', 'S2f, S2s, ts, Rex',
                                                                        'S2f, tf, S2, ts, Rex', 'S2f, tf, S2s, ts, Rex', 'na')},
                                                              {'name': 'Sf2_val', 'type': 'range-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True,
                                                               'range': PROBABILITY_RANGE},
                                                              {'name': 'Sf2_val_fit_err', 'type': 'range-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True,
                                                               'range': PROBABILITY_RANGE},
                                                              {'name': 'Ss2_val', 'type': 'range-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True,
                                                               'range': PROBABILITY_RANGE},
                                                              {'name': 'Ss2_val_fit_err', 'type': 'range-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True,
                                                               'range': PROBABILITY_RANGE},
                                                              {'name': 'SH2_val', 'type': 'range-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True,
                                                               'range': PROBABILITY_RANGE},
                                                              {'name': 'SH2_val_fit_err', 'type': 'range-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True,
                                                               'range': PROBABILITY_RANGE},
                                                              {'name': 'SN2_val', 'type': 'range-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True,
                                                               'range': PROBABILITY_RANGE},
                                                              {'name': 'SN2_val_fit_err', 'type': 'range-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True,
                                                               'range': PROBABILITY_RANGE},
                                                              {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
                                                              {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
@@ -3591,8 +3708,10 @@ class NmrDpUtility:
                                                                  'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                                  'enforce-enum': True},
                                                                 {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                                                 'remove-bad-patter': True,
                                                                  'range': CCR_RESTRAINT_RANGE},
                                                                 {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                 'clear-bad-pattern': True,
                                                                  'range': CCR_RESTRAINT_RANGE},
                                                                 {'name': 'Dipole_auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
                                                                 {'name': 'Dipole_auth_seq_ID_1', 'type': 'int', 'mandatory': False},
@@ -3638,8 +3757,10 @@ class NmrDpUtility:
                                                               'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                               'enforce-enum': True},
                                                              {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                                              'remove-bad-patter': True,
                                                               'range': CCR_RESTRAINT_RANGE},
                                                              {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                              'clear-bad-pattern': True,
                                                               'range': CCR_RESTRAINT_RANGE},
                                                              {'name': 'Dipole_1_auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
                                                              {'name': 'Dipole_1_auth_seq_ID_1', 'type': 'int', 'mandatory': False},
@@ -3670,8 +3791,10 @@ class NmrDpUtility:
                                                               {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                                               {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False}
                                                               ],
-                                        'saxs_restraint': [{'name': 'Intensity_val', 'type': 'float', 'mandatory': True},
-                                                           {'name': 'Intensity_val_err', 'type': 'float', 'mandatory': True},
+                                        'saxs_restraint': [{'name': 'Intensity_val', 'type': 'float', 'mandatory': True,
+                                                            'remove-bad-patter': True},
+                                                           {'name': 'Intensity_val_err', 'type': 'float', 'mandatory': True,
+                                                            'clear-bad-pattern': True},
                                                            {'name': 'Weight_val', 'type': 'range-float', 'mandatory': False,
                                                             'range': WEIGHT_RANGE}
                                                            ],
@@ -3681,8 +3804,10 @@ class NmrDpUtility:
                                                             {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
                                                              'enum': set(ALLOWED_ISOTOPE_NUMBERS),
                                                              'enforce-enum': True},
-                                                            {'name': 'Val', 'type': 'float', 'mandatory': True},
+                                                            {'name': 'Val', 'type': 'float', 'mandatory': True,
+                                                             'remove-bad-patter': True},
                                                             {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                             'clear-bad-pattern': True,
                                                              'range': {'min_inclusive': 0.0}},
                                                             {'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
@@ -3696,32 +3821,38 @@ class NmrDpUtility:
 
         # data items of loop to check consistency
         self.consist_data_items = {'nef': {'dist_restraint': [{'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                               'clear-bad-pattern': True,
                                                                'range': DIST_RESTRAINT_RANGE,
                                                                'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                          'coexist-with': None,
                                                                          'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                          'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                               {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
+                                                               'clear-bad-pattern': True,
                                                                'range': DIST_UNCERTAINTY_RANGE},
                                                               {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                               'clear-bad-pattern': True,
                                                                'range': DIST_RESTRAINT_RANGE,
                                                                'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                          'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                          'smaller-than': None,
                                                                          'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
                                                               {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                               'clear-bad-pattern': True,
                                                                'range': DIST_RESTRAINT_RANGE,
                                                                'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                          'coexist-with': None,  # ['upper_limit'],
                                                                          'smaller-than': ['lower_linear_limit'],
                                                                          'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                               {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                               'clear-bad-pattern': True,
                                                                'range': DIST_RESTRAINT_RANGE,
                                                                'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                          'coexist-with': None,  # ['lower_limit'],
                                                                          'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                          'larger-than': ['upper_linear_limit']}},
                                                               {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                               'clear-bad-pattern': True,
                                                                'range': DIST_RESTRAINT_RANGE,
                                                                'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                          'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
@@ -3729,32 +3860,38 @@ class NmrDpUtility:
                                                                          'larger-than': None}}
                                                               ],
                                            'dihed_restraint': [{'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                'clear-bad-pattern': True,
                                                                'range': ANGLE_RESTRAINT_RANGE,
                                                                 'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                           'coexist-with': None,
                                                                           'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                           'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                                {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
+                                                                'clear-bad-pattern': True,
                                                                 'range': ANGLE_UNCERTAINTY_RANGE},
                                                                {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                'clear-bad-pattern': True,
                                                                 'range': ANGLE_RESTRAINT_RANGE,
                                                                 'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                           'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                           'smaller-than': None,
                                                                           'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
                                                                {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                'clear-bad-pattern': True,
                                                                 'range': ANGLE_RESTRAINT_RANGE,
                                                                 'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                           'coexist-with': None,  # ['upper_limit'],
                                                                           'smaller-than': ['lower_linear_limit'],
                                                                           'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                                {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                'clear-bad-pattern': True,
                                                                 'range': ANGLE_RESTRAINT_RANGE,
                                                                 'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                           'coexist-with': None,  # ['lower_limit'],
                                                                           'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                           'larger-than': ['upper_linear_limit']}},
                                                                {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                'clear-bad-pattern': True,
                                                                 'range': ANGLE_RESTRAINT_RANGE,
                                                                 'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                           'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
@@ -3762,32 +3899,38 @@ class NmrDpUtility:
                                                                           'larger-than': None}}
                                                                ],
                                            'rdc_restraint': [{'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                              'clear-bad-pattern': True,
                                                               'range': RDC_RESTRAINT_RANGE,
                                                               'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                         'coexist-with': None,
                                                                         'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                         'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                              {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
+                                                              'clear-bad-pattern': True,
                                                               'range': RDC_UNCERTAINTY_RANGE},
                                                              {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                              'clear-bad-pattern': True,
                                                               'range': RDC_RESTRAINT_RANGE,
                                                               'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                         'coexist-with': None,  # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                         'smaller-than': None,
                                                                         'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
                                                              {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                              'clear-bad-pattern': True,
                                                               'range': RDC_RESTRAINT_RANGE,
                                                               'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                         'coexist-with': None,  # ['upper_limit'],
                                                                         'smaller-than': ['lower_linear_limit'],
                                                                         'larger-than': ['upper_limit', 'upper_linear_limit']}},
                                                              {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                              'clear-bad-pattern': True,
                                                               'range': RDC_RESTRAINT_RANGE,
                                                               'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                         'coexist-with': None,  # ['lower_limit'],
                                                                         'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                         'larger-than': ['upper_linear_limit']}},
                                                              {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                              'clear-bad-pattern': True,
                                                               'range': RDC_RESTRAINT_RANGE,
                                                               'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                         'coexist-with': None,  # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
@@ -3817,6 +3960,7 @@ class NmrDpUtility:
                                            'other_restraint': None
                                            },
                                    'nmr-star': {'dist_restraint': [{'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                    'clear-bad-pattern': True,
                                                                     'range': DIST_RESTRAINT_RANGE,
                                                                     'group': {'member-with': ['Lower_linear_limit',
                                                                                               'Upper_linear_limit',
@@ -3826,8 +3970,10 @@ class NmrDpUtility:
                                                                               'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                               'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                                    {'name': 'Target_val_uncertainty', 'type': 'range-float', 'mandatory': False,
+                                                                    'clear-bad-pattern': True,
                                                                     'range': DIST_UNCERTAINTY_RANGE},
                                                                    {'name': 'Lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                    'clear-bad-pattern': True,
                                                                     'range': DIST_RESTRAINT_RANGE,
                                                                     'group': {'member-with': ['Target_val',
                                                                                               'Upper_linear_limit',
@@ -3838,6 +3984,7 @@ class NmrDpUtility:
                                                                               'smaller-than': None,
                                                                               'larger-than': ['Distance_lower_bound_val', 'Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                                    {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                    'clear-bad-pattern': True,
                                                                     'range': DIST_RESTRAINT_RANGE,
                                                                     'group': {'member-with': ['Target_val',
                                                                                               'Lower_linear_limit',
@@ -3848,6 +3995,7 @@ class NmrDpUtility:
                                                                               'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
                                                                               'larger-than': None}},
                                                                    {'name': 'Distance_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                    'clear-bad-pattern': True,
                                                                     'range': DIST_RESTRAINT_RANGE,
                                                                     'group': {'member-with': ['Target_val',
                                                                                               'Lower_linear_limit',
@@ -3857,6 +4005,7 @@ class NmrDpUtility:
                                                                               'smaller-than': ['Lower_linear_limit'],
                                                                               'larger-than': ['Distance_upper_bound_val', 'Upper_linear_limit']}},
                                                                    {'name': 'Distance_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                    'clear-bad-pattern': True,
                                                                     'range': DIST_RESTRAINT_RANGE,
                                                                     'group': {'member-with': ['Target_val',
                                                                                               'Lower_linear_limit',
@@ -3869,6 +4018,7 @@ class NmrDpUtility:
                                                                     'range': DIST_RESTRAINT_RANGE}
                                                                    ],
                                                 'dihed_restraint': [{'name': 'Angle_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                     'clear-bad-pattern': True,
                                                                      'range': ANGLE_RESTRAINT_RANGE,
                                                                      'group': {'member-with': ['Angle_target_val',
                                                                                                'Angle_lower_linear_limit',
@@ -3878,6 +4028,7 @@ class NmrDpUtility:
                                                                                'smaller-than': ['Angle_lower_linear_limit'],
                                                                                'larger-than': ['Angle_upper_bound_val', 'Angle_upper_linear_limit']}},
                                                                     {'name': 'Angle_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                     'clear-bad-pattern': True,
                                                                      'range': ANGLE_RESTRAINT_RANGE,
                                                                      'group': {'member-with': ['Angle_target_val',
                                                                                                'Angle_lower_linear_limit',
@@ -3887,6 +4038,7 @@ class NmrDpUtility:
                                                                                'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
                                                                                'larger-than': ['Angle_upper_linear_limit']}},
                                                                     {'name': 'Angle_target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                     'clear-bad-pattern': True,
                                                                      'range': ANGLE_RESTRAINT_RANGE,
                                                                      'group': {'member-with': ['Angle_lower_linear_limit',
                                                                                                'Angle_upper_linear_limit',
@@ -3896,8 +4048,10 @@ class NmrDpUtility:
                                                                                'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
                                                                                'larger-than': ['Angle_upper_bound_val', 'Angle_upper_linear_limit']}},
                                                                     {'name': 'Angle_target_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                     'clear-bad-pattern': True,
                                                                      'range': ANGLE_UNCERTAINTY_RANGE},
                                                                     {'name': 'Angle_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                     'clear-bad-pattern': True,
                                                                      'range': ANGLE_RESTRAINT_RANGE,
                                                                      'group': {'member-with': ['Angle_target_val',
                                                                                                'Angle_upper_linear_limit',
@@ -3908,6 +4062,7 @@ class NmrDpUtility:
                                                                                'smaller-than': None,
                                                                                'larger-than': ['Angle_lower_bound_val', 'Angle_upper_bound_val', 'Angle_upper_linear_limit']}},
                                                                     {'name': 'Angle_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                     'clear-bad-pattern': True,
                                                                      'range': ANGLE_RESTRAINT_RANGE,
                                                                      'group': {'member-with': ['Angle_target_val',
                                                                                                'Angle_lower_linear_limit',
@@ -3919,6 +4074,7 @@ class NmrDpUtility:
                                                                                'larger-than': None}}
                                                                     ],
                                                 'rdc_restraint': [{'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                   'clear-bad-pattern': True,
                                                                    'range': RDC_RESTRAINT_RANGE,
                                                                    'group': {'member-with': ['RDC_lower_linear_limit',
                                                                                              'RDC_upper_linear_limit',
@@ -3928,8 +4084,10 @@ class NmrDpUtility:
                                                                              'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                              'larger-than': ['RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                                   {'name': 'Target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
+                                                                   'clear-bad-pattern': True,
                                                                    'range': RDC_UNCERTAINTY_RANGE},
                                                                   {'name': 'RDC_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                   'clear-bad-pattern': True,
                                                                    'range': RDC_RESTRAINT_RANGE,
                                                                    'group': {'member-with': ['Target_value',
                                                                                              'RDC_lower_linear_limit',
@@ -3939,6 +4097,7 @@ class NmrDpUtility:
                                                                              'smaller-than': ['RDC_lower_linear_limit'],
                                                                              'larger-than': ['RDC_upper_boud', 'RDC_upper_linear_limit']}},
                                                                   {'name': 'RDC_upper_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                   'clear-bad-pattern': True,
                                                                    'range': RDC_RESTRAINT_RANGE,
                                                                    'group': {'member-with': ['Target_value',
                                                                                              'RDC_lower_linear_limit',
@@ -3948,20 +4107,24 @@ class NmrDpUtility:
                                                                              'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                              'larger-than': ['RDC_upper_linear_limit']}},
                                                                   {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                   'clear-bad-pattern': True,
                                                                    'range': RDC_RESTRAINT_RANGE,
                                                                    'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'smaller-than': None,
                                                                              'larger-than': ['RDC_lower_bound', 'RDC_upper_bound', 'RDC_upper_linear_limit']}},
                                                                   {'name': 'RDC_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                   'clear-bad-pattern': True,
                                                                    'range': RDC_RESTRAINT_RANGE,
                                                                    'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'coexist-with': None,  # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                              'smaller-than': None,
                                                                              'larger-than': ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound']}},
                                                                   {'name': 'RDC_val', 'type': 'range-float', 'mandatory': False,
+                                                                   'clear-bad-pattern': True,
                                                                    'range': RDC_RESTRAINT_RANGE},
                                                                   {'name': 'RDC_val_err', 'type': 'range-float', 'mandatory': False,
+                                                                   'clear-bad-pattern': True,
                                                                    'range': RDC_UNCERTAINTY_RANGE}
                                                                   ],
                                                 'spectral_peak': None,
@@ -4027,6 +4190,7 @@ class NmrDpUtility:
 
         # loop data items for spectral peak
         self.pk_data_items = {'nef': [{'name': 'position_uncertainty_%s', 'type': 'range-float', 'mandatory': False,
+                                       'clear-bad-pattern': True,
                                        'range': CS_UNCERTAINTY_RANGE},
                                       {'name': 'chain_code_%s', 'type': 'str', 'mandatory': False,
                                        'relax-key-if-exist': True},
@@ -4041,6 +4205,7 @@ class NmrDpUtility:
                                        'relax-key-if-exist': True,
                                        'clear-bad-pattern': True}],
                               'nmr-star': [{'name': 'Position_uncertainty_%s', 'type': 'range-float', 'mandatory': False,
+                                            'clear-bad-pattern': True,
                                             'range': CS_UNCERTAINTY_RANGE},
                                            {'name': 'Entity_assembly_ID_%s', 'type': 'positive-int-as-str', 'mandatory': False,
                                             'default': '1', 'default-from': 'Auth_asym_ID_%s',
@@ -6474,7 +6639,7 @@ class NmrDpUtility:
                         self.__bmrb_id = None
 
                 if self.__bmrb_id is not None:
-                    self.__entry_id = self.__bmrb_id
+                    self.__entry_id = self.__bmrb_id.strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 
         entity_name_item = next(item for item in self.sf_tag_items['nmr-star']['entity'] if item['name'] == 'Name')
         entity_name_item['mandatory'] = self.__bmrb_only
@@ -6582,13 +6747,13 @@ class NmrDpUtility:
                 self.rmsd_overlaid_exactly = self.__inputParamDict['rmsd_overlaid_exactly']
 
         if has_key_value(self.__outputParamDict, 'entry_id'):
-            self.__entry_id = self.__outputParamDict['entry_id']
+            self.__entry_id = self.__outputParamDict['entry_id'].strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 
-        if has_key_value(self.__outputParamDict, 'insert_entry_id_to_loops'):
-            if isinstance(self.__outputParamDict['insert_entry_id_to_loops'], bool):
-                self.__insert_entry_id_to_loops = self.__outputParamDict['insert_entry_id_to_loops']
-            else:
-                self.__insert_entry_id_to_loops = self.__outputParamDict['insert_entry_id_to_loops'] in trueValue
+        # if has_key_value(self.__outputParamDict, 'insert_entry_id_to_loops'):
+        #     if isinstance(self.__outputParamDict['insert_entry_id_to_loops'], bool):
+        #         self.__insert_entry_id_to_loops = self.__outputParamDict['insert_entry_id_to_loops']
+        #     else:
+        #         self.__insert_entry_id_to_loops = self.__outputParamDict['insert_entry_id_to_loops'] in trueValue
 
         if has_key_value(self.__outputParamDict, 'retain_original'):
             if isinstance(self.__outputParamDict['retain_original'], bool):
@@ -17296,7 +17461,7 @@ class NmrDpUtility:
 
                 for chain_id in chain_ids:
                     ps = next(ps for ps in polymer_sequence if ps['chain_id'] == chain_id)
-                    if 'alt_comp_id' not in ps:
+                    if 'alt_comp_id' not in ps or len(ps['alt_comp_id']) != len(ps['comp_id']):
                         ps['alt_comp_id'] = copy.deepcopy(ps['comp_id'])
                     for ext_seq_key in ext_seq_key_set:
                         if ext_seq_key[0] != chain_id:
@@ -19053,7 +19218,7 @@ class NmrDpUtility:
         """ Return whether a given atom_id uses NMR conventional atom name.
         """
 
-        return ((atom_id == 'HN' and self.__csStat.peptideLike(comp_id))
+        return ((atom_id in ('HN', 'CO') and self.__csStat.peptideLike(comp_id))
                 or atom_id.startswith('Q') or atom_id.startswith('M')
                 or atom_id.endswith('%') or atom_id.endswith('#')
                 or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)
@@ -19166,9 +19331,13 @@ class NmrDpUtility:
                         if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                             continue
 
-                        if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
-                            self.__fixAtomNomenclature(comp_id, {'HN': 'H'})
-                            continue
+                        if self.__csStat.peptideLike(comp_id):
+                            if atom_id.upper() == 'HN':
+                                self.__fixAtomNomenclature(comp_id, {atom_id: 'H'})
+                                continue
+                            if atom_id.upper() == 'CO':
+                                self.__fixAtomNomenclature(comp_id, {atom_id: 'C'})
+                                continue
 
                         atom_id_ = atom_id
 
@@ -19302,9 +19471,13 @@ class NmrDpUtility:
                             if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                 continue
 
-                            if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
-                                self.__fixAtomNomenclature(comp_id, {'HN': 'H'})
-                                continue
+                            if self.__csStat.peptideLike(comp_id):
+                                if atom_id.upper() == 'HN':
+                                    self.__fixAtomNomenclature(comp_id, {atom_id: 'H'})
+                                    continue
+                                if atom_id.upper() == 'CO':
+                                    self.__fixAtomNomenclature(comp_id, {atom_id: 'C'})
+                                    continue
 
                             atom_id_ = atom_id
 
@@ -19952,17 +20125,19 @@ class NmrDpUtility:
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
+            modified = False
+
             if self.__star_data_type[fileListId] == 'Loop':
                 sf = self.__star_data[fileListId]
                 sf_framecode = ''
 
-                self.__validateAmbigCodeOfCsLoop__(file_name, sf, sf_framecode, lp_category)
+                modified |= self.__validateAmbigCodeOfCsLoop__(file_name, sf, sf_framecode, lp_category)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
                 sf = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                self.__validateAmbigCodeOfCsLoop__(file_name, sf, sf_framecode, lp_category)
+                modified |= self.__validateAmbigCodeOfCsLoop__(file_name, sf, sf_framecode, lp_category)
 
             else:
 
@@ -19972,7 +20147,10 @@ class NmrDpUtility:
                     if not any(loop for loop in sf.loops if loop.category == lp_category):
                         continue
 
-                    self.__validateAmbigCodeOfCsLoop__(file_name, sf, sf_framecode, lp_category)
+                    modified |= self.__validateAmbigCodeOfCsLoop__(file_name, sf, sf_framecode, lp_category)
+
+            if modified:
+                self.__depositNmrData()
 
         return not self.report.isError()
 
@@ -19981,6 +20159,9 @@ class NmrDpUtility:
         """
 
         try:
+
+            need_set_id = False
+            valid = True
 
             a_codes = self.__nefT.get_star_ambig_code_from_cs_loop(sf)[0]
 
@@ -19995,7 +20176,7 @@ class NmrDpUtility:
                     comp_ids_wo_ambig_code.append(comp_id)
 
                 elif ambig_code == 1 or ambig_code >= 4:
-                    pass
+                    need_set_id |= ambig_code in (4, 5, 6, 9)
 
                 # ambig_code is 2 (geminal atoms) or 3 (aromatic ring atoms in opposite side)
                 else:
@@ -20042,6 +20223,8 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ Warning  - {warn}\n")
 
+                                    valid = False
+
                             else:
 
                                 if self.__remediation_mode:
@@ -20073,6 +20256,8 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ Error  - {err}\n")
 
+                                    valid = False
+
             if len(comp_ids_wo_ambig_code) > 0:
 
                 warn = f"Missing ambiguity code for the following residues {comp_ids_wo_ambig_code}."
@@ -20084,6 +20269,114 @@ class NmrDpUtility:
 
                 if self.__verbose:
                     self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ Warning  - {warn}\n")
+
+                valid = False
+
+            if need_set_id and valid:
+
+                list_id = get_first_sf_tag(sf, 'ID')
+
+                try:
+
+                    if __pynmrstar_v3_2__:
+                        lp = sf.get_loop(lp_category)
+                    else:
+                        lp = sf.get_loop_by_category(lp_category)
+
+                    ambig_code_col = lp.tags.index('Ambiguity_code')
+                    ambig_set_id_col = lp.tags.index('Ambiguity_set_ID')
+
+                    id_col = lp.tags.index('ID')
+                    chain_id_col = lp.tags.index('Entity_assembly_ID')
+                    seq_id_col = lp.tags.index('Comp_index_ID')
+                    atom_type_col = lp.tags.index('Atom_type')
+
+                    aux_lp_category = self.aux_lp_categories['nmr-star']['chem_shift'][0]
+
+                    if any(aux_loop for aux_loop in sf if aux_loop.category == aux_lp_category):
+
+                        if __pynmrstar_v3_2__:
+                            aux_loop = sf.get_loop(aux_lp_category)
+                        else:
+                            aux_loop = sf.get_loop_by_category(aux_lp_category)
+
+                        del sf[aux_loop]
+
+                    aux_lp = pynmrstar.Loop.from_scratch(aux_lp_category)
+
+                    aux_items = ['Ambiguous_shift_set_ID', 'Atom_chem_shift_ID', 'Entry_ID', 'Assigned_chem_shift_list_ID']
+
+                    aux_tags = [aux_lp_category + '.' + item for item in aux_items]
+
+                    for tag in aux_tags:
+                        aux_lp.add_tag(tag)
+
+                    inter_residue_seq_id = {}
+
+                    for _row in lp:
+
+                        ambig_code = _row[ambig_code_col]
+
+                        if ambig_code in emptyValue:
+                            continue
+
+                        if isinstance(ambig_code, str):
+                            ambig_code = int(ambig_code)
+
+                        if ambig_code not in (5, 6, 9):
+                            continue
+
+                        chain_id = _row[chain_id_col]
+                        seq_id = _row[seq_id_col]
+
+                        if chain_id not in inter_residue_seq_id:
+                            inter_residue_seq_id[chain_id] = set()
+
+                        inter_residue_seq_id[chain_id].add(seq_id)
+
+                    aux_index_id = 0
+                    ambig_shift_set_id = {}
+
+                    for _idx, _row in enumerate(lp):
+
+                        ambig_code = _row[ambig_code_col]
+
+                        if ambig_code in emptyValue:
+                            continue
+
+                        if isinstance(ambig_code, str):
+                            ambig_code = int(ambig_code)
+
+                        if ambig_code not in (4, 5, 6, 9):
+                            continue
+
+                        chain_id = _row[chain_id_col]
+                        seq_id = _row[seq_id_col]
+                        atom_type = _row[atom_type_col]
+
+                        if ambig_code == 4:
+                            key = (chain_id, str(seq_id), atom_type, ambig_code)
+                        else:
+                            key = (chain_id, str(inter_residue_seq_id[chain_id]), atom_type, ambig_code)
+
+                        if key not in ambig_shift_set_id:
+                            aux_index_id += 1
+                            ambig_shift_set_id[key] = aux_index_id
+
+                        lp.data[_idx][ambig_set_id_col] = ambig_shift_set_id[key]
+
+                        _aux_row = [None] * 4
+                        _aux_row[0], _aux_row[1], _aux_row[2], _aux_row[3] =\
+                            ambig_shift_set_id[key], _row[id_col], self.__entry_id, list_id
+
+                        aux_lp.add_data(_aux_row)
+
+                    if len(aux_lp) > 0:
+                        sf.add_loop(aux_lp)
+                        return True
+
+                except (KeyError, IndexError, ValueError):
+                    pass
 
         except LookupError as e:
 
@@ -20143,6 +20436,8 @@ class NmrDpUtility:
 
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ Error  - {str(e)}\n")
+
+        return False
 
     def __testIndexConsistency(self):
         """ Perform consistency test on index of interesting loops.
@@ -23582,7 +23877,7 @@ class NmrDpUtility:
                             if allowed_ambig_code == 1:
                                 pass
                                 # """
-                                # @deprecated: This functionality has been inherited by __remediateCsLoop()
+                                # @deprecated: This functionality has been replaced by __remediateCsLoop()
                                 # try:
                                 #
                                 #     _row = next(_row for _row in lp_data
@@ -24083,6 +24378,11 @@ class NmrDpUtility:
 
         __errors = self.report.getTotalErrors()
 
+        content_subtype = 'chem_shift'
+
+        if not self.__native_combined:
+            self.__lp_data[content_subtype] = []
+
         for fileListId in range(self.__file_path_list_len):
 
             input_source = self.report.input_sources[fileListId]
@@ -24093,8 +24393,6 @@ class NmrDpUtility:
 
             if input_source_dic['content_subtype'] is None:
                 continue
-
-            content_subtype = 'chem_shift'
 
             if content_subtype not in input_source_dic['content_subtype']:
                 continue
@@ -24110,7 +24408,7 @@ class NmrDpUtility:
                 sf = self.__star_data[fileListId]
                 sf_framecode = ''
 
-                if original_file_name not in emptyValue:
+                if file_type == 'nmr-star' and original_file_name not in emptyValue:
                     set_sf_tag(sf, 'Data_file_name', original_file_name)
 
                 modified |= self.__remediateCsLoop__(fileListId, file_type, content_subtype, sf, list_id, sf_framecode, lp_category)
@@ -24119,15 +24417,16 @@ class NmrDpUtility:
                 sf = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                data_file_name = get_first_sf_tag(sf, 'Data_file_name')
-                len_data_file_name = len(data_file_name)
-                if len_data_file_name > 0:
-                    data_file_name.strip("'").strip('"')
-                    _len_data_file_name = len(data_file_name)
-                    if _len_data_file_name > 0 and _len_data_file_name != len_data_file_name:
-                        set_sf_tag(sf, 'Data_file_name', data_file_name)
-                elif original_file_name not in emptyValue:
-                    set_sf_tag(sf, 'Data_file_name', original_file_name)
+                if file_type == 'nmr-star':
+                    data_file_name = get_first_sf_tag(sf, 'Data_file_name')
+                    len_data_file_name = len(data_file_name)
+                    if len_data_file_name > 0:
+                        data_file_name.strip("'").strip('"')
+                        _len_data_file_name = len(data_file_name)
+                        if _len_data_file_name > 0 and _len_data_file_name != len_data_file_name:
+                            set_sf_tag(sf, 'Data_file_name', data_file_name)
+                    elif original_file_name not in emptyValue:
+                        set_sf_tag(sf, 'Data_file_name', original_file_name)
 
                 modified |= self.__remediateCsLoop__(fileListId, file_type, content_subtype, sf, list_id, sf_framecode, lp_category)
 
@@ -24139,15 +24438,16 @@ class NmrDpUtility:
                     if not any(loop for loop in sf.loops if loop.category == lp_category):
                         continue
 
-                    data_file_name = get_first_sf_tag(sf, 'Data_file_name')
-                    len_data_file_name = len(data_file_name)
-                    if len_data_file_name > 0:
-                        data_file_name.strip("'").strip('"')
-                        _len_data_file_name = len(data_file_name)
-                        if _len_data_file_name > 0 and _len_data_file_name != len_data_file_name:
-                            set_sf_tag(sf, 'Data_file_name', data_file_name)
-                    elif original_file_name not in emptyValue:
-                        set_sf_tag(sf, 'Data_file_name', original_file_name)
+                    if file_type == 'nmr-star':
+                        data_file_name = get_first_sf_tag(sf, 'Data_file_name')
+                        len_data_file_name = len(data_file_name)
+                        if len_data_file_name > 0:
+                            data_file_name.strip("'").strip('"')
+                            _len_data_file_name = len(data_file_name)
+                            if _len_data_file_name > 0 and _len_data_file_name != len_data_file_name:
+                                set_sf_tag(sf, 'Data_file_name', data_file_name)
+                        elif original_file_name not in emptyValue:
+                            set_sf_tag(sf, 'Data_file_name', original_file_name)
 
                     modified |= self.__remediateCsLoop__(fileListId, file_type, content_subtype, sf, list_id, sf_framecode, lp_category)
 
@@ -26856,8 +27156,6 @@ class NmrDpUtility:
                     for tag in aux_tags:
                         aux_lp.add_tag(tag)
 
-                    aux_index_id = 1
-
                     inter_residue_seq_id = {}
 
                     for _row in lp:
@@ -26888,9 +27186,10 @@ class NmrDpUtility:
                                     if _row[1] == chain_id and _row[3] == seq_id:
                                         _row[12] = 4
 
+                    aux_index_id = 0
                     ambig_shift_set_id = {}
 
-                    for _row in lp:
+                    for _idx, _row in enumerate(lp):
 
                         if _row[12] not in (4, 5):
                             continue
@@ -26899,8 +27198,6 @@ class NmrDpUtility:
 
                         chain_id = _row[1]
                         seq_id = _row[3]
-                        comp_id = _row[5]
-                        atom_id = _row[6]
                         atom_type = _row[7]
 
                         if ambig_code == 4:
@@ -26909,10 +27206,10 @@ class NmrDpUtility:
                             key = (chain_id, str(inter_residue_seq_id[chain_id]), atom_type, ambig_code)
 
                         if key not in ambig_shift_set_id:
-                            ambig_shift_set_id[key] = aux_index_id
                             aux_index_id += 1
+                            ambig_shift_set_id[key] = aux_index_id
 
-                        _row[13] = ambig_shift_set_id[key]
+                        lp.data[_idx][13] = ambig_shift_set_id[key]
 
                         _aux_row = [None] * 4
                         _aux_row[0], _aux_row[1], _aux_row[2], _aux_row[3] =\
@@ -26934,6 +27231,16 @@ class NmrDpUtility:
 
         if aux_lp is not None and len(aux_lp) > 0:
             sf.add_loop(aux_lp)
+
+        if file_type == 'nmr-star':
+            val = get_first_sf_tag(sf, 'ID')
+            if (isinstance(val, int) and val == list_id) or (isinstance(val, str) and val.isdigit() and int(val) == list_id):
+                pass
+            else:
+                set_sf_tag(sf, 'ID', list_id)
+
+        if not self.__native_combined:
+            self.__testDataConsistencyInLoop__(file_list_id, file_name, file_type, content_subtype, sf, sf_framecode, lp_category, list_id)
 
         return True
 
@@ -27919,7 +28226,7 @@ class NmrDpUtility:
 
                                         if abs(position - value) > error and sp_widths[d] is not None:
 
-                                            if CS_RANGE_MIN < sp_width[d] < CS_RANGE_MAX:
+                                            if CS_RANGE_MIN < sp_widths[d] < CS_RANGE_MAX:
 
                                                 err = f"[Check row of {index_tag} {row[index_tag]}] "\
                                                     f"Peak position of spectral peak {position_names[d]} {position} ("\
@@ -28414,7 +28721,7 @@ class NmrDpUtility:
 
                                     if abs(position - value) > error and sp_widths[d] is not None:
 
-                                        if CS_RANGE_MIN < sp_width[d] < CS_RANGE_MAX:
+                                        if CS_RANGE_MIN < sp_widths[d] < CS_RANGE_MAX:
 
                                             err = f"[Check row of {pk_id_name} {row[pk_id_name]}] Peak position of spectral peak {cs_value_name} {position} ("\
                                                 + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,
@@ -32014,6 +32321,51 @@ class NmrDpUtility:
 
         fileListId = self.__file_path_list_len
 
+        def deal_aux_warn_message(listener):
+
+            if listener.warningMessage is not None:
+
+                for warn in listener.warningMessage:
+
+                    if warn.startswith('[Concatenated sequence]'):
+                        self.report.warning.appendDescription('concatenated_sequence',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Sequence mismatch]'):
+                        self.report.warning.appendDescription('sequence_mismatch',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Unknown atom name]'):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Unknown residue name]'):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    else:
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+
         for ar in self.__inputParamDict[ar_file_path_list]:
 
             file_path = ar['file_name']
@@ -32055,48 +32407,7 @@ class NmrDpUtility:
 
                     if listener is not None:
 
-                        if listener.warningMessage is not None:
-
-                            for warn in listener.warningMessage:
-
-                                if warn.startswith('[Concatenated sequence]'):
-                                    self.report.warning.appendDescription('concatenated_sequence',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                elif warn.startswith('[Sequence mismatch]'):
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                elif warn.startswith('[Unknown atom name]'):
-                                    self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                elif warn.startswith('[Unknown residue name]'):
-                                    self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                else:
-                                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                        deal_aux_warn_message(listener)
 
                         amberAtomNumberDict = listener.getAtomNumberDict()
 
@@ -32134,48 +32445,7 @@ class NmrDpUtility:
 
                     if listener is not None:
 
-                        if listener.warningMessage is not None:
-
-                            for warn in listener.warningMessage:
-
-                                if warn.startswith('[Concatenated sequence]'):
-                                    self.report.warning.appendDescription('concatenated_sequence',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                elif warn.startswith('[Sequence mismatch]'):
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                elif warn.startswith('[Unknown atom name]'):
-                                    self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                elif warn.startswith('[Unknown residue name]'):
-                                    self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                else:
-                                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                        deal_aux_warn_message(listener)
 
                         gromacsAtomNumberDict = listener.getAtomNumberDict()
 
@@ -32356,6 +32626,195 @@ class NmrDpUtility:
 
         reasons_dict = {}
 
+        def deal_res_warn_message(listener):
+
+            if listener.warningMessage is not None:
+
+                for warn in listener.warningMessage:
+
+                    if warn.startswith('[Concatenated sequence]'):
+                        self.report.warning.appendDescription('concatenated_sequence',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Sequence mismatch]'):
+                        self.report.error.appendDescription('sequence_mismatch',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Atom not found]'):
+                        if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                            self.report.error.appendDescription('atom_not_found',
+                                                                {'file_name': file_name, 'description': warn})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                        else:
+                            self.report.warning.appendDescription('sequence_mismatch',
+                                                                  {'file_name': file_name, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Hydrogen not instantiated]'):
+                        if self.__remediation_mode:
+                            self.report.warning.appendDescription('hydrogen_not_instantiated',
+                                                                  {'file_name': file_name, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                        else:
+                            self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                {'file_name': file_name, 'description': warn})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Coordinate issue]'):
+                        self.report.error.appendDescription('coordinate_issue',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Invalid atom nomenclature]'):
+                        self.report.error.appendDescription('invalid_atom_nomenclature',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                        self.report.error.appendDescription('invalid_data',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
+
+                    elif warn.startswith('[Sequence mismatch warning]'):
+                        self.report.warning.appendDescription('sequence_mismatch',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                        if seq_mismatch_warning_pattern.match(warn):
+                            g = seq_mismatch_warning_pattern.search(warn).groups()
+                            d = {'auth_chain_id': g[2],
+                                 'auth_seq_id': int(g[0]),
+                                 'auth_comp_id': g[1]}
+                            if d not in self.__nmr_ext_poly_seq:
+                                self.__nmr_ext_poly_seq.append(d)
+
+                    elif warn.startswith('[Missing data]'):
+                        self.report.error.appendDescription('missing_data',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
+
+                    elif warn.startswith('[Enum mismatch]'):
+                        self.report.warning.appendDescription('enum_mismatch',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Enum mismatch ignorable]'):
+                        self.report.warning.appendDescription('enum_mismatch_ignorable',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Range value error]') and not self.__remediation_mode:
+                        self.report.error.appendDescription('anomalous_data',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
+
+                    elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Insufficient atom selection]') or warn.startswith('[Insufficient angle selection]'):
+                        self.report.warning.appendDescription('insufficient_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Redundant data]'):
+                        self.report.warning.appendDescription('redundant_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Ambiguous dihedral angle]'):
+                        self.report.warning.appendDescription('ambiguous_dihedral_angle',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Anomalous RDC vector]'):
+                        self.report.warning.appendDescription('anomalous_rdc_vector',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Anomalous data]'):
+                        self.report.warning.appendDescription('anomalous_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Unsupported data]'):
+                        self.report.warning.appendDescription('unsupported_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    else:
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+
         for input_source, ar, _ in ar_file_order:
 
             file_path = ar['file_name']
@@ -32482,128 +32941,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Insufficient atom selection]'):
-                                self.report.warning.appendDescription('insufficient_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Ambiguous dihedral angle]'):
-                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Anomalous RDC vector]'):
-                                self.report.warning.appendDescription('anomalous_rdc_vector',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Unsupported data]'):
-                                self.report.warning.appendDescription('unsupported_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -32695,128 +33033,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Insufficient atom selection]'):
-                                self.report.warning.appendDescription('insufficient_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Ambiguous dihedral angle]'):
-                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Anomalous RDC vector]'):
-                                self.report.warning.appendDescription('anomalous_rdc_vector',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Unsupported data]'):
-                                self.report.warning.appendDescription('unsupported_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -32889,104 +33106,7 @@ class NmrDpUtility:
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Missing data]'):
-                                self.report.error.appendDescription('missing_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Redundant data]'):
-                                self.report.warning.appendDescription('redundant_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     cur_dict = listener.getAtomNumberDict()
                     if cur_dict is not None:
@@ -33105,135 +33225,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom nomenclature]'):
-                                self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch warning]'):
-                                self.report.warning.appendDescription('sequence_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                if seq_mismatch_warning_pattern.match(warn):
-                                    g = seq_mismatch_warning_pattern.search(warn).groups()
-                                    d = {'auth_chain_id': g[2],
-                                         'auth_seq_id': int(g[0]),
-                                         'auth_comp_id': g[1]}
-                                    if d not in self.__nmr_ext_poly_seq:
-                                        self.__nmr_ext_poly_seq.append(d)
-
-                            elif warn.startswith('[Insufficient angle selection]'):
-                                self.report.warning.appendDescription('insufficient_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """ defer to sequence alignment error
-                            # elif warn.startswith('[Unmatched residue name]'):
-                            #     self.report.warning.appendDescription('conflicted_mr_data',
-                            #                                           {'file_name': file_name, 'description': warn})
-                            #     self.report.setWarning()
-
-                            #     if self.__verbose:
-                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """
-                            elif warn.startswith('[Ambiguous dihedral angle]'):
-                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -33328,136 +33320,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom nomenclature]'):
-                                self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch warning]'):
-                                self.report.warning.appendDescription('sequence_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                if seq_mismatch_warning_pattern.match(warn):
-                                    g = seq_mismatch_warning_pattern.search(warn).groups()
-                                    d = {'auth_chain_id': g[2],
-                                         'auth_seq_id': int(g[0]),
-                                         'auth_comp_id': g[1]}
-                                    if d not in self.__nmr_ext_poly_seq:
-                                        self.__nmr_ext_poly_seq.append(d)
-
-                            elif warn.startswith('[Enum mismatch]'):
-                                self.report.warning.appendDescription('enum_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Ambiguous dihedral angle]'):
-                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Unsupported data]'):
-                                self.report.warning.appendDescription('unsupported_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -33524,135 +33387,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom nomenclature]'):
-                                self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch warning]'):
-                                self.report.warning.appendDescription('sequence_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                if seq_mismatch_warning_pattern.match(warn):
-                                    g = seq_mismatch_warning_pattern.search(warn).groups()
-                                    d = {'auth_chain_id': g[2],
-                                         'auth_seq_id': int(g[0]),
-                                         'auth_comp_id': g[1]}
-                                    if d not in self.__nmr_ext_poly_seq:
-                                        self.__nmr_ext_poly_seq.append(d)
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """ defer to sequence alignment error
-                            # elif warn.startswith('[Unmatched residue name]'):
-                            #     self.report.warning.appendDescription('conflicted_mr_data',
-                            #                                           {'file_name': file_name, 'description': warn})
-                            #     self.report.setWarning()
-
-                            #     if self.__verbose:
-                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """
-                            elif warn.startswith('[Ambiguous dihedral angle]'):
-                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -33698,96 +33433,7 @@ class NmrDpUtility:
 
                 if listener is not None:
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Missing data]'):
-                                self.report.error.appendDescription('missing_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -33854,135 +33500,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom nomenclature]'):
-                                self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch warning]'):
-                                self.report.warning.appendDescription('sequence_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                if seq_mismatch_warning_pattern.match(warn):
-                                    g = seq_mismatch_warning_pattern.search(warn).groups()
-                                    d = {'auth_chain_id': g[2],
-                                         'auth_seq_id': int(g[0]),
-                                         'auth_comp_id': g[1]}
-                                    if d not in self.__nmr_ext_poly_seq:
-                                        self.__nmr_ext_poly_seq.append(d)
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """ defer to sequence alignment error
-                            # elif warn.startswith('[Unmatched residue name]'):
-                            #     self.report.warning.appendDescription('conflicted_mr_data',
-                            #                                           {'file_name': file_name, 'description': warn})
-                            #     self.report.setWarning()
-
-                            #     if self.__verbose:
-                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """
-                            elif warn.startswith('[Ambiguous dihedral angle]'):
-                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -34049,128 +33567,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom nomenclature]'):
-                                self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch warning]'):
-                                self.report.warning.appendDescription('sequence_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                if seq_mismatch_warning_pattern.match(warn):
-                                    g = seq_mismatch_warning_pattern.search(warn).groups()
-                                    d = {'auth_chain_id': g[2],
-                                         'auth_seq_id': int(g[0]),
-                                         'auth_comp_id': g[1]}
-                                    if d not in self.__nmr_ext_poly_seq:
-                                        self.__nmr_ext_poly_seq.append(d)
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """ defer to sequence alignment error
-                            # elif warn.startswith('[Unmatched residue name]'):
-                            #     self.report.warning.appendDescription('conflicted_mr_data',
-                            #                                           {'file_name': file_name, 'description': warn})
-                            #     self.report.setWarning()
-
-                            #     if self.__verbose:
-                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -34237,128 +33634,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom nomenclature]'):
-                                self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch warning]'):
-                                self.report.warning.appendDescription('sequence_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                if seq_mismatch_warning_pattern.match(warn):
-                                    g = seq_mismatch_warning_pattern.search(warn).groups()
-                                    d = {'auth_chain_id': g[2],
-                                         'auth_seq_id': int(g[0]),
-                                         'auth_comp_id': g[1]}
-                                    if d not in self.__nmr_ext_poly_seq:
-                                        self.__nmr_ext_poly_seq.append(d)
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """ defer to sequence alignment error
-                            # elif warn.startswith('[Unmatched residue name]'):
-                            #     self.report.warning.appendDescription('conflicted_mr_data',
-                            #                                           {'file_name': file_name, 'description': warn})
-                            #     self.report.setWarning()
-
-                            #     if self.__verbose:
-                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -34447,128 +33723,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Insufficient atom selection]'):
-                                self.report.warning.appendDescription('insufficient_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Ambiguous dihedral angle]'):
-                                self.report.warning.appendDescription('ambiguous_dihedral_angle',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Anomalous RDC vector]'):
-                                self.report.warning.appendDescription('anomalous_rdc_vector',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Unsupported data]'):
-                                self.report.warning.appendDescription('unsupported_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -34635,128 +33790,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                self.report.warning.appendDescription('concatenated_sequence',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Atom not found]'):
-                                if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                                    self.report.error.appendDescription('atom_not_found',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-                                else:
-                                    self.report.warning.appendDescription('sequence_mismatch',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Hydrogen not instantiated]'):
-                                if self.__remediation_mode:
-                                    self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                          {'file_name': file_name, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                                else:
-                                    self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                        {'file_name': file_name, 'description': warn})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom nomenclature]'):
-                                self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
-
-                            elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                self.report.error.appendDescription('invalid_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch warning]'):
-                                self.report.warning.appendDescription('sequence_mismatch',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                                if seq_mismatch_warning_pattern.match(warn):
-                                    g = seq_mismatch_warning_pattern.search(warn).groups()
-                                    d = {'auth_chain_id': g[2],
-                                         'auth_seq_id': int(g[0]),
-                                         'auth_comp_id': g[1]}
-                                    if d not in self.__nmr_ext_poly_seq:
-                                        self.__nmr_ext_poly_seq.append(d)
-
-                            elif warn.startswith('[Enum mismatch ignorable]'):
-                                self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                                self.report.error.appendDescription('anomalous_data',
-                                                                    {'file_name': file_name, 'description': warn})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
-
-                            elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                                self.report.warning.appendDescription('inconsistent_mr_data',
-                                                                      {'file_name': file_name, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """ defer to sequence alignment error
-                            # elif warn.startswith('[Unmatched residue name]'):
-                            #     self.report.warning.appendDescription('conflicted_mr_data',
-                            #                                           {'file_name': file_name, 'description': warn})
-                            #     self.report.setWarning()
-
-                            #     if self.__verbose:
-                            #         self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
-                            #     """
-                            else:
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                    deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -36234,7 +35268,7 @@ class NmrDpUtility:
                     prev_stats = self.report_prev.getNmrLegacyStatsOfExptlData(fileListId, content_subtype)
                     if prev_stats is not None:
                         stats[content_subtype] = prev_stats
-                    continue
+                        continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
@@ -41981,7 +41015,7 @@ class NmrDpUtility:
                 if len(entry) == 0 or ('id' not in entry[0]):
                     self.__entry_id = self.__entry_id__
                 else:
-                    self.__entry_id = entry[0]['id']
+                    self.__entry_id = entry[0]['id'].strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 
             exptl = self.__cR.getDictList('exptl')
 
@@ -53249,8 +52283,8 @@ class NmrDpUtility:
         if file_type == 'nef':
             return True
 
-        if self.__updateAtomChemShiftId():
-            self.__updateAmbiguousAtomChemShift()
+        # if self.__updateAtomChemShiftId():
+        #     self.__updateAmbiguousAtomChemShift()
 
         self.__c2S.set_entry_id(self.__star_data[0], self.__entry_id)
 
@@ -53386,228 +52420,230 @@ class NmrDpUtility:
             self.__depositNmrData()
 
         return True
-
-    def __updateAtomChemShiftId(self):
-        """ Update _Atom_chem_shift.ID.
-        """
-
-        if not self.__combined_mode:
-            return True
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if file_type == 'nef':
-            return False
-
-        if input_source_dic['content_subtype'] is None:
-            return False
-
-        content_subtype = 'chem_shift'
-
-        if content_subtype not in input_source_dic['content_subtype']:
-            return False
-
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = self.lp_categories[file_type][content_subtype]
-
-        for sf in self.__star_data[0].get_saveframes_by_category(sf_category):
-            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
-
-            if self.report.error.exists(file_name, sf_framecode):
-                continue
-
-            try:
-                if __pynmrstar_v3_2__:
-                    loop = sf.get_loop(lp_category)
-                else:
-                    loop = sf.get_loop_by_category(lp_category)
-            except KeyError:
-                continue
-
-            ambig_set_id_name = 'Ambiguity_set_ID'
-
-            try:
-                ambig_set_id_col = loop.tags.index(ambig_set_id_name)
-            except ValueError:
-                continue
-
-            ambig_set_id_dic = {}
-
-            if ambig_set_id_name in loop.tags:
-
-                ambig_set_ids = []
-
-                for row in loop:
-
-                    ambig_set_id = row[ambig_set_id_col]
-
-                    if ambig_set_id not in emptyValue:
-                        ambig_set_ids.append(str(ambig_set_id))
-
-                if len(ambig_set_ids) > 0:
-
-                    for idx, ambig_set_id in enumerate(ambig_set_ids, start=1):
-
-                        if ambig_set_id in ambig_set_id_dic:
-                            continue
-
-                        ambig_set_id_dic[ambig_set_id] = str(idx)
-
-            disordered_ambig_set_id = False
-
-            for k, v in ambig_set_id_dic.items():
-                if k != v:
-                    disordered_ambig_set_id = True
-                    break
-
-            if disordered_ambig_set_id:
-
-                for row in loop:
-                    ambig_set_id = row[ambig_set_id_col]
-
-                    if ambig_set_id not in emptyValue:
-                        row[ambig_set_id_col] = int(ambig_set_id_dic[str(ambig_set_id)])
-
-            if 'ID' in loop.tags:
-                loop.renumber_rows('ID')
-
-            else:
-
-                lp_tag = lp_category + '.ID'
-                err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
-
-                if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-
-                    if self.__rescue_mode:
-                        self.report.error.appendDescription('missing_mandatory_item',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                             'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__updateAtomChemShiftId() ++ LookupError  - "
-                                             f"{file_name} {sf_framecode} {lp_category} {err}\n")
-
-                lp = pynmrstar.Loop.from_scratch(lp_category)
-
-                lp.add_tag(lp_tag)
-
-                for tag in loop.tags:
-                    lp.add_tag(lp_category + '.' + tag)
-
-                for index, row in enumerate(loop, start=1):
-                    lp.add_data([str(index)] + row)
-
-                del sf[loop]
-
-                sf.add_loop(lp)
-
-        return True
-
-    def __updateAmbiguousAtomChemShift(self):
-        """ Update _Ambiguous_atom_chem_shift loops.
-        """
-
-        if not self.__combined_mode:
-            return True
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if file_type == 'nef':
-            return False
-
-        if input_source_dic['content_subtype'] is None:
-            return False
-
-        content_subtype = 'chem_shift'
-
-        if content_subtype not in input_source_dic['content_subtype']:
-            return False
-
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = self.lp_categories[file_type][content_subtype]
-
-        key_items = self.key_items[file_type][content_subtype]
-        data_items = self.data_items[file_type][content_subtype]
-
-        for sf in self.__star_data[0].get_saveframes_by_category(sf_category):
-            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
-
-            if self.report.error.exists(file_name, sf_framecode):
-                continue
-
-            lp_data = next((lp['data'] for lp in self.__lp_data[content_subtype]
-                            if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode), None)
-
-            if lp_data is None:
-
-                try:
-
-                    lp_data = self.__nefT.check_data(sf, lp_category, key_items, data_items, None, None, None,
-                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                     excl_missing_data=self.__excl_missing_data)[0]
-
-                    self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
-
-                except Exception:
-                    pass
-
-            if lp_data is not None:
-
-                ambig_set_id_name = 'Ambiguity_set_ID'
-
-                has_ambig_set_id = False
-
-                for row in lp_data:
-
-                    if ambig_set_id_name in row and row[ambig_set_id_name] not in emptyValue:
-                        has_ambig_set_id = True
-                        break
-
-                if has_ambig_set_id:
-
-                    aux_lp_category = '_Ambiguous_atom_chem_shift'
-
-                    for _loop in sf.loops:
-
-                        if _loop.category == aux_lp_category:
-                            del sf[_loop]
-                            break
-
-                    _loop = pynmrstar.Loop.from_scratch(aux_lp_category)
-                    _loop.add_tag(aux_lp_category + '.Ambiguous_shift_set_ID')
-                    _loop.add_tag(aux_lp_category + '.Assigned_chem_shift_list_ID')
-                    _loop.add_tag(aux_lp_category + '.Atom_chem_shift_ID')
-
-                    if self.__insert_entry_id_to_loops:
-                        _loop.add_tag(aux_lp_category + '.Entry_ID')
-
-                    for idx, row in enumerate(lp_data, start=1):
-
-                        if ambig_set_id_name in row and row[ambig_set_id_name] not in emptyValue:
-
-                            _row = []
-
-                            _row.append(row[ambig_set_id_name])
-                            _row.append(row['Assigned_chem_shift_list_ID'])
-                            _row.append(idx)
-
-                            if self.__insert_entry_id_to_loops:
-                                _row.append(self.__entry_id)
-
-                            _loop.add_data(_row)
-
-                    sf.add_loop(_loop)
-
-        return True
+    # """
+    # @deprecated: This functionality has been replaced by both __remediateCsLoop() and __testAmbigCodeOfCsLoop()
+    # def __updateAtomChemShiftId(self):
+    #     """ Update _Atom_chem_shift.ID.
+    #     """
+    #
+    #     if not self.__combined_mode:
+    #         return True
+    #
+    #     input_source = self.report.input_sources[0]
+    #     input_source_dic = input_source.get()
+    #
+    #     file_name = input_source_dic['file_name']
+    #     file_type = input_source_dic['file_type']
+    #
+    #     if file_type == 'nef':
+    #         return False
+    #
+    #     if input_source_dic['content_subtype'] is None:
+    #         return False
+    #
+    #     content_subtype = 'chem_shift'
+    #
+    #     if content_subtype not in input_source_dic['content_subtype']:
+    #         return False
+    #
+    #     sf_category = self.sf_categories[file_type][content_subtype]
+    #     lp_category = self.lp_categories[file_type][content_subtype]
+    #
+    #     for sf in self.__star_data[0].get_saveframes_by_category(sf_category):
+    #         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+    #
+    #         if self.report.error.exists(file_name, sf_framecode):
+    #             continue
+    #
+    #         try:
+    #             if __pynmrstar_v3_2__:
+    #                 loop = sf.get_loop(lp_category)
+    #             else:
+    #                 loop = sf.get_loop_by_category(lp_category)
+    #         except KeyError:
+    #             continue
+    #
+    #         ambig_set_id_name = 'Ambiguity_set_ID'
+    #
+    #         try:
+    #             ambig_set_id_col = loop.tags.index(ambig_set_id_name)
+    #         except ValueError:
+    #             continue
+    #
+    #         ambig_set_id_dic = {}
+    #
+    #         if ambig_set_id_name in loop.tags:
+    #
+    #             ambig_set_ids = []
+    #
+    #             for row in loop:
+    #
+    #                 ambig_set_id = row[ambig_set_id_col]
+    #
+    #                 if ambig_set_id not in emptyValue:
+    #                     ambig_set_ids.append(str(ambig_set_id))
+    #
+    #             if len(ambig_set_ids) > 0:
+    #
+    #                 for idx, ambig_set_id in enumerate(ambig_set_ids, start=1):
+    #
+    #                     if ambig_set_id in ambig_set_id_dic:
+    #                         continue
+    #
+    #                     ambig_set_id_dic[ambig_set_id] = str(idx)
+    #
+    #         disordered_ambig_set_id = False
+    #
+    #         for k, v in ambig_set_id_dic.items():
+    #             if k != v:
+    #                 disordered_ambig_set_id = True
+    #                 break
+    #
+    #         if disordered_ambig_set_id:
+    #
+    #             for row in loop:
+    #                 ambig_set_id = row[ambig_set_id_col]
+    #
+    #                 if ambig_set_id not in emptyValue:
+    #                     row[ambig_set_id_col] = int(ambig_set_id_dic[str(ambig_set_id)])
+    #
+    #         if 'ID' in loop.tags:
+    #             loop.renumber_rows('ID')
+    #
+    #         else:
+    #
+    #             lp_tag = lp_category + '.ID'
+    #             err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
+    #
+    #             if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+    #
+    #                 if self.__rescue_mode:
+    #                     self.report.error.appendDescription('missing_mandatory_item',
+    #                                                         {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+    #                                                          'description': err})
+    #                     self.report.setError()
+    #
+    #                     if self.__verbose:
+    #                         self.__lfh.write("+NmrDpUtility.__updateAtomChemShiftId() ++ LookupError  - "
+    #                                          f"{file_name} {sf_framecode} {lp_category} {err}\n")
+    #
+    #             lp = pynmrstar.Loop.from_scratch(lp_category)
+    #
+    #             lp.add_tag(lp_tag)
+    #
+    #             for tag in loop.tags:
+    #                 lp.add_tag(lp_category + '.' + tag)
+    #
+    #             for index, row in enumerate(loop, start=1):
+    #                 lp.add_data([str(index)] + row)
+    #
+    #             del sf[loop]
+    #
+    #             sf.add_loop(lp)
+    #
+    #     return True
+    #
+    # def __updateAmbiguousAtomChemShift(self):
+    #     """ Update _Ambiguous_atom_chem_shift loops.
+    #     """
+    #
+    #     if not self.__combined_mode:
+    #         return True
+    #
+    #     input_source = self.report.input_sources[0]
+    #     input_source_dic = input_source.get()
+    #
+    #     file_name = input_source_dic['file_name']
+    #     file_type = input_source_dic['file_type']
+    #
+    #     if file_type == 'nef':
+    #         return False
+    #
+    #     if input_source_dic['content_subtype'] is None:
+    #         return False
+    #
+    #     content_subtype = 'chem_shift'
+    #
+    #     if content_subtype not in input_source_dic['content_subtype']:
+    #         return False
+    #
+    #     sf_category = self.sf_categories[file_type][content_subtype]
+    #     lp_category = self.lp_categories[file_type][content_subtype]
+    #
+    #     key_items = self.key_items[file_type][content_subtype]
+    #     data_items = self.data_items[file_type][content_subtype]
+    #
+    #     for sf in self.__star_data[0].get_saveframes_by_category(sf_category):
+    #         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+    #
+    #         if self.report.error.exists(file_name, sf_framecode):
+    #             continue
+    #
+    #         lp_data = next((lp['data'] for lp in self.__lp_data[content_subtype]
+    #                         if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode), None)
+    #
+    #         if lp_data is None:
+    #
+    #             try:
+    #
+    #                 lp_data = self.__nefT.check_data(sf, lp_category, key_items, data_items, None, None, None,
+    #                                                  enforce_allowed_tags=(file_type == 'nmr-star'),
+    #                                                  excl_missing_data=self.__excl_missing_data)[0]
+    #
+    #                 self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
+    #
+    #             except Exception:
+    #                 pass
+    #
+    #         if lp_data is not None:
+    #
+    #             ambig_set_id_name = 'Ambiguity_set_ID'
+    #
+    #             has_ambig_set_id = False
+    #
+    #             for row in lp_data:
+    #
+    #                 if ambig_set_id_name in row and row[ambig_set_id_name] not in emptyValue:
+    #                     has_ambig_set_id = True
+    #                     break
+    #
+    #             if has_ambig_set_id:
+    #
+    #                 aux_lp_category = '_Ambiguous_atom_chem_shift'
+    #
+    #                 for _loop in sf.loops:
+    #
+    #                     if _loop.category == aux_lp_category:
+    #                         del sf[_loop]
+    #                         break
+    #
+    #                 _loop = pynmrstar.Loop.from_scratch(aux_lp_category)
+    #                 _loop.add_tag(aux_lp_category + '.Ambiguous_shift_set_ID')
+    #                 _loop.add_tag(aux_lp_category + '.Assigned_chem_shift_list_ID')
+    #                 _loop.add_tag(aux_lp_category + '.Atom_chem_shift_ID')
+    #
+    #                 if self.__insert_entry_id_to_loops:
+    #                     _loop.add_tag(aux_lp_category + '.Entry_ID')
+    #
+    #                 for idx, row in enumerate(lp_data, start=1):
+    #
+    #                     if ambig_set_id_name in row and row[ambig_set_id_name] not in emptyValue:
+    #
+    #                         _row = []
+    #
+    #                         _row.append(row[ambig_set_id_name])
+    #                         _row.append(row['Assigned_chem_shift_list_ID'])
+    #                         _row.append(idx)
+    #
+    #                         if self.__insert_entry_id_to_loops:
+    #                             _row.append(self.__entry_id)
+    #
+    #                         _loop.add_data(_row)
+    #
+    #                 sf.add_loop(_loop)
+    #
+    #     return True
+    # """
 
     def __depositNmrData(self):
         """ Deposit next NMR unified data file.

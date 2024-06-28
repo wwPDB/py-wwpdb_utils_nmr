@@ -868,7 +868,8 @@ class CifReader:
 
                     etype = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
 
-                    if withRmsd and etype is not None and totalModels > 1 and i < LEN_MAJOR_ASYM_ID:  # to process large assembly avoiding forced timeout
+                    # to process large assembly avoiding forced timeout (2ms7, 21 chains)
+                    if withRmsd and etype is not None and totalModels > 1 and i < LEN_MAJOR_ASYM_ID / 2:
                         ent['type'] = etype
 
                         randomM = None

@@ -104,9 +104,8 @@ save_nef_molecular_system
 save_
 
 save_nef_chemical_shift_list_18214
-   _nef_chemical_shift_list.sf_category     nef_chemical_shift_list
-   _nef_chemical_shift_list.sf_framecode    nef_chemical_shift_list_18214
-   _nef_chemical_shift_list.Data_file_name  2loj.nef
+   _nef_chemical_shift_list.sf_category   nef_chemical_shift_list
+   _nef_chemical_shift_list.sf_framecode  nef_chemical_shift_list_18214
 
    loop_
       _nef_chemical_shift.chain_code

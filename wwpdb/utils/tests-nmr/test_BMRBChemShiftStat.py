@@ -183,6 +183,12 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual([stat['atom_id'] for stat in self.bmrb_cs_stat.get('ILE') if 'avg' in stat and stat['desc'] == 'methyl' and stat['atom_id'][0] == 'H'],
                          ['HD11', 'HD12', 'HD13', 'HG21', 'HG22', 'HG23'])
 
+    def test_dc_h3_stat(self):
+        h3c_stat = next(cs_stat for cs_stat in self.bmrb_cs_stat.get('DC') if cs_stat['atom_id'] == "H3'")
+        self.assertTrue(h3c_stat['avg'] < 5.0)
+        h3_stat = next((cs_stat for cs_stat in self.bmrb_cs_stat.get('DC') if cs_stat['atom_id'] == "H3"), None)
+        self.assertIsNone(h3_stat)
+
 
 if __name__ == '__main__':
     unittest.main()

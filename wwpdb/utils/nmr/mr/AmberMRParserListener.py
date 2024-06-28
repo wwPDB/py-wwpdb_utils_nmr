@@ -28,6 +28,7 @@ try:
                                                        isIdenticalRestraint,
                                                        isLongRangeRestraint,
                                                        isAmbigAtomSelection,
+                                                       isCyclicPolymer,
                                                        getAltProtonIdInBondConstraint,
                                                        getTypeOfDihedralRestraint,
                                                        isLikePheOrTyr,
@@ -71,6 +72,7 @@ try:
                                            protonBeginCode,
                                            pseProBeginCode,
                                            aminoProtonCode,
+                                           carboxylCode,
                                            rdcBbPairCode,
                                            isReservedLigCode,
                                            updatePolySeqRst,
@@ -95,6 +97,7 @@ except ImportError:
                                            isIdenticalRestraint,
                                            isLongRangeRestraint,
                                            isAmbigAtomSelection,
+                                           isCyclicPolymer,
                                            getAltProtonIdInBondConstraint,
                                            getTypeOfDihedralRestraint,
                                            isLikePheOrTyr,
@@ -138,6 +141,7 @@ except ImportError:
                                protonBeginCode,
                                pseProBeginCode,
                                aminoProtonCode,
+                               carboxylCode,
                                rdcBbPairCode,
                                isReservedLigCode,
                                updatePolySeqRst,
@@ -5302,13 +5306,15 @@ class AmberMRParserListener(ParseTreeListener):
 
                     elif 'igr' in factor:
 
-                        if authAtomId == 'H%' and _authAtomId.startswith('HT') and len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
-                            _atomIds = []
-                            for _atomId in coordAtomSite['atom_id']:
-                                if _atomId in aminoProtonCode:
-                                    _atomIds.append(_atomId)
-                            if len(_atomIds) >= len(factor['igr']):
-                                atomIds = _atomIds
+                        if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+
+                            if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                                _atomIds = []
+                                for _atomId in coordAtomSite['atom_id']:
+                                    if _atomId in aminoProtonCode:
+                                        _atomIds.append(_atomId)
+                                if len(_atomIds) >= len(factor['igr']):
+                                    atomIds = _atomIds
 
                         if any(_igr in self.__sanderAtomNumberDict for _igr in factor['igr']):
                             for _igr in factor['igr']:
@@ -5485,7 +5491,10 @@ class AmberMRParserListener(ParseTreeListener):
                     continue
 
                 if 'alt_auth_seq_id' in np and seqId not in np['auth_seq_id'] and seqId in np['alt_auth_seq_id']:
-                    seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _altSeqId_ == seqId)
+                    try:
+                        seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _altSeqId_ == seqId)
+                    except StopIteration:
+                        pass
 
                 if seqId in np['auth_seq_id']\
                    or (ligands == 1 and (authCompId in np['comp_id'] or ('alt_comp_id' in np and authCompId in np['alt_comp_id']))):
@@ -5638,6 +5647,14 @@ class AmberMRParserListener(ParseTreeListener):
                                                                             "Please re-upload the model file.")
                                                     elif bondedTo[0][0] == 'O':
                                                         checked = True
+                                            if seqId == max(auth_seq_id_list) or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
+                                                if coordAtomSite is not None and _atomId in carboxylCode\
+                                                   and not isCyclicPolymer(self.__cR, self.__polySeq, chainId, self.__representativeModelId,
+                                                                           self.__representativeAltId, self.__modelNumName):
+                                                    self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not properly instantiated in the coordinates. "
+                                                                    "Please re-upload the model file.")
+                                                    checked = True
 
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
@@ -5647,13 +5664,15 @@ class AmberMRParserListener(ParseTreeListener):
 
                     elif 'igr' in factor:
 
-                        if authAtomId == 'H%' and _authAtomId.startswith('HT') and len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
-                            _atomIds = []
-                            for _atomId in coordAtomSite['atom_id']:
-                                if _atomId in aminoProtonCode:
-                                    _atomIds.append(_atomId)
-                            if len(_atomIds) >= len(factor['igr']):
-                                atomIds = _atomIds
+                        if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+
+                            if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                                _atomIds = []
+                                for _atomId in coordAtomSite['atom_id']:
+                                    if _atomId in aminoProtonCode:
+                                        _atomIds.append(_atomId)
+                                if len(_atomIds) >= len(factor['igr']):
+                                    atomIds = _atomIds
 
                         ccdCheckOnly = False
                         for igr, _atomId in zip(sorted(factor['igr']), atomIds):
@@ -6061,13 +6080,15 @@ class AmberMRParserListener(ParseTreeListener):
 
                         elif 'igr' in factor:
 
-                            if authAtomId == 'H%' and _authAtomId.startswith('HT') and len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
-                                _atomIds = []
-                                for _atomId in coordAtomSite['atom_id']:
-                                    if _atomId in aminoProtonCode:
-                                        _atomIds.append(_atomId)
-                                if len(_atomIds) >= len(factor['igr']):
-                                    atomIds = _atomIds
+                            if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+
+                                if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                                    _atomIds = []
+                                    for _atomId in coordAtomSite['atom_id']:
+                                        if _atomId in aminoProtonCode:
+                                            _atomIds.append(_atomId)
+                                    if len(_atomIds) >= len(factor['igr']):
+                                        atomIds = _atomIds
 
                             ccdCheckOnly = False
                             for igr, _atomId in zip(sorted(factor['igr']), atomIds):
@@ -6331,13 +6352,15 @@ class AmberMRParserListener(ParseTreeListener):
 
                         elif 'igr' in factor:
 
-                            if authAtomId == 'H%' and _authAtomId.startswith('HT') and len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
-                                _atomIds = []
-                                for _atomId in coordAtomSite['atom_id']:
-                                    if _atomId in aminoProtonCode:
-                                        _atomIds.append(_atomId)
-                                if len(_atomIds) >= len(factor['igr']):
-                                    atomIds = _atomIds
+                            if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+
+                                if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                                    _atomIds = []
+                                    for _atomId in coordAtomSite['atom_id']:
+                                        if _atomId in aminoProtonCode:
+                                            _atomIds.append(_atomId)
+                                    if len(_atomIds) >= len(factor['igr']):
+                                        atomIds = _atomIds
 
                             ccdCheckOnly = False
                             for igr, _atomId in zip(sorted(factor['igr']), atomIds):
@@ -8873,7 +8896,7 @@ class AmberMRParserListener(ParseTreeListener):
                         ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                         ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                         if ps1 is None and ps2 is None:
-                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                            self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(self.dataset,n)}"
                                             "Found inter-chain RDC vector; "
                                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                             f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
@@ -8882,7 +8905,7 @@ class AmberMRParserListener(ParseTreeListener):
                     elif abs(seq_id_1 - seq_id_2) > 1:
                         ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                         if ps1 is None:
-                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                            self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(self.dataset,n)}"
                                             "Found inter-residue RDC vector; "
                                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                             f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
@@ -8898,7 +8921,7 @@ class AmberMRParserListener(ParseTreeListener):
                             pass
 
                         else:
-                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                            self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(self.dataset,n)}"
                                             "Found inter-residue RDC vector; "
                                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                             f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")

@@ -192,6 +192,7 @@
 # 11-Jun-2024  M. Yokcohi - add support for ligand remapping in annotation process (DAOTHER-9286)
 # 25-Jun-2024  M. Yokochi - strip white spaces in a datablock name derived from the model file (DAOTHER-9511)
 # 28-Jun-2024  M. Yokochi - ignore extraneous input value for numeric tags and replace statistics of chemical shifts using remediated loop (DAOTHER-9520)
+# 28-Jun-2024  M. Yokochi - convert conventional NMR name of carbonyl carbon 'CO' to valid one 'C' (DAOTHER-9520, 2nd case)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -19217,7 +19218,7 @@ class NmrDpUtility:
         """ Return whether a given atom_id uses NMR conventional atom name.
         """
 
-        return ((atom_id == 'HN' and self.__csStat.peptideLike(comp_id))
+        return ((atom_id in ('HN', 'CO') and self.__csStat.peptideLike(comp_id))
                 or atom_id.startswith('Q') or atom_id.startswith('M')
                 or atom_id.endswith('%') or atom_id.endswith('#')
                 or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)
@@ -19330,9 +19331,13 @@ class NmrDpUtility:
                         if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                             continue
 
-                        if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
-                            self.__fixAtomNomenclature(comp_id, {'HN': 'H'})
-                            continue
+                        if self.__csStat.peptideLike(comp_id):
+                            if atom_id.upper() == 'HN':
+                                self.__fixAtomNomenclature(comp_id, {atom_id: 'H'})
+                                continue
+                            if atom_id.upper() == 'CO':
+                                self.__fixAtomNomenclature(comp_id, {atom_id: 'C'})
+                                continue
 
                         atom_id_ = atom_id
 
@@ -19466,9 +19471,13 @@ class NmrDpUtility:
                             if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
                                 continue
 
-                            if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
-                                self.__fixAtomNomenclature(comp_id, {'HN': 'H'})
-                                continue
+                            if self.__csStat.peptideLike(comp_id):
+                                if atom_id.upper() == 'HN':
+                                    self.__fixAtomNomenclature(comp_id, {atom_id: 'H'})
+                                    continue
+                                if atom_id.upper() == 'CO':
+                                    self.__fixAtomNomenclature(comp_id, {atom_id: 'C'})
+                                    continue
 
                             atom_id_ = atom_id
 
@@ -52635,6 +52644,7 @@ class NmrDpUtility:
     #
     #     return True
     # """
+
     def __depositNmrData(self):
         """ Deposit next NMR unified data file.
         """

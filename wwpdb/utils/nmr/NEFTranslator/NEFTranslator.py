@@ -95,6 +95,7 @@
 # 02-Oct-2023  M. Yokochi - do not reorganize _Gen_dist_constraint.ID (v3.5.1, DAOTHER-8855)
 # 11-Jun-2024  M. Yokochi - add support for ligand remapping in annotation process (v3.6.0, DAOTHER-9286)
 # 28-Jun-2024  M. Yokochi - do not evaluate value in case of ValueError exception (v3.6.1, DAOTHER-9520)
+# 28-Jun-2024  M. Yokochi - throw error for key items with empty value (v3.6.2, DAOTHER-9520, 2nd case)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -147,7 +148,7 @@ except ImportError:
 
 
 __package_name__ = 'wwpdb.utils.nmr'
-__version__ = '3.6.1'
+__version__ = '3.6.2'
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
@@ -3895,6 +3896,8 @@ class NEFTranslator:
                                         val = indexToLetter(letterToDigit(val, 1) - 1)
                                     elif 'default' in k:
                                         val = k['default']
+                                    elif 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                        remove_bad_pattern = True
                                     elif excl_missing_data:
                                         missing_mandatory_data = True
                                         continue
@@ -5780,9 +5783,13 @@ class NEFTranslator:
 
         if len(atom_list) == 0:
 
-            if nef_atom == 'HN' and self.__csStat.peptideLike(comp_id):
-                atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'H', None, coord_atom_site)
-                return (atom_list, ambiguity_code, details)
+            if self.__csStat.peptideLike(comp_id):
+                if nef_atom == 'HN':
+                    atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'H', None, coord_atom_site)
+                    return (atom_list, ambiguity_code, details)
+                if nef_atom == 'CO':
+                    atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'C', None, coord_atom_site)
+                    return (atom_list, ambiguity_code, details)
 
             if self.__csStat.hasCompId(comp_id):
 
@@ -6338,11 +6345,17 @@ class NEFTranslator:
 
             if len(atom_list) == 0:
 
-                if nef_atom == 'HN' and self.__csStat.peptideLike(comp_id):
-                    atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H', None,
-                                                                            # 'HN converted to H.'
-                                                                            leave_unmatched)
-                    return (atom_list, ambiguity_code, details)
+                if self.__csStat.peptideLike(comp_id):
+                    if nef_atom == 'HN':
+                        atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H', None,
+                                                                                # 'HN converted to H.'
+                                                                                leave_unmatched)
+                        return (atom_list, ambiguity_code, details)
+                    if nef_atom == 'CO':
+                        atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'C', None,
+                                                                                # 'CO converted to C.'
+                                                                                leave_unmatched)
+                        return (atom_list, ambiguity_code, details)
 
                 if self.__csStat.hasCompId(comp_id):
 
@@ -6441,8 +6454,11 @@ class NEFTranslator:
 
                         _atom_id = None
 
-                        if atom_id == 'HN' and self.__csStat.peptideLike(comp_id):
-                            _atom_id = 'H'
+                        if self.__csStat.peptideLike(comp_id):
+                            if atom_id == 'HN':
+                                _atom_id = 'H'
+                            elif atom_id == 'CO':
+                                _atom_id = 'C'
                         elif atom_id.startswith('QQ') and self.__remediation_mode:  # DAOTHER-8663
                             _atom_id = 'H' + atom_id[2:] + '*'
                         elif (atom_id.startswith('QR') or atom_id.startswith('QX')) and self.__remediation_mode:  # DAOTHER-8663

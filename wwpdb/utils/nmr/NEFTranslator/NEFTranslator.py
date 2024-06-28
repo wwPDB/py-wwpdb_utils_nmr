@@ -94,7 +94,7 @@
 # 13-Sep-2023  M. Yokochi - fix/improve NEF atom nomenclature mapping (v3.5.0, DAOTHER-8817)
 # 02-Oct-2023  M. Yokochi - do not reorganize _Gen_dist_constraint.ID (v3.5.1, DAOTHER-8855)
 # 11-Jun-2024  M. Yokochi - add support for ligand remapping in annotation process (v3.6.0, DAOTHER-9286)
-# 27-Jun-2024  M. Yokochi - do not evaluate value in case of ValueError exception (v3.6.1, DAOTHER-9520)
+# 28-Jun-2024  M. Yokochi - do not evaluate value in case of ValueError exception (v3.6.1, DAOTHER-9520)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -3648,7 +3648,6 @@ class NEFTranslator:
                                     else:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                          + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                                    continue
 
                                 if (type == 'index-int' and ent[name] <= 0)\
                                    or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):
@@ -3665,6 +3664,7 @@ class NEFTranslator:
                                                  f"as defined by {self.readableItemType[type]}.")
                                 if type == 'positive-int-as-str':
                                     row[j] = ent[name] = str(ent[name])
+
                             elif type == 'pointer-index':
                                 try:
                                     ent[name] = int(val)
@@ -3692,7 +3692,6 @@ class NEFTranslator:
                                     else:
                                         raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                          + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                                    continue
 
                                 if ent[name] <= 0:
                                     raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
@@ -3752,6 +3751,7 @@ class NEFTranslator:
                                         f.append(f"[Zero value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                  f"{name} {val!r} should not be zero, "
                                                  f"as defined by {self.readableItemType[type]}.")
+
                             elif type == 'range-float':
                                 try:
                                     _range = k['range']
@@ -3852,6 +3852,7 @@ class NEFTranslator:
                                     ent[name] = val
                                 except KeyError:
                                     raise ValueError(f"Enumeration of key item {name} is not defined")
+
                             elif type == 'enum-int':
                                 try:
                                     enum = k['enum']
@@ -3894,10 +3895,10 @@ class NEFTranslator:
                                         val = indexToLetter(letterToDigit(val, 1) - 1)
                                     elif 'default' in k:
                                         val = k['default']
-                                    elif skip_empty_value_error(loop, idx):
-                                        continue
-                                    else:
+                                    elif excl_missing_data:
                                         missing_mandatory_data = True
+                                        continue
+                                    elif skip_empty_value_error(loop, idx):
                                         continue
                                     if 'uppercase' in k and k['uppercase']:
                                         val = val.upper()
@@ -3981,6 +3982,7 @@ class NEFTranslator:
                                             else:
                                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                                  + f"{name} {val!r} must be {self.readableItemType[type]}.")
+
                                     elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
                                         try:
                                             ent[name] = int(val)
@@ -4016,7 +4018,6 @@ class NEFTranslator:
                                             else:
                                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                                  + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                                            continue
 
                                         if (type == 'index-int' and ent[name] <= 0)\
                                            or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):
@@ -4033,6 +4034,7 @@ class NEFTranslator:
                                                          f"as defined by {self.readableItemType[type]}.")
                                         if type == 'positive-int-as-str':
                                             row[j] = ent[name] = str(ent[name])
+
                                     elif type == 'pointer-index':
                                         try:
                                             ent[name] = int(val)
@@ -4066,7 +4068,6 @@ class NEFTranslator:
                                             else:
                                                 raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                                  + f"{name} {val!r} must be {self.readableItemType[type]}.")
-                                            continue
 
                                         if ent[name] <= 0:
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
@@ -4076,6 +4077,7 @@ class NEFTranslator:
                                         elif val != static_val[name] and _test_on_index:
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                              + f"{name} {val} vs {static_val[name]} must be {self.readableItemType[type]}.")
+
                                     elif type == 'float':
                                         try:
                                             ent[name] = float(val)
@@ -4243,6 +4245,7 @@ class NEFTranslator:
                                             else:
                                                 f.append(f"[Range value error] {get_idx_msg(idx_tag_ids, tags, ent)}"
                                                          f"{name} {val!r} must be within range {_range}.")
+
                                     elif type == 'enum':
                                         try:
                                             enum = d['enum']
@@ -4280,6 +4283,7 @@ class NEFTranslator:
                                             ent[name] = val
                                         except KeyError:
                                             raise ValueError(f"Enumeration of data item {name} is not defined")
+
                                     elif type == 'enum-int':
                                         try:
                                             enum = d['enum']
@@ -4318,6 +4322,7 @@ class NEFTranslator:
                                                 continue
                                             raise ValueError(get_idx_msg(idx_tag_ids, tags, ent)
                                                              + f"{name} {val!r} must be {self.readableItemType[type]}.")
+
                                     else:
                                         if ('remove-bad-pattern' in d and d['remove-bad-pattern']) or ('clear-bad-pattern' in d and d['clear-bad-pattern']):
                                             if isinstance(val, str) and badPattern.match(val):
@@ -4825,6 +4830,7 @@ class NEFTranslator:
                             ent[name] = val.lower() in trueValue
                         except ValueError:
                             raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
+
                     elif type == 'int':
                         try:
                             ent[name] = int(val)
@@ -4837,6 +4843,7 @@ class NEFTranslator:
                                 ent[name] = int(t['default'])
                             else:
                                 raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
+
                     elif type in ('positive-int', 'positive-int-as-str'):
                         try:
                             ent[name] = int(val)
@@ -4865,11 +4872,13 @@ class NEFTranslator:
                                          f"as defined by {self.readableItemType[type]}.")
                         if type == 'positive-int-as-str':
                             ent[name] = str(ent[name])
+
                     elif type == 'float':
                         try:
                             ent[name] = float(val)
                         except ValueError:
                             raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
+
                     elif type == 'positive-float':
                         try:
                             ent[name] = float(val)
@@ -4885,6 +4894,7 @@ class NEFTranslator:
                             else:
                                 f.append(f"[Zero value error] {name} {val!r} should not be zero, "
                                          f"as defined by {self.readableItemType[type]}.")
+
                     elif type == 'range-float':
                         try:
                             _range = t['range']
@@ -4934,6 +4944,7 @@ class NEFTranslator:
                                 ent[name] = None
                             else:
                                 f.append(f"[Range value error] {name} {val} must be within range {_range}.")
+
                     elif type == 'enum':
                         if val in emptyValue:
                             val = '?'  # '.' raises internal error in NmrDpUtility
@@ -4965,6 +4976,7 @@ class NEFTranslator:
                             ent[name] = None if val in emptyValue else val
                         except KeyError:
                             raise ValueError(f"Enumeration of tag item {name} is not defined.")
+
                     elif type == 'enum-int':
                         try:
                             enum = t['enum']

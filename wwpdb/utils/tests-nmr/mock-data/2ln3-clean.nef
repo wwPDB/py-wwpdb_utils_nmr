@@ -124,9 +124,8 @@ save_nef_molecular_system
 save_
 
 save_nef_chemical_shift_list_18145
-   _nef_chemical_shift_list.sf_category     nef_chemical_shift_list
-   _nef_chemical_shift_list.sf_framecode    nef_chemical_shift_list_18145
-   _nef_chemical_shift_list.Data_file_name  2ln3.nef
+   _nef_chemical_shift_list.sf_category   nef_chemical_shift_list
+   _nef_chemical_shift_list.sf_framecode  nef_chemical_shift_list_18145
 
    loop_
       _nef_chemical_shift.chain_code

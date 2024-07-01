@@ -96,7 +96,7 @@
 # 11-Jun-2024  M. Yokochi - add support for ligand remapping in annotation process (v3.6.0, DAOTHER-9286)
 # 28-Jun-2024  M. Yokochi - do not evaluate value in case of ValueError exception (v3.6.1, DAOTHER-9520)
 # 28-Jun-2024  M. Yokochi - throw error for key items with empty value (v3.6.2, DAOTHER-9520, 2nd case)
-# 01-Jul-2024  M. Yokochi - convert protonated DC/C to DNR/CH (v3.6.3)
+# 01-Jul-2024  M. Yokochi - convert protonated DC/C residue to valid DNR/CH respectively because of existence of H3/H3+ assignment (v3.6.3)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -1534,23 +1534,23 @@ class NEFTranslator:
                     dnr_set = set()
                     ch_set = set()
                     for row in pre_seq_data:
-                        if row[1] == 'DC' and row[4] in ('H3', 'H3+'):
-                            has_dc_h3 = True
-                            seq_key = (row[0], row[3])
-                            dnr_set.add(seq_key)
-                        if row[1] == 'C' and row[4] in ('H3', 'H3+'):
-                            has_c_h3 = True
-                            seq_key = (row[0], row[3])
-                            ch_set.add(seq_key)
+                        if row[4] in ('H3', 'H3+'):
+                            if row[1] == 'DC':
+                                has_dc_h3 = True
+                                seq_key = (row[0], row[3])
+                                dnr_set.add(seq_key)
+                            elif row[1] == 'C':
+                                has_c_h3 = True
+                                seq_key = (row[0], row[3])
+                                ch_set.add(seq_key)
+                    comp_id_col = loop.tags.index('Comp_ID')
                     if has_dc_h3:
-                        comp_id_col = loop.tags.index('Comp_ID')
                         for idx, row in enumerate(pre_seq_data):
                             if row[1] == 'DC':
                                 seq_key = (row[0], row[3])
                                 if seq_key in dnr_set:
                                     loop.data[idx][comp_id_col] = 'DNR'
                     if has_c_h3:
-                        comp_id_col = loop.tags.index('Comp_ID')
                         for idx, row in enumerate(pre_seq_data):
                             if row[1] == 'C':
                                 seq_key = (row[0], row[3])

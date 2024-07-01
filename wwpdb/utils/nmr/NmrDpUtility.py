@@ -24708,6 +24708,24 @@ class NmrDpUtility:
 
         aux_lp = None
 
+        aux_lp_category = self.aux_lp_categories[file_type][content_subtype][0] if file_type == 'nmr-star' else ''
+
+        def delete_aux_loop():
+
+            if file_type == 'nmr-star' and not isinstance(sf, pynmrstar.Loop):
+
+                try:
+
+                    if __pynmrstar_v3_2__:
+                        aux_loop = sf.get_loop(aux_lp_category)
+                    else:
+                        aux_loop = sf.get_loop_by_category(aux_lp_category)
+
+                    del sf[aux_loop]
+
+                except KeyError:
+                    pass
+
         if file_type == 'nef':
 
             items = ['chain_code', 'sequence_code', 'residue_name', 'atom_name', 'value', 'value_uncertainty', 'element', 'isotope_number']
@@ -27034,19 +27052,6 @@ class NmrDpUtility:
                 for _id, _row in enumerate(lp, start=1):
                     _row[id_col] = _id
 
-            aux_lp_category = self.aux_lp_categories[file_type][content_subtype][0]
-
-            def delete_aux_loop():
-
-                if not isinstance(sf, pynmrstar.Loop) and any(aux_loop for aux_loop in sf if aux_loop.category == aux_lp_category):
-
-                    if __pynmrstar_v3_2__:
-                        aux_loop = sf.get_loop(aux_lp_category)
-                    else:
-                        aux_loop = sf.get_loop_by_category(aux_lp_category)
-
-                    del sf[aux_loop]
-
             if has_genuine_ambig_code:
 
                 for _row in lp:
@@ -27224,8 +27229,6 @@ class NmrDpUtility:
 
                         aux_lp.add_data(_aux_row)
 
-                    delete_aux_loop()
-
                 else:
                     delete_aux_loop()
 
@@ -27237,6 +27240,8 @@ class NmrDpUtility:
         sf.add_loop(lp)
 
         if aux_lp is not None and len(aux_lp) > 0:
+            delete_aux_loop()
+
             sf.add_loop(aux_lp)
 
         if file_type == 'nmr-star':

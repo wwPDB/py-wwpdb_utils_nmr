@@ -1136,8 +1136,11 @@ class BMRBChemShiftStat:
                     elif _atom_id == 'MD':
                         _atom_id = 'MD1'
 
-                if comp_id == 'THR' and _atom_id == 'MG':
+                elif comp_id == 'THR' and _atom_id == 'MG':
                     _atom_id = 'MG2'
+
+                elif _atom_id.endswith('"'):
+                    _atom_id = _atom_id[:-1] + "''"
 
                 # methyl proton group
                 if _atom_id.startswith('M'):

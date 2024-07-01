@@ -20347,7 +20347,7 @@ class NmrDpUtility:
                         if isinstance(ambig_code, str):
                             ambig_code = int(ambig_code)
 
-                        if ambig_code not in (4, 5, 6, 9):
+                        if ambig_code not in (4, 5):
                             continue
 
                         chain_id = _row[chain_id_col]
@@ -24161,7 +24161,6 @@ class NmrDpUtility:
                                         seq_id2 = _row[seq_id_name]
                                         comp_id2 = _row[comp_id_name]
                                         atom_id2 = _row[atom_id_name]
-                                        value2 = _row[value_name]
 
                                         _atom_id2 = atom_id2
 
@@ -24174,18 +24173,22 @@ class NmrDpUtility:
                                                 if _atom_id2 in self.__csStat.getProtonsInSameGroup(comp_id, _atom_id):
                                                     continue
 
-                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
-                                                + f", {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
-                                                "It indicates inter-molecular ambiguities. However, row of "\
-                                                + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+                                            if not any(_row_ for _row_ in ambig_set if _row_[chain_id_name] != chain_id
+                                               and _row_[seq_id_name] == seq_id and _row_[comp_id_name] == comp_id
+                                               and _row_[atom_id_name] == atom_id):
 
-                                            self.report.error.appendDescription('invalid_ambiguity_code',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': err})
-                                            self.report.setError()
+                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                                    + f", {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
+                                                    "It indicates inter-molecular ambiguities. However, row of "\
+                                                    + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
 
-                                            if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                                self.report.error.appendDescription('invalid_ambiguity_code',
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                                     'description': err})
+                                                self.report.setError()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
 
                                 for _row in ambig_set:
                                     chain_id2 = _row[chain_id_name]

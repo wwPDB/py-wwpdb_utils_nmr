@@ -188,6 +188,8 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertTrue(h3c_stat['avg'] < 5.0)
         h3_stat = next((cs_stat for cs_stat in self.bmrb_cs_stat.get('DC') if cs_stat['atom_id'] == "H3"), None)
         self.assertIsNone(h3_stat)
+        hn3_stat = next(cs_stat for cs_stat in self.bmrb_cs_stat.get('DNR') if cs_stat['atom_id'] == "HN3")
+        self.assertTrue(hn3_stat['avg'] > 5.0)
 
 
 if __name__ == '__main__':

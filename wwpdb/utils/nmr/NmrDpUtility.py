@@ -20792,7 +20792,10 @@ class NmrDpUtility:
                             item = 'insufficient_data'
                         has_bad_pattern = True
                     elif clea:
-                        if content_subtype.startswith('spectral_peak'):
+                        if content_subtype == 'chem_shift':
+                            warn += ' Partially assiged chemical shifts should be resolved or removed.'
+                            item = 'incompletely_assigned_chemical_shift'
+                        elif content_subtype.startswith('spectral_peak'):
                             warn += ' Unassigned spectral peaks can be included in your peak list(s).'
                             item = 'incompletely_assigned_spectral_peak'
                         else:
@@ -26982,9 +26985,10 @@ class NmrDpUtility:
                         elif ambig_code in (4, 5, 6, 9):
                             has_genuine_ambig_code = True
 
-                    lp.add_data(_row)
+                    if _row[8] not in emptyValue:  # DAOTHER-9520: Atom_isotppe_number is mandatory
+                        lp.add_data(_row)
 
-                    index += 1
+                        index += 1
 
                 if trial == 0 and len(incomplete_comp_id_annotation) > 0:  # DAOTHER-9286
                     regenerate_request = True

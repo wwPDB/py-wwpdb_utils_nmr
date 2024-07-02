@@ -20020,7 +20020,7 @@ class NmrDpUtility:
                     for atom_id in atom_ids:
                         if not atom_id.startswith(atom_type):
 
-                            if self.__remediation_mode and isotope_num == 1 and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751, 9520
+                            if self.__remediation_mode and 1 in isotope_nums and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751, 9520
                                 continue
 
                             err = f"Invalid atom_id {atom_id!r} (atom_type {atom_type!r}) in a loop {lp_category}."

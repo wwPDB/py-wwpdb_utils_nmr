@@ -19468,7 +19468,7 @@ class NmrDpUtility:
                             if atom_id in emptyValue:
                                 continue
 
-                            if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                            if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                 continue
 
                             if self.__csStat.peptideLike(comp_id):
@@ -19544,7 +19544,7 @@ class NmrDpUtility:
                                        and _auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                         continue
 
-                                    if self.__remediation_mode and _auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                                    if self.__remediation_mode and _auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                         continue
 
                                     if self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
@@ -19582,7 +19582,7 @@ class NmrDpUtility:
                                        and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                         continue
 
-                                    if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                                    if self.__remediation_mode and auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                         continue
 
                                     if self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
@@ -19623,7 +19623,7 @@ class NmrDpUtility:
                                            and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                             continue
 
-                                        if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                                        if self.__remediation_mode and auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                             continue
 
                                         if self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
@@ -19653,7 +19653,7 @@ class NmrDpUtility:
                                        and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                         continue
 
-                                    if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                                    if self.__remediation_mode and auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                         continue
 
                                     if self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
@@ -20020,7 +20020,7 @@ class NmrDpUtility:
                     for atom_id in atom_ids:
                         if not atom_id.startswith(atom_type):
 
-                            if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                            if self.__remediation_mode and isotope_num == 1 and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751, 9520
                                 continue
 
                             err = f"Invalid atom_id {atom_id!r} (atom_type {atom_type!r}) in a loop {lp_category}."
@@ -27025,6 +27025,7 @@ class NmrDpUtility:
 
             if len(conflict_id) > 0:
                 conflict_id_set = self.__nefT.get_conflict_id_set(lp, lp_category, key_items)[0]
+                orig_atom_id_col = lp.tags.index('Original_PDB_atom_name') if 'Original_PDB_atom_name' in lp.tags else -1
 
                 for _id in conflict_id:
                     _id_set = next(id_set for id_set in conflict_id_set if _id in id_set)
@@ -27032,17 +27033,22 @@ class NmrDpUtility:
                     if len(set(str(lp.data[_id_]) for _id_ in _id_set)) == 1:
                         continue
 
-                    msg = ' vs '.join([str(lp.data[_id_]).replace('None', '.').replace(',', '').replace("'", '') for _id_ in _id_set])
+                    # DAOTHER-9520: Suppress known warnings
+                    if orig_atom_id_col != -1\
+                       and any(lp.data[_id1_][orig_atom_id_col] != lp.data[_id2_][orig_atom_id_col]
+                               for (_id1_, _id2_) in itertools.combinations(_id_set, 2)):
 
-                    warn = f"Resolved redundancy of assigned chemical shifts ({msg}) by deletion of the latter one."
+                        msg = ' vs '.join([str(lp.data[_id_]).replace('None', '.').replace(',', '').replace("'", '') for _id_ in _id_set])
 
-                    self.report.warning.appendDescription('redundant_data',
-                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                           'description': warn})
-                    self.report.setWarning()
+                        warn = f"Resolved redundancy of assigned chemical shifts ({msg}) by deletion of the latter one."
 
-                    if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Warning  - {warn}\n")
+                        self.report.warning.appendDescription('redundant_data',
+                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                               'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Warning  - {warn}\n")
 
                 for _id in conflict_id:
                     del lp.data[_id]

@@ -1535,24 +1535,24 @@ class NEFTranslator:
                     ch_set = set()
                     for row in pre_seq_data:
                         if row[4] in ('H3', 'H3+'):
-                            if row[1] == 'DC':
+                            if row[1] in ('DC', 'CYT', 'DC5', 'DC3'):
                                 has_dc_h3 = True
                                 seq_key = (row[0], row[3])
                                 dnr_set.add(seq_key)
-                            elif row[1] == 'C':
+                            elif row[1] == ('C', 'RCYT', 'C5', 'C3'):
                                 has_c_h3 = True
                                 seq_key = (row[0], row[3])
                                 ch_set.add(seq_key)
                     comp_id_col = loop.tags.index('Comp_ID')
                     if has_dc_h3:
                         for idx, row in enumerate(pre_seq_data):
-                            if row[1] == 'DC':
+                            if row[1] in ('DC', 'CYT', 'DC5', 'DC3'):
                                 seq_key = (row[0], row[3])
                                 if seq_key in dnr_set:
                                     loop.data[idx][comp_id_col] = 'DNR'
                     if has_c_h3:
                         for idx, row in enumerate(pre_seq_data):
-                            if row[1] == 'C':
+                            if row[1] in ('C', 'RCYT', 'C5', 'C3'):
                                 seq_key = (row[0], row[3])
                                 if seq_key in ch_set:
                                     loop.data[idx][comp_id_col] = 'CH'

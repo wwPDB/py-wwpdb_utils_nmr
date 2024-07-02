@@ -17,6 +17,7 @@ from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+    from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
     from wwpdb.utils.nmr.mr.DynamoMRParser import DynamoMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -34,6 +35,7 @@ try:
                                                        translateToLigandName,
                                                        isCyclicPolymer,
                                                        isStructConn,
+                                                       getMetalCoordOf,
                                                        getRestraintName,
                                                        contentSubtypeOf,
                                                        incListIdCounter,
@@ -97,6 +99,7 @@ try:
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+    from nmr.io.CifReader import SYMBOLS_ELEMENT
     from nmr.mr.DynamoMRParser import DynamoMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
@@ -114,6 +117,7 @@ except ImportError:
                                            translateToLigandName,
                                            isCyclicPolymer,
                                            isStructConn,
+                                           getMetalCoordOf,
                                            getRestraintName,
                                            contentSubtypeOf,
                                            incListIdCounter,
@@ -1468,6 +1472,18 @@ class DynamoMRParserListener(ParseTreeListener):
                     seqId = _seqId = znSeqId
                     atomId = 'ZN'
                 preferNonPoly = True
+
+        if atomId in SYMBOLS_ELEMENT and self.__hasNonPolySeq:
+            elemCount = 0
+            for np in self.__nonPoly:
+                if np['comp_id'][0] == atomId:
+                    elemCount += 1
+            if elemCount > 0:
+                _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
+                if elemSeqId is not None:
+                    seqId = _seqId = elemSeqId
+                    compId = _compId = atomId
+                    preferNonPoly = True
 
         if self.__splitLigand is not None and len(self.__splitLigand):
             found = False

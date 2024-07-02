@@ -601,8 +601,16 @@ class BiosymMRParserListener(ParseTreeListener):
                                        and not any(k for k, v in seq_id_mapping.items()
                                                    if v in poly_seq_model['seq_id']
                                                    and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
-                                        seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
-                                                                 'comp_id_set': list(set(poly_seq_model['comp_id']))})
+
+                                        if 'seq_id_remap' not in self.reasonsForReParsing:
+                                            seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
+                                                                     'comp_id_set': list(set(poly_seq_model['comp_id']))})
+                                        else:
+                                            _seq_id_remapping = next((_seq_id_remapping for _seq_id_remapping in self.reasonsForReParsing['seq_id_remap']
+                                                                      if _seq_id_remapping['chain_id'] == ref_chain_id), None)
+                                            if _seq_id_remapping is None and not all(src_seq_id in _seq_id_remapping for src_seq_id in seq_id_mapping.keys()):
+                                                seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
+                                                                         'comp_id_set': list(set(poly_seq_model['comp_id']))})
 
                                 if len(seqIdRemapFailed) > 0:
                                     if 'chain_seq_id_remap' not in self.reasonsForReParsing:
@@ -636,8 +644,15 @@ class BiosymMRParserListener(ParseTreeListener):
                                                     seq_id_mapping[seq_id] = auth_seq_id
                                                     comp_id_mapping[seq_id] = comp_id
 
-                                            seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
-                                                                     'comp_id_dict': comp_id_mapping})
+                                            if 'seq_id_remap' not in self.reasonsForReParsing:
+                                                seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
+                                                                         'comp_id_dict': comp_id_mapping})
+                                            else:
+                                                _seq_id_remapping = next((_seq_id_remapping for _seq_id_remapping in self.reasonsForReParsing['seq_id_remap']
+                                                                          if _seq_id_remapping['chain_id'] == ref_chain_id), None)
+                                                if _seq_id_remapping is None and not all(src_seq_id in _seq_id_remapping for src_seq_id in seq_id_mapping.keys()):
+                                                    seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
+                                                                             'comp_id_dict': comp_id_mapping})
 
                                     if len(seqIdRemapFailed) > 0:
                                         if 'ext_chain_seq_id_remap' not in self.reasonsForReParsing:

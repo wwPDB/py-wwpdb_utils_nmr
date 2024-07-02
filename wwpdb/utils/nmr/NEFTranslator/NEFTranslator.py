@@ -6429,7 +6429,7 @@ class NEFTranslator:
                     atom_list.append(nef_atom)
                     ambiguity_code = None
                     if leave_unmatched and details is None:
-                        details = f"{nef_atom} is invalid atom_id in comp_id {comp_id}."
+                        details = f"{nef_atom} is an invalid atom name as a residue {comp_id}."
 
             atom_list = sorted(atom_list)
 
@@ -6521,7 +6521,7 @@ class NEFTranslator:
                                 if not self.__ccU.lastStatus:
                                     details[atom_id] = f"Unknown non-standard residue {comp_id} found."
                                 else:
-                                    details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                    details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                 atom_id_map[atom_id] = atom_id
                             elif self.__verbose:
                                 if not self.__ccU.lastStatus:
@@ -6561,7 +6561,7 @@ class NEFTranslator:
 
                                 if leave_unmatched:
                                     atom_list.append(atom_id)
-                                    details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                    details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                     atom_id_map[atom_id] = atom_id
                                 elif self.__verbose:
                                     self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
@@ -6620,7 +6620,7 @@ class NEFTranslator:
 
                                     if leave_unmatched:
                                         atom_list.append(atom_id)
-                                        details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                        details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                         atom_id_map[atom_id] = atom_id
                                     elif self.__verbose:
                                         self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
@@ -6686,7 +6686,7 @@ class NEFTranslator:
 
                                     if leave_unmatched:
                                         atom_list.append(atom_id)
-                                        details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                        details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                         atom_id_map[atom_id] = atom_id
                                     elif self.__verbose:
                                         self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
@@ -6747,7 +6747,7 @@ class NEFTranslator:
 
                                 if leave_unmatched:
                                     atom_list.append(atom_id)
-                                    details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                    details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                     atom_id_map[atom_id] = atom_id
                                 elif self.__verbose:
                                     self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
@@ -6811,7 +6811,7 @@ class NEFTranslator:
 
                                 if leave_unmatched:
                                     atom_list.append(atom_id)
-                                    details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                    details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                     atom_id_map[atom_id] = atom_id
                                 elif self.__verbose:
                                     self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")

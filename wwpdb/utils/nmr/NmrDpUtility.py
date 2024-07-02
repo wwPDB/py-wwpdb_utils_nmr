@@ -22806,7 +22806,7 @@ class NmrDpUtility:
                         atom_name = atom_id
 
                         if details is not None:
-                            atom_name += f" ({details.rstrip('.')})"
+                            atom_name += f", where {details.rstrip('.')}"
 
                     else:
                         atom_name = f'{atom_id} (e.g. '
@@ -29611,7 +29611,7 @@ class NmrDpUtility:
                                     atom_name = atom_id
 
                                     if details is not None:
-                                        atom_name += f" ({details.rstrip('.')})"
+                                        atom_name += f", where {details.rstrip('.')}"
 
                                 else:
                                     atom_name = f'{atom_id} (e.g. '
@@ -29717,7 +29717,7 @@ class NmrDpUtility:
                                 atom_name = atom_id
 
                                 if details is not None:
-                                    atom_name += f" ({details.rstrip('.')})"
+                                    atom_name += f", where {details.rstrip('.')}"
 
                             else:
                                 atom_name = f'{atom_id} (e.g. '
@@ -44714,7 +44714,7 @@ class NmrDpUtility:
                         atom_name = atom_id
 
                         if details is not None:
-                            atom_name += f" ({details.rstrip('.')})"
+                            atom_name += f", where {details.rstrip('.')}"
 
                     else:
                         atom_name = f'{atom_id} (e.g. '

@@ -988,7 +988,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                         length, _matched, unmapped, conflict, offset_1, offset_2 =\
                             _length, __matched, _unmapped, _conflict, _offset_1, _offset_2
 
-            elif _matched > 0 and conflict > 0 and 'alt_comp_id' in s1:
+            elif _matched > 0 and conflict > 0 and 'alt_comp_id' in s1 and conservative:
                 pA.setReferenceSequence(s1['alt_comp_id'], 'REF' + chain_id)
                 pA.addTestSequence(s2['comp_id'], chain_id)
                 pA.doAlign()

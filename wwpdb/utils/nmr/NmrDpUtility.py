@@ -19468,7 +19468,7 @@ class NmrDpUtility:
                             if atom_id in emptyValue:
                                 continue
 
-                            if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                            if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                 continue
 
                             if self.__csStat.peptideLike(comp_id):
@@ -19544,7 +19544,7 @@ class NmrDpUtility:
                                        and _auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                         continue
 
-                                    if self.__remediation_mode and _auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                                    if self.__remediation_mode and _auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                         continue
 
                                     if self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
@@ -19582,7 +19582,7 @@ class NmrDpUtility:
                                        and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                         continue
 
-                                    if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                                    if self.__remediation_mode and auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                         continue
 
                                     if self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
@@ -19623,7 +19623,7 @@ class NmrDpUtility:
                                            and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                             continue
 
-                                        if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                                        if self.__remediation_mode and auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                             continue
 
                                         if self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
@@ -19653,7 +19653,7 @@ class NmrDpUtility:
                                        and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                         continue
 
-                                    if self.__remediation_mode and auth_atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                                    if self.__remediation_mode and auth_atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                         continue
 
                                     if self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
@@ -20020,7 +20020,7 @@ class NmrDpUtility:
                     for atom_id in atom_ids:
                         if not atom_id.startswith(atom_type):
 
-                            if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                            if self.__remediation_mode and 1 in isotope_nums and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751, 9520
                                 continue
 
                             err = f"Invalid atom_id {atom_id!r} (atom_type {atom_type!r}) in a loop {lp_category}."
@@ -20347,7 +20347,7 @@ class NmrDpUtility:
                         if isinstance(ambig_code, str):
                             ambig_code = int(ambig_code)
 
-                        if ambig_code not in (4, 5, 6, 9):
+                        if ambig_code not in (4, 5):
                             continue
 
                         chain_id = _row[chain_id_col]
@@ -20792,7 +20792,10 @@ class NmrDpUtility:
                             item = 'insufficient_data'
                         has_bad_pattern = True
                     elif clea:
-                        if content_subtype.startswith('spectral_peak'):
+                        if content_subtype == 'chem_shift':
+                            warn += ' Partially assiged chemical shifts should be resolved or removed.'
+                            item = 'incompletely_assigned_chemical_shift'
+                        elif content_subtype.startswith('spectral_peak'):
                             warn += ' Unassigned spectral peaks can be included in your peak list(s).'
                             item = 'incompletely_assigned_spectral_peak'
                         else:
@@ -22803,7 +22806,7 @@ class NmrDpUtility:
                         atom_name = atom_id
 
                         if details is not None:
-                            atom_name += f" ({details.rstrip('.')})"
+                            atom_name += f", where {details.rstrip('.')}"
 
                     else:
                         atom_name = f'{atom_id} (e.g. '
@@ -24158,7 +24161,6 @@ class NmrDpUtility:
                                         seq_id2 = _row[seq_id_name]
                                         comp_id2 = _row[comp_id_name]
                                         atom_id2 = _row[atom_id_name]
-                                        value2 = _row[value_name]
 
                                         _atom_id2 = atom_id2
 
@@ -24171,18 +24173,22 @@ class NmrDpUtility:
                                                 if _atom_id2 in self.__csStat.getProtonsInSameGroup(comp_id, _atom_id):
                                                     continue
 
-                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
-                                                + f", {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
-                                                "It indicates inter-molecular ambiguities. However, row of "\
-                                                + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+                                            if not any(_row_ for _row_ in ambig_set if _row_[chain_id_name] != chain_id
+                                               and _row_[seq_id_name] == seq_id and _row_[comp_id_name] == comp_id
+                                               and _row_[atom_id_name] == atom_id):
 
-                                            self.report.error.appendDescription('invalid_ambiguity_code',
-                                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                                 'description': err})
-                                            self.report.setError()
+                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id)\
+                                                    + f", {ambig_code_name} {str(ambig_code)!r}, {ambig_set_id_name} {ambig_set_id}] "\
+                                                    "It indicates inter-molecular ambiguities. However, row of "\
+                                                    + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
 
-                                            if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                                self.report.error.appendDescription('invalid_ambiguity_code',
+                                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                                     'description': err})
+                                                self.report.setError()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
 
                                 for _row in ambig_set:
                                     chain_id2 = _row[chain_id_name]
@@ -24701,6 +24707,24 @@ class NmrDpUtility:
             loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
 
         aux_lp = None
+
+        aux_lp_category = self.aux_lp_categories[file_type][content_subtype][0] if file_type == 'nmr-star' else ''
+
+        def delete_aux_loop():
+
+            if file_type == 'nmr-star' and not isinstance(sf, pynmrstar.Loop):
+
+                try:
+
+                    if __pynmrstar_v3_2__:
+                        aux_loop = sf.get_loop(aux_lp_category)
+                    else:
+                        aux_loop = sf.get_loop_by_category(aux_lp_category)
+
+                    del sf[aux_loop]
+
+                except KeyError:
+                    pass
 
         if file_type == 'nef':
 
@@ -26982,9 +27006,10 @@ class NmrDpUtility:
                         elif ambig_code in (4, 5, 6, 9):
                             has_genuine_ambig_code = True
 
-                    lp.add_data(_row)
+                    if _row[8] not in emptyValue:  # DAOTHER-9520: Atom_isotppe_number is mandatory
+                        lp.add_data(_row)
 
-                    index += 1
+                        index += 1
 
                 if trial == 0 and len(incomplete_comp_id_annotation) > 0:  # DAOTHER-9286
                     regenerate_request = True
@@ -27000,6 +27025,7 @@ class NmrDpUtility:
 
             if len(conflict_id) > 0:
                 conflict_id_set = self.__nefT.get_conflict_id_set(lp, lp_category, key_items)[0]
+                orig_atom_id_col = lp.tags.index('Original_PDB_atom_name') if 'Original_PDB_atom_name' in lp.tags else -1
 
                 for _id in conflict_id:
                     _id_set = next(id_set for id_set in conflict_id_set if _id in id_set)
@@ -27007,17 +27033,22 @@ class NmrDpUtility:
                     if len(set(str(lp.data[_id_]) for _id_ in _id_set)) == 1:
                         continue
 
-                    msg = ' vs '.join([str(lp.data[_id_]).replace('None', '.').replace(',', '').replace("'", '') for _id_ in _id_set])
+                    # DAOTHER-9520: Suppress known warnings
+                    if orig_atom_id_col != -1\
+                       and any(lp.data[_id1_][orig_atom_id_col] != lp.data[_id2_][orig_atom_id_col]
+                               for (_id1_, _id2_) in itertools.combinations(_id_set, 2)):
 
-                    warn = f"Resolved redundancy of assigned chemical shifts ({msg}) by deletion of the latter one."
+                        msg = ' vs '.join([str(lp.data[_id_]).replace('None', '.').replace(',', '').replace("'", '') for _id_ in _id_set])
 
-                    self.report.warning.appendDescription('redundant_data',
-                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                           'description': warn})
-                    self.report.setWarning()
+                        warn = f"Resolved redundancy of assigned chemical shifts ({msg}) by deletion of the latter one."
 
-                    if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Warning  - {warn}\n")
+                        self.report.warning.appendDescription('redundant_data',
+                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                               'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Warning  - {warn}\n")
 
                 for _id in conflict_id:
                     del lp.data[_id]
@@ -27026,19 +27057,6 @@ class NmrDpUtility:
 
                 for _id, _row in enumerate(lp, start=1):
                     _row[id_col] = _id
-
-            aux_lp_category = self.aux_lp_categories[file_type][content_subtype][0]
-
-            def delete_aux_loop():
-
-                if not isinstance(sf, pynmrstar.Loop) and any(aux_loop for aux_loop in sf if aux_loop.category == aux_lp_category):
-
-                    if __pynmrstar_v3_2__:
-                        aux_loop = sf.get_loop(aux_lp_category)
-                    else:
-                        aux_loop = sf.get_loop_by_category(aux_lp_category)
-
-                    del sf[aux_loop]
 
             if has_genuine_ambig_code:
 
@@ -27217,8 +27235,6 @@ class NmrDpUtility:
 
                         aux_lp.add_data(_aux_row)
 
-                    delete_aux_loop()
-
                 else:
                     delete_aux_loop()
 
@@ -27230,6 +27246,8 @@ class NmrDpUtility:
         sf.add_loop(lp)
 
         if aux_lp is not None and len(aux_lp) > 0:
+            delete_aux_loop()
+
             sf.add_loop(aux_lp)
 
         if file_type == 'nmr-star':
@@ -29593,7 +29611,7 @@ class NmrDpUtility:
                                     atom_name = atom_id
 
                                     if details is not None:
-                                        atom_name += f" ({details.rstrip('.')})"
+                                        atom_name += f", where {details.rstrip('.')}"
 
                                 else:
                                     atom_name = f'{atom_id} (e.g. '
@@ -29699,7 +29717,7 @@ class NmrDpUtility:
                                 atom_name = atom_id
 
                                 if details is not None:
-                                    atom_name += f" ({details.rstrip('.')})"
+                                    atom_name += f", where {details.rstrip('.')}"
 
                             else:
                                 atom_name = f'{atom_id} (e.g. '
@@ -44696,7 +44714,7 @@ class NmrDpUtility:
                         atom_name = atom_id
 
                         if details is not None:
-                            atom_name += f" ({details.rstrip('.')})"
+                            atom_name += f", where {details.rstrip('.')}"
 
                     else:
                         atom_name = f'{atom_id} (e.g. '

@@ -817,6 +817,9 @@ class BMRBChemShiftStat:
                 elif comp_id == 'THR' and _atom_id == 'MG':
                     _atom_id = 'MG2'
 
+                elif _atom_id.endswith('"'):
+                    _atom_id = _atom_id[:-1] + "''"
+
                 # methyl proton group
                 if _atom_id.startswith('M'):
                     _atom_id = re.sub(r'^M', 'H', _atom_id)
@@ -1133,8 +1136,11 @@ class BMRBChemShiftStat:
                     elif _atom_id == 'MD':
                         _atom_id = 'MD1'
 
-                if comp_id == 'THR' and _atom_id == 'MG':
+                elif comp_id == 'THR' and _atom_id == 'MG':
                     _atom_id = 'MG2'
+
+                elif _atom_id.endswith('"'):
+                    _atom_id = _atom_id[:-1] + "''"
 
                 # methyl proton group
                 if _atom_id.startswith('M'):
@@ -1705,6 +1711,12 @@ class BMRBChemShiftStat:
         if _atom_id in _ref_atom_ids and (("'" not in atom_id and "'" not in _atom_id) or ("'" in atom_id and "'" in _atom_id)):
             # print(f'case 4. {_comp_id}:{atom_id} -> {comp_id}:{_atom_id}')
             return True, comp_id, _atom_id
+
+        if comp_id == 'DC' and atom_id == 'H3':  # DAOTHER-9198
+            return True, 'DNR', 'HN3'
+
+        if comp_id == 'C' and atom_id == 'H3':  # DAOTHER-9198 (RNA linking)
+            return True, 'CH', 'HN3'
 
         if verbose:
             self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} did not match with any atom in CCD, {_ref_atom_ids}\n")

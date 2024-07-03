@@ -96,6 +96,7 @@
 # 11-Jun-2024  M. Yokochi - add support for ligand remapping in annotation process (v3.6.0, DAOTHER-9286)
 # 28-Jun-2024  M. Yokochi - do not evaluate value in case of ValueError exception (v3.6.1, DAOTHER-9520)
 # 28-Jun-2024  M. Yokochi - throw error for key items with empty value (v3.6.2, DAOTHER-9520, 2nd case)
+# 03-Jul-2024  M. Yokochi - convert protonated DC/C residue to valid DNR/CH respectively because of existence of H3/H3+ assignment (v3.6.3)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -148,7 +149,7 @@ except ImportError:
 
 
 __package_name__ = 'wwpdb.utils.nmr'
-__version__ = '3.6.2'
+__version__ = '3.6.3'
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
@@ -1522,6 +1523,39 @@ class NEFTranslator:
                         if row not in emptyValue:
                             alt_chain_id_set.add(row)
                 has_auth_asym_id = len(alt_chain_id_set) > 0
+
+                # convert protonated DC -> DNR, protonated C -> CH
+                if 'Atom_ID' in loop.tags and 'Auth_comp_ID' not in loop.tags\
+                   and set(tags) & set(loop.tags) == set(tags):
+                    pre_tag = copy.deepcopy(tags)
+                    pre_tag.append('Atom_ID')
+                    pre_seq_data = get_lp_tag(loop, pre_tag)
+                    has_dc_h3 = has_c_h3 = False
+                    dnr_set = set()
+                    ch_set = set()
+                    for row in pre_seq_data:
+                        if row[3] in ('H3', 'H3+'):
+                            if row[1] in ('DC', 'CYT', 'DC5', 'DC3'):
+                                has_dc_h3 = True
+                                seq_key = (row[2], row[0])
+                                dnr_set.add(seq_key)
+                            elif row[1] == ('C', 'RCYT', 'C5', 'C3'):
+                                has_c_h3 = True
+                                seq_key = (row[2], row[0])
+                                ch_set.add(seq_key)
+                    comp_id_col = loop.tags.index('Comp_ID')
+                    if has_dc_h3:
+                        for idx, row in enumerate(pre_seq_data):
+                            if row[1] in ('DC', 'CYT', 'DC5', 'DC3'):
+                                seq_key = (row[2], row[0])
+                                if seq_key in dnr_set:
+                                    loop.data[idx][comp_id_col] = 'DNR'
+                    if has_c_h3:
+                        for idx, row in enumerate(pre_seq_data):
+                            if row[1] in ('C', 'RCYT', 'C5', 'C3'):
+                                seq_key = (row[2], row[0])
+                                if seq_key in ch_set:
+                                    loop.data[idx][comp_id_col] = 'CH'
 
             if lp_category == '_Atom_chem_shift' and self.__remediation_mode and has_auth_asym_id\
                and set(tags) & set(loop.tags) == set(tags) and set(tags__) & set(loop.tags) == set(tags__):
@@ -6395,7 +6429,7 @@ class NEFTranslator:
                     atom_list.append(nef_atom)
                     ambiguity_code = None
                     if leave_unmatched and details is None:
-                        details = f"{nef_atom} is invalid atom_id in comp_id {comp_id}."
+                        details = f"{nef_atom} is an invalid atom name as a residue {comp_id}."
 
             atom_list = sorted(atom_list)
 
@@ -6487,7 +6521,7 @@ class NEFTranslator:
                                 if not self.__ccU.lastStatus:
                                     details[atom_id] = f"Unknown non-standard residue {comp_id} found."
                                 else:
-                                    details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                    details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                 atom_id_map[atom_id] = atom_id
                             elif self.__verbose:
                                 if not self.__ccU.lastStatus:
@@ -6527,7 +6561,7 @@ class NEFTranslator:
 
                                 if leave_unmatched:
                                     atom_list.append(atom_id)
-                                    details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                    details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                     atom_id_map[atom_id] = atom_id
                                 elif self.__verbose:
                                     self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
@@ -6586,7 +6620,7 @@ class NEFTranslator:
 
                                     if leave_unmatched:
                                         atom_list.append(atom_id)
-                                        details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                        details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                         atom_id_map[atom_id] = atom_id
                                     elif self.__verbose:
                                         self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
@@ -6652,7 +6686,7 @@ class NEFTranslator:
 
                                     if leave_unmatched:
                                         atom_list.append(atom_id)
-                                        details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                        details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                         atom_id_map[atom_id] = atom_id
                                     elif self.__verbose:
                                         self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
@@ -6713,7 +6747,7 @@ class NEFTranslator:
 
                                 if leave_unmatched:
                                     atom_list.append(atom_id)
-                                    details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                    details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                     atom_id_map[atom_id] = atom_id
                                 elif self.__verbose:
                                     self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")
@@ -6777,7 +6811,7 @@ class NEFTranslator:
 
                                 if leave_unmatched:
                                     atom_list.append(atom_id)
-                                    details[atom_id] = f"{atom_id} is invalid atom_id in comp_id {comp_id}."
+                                    details[atom_id] = f"{atom_id} is an invalid atom name as a residue {comp_id}."
                                     atom_id_map[atom_id] = atom_id
                                 elif self.__verbose:
                                     self.__lfh.write(f"+NEFTranslator.get_nef_atom() ++ Error  - Invalid atom nomenclature {atom_id} found.\n")

@@ -105,7 +105,7 @@ DIST_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 101.0}
 DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}
 
 
-ANGLE_RESTRAINT_RANGE = {'min_inclusive': -341.0, 'max_inclusive': 341.0}
+ANGLE_RESTRAINT_RANGE = {'min_inclusive': -355.0, 'max_inclusive': 355.0}
 ANGLE_RESTRAINT_ERROR = {'min_exclusive': -360.0, 'max_exclusive': 360.0}
 
 
@@ -5973,6 +5973,45 @@ def getCoordBondLength(cR, asymId1, seqId1, atomId1, asymId2, seqId2, atomId2,
         return bond
 
     return None
+
+
+def getMetalCoordOf(cR, authSeqId, authCompId, metalId):
+    """ Return auth_asym_id and auth_seq_id of a metal element attached to given residue.
+    """
+
+    if cR is None:
+        return False
+
+    if cR.hasCategory('struct_conn'):
+
+        bonds = cR.getDictList('struct_conn')
+
+        for bond in bonds:
+
+            if bond['conn_type_id'] != 'metalc':
+                continue
+
+            auth_comp_id_1 = bond['ptnr1_auth_comp_id']
+            auth_comp_id_2 = bond['ptnr2_auth_comp_id']
+
+            if {auth_comp_id_1, auth_comp_id_2} != {authCompId, metalId}:
+                continue
+
+            try:
+
+                auth_seq_id_1 = int(bond['ptnr1_auth_seq_id'])
+                auth_seq_id_2 = int(bond['ptnr2_auth_seq_id'])
+
+                if authSeqId == auth_seq_id_1 and authCompId == auth_comp_id_1 and metalId == auth_comp_id_2:
+                    return bond['ptnr2_auth_asym_id'], auth_seq_id_2
+
+                if authSeqId == auth_seq_id_2 and authCompId == auth_comp_id_2 and metalId == auth_comp_id_1:
+                    return bond['ptnr1_auth_asym_id'], auth_seq_id_1
+
+            except ValueError:
+                pass
+
+    return None, None
 
 
 def getRestraintName(mrSubtype, title=False):

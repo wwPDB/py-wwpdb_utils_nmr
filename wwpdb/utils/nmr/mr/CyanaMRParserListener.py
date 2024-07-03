@@ -17,6 +17,7 @@ from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+    from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
     from wwpdb.utils.nmr.mr.CyanaMRParser import CyanaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -35,6 +36,7 @@ try:
                                                        guessCompIdFromAtomId,
                                                        getTypeOfDihedralRestraint,
                                                        isLikePheOrTyr,
+                                                       getMetalCoordOf,
                                                        getRestraintName,
                                                        contentSubtypeOf,
                                                        incListIdCounter,
@@ -108,6 +110,7 @@ try:
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+    from nmr.io.CifReader import SYMBOLS_ELEMENT
     from nmr.mr.CyanaMRParser import CyanaMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
@@ -126,6 +129,7 @@ except ImportError:
                                            guessCompIdFromAtomId,
                                            getTypeOfDihedralRestraint,
                                            isLikePheOrTyr,
+                                           getMetalCoordOf,
                                            getRestraintName,
                                            contentSubtypeOf,
                                            incListIdCounter,
@@ -766,7 +770,12 @@ class CyanaMRParserListener(ParseTreeListener):
 
                                 if len(seqIdRemapFailed) > 0:
                                     if 'chain_seq_id_remap' not in self.reasonsForReParsing:
-                                        self.reasonsForReParsing['chain_seq_id_remap'] = seqIdRemapFailed
+                                        seqIdRemap = self.reasonsForReParsing['seq_id_remap'] if 'seq_id_remap' in self.reasonsForReParsing else []
+                                        if len(seqIdRemap) != len(seqIdRemapFailed)\
+                                           or seqIdRemap[0]['chain_id'] != seqIdRemapFailed[0]['chain_id']\
+                                           or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
+                                            self.reasonsForReParsing['chain_seq_id_remap'] = seqIdRemapFailed
+
                                 else:
                                     for ps in self.__polySeqRstFailed:
                                         for ca in self.__chainAssign:
@@ -795,13 +804,16 @@ class CyanaMRParserListener(ParseTreeListener):
                                                     auth_seq_id = sa['ref_seq_id'][idx]
                                                     seq_id_mapping[seq_id] = auth_seq_id
                                                     comp_id_mapping[seq_id] = comp_id
-
                                             seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
                                                                      'comp_id_dict': comp_id_mapping})
 
                                     if len(seqIdRemapFailed) > 0:
                                         if 'ext_chain_seq_id_remap' not in self.reasonsForReParsing:
-                                            self.reasonsForReParsing['ext_chain_seq_id_remap'] = seqIdRemapFailed
+                                            seqIdRemap = self.reasonsForReParsing['seq_id_remap'] if 'seq_id_remap' in self.reasonsForReParsing else []
+                                            if len(seqIdRemap) != len(seqIdRemapFailed)\
+                                               or seqIdRemap[0]['chain_id'] != seqIdRemapFailed[0]['chain_id']\
+                                               or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
+                                                self.reasonsForReParsing['ext_chain_seq_id_remap'] = seqIdRemapFailed
 
                 if self.__reasons is None and any(f for f in self.__f if '[Atom not found]' in f):
                     if len(self.unambigAtomNameMapping) > 0:
@@ -2283,6 +2295,18 @@ class CyanaMRParserListener(ParseTreeListener):
                     atomId = 'ZN'
                 preferNonPoly = True
 
+        if atomId in SYMBOLS_ELEMENT and self.__hasNonPolySeq:
+            elemCount = 0
+            for np in self.__nonPoly:
+                if np['comp_id'][0] == atomId:
+                    elemCount += 1
+            if elemCount > 0:
+                _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
+                if elemSeqId is not None:
+                    seqId = _seqId = elemSeqId
+                    compId = _compId = atomId
+                    preferNonPoly = True
+
         if self.__splitLigand is not None and len(self.__splitLigand):
             found = False
             for (_, _seqId_, _compId_), ligList in self.__splitLigand.items():
@@ -2703,6 +2727,18 @@ class CyanaMRParserListener(ParseTreeListener):
                     seqId = _seqId = znSeqId
                     atomId = 'ZN'
                 preferNonPoly = True
+
+        if atomId in SYMBOLS_ELEMENT and self.__hasNonPolySeq:
+            elemCount = 0
+            for np in self.__nonPoly:
+                if np['comp_id'][0] == atomId:
+                    elemCount += 1
+            if elemCount > 0:
+                _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
+                if elemSeqId is not None:
+                    seqId = _seqId = elemSeqId
+                    compId = _compId = atomId
+                    preferNonPoly = True
 
         if self.__splitLigand is not None and len(self.__splitLigand):
             found = False

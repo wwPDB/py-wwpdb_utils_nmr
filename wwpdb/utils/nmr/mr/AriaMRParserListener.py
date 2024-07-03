@@ -16,6 +16,7 @@ from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+    from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
     from wwpdb.utils.nmr.mr.AriaMRParser import AriaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -28,6 +29,7 @@ try:
                                                        isCyclicPolymer,
                                                        isStructConn,
                                                        getAltProtonIdInBondConstraint,
+                                                       getMetalCoordOf,
                                                        getRestraintName,
                                                        contentSubtypeOf,
                                                        incListIdCounter,
@@ -80,6 +82,7 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+    from nmr.io.CifReader import SYMBOLS_ELEMENT
     from nmr.mr.AriaMRParser import AriaMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
@@ -92,6 +95,7 @@ except ImportError:
                                            isCyclicPolymer,
                                            isStructConn,
                                            getAltProtonIdInBondConstraint,
+                                           getMetalCoordOf,
                                            getRestraintName,
                                            contentSubtypeOf,
                                            incListIdCounter,
@@ -593,7 +597,12 @@ class AriaMRParserListener(ParseTreeListener):
 
                                 if len(seqIdRemapFailed) > 0:
                                     if 'chain_seq_id_remap' not in self.reasonsForReParsing:
-                                        self.reasonsForReParsing['chain_seq_id_remap'] = seqIdRemapFailed
+                                        seqIdRemap = self.reasonsForReParsing['seq_id_remap'] if 'seq_id_remap' in self.reasonsForReParsing else []
+                                        if len(seqIdRemap) != len(seqIdRemapFailed)\
+                                           or seqIdRemap[0]['chain_id'] != seqIdRemapFailed[0]['chain_id']\
+                                           or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
+                                            self.reasonsForReParsing['chain_seq_id_remap'] = seqIdRemapFailed
+
                                 else:
                                     for ps in self.__polySeqRstFailed:
                                         for ca in self.__chainAssign:
@@ -628,7 +637,11 @@ class AriaMRParserListener(ParseTreeListener):
 
                                     if len(seqIdRemapFailed) > 0:
                                         if 'ext_chain_seq_id_remap' not in self.reasonsForReParsing:
-                                            self.reasonsForReParsing['ext_chain_seq_id_remap'] = seqIdRemapFailed
+                                            seqIdRemap = self.reasonsForReParsing['seq_id_remap'] if 'seq_id_remap' in self.reasonsForReParsing else []
+                                            if len(seqIdRemap) != len(seqIdRemapFailed)\
+                                               or seqIdRemap[0]['chain_id'] != seqIdRemapFailed[0]['chain_id']\
+                                               or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
+                                                self.reasonsForReParsing['ext_chain_seq_id_remap'] = seqIdRemapFailed
 
             # """
             # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
@@ -1013,6 +1026,18 @@ class AriaMRParserListener(ParseTreeListener):
                     seqId = _seqId = znSeqId
                     atomId = 'ZN'
                 preferNonPoly = True
+
+        if atomId in SYMBOLS_ELEMENT and self.__hasNonPolySeq:
+            elemCount = 0
+            for np in self.__nonPoly:
+                if np['comp_id'][0] == atomId:
+                    elemCount += 1
+            if elemCount > 0:
+                _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
+                if elemSeqId is not None:
+                    seqId = _seqId = elemSeqId
+                    compId = _compId = atomId
+                    preferNonPoly = True
 
         if self.__splitLigand is not None and len(self.__splitLigand):
             found = False
@@ -1420,6 +1445,18 @@ class AriaMRParserListener(ParseTreeListener):
                     seqId = _seqId = znSeqId
                     atomId = 'ZN'
                 preferNonPoly = True
+
+        if atomId in SYMBOLS_ELEMENT and self.__hasNonPolySeq:
+            elemCount = 0
+            for np in self.__nonPoly:
+                if np['comp_id'][0] == atomId:
+                    elemCount += 1
+            if elemCount > 0:
+                _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
+                if elemSeqId is not None:
+                    seqId = _seqId = elemSeqId
+                    compId = _compId = atomId
+                    preferNonPoly = True
 
         if self.__splitLigand is not None and len(self.__splitLigand):
             found = False

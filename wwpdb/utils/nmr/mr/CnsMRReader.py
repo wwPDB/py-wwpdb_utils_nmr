@@ -214,6 +214,24 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6cc9/NOE_cmpd2_run30_ambig.tbl',
+                     '../../tests-nmr/mock-data-remediation/6cc9/6cc9.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2lp4/2lp4-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2lp4/2lp4.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2lp4/2lp4-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2lp4/2lp4.cif')
+
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
@@ -325,11 +343,12 @@ if __name__ == "__main__":
         reader.parse('../../tests-nmr/mock-data-remediation/6vl2/restraint_file-corrected',
                      '../../tests-nmr/mock-data-remediation/6vl2/6vl2.cif')
 
-    reader = CnsMRReader(True)
-    reader.setDebugMode(True)
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2ljc/2ljc-trimmed.mr',
                      '../../tests-nmr/mock-data-remediation/2ljc/2ljc.cif')
+    print(reader_listener.getReasonsForReparsing())
     reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2ljc/2ljc-trimmed.mr',

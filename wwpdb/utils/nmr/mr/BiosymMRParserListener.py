@@ -608,7 +608,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                         else:
                                             _seq_id_remapping = next((_seq_id_remapping for _seq_id_remapping in self.reasonsForReParsing['seq_id_remap']
                                                                       if _seq_id_remapping['chain_id'] == ref_chain_id), None)
-                                            if _seq_id_remapping is None and not all(src_seq_id in _seq_id_remapping for src_seq_id in seq_id_mapping.keys()):
+                                            if _seq_id_remapping is not None and not all(src_seq_id in _seq_id_remapping for src_seq_id in seq_id_mapping.keys()):
                                                 seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
                                                                          'comp_id_set': list(set(poly_seq_model['comp_id']))})
 
@@ -650,7 +650,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                             else:
                                                 _seq_id_remapping = next((_seq_id_remapping for _seq_id_remapping in self.reasonsForReParsing['seq_id_remap']
                                                                           if _seq_id_remapping['chain_id'] == ref_chain_id), None)
-                                                if _seq_id_remapping is None and not all(src_seq_id in _seq_id_remapping for src_seq_id in seq_id_mapping.keys()):
+                                                if _seq_id_remapping is not None and not all(src_seq_id in _seq_id_remapping for src_seq_id in seq_id_mapping.keys()):
                                                     seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
                                                                              'comp_id_dict': comp_id_mapping})
 

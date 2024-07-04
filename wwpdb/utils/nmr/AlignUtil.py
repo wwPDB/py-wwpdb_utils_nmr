@@ -76,6 +76,9 @@ zincIonCode = ('ZN', 'ME', 'Z1', 'Z2')
 unknownResidue = ('UNK', 'DN', 'N')
 reservedLigCode = ('LIG', 'DRG', 'INH')  # DAOTHER-7204, 7388: reserved ligand codes for new ligands, which must include 2 digits 01-99
 
+dnrParentCode = ('DC', 'CYT', 'DC5', 'DC3')
+chParentCode = ('C', 'RCYT', 'C5', 'C3')
+
 LARGE_ASYM_ID = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')
 LEN_LARGE_ASYM_ID = len(LARGE_ASYM_ID)

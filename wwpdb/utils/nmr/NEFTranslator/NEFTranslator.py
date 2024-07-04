@@ -121,6 +121,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (LEN_LARGE_ASYM_ID, LOW_SEQ_COVERAGE,
                                            emptyValue, trueValue, monDict3,
                                            protonBeginCode, pseProBeginCode, aminoProtonCode,
+                                           dnrParentCode, chParentCode,
                                            letterToDigit, indexToLetter,
                                            alignPolymerSequence,
                                            alignPolymerSequenceWithConflicts,
@@ -136,6 +137,7 @@ except ImportError:
     from nmr.AlignUtil import (LEN_LARGE_ASYM_ID, LOW_SEQ_COVERAGE,
                                emptyValue, trueValue, monDict3,
                                protonBeginCode, pseProBeginCode, aminoProtonCode,
+                               dnrParentCode, chParentCode,
                                letterToDigit, indexToLetter,
                                alignPolymerSequence,
                                alignPolymerSequenceWithConflicts,
@@ -1535,24 +1537,24 @@ class NEFTranslator:
                     ch_set = set()
                     for row in pre_seq_data:
                         if row[3] in ('H3', 'H3+'):
-                            if row[1] in ('DC', 'CYT', 'DC5', 'DC3'):
+                            if row[1] in dnrParentCode:
                                 has_dc_h3 = True
                                 seq_key = (row[2], row[0])
                                 dnr_set.add(seq_key)
-                            elif row[1] == ('C', 'RCYT', 'C5', 'C3'):
+                            elif row[1] in chParentCode:
                                 has_c_h3 = True
                                 seq_key = (row[2], row[0])
                                 ch_set.add(seq_key)
                     comp_id_col = loop.tags.index('Comp_ID')
                     if has_dc_h3:
                         for idx, row in enumerate(pre_seq_data):
-                            if row[1] in ('DC', 'CYT', 'DC5', 'DC3'):
+                            if row[1] in dnrParentCode:
                                 seq_key = (row[2], row[0])
                                 if seq_key in dnr_set:
                                     loop.data[idx][comp_id_col] = 'DNR'
                     if has_c_h3:
                         for idx, row in enumerate(pre_seq_data):
-                            if row[1] in ('C', 'RCYT', 'C5', 'C3'):
+                            if row[1] in chParentCode:
                                 seq_key = (row[2], row[0])
                                 if seq_key in ch_set:
                                     loop.data[idx][comp_id_col] = 'CH'
@@ -1791,31 +1793,36 @@ class NEFTranslator:
                         for idx, row in enumerate(pre_comp_data):
                             if row[2] in emptyValue:
                                 continue
+                            auth_asym_id = row[0]
+                            try:
+                                auth_seq_id = int(row[1])
+                            except ValueError:
+                                continue
                             auth_comp_id = row[2].upper()
                             if len(auth_comp_id) not in (1, 2, 3, 5):
                                 ref_comp_id = None
                                 if coord_assembly_checker is not None:
                                     cif_ps = coord_assembly_checker['polymer_sequence']
                                     cif_np = coord_assembly_checker['non_polymer']
-                                    ps = next((ps for ps in cif_ps if ps['auth_chain_id'] == row[0]), None)
+                                    ps = next((ps for ps in cif_ps if ps['auth_chain_id'] == auth_asym_id), None)
                                     if ps is not None:
-                                        if row[1].isdigit() and int(row[1]) in ps['auth_seq_id']:
-                                            ref_comp_id = ps['comp_id'][ps['auth_seq_id'].index(int(row[1]))]
+                                        if auth_asym_id in ps['auth_seq_id']:
+                                            ref_comp_id = ps['comp_id'][ps['auth_seq_id'].index(auth_seq_id)]
                                     if cif_np is not None:
-                                        np = next((np for np in cif_np if np['auth_chain_id'] == row[0]), None)
+                                        np = next((np for np in cif_np if np['auth_chain_id'] == auth_asym_id), None)
                                         if np is not None:
-                                            if row[1].isdigit() and int(row[1]) in np['auth_seq_id']:
-                                                ref_comp_id = np['comp_id'][np['auth_seq_id'].index(int(row[1]))]
+                                            if auth_seq_id in np['auth_seq_id']:
+                                                ref_comp_id = np['comp_id'][np['auth_seq_id'].index(auth_seq_id)]
                                 loop.data[idx][auth_comp_id_col] = translateToStdResName(auth_comp_id, refCompId=ref_comp_id, ccU=self.__ccU)
                             elif coord_assembly_checker is not None:
                                 cif_ps = coord_assembly_checker['polymer_sequence']
                                 cif_np = coord_assembly_checker['non_polymer']
-                                ps = next((ps for ps in cif_ps if ps['auth_chain_id'] == row[0]), None)
+                                ps = next((ps for ps in cif_ps if ps['auth_chain_id'] == auth_asym_id), None)
                                 if ps is not None and auth_comp_id in ps['comp_id']:
                                     pass
                                 elif cif_np is not None:
                                     ligands = 0
-                                    np = next((np for np in cif_np if np['auth_chain_id'] == row[0]), None)
+                                    np = next((np for np in cif_np if np['auth_chain_id'] == auth_asym_id and auth_seq_id in np['auth_seq_id']), None)
                                     if np is not None:
                                         if auth_comp_id in np['comp_id']:
                                             ligands = 1
@@ -1825,7 +1832,12 @@ class NEFTranslator:
                                             ligands += np['comp_id'].count(auth_comp_id)
                                         if ligands == 1:
                                             for np in cif_np:
-                                                if np['comp_id'] == auth_comp_id:
+                                                if auth_comp_id in np['comp_id']:
+                                                    fill_ligand(idx, np)
+                                                    break
+                                        elif ligands > 1:
+                                            for np in cif_np:
+                                                if auth_comp_id in np['comp_id'] and auth_seq_id in np['auth_seq_id']:
                                                     fill_ligand(idx, np)
                                                     break
                                     if ligands == 0:
@@ -1834,7 +1846,12 @@ class NEFTranslator:
                                                 ligands += np['alt_comp_id'].count(auth_comp_id)
                                         if ligands == 1:
                                             for np in cif_np:
-                                                if 'alt_comp_id' in np and np['alt_comp_id'][0] == auth_comp_id:
+                                                if 'alt_comp_id' in np and auth_comp_id in np['alt_comp_id']:
+                                                    fill_ligand(idx, np)
+                                                    break
+                                        elif ligands > 1:
+                                            for np in cif_np:
+                                                if 'alt_comp_id' in np and auth_comp_id in np['alt_comp_id'] and auth_seq_id in np['auth_seq_id']:
                                                     fill_ligand(idx, np)
                                                     break
 

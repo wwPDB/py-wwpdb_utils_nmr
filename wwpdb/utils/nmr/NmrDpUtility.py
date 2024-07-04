@@ -32354,12 +32354,12 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
-                        self.report.warning.appendDescription('sequence_mismatch',
-                                                              {'file_name': file_name, 'description': warn})
-                        self.report.setWarning()
+                        self.report.error.appendDescription('sequence_mismatch',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Unknown atom name]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',

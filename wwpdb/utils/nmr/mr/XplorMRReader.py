@@ -219,6 +219,12 @@ class XplorMRReader:
 
 
 if __name__ == "__main__":
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/5j0m/TARpRAM_pf1.txt-corrected',
+                     '../../tests-nmr/mock-data-remediation/5j0m/5j0m.cif')
+
     reader = XplorMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\

@@ -286,7 +286,8 @@ class AmberPTParserListener(ParseTreeListener):
                 if is_prev_term_atom and atom_name.endswith('T'):
                     return True
                 is_prev_3_prime_comp = prev_comp_id.endswith('3')
-                if is_prev_3_prime_comp and is_prev_term_atom:
+                if is_prev_3_prime_comp and (is_prev_term_atom
+                                             or self.__csStat.peptideLike(translateToStdResName(comp_id, ccU=self.__ccU))):
                     return True
                 return comp_id.endswith('5')\
                     and (is_prev_3_prime_comp

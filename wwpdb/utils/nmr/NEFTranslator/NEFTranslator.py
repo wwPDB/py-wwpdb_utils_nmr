@@ -1761,11 +1761,38 @@ class NEFTranslator:
                             loop.data[idx][comp_id_col] = translateToStdResName(row[2].upper(), refCompId=ref_comp_id, ccU=self.__ccU)
                     if 'Auth_comp_ID' in loop.tags:
                         pre_comp_data = get_lp_tag(loop, ['Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID'])
+                        alt_chain_id_col = loop.tags.index('Auth_asym_ID')
+                        auth_seq_id_col = loop.tags.index('Auth_seq_ID')
                         auth_comp_id_col = loop.tags.index('Auth_comp_ID')
+                        chain_id_col = loop.tags.index('Entity_assembly_ID') if 'Entity_assembly_ID' in loop.tags else -1
+                        seq_id_col = loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in loop.tags else -1
+                        alt_seq_id_col = loop.tags.index('Seq_ID') if 'Seq_ID' in loop.tags else -1
+                        entity_id_col = loop.tags.index('Entity_ID') if 'Entity_ID' in loop.tags else -1
+
+                        def fill_ligand(idx, np):
+                            try:
+                                seq_key = (np['auth_chain_id'], np['auth_seq_id'][0], np['comp_id'][0])
+                                if seq_key in coord_assembly_checker['auth_to_star_seq']:
+                                    _entity_assembly_id, _seq_id, _entity_id, _ = coord_assembly_checker['auth_to_star_seq'][seq_key]
+                                    row = loop.data[idx]  # pylint: disable=cell-var-from-loop
+                                    if chain_id_col != -1:  # pylint: disable=cell-var-from-loop
+                                        row[chain_id_col] = str(_entity_assembly_id)  # pylint: disable=cell-var-from-loop
+                                    if seq_id_col != -1:  # pylint: disable=cell-var-from-loop
+                                        row[seq_id_col] = str(_seq_id)  # pylint: disable=cell-var-from-loop
+                                    if alt_seq_id_col != -1:  # pylint: disable=cell-var-from-loop
+                                        row[alt_seq_id_col] = str(_seq_id)  # pylint: disable=cell-var-from-loop
+                                    if entity_id_col != -1:  # pylint: disable=cell-var-from-loop
+                                        row[entity_id_col] = str(_entity_id)  # pylint: disable=cell-var-from-loop
+                                    row[alt_chain_id_col], row[auth_seq_id_col], row[comp_id_col], row[auth_comp_id_col] =\
+                                        seq_key[0], str(seq_key[1]), seq_key[2], seq_key[2]  # pylint: disable=cell-var-from-loop
+                            except (KeyError, TypeError):
+                                pass
+
                         for idx, row in enumerate(pre_comp_data):
                             if row[2] in emptyValue:
                                 continue
-                            if len(row[2]) not in (1, 2, 3, 5):
+                            auth_comp_id = row[2].upper()
+                            if len(auth_comp_id) not in (1, 2, 3, 5):
                                 ref_comp_id = None
                                 if coord_assembly_checker is not None:
                                     cif_ps = coord_assembly_checker['polymer_sequence']
@@ -1779,7 +1806,37 @@ class NEFTranslator:
                                         if np is not None:
                                             if row[1].isdigit() and int(row[1]) in np['auth_seq_id']:
                                                 ref_comp_id = np['comp_id'][np['auth_seq_id'].index(int(row[1]))]
-                                loop.data[idx][auth_comp_id_col] = translateToStdResName(row[2].upper(), refCompId=ref_comp_id, ccU=self.__ccU)
+                                loop.data[idx][auth_comp_id_col] = translateToStdResName(auth_comp_id, refCompId=ref_comp_id, ccU=self.__ccU)
+                            elif coord_assembly_checker is not None:
+                                cif_ps = coord_assembly_checker['polymer_sequence']
+                                cif_np = coord_assembly_checker['non_polymer']
+                                ps = next((ps for ps in cif_ps if ps['auth_chain_id'] == row[0]), None)
+                                if ps is not None and auth_comp_id in ps['comp_id']:
+                                    pass
+                                elif cif_np is not None:
+                                    ligands = 0
+                                    np = next((np for np in cif_np if np['auth_chain_id'] == row[0]), None)
+                                    if np is not None:
+                                        if auth_comp_id in np['comp_id']:
+                                            ligands = 1
+                                            fill_ligand(idx, np)
+                                    if ligands == 0:
+                                        for np in cif_np:
+                                            ligands += np['comp_id'].count(auth_comp_id)
+                                        if ligands == 1:
+                                            for np in cif_np:
+                                                if np['comp_id'] == auth_comp_id:
+                                                    fill_ligand(idx, np)
+                                                    break
+                                    if ligands == 0:
+                                        for np in cif_np:
+                                            if 'alt_comp_id' in np:
+                                                ligands += np['alt_comp_id'].count(auth_comp_id)
+                                        if ligands == 1:
+                                            for np in cif_np:
+                                                if 'alt_comp_id' in np and np['alt_comp_id'][0] == auth_comp_id:
+                                                    fill_ligand(idx, np)
+                                                    break
 
                 seq_data = get_lp_tag(loop, tags)
                 has_valid_chain_id = True

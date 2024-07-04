@@ -980,7 +980,7 @@ class SybylMRParserListener(ParseTreeListener):
         self.__allow_ext_seq = False
 
         if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
-           and atomId in zincIonCode and self.__hasNonPolySeq:
+           and atomId in zincIonCode and self.__hasNonPoly:
             znCount = 0
             znSeqId = None
             for np in self.__nonPoly:
@@ -994,7 +994,7 @@ class SybylMRParserListener(ParseTreeListener):
                     atomId = 'ZN'
                 preferNonPoly = True
 
-        if atomId in SYMBOLS_ELEMENT and self.__hasNonPolySeq:
+        if atomId in SYMBOLS_ELEMENT and self.__hasNonPoly:
             elemCount = 0
             for np in self.__nonPoly:
                 if np['comp_id'][0] == atomId:

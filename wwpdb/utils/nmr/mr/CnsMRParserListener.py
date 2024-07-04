@@ -5589,7 +5589,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 coordAtomSite = _coordAtomSite
                                 atomSiteAtomId = _coordAtomSite['atom_id']
 
-                    if compId == 'CYS' and _factor['atom_id'][0] in zincIonCode and self.__hasNonPolySeq:
+                    if compId == 'CYS' and _factor['atom_id'][0] in zincIonCode and self.__hasNonPoly:
                         znCount = 0
                         znSeqId = None
                         for np in self.__nonPoly:

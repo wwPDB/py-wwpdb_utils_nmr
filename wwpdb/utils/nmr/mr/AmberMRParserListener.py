@@ -75,6 +75,7 @@ try:
                                            carboxylCode,
                                            rdcBbPairCode,
                                            isReservedLigCode,
+                                           getOneLetterCodeCan,
                                            updatePolySeqRst,
                                            updatePolySeqRstFromAtomSelectionSet,
                                            sortPolySeqRst,
@@ -144,6 +145,7 @@ except ImportError:
                                carboxylCode,
                                rdcBbPairCode,
                                isReservedLigCode,
+                               getOneLetterCodeCan,
                                updatePolySeqRst,
                                updatePolySeqRstFromAtomSelectionSet,
                                sortPolySeqRst,
@@ -5134,9 +5136,12 @@ class AmberMRParserListener(ParseTreeListener):
                 if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
                     idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
                     compId = ps['comp_id'][idx]
-                    if compId not in monDict3 and self.__ccU.updateChemCompDict(compId)\
-                       and _compId == self.__ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?'):
-                        keep = True
+                    if compId not in monDict3 and self.__ccU.updateChemCompDict(compId):
+                        parentCompId = self.__ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
+                        if _compId == parentCompId or getOneLetterCodeCan(_compId) == getOneLetterCodeCan(parentCompId):
+                            keep = True
+                            if _compId != parentCompId:
+                                authCompId = compId
                 if not keep:
                     continue
 
@@ -5929,9 +5934,12 @@ class AmberMRParserListener(ParseTreeListener):
                     if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
                         idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
                         compId = ps['comp_id'][idx]
-                        if compId not in monDict3 and self.__ccU.updateChemCompDict(compId)\
-                           and _compId == self.__ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?'):
-                            keep = True
+                        if compId not in monDict3 and self.__ccU.updateChemCompDict(compId):
+                            parentCompId = self.__ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
+                            if _compId == parentCompId or getOneLetterCodeCan(_compId) == getOneLetterCodeCan(parentCompId):
+                                keep = True
+                                if _compId != parentCompId:
+                                    authCompId = compId
                     if not keep:
                         continue
 

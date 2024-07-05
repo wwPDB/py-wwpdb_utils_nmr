@@ -382,10 +382,11 @@ class GromacsPTParserListener(ParseTreeListener):
                                 for np in self.__nonPolyModel:
                                     if 'alt_comp_id' in np:
                                         ligands += np['alt_comp_id'].count(authCompId)
-                                if ligands == 1:
+                                if ligands > 0:
                                     for np in self.__nonPolyModel:
                                         if authCompId in np['alt_comp_id']:
                                             compId = np['comp_id'][0]
+                                            break
                                 if ligands == 0:
                                     __compId = None
                                     for np in self.__nonPolyModel:
@@ -681,6 +682,8 @@ class GromacsPTParserListener(ParseTreeListener):
                                     if atomId in self.__chemCompAtom[atomNum['cif_comp_id']]:
                                         atomNum['atom_id'] = atomId
                                         continue
+                            if atomId == "HO5'" and atomNum['seq_id'] == 1 and self.__csStat.getTypeOfCompId(atomNum['auth_comp_id'])[1]:
+                                continue
                             self.__f.append(f"[Unknown atom name] "
                                             f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['auth_comp_id']!r} residue.")
                         elif self.__chemCompAtom is not None:
@@ -717,6 +720,8 @@ class GromacsPTParserListener(ParseTreeListener):
                                         atomNum['atom_id'] = atomId
                                         continue
                             atomNum['atom_id'] = atomNum['auth_atom_id']
+                            if atomNum['atom_id'] == "HO5'" and atomNum['seq_id'] == 1 and self.__csStat.getTypeOfCompId(atomNum['comp_id'])[1]:
+                                continue
                             self.__f.append(f"[Unknown atom name] "
                                             f"{atomNum['auth_atom_id']!r} is not recognized as the atom name of {atomNum['comp_id']!r} residue "
                                             f"(the original residue label is {atomNum['auth_comp_id']!r}).")
@@ -1110,6 +1115,8 @@ class GromacsPTParserListener(ParseTreeListener):
                                 continue
                             if authAtomId not in reported_auth_atom_id:
                                 atomNum['atom_id'] = atomNum['auth_atom_id']
+                                if authAtomId == "HO5'" and atomNum['seq_id'] == 1 and self.__csStat.getTypeOfCompId(compId)[1]:
+                                    continue
                                 self.__f.append(f"[Unknown atom name] "
                                                 f"{authAtomId!r} is not recognized as the atom name of {compId!r} residue "
                                                 f"(the original residue label is {authCompId!r}).")

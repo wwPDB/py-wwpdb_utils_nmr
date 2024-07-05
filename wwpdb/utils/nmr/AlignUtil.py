@@ -1707,9 +1707,11 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
         result = next(seq_align for seq_align in seqAlign
                       if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
 
-        if result['matched'] == 0 or\
-           (result['conflict'] > 0
-            and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
+        if result['matched'] == 0:
+            continue
+
+        if not fileType.startswith('nm-aux') and result['conflict'] > 0\
+           and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched']):
             continue
 
         ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],

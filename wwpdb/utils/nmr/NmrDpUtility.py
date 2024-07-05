@@ -42836,8 +42836,8 @@ class NmrDpUtility:
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
                     if result['matched'] == 0 or\
-                       (result['conflict'] > 0
-                        and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
+                            (result['conflict'] > 0
+                             and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
                         continue
 
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
@@ -43104,8 +43104,8 @@ class NmrDpUtility:
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
                     if result['matched'] == 0 or\
-                       (result['conflict'] > 0
-                        and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
+                            (result['conflict'] > 0
+                             and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
                         continue
 
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
@@ -43583,8 +43583,8 @@ class NmrDpUtility:
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
                     if result['matched'] == 0 or\
-                       (result['conflict'] > 0
-                        and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
+                            (result['conflict'] > 0
+                             and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
                         continue
 
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],

@@ -223,15 +223,25 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    reader = CyanaMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2mxu/2mxu-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2mxu/2mxu.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CyanaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2mxu/2mxu-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2mxu/2mxu.cif')
+
     reasons = {'chain_seq_id_remap': [{'chain_id': 'B',
                                        'seq_id_dict': {1200: 1120, 1201: 1121, 1202: 1122, 1203: 1123, 1204: 1124, 1205: 1125, 1206: 1126,
                                                        1207: 1127, 1208: 1128, 1209: 1129, 1210: 1130, 1211: 1131, 1212: 1132, 1213: 1133},
                                        'comp_id_set': ['THR', 'ALA', 'GLU', 'LEU', 'PRO', 'ASN', 'GLY', 'LYS', 'SER', 'ARG', 'ASP', 'GLN', 'VAL', 'PHE']}]}
     reader = CyanaMRReader(True, reasons=reasons)
     reader.setDebugMode(True)
-    reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/8fg1/DADspinlinks.upl',
-                     '../../tests-nmr/mock-data-remediation/8fg1/8fg1.cif')
+    reader.parse('../../tests-nmr/mock-data-remediation/8fg1/DADspinlinks.upl',
+                 '../../tests-nmr/mock-data-remediation/8fg1/8fg1.cif')
 
     reader = CyanaMRReader(False)
     reader.setDebugMode(False)

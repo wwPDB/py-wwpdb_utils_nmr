@@ -942,6 +942,8 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
         if i1 >= LEN_LARGE_ASYM_ID:
             continue
 
+        len_ident_chain_id = 0 if 'identical_chain_id' not in s1 else len(s1['identical_chain_id'])
+
         seq_id_name = 'auth_seq_id' if 'auth_seq_id' in s1 else 'seq_id'
 
         for i2, s2 in enumerate(polySeqRst):
@@ -1147,7 +1149,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                                 truncated = (s_p, s_q)
                                 break
 
-            if conflict > 0 and not hasLargeSeqGap(_s1, _s2, seqIdName1=_seq_id_name):
+            if conflict > len_ident_chain_id // 5 and not hasLargeSeqGap(_s1, _s2, seqIdName1=_seq_id_name):
                 tabooList.append({chain_id, chain_id2})
 
             ref_length = len(s1[seq_id_name])
@@ -2527,6 +2529,15 @@ def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssign):
             if test_chain_id not in target_chain_ids:
                 target_chain_ids[test_chain_id] = []
             target_chain_ids[test_chain_id].append(ref_chain_id)
+        elif ca['conflict'] > 0 and ca['unmapped'] > 0:
+            ref_chain_id = ca['ref_chain_id']
+            ref_ps = next(ps for ps in polySeqModel if ps['auth_chain_id'] == ref_chain_id)
+            len_ident_chain_id = 0 if 'identical_chain_id' not in ref_ps else len(ref_ps['identical_chain_id'])
+            if ca['conflict'] <= len_ident_chain_id // 5:
+                test_chain_id = ca['test_chain_id']
+                if test_chain_id not in target_chain_ids:
+                    target_chain_ids[test_chain_id] = []
+                target_chain_ids[test_chain_id].append(ref_chain_id)
 
     if len(target_chain_ids) == 0:
         return None, None

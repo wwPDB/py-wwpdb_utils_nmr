@@ -16867,13 +16867,25 @@ class NmrDpUtility:
 
                                 err = f"Invalid chain_id {chain_id!r} in a loop {lp_category2}."
 
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
-                                                                     'description': err})
-                                self.report.setError()
+                                if self.__remediation_mode:
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Error  - {err}\n")
+                                    self.report.warning.appendDescription('sequence_mismatch',
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
+                                                                           'description': err})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Warning  - {err}\n")
+
+                                else:
+
+                                    self.report.error.appendDescription('sequence_mismatch',
+                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
+                                                                         'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Error  - {err}\n")
 
                             else:
 

@@ -351,6 +351,9 @@ class CharmmMRParserListener(ParseTreeListener):
     __f = __g = None
     warningMessage = None
 
+    # record failed chain id for segment_id assignment
+    __failure_chain_ids = []
+
     reasonsForReParsing = {}
 
     __cachedDictForAtomIdList = {}
@@ -2438,6 +2441,8 @@ class CharmmMRParserListener(ParseTreeListener):
                 _factor['atom_selection'] = ['*']
                 return _factor
 
+            self.__failure_chain_ids.clear()
+
         self.__retrieveLocalSeqScheme()
 
         if 'atom_id' in _factor and len(_factor['atom_id']) == 1:
@@ -3774,6 +3779,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                             f"The residue number '{seqId}' is not present "
                                                                             f"in polymer sequence of chain {chainId} of the coordinates. "
                                                                             "Please update the sequence in the Macromolecules page.")
+                                                            if 'alt_chain_id' in _factor:
+                                                                self.__failure_chain_ids.append(chainId)
                                                         else:
                                                             if len(chainIds) > 1 and isPolySeq:
                                                                 __preferAuthSeq = self.__preferAuthSeq
@@ -3811,6 +3818,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                 else 'Atom not found'
                                                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates.")
+                                                            if 'alt_chain_id' in _factor:
+                                                                self.__failure_chain_ids.append(chainId)
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
                                         auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                         if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
@@ -3841,6 +3850,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates. "
                                                                     f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
                                                                     "Please update the sequence in the Macromolecules page.")
+                                                    if 'alt_chain_id' in _factor:
+                                                        self.__failure_chain_ids.append(chainId)
                                                 elif seqSpecified:
                                                     if resolved and altPolySeq is not None:
                                                         continue
@@ -3934,6 +3945,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates.")
                                                     if self.__cur_subtype == 'dist' and isPolySeq and isChainSpecified and compId in monDict3 and self.__csStat.peptideLike(compId):
                                                         self.checkDistSequenceOffset(chainId, seqId, compId, origAtomId0)
+                                                    if 'alt_chain_id' in _factor:
+                                                        self.__failure_chain_ids.append(chainId)
 
         return foundCompId
 
@@ -4086,8 +4099,14 @@ class CharmmMRParserListener(ParseTreeListener):
             return
         if chainId not in self.reasonsForReParsing['segment_id_match_stats'][altChainId]:
             self.reasonsForReParsing['segment_id_match_stats'][altChainId][chainId] = 0
-        if valid:
+        if valid or chainId not in self.__failure_chain_ids:
             self.reasonsForReParsing['segment_id_match_stats'][altChainId][chainId] += 1
+        else:
+            for _chainId in factor['chain_id']:
+                if _chainId in self.__failure_chain_ids:
+                    if _chainId not in self.reasonsForReParsing['segment_id_match_stats'][altChainId]:
+                        self.reasonsForReParsing['segment_id_match_stats'][altChainId][_chainId] = 0
+                    self.reasonsForReParsing['segment_id_match_stats'][altChainId][_chainId] -= 1
         stats = self.reasonsForReParsing['segment_id_match_stats'][altChainId]
         _chainId = max(stats, key=lambda key: stats[key])[0]
         self.reasonsForReParsing['segment_id_mismatch'][altChainId] = _chainId

@@ -1639,15 +1639,17 @@ class NEFTranslator:
                                         ps = next(ps for ps in cif_ps if ps['auth_chain_id'] == ref_chain_id)
                                         for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                                             if mid_code == '|' and test_seq_id is not None:
+                                                rev_seq_key = (test_chain_id, test_seq_id)
+                                                if rev_seq_key in rev_seq:
+                                                    continue
                                                 try:
-                                                    rev_seq[(test_chain_id, test_seq_id)] =\
+                                                    rev_seq[rev_seq_key] =\
                                                         (ps['auth_chain_id'],
                                                          next(auth_seq_id for auth_seq_id, _seq_id
                                                               in zip(ps['auth_seq_id'], ps['seq_id'])
                                                               if _seq_id == ref_seq_id and isinstance(auth_seq_id, int)))
                                                 except StopIteration:
-                                                    rev_seq[(test_chain_id, test_seq_id)] = (ps['auth_chain_id'], ref_seq_id)
-                                        break
+                                                    rev_seq[rev_seq_key] = (ps['auth_chain_id'], ref_seq_id)
                                     chain_id_col = loop.tags.index('Entity_assembly_ID')  # pylint: disable=cell-var-from-loop
                                     alt_chain_id_col = loop.tags.index('Auth_asym_ID')  # pylint: disable=cell-var-from-loop
                                     auth_seq_id_col = loop.tags.index('Auth_seq_ID')  # pylint: disable=cell-var-from-loop
@@ -1693,15 +1695,17 @@ class NEFTranslator:
                                             np = next(np for np in cif_np if np['auth_chain_id'] == ref_chain_id)
                                             for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                                                 if mid_code == '|' and test_seq_id is not None:
+                                                    rev_seq_key = (test_chain_id, test_seq_id)
+                                                    if rev_seq_key in rev_seq:
+                                                        continue
                                                     try:
-                                                        rev_seq[(test_chain_id, test_seq_id)] =\
+                                                        rev_seq[rev_seq_key] =\
                                                             (np['auth_chain_id'],
                                                              next(auth_seq_id for auth_seq_id, _seq_id
                                                                   in zip(np['auth_seq_id'], np['seq_id'])
                                                                   if _seq_id == ref_seq_id and isinstance(auth_seq_id, int)))
                                                     except StopIteration:
-                                                        rev_seq[(test_chain_id, test_seq_id)] = (np['auth_chain_id'], ref_seq_id)
-                                            break
+                                                        rev_seq[rev_seq_key] = (np['auth_chain_id'], ref_seq_id)
                                         chain_id_col = loop.tags.index('Entity_assembly_ID')  # pylint: disable=cell-var-from-loop
                                         alt_chain_id_col = loop.tags.index('Auth_asym_ID')  # pylint: disable=cell-var-from-loop
                                         auth_seq_id_col = loop.tags.index('Auth_seq_ID')  # pylint: disable=cell-var-from-loop

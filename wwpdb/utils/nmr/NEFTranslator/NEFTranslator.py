@@ -1647,6 +1647,7 @@ class NEFTranslator:
                                                               if _seq_id == ref_seq_id and isinstance(auth_seq_id, int)))
                                                 except StopIteration:
                                                     rev_seq[(test_chain_id, test_seq_id)] = (ps['auth_chain_id'], ref_seq_id)
+                                        break
                                     chain_id_col = loop.tags.index('Entity_assembly_ID')  # pylint: disable=cell-var-from-loop
                                     alt_chain_id_col = loop.tags.index('Auth_asym_ID')  # pylint: disable=cell-var-from-loop
                                     auth_seq_id_col = loop.tags.index('Auth_seq_ID')  # pylint: disable=cell-var-from-loop
@@ -1700,6 +1701,7 @@ class NEFTranslator:
                                                                   if _seq_id == ref_seq_id and isinstance(auth_seq_id, int)))
                                                     except StopIteration:
                                                         rev_seq[(test_chain_id, test_seq_id)] = (np['auth_chain_id'], ref_seq_id)
+                                            break
                                         chain_id_col = loop.tags.index('Entity_assembly_ID')  # pylint: disable=cell-var-from-loop
                                         alt_chain_id_col = loop.tags.index('Auth_asym_ID')  # pylint: disable=cell-var-from-loop
                                         auth_seq_id_col = loop.tags.index('Auth_seq_ID')  # pylint: disable=cell-var-from-loop

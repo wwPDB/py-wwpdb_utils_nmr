@@ -1743,7 +1743,7 @@ class NEFTranslator:
                             chain_id_col = loop.tags.index('Entity_assembly_ID')
                             for r in loop.data:
                                 r[chain_id_col] = r[entity_id_col]
-                    elif len(alt_chain_id_set) > 0 and len(alt_chain_id_set) == len(chain_id_set):  # 5xv8
+                    elif len(alt_chain_id_set) == 1 and len(chain_id_set) == 1:  # 5xv8
                         resolve_entity_assembly()
 
                 if 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags:

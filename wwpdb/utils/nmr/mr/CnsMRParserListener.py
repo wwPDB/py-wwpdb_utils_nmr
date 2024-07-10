@@ -18,6 +18,7 @@ from operator import itemgetter
 
 try:
     from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+    from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
     from wwpdb.utils.nmr.mr.CnsMRParser import CnsMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx, toNefEx,
                                                        coordAssemblyChecker,
@@ -116,6 +117,7 @@ try:
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
     from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+    from nmr.io.CifReader import SYMBOLS_ELEMENT
     from nmr.mr.CnsMRParser import CnsMRParser
     from nmr.mr.ParserListenerUtil import (toRegEx, toNefEx,
                                            coordAssemblyChecker,
@@ -5324,28 +5326,79 @@ class CnsMRParserListener(ParseTreeListener):
                                     for np in self.__nonPoly:
                                         ligands += len(np['seq_id'])
                                 if len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1:
+
+                                    def update_np_seq_id_remap_request(np, ligands):
+                                        if 'np_seq_id_remap' not in self.reasonsForReParsing:
+                                            self.reasonsForReParsing['np_seq_id_remap'] = {}
+                                        chainId = _factor['chain_id'][0]
+                                        srcSeqId = _factor['seq_id'][0]
+                                        dstSeqId = np['seq_id'][0]
+                                        if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
+                                            self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
+                                        if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
+                                            if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] is not None:
+                                                if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
+                                                    self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = None
+                                                    ligands = 0
+                                            else:
+                                                ligands = 0
+                                        else:
+                                            self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
+                                        return ligands
+
                                     if ligands == 1:
                                         for np in self.__nonPoly:
                                             _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
                                             if _coordAtomSite is not None and len(_factor['atom_id']) == 1 and _factor['atom_id'][0].upper() in _coordAtomSite['atom_id']:
-                                                if 'np_seq_id_remap' not in self.reasonsForReParsing:
-                                                    self.reasonsForReParsing['np_seq_id_remap'] = {}
-                                                chainId = _factor['chain_id'][0]
-                                                srcSeqId = _factor['seq_id'][0]
-                                                dstSeqId = self.__nonPoly[0]['seq_id'][0]
-                                                if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
-                                                    self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
-                                                if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
-                                                    if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] is not None:
-                                                        if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
-                                                            self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = None
-                                                            ligands = 0
-                                                    else:
-                                                        ligands = 0
-                                                else:
-                                                    self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
+                                                ligands = update_np_seq_id_remap_request(self.__nonPoly[0], ligands)
                                             else:
                                                 ligands = 0
+
+                                    elif ligands > 1 and len(_factor['atom_id']) == 1 and _factor['atom_id'][0].upper() in SYMBOLS_ELEMENT:  # 2n3r
+                                        elemName = _factor['atom_id'][0].upper()
+                                        elemCount = 0
+                                        refElemSeqIds = []
+                                        for np in self.__nonPoly:
+                                            if np['comp_id'][0] == elemName:
+                                                elemCount += 1
+                                                refElemSeqIds.append(np['seq_id'][0])
+                                        if elemCount == 1:
+                                            for np in self.__nonPoly:
+                                                if np['comp_id'][0] == elemName:
+                                                    ligands = update_np_seq_id_remap_request(np, ligands)
+                                                    break
+                                        elif elemCount > 1:
+                                            try:
+                                                elemSeqId = int(_factor['seq_id'][0])
+                                                found = False
+                                                for np in self.__nonPoly:
+                                                    if np['comp_id'][0] == elemName and (elemSeqId in np['seq_id'] or elemSeqId in np['auth_seq_id']):
+                                                        ligands = update_np_seq_id_remap_request(np, ligands)
+                                                        found = True
+                                                        break
+                                                if not found:
+                                                    if 'alt_chain_id' in _factor:
+                                                        elemChainId = _factor['alt_chain_id']
+                                                        if elemName in elemChainId and len(elemChainId) > len(elemName) and elemChainId[len(elemName):].isdigit():
+                                                            elemChainOrder = int(elemChainId[len(elemName):])
+                                                            if 1 <= elemChainOrder <= len(refElemSeqIds):
+                                                                np_idx = 1
+                                                                for np in self.__nonPoly:
+                                                                    if np['comp_id'][0] == elemName:
+                                                                        if elemChainOrder == np_idx:
+                                                                            ligands = update_np_seq_id_remap_request(np, ligands)
+                                                                            found = True
+                                                                            break
+                                                                        np_idx += 1
+                                                    if not found and 1 <= elemSeqId <= len(refElemSeqIds):
+                                                        elemSeqId = refElemSeqIds[elemSeqId - 1]
+                                                        for np in self.__nonPoly:
+                                                            if np['comp_id'][0] == elemName and elemSeqId in np['seq_id']:
+                                                                ligands = update_np_seq_id_remap_request(np, ligands)
+                                                                found = True
+                                            except ValueError:
+                                                pass
+
                                     if len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
                                         compIds = guessCompIdFromAtomId(_factor['atom_id'], self.__polySeq, self.__nefT)
                                         if compIds is not None:
@@ -6207,6 +6260,11 @@ class CnsMRParserListener(ParseTreeListener):
                                                                         checked = True
                                                             if checked and isPolySeq and self.__reasons is not None and 'np_seq_id_remap' in self.__reasons:
                                                                 continue
+                                                        # 2n3r
+                                                        elif ligands > 1 and isPolySeq and self.__reasons is not None and 'np_seq_id_remap' in self.__reasons\
+                                                                and retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)[0] is not None:
+                                                            continue
+
                                                     warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                         and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
                                                         else 'Atom not found'
@@ -6924,7 +6982,7 @@ class CnsMRParserListener(ParseTreeListener):
                     if len(self.__fibril_chain_ids) > 0 and not self.__hasNonPoly:
                         if chainId[0] in self.__fibril_chain_ids:
                             self.factor['chain_id'] = [chainId[0]]
-                    elif len(self.__polySeq) == 1:
+                    elif len(self.__polySeq) == 1 and not self.__hasNonPoly:
                         self.factor['chain_id'] = self.__polySeq[0]['chain_id']
                         self.factor['auth_chain_id'] = chainId
                     elif self.__reasons is not None:
@@ -8339,7 +8397,7 @@ class CnsMRParserListener(ParseTreeListener):
                         if len(self.__fibril_chain_ids) > 0 and not self.__hasNonPoly:
                             if chainId[0] in self.__fibril_chain_ids:
                                 self.factor['chain_id'] = [chainId[0]]
-                        elif len(self.__polySeq) == 1:
+                        elif len(self.__polySeq) == 1 and not self.__hasNonPoly:
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']
                             self.factor['auth_chain_id'] = chainId
                         elif self.__reasons is not None:

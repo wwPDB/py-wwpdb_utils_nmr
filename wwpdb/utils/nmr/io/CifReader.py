@@ -587,13 +587,29 @@ class CifReader:
                             elif filterItemType == 'bool':
                                 val = val.lower() in self.trueValue
                             elif filterItemType == 'int':
-                                val = int(val)
+                                try:
+                                    val = int(val)
+                                except ValueError:
+                                    keep = False
+                                    break
                             elif filterItemType == 'float':
-                                val = float(val)
+                                try:
+                                    val = float(val)
+                                except ValueError:
+                                    keep = False
+                                    break
                             elif filterItemType in ('abs-int', 'range-abs-int'):
-                                val = abs(int(val))
+                                try:
+                                    val = abs(int(val))
+                                except ValueError:
+                                    keep = False
+                                    break
                             else:  # 'range-float', 'range-abs-float'
-                                val = abs(float(val))
+                                try:
+                                    val = abs(float(val))
+                                except ValueError:
+                                    keep = False
+                                    break
                             if filterItemType in ('range-int', 'range-abs-int', 'range-float', 'range-abs-float'):
                                 _range = filterItem['range']
                                 if ('min_exclusive' in _range and val <= _range['min_exclusive'])\
@@ -641,7 +657,10 @@ class CifReader:
                         elif dataItemType == 'bool':
                             val = val.lower() in self.trueValue
                         elif dataItemType == 'int' and val is not None:
-                            val = int(val)
+                            try:
+                                val = int(val)
+                            except ValueError:
+                                val = None
                         elif val is not None:
                             val = float(val)
                         if 'alt_name' in dataItem:

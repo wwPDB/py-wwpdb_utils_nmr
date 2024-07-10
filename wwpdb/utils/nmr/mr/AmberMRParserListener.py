@@ -895,6 +895,10 @@ class AmberMRParserListener(ParseTreeListener):
                             ref_chain_id = ca['ref_chain_id']
                             test_chain_id = ca['test_chain_id']
 
+                            ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == ref_chain_id)
+                            if 'identical_chain_id' in ps:
+                                continue
+
                             sa = next((sa for sa in self.__seqAlign
                                        if sa['ref_chain_id'] == ref_chain_id
                                        and sa['test_chain_id'] == test_chain_id), None)

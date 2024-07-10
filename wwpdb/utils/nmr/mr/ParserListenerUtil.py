@@ -3119,6 +3119,9 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
         if _compId in monDict3:
             return _compId
 
+        if _compId == 'HC':
+            return 'CH' if refCompId == 'C' else 'DNR'
+
     if compId.startswith('R') and len(compId) > 1 and compId[1] in ('A', 'C', 'G', 'U'):
         _compId = compId[1:]
 
@@ -3171,6 +3174,8 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
             return 'G' if refCompId == 'G' else 'DG'
         if compId == 'THY':
             return 'DT'
+        if compId == 'HCY':
+            return 'CH' if refCompId == 'C' else 'DNR'
 
     if compId == 'RADE':
         return 'A'

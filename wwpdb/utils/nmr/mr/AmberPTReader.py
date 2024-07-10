@@ -190,6 +190,10 @@ class AmberPTReader:
 
 if __name__ == "__main__":
     reader = AmberPTReader(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/7z9l/ok1.top',
+                 '../../tests-nmr/mock-data-remediation/7z9l/7z9l.cif')
+
+    reader = AmberPTReader(True)
     reader.parse('../../tests-nmr/mock-data-remediation/7x8m/sa0.prmtop',
                  '../../tests-nmr/mock-data-remediation/7x8m/7x8m.cif')
 

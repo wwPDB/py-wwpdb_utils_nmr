@@ -296,7 +296,7 @@ class AmberPTParserListener(ParseTreeListener):
             def is_ligand(prev_comp_id, comp_id):
                 if prev_comp_id is None or not self.__hasNonPolyModel:
                     return False
-                if not prev_comp_id.endswith('3'):
+                if not prev_comp_id.endswith('3') or prev_comp_id == comp_id:
                     return False
                 for np in self.__nonPolyModel:
                     if comp_id in np['comp_id']:

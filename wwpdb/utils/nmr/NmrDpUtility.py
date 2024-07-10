@@ -19313,7 +19313,7 @@ class NmrDpUtility:
                                    and atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                     continue
 
-                                if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                                if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                     continue
 
                                 if self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
@@ -19340,7 +19340,7 @@ class NmrDpUtility:
                         if atom_id in emptyValue:
                             continue
 
-                        if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                        if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                             continue
 
                         if self.__csStat.peptideLike(comp_id):
@@ -19400,7 +19400,7 @@ class NmrDpUtility:
                                     and atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                 pass
 
-                            elif self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                            elif self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                 pass
 
                             elif self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
@@ -19445,7 +19445,7 @@ class NmrDpUtility:
 
                             if atom_id not in ref_atom_ids:
 
-                                if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                                if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                     continue
 
                                 unk_atom_ids.append(atom_id)

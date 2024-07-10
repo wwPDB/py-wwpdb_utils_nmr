@@ -1526,12 +1526,21 @@ class NEFTranslator:
                             alt_chain_id_set.add(row)
                 has_auth_asym_id = len(alt_chain_id_set) > 0
 
+                # fix wrong biocuration seen in 8ofc_cs.str
+                if set(tags) & set(loop.tags) == set(tags):
+                    pre_seq_data = get_lp_tag(loop, tags)
+                    if all(not row[0].isdigit() and row[1].isdigit() for row in pre_seq_data if row[0] not in emptyValue and row[1] not in emptyValue):
+                        col0 = loop.tags.index(tags[0])
+                        col1 = loop.tags.index(tags[1])
+                        for row in loop:
+                            row[col0], row[col1] = row[col1], row[col0]
+
                 # convert protonated DC -> DNR, protonated C -> CH
                 if 'Atom_ID' in loop.tags and 'Auth_comp_ID' not in loop.tags\
                    and set(tags) & set(loop.tags) == set(tags):
-                    pre_tag = copy.deepcopy(tags)
-                    pre_tag.append('Atom_ID')
-                    pre_seq_data = get_lp_tag(loop, pre_tag)
+                    pre_tags = copy.deepcopy(tags)
+                    pre_tags.append('Atom_ID')
+                    pre_seq_data = get_lp_tag(loop, pre_tags)
                     has_dc_h3 = has_c_h3 = False
                     dnr_set = set()
                     ch_set = set()
@@ -1558,13 +1567,45 @@ class NEFTranslator:
                                 seq_key = (row[2], row[0])
                                 if seq_key in ch_set:
                                     loop.data[idx][comp_id_col] = 'CH'
+                elif 'Atom_ID' in loop.tags and 'Auth_comp_ID' in loop.tags\
+                        and set(tags) & set(loop.tags) == set(tags):
+                    pre_tags = copy.deepcopy(tags)
+                    pre_tags.append('Atom_ID')
+                    pre_seq_data = get_lp_tag(loop, pre_tags)
+                    has_dc_h3 = has_c_h3 = False
+                    dnr_set = set()
+                    ch_set = set()
+                    for row in pre_seq_data:
+                        if row[3] in ('H3', 'H3+'):
+                            if row[1] in dnrParentCode:
+                                has_dc_h3 = True
+                                seq_key = (row[2], row[0])
+                                dnr_set.add(seq_key)
+                            elif row[1] in chParentCode:
+                                has_c_h3 = True
+                                seq_key = (row[2], row[0])
+                                ch_set.add(seq_key)
+                    comp_id_col = loop.tags.index('Comp_ID')
+                    auth_comp_id_col = loop.tags.index('Auth_comp_ID')
+                    if has_dc_h3:
+                        for idx, row in enumerate(pre_seq_data):
+                            if row[1] in dnrParentCode:
+                                seq_key = (row[2], row[0])
+                                if seq_key in dnr_set:
+                                    loop.data[idx][comp_id_col] = loop.data[idx][auth_comp_id_col] = 'DNR'
+                    if has_c_h3:
+                        for idx, row in enumerate(pre_seq_data):
+                            if row[1] in chParentCode:
+                                seq_key = (row[2], row[0])
+                                if seq_key in ch_set:
+                                    loop.data[idx][comp_id_col] = loop.data[idx][auth_comp_id_col] = 'CH'
 
             if lp_category == '_Atom_chem_shift' and self.__remediation_mode and has_auth_asym_id\
                and set(tags) & set(loop.tags) == set(tags) and set(tags__) & set(loop.tags) == set(tags__):
                 factor = max(len(alt_chain_id_set), 2)  # 2lnh
                 if seq_id != alt_seq_id and alt_seq_id in loop.tags:
-                    pre_tag = [seq_id, alt_seq_id]
-                    pre_seq_data = get_lp_tag(loop, pre_tag)
+                    pre_tags = [seq_id, alt_seq_id]
+                    pre_seq_data = get_lp_tag(loop, pre_tags)
                     seq_id_set = set()
                     alt_seq_id_set = set()
                     for row in pre_seq_data:
@@ -1596,8 +1637,8 @@ class NEFTranslator:
 
                     def resolve_entity_assembly(sync_seq):
                         if coord_assembly_checker is not None and 'Auth_seq_ID' in loop.tags:  # pylint: disable=cell-var-from-loop
-                            pre_tag = [alt_chain_id, 'Auth_seq_ID', 'Comp_ID']
-                            pre_seq_data = get_lp_tag(loop, pre_tag)  # pylint: disable=cell-var-from-loop
+                            pre_tags = [alt_chain_id, 'Auth_seq_ID', 'Comp_ID']
+                            pre_seq_data = get_lp_tag(loop, pre_tags)  # pylint: disable=cell-var-from-loop
                             alt_chain_id_list = list(alt_chain_id_set)  # pylint: disable=cell-var-from-loop
                             cif_ps = coord_assembly_checker['polymer_sequence']
                             cif_np = coord_assembly_checker['non_polymer']
@@ -1916,8 +1957,8 @@ class NEFTranslator:
                     and coord_assembly_checker is not None and len(coord_assembly_checker['polymer_sequence']) > 1:
                 factor = 2
                 if seq_id != alt_seq_id and alt_seq_id in loop.tags:
-                    pre_tag = [seq_id, alt_seq_id]
-                    pre_seq_data = get_lp_tag(loop, pre_tag)
+                    pre_tags = [seq_id, alt_seq_id]
+                    pre_seq_data = get_lp_tag(loop, pre_tags)
                     seq_id_set = set()
                     alt_seq_id_set = set()
                     for row in pre_seq_data:
@@ -1946,8 +1987,8 @@ class NEFTranslator:
                     if row not in emptyValue:
                         chain_id_set.add(row)
                 if len(chain_id_set) == 1:
-                    pre_tag = ['Comp_index_ID', 'Comp_ID']
-                    pre_seq_data = get_lp_tag(loop, pre_tag)
+                    pre_tags = ['Comp_index_ID', 'Comp_ID']
+                    pre_seq_data = get_lp_tag(loop, pre_tags)
                     cif_ps = coord_assembly_checker['polymer_sequence']
                     cif_np = coord_assembly_checker['non_polymer']
                     nmr_chain_id = list(chain_id_set)[0]
@@ -6170,6 +6211,12 @@ class NEFTranslator:
                         _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, qr_atom, details, leave_unmatched, methyl_only)
                         atom_list.extend(_atom_list)
                     return (atom_list, ambiguity_code, details)
+
+                if comp_id in monDict3 and atom_id.upper() == 'ME':
+                    rep_methyl_protons = self.__csStat.getRepMethylProtons(comp_id)
+                    if len(rep_methyl_protons) == 1:
+                        atom_list, ambiguity_code, details = self.__csStat.getProtonsInSameGroup(comp_id, rep_methyl_protons[0]), 1, None
+                        return (atom_list, ambiguity_code, details)
 
                 if atom_id.startswith('Q') or atom_id.startswith('M'):
                     if atom_id[-1].isalnum():

@@ -2194,9 +2194,104 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
             if atomId == 'CD':
                 return 'CD1'
 
-        if refCompId in ('SER', 'THR', 'TYR'):
+        elif refCompId in ('SER', 'THR', 'TYR'):
             if atomId.startswith('HO') and len(atomId) > 2:  # 2n6j
                 return 'H' + atomId[2:]
+
+        elif refCompId == 'ASN' and atomId.startswith('HND'):  # 2kg1
+            if atomId == 'HND1':
+                return 'HD21'
+            if atomId == 'HND2':
+                return 'HD22'
+            if atomId == 'HND':
+                return 'HD2'
+
+        elif refCompId == 'GLN' and atomId.startswith('HNE'):  # 2kg1
+            if atomId == 'HNE1':
+                return 'HE21'
+            if atomId == 'HNE2':
+                return 'HE22'
+            if atomId == 'HNE':
+                return 'HE2'
+
+        elif refCompId == 'HIS':
+            if atomId == 'HNE':  # 2k4w
+                return 'HE2'
+            if atomId == 'HND':
+                return 'HD1'
+            if atomId == 'HE':
+                return 'HE1'
+            if atomId == 'HD':
+                return 'HD2'
+
+        elif refCompId == 'NH2':
+            if atomId in ('HN*', 'HN%', 'H*', 'H%', 'QH', 'QN') and not unambig:
+                return 'HN%'
+            if atomId in ('H', 'HN'):
+                return 'HN1'
+            if atomId.startswith('H'):
+                return 'HN2'
+
+        elif refCompId == 'ACE':
+            if atomId in ('HA', 'HA*', 'HA%', 'HA1', 'HA2', 'HA3', 'QH', 'MH', 'QA', 'MA') and not unambig:
+                return 'H%'
+            if atomId == 'CA':
+                return 'CH3'
+
+        elif refCompId in ('HEB', 'HEC'):
+            if atomId[0] in pseProBeginCode:
+                if atomId == 'QM1':
+                    return 'HMB'
+                if atomId == 'QT2':
+                    return 'HBB'
+                if atomId.startswith('HT2') and refCompId == 'HEC':
+                    return 'HAB'
+                if atomId in ('HT2', 'HA2', 'HA21', 'HA22') and refCompId == 'HEB':
+                    return 'HAB'
+                if atomId == 'HA23' and refCompId == 'HEB':
+                    return 'HAB2'
+                if atomId == 'QM3':
+                    return 'HMC'
+                if atomId == 'QT4':
+                    return 'HBC'
+                if atomId.startswith('HT4'):
+                    return 'HAC'
+                if atomId == 'QM5':
+                    return 'HMD'
+                if atomId == 'HA62':
+                    return 'HAD1'
+                if atomId == 'HA63':
+                    return 'HAD2'
+                if atomId == 'HB62':
+                    return 'HBD1'
+                if atomId == 'HB63':
+                    return 'HBD2'
+                if atomId == 'HA72':
+                    return 'HAA1'
+                if atomId == 'HA73':
+                    return 'HAA2'
+                if atomId == 'HB72':
+                    return 'HBA1'
+                if atomId == 'HB73':
+                    return 'HBA2'
+                if atomId == 'HA6':
+                    return 'HAD'
+                if atomId == 'HB6':
+                    return 'HBD'
+                if atomId == 'HA7':
+                    return 'HAA'
+                if atomId == 'HB7':
+                    return 'HBA'
+                if atomId == 'QM8':
+                    return 'HMA'
+                if atomId == 'HAM':
+                    return 'HHA'
+                if atomId == 'HBM':
+                    return 'HHB'
+                if atomId in ('HGM', 'HCM'):
+                    return 'HHC'
+                if atomId == 'HDM':
+                    return 'HHD'
 
         if len(refCompId) == 3 and refCompId in monDict3:
             if atomId in ('O1', 'OT1'):
@@ -2209,22 +2304,6 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'N'
             if atomId.startswith('HQ'):  # 1e8e
                 return atomId[1:]
-
-        if refCompId == 'ASN' and atomId.startswith('HND'):  # 2kg1
-            if atomId == 'HND1':
-                return 'HD21'
-            if atomId == 'HND2':
-                return 'HD22'
-            if atomId == 'HND':
-                return 'HD2'
-
-        if refCompId == 'GLN' and atomId.startswith('HNE'):  # 2kg1
-            if atomId == 'HNE1':
-                return 'HE21'
-            if atomId == 'HNE2':
-                return 'HE22'
-            if atomId == 'HNE':
-                return 'HE2'
 
         # BIOSYM atom nomenclature
         if (atomId[-1] in ('R', 'S', 'Z', 'E') or (len(atomId) > 2 and atomId[-1] in ('*', '%') and atomId[-2] in ('R', 'S'))):
@@ -2360,75 +2439,6 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return 'CG1'
                 if atomId == 'CGS':
                     return 'CG2'
-
-        if refCompId == 'NH2':
-            if atomId in ('HN*', 'HN%', 'H*', 'H%', 'QH', 'QN') and not unambig:
-                return 'HN%'
-            if atomId in ('H', 'HN'):
-                return 'HN1'
-            if atomId.startswith('H'):
-                return 'HN2'
-
-        if refCompId == 'ACE':
-            if atomId in ('HA', 'HA*', 'HA%', 'HA1', 'HA2', 'HA3', 'QH', 'MH', 'QA', 'MA') and not unambig:
-                return 'H%'
-            if atomId == 'CA':
-                return 'CH3'
-
-        if refCompId in ('HEB', 'HEC'):
-            if atomId[0] in pseProBeginCode:
-                if atomId == 'QM1':
-                    return 'HMB'
-                if atomId == 'QT2':
-                    return 'HBB'
-                if atomId.startswith('HT2') and refCompId == 'HEC':
-                    return 'HAB'
-                if atomId in ('HT2', 'HA2', 'HA21', 'HA22') and refCompId == 'HEB':
-                    return 'HAB'
-                if atomId == 'HA23' and refCompId == 'HEB':
-                    return 'HAB2'
-                if atomId == 'QM3':
-                    return 'HMC'
-                if atomId == 'QT4':
-                    return 'HBC'
-                if atomId.startswith('HT4'):
-                    return 'HAC'
-                if atomId == 'QM5':
-                    return 'HMD'
-                if atomId == 'HA62':
-                    return 'HAD1'
-                if atomId == 'HA63':
-                    return 'HAD2'
-                if atomId == 'HB62':
-                    return 'HBD1'
-                if atomId == 'HB63':
-                    return 'HBD2'
-                if atomId == 'HA72':
-                    return 'HAA1'
-                if atomId == 'HA73':
-                    return 'HAA2'
-                if atomId == 'HB72':
-                    return 'HBA1'
-                if atomId == 'HB73':
-                    return 'HBA2'
-                if atomId == 'HA6':
-                    return 'HAD'
-                if atomId == 'HB6':
-                    return 'HBD'
-                if atomId == 'HA7':
-                    return 'HAA'
-                if atomId == 'HB7':
-                    return 'HBA'
-                if atomId == 'QM8':
-                    return 'HMA'
-                if atomId == 'HAM':
-                    return 'HHA'
-                if atomId == 'HBM':
-                    return 'HHB'
-                if atomId in ('HGM', 'HCM'):
-                    return 'HHC'
-                if atomId == 'HDM':
-                    return 'HHD'
 
     if atomId.endswith("O'1"):
         atomId = atomId[:len(atomId) - 3] + "O1'"
@@ -3121,7 +3131,7 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
             if _compId in monDict3:
                 return _compId
 
-    if compId in ('HIE', 'HIP', 'HID', 'HIZ'):
+    if compId in ('HID', 'HIE', 'HIF', 'HIP', 'HIZ'):
         return 'HIS'
 
     if refCompId is not None:

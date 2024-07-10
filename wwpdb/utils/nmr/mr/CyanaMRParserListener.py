@@ -2280,7 +2280,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         preferNonPoly = False
 
-        if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
+        if compId in ('CYS', 'CYSZ', 'CYZ', 'CZN', 'CYO', 'ION', 'ZN1', 'ZN2')\
            and atomId in zincIonCode and self.__hasNonPoly:
             znCount = 0
             znSeqId = None
@@ -2713,7 +2713,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         preferNonPoly = False
 
-        if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
+        if compId in ('CYS', 'CYSZ', 'CYZ', 'CZN', 'CYO', 'ION', 'ZN1', 'ZN2')\
            and atomId in zincIonCode and self.__hasNonPoly:
             znCount = 0
             znSeqId = None

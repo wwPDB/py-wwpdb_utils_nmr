@@ -3135,7 +3135,7 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
                 return _compId
 
     if refCompId is not None and refCompId in monDict3 and len(refCompId) == 3:
-        if len(compId) >= 3 and compId[:2] == refCompId[:2]:  # 1e8e: HID/HIE/HIF/HIP/HIZ -> HIS, PR. -> PRO, 2k4w: AS. -> ASP + ZN, 2n6j: TYZ -> TYR
+        if len(compId) >= 3 and compId[:2] == refCompId[:2]:  # 1e8e: HID/HIE/HIF/HIP/HIZ -> HIS, PR. -> PRO, 2k4w: ASM -> ASP + ZN, 2n6j: TYZ -> TYR
             return refCompId
         if 'Z' in compId and compId[0] == refCompId[0]:  # 2n6j: GZC, GZL -> GLU + ZN,
             return refCompId
@@ -3165,6 +3165,21 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
             return 'DT'
         if compId.startswith('DU'):
             return 'DU'
+        if compId.startswith('DI'):
+            return 'DI'
+
+        if compId.startswith('RA'):
+            return 'A'
+        if compId.startswith('RC'):
+            return 'C'
+        if compId.startswith('RG'):
+            return 'G'
+        if compId.startswith('RT'):
+            return 'T'
+        if compId.startswith('RU'):
+            return 'U'
+        if compId.startswith('RI'):
+            return 'I'
 
         if compId == 'ADE':
             return 'A' if refCompId == 'A' else 'DA'
@@ -3174,17 +3189,21 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
             return 'G' if refCompId == 'G' else 'DG'
         if compId == 'THY':
             return 'DT'
+        if compId == 'INO':
+            return 'I' if refCompId == 'I' else 'DI'
         if compId == 'HCY':
             return 'CH' if refCompId == 'C' else 'DNR'
 
-    if compId == 'RADE':
+    if compId in ('RADE', 'RA'):
         return 'A'
-    if compId == 'RCYT':
+    if compId in ('RCYT', 'RC'):
         return 'C'
-    if compId == 'RGUA':
+    if compId in ('RGUA', 'RG'):
         return 'G'
-    if compId in ('URA', 'URI'):
+    if compId in ('URA', 'URI', 'RU'):
         return 'U'
+    if compId in ('RINO', 'RI'):
+        return 'I'
 
     if compId == 'HEMB':
         return 'HEB'

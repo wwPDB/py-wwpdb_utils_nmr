@@ -580,7 +580,7 @@ class AmberMRParserListener(ParseTreeListener):
         # whether to use alternative polymer sequence
         self.__useDefault = reasons is None or 'use_alt_poly_seq' not in reasons or not reasons['use_alt_poly_seq']
         # whether to use alternative polymer sequence when comp_id is not available
-        self.__useDefaultWoCompId = reasons is not None and 'auth_seq_scheme' in reasons
+        self.__useDefaultWoCompId = (reasons is not None and 'auth_seq_scheme' in reasons) or self.__altPolySeq is None
 
         self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
 
@@ -1864,10 +1864,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None:
                                             refAtomIds = [ga[_col + 1] for _col in range(2)]
-                                            polySeq = self.__polySeq if self.__useDefaultWoCompId or self.__altPolySeq is None else self.__altPolySeq
+                                            polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                             for ps in polySeq:
-                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId or self.__altPolySeq is None else ps['chain_id']
+                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                                                         __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
@@ -2379,10 +2379,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None:
                                             refAtomIds = self.ang_nang_atoms[0]
-                                            polySeq = self.__polySeq if self.__useDefaultWoCompId or self.__altPolySeq is None else self.__altPolySeq
+                                            polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                             for ps in polySeq:
-                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId or self.__altPolySeq is None else ps['chain_id']
+                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                                                         __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
@@ -2469,10 +2469,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None:
                                             refAtomIds = [ga[_col + 1] for _col in range(3)]
-                                            polySeq = self.__polySeq if self.__useDefaultWoCompId or self.__altPolySeq is None else self.__altPolySeq
+                                            polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                             for ps in polySeq:
-                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId or self.__altPolySeq is None else ps['chain_id']
+                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                                                         __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
@@ -2684,10 +2684,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None:
                                             refAtomIds = self.dihed_omega_atoms
-                                            polySeq = self.__polySeq if self.__useDefaultWoCompId or self.__altPolySeq is None else self.__altPolySeq
+                                            polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                             for ps in polySeq:
-                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId or self.__altPolySeq is None else ps['chain_id']
+                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                                                         __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
@@ -2776,10 +2776,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None:
                                             refAtomIds = [gc[_col + 1] for _col in range(4)]
-                                            polySeq = self.__polySeq if self.__useDefaultWoCompId or self.__altPolySeq is None else self.__altPolySeq
+                                            polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                             for ps in polySeq:
-                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId or self.__altPolySeq is None else ps['chain_id']
+                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                                                         __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
@@ -2866,10 +2866,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None:
                                             refAtomIds = [ga[_col + 1] for _col in range(4)]
-                                            polySeq = self.__polySeq if self.__useDefaultWoCompId or self.__altPolySeq is None else self.__altPolySeq
+                                            polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                             for ps in polySeq:
-                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId or self.__altPolySeq is None else ps['chain_id']
+                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                                                         __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
@@ -3004,10 +3004,10 @@ class AmberMRParserListener(ParseTreeListener):
                                             _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                             if _factor is None:
                                                 refAtomIds = [g5[_col] for _col in range(4)]
-                                                polySeq = self.__polySeq if self.__useDefaultWoCompId or self.__altPolySeq is None else self.__altPolySeq
+                                                polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                                 _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                                 for ps in polySeq:
-                                                    chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId or self.__altPolySeq is None else ps['chain_id']
+                                                    chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                     for _compId in _compIds:
                                                         if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                                                             __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
@@ -4586,16 +4586,21 @@ class AmberMRParserListener(ParseTreeListener):
 
         hasAuthSeqScheme = self.__reasons is not None and 'auth_seq_scheme' in self.__reasons
 
+        _useDefault = useDefault
         if self.__concatHetero and not hasAuthSeqScheme and authChainId is None:
             useDefault = False
 
-        for ps in (self.__polySeq if useDefault or self.__altPolySeq is None else self.__altPolySeq):
-            chainId = ps['auth_chain_id'] if useDefault or self.__altPolySeq is None else ps['chain_id']
+        enforceAuthSeq = authChainId is not None
+        if enforceAuthSeq or self.__altPolySeq is None:
+            useDefault = True
+
+        for ps in (self.__polySeq if useDefault else self.__altPolySeq):
+            chainId = ps['auth_chain_id'] if useDefault else ps['chain_id']
 
             if authChainId is not None and chainId != authChainId:
                 continue
 
-            enforceAuthSeq = authChainId is not None
+            # enforceAuthSeq = authChainId is not None
 
             if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
@@ -4626,7 +4631,7 @@ class AmberMRParserListener(ParseTreeListener):
             if self.__reasons is not None and 'global_sequence_offset' in self.__reasons:
                 __chainId = __offset = None
                 for _ps in self.__polySeq:
-                    _chainId = _ps['auth_chain_id'] if useDefault or self.__altPolySeq is None else _ps['chain_id']
+                    _chainId = _ps['auth_chain_id'] if useDefault else _ps['chain_id']
                     if _chainId in self.__reasons['global_sequence_offset']:
                         _seq_id_list = list(filter(None, _ps['auth_seq_id']))
                         _offset = self.__reasons['global_sequence_offset'][_chainId]
@@ -5004,7 +5009,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
                                     return None
 
-        if not useDefault:  # or self.__altPolySeq is None:
+        if not _useDefault:
             return None
 
         return self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, order, enableWarning, False, authChainId)
@@ -5055,16 +5060,20 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__concatHetero and not hasAuthSeqScheme and not useAuthSeqScheme:
             useDefault = False
 
+        enforceAuthSeq = authChainId is not None or useAuthSeqScheme
+        if enforceAuthSeq or self.__altPolySeq is None:
+            useDefault = True
+
         found = False
 
-        for ps in (self.__polySeq if useDefault or self.__altPolySeq is None else self.__altPolySeq):
-            chainId = ps['auth_chain_id'] if useDefault or self.__altPolySeq is None else ps['chain_id']
+        for ps in (self.__polySeq if useDefault else self.__altPolySeq):
+            chainId = ps['auth_chain_id'] if useDefault else ps['chain_id']
             seqId = factor['auth_seq_id']
 
             if authChainId is not None and chainId != authChainId:
                 continue
 
-            enforceAuthSeq = authChainId is not None or useAuthSeqScheme
+            # enforceAuthSeq = authChainId is not None or useAuthSeqScheme
 
             if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
@@ -5095,7 +5104,7 @@ class AmberMRParserListener(ParseTreeListener):
             if self.__reasons is not None and 'global_sequence_offset' in self.__reasons:
                 __chainId = __offset = None
                 for _ps in self.__polySeq:
-                    _chainId = _ps['auth_chain_id'] if useDefault or self.__altPolySeq is None else _ps['chain_id']
+                    _chainId = _ps['auth_chain_id'] if useDefault else _ps['chain_id']
                     if _chainId in self.__reasons['global_sequence_offset']:
                         _seq_id_list = list(filter(None, _ps['auth_seq_id']))
                         _offset = self.__reasons['global_sequence_offset'][_chainId]
@@ -5315,15 +5324,18 @@ class AmberMRParserListener(ParseTreeListener):
 
                     elif 'igr' in factor:
 
-                        if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+                        if len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
 
-                            if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                            if authAtomId == 'H%' and (_authAtomId.startswith('HT') or _authAtomId == 'Q'):
                                 _atomIds = []
                                 for _atomId in coordAtomSite['atom_id']:
                                     if _atomId in aminoProtonCode:
                                         _atomIds.append(_atomId)
                                 if len(_atomIds) >= len(factor['igr']):
                                     atomIds = _atomIds
+
+                            elif _authAtomId[0] in ('Q', 'M'):
+                                atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _authAtomId)[0]
 
                         if any(_igr in self.__sanderAtomNumberDict for _igr in factor['igr']):
                             for _igr in factor['igr']:
@@ -5673,15 +5685,18 @@ class AmberMRParserListener(ParseTreeListener):
 
                     elif 'igr' in factor:
 
-                        if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+                        if len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
 
-                            if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                            if authAtomId == 'H%' and (_authAtomId.startswith('HT') or _authAtomId == 'Q'):
                                 _atomIds = []
                                 for _atomId in coordAtomSite['atom_id']:
                                     if _atomId in aminoProtonCode:
                                         _atomIds.append(_atomId)
                                 if len(_atomIds) >= len(factor['igr']):
                                     atomIds = _atomIds
+
+                            elif _authAtomId[0] in ('Q', 'M'):
+                                atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _authAtomId)[0]
 
                         ccdCheckOnly = False
                         for igr, _atomId in zip(sorted(factor['igr']), atomIds):
@@ -5798,7 +5813,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if found:
                             return True
 
-        if not useDefault:  # or self.__altPolySeq is None:
+        if not _useDefault:
             return False
 
         # 6gbm, hbonds.rst
@@ -5857,12 +5872,16 @@ class AmberMRParserListener(ParseTreeListener):
 
             found = False
 
-            for ps in (self.__polySeq if useDefault or self.__altPolySeq is None else self.__altPolySeq):
+            enforceAuthSeq = authChainId is not None or useAuthSeqScheme
+            if enforceAuthSeq or self.__altPolySeq is None:
+                useDefault = True
+
+            for ps in (self.__polySeq if useDefault else self.__altPolySeq):
 
                 if ps['auth_chain_id'] != chainId:
                     continue
 
-                enforceAuthSeq = authChainId is not None or useAuthSeqScheme
+                # enforceAuthSeq = authChainId is not None or useAuthSeqScheme
 
                 if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
                     auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
@@ -6092,15 +6111,18 @@ class AmberMRParserListener(ParseTreeListener):
 
                         elif 'igr' in factor:
 
-                            if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+                            if len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
 
-                                if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                                if authAtomId == 'H%' and (_authAtomId.startswith('HT') or _authAtomId == 'Q'):
                                     _atomIds = []
                                     for _atomId in coordAtomSite['atom_id']:
                                         if _atomId in aminoProtonCode:
                                             _atomIds.append(_atomId)
                                     if len(_atomIds) >= len(factor['igr']):
                                         atomIds = _atomIds
+
+                                elif _authAtomId[0] in ('Q', 'M'):
+                                    atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _authAtomId)[0]
 
                             ccdCheckOnly = False
                             for igr, _atomId in zip(sorted(factor['igr']), atomIds):
@@ -6364,15 +6386,18 @@ class AmberMRParserListener(ParseTreeListener):
 
                         elif 'igr' in factor:
 
-                            if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+                            if len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
 
-                                if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                                if authAtomId == 'H%' and (_authAtomId.startswith('HT') or _authAtomId == 'Q'):
                                     _atomIds = []
                                     for _atomId in coordAtomSite['atom_id']:
                                         if _atomId in aminoProtonCode:
                                             _atomIds.append(_atomId)
                                     if len(_atomIds) >= len(factor['igr']):
                                         atomIds = _atomIds
+
+                                elif _authAtomId[0] in ('Q', 'M'):
+                                    atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _authAtomId)[0]
 
                             ccdCheckOnly = False
                             for igr, _atomId in zip(sorted(factor['igr']), atomIds):
@@ -6492,7 +6517,7 @@ class AmberMRParserListener(ParseTreeListener):
         if allFound:
             return True
 
-        if not useDefault:  # or self.__altPolySeq is None:
+        if not _useDefault:
             return False
 
         # 6gbm, hbonds.rst

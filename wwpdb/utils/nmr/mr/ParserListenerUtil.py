@@ -3134,14 +3134,14 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
             if _compId in monDict3:
                 return _compId
 
+    if refCompId is not None and refCompId in monDict3 and len(refCompId) == 3:
+        if len(compId) >= 3 and compId[:2] == refCompId[:2]:  # 1e8e: HID/HIE/HIF/HIP/HIZ -> HIS, PR. -> PRO, 2k4w: AS. -> ASP + ZN, 2n6j: TYZ -> TYR
+            return refCompId
+        if 'Z' in compId and compId[0] == refCompId[0]:  # 2n6j: GZC, GZL -> GLU + ZN,
+            return refCompId
+
     if compId in ('HID', 'HIE', 'HIF', 'HIP', 'HIZ'):
         return 'HIS'
-
-    if refCompId is not None:
-        if compId.startswith('HI') and refCompId == 'HIS':  # 1e8e
-            return 'HIS'
-        if compId.endswith('PR') and refCompId == 'PRO':  # 1e8e
-            return 'PRO'
 
     if compId.startswith('CY'):
         if refCompId == 'CYS':  # 6xyv

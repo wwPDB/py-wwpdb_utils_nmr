@@ -14478,13 +14478,13 @@ class NmrDpUtility:
                             col = line.split()
                             len_col = len(col)
                             if len_col == 10:
-                                original_comp_id = col[5]
+                                original_comp_id = col[5].upper()
                                 if original_comp_id not in monDict3:  # extract non-standard residues
                                     try:
                                         atom_map = {'auth_atom_id': col[1],
                                                     'auth_comp_id': col[2],
                                                     'auth_seq_id': int(col[3]),
-                                                    'original_atom_id': col[4],
+                                                    'original_atom_id': col[4].upper(),
                                                     'original_comp_id': original_comp_id,
                                                     'original_seq_id': int(col[3])}
                                         if atom_map not in self.__mr_atom_name_mapping:
@@ -14510,12 +14510,12 @@ class NmrDpUtility:
 
                                     if len(col[4]) > 4 and len_col == 8:
                                         orig_comp_id, orig_seq_id = split_concat_comp_id_seq_id(col[4])
-                                        if auth_comp_id is not None and orig_comp_id is not None and orig_comp_id not in monDict3:
+                                        if auth_comp_id is not None and orig_comp_id is not None and orig_comp_id.upper() not in monDict3:
                                             atom_map = {'auth_atom_id': col[1],
                                                         'auth_comp_id': auth_comp_id,
                                                         'auth_seq_id': auth_seq_id,
-                                                        'original_atom_id': col[3],
-                                                        'original_comp_id': orig_comp_id,
+                                                        'original_atom_id': col[3].upper(),
+                                                        'original_comp_id': orig_comp_id.upper(),
                                                         'original_seq_id': orig_seq_id}
                                             if atom_map not in self.__mr_atom_name_mapping:
                                                 self.__mr_atom_name_mapping.append(atom_map)
@@ -14525,8 +14525,8 @@ class NmrDpUtility:
                                                 atom_map = {'auth_atom_id': col[1],
                                                             'auth_comp_id': auth_comp_id,
                                                             'auth_seq_id': auth_seq_id,
-                                                            'original_atom_id': col[3],
-                                                            'original_comp_id': col[4],
+                                                            'original_atom_id': col[3].upper(),
+                                                            'original_comp_id': col[4].upper(),
                                                             'original_seq_id': int(col[5])}
                                                 if atom_map not in self.__mr_atom_name_mapping:
                                                     self.__mr_atom_name_mapping.append(atom_map)
@@ -14534,13 +14534,13 @@ class NmrDpUtility:
                                                 pass
                                 elif len(col[5]) > 4 and len_col == 9:
                                     orig_comp_id, orig_seq_id = split_concat_comp_id_seq_id(col[5])
-                                    if orig_comp_id is not None and orig_comp_id not in monDict3:
+                                    if orig_comp_id is not None and orig_comp_id.upper() not in monDict3:
                                         try:
                                             atom_map = {'auth_atom_id': col[1],
                                                         'auth_comp_id': col[2],
                                                         'auth_seq_id': int(col[3]),
-                                                        'original_atom_id': col[4],
-                                                        'original_comp_id': orig_comp_id,
+                                                        'original_atom_id': col[4].upper(),
+                                                        'original_comp_id': orig_comp_id.upper(),
                                                         'original_seq_id': orig_seq_id}
                                             if atom_map not in self.__mr_atom_name_mapping:
                                                 self.__mr_atom_name_mapping.append(atom_map)

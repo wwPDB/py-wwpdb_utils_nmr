@@ -1984,7 +1984,7 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
     if elemName in ('Q', 'M'):
 
         item = next((item for item in mapping
-                     if item['original_atom_id'] == 'H' + atomId[1:] + '2'), None)
+                     if item['original_atom_id'] in ('H' + atomId[1:] + '2', '2H' + atomId[1:])), None)
 
         if item is not None:
 

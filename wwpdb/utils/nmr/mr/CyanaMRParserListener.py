@@ -863,17 +863,45 @@ class CyanaMRParserListener(ParseTreeListener):
         for col in range(20):
             if ctx.Any_name(col):
                 text = str(ctx.Any_name(col)).lower()
-                if 'cco' in text or 'coupling' in text:
+                if 'coupling' in text:
                     self.__cur_dist_type = 'cco'
                     break
-                if ('upl' in text or 'upper' in text) and not ('lol' in text or 'lower' in text):
-                    if self.__file_ext != 'lol':
-                        self.__cur_dist_type = 'upl'
+                if 'cco' in text:
+                    idx = text.index('cco')  # 'according' is not cco (6wa5)
+                    if idx == (0, len(text) - 3):
+                        self.__cur_dist_type = 'cco'
+                        break
+                    p, q = text[idx - 1], text[idx + 3]
+                    if p.isalpha() or q.isalpha():
+                        continue
+                    self.__cur_dist_type = 'cco'
                     break
-                if ('lol' in text or 'lower' in text) and not ('upl' in text or 'upper' in text):
-                    if self.__file_ext != 'upl':
-                        self.__cur_dist_type = 'lol'
-                    break
+                if not ('lol' in text or 'lower' in text):
+                    if 'upper' in text:
+                        if self.__file_ext != 'lol':
+                            self.__cur_dist_type = 'upl'
+                            break
+                    if 'upl' in text:
+                        idx = text.index('upl')
+                        p, q = text[idx - 1], text[idx + 3]
+                        if p.isalpha() or q.isalpha():
+                            continue
+                        if self.__file_ext != 'lol':
+                            self.__cur_dist_type = 'upl'
+                            break
+                if not ('upl' in text or 'upper' in text):
+                    if 'lower' in text:
+                        if self.__file_ext != 'upl':
+                            self.__cur_dist_type = 'lol'
+                            break
+                    if 'lol' in text:
+                        idx = text.index('lol')
+                        p, q = text[idx - 1], text[idx + 3]
+                        if p.isalpha() or q.isalpha():
+                            continue
+                        if self.__file_ext != 'upl':
+                            self.__cur_dist_type = 'lol'
+                            break
             else:
                 break
 

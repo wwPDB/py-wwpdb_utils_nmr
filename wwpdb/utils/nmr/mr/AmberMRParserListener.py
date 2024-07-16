@@ -815,11 +815,17 @@ class AmberMRParserListener(ParseTreeListener):
         self.dihed_chiral_sander_w_chain_pat = re.compile(r'chirality for residue ([A-Z]) (-?\d+) atoms: '
                                                           r'(\S+) (\S+) (\S+) (\S+).*')
 
-        self.dihed_omega_sander_pat = re.compile(r'trans-omega constraint for residue (-?\d+).*')
+        self.dihed_tomega_sander_pat = re.compile(r'trans-omega constraint for residue (-?\d+).*')
 
-        self.dihed_omega_sander_w_chain_pat = re.compile(r'trans-omega constraint for residue ([A-Z]) (-?\d+).*')
+        self.dihed_tomega_sander_w_chain_pat = re.compile(r'trans-omega constraint for residue ([A-Z]) (-?\d+).*')
 
-        self.dihed_omega_atoms = ['CA', 'N', 'C', 'CA']  # OMEGA dihedral angle defined by CA(i), N(i), C(i-1), CA(i-1)
+        self.dihed_tomega_atoms = ['CA', 'N', 'C', 'CA']  # OMEGA dihedral angle defined by CA(i), N(i), C(i-1), CA(i-1)
+
+        self.dihed_comega_sander_pat = re.compile(r'cis-omega constraint for residue (-?\d+).*')
+
+        self.dihed_comega_sander_w_chain_pat = re.compile(r'cis-omega constraint for residue ([A-Z]) (-?\d+).*')
+
+        self.dihed_comega_atoms = ['CA', 'N', 'C', 'O']  # OMEGA dihedral angle defined by CA(i), N(i), C(i-1), O(i-1) (e.g. 2m2d)
 
         self.dihed_amb_comp_sander_pat = re.compile(r'(\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s*-\s*(\S+) '
                                                     r'restraint for residue(.*) (-?\d+).*')
@@ -2885,9 +2891,13 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.lastComment is None or not self.dihed_chiral_sander_pat.match(self.lastComment)\
                             else self.dihed_chiral_sander_pat.search(self.lastComment).groups()
 
-                        go = None\
-                            if self.lastComment is None or not self.dihed_omega_sander_pat.match(self.lastComment)\
-                            else self.dihed_omega_sander_pat.search(self.lastComment).groups()
+                        gto = None\
+                            if self.lastComment is None or not self.dihed_tomega_sander_pat.match(self.lastComment)\
+                            else self.dihed_tomega_sander_pat.search(self.lastComment).groups()
+
+                        gco = None\
+                            if self.lastComment is None or not self.dihed_comega_sander_pat.match(self.lastComment)\
+                            else self.dihed_comega_sander_pat.search(self.lastComment).groups()
 
                         ga = None\
                             if self.lastComment is None or not self.dihed_amb_comp_sander_pat.match(self.lastComment)\
@@ -2905,9 +2915,13 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.lastComment is None or not self.dihed_chiral_sander_w_chain_pat.match(self.lastComment)\
                             else self.dihed_chiral_sander_w_chain_pat.search(self.lastComment).groups()
 
-                        gowc = None\
-                            if self.lastComment is None or not self.dihed_omega_sander_w_chain_pat.match(self.lastComment)\
-                            else self.dihed_omega_sander_w_chain_pat.search(self.lastComment).groups()
+                        gtowc = None\
+                            if self.lastComment is None or not self.dihed_tomega_sander_w_chain_pat.match(self.lastComment)\
+                            else self.dihed_tomega_sander_w_chain_pat.search(self.lastComment).groups()
+
+                        gcowc = None\
+                            if self.lastComment is None or not self.dihed_comega_sander_w_chain_pat.match(self.lastComment)\
+                            else self.dihed_comega_sander_w_chain_pat.search(self.lastComment).groups()
 
                         if gp is not None:
                             for col, iat in enumerate(self.iat):
@@ -2929,20 +2943,26 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                             f"based on Sander comment 'PLANAR RESTRAINTS FOR RESIDUE {self.lastPlaneSeqId}' and {gp[col]!r}.")
 
-                        elif go is not None:
+                        elif gto is not None or gco is not None:
                             for col, iat in enumerate(self.iat):
 
                                 if iat > 0:
                                     if iat in self.__sanderAtomNumberDict:
                                         pass
                                     else:
-                                        seqId = int(go[0])
-                                        if col >= 2:
-                                            seqId -= 1
-                                        atomId = self.dihed_omega_atoms[col]
+                                        if gto is not None:
+                                            seqId = int(gto[0])
+                                            if col >= 2:
+                                                seqId -= 1
+                                            atomId = self.dihed_tomega_atoms[col]
+                                        else:
+                                            seqId = int(gco[0])
+                                            if col >= 2:
+                                                seqId -= 1
+                                            atomId = self.dihed_comega_atoms[col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None:
-                                            refAtomIds = self.dihed_omega_atoms
+                                            refAtomIds = self.dihed_tomega_atoms if gto is not None else self.dihed_comega_atoms
                                             polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                             for ps in polySeq:
@@ -2959,7 +2979,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 self.__useDefaultWoCompId = True
                                                 _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                                 if _factor is None:
-                                                    refAtomIds = self.dihed_omega_atoms
+                                                    refAtomIds = self.dihed_tomega_atoms if gto is not None else self.dihed_comega_atoms
                                                     polySeq = self.__polySeq
                                                     _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                                     for ps in polySeq:
@@ -2993,18 +3013,25 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                             f"based on Sander comment {self.lastComment!r}.")
 
-                        elif gowc is not None:
+                        elif gtowc is not None or gcowc is not None:
                             for col, iat in enumerate(self.iat):
 
                                 if iat > 0:
                                     if iat in self.__sanderAtomNumberDict:
                                         pass
                                     else:
-                                        chainId = gowc[0]
-                                        seqId = int(gowc[1])
-                                        if col >= 2:
-                                            seqId -= 1
-                                        atomId = self.dihed_omega_atoms[col]
+                                        if gtowc is not None:
+                                            chainId = gtowc[0]
+                                            seqId = int(gtowc[1])
+                                            if col >= 2:
+                                                seqId -= 1
+                                            atomId = self.dihed_tomega_atoms[col]
+                                        else:
+                                            chainId = gcowc[0]
+                                            seqId = int(gcowc[1])
+                                            if col >= 2:
+                                                seqId -= 1
+                                            atomId = self.dihed_comega_atoms[col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False,
                                                                                         authChainId=chainId)
                                         if _factor is None:
@@ -4318,9 +4345,13 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.lastComment is None or not self.dihed_chiral_sander_pat.match(self.lastComment)\
                             else self.dihed_chiral_sander_pat.search(self.lastComment).groups()
 
-                        go = None\
-                            if self.lastComment is None or not self.dihed_omega_sander_pat.match(self.lastComment)\
-                            else self.dihed_omega_sander_pat.search(self.lastComment).groups()
+                        gto = None\
+                            if self.lastComment is None or not self.dihed_tomega_sander_pat.match(self.lastComment)\
+                            else self.dihed_tomega_sander_pat.search(self.lastComment).groups()
+
+                        gco = None\
+                            if self.lastComment is None or not self.dihed_comega_sander_pat.match(self.lastComment)\
+                            else self.dihed_comega_sander_pat.search(self.lastComment).groups()
 
                         ga = None\
                             if self.lastComment is None or not self.dihed_amb_comp_sander_pat.match(self.lastComment)\
@@ -4356,7 +4387,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                 f"based on Sander comment {self.lastComment!r}.")
 
-                        elif go is not None:
+                        elif gto is not None or gco is not None:
                             for col, funcExpr in enumerate(self.funcExprs):
 
                                 if isinstance(funcExpr, dict):
@@ -4365,10 +4396,16 @@ class AmberMRParserListener(ParseTreeListener):
                                         if iat in self.__sanderAtomNumberDict:
                                             pass
                                         else:
-                                            seqId = int(go[0])
-                                            if col >= 2:
-                                                seqId -= 1
-                                            atomId = self.dihed_omega_atoms[col]
+                                            if gto is not None:
+                                                seqId = int(gto[0])
+                                                if col >= 2:
+                                                    seqId -= 1
+                                                atomId = self.dihed_tomega_atoms[col]
+                                            else:
+                                                seqId = int(gco[0])
+                                                if col >= 2:
+                                                    seqId -= 1
+                                                atomId = self.dihed_comega_atoms[col]
                                             _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                             if _factor is None and not self.__useDefaultWoCompId:
                                                 self.__useDefaultWoCompId = True

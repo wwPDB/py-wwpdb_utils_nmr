@@ -5559,7 +5559,10 @@ class AmberMRParserListener(ParseTreeListener):
                 if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
                     idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
                     compId = ps['comp_id'][idx]
-                    if compId not in monDict3 and self.__ccU.updateChemCompDict(compId):
+                    if compId in monDict3 and getOneLetterCodeCan(compId) == getOneLetterCodeCan(_compId):
+                        keep = True
+                        authCompId = compId
+                    elif compId not in monDict3 and self.__ccU.updateChemCompDict(compId):
                         parentCompId = self.__ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
                         if _compId == parentCompId or getOneLetterCodeCan(_compId) == getOneLetterCodeCan(parentCompId):
                             keep = True
@@ -6367,7 +6370,10 @@ class AmberMRParserListener(ParseTreeListener):
                     if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
                         idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
                         compId = ps['comp_id'][idx]
-                        if compId not in monDict3 and self.__ccU.updateChemCompDict(compId):
+                        if compId in monDict3 and getOneLetterCodeCan(compId) == getOneLetterCodeCan(_compId):
+                            keep = True
+                            authCompId = compId
+                        elif compId not in monDict3 and self.__ccU.updateChemCompDict(compId):
                             parentCompId = self.__ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
                             if _compId == parentCompId or getOneLetterCodeCan(_compId) == getOneLetterCodeCan(parentCompId):
                                 keep = True

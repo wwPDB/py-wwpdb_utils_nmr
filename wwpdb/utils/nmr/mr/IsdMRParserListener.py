@@ -45,6 +45,7 @@ try:
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
+                                                       MAX_ALLOWED_EXT_SEQ,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        DIST_AMBIG_LOW,
@@ -111,6 +112,7 @@ except ImportError:
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
+                                           MAX_ALLOWED_EXT_SEQ,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            DIST_AMBIG_LOW,
@@ -683,8 +685,8 @@ class IsdMRParserListener(ParseTreeListener):
 
         self.__retrieveLocalSeqScheme()
 
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+        chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+        chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
         if len(chainAssign1) == 0 or len(chainAssign2) == 0:
             return
@@ -771,7 +773,7 @@ class IsdMRParserListener(ParseTreeListener):
                              '.', memberId, memberLogicCode,
                              sf['list_id'], self.__entryId, dstFunc,
                              self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                             atom1, atom2)
+                             atom1, atom2, asis1=asis1, asis2=asis2)
                 sf['loop'].add_data(row)
 
                 if sf['constraint_subsubtype'] == 'ambi':
@@ -962,6 +964,7 @@ class IsdMRParserListener(ParseTreeListener):
         """
 
         chainAssign = set()
+        asis = False
         _seqId = seqId
         _compId = compId
 
@@ -1360,17 +1363,49 @@ class IsdMRParserListener(ParseTreeListener):
                     self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                     f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
+                    chainAssign.add((refChainId, _seqId, compId, True))
+                    asis = True
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                     f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
             else:
-                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
+                ext_seq = False
+                if (compId in monDict3 or compId in ('ACE', 'NH2')) and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                    refChainIds = []
+                    _auth_seq_id_list = []
+                    for ps in self.__polySeq:
+                        auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                        _auth_seq_id_list.extend(auth_seq_id_list)
+                        if len(auth_seq_id_list) > 0:
+                            min_auth_seq_id = min(auth_seq_id_list)
+                            max_auth_seq_id = max(auth_seq_id_list)
+                            if min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id and (compId in monDict3 or compId == 'ACE'):
+                                refChainIds.append(ps['auth_chain_id'])
+                                ext_seq = True
+                            if max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ and (compId in monDict3 or compId == 'NH2'):
+                                refChainIds.append(ps['auth_chain_id'])
+                                ext_seq = True
+                    if ext_seq and seqId in _auth_seq_id_list:
+                        ext_seq = False
+                if ext_seq:
+                    refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
+                    self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
+                    if isinstance(refChainId, str):
+                        chainAssign.add((refChainId, _seqId, compId, True))
+                    else:
+                        for _refChainId in refChainIds:
+                            chainAssign.add((_refChainId, _seqId, compId, True))
+                    asis = True
+                else:
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                 updatePolySeqRst(self.__polySeqRstFailed, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
 
-        return list(chainAssign)
+        return list(chainAssign), asis
 
     def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, offset=0):
         """ Select atoms of the coordinates.
@@ -1815,7 +1850,24 @@ class IsdMRParserListener(ParseTreeListener):
                                             "Please re-upload the model file.")
                             return atomId
 
+                    ext_seq = False
+                    if (compId in monDict3 or compId in ('ACE', 'NH2')) and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                        _auth_seq_id_list = []
+                        for ps in self.__polySeq:
+                            auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                            _auth_seq_id_list.extend(auth_seq_id_list)
+                            if len(auth_seq_id_list) > 0:
+                                min_auth_seq_id = min(auth_seq_id_list)
+                                max_auth_seq_id = max(auth_seq_id_list)
+                                if min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id and (compId in monDict3 or compId == 'ACE'):
+                                    ext_seq = True
+                                if max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ and (compId in monDict3 or compId == 'NH2'):
+                                    ext_seq = True
+                        if ext_seq and seqId in _auth_seq_id_list:
+                            ext_seq = False
                     if chainId in LARGE_ASYM_ID:
+                        if ext_seq:
+                            return atomId
                         if self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                             f"The residue '{chainId}:{seqId}:{compId}' is not present in polymer sequence of chain {chainId} of the coordinates. "

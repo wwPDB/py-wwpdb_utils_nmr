@@ -48,6 +48,7 @@ try:
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
+                                                       MAX_ALLOWED_EXT_SEQ,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
@@ -121,6 +122,7 @@ except ImportError:
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
+                                           MAX_ALLOWED_EXT_SEQ,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
@@ -714,8 +716,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
+            chainAssign1, asis1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
+            chainAssign2, asis2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
 
             if len(chainAssign1) == 0 or len(chainAssign2) == 0:
                 return
@@ -794,7 +796,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                  '.', memberId, memberLogicCode,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                                 atom1, atom2)
+                                 atom1, atom2, asis1=asis1, asis2=asis2)
                     sf['loop'].add_data(row)
 
                     if sf['constraint_subsubtype'] == 'ambi':
@@ -852,8 +854,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
+            chainAssign1, asis1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
+            chainAssign2, asis2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
 
             if len(chainAssign1) == 0 or len(chainAssign2) == 0:
                 return
@@ -932,7 +934,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                  '.', memberId, memberLogicCode,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                                 atom1, atom2)
+                                 atom1, atom2, asis1=asis1, asis2=asis2)
                     sf['loop'].add_data(row)
 
                     if sf['constraint_subsubtype'] == 'ambi':
@@ -1135,6 +1137,7 @@ class BiosymMRParserListener(ParseTreeListener):
         _refChainId = refChainId
 
         chainAssign = set()
+        asis = False
         _seqId = seqId
         _compId = compId
 
@@ -1596,14 +1599,46 @@ class BiosymMRParserListener(ParseTreeListener):
                     self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                     f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
+                    chainAssign.add((refChainId, _seqId, compId, True))
+                    asis = True
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                     f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
             else:
-                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
+                ext_seq = False
+                if (compId in monDict3 or compId in ('ACE', 'NH2')) and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                    refChainIds = []
+                    _auth_seq_id_list = []
+                    for ps in self.__polySeq:
+                        auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                        _auth_seq_id_list.extend(auth_seq_id_list)
+                        if len(auth_seq_id_list) > 0:
+                            min_auth_seq_id = min(auth_seq_id_list)
+                            max_auth_seq_id = max(auth_seq_id_list)
+                            if min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id and (compId in monDict3 or compId == 'ACE'):
+                                refChainIds.append(ps['auth_chain_id'])
+                                ext_seq = True
+                            if max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ and (compId in monDict3 or compId == 'NH2'):
+                                refChainIds.append(ps['auth_chain_id'])
+                                ext_seq = True
+                    if ext_seq and seqId in _auth_seq_id_list:
+                        ext_seq = False
+                if ext_seq:
+                    refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
+                    self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
+                    if isinstance(refChainId, str):
+                        chainAssign.add((refChainId, _seqId, compId, True))
+                    else:
+                        for _refChainId in refChainIds:
+                            chainAssign.add((_refChainId, _seqId, compId, True))
+                    asis = True
+                else:
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                 updatePolySeqRst(self.__polySeqRstFailed, str(refChainId), _seqId, compId, _compId)
 
         elif any(ca for ca in chainAssign if ca[0] == refChainId) and any(ca for ca in chainAssign if ca[0] != refChainId):
@@ -1612,7 +1647,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 if _ca[0] != refChainId:
                     chainAssign.remove(_ca)
 
-        return list(chainAssign)
+        return list(chainAssign), asis
 
     def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, offset=0):
         """ Select atoms of the coordinates.
@@ -2060,7 +2095,24 @@ class BiosymMRParserListener(ParseTreeListener):
                                             "Please re-upload the model file.")
                             return atomId
 
+                    ext_seq = False
+                    if (compId in monDict3 or compId in ('ACE', 'NH2')) and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                        _auth_seq_id_list = []
+                        for ps in self.__polySeq:
+                            auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                            _auth_seq_id_list.extend(auth_seq_id_list)
+                            if len(auth_seq_id_list) > 0:
+                                min_auth_seq_id = min(auth_seq_id_list)
+                                max_auth_seq_id = max(auth_seq_id_list)
+                                if min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id and (compId in monDict3 or compId == 'ACE'):
+                                    ext_seq = True
+                                if max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ and (compId in monDict3 or compId == 'NH2'):
+                                    ext_seq = True
+                        if ext_seq and seqId in _auth_seq_id_list:
+                            ext_seq = False
                     if chainId in LARGE_ASYM_ID:
+                        if ext_seq:
+                            return atomId
                         if self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                             f"The residue '{chainId}:{seqId}:{compId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
@@ -2456,10 +2508,10 @@ class BiosymMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
-            chainAssign3 = self.assignCoordPolymerSequence(chainId3, seqId3, compId3, atomId3)
-            chainAssign4 = self.assignCoordPolymerSequence(chainId4, seqId4, compId4, atomId4)
+            chainAssign1, asis1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
+            chainAssign2, asis2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
+            chainAssign3, asis3 = self.assignCoordPolymerSequence(chainId3, seqId3, compId3, atomId3)
+            chainAssign4, asis4 = self.assignCoordPolymerSequence(chainId4, seqId4, compId4, atomId4)
 
             if len(chainAssign1) == 0 or len(chainAssign2) == 0\
                or len(chainAssign3) == 0 or len(chainAssign4) == 0:
@@ -2542,7 +2594,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                  combinationId if dstFunc2 is None else 1, None, angleName,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                                 atom1, atom2, atom3, atom4)
+                                 atom1, atom2, atom3, atom4, asis1=asis1, asis2=asis2, asis3=asis3, asis4=asis4)
                     sf['loop'].add_data(row)
                     if dstFunc2 is not None:
                         sf['index_id'] += 1
@@ -2553,7 +2605,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                      2, None, angleName,
                                      sf['list_id'], self.__entryId, dstFunc2,
                                      self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                                     atom1, atom2, atom3, atom4)
+                                     atom1, atom2, atom3, atom4, asis1=asis1, asis2=asis2, asis3=asis3, asis4=asis4)
                         sf['loop'].add_data(row)
                     if dstFunc3 is not None:
                         sf['index_id'] += 1
@@ -2564,7 +2616,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                      3, None, angleName,
                                      sf['list_id'], self.__entryId, dstFunc3,
                                      self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                                     atom1, atom2, atom3, atom4)
+                                     atom1, atom2, atom3, atom4, asis1=asis1, asis2=asis2, asis3=asis3, asis4=asis4)
                         sf['loop'].add_data(row)
                     if dstFunc4 is not None:
                         sf['index_id'] += 1
@@ -2575,7 +2627,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                      4, None, angleName,
                                      sf['list_id'], self.__entryId, dstFunc4,
                                      self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                                     atom1, atom2, atom3, atom4)
+                                     atom1, atom2, atom3, atom4, asis1=asis1, asis2=asis2, asis3=asis3, asis4=asis4)
                         sf['loop'].add_data(row)
 
             if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1 and dstFunc2 is None:
@@ -2636,10 +2688,10 @@ class BiosymMRParserListener(ParseTreeListener):
 
             self.__retrieveLocalSeqScheme()
 
-            chainAssign1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
-            chainAssign2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
-            chainAssign3 = self.assignCoordPolymerSequence(chainId3, seqId3, compId3, atomId3)
-            chainAssign4 = self.assignCoordPolymerSequence(chainId4, seqId4, compId4, atomId4)
+            chainAssign1, asis1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
+            chainAssign2, asis2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
+            chainAssign3, asis3 = self.assignCoordPolymerSequence(chainId3, seqId3, compId3, atomId3)
+            chainAssign4, asis4 = self.assignCoordPolymerSequence(chainId4, seqId4, compId4, atomId4)
 
             if len(chainAssign1) == 0 or len(chainAssign2) == 0\
                or len(chainAssign3) == 0 or len(chainAssign4) == 0:
@@ -2715,7 +2767,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                  combinationId, None, angleName,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                                 atom1, atom2, atom3, atom4)
+                                 atom1, atom2, atom3, atom4, asis1=asis1, asis2=asis2, asis3=asis3, asis4=asis4)
                     sf['loop'].add_data(row)
 
             if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
@@ -2829,7 +2881,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
         self.__retrieveLocalSeqScheme()
 
-        chainAssign1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
+        chainAssign1, _ = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
 
         if len(chainAssign1) == 0:
             return
@@ -2889,11 +2941,11 @@ class BiosymMRParserListener(ParseTreeListener):
 
         self.__retrieveLocalSeqScheme()
 
-        chainAssign1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
-        chainAssign2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
-        chainAssign3 = self.assignCoordPolymerSequence(chainId3, seqId3, compId3, atomId3)
-        chainAssign4 = self.assignCoordPolymerSequence(chainId4, seqId4, compId4, atomId4)
-        chainAssign5 = self.assignCoordPolymerSequence(chainId5, seqId5, compId5, atomId5)
+        chainAssign1, _ = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
+        chainAssign2, _ = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
+        chainAssign3, _ = self.assignCoordPolymerSequence(chainId3, seqId3, compId3, atomId3)
+        chainAssign4, _ = self.assignCoordPolymerSequence(chainId4, seqId4, compId4, atomId4)
+        chainAssign5, _ = self.assignCoordPolymerSequence(chainId5, seqId5, compId5, atomId5)
 
         if len(chainAssign1) == 0 or len(chainAssign2) == 0\
            or len(chainAssign3) == 0 or len(chainAssign4) == 0\

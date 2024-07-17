@@ -6021,6 +6021,8 @@ def getMetalCoordOf(cR, authSeqId, authCompId, metalId):
     if cR is None:
         return False
 
+    is_metal_ion = authCompId in SYMBOLS_ELEMENT
+
     if cR.hasCategory('struct_conn'):
 
         bonds = cR.getDictList('struct_conn')
@@ -6033,7 +6035,7 @@ def getMetalCoordOf(cR, authSeqId, authCompId, metalId):
             auth_comp_id_1 = bond['ptnr1_auth_comp_id']
             auth_comp_id_2 = bond['ptnr2_auth_comp_id']
 
-            if {auth_comp_id_1, auth_comp_id_2} != {authCompId, metalId}:
+            if not is_metal_ion and {auth_comp_id_1, auth_comp_id_2} != {authCompId, metalId}:
                 continue
 
             try:
@@ -6041,10 +6043,10 @@ def getMetalCoordOf(cR, authSeqId, authCompId, metalId):
                 auth_seq_id_1 = int(bond['ptnr1_auth_seq_id'])
                 auth_seq_id_2 = int(bond['ptnr2_auth_seq_id'])
 
-                if authSeqId == auth_seq_id_1 and authCompId == auth_comp_id_1 and metalId == auth_comp_id_2:
+                if authSeqId == auth_seq_id_1 and (is_metal_ion or authCompId == auth_comp_id_1) and metalId == auth_comp_id_2:
                     return bond['ptnr2_auth_asym_id'], auth_seq_id_2
 
-                if authSeqId == auth_seq_id_2 and authCompId == auth_comp_id_2 and metalId == auth_comp_id_1:
+                if authSeqId == auth_seq_id_2 and (is_metal_ion or authCompId == auth_comp_id_2) and metalId == auth_comp_id_1:
                     return bond['ptnr1_auth_asym_id'], auth_seq_id_1
 
             except ValueError:

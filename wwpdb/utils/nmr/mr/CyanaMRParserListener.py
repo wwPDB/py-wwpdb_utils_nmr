@@ -867,7 +867,7 @@ class CyanaMRParserListener(ParseTreeListener):
             if idx == 0:
                 return True
             len_ext = len(ext)
-            if idx + len_ext == len(txt) - 1:
+            if idx + len_ext == len(txt):
                 return True
             return not txt[idx - 1].isalpha() and not txt[idx + len_ext].isalpha()
 

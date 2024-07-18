@@ -520,6 +520,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.distRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -1026,6 +1027,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.dihedRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -1296,6 +1298,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.rdcRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -1570,6 +1573,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.angRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -1698,6 +1702,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.angRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -1790,6 +1795,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.geoRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 

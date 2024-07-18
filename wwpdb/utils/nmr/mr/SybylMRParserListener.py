@@ -807,9 +807,7 @@ class SybylMRParserListener(ParseTreeListener):
 
             return int(g[1]), g[0], g[2]
 
-        except ValueError:
-            return None, None, None
-        except AttributeError:
+        except (ValueError, AttributeError):
             return None, None, None
 
     def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier):

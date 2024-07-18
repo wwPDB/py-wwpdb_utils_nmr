@@ -927,6 +927,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.distRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -1098,6 +1099,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.distRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -1270,6 +1272,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.distRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -2969,6 +2972,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.dihedRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -3119,6 +3123,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.dihedRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -3269,6 +3274,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.dihedRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -3532,6 +3538,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.rdcRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -3717,6 +3724,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.rdcRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -3902,6 +3910,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.rdcRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -4096,6 +4105,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.rdcRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -4343,6 +4353,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.jcoupRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -4490,6 +4501,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.jcoupRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -4637,6 +4649,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.jcoupRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -4925,6 +4938,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.dihedRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -5025,7 +5039,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
                 self.__retrieveLocalSeqScheme()
 
-                chainAssign = self.assignCoordPolymerSequence(None, seqId, compId, atomId)
+                chainAssign, _ = self.assignCoordPolymerSequence(None, seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -5137,6 +5151,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.dihedRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 

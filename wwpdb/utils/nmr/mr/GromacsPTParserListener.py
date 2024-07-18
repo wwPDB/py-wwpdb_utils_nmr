@@ -1314,6 +1314,7 @@ class GromacsPTParserListener(ParseTreeListener):
 
         except ValueError:
             pass
+
         finally:
             self.numberSelection.clear()
 

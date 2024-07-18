@@ -2841,6 +2841,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.geoRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -2944,6 +2945,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.geoRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -3233,6 +3235,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.geoRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -3333,6 +3336,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.geoRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -4237,6 +4241,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         except ValueError:
             pass
+
         finally:
             self.numberFSelection.clear()
 
@@ -4410,10 +4415,9 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
                 sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
-        except ValueError:
+        except (ValueError, IndexError):
             self.rdcRestraints -= 1
-        except IndexError:
-            self.rdcRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 

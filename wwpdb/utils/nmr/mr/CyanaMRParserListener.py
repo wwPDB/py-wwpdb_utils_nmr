@@ -1525,6 +1525,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.jcoupRestraints -= 1
             elif self.__cur_subtype == 'noepk':
                 self.noepkRestraints -= 1
+
         finally:
             self.numberSelection.clear()
             self.genAtomNameSelection.clear()
@@ -2078,6 +2079,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.jcoupRestraints -= 1
             elif self.__cur_subtype == 'noepk':
                 self.noepkRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -5081,6 +5083,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.dihedRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -5389,6 +5392,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.rdcRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -5625,6 +5629,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.pcsRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -5970,6 +5975,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.distRestraints -= 1
             else:
                 self.noepkRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -6318,6 +6324,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.distRestraints -= 1
             else:
                 self.noepkRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -6573,6 +6580,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.distRestraints -= 1
             else:
                 self.noepkRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -6844,6 +6852,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.distRestraints -= 1
             else:
                 self.noepkRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -7192,6 +7201,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.distRestraints -= 1
             else:
                 self.noepkRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -7447,6 +7457,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.distRestraints -= 1
             else:
                 self.noepkRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -7614,6 +7625,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.distRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -8173,6 +8185,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 self.distRestraints -= 1
             else:
                 self.noepkRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -8698,6 +8711,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.dihedRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 
@@ -8885,6 +8899,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         except ValueError:
             self.jcoupRestraints -= 1
+
         finally:
             self.numberSelection.clear()
 

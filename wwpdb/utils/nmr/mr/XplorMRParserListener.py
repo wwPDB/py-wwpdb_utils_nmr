@@ -8203,7 +8203,7 @@ class XplorMRParserListener(ParseTreeListener):
             is_hbond = False
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0], self.atomSelectionSet[1]):
                 _dstFunc = getDstFuncForHBond(atom1, atom2)
-                if 'upper_limit' in _dstFunc or float(_dstFunc['upper_limit']) >= DIST_AMBIG_MED:
+                if 'upper_limit' in _dstFunc and _dstFunc['upper_limit'] != str(DIST_AMBIG_MED):
                     is_hbond = True
                     break
 

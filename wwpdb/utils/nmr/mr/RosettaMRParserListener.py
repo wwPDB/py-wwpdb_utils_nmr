@@ -50,6 +50,7 @@ try:
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
+                                                       MAX_ALLOWED_EXT_SEQ,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
@@ -129,6 +130,7 @@ except ImportError:
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
+                                           MAX_ALLOWED_EXT_SEQ,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
@@ -1822,8 +1824,12 @@ class RosettaMRParserListener(ParseTreeListener):
                 checked = False
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
+                min_auth_seq_id = max_auth_seq_id = None
+                if auth_seq_id_list is not None and len(auth_seq_id_list) > 0:
+                    min_auth_seq_id = min(auth_seq_id_list)
+                    max_auth_seq_id = max(auth_seq_id_list)
                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes\
-                   or (auth_seq_id_list is not None and min(auth_seq_id_list) == seqId):
+                   or (min_auth_seq_id is not None and min_auth_seq_id == seqId):
                     if atomId in aminoProtonCode and atomId != 'H1':
                         return self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     if atomId in aminoProtonCode or atomId == 'P' or atomId.startswith('HOP'):
@@ -1843,7 +1849,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                     return atomId
                             if bondedTo[0][0] == 'O':
                                 return 'Ignorable hydroxyl group'
-                    if (auth_seq_id_list is not None and seqId == max(auth_seq_id_list))\
+                    if (max_auth_seq_id is not None and seqId == max_auth_seq_id)\
                        or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
                         if coordAtomSite is not None and atomId in carboxylCode\
                            and not isCyclicPolymer(self.__cR, self.__polySeq, chainId, self.__representativeModelId, self.__representativeAltId, self.__modelNumName):
@@ -1852,7 +1858,17 @@ class RosettaMRParserListener(ParseTreeListener):
                                             "Please re-upload the model file.")
                             return atomId
 
+                    ext_seq = False
+                    if auth_seq_id_list is not None and len(auth_seq_id_list) > 0:
+                        if (compId == 'ACE' and seqId == min_auth_seq_id - 1)\
+                           or (compId == 'NH2' and seqId == max_auth_seq_id + 1)\
+                           or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                               and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
+                                    or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
+                            ext_seq = True
                     if chainId in LARGE_ASYM_ID:
+                        if ext_seq:
+                            return atomId
                         if self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                             f"The residue '{seqId}:{compId}' is not present in polymer sequence of chain {chainId} of the coordinates. "

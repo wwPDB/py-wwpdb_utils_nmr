@@ -1393,18 +1393,31 @@ class AriaMRParserListener(ParseTreeListener):
             if seqId == 1 or (refChainId, seqId - 1) in self.__coordUnobsRes:
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequence(seqId, compId, 'H1')
+            _auth_seq_id_list = list(filter(None, self.__polySeq[0]['auth_seq_id']))
+            min_auth_seq_id = max_auth_seq_id = None
+            if len(_auth_seq_id_list) > 0:
+                min_auth_seq_id = min(_auth_seq_id_list)
+                max_auth_seq_id = max(_auth_seq_id_list)
             if len(self.__polySeq) == 1\
                and (seqId < 1
-                    or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
-                    or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)
+                    or (compId == 'ACE' and min_auth_seq_id is not None and seqId == min_auth_seq_id - 1)
+                    or (compId == 'NH2' and max_auth_seq_id is not None and seqId == max_auth_seq_id + 1)
                     or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT)):
                 refChainId = self.__polySeq[0]['auth_chain_id']
-                if compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                if (compId == 'ACE' and min_auth_seq_id is not None and seqId == min_auth_seq_id - 1)\
+                   or (compId == 'NH2' and max_auth_seq_id is not None and seqId == max_auth_seq_id + 1)\
+                   or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                       and (min_auth_seq_id is not None and min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
+                            or max_auth_seq_id is not None and max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
                     self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                     f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                     chainAssign.add((refChainId, _seqId, compId, True))
                     asis = True
+                elif compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                    self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
@@ -1414,17 +1427,21 @@ class AriaMRParserListener(ParseTreeListener):
                 ext_seq = False
                 if (compId in monDict3 or compId in ('ACE', 'NH2')) and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
                     refChainIds = []
-                    _auth_seq_id_list = []
-                    for ps in self.__polySeq:
-                        auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
-                        _auth_seq_id_list.extend(auth_seq_id_list)
+                    _auth_seq_id_list = auth_seq_id_list
+                    for idx, ps in enumerate(self.__polySeq):
+                        if idx > 0:
+                            auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                            _auth_seq_id_list.extend(auth_seq_id_list)
                         if len(auth_seq_id_list) > 0:
-                            min_auth_seq_id = min(auth_seq_id_list)
-                            max_auth_seq_id = max(auth_seq_id_list)
-                            if min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id and (compId in monDict3 or compId == 'ACE'):
+                            if idx > 0:
+                                min_auth_seq_id = min(auth_seq_id_list)
+                                max_auth_seq_id = max(auth_seq_id_list)
+                            if min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id\
+                               and (compId in monDict3 or (compId == 'ACE' and seqId == min_auth_seq_id - 1)):
                                 refChainIds.append(ps['auth_chain_id'])
                                 ext_seq = True
-                            if max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ and (compId in monDict3 or compId == 'NH2'):
+                            if max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ\
+                               and (compId in monDict3 or (compId == 'NH2' and seqId == max_auth_seq_id + 1)):
                                 refChainIds.append(ps['auth_chain_id'])
                                 ext_seq = True
                     if ext_seq and seqId in _auth_seq_id_list:
@@ -1907,62 +1924,74 @@ class AriaMRParserListener(ParseTreeListener):
             if seqId == 1 or (refChainId, seqId - 1) in self.__coordUnobsRes:
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequenceWithChainId(refChainId, seqId, compId, 'H1')
-            if compId == 'AMB' and (('-' in atomId and ':' in atomId) or '.' in atomId):
-                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
-                                "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the CYANA restraint file.")
-            else:
-                if len(self.__polySeq) == 1\
-                   and (seqId < 1
-                        or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
-                        or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)
-                        or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT)):
-                    refChainId = self.__polySeq[0]['auth_chain_id']
-                    if compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
-                        self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                        f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
-                                        "Please update the sequence in the Macromolecules page.")
-                        chainAssign.add((refChainId, _seqId, compId, True))
-                        asis = True
-                    else:
-                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                        f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
-                                        f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
-                                        "Please update the sequence in the Macromolecules page.")
+            _auth_seq_id_list = list(filter(None, self.__polySeq[0]['auth_seq_id']))
+            min_auth_seq_id = max_auth_seq_id = None
+            if len(_auth_seq_id_list) > 0:
+                min_auth_seq_id = min(_auth_seq_id_list)
+                max_auth_seq_id = max(_auth_seq_id_list)
+            if len(self.__polySeq) == 1\
+               and (seqId < 1
+                    or (compId == 'ACE' and min_auth_seq_id is not None and seqId == min_auth_seq_id - 1)
+                    or (compId == 'NH2' and max_auth_seq_id is not None and seqId == max_auth_seq_id + 1)
+                    or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT)):
+                refChainId = self.__polySeq[0]['auth_chain_id']
+                if (compId == 'ACE' and min_auth_seq_id is not None and seqId == min_auth_seq_id - 1)\
+                   or (compId == 'NH2' and max_auth_seq_id is not None and seqId == max_auth_seq_id + 1)\
+                   or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                       and (min_auth_seq_id is not None and min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
+                            or max_auth_seq_id is not None and max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
+                    self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
+                    chainAssign.add((refChainId, _seqId, compId, True))
+                    asis = True
+                elif compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                    self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
                 else:
-                    ext_seq = False
-                    if (compId in monDict3 or compId in ('ACE', 'NH2')) and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
-                        refChainIds = []
-                        _auth_seq_id_list = []
-                        for ps in self.__polySeq:
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
+            else:
+                ext_seq = False
+                if (compId in monDict3 or compId in ('ACE', 'NH2')) and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                    refChainIds = []
+                    _auth_seq_id_list = auth_seq_id_list
+                    for idx, ps in enumerate(self.__polySeq):
+                        if idx > 0:
                             auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                             _auth_seq_id_list.extend(auth_seq_id_list)
-                            if len(auth_seq_id_list) > 0:
+                        if len(auth_seq_id_list) > 0:
+                            if idx > 0:
                                 min_auth_seq_id = min(auth_seq_id_list)
                                 max_auth_seq_id = max(auth_seq_id_list)
-                                if min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id and (compId in monDict3 or compId == 'ACE'):
-                                    refChainIds.append(ps['auth_chain_id'])
-                                    ext_seq = True
-                                if max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ and (compId in monDict3 or compId == 'NH2'):
-                                    refChainIds.append(ps['auth_chain_id'])
-                                    ext_seq = True
-                        if ext_seq and seqId in _auth_seq_id_list:
-                            ext_seq = False
-                    if ext_seq:
-                        refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
-                        self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                        f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
-                                        "Please update the sequence in the Macromolecules page.")
-                        if isinstance(refChainId, str):
-                            chainAssign.add((refChainId, _seqId, compId, True))
-                        else:
-                            for _refChainId in refChainIds:
-                                chainAssign.add((_refChainId, _seqId, compId, True))
-                        asis = True
+                            if min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id\
+                               and (compId in monDict3 or (compId == 'ACE' and seqId == min_auth_seq_id - 1)):
+                                refChainIds.append(ps['auth_chain_id'])
+                                ext_seq = True
+                            if max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ\
+                               and (compId in monDict3 or (compId == 'NH2' and seqId == max_auth_seq_id + 1)):
+                                refChainIds.append(ps['auth_chain_id'])
+                                ext_seq = True
+                    if ext_seq and seqId in _auth_seq_id_list:
+                        ext_seq = False
+                if ext_seq:
+                    refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
+                    self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
+                    if isinstance(refChainId, str):
+                        chainAssign.add((refChainId, _seqId, compId, True))
                     else:
-                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                        f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
-                    updatePolySeqRst(self.__polySeqRstFailed, str(refChainId), _seqId, compId, _compId)
+                        for _refChainId in refChainIds:
+                            chainAssign.add((_refChainId, _seqId, compId, True))
+                    asis = True
+                else:
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
+                updatePolySeqRst(self.__polySeqRstFailed, str(refChainId), _seqId, compId, _compId)
 
         elif any(ca for ca in chainAssign if ca[0] == refChainId) and any(ca for ca in chainAssign if ca[0] != refChainId):
             _chainAssign = copy.copy(chainAssign)
@@ -2388,8 +2417,12 @@ class AriaMRParserListener(ParseTreeListener):
                 checked = False
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
+                min_auth_seq_id = max_auth_seq_id = None
+                if auth_seq_id_list is not None and len(auth_seq_id_list) > 0:
+                    min_auth_seq_id = min(auth_seq_id_list)
+                    max_auth_seq_id = max(auth_seq_id_list)
                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes\
-                   or (auth_seq_id_list is not None and min(auth_seq_id_list) == seqId):
+                   or (min_auth_seq_id is not None and min_auth_seq_id == seqId):
                     if atomId in aminoProtonCode and atomId != 'H1':
                         return self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     if atomId in aminoProtonCode or atomId == 'P' or atomId.startswith('HOP'):
@@ -2409,7 +2442,7 @@ class AriaMRParserListener(ParseTreeListener):
                                     return atomId
                             if bondedTo[0][0] == 'O':
                                 return 'Ignorable hydroxyl group'
-                    if (auth_seq_id_list is not None and seqId == max(auth_seq_id_list))\
+                    if (max_auth_seq_id is not None and seqId == max_auth_seq_id)\
                        or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
                         if coordAtomSite is not None and atomId in carboxylCode\
                            and not isCyclicPolymer(self.__cR, self.__polySeq, chainId, self.__representativeModelId, self.__representativeAltId, self.__modelNumName):
@@ -2419,20 +2452,13 @@ class AriaMRParserListener(ParseTreeListener):
                             return atomId
 
                     ext_seq = False
-                    if (compId in monDict3 or compId in ('ACE', 'NH2')) and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
-                        _auth_seq_id_list = []
-                        for ps in self.__polySeq:
-                            auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
-                            _auth_seq_id_list.extend(auth_seq_id_list)
-                            if len(auth_seq_id_list) > 0:
-                                min_auth_seq_id = min(auth_seq_id_list)
-                                max_auth_seq_id = max(auth_seq_id_list)
-                                if min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id and (compId in monDict3 or compId == 'ACE'):
-                                    ext_seq = True
-                                if max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ and (compId in monDict3 or compId == 'NH2'):
-                                    ext_seq = True
-                        if ext_seq and seqId in _auth_seq_id_list:
-                            ext_seq = False
+                    if auth_seq_id_list is not None and len(auth_seq_id_list) > 0:
+                        if (compId == 'ACE' and seqId == min_auth_seq_id - 1)\
+                           or (compId == 'NH2' and seqId == max_auth_seq_id + 1)\
+                           or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                               and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
+                                    or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
+                            ext_seq = True
                     if chainId in LARGE_ASYM_ID:
                         if ext_seq:
                             return atomId

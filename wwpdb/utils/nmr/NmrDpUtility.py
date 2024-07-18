@@ -32776,6 +32776,14 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
+                    elif warn.startswith('[Unmatched atom type]'):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
                     elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                         self.report.error.appendDescription('anomalous_data',
                                                             {'file_name': file_name, 'description': warn})

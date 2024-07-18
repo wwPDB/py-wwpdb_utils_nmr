@@ -7141,7 +7141,7 @@ def getDstFuncForHBond(atom1, atom2):
         dstFunc['lower_limit'] = '2.5'
         dstFunc['upper_limit'] = '3.5'
 
-    return dstFunc
+    return getDstFuncAsNoe()
 
 
 def getDstFuncForSsBond(atom1, atom2):
@@ -7170,7 +7170,7 @@ def getDstFuncForSsBond(atom1, atom2):
 def getDstFuncAsNoe():
     """ Return default upper/lower limits as an NOE.
     """
-    return {'weight': '1.0', 'lower_limit': '2.0', 'upper_limit': '6.0'}
+    return {'weight': '1.0', 'lower_limit': '2.0', 'upper_limit': str(DIST_AMBIG_MED)}
 
 
 def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,

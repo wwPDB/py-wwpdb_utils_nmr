@@ -7893,6 +7893,8 @@ class XplorMRParserListener(ParseTreeListener):
         hydrogen = self.atomSelectionSet[1][0]
         acceptor = self.atomSelectionSet[2][0]
 
+        is_hbond = True
+
         if donor['chain_id'] != hydrogen['chain_id']:
             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                             "The donor atom and its hygrogen are in different chains; "
@@ -7907,26 +7909,28 @@ class XplorMRParserListener(ParseTreeListener):
                             f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
             return
 
-        if donor['atom_id'][0] not in ('N', 'O', 'F'):
-            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                            "The donor atom type should be one of Nitrogen, Oxygen, Fluorine; "
-                            f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}. "
-                            "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
-            return
-
-        if acceptor['atom_id'][0] not in ('N', 'O', 'F'):
-            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                            "The acceptor atom type should be one of Nitrogen, Oxygen, Fluorine; "
-                            f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}. "
-                            "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
-            return
-
         if hydrogen['atom_id'][0] not in protonBeginCode:
             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                             "Not a hydrogen; "
                             f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}. "
                             "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
             return
+
+        if donor['atom_id'][0] not in ('N', 'O', 'F'):
+            self.__f.append(f"[Unmatched atom type] {self.__getCurrentRestraint()}"
+                            "The donor atom type should be one of Nitrogen, Oxygen, Fluorine; "
+                            f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}. "
+                            "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
+            is_hbond = False
+            # return
+
+        if acceptor['atom_id'][0] not in ('N', 'O', 'F'):
+            self.__f.append(f"[Unmatched atom type] {self.__getCurrentRestraint()}"
+                            "The acceptor atom type should be one of Nitrogen, Oxygen, Fluorine; "
+                            f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}. "
+                            "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
+            is_hbond = False
+            # return
 
         comp_id = donor['comp_id']
 
@@ -7943,6 +7947,13 @@ class XplorMRParserListener(ParseTreeListener):
                                     f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "
                                     f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
                     return
+
+        if not is_hbond:
+            self.hbondRestraints -= 1
+            self.distRestraints += 1
+            if self.distStatements == 0:
+                self.distStatements += 1
+            self.__cur_subtype = 'dist'
 
         chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
         seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
@@ -7996,16 +8007,16 @@ class XplorMRParserListener(ParseTreeListener):
 
             if len(_donor) == 1 and len(_hydrogen) == 1 and len(_acceptor) == 1:
                 dist = distance(to_np_array(_hydrogen[0]), to_np_array(_acceptor[0]))
-                if dist > 2.5:
+                if dist > 2.5 and is_hbond:
                     self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
-                                    f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
-                                    f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({dist:.3f}Å).")
+                                    f"The distance of the hydrogen bond linkage ({chain_id_2}:{seq_id_2}:{atom_id_2} - "
+                                    f"{chain_id_3}:{seq_id_3}:{atom_id_3}) is too far apart in the coordinates ({dist:.3f}Å).")
 
                 dist = distance(to_np_array(_donor[0]), to_np_array(_acceptor[0]))
-                if dist > 3.5:
+                if dist > 3.5 and is_hbond:
                     self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                     f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
-                                    f"{chain_id_2}:{seq_id_2}:{atom_id_2}) is too far apart in the coordinates ({dist:.3f}Å).")
+                                    f"{chain_id_3}:{seq_id_3}:{atom_id_3}) is too far apart in the coordinates ({dist:.3f}Å).")
 
         except Exception as e:
             if self.__verbose:
@@ -8041,6 +8052,9 @@ class XplorMRParserListener(ParseTreeListener):
                              self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                              atom2, atom3)
                 sf['loop'].add_data(row)
+
+        if not is_hbond:
+            self.__cur_subtype = 'hbond'
 
     # Enter a parse tree produced by XplorMRParser#hbond_db_statement.
     def enterHbond_db_statement(self, ctx: XplorMRParser.Hbond_db_statementContext):  # pylint: disable=unused-argument
@@ -8189,7 +8203,7 @@ class XplorMRParserListener(ParseTreeListener):
             is_hbond = False
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0], self.atomSelectionSet[1]):
                 _dstFunc = getDstFuncForHBond(atom1, atom2)
-                if 'upper_limit' in _dstFunc:
+                if 'upper_limit' in _dstFunc or float(_dstFunc['upper_limit']) >= DIST_AMBIG_MED:
                     is_hbond = True
                     break
 

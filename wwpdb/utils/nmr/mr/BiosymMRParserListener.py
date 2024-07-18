@@ -1589,11 +1589,11 @@ class BiosymMRParserListener(ParseTreeListener):
             if seqId == 1 or (refChainId, seqId - 1) in self.__coordUnobsRes:
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequence(refChainId, seqId, compId, 'H1')
-            _auth_seq_id_list = list(filter(None, self.__polySeq[0]['auth_seq_id']))
+            auth_seq_id_list = list(filter(None, self.__polySeq[0]['auth_seq_id']))
             min_auth_seq_id = max_auth_seq_id = None
-            if len(_auth_seq_id_list) > 0:
-                min_auth_seq_id = min(_auth_seq_id_list)
-                max_auth_seq_id = max(_auth_seq_id_list)
+            if len(auth_seq_id_list) > 0:
+                min_auth_seq_id = min(auth_seq_id_list)
+                max_auth_seq_id = max(auth_seq_id_list)
             if len(self.__polySeq) == 1\
                and (seqId < 1
                     or (compId == 'ACE' and min_auth_seq_id is not None and seqId == min_auth_seq_id - 1)

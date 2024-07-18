@@ -826,6 +826,15 @@ class CyanaMRParserListener(ParseTreeListener):
                     if len(self.ambigAtomNameMapping) > 0:
                         if 'ambig_atom_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['ambig_atom_id_remap'] = self.ambigAtomNameMapping
+                    if len(self.unambigAtomNameMapping) + len(self.ambigAtomNameMapping) == 0:
+                        __f = copy.deepcopy(self.__f)
+                        self.__f = []
+                        for f in __f:
+                            if '[Atom not found]' in f and 'makeDIST_RST' in f:
+                                self.__f.append(re.sub(r'\[Atom not found\]', '[Unsupported data]', f, 1))
+                            else:
+                                self.__f.append(f)
+
             # """
             # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
             #     if 'non_poly_remap' in self.reasonsForReParsing:
@@ -2415,10 +2424,12 @@ class CyanaMRParserListener(ParseTreeListener):
                and atomId in self.unambigAtomNameMapping[compId]:
                 atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
 
+        pure_ambig = _compId == 'AMB' and (('-' in atomId and ':' in atomId) or '.' in atomId)
+
         updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
 
         for ps in self.__polySeq:
-            if preferNonPoly:
+            if preferNonPoly or pure_ambig:
                 continue
             chainId, seqId, cifCompId = self.getRealChainSeqId(ps, _seqId, compId)
             if self.__reasons is not None:
@@ -2547,6 +2558,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _altSeqId_ == seqId)
                     except StopIteration:
                         pass
+                if pure_ambig:
+                    continue
                 if seqId in np['auth_seq_id']\
                    or (ligands == 1 and (_compId in np['comp_id'] or ('alt_comp_id' in np and _compId in np['alt_comp_id']))):
                     if ligands == 1 and cifCompId is None:
@@ -2578,7 +2591,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
-                if preferNonPoly:
+                if preferNonPoly or pure_ambig:
                     continue
                 chainId = ps['chain_id']
                 if fixedChainId is not None and fixedChainId != chainId:
@@ -2617,6 +2630,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainId = np['auth_chain_id']
                     if fixedChainId is not None and fixedChainId != chainId:
                         continue
+                    if pure_ambig:
+                        continue
                     seqKey = (chainId, _seqId)
                     if seqKey in self.__authToLabelSeq:
                         _, seqId = self.__authToLabelSeq[seqKey]
@@ -2639,7 +2654,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
-                if preferNonPoly:
+                if preferNonPoly or pure_ambig:
                     continue
                 chainId = ps['auth_chain_id']
                 if fixedChainId is not None and fixedChainId != chainId:
@@ -2661,7 +2676,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
             for ps in self.__polySeq:
-                if preferNonPoly:
+                if preferNonPoly or pure_ambig:
                     continue
                 chainId = ps['chain_id']
                 if fixedChainId is not None and fixedChainId != chainId:
@@ -2701,13 +2716,14 @@ class CyanaMRParserListener(ParseTreeListener):
                             # """
 
         if len(chainAssign) == 0:
-            if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
-                if atomId in aminoProtonCode and atomId != 'H1':
-                    return self.assignCoordPolymerSequence(seqId, compId, 'H1')
-            if compId == 'AMB' and (('-' in atomId and ':' in atomId) or '.' in atomId):
-                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+            if pure_ambig:
+                warn_title = 'Atom not found' if self.__reasons is None else 'Unsupported data'
+                self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                 f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                 "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the CYANA restraint file.")
+            elif seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
+                if atomId in aminoProtonCode and atomId != 'H1':
+                    return self.assignCoordPolymerSequence(seqId, compId, 'H1')
             else:
                 auth_seq_id_list = list(filter(None, self.__polySeq[0]['auth_seq_id']))
                 min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM
@@ -2909,6 +2925,8 @@ class CyanaMRParserListener(ParseTreeListener):
             if compId in self.unambigAtomNameMapping and atomId in self.unambigAtomNameMapping[compId]:
                 atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
 
+        pure_ambig = _compId == 'AMB' and (('-' in atomId and ':' in atomId) or '.' in atomId)
+
         updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId, _compId)
 
         if refChainId is not None or refChainId != _refChainId:
@@ -2919,7 +2937,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     fixedChainId = _refChainId
 
         for ps in self.__polySeq:
-            if preferNonPoly:
+            if preferNonPoly or pure_ambig:
                 continue
             chainId, seqId, cifCompId = self.getRealChainSeqId(ps, _seqId, compId)
             if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
@@ -3053,6 +3071,8 @@ class CyanaMRParserListener(ParseTreeListener):
                             seqId = fixedSeqId
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
+                if pure_ambig:
+                    continue
                 if 'alt_auth_seq_id' in np and seqId not in np['auth_seq_id'] and seqId in np['alt_auth_seq_id']:
                     try:
                         seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _altSeqId_ == seqId)
@@ -3093,7 +3113,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
-                if preferNonPoly:
+                if preferNonPoly or pure_ambig:
                     continue
                 chainId = ps['chain_id']
                 if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
@@ -3144,6 +3164,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if fixedChainId is not None:
                         if fixedChainId != chainId:
                             continue
+                    if pure_ambig:
+                        continue
                     seqKey = (chainId, _seqId)
                     if seqKey in self.__authToLabelSeq:
                         _, seqId = self.__authToLabelSeq[seqKey]
@@ -3170,7 +3192,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
-                if preferNonPoly:
+                if preferNonPoly or pure_ambig:
                     continue
                 chainId = ps['auth_chain_id']
                 if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
@@ -3202,7 +3224,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
             for ps in self.__polySeq:
-                if preferNonPoly:
+                if preferNonPoly or pure_ambig:
                     continue
                 chainId = ps['chain_id']
                 if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
@@ -3250,13 +3272,14 @@ class CyanaMRParserListener(ParseTreeListener):
                             # """
 
         if len(chainAssign) == 0:
-            if seqId == 1 or (refChainId, seqId - 1) in self.__coordUnobsRes:
-                if atomId in aminoProtonCode and atomId != 'H1':
-                    return self.assignCoordPolymerSequenceWithChainId(refChainId, seqId, compId, 'H1')
-            if compId == 'AMB' and (('-' in atomId and ':' in atomId) or '.' in atomId):
-                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+            if pure_ambig:
+                warn_title = 'Atom not found' if self.__reasons is None else 'Unsupported data'
+                self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                 f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                 "Please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the CYANA restraint file.")
+            elif seqId == 1 or (refChainId, seqId - 1) in self.__coordUnobsRes:
+                if atomId in aminoProtonCode and atomId != 'H1':
+                    return self.assignCoordPolymerSequenceWithChainId(refChainId, seqId, compId, 'H1')
             else:
                 auth_seq_id_list = list(filter(None, self.__polySeq[0]['auth_seq_id']))
                 min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM

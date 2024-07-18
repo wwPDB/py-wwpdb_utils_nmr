@@ -91,17 +91,17 @@ WELL_KNOWN_ISOTOPE_NUMBERS.extend(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P'])
 
 REPRESENTATIVE_MODEL_ID = 1
 
-
 REPRESENTATIVE_ALT_ID = 'A'
-
 
 MAX_PREF_LABEL_SCHEME_COUNT = 100
 
+MAX_OFFSET_ATTEMPT = 1000
 
 MAX_ALLOWED_EXT_SEQ = 2
 
+UNREAL_AUTH_SEQ_NUM = -10000
 
-THRESHHOLD_FOR_CIRCULAR_SHIFT = 340
+THRESHHOLD_FOR_CIRCULAR_SHIFT = 355.0
 
 
 DIST_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 101.0}
@@ -154,11 +154,17 @@ SCALE_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 100.0}
 
 PROBABILITY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 1.0}
 
+
 DIST_AMBIG_LOW = 1.0
+
 DIST_AMBIG_BND = 4.0
+
 DIST_AMBIG_MED = 6.0
+
 DIST_AMBIG_UP = 12.0
+
 DIST_AMBIG_UNCERT = 0.1
+
 
 # @see: https://x3dna.org/highlights/torsion-angles-of-nucleic-acid-structures for nucleic acids
 KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
@@ -6490,7 +6496,7 @@ def getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom, aux_atom=None,
         return starAtom
 
     if seqId is not None:
-        for offset in range(1, 1000):
+        for offset in range(1, MAX_OFFSET_ATTEMPT):
             seqKey = (chainId, seqId + offset, compId)
             if has_aux_atom:
                 auxSeqKey = (auxChainId, auxSeqId + offset, auxCompId)
@@ -6552,7 +6558,7 @@ def getInsCode(authToInsCode, offsetHolder, atom):
         if seqKey in authToInsCode:
             return authToInsCode[seqKey]
 
-    for offset in range(1, 1000):
+    for offset in range(1, MAX_OFFSET_ATTEMPT):
         seqKey = (chainId, seqId + offset, compId)
         if seqKey in authToInsCode:
             offsetHolder[chainId] = offset

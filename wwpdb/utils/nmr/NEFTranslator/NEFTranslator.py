@@ -205,6 +205,10 @@ MAX_DIM_NUM_OF_SPECTRA = 16
 MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK = 100000
 
 
+# maximum number of rows to perform index order check
+MAX_ROWS_TO_PERFORM_INDEX_ORDER_CHECK = 10000
+
+
 # data items in _Entity_deleted_atom category of NMR-STAR
 ENTITY_DELETED_ATOM_ITEMS = ['ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID',
                              'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID']
@@ -2991,7 +2995,7 @@ class NEFTranslator:
 
         return data
 
-    def get_index(self, star_data, lp_category, index_id, row_limit=10000):  # pylint: disable=no-self-use
+    def get_index(self, star_data, lp_category, index_id, row_limit=MAX_ROWS_TO_PERFORM_INDEX_ORDER_CHECK):  # pylint: disable=no-self-use
         """ Extract index_id from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of index for each loop

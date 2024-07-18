@@ -305,6 +305,7 @@ try:
                                                        SCALE_RANGE,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
+                                                       MAX_OFFSET_ATTEMPT,
                                                        CYANA_MR_FILE_EXTS,
                                                        NMR_STAR_LP_KEY_ITEMS,
                                                        NMR_STAR_LP_DATA_ITEMS)
@@ -409,6 +410,7 @@ except ImportError:
                                            SCALE_RANGE,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
+                                           MAX_OFFSET_ATTEMPT,
                                            CYANA_MR_FILE_EXTS,
                                            NMR_STAR_LP_KEY_ITEMS,
                                            NMR_STAR_LP_DATA_ITEMS)
@@ -26632,7 +26634,7 @@ class NmrDpUtility:
                                 return _found, _resolved, _index, _row
 
                             found = False
-                            for offset in range(1, 1000):
+                            for offset in range(1, MAX_OFFSET_ATTEMPT):
                                 found, resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, comp_id, offset)
 
                                 if found:
@@ -26830,7 +26832,7 @@ class NmrDpUtility:
                                     return _resolved, _index, _row
 
                                 found = False
-                                for offset in range(1, 1000):
+                                for offset in range(1, MAX_OFFSET_ATTEMPT):
                                     resolved, _index, __row = test_seq_id_offset_as_is(lp, index, _row, idx, chain_id, seq_id, comp_id, offset)
 
                                     if resolved:

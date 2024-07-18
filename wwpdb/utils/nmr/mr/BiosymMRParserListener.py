@@ -49,6 +49,7 @@ try:
                                                        REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        MAX_ALLOWED_EXT_SEQ,
+                                                       UNREAL_AUTH_SEQ_NUM,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
@@ -123,6 +124,7 @@ except ImportError:
                                            REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            MAX_ALLOWED_EXT_SEQ,
+                                           UNREAL_AUTH_SEQ_NUM,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
@@ -1590,21 +1592,21 @@ class BiosymMRParserListener(ParseTreeListener):
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequence(refChainId, seqId, compId, 'H1')
             auth_seq_id_list = list(filter(None, self.__polySeq[0]['auth_seq_id']))
-            min_auth_seq_id = max_auth_seq_id = None
+            min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM
             if len(auth_seq_id_list) > 0:
                 min_auth_seq_id = min(auth_seq_id_list)
                 max_auth_seq_id = max(auth_seq_id_list)
             if len(self.__polySeq) == 1\
                and (seqId < 1
-                    or (compId == 'ACE' and min_auth_seq_id is not None and seqId == min_auth_seq_id - 1)
-                    or (compId == 'NH2' and max_auth_seq_id is not None and seqId == max_auth_seq_id + 1)
+                    or (compId == 'ACE' and seqId == min_auth_seq_id - 1)
+                    or (compId == 'NH2' and seqId == max_auth_seq_id + 1)
                     or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT)):
                 refChainId = self.__polySeq[0]['auth_chain_id']
-                if (compId == 'ACE' and min_auth_seq_id is not None and seqId == min_auth_seq_id - 1)\
-                   or (compId == 'NH2' and max_auth_seq_id is not None and seqId == max_auth_seq_id + 1)\
+                if (compId == 'ACE' and seqId == min_auth_seq_id - 1)\
+                   or (compId == 'NH2' and seqId == max_auth_seq_id + 1)\
                    or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
-                       and (min_auth_seq_id is not None and min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
-                            or max_auth_seq_id is not None and max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
+                       and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
+                            or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
                     self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                     f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
@@ -2082,12 +2084,12 @@ class BiosymMRParserListener(ParseTreeListener):
                 checked = False
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
-                min_auth_seq_id = max_auth_seq_id = None
+                min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM
                 if auth_seq_id_list is not None and len(auth_seq_id_list) > 0:
                     min_auth_seq_id = min(auth_seq_id_list)
                     max_auth_seq_id = max(auth_seq_id_list)
                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes\
-                   or (min_auth_seq_id is not None and min_auth_seq_id == seqId):
+                   or seqId == min_auth_seq_id:
                     if atomId in aminoProtonCode and atomId != 'H1':
                         return self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     if atomId in aminoProtonCode or atomId == 'P' or atomId.startswith('HOP'):
@@ -2107,7 +2109,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                     return atomId
                             if bondedTo[0][0] == 'O':
                                 return 'Ignorable hydroxyl group'
-                    if (max_auth_seq_id is not None and seqId == max_auth_seq_id)\
+                    if seqId == max_auth_seq_id\
                        or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
                         if coordAtomSite is not None and atomId in carboxylCode\
                            and not isCyclicPolymer(self.__cR, self.__polySeq, chainId, self.__representativeModelId, self.__representativeAltId, self.__modelNumName):

@@ -779,10 +779,11 @@ def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
             idx = 0
             for seqId in ps['seq_id']:
                 if seqId is not None and seqId in _seqIds:
-                    _compIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
-                    _authCompIds[_seqIds.index(seqId)] = ps['auth_comp_id'][idx]
-                    if ps['auth_comp_id'][idx] in emptyValue:
-                        _authCompIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
+                    _idx = _seqIds.index(seqId)
+                    _compIds[_idx] = ps['comp_id'][idx]
+                    _authCompIds[_idx] = ps['auth_comp_id'][idx] if 'auth_comp_id' in ps else _compIds[_idx]
+                    if _authCompIds[_idx] in emptyValue:
+                        _authCompIds[_idx] = _compIds[_idx]
                     idx += 1
 
             ps['seq_id'] = _seqIds
@@ -815,10 +816,11 @@ def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
 
             for idx, seqId in enumerate(ps['seq_id']):
                 if minSeqId <= seqId <= maxSeqId:
-                    _compIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
-                    _authCompIds[_seqIds.index(seqId)] = ps['auth_comp_id'][idx]
-                    if ps['auth_comp_id'][idx] in emptyValue:
-                        _authCompIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
+                    _idx = _seqIds.index(seqId)
+                    _compIds[_idx] = ps['comp_id'][idx]
+                    _authCompIds[_idx] = ps['auth_comp_id'][idx] if 'auth_comp_id' in ps else _compIds[_idx]
+                    if _authCompIds[_idx] in emptyValue:
+                        _authCompIds[_idx] = _compIds[_idx]
 
             _endSeqIds = []
             _endCompIds = []

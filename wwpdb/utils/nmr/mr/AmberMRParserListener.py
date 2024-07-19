@@ -1304,25 +1304,27 @@ class AmberMRParserListener(ParseTreeListener):
                                     if chk_dihed:
                                         dihed_factors[col] = copy.copy(self.__atomNumberDict[iat])
                                 else:
+                                    warn_title = 'Missing data' if len(hint) == 0 else 'Unsupported data'
                                     if chk_dihed:
                                         mis_dihed = True
                                         mis_iat = iat
-                                        self.__g.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                        self.__g.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                         f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file{hint}.")
                                     else:
-                                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                        self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                         f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file{hint}.")
                             elif iat < 0:
                                 varNum = col + 1
+                                warn_title = 'Missing data' if len(hint) == 0 else 'Unsupported data'
                                 if self.igr is None:
-                                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                     f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
                                 elif varNum in self.igr:
                                     for igr in self.igr[varNum]:
                                         if igr in self.__atomNumberDict:
                                             atomSelection.append(copy.copy(self.__atomNumberDict[igr]))
                                         else:
-                                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                            self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                             f"'igr({varNum})={igr}' is not defined in the AMBER parameter/topology file{hint}.")
 
                         else:
@@ -1344,7 +1346,8 @@ class AmberMRParserListener(ParseTreeListener):
                             elif iat < 0:
                                 varNum = col + 1
                                 if self.igr is None:
-                                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                    warn_title = 'Missing data' if len(hint) == 0 else 'Unsupported data'
+                                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                     f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
                                 elif varNum in self.igr:
                                     if varNum not in self.grnam:
@@ -2029,7 +2032,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                       }
                                             if not self.updateSanderAtomNumberDict(factor, useDefault=self.__useDefault):
                                                 if 'AMB' in g[offset + 1] and ((':' in g[offset + 2] and '-' in g[offset + 2]) or '.' in g[offset + 2]):
-                                                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                                                     f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                     f"based on Sander comment {' '.join(g[offset:offset+3])!r}. "
                                                                     "Please attach ambiguous atom name mapping information generated "
@@ -2127,7 +2130,8 @@ class AmberMRParserListener(ParseTreeListener):
                                 elif iat < 0:
                                     varNum = col + 1
                                     if self.igr is None:
-                                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                        warn_title = 'Missing data' if len(hint) == 0 else 'Unsupported data'
+                                        self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                         f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
                                     elif varNum in self.igr:
                                         igr = self.igr[varNum]
@@ -2237,7 +2241,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                           }
                                                 if not self.updateSanderAtomNumberDict(factor, useDefault=self.__useDefault):
                                                     if 'AMB' in g[offset + 1] and ((':' in g[offset + 2] and '-' in g[offset + 2]) or '.' in g[offset + 2]):
-                                                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                        self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                                                         f"Couldn't specify 'igr({varNum})={igr}' in the coordinates "
                                                                         f"based on Sander comment {' '.join(g[offset:offset+3])!r}. "
                                                                         "Please attach ambiguous atom name mapping information generated "
@@ -5436,7 +5440,7 @@ class AmberMRParserListener(ParseTreeListener):
         else:
             lastComment = str(self.lastComment)
             if 'AMB' in lastComment and (('-' in lastComment and ':' in lastComment) or '.' in lastComment):
-                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                 "Failed to recognize AMBER atom numbers in the restraint file "
                                 f"To interpret Sander comment {lastComment!r} as a {subtype_name}, "
                                 "please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the AMBER restraint file.")

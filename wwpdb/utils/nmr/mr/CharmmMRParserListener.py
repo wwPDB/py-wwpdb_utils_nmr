@@ -509,6 +509,8 @@ class CharmmMRParserListener(ParseTreeListener):
 
         try:
 
+            _seqIdRemap = []
+
             if self.__hasPolySeq and self.__polySeqRst is not None:
                 sortPolySeqRst(self.__polySeqRst,
                                None if self.__reasons is None else self.__reasons.get('non_poly_remap'))
@@ -618,6 +620,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                            if v in poly_seq_model['seq_id']
                                            and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
                                 seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
+                            else:
+                                _seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
 
                         if len(seqIdRemap) > 0:
                             if 'seq_id_remap' not in self.reasonsForReParsing:
@@ -977,6 +981,23 @@ class CharmmMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['inhibit_label_seq_scheme']
                 if 'seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['seq_id_remap']
+                if len(_seqIdRemap) > 0 and 'chain_id_remap' not in self.reasonsForReParsing:
+                    _chainIds = [d['chain_id'] for d in _seqIdRemap]
+                    chainIds = [k for k, v in self.reasonsForReParsing['global_auth_sequence_offset'].items() if v is not None]
+                    if any(_c in chainIds for _c in _chainIds) and len(chainIds) < len(_chainIds):
+                        chainIdRemap = {}
+                        for d in _seqIdRemap:
+                            chainId = d['chain_id']
+                            ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
+                            if chainId in chainIds:
+                                offset = next(v for k, v in self.reasonsForReParsing['global_auth_sequence_offset'].items() if k == chainId and v is not None)
+                                for auth_seq_id in ps['auth_seq_id']:
+                                    chainIdRemap[auth_seq_id - offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
+                            else:
+                                for auth_seq_id in ps['auth_seq_id']:
+                                    chainIdRemap[auth_seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
+                        del self.reasonsForReParsing['global_auth_sequence_offset']
+                        self.reasonsForReParsing['chain_id_remap'] = chainIdRemap
 
             if self.hasAnyRestraints():
 

@@ -269,6 +269,7 @@ class RosettaMRParserListener(ParseTreeListener):
     __hasNonPolySeq = False
     __preferAuthSeq = True
     __gapInAuthSeq = False
+    __extendAuthSeq = False
 
     # polymer sequence of MR file
     __polySeqRst = None
@@ -747,6 +748,15 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
                     del self.reasonsForReParsing['seq_id_remap']
 
+            if 'local_seq_scheme' in self.reasonsForReParsing and len(self.reasonsForReParsing) == 1:
+                if len(self.__polySeqRstFailed) > 0:
+                    if len(self.__polySeqRstFailedAmbig) > 0:
+                        mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
+                sortPolySeqRst(self.__polySeqRstFailed)
+                if len(self.__polySeqRstFailed) > 0:
+                    self.reasonsForReParsing['extend_seq_scheme'] = self.__polySeqRstFailed
+                del self.reasonsForReParsing['local_seq_scheme']
+
             if self.__remediate:
                 if self.__dist_lb_greater_than_ub and self.__dist_ub_always_positive:
                     if 'dist_unusual_order' not in self.reasonsForReParsing:
@@ -1211,12 +1221,17 @@ class RosettaMRParserListener(ParseTreeListener):
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
-                    return _chainId, _seqId
+                    return _chainId, _seqId, ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
         if seqId in ps['auth_seq_id']:
-            return ps['auth_chain_id'], seqId
+            return ps['auth_chain_id'], seqId, ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+        if self.__reasons is not None and 'extend_seq_scheme' in self.__reasons:
+            _ps = next((_ps for _ps in self.__reasons['extend_seq_scheme'] if _ps['chain_id'] == ps['auth_chain_id']), None)
+            if _ps is not None:
+                if seqId in _ps['seq_id']:
+                    return ps['auth_chain_id'], seqId, _ps['comp_id'][_ps['seq_id'].index(seqId)]
         # if seqId in ps['seq_id']:
         #     return ps['auth_chain_id'], ps['auth_seq_id'][ps['seq_id'].index(seqId)]
-        return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId
+        return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequence(self, seqId, atomId=None, fixedChainId=None):
         """ Assign polymer sequences of the coordinates.
@@ -1241,7 +1256,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 seqId = _seqId = fixedSeqId
 
         for ps in self.__polySeq:
-            chainId, seqId = self.getRealChainSeqId(ps, _seqId)
+            chainId, seqId, fixedCompId = self.getRealChainSeqId(ps, _seqId)
             if self.__reasons is not None:
                 if 'seq_id_remap' not in self.__reasons\
                    and 'chain_seq_id_remap' not in self.__reasons\
@@ -1326,7 +1341,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if self.__hasNonPolySeq:
             for np in self.__nonPolySeq:
-                chainId, seqId = self.getRealChainSeqId(np, _seqId, False)
+                chainId, seqId, _ = self.getRealChainSeqId(np, _seqId, False)
                 if self.__reasons is not None:
                     if 'seq_id_remap' not in self.__reasons and 'chain_seq_id_remap' not in self.__reasons:
                         if fixedChainId != chainId:
@@ -1460,7 +1475,8 @@ class RosettaMRParserListener(ParseTreeListener):
                             if len(compIds) == 1:
                                 updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compIds[0])
                             else:
-                                updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, seqId, compIds)
+                                updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, seqId, compIds,
+                                                      self.__polySeqRstFailed)
 
             else:
                 if len(self.__polySeq) == 1 and seqId < 1:
@@ -1656,7 +1672,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
             elif self.__preferAuthSeq:
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
-                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId and not self.__extendAuthSeq:
                     if atomId in _coordAtomSite['atom_id']:
                         found = True
                         self.__preferAuthSeq = False
@@ -1701,14 +1717,14 @@ class RosettaMRParserListener(ParseTreeListener):
                         self.__authAtomId = 'auth_atom_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
-                    else:
+                    elif not self.__extendAuthSeq:
                         self.__preferAuthSeq = False
-                else:
+                elif not self.__extendAuthSeq:
                     self.__preferAuthSeq = False
 
         elif self.__preferAuthSeq:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
-            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId and not self.__extendAuthSeq:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
                     self.__preferAuthSeq = False
@@ -1753,9 +1769,9 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__authAtomId = 'auth_atom_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
-                else:
+                elif not self.__extendAuthSeq:
                     self.__preferAuthSeq = False
-            else:
+            elif not self.__extendAuthSeq:
                 self.__preferAuthSeq = False
 
         if found:
@@ -1765,7 +1781,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if self.__preferAuthSeq:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
-            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId and not self.__extendAuthSeq:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
                     self.__preferAuthSeq = False
@@ -1810,9 +1826,9 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__authAtomId = 'auth_atom_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
-                else:
+                elif not self.__extendAuthSeq:
                     self.__preferAuthSeq = False
-            else:
+            elif not self.__extendAuthSeq:
                 self.__preferAuthSeq = False
 
         if found:
@@ -4681,7 +4697,13 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.reasonsForReParsing['label_seq_scheme'] = True
 
     def __retrieveLocalSeqScheme(self):
-        if self.__reasons is None or 'local_seq_scheme' not in self.__reasons:
+        if self.__reasons is None\
+           or ('label_seq_scheme' not in self.__reasons
+               and 'local_seq_scheme' not in self.__reasons
+               and 'extend_seq_scheme' not in self.__reasons):
+            return
+        if 'extend_seq_scheme' in self.__reasons:
+            self.__preferAuthSeq = self.__extendAuthSeq = True
             return
         if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
             self.__preferAuthSeq = False

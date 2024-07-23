@@ -1135,8 +1135,6 @@ class CnsMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['inhibit_label_seq_scheme']
                 if 'seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['seq_id_remap']
-                if 'global_sequence_offset' in self.reasonsForReParsing:
-                    del self.reasonsForReParsing['global_sequence_offset']
                 if len(_seqIdRemap) > 0 and 'chain_id_remap' not in self.reasonsForReParsing:
                     _chainIds = [d['chain_id'] for d in _seqIdRemap]
                     chainIds = [k for k, v in self.reasonsForReParsing['global_auth_sequence_offset'].items() if v is not None]
@@ -1163,6 +1161,8 @@ class CnsMRParserListener(ParseTreeListener):
                                         break
                                     chainIdRemap[auth_seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
                         if valid:
+                            if 'global_sequence_offset' in self.reasonsForReParsing:
+                                del self.reasonsForReParsing['global_sequence_offset']
                             del self.reasonsForReParsing['global_auth_sequence_offset']
                             self.reasonsForReParsing['chain_id_remap'] = chainIdRemap
 

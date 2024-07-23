@@ -555,7 +555,7 @@ class AmberMRParserListener(ParseTreeListener):
                 self.__nonPolySeq = self.__branched
 
         if self.__hasPolySeq:
-            self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
+            self.__gapInAuthSeq = any(ps for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
             if len(self.__polySeq) > 1:
                 self.__concatHetero = True
                 for ps in self.__polySeq:
@@ -5018,7 +5018,7 @@ class AmberMRParserListener(ParseTreeListener):
 
             # enforceAuthSeq = authChainId is not None
 
-            if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
+            if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                 if len(auth_seq_id_list) > 0:
                     min_auth_seq_id = min(auth_seq_id_list)
@@ -5244,7 +5244,7 @@ class AmberMRParserListener(ParseTreeListener):
                 chainId = ps['auth_chain_id']
 
                 seqKey = (chainId, seqId)
-                if seqKey not in self.__authToLabelSeq and 'gap_in_auth_seq' in ps:
+                if seqKey not in self.__authToLabelSeq and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                     auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                     min_auth_seq_id = min(auth_seq_id_list)
                     max_auth_seq_id = max(auth_seq_id_list)
@@ -5491,7 +5491,7 @@ class AmberMRParserListener(ParseTreeListener):
 
             # enforceAuthSeq = authChainId is not None or useAuthSeqScheme
 
-            if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
+            if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                 if len(auth_seq_id_list) > 0:
                     min_auth_seq_id = min(auth_seq_id_list)
@@ -6302,7 +6302,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 # enforceAuthSeq = authChainId is not None or useAuthSeqScheme
 
-                if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
+                if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                     auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                     if len(auth_seq_id_list) > 0:
                         min_auth_seq_id = min(auth_seq_id_list)
@@ -10708,7 +10708,7 @@ class AmberMRParserListener(ParseTreeListener):
             if seqId in ps['auth_seq_id']:
                 if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.add((chainId, seqId, cifCompId, True))
-            elif 'gap_in_auth_seq' in ps:
+            elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                 if len(auth_seq_id_list) > 0:
                     min_auth_seq_id = min(auth_seq_id_list)

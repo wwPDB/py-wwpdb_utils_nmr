@@ -993,7 +993,7 @@ class CharmmMRParserListener(ParseTreeListener):
                         for d in _seqIdRemap:
                             chainId = d['chain_id']
                             ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
-                            if 'gap_in_auth_seq' in ps:
+                            if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                                 valid = False
                                 break
                             if chainId in chainIds:
@@ -3478,7 +3478,7 @@ class CharmmMRParserListener(ParseTreeListener):
                         compId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
                     elif _compId_ is not None and self.__reasons is not None and 'extend_seq_scheme' in self.__reasons:
                         compId = _compId_
-                    elif 'gap_in_auth_seq' in ps and seqId is not None:
+                    elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'] and seqId is not None:
                         compId = None
                         auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                         if len(auth_seq_id_list) > 0:

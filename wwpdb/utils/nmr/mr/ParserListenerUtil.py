@@ -8164,7 +8164,7 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
             elif len(nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                 chainAssign.add((chainId, seqId, cifCompId, True))
 
-        elif 'gap_in_auth_seq' in ps:
+        elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
             auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
             if len(auth_seq_id_list) > 0:
                 min_auth_seq_id = min(auth_seq_id_list)

@@ -266,7 +266,7 @@ class GromacsMRParserListener(ParseTreeListener):
             self.__hasNonPolySeq = True
 
         if self.__hasPolySeq:
-            self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
+            self.__gapInAuthSeq = any(ps for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU

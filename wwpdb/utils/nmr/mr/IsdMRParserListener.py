@@ -1124,7 +1124,7 @@ class IsdMRParserListener(ParseTreeListener):
                     #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                     #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
-            elif 'gap_in_auth_seq' in ps:
+            elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                 if len(auth_seq_id_list) > 0:
                     min_auth_seq_id = min(auth_seq_id_list)

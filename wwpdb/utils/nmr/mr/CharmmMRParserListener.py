@@ -993,6 +993,9 @@ class CharmmMRParserListener(ParseTreeListener):
                         for d in _seqIdRemap:
                             chainId = d['chain_id']
                             ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
+                            if 'gap_in_auth_seq' in ps:
+                                valid = False
+                                break
                             if chainId in chainIds:
                                 offset = next(v for k, v in self.reasonsForReParsing['global_auth_sequence_offset'].items() if k == chainId and v is not None)
                                 for auth_seq_id in ps['auth_seq_id']:

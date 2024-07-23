@@ -1142,18 +1142,26 @@ class CnsMRParserListener(ParseTreeListener):
                     chainIds = [k for k, v in self.reasonsForReParsing['global_auth_sequence_offset'].items() if v is not None]
                     if any(_c in chainIds for _c in _chainIds) and len(chainIds) < len(_chainIds):
                         chainIdRemap = {}
+                        valid = True
                         for d in _seqIdRemap:
                             chainId = d['chain_id']
                             ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
                             if chainId in chainIds:
                                 offset = next(v for k, v in self.reasonsForReParsing['global_auth_sequence_offset'].items() if k == chainId and v is not None)
                                 for auth_seq_id in ps['auth_seq_id']:
+                                    if auth_seq_id - offset in chainIdRemap:
+                                        valid = False
+                                        break
                                     chainIdRemap[auth_seq_id - offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
                             else:
                                 for auth_seq_id in ps['auth_seq_id']:
+                                    if auth_seq_id in chainIdRemap:
+                                        valid = False
+                                        break
                                     chainIdRemap[auth_seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
-                        del self.reasonsForReParsing['global_auth_sequence_offset']
-                        self.reasonsForReParsing['chain_id_remap'] = chainIdRemap
+                        if valid:
+                            del self.reasonsForReParsing['global_auth_sequence_offset']
+                            self.reasonsForReParsing['chain_id_remap'] = chainIdRemap
 
             if 'local_seq_scheme' in self.reasonsForReParsing and len(self.reasonsForReParsing) == 1:
                 if len(self.__polySeqRstFailed) > 0:

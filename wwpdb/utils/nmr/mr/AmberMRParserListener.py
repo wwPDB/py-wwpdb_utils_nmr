@@ -5011,7 +5011,8 @@ class AmberMRParserListener(ParseTreeListener):
             useDefault = True
 
         for ps in (self.__polySeq if useDefault else self.__altPolySeq):
-            chainId = ps['auth_chain_id'] if useDefault else ps['chain_id']
+            refAuthChainId = ps['auth_chain_id']
+            chainId = refAuthChainId if useDefault else ps['chain_id']
 
             if authChainId is not None and chainId != authChainId:
                 continue
@@ -5178,7 +5179,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     seqKey = _seqKey
 
                         if found:
-                            factor['chain_id'] = chainId
+                            factor['chain_id'] = refAuthChainId
                             factor['seq_id'] = seqId if cifSeqId is None else cifSeqId
                             factor['comp_id'] = compId
                             factor['atom_id'] = _atomId
@@ -5192,7 +5193,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if self.__ccU.updateChemCompDict(compId):
                             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                             if cca is not None:
-                                factor['chain_id'] = chainId
+                                factor['chain_id'] = refAuthChainId
                                 factor['seq_id'] = seqId if cifSeqId is None else cifSeqId
                                 factor['comp_id'] = compId
                                 factor['atom_id'] = _atomId
@@ -5483,7 +5484,8 @@ class AmberMRParserListener(ParseTreeListener):
         found = False
 
         for ps in (self.__polySeq if useDefault else self.__altPolySeq):
-            chainId = ps['auth_chain_id'] if useDefault else ps['chain_id']
+            refAuthChainId = ps['auth_chain_id']
+            chainId = refAuthChainId if useDefault else ps['chain_id']
             seqId = factor['auth_seq_id']
 
             if authChainId is not None and chainId != authChainId:
@@ -5691,7 +5693,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             seqKey = _seqKey
 
                                 if found:
-                                    factor['chain_id'] = chainId
+                                    factor['chain_id'] = refAuthChainId
                                     factor['seq_id'] = seqKey[1]  # seqId if cifSeqId is None else cifSeqId
                                     factor['comp_id'] = compId
                                     factor['atom_id'] = _atomId
@@ -5705,7 +5707,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__ccU.updateChemCompDict(compId):
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                     if cca is not None:
-                                        factor['chain_id'] = chainId
+                                        factor['chain_id'] = refAuthChainId
                                         factor['seq_id'] = seqId if cifSeqId is None else cifSeqId
                                         factor['comp_id'] = compId
                                         factor['atom_id'] = _atomId
@@ -5825,7 +5827,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             seqKey = _seqKey
 
                                 if found:
-                                    _factor['chain_id'] = chainId
+                                    _factor['chain_id'] = refAuthChainId
                                     _factor['seq_id'] = seqKey[1]  # seqId if cifSeqId is None else cifSeqId
                                     _factor['comp_id'] = compId
                                     _factor['atom_id'] = _atomId
@@ -5839,7 +5841,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                     if cca is not None:
                                         found = True
-                                        _factor['chain_id'] = chainId
+                                        _factor['chain_id'] = refAuthChainId
                                         _factor['seq_id'] = seqId if cifSeqId is None else cifSeqId
                                         _factor['comp_id'] = compId
                                         _factor['atom_id'] = _atomId

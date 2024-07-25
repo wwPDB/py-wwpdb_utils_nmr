@@ -305,6 +305,7 @@ try:
                                                        SCALE_RANGE,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
+                                                       MAX_OFFSET_ATTEMPT,
                                                        CYANA_MR_FILE_EXTS,
                                                        NMR_STAR_LP_KEY_ITEMS,
                                                        NMR_STAR_LP_DATA_ITEMS)
@@ -409,6 +410,7 @@ except ImportError:
                                            SCALE_RANGE,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
+                                           MAX_OFFSET_ATTEMPT,
                                            CYANA_MR_FILE_EXTS,
                                            NMR_STAR_LP_KEY_ITEMS,
                                            NMR_STAR_LP_DATA_ITEMS)
@@ -14478,13 +14480,13 @@ class NmrDpUtility:
                             col = line.split()
                             len_col = len(col)
                             if len_col == 10:
-                                original_comp_id = col[5]
+                                original_comp_id = col[5].upper()
                                 if original_comp_id not in monDict3:  # extract non-standard residues
                                     try:
                                         atom_map = {'auth_atom_id': col[1],
                                                     'auth_comp_id': col[2],
                                                     'auth_seq_id': int(col[3]),
-                                                    'original_atom_id': col[4],
+                                                    'original_atom_id': col[4].upper(),
                                                     'original_comp_id': original_comp_id,
                                                     'original_seq_id': int(col[3])}
                                         if atom_map not in self.__mr_atom_name_mapping:
@@ -14510,12 +14512,12 @@ class NmrDpUtility:
 
                                     if len(col[4]) > 4 and len_col == 8:
                                         orig_comp_id, orig_seq_id = split_concat_comp_id_seq_id(col[4])
-                                        if auth_comp_id is not None and orig_comp_id is not None and orig_comp_id not in monDict3:
+                                        if auth_comp_id is not None and orig_comp_id is not None and orig_comp_id.upper() not in monDict3:
                                             atom_map = {'auth_atom_id': col[1],
                                                         'auth_comp_id': auth_comp_id,
                                                         'auth_seq_id': auth_seq_id,
-                                                        'original_atom_id': col[3],
-                                                        'original_comp_id': orig_comp_id,
+                                                        'original_atom_id': col[3].upper(),
+                                                        'original_comp_id': orig_comp_id.upper(),
                                                         'original_seq_id': orig_seq_id}
                                             if atom_map not in self.__mr_atom_name_mapping:
                                                 self.__mr_atom_name_mapping.append(atom_map)
@@ -14525,8 +14527,8 @@ class NmrDpUtility:
                                                 atom_map = {'auth_atom_id': col[1],
                                                             'auth_comp_id': auth_comp_id,
                                                             'auth_seq_id': auth_seq_id,
-                                                            'original_atom_id': col[3],
-                                                            'original_comp_id': col[4],
+                                                            'original_atom_id': col[3].upper(),
+                                                            'original_comp_id': col[4].upper(),
                                                             'original_seq_id': int(col[5])}
                                                 if atom_map not in self.__mr_atom_name_mapping:
                                                     self.__mr_atom_name_mapping.append(atom_map)
@@ -14534,13 +14536,13 @@ class NmrDpUtility:
                                                 pass
                                 elif len(col[5]) > 4 and len_col == 9:
                                     orig_comp_id, orig_seq_id = split_concat_comp_id_seq_id(col[5])
-                                    if orig_comp_id is not None and orig_comp_id not in monDict3:
+                                    if orig_comp_id is not None and orig_comp_id.upper() not in monDict3:
                                         try:
                                             atom_map = {'auth_atom_id': col[1],
                                                         'auth_comp_id': col[2],
                                                         'auth_seq_id': int(col[3]),
-                                                        'original_atom_id': col[4],
-                                                        'original_comp_id': orig_comp_id,
+                                                        'original_atom_id': col[4].upper(),
+                                                        'original_comp_id': orig_comp_id.upper(),
                                                         'original_seq_id': orig_seq_id}
                                             if atom_map not in self.__mr_atom_name_mapping:
                                                 self.__mr_atom_name_mapping.append(atom_map)
@@ -16867,13 +16869,25 @@ class NmrDpUtility:
 
                                 err = f"Invalid chain_id {chain_id!r} in a loop {lp_category2}."
 
-                                self.report.error.appendDescription('sequence_mismatch',
-                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
-                                                                     'description': err})
-                                self.report.setError()
+                                if self.__remediation_mode:
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Error  - {err}\n")
+                                    self.report.warning.appendDescription('sequence_mismatch',
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
+                                                                           'description': err})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Warning  - {err}\n")
+
+                                else:
+
+                                    self.report.error.appendDescription('sequence_mismatch',
+                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2,
+                                                                         'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Error  - {err}\n")
 
                             else:
 
@@ -19301,7 +19315,7 @@ class NmrDpUtility:
                                    and atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                     continue
 
-                                if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                                if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                     continue
 
                                 if self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
@@ -19328,7 +19342,7 @@ class NmrDpUtility:
                         if atom_id in emptyValue:
                             continue
 
-                        if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                        if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                             continue
 
                         if self.__csStat.peptideLike(comp_id):
@@ -19388,7 +19402,7 @@ class NmrDpUtility:
                                     and atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):  # and comp_id in first_comp_ids:
                                 pass
 
-                            elif self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                            elif self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                 pass
 
                             elif self.__remediation_mode and self.__csStat.getTypeOfCompId(comp_id)[1]\
@@ -19433,7 +19447,7 @@ class NmrDpUtility:
 
                             if atom_id not in ref_atom_ids:
 
-                                if self.__remediation_mode and atom_id[0] == 'Q':  # DAOTHER-8663, 8751
+                                if self.__remediation_mode and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751
                                     continue
 
                                 unk_atom_ids.append(atom_id)
@@ -26620,7 +26634,7 @@ class NmrDpUtility:
                                 return _found, _resolved, _index, _row
 
                             found = False
-                            for offset in range(1, 1000):
+                            for offset in range(1, MAX_OFFSET_ATTEMPT):
                                 found, resolved, _index, __row = test_seq_id_offset(lp, index, row, _row, idx, chain_id, seq_id, comp_id, offset)
 
                                 if found:
@@ -26818,7 +26832,7 @@ class NmrDpUtility:
                                     return _resolved, _index, _row
 
                                 found = False
-                                for offset in range(1, 1000):
+                                for offset in range(1, MAX_OFFSET_ATTEMPT):
                                     resolved, _index, __row = test_seq_id_offset_as_is(lp, index, _row, idx, chain_id, seq_id, comp_id, offset)
 
                                     if resolved:
@@ -32354,12 +32368,12 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
-                        self.report.warning.appendDescription('sequence_mismatch',
-                                                              {'file_name': file_name, 'description': warn})
-                        self.report.setWarning()
+                        self.report.error.appendDescription('sequence_mismatch',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Unknown atom name]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',
@@ -32756,6 +32770,14 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Enum mismatch ignorable]'):
                         self.report.warning.appendDescription('enum_mismatch_ignorable',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Unmatched atom type]'):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
                                                               {'file_name': file_name, 'description': warn})
                         self.report.setWarning()
 
@@ -42823,7 +42845,9 @@ class NmrDpUtility:
                     _result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
-                    if result['matched'] == 0:
+                    if result['matched'] == 0 or\
+                            (result['conflict'] > 0
+                             and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
                         continue
 
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
@@ -43089,7 +43113,9 @@ class NmrDpUtility:
                     _result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
-                    if result['matched'] == 0:
+                    if result['matched'] == 0 or\
+                            (result['conflict'] > 0
+                             and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
                         continue
 
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
@@ -43566,7 +43592,9 @@ class NmrDpUtility:
                     _result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
-                    if result['matched'] == 0:
+                    if result['matched'] == 0 or\
+                            (result['conflict'] > 0
+                             and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
                         continue
 
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],

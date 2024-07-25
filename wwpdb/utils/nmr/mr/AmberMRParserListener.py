@@ -47,6 +47,7 @@ try:
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
+                                                       MAX_OFFSET_ATTEMPT,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
@@ -75,6 +76,7 @@ try:
                                            carboxylCode,
                                            rdcBbPairCode,
                                            isReservedLigCode,
+                                           getOneLetterCodeCan,
                                            updatePolySeqRst,
                                            updatePolySeqRstFromAtomSelectionSet,
                                            sortPolySeqRst,
@@ -116,6 +118,7 @@ except ImportError:
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
+                                           MAX_OFFSET_ATTEMPT,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
@@ -144,6 +147,7 @@ except ImportError:
                                carboxylCode,
                                rdcBbPairCode,
                                isReservedLigCode,
+                               getOneLetterCodeCan,
                                updatePolySeqRst,
                                updatePolySeqRstFromAtomSelectionSet,
                                sortPolySeqRst,
@@ -336,6 +340,7 @@ class AmberMRParserListener(ParseTreeListener):
     # last Sander comment
     lastComment = None
     prevComment = None
+    ancComment = None
 
     lastElemName = None
     lastPlaneSeqId = None
@@ -550,7 +555,7 @@ class AmberMRParserListener(ParseTreeListener):
                 self.__nonPolySeq = self.__branched
 
         if self.__hasPolySeq:
-            self.__gapInAuthSeq = any(ps for ps in self.__polySeq if ps['gap_in_auth_seq'])
+            self.__gapInAuthSeq = any(ps for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
             if len(self.__polySeq) > 1:
                 self.__concatHetero = True
                 for ps in self.__polySeq:
@@ -578,7 +583,7 @@ class AmberMRParserListener(ParseTreeListener):
         # whether to use alternative polymer sequence
         self.__useDefault = reasons is None or 'use_alt_poly_seq' not in reasons or not reasons['use_alt_poly_seq']
         # whether to use alternative polymer sequence when comp_id is not available
-        self.__useDefaultWoCompId = reasons is not None and 'auth_seq_scheme' in reasons
+        self.__useDefaultWoCompId = (reasons is not None and 'auth_seq_scheme' in reasons) or self.__altPolySeq is None
 
         self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
 
@@ -751,6 +756,18 @@ class AmberMRParserListener(ParseTreeListener):
                                ['H', 'N', 'CA']
                                ]
 
+        self.ang_cang_sander_pat = re.compile(r'C angles for residue (-?\d+).*')
+
+        self.ang_cang_sander_w_chain_pat = re.compile(r'C angles for residue ([A-Z]) (-?\d+).*')
+
+        self.ang_cang_atoms = {'Y': [["H1'", "C1'", 'N1'],  # for pyrimidines (i.e. C, T, U)
+                                     ["H1'", "C1'", "C2'"],
+                                     ["H1'", "C1'", "O4'"]],
+                               'R': [["H1'", "C1'", 'N9'],  # for purines (i.e. G, A)
+                                     ["H1'", "C1'", "C2'"],
+                                     ["H1'", "C1'", "O4'"]]
+                               }
+
         self.ang_amb_comp_sander_pat = re.compile(r'(\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s* '
                                                   r'angle restraint for residue(.*) (-?\d+).*')
 
@@ -800,11 +817,17 @@ class AmberMRParserListener(ParseTreeListener):
         self.dihed_chiral_sander_w_chain_pat = re.compile(r'chirality for residue ([A-Z]) (-?\d+) atoms: '
                                                           r'(\S+) (\S+) (\S+) (\S+).*')
 
-        self.dihed_omega_sander_pat = re.compile(r'trans-omega constraint for residue (-?\d+).*')
+        self.dihed_tomega_sander_pat = re.compile(r'trans-omega constraint for residue (-?\d+).*')
 
-        self.dihed_omega_sander_w_chain_pat = re.compile(r'trans-omega constraint for residue ([A-Z]) (-?\d+).*')
+        self.dihed_tomega_sander_w_chain_pat = re.compile(r'trans-omega constraint for residue ([A-Z]) (-?\d+).*')
 
-        self.dihed_omega_atoms = ['CA', 'N', 'C', 'CA']  # OMEGA dihedral angle defined by CA(i), N(i), C(i-1), CA(i-1)
+        self.dihed_tomega_atoms = ['CA', 'N', 'C', 'CA']  # OMEGA dihedral angle defined by CA(i), N(i), C(i-1), CA(i-1)
+
+        self.dihed_comega_sander_pat = re.compile(r'cis-omega constraint for residue (-?\d+).*')
+
+        self.dihed_comega_sander_w_chain_pat = re.compile(r'cis-omega constraint for residue ([A-Z]) (-?\d+).*')
+
+        self.dihed_comega_atoms = ['CA', 'N', 'C', 'O']  # OMEGA dihedral angle defined by CA(i), N(i), C(i-1), O(i-1) (e.g. 2m2d)
 
         self.dihed_amb_comp_sander_pat = re.compile(r'(\S+)\s*-\s*(\S+)\s*-\s*(\S+)\s*-\s*(\S+) '
                                                     r'restraint for residue(.*) (-?\d+).*')
@@ -892,6 +915,10 @@ class AmberMRParserListener(ParseTreeListener):
                         for ca in self.__chainAssign:
                             ref_chain_id = ca['ref_chain_id']
                             test_chain_id = ca['test_chain_id']
+
+                            ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == ref_chain_id)
+                            if 'identical_chain_id' in ps:
+                                continue
 
                             sa = next((sa for sa in self.__seqAlign
                                        if sa['ref_chain_id'] == ref_chain_id
@@ -1277,25 +1304,27 @@ class AmberMRParserListener(ParseTreeListener):
                                     if chk_dihed:
                                         dihed_factors[col] = copy.copy(self.__atomNumberDict[iat])
                                 else:
+                                    warn_title = 'Missing data' if len(hint) == 0 else 'Unsupported data'
                                     if chk_dihed:
                                         mis_dihed = True
                                         mis_iat = iat
-                                        self.__g.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                        self.__g.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                         f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file{hint}.")
                                     else:
-                                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                        self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                         f"'iat({col+1})={iat}' is not defined in the AMBER parameter/topology file{hint}.")
                             elif iat < 0:
                                 varNum = col + 1
+                                warn_title = 'Missing data' if len(hint) == 0 else 'Unsupported data'
                                 if self.igr is None:
-                                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                     f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
                                 elif varNum in self.igr:
                                     for igr in self.igr[varNum]:
                                         if igr in self.__atomNumberDict:
                                             atomSelection.append(copy.copy(self.__atomNumberDict[igr]))
                                         else:
-                                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                            self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                             f"'igr({varNum})={igr}' is not defined in the AMBER parameter/topology file{hint}.")
 
                         else:
@@ -1317,7 +1346,8 @@ class AmberMRParserListener(ParseTreeListener):
                             elif iat < 0:
                                 varNum = col + 1
                                 if self.igr is None:
-                                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                    warn_title = 'Missing data' if len(hint) == 0 else 'Unsupported data'
+                                    self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                     f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
                                 elif varNum in self.igr:
                                     if varNum not in self.grnam:
@@ -1858,10 +1888,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None:
                                             refAtomIds = [ga[_col + 1] for _col in range(2)]
-                                            polySeq = self.__polySeq if self.__useDefaultWoCompId or self.__altPolySeq is None else self.__altPolySeq
+                                            polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                             for ps in polySeq:
-                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId or self.__altPolySeq is None else ps['chain_id']
+                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                                                         __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
@@ -2002,7 +2032,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                       }
                                             if not self.updateSanderAtomNumberDict(factor, useDefault=self.__useDefault):
                                                 if 'AMB' in g[offset + 1] and ((':' in g[offset + 2] and '-' in g[offset + 2]) or '.' in g[offset + 2]):
-                                                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                    self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                                                     f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                     f"based on Sander comment {' '.join(g[offset:offset+3])!r}. "
                                                                     "Please attach ambiguous atom name mapping information generated "
@@ -2100,7 +2130,8 @@ class AmberMRParserListener(ParseTreeListener):
                                 elif iat < 0:
                                     varNum = col + 1
                                     if self.igr is None:
-                                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                        warn_title = 'Missing data' if len(hint) == 0 else 'Unsupported data'
+                                        self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                         f"'igr({varNum})' is not defined in the AMBER parameter/topology file{hint}.")
                                     elif varNum in self.igr:
                                         igr = self.igr[varNum]
@@ -2210,7 +2241,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                           }
                                                 if not self.updateSanderAtomNumberDict(factor, useDefault=self.__useDefault):
                                                     if 'AMB' in g[offset + 1] and ((':' in g[offset + 2] and '-' in g[offset + 2]) or '.' in g[offset + 2]):
-                                                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                                        self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                                                         f"Couldn't specify 'igr({varNum})={igr}' in the coordinates "
                                                                         f"based on Sander comment {' '.join(g[offset:offset+3])!r}. "
                                                                         "Please attach ambiguous atom name mapping information generated "
@@ -2278,6 +2309,21 @@ class AmberMRParserListener(ParseTreeListener):
                             or not self.ang_nang_sander_pat.match(self.prevComment)\
                             else self.ang_nang_sander_pat.search(self.prevComment).groups()
 
+                        gc = None\
+                            if self.lastComment is None or not self.ang_cang_sander_pat.match(self.lastComment)\
+                            else self.ang_cang_sander_pat.search(self.lastComment).groups()
+
+                        _gc = None\
+                            if self.lastComment is not None or gc is not None or self.prevComment is None\
+                            or not self.ang_cang_sander_pat.match(self.prevComment)\
+                            else self.ang_cang_sander_pat.search(self.prevComment).groups()
+
+                        __gc = None\
+                            if self.lastComment is not None or gc is not None\
+                            or self.prevComment is not None or _gc is not None or self.ancComment is None\
+                            or not self.ang_cang_sander_pat.match(self.ancComment)\
+                            else self.ang_cang_sander_pat.search(self.ancComment).groups()
+
                         ga = None\
                             if self.lastComment is None or not self.ang_amb_comp_sander_pat.match(self.lastComment)\
                             else self.ang_amb_comp_sander_pat.search(self.lastComment).groups()
@@ -2294,6 +2340,21 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.lastComment is not None or gnwc is not None or self.prevComment is None\
                             or not self.ang_nang_sander_w_chain_pat.match(self.prevComment)\
                             else self.ang_nang_sander_w_chain_pat.search(self.prevComment).groups()
+
+                        gcwc = None\
+                            if self.lastComment is None or not self.ang_cang_sander_w_chain_pat.match(self.lastComment)\
+                            else self.ang_cang_sander_w_chain_pat.search(self.lastComment).groups()
+
+                        _gcwc = None\
+                            if self.lastComment is not None or gcwc is not None or self.prevComment is None\
+                            or not self.ang_cang_sander_w_chain_pat.match(self.prevComment)\
+                            else self.ang_cang_sander_w_chain_pat.search(self.prevComment).groups()
+
+                        __gcwc = None\
+                            if self.lastComment is not None or gcwc is not None\
+                            or self.prevComment is not None or _gcwc is not None or self.ancComment is None\
+                            or not self.ang_cang_sander_w_chain_pat.match(self.ancComment)\
+                            else self.ang_cang_sander_w_chain_pat.search(self.ancComment).groups()
 
                         if _gn is not None:
                             for col, iat in enumerate(self.iat):
@@ -2329,8 +2390,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                             f"based on Sander comment {self.prevComment!r}.")
 
-                            self.prevComment = None
-
                         elif _gnwc is not None:
                             for col, iat in enumerate(self.iat):
 
@@ -2359,8 +2418,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                             f"based on Sander comment {self.prevComment!r}.")
 
-                            self.prevComment = None
-
                         elif gn is not None:
                             for col, iat in enumerate(self.iat):
 
@@ -2373,10 +2430,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None:
                                             refAtomIds = self.ang_nang_atoms[0]
-                                            polySeq = self.__polySeq if self.__useDefaultWoCompId or self.__altPolySeq is None else self.__altPolySeq
+                                            polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                             for ps in polySeq:
-                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId or self.__altPolySeq is None else ps['chain_id']
+                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                                                         __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
@@ -2451,6 +2508,226 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                             f"based on Sander comment {self.lastComment!r}.")
 
+                        elif __gc is not None:
+                            for col, iat in enumerate(self.iat):
+
+                                if iat > 0:
+                                    if iat in self.__sanderAtomNumberDict:
+                                        pass
+                                    else:
+                                        seqId = int(__gc[0])
+                                        atomId = self.ang_cang_atoms['Y'][2][col]
+                                        _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
+                                        if _factor is None and not self.__useDefaultWoCompId:
+                                            self.__useDefaultWoCompId = True
+                                            _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
+                                        if _factor is None:
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.ancComment!r}.")
+                                            continue
+                                        factor = {'auth_seq_id': seqId,
+                                                  'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
+                                                  'auth_atom_id': atomId,
+                                                  'iat': iat
+                                                  }
+                                        compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
+                                        chainIds = self.guessChainIdFromCompId(seqId, compId)
+                                        if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.ancComment!r}.")
+                                        elif not self.updateSanderAtomNumberDict(factor, useDefault=self.__useDefaultWoCompId):
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.ancComment!r}.")
+
+                        elif __gcwc is not None:
+                            for col, iat in enumerate(self.iat):
+
+                                if iat > 0:
+                                    if iat in self.__sanderAtomNumberDict:
+                                        pass
+                                    else:
+                                        chainId = __gcwc[0]
+                                        seqId = int(__gcwc[1])
+                                        atomId = self.ang_cang_atoms['Y'][2][col]
+                                        _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False,
+                                                                                        authChainId=chainId)
+                                        if _factor is None:
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.ancComment!r}.")
+                                            continue
+                                        factor = {'auth_chain_id': chainId,
+                                                  'auth_seq_id': seqId,
+                                                  'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
+                                                  'auth_atom_id': atomId,
+                                                  'iat': iat
+                                                  }
+                                        if not self.updateSanderAtomNumberDict(factor, useAuthSeqScheme=True):
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.ancComment!r}.")
+
+                        elif _gc is not None:
+                            for col, iat in enumerate(self.iat):
+
+                                if iat > 0:
+                                    if iat in self.__sanderAtomNumberDict:
+                                        pass
+                                    else:
+                                        seqId = int(_gc[0])
+                                        atomId = self.ang_cang_atoms['Y'][1][col]
+                                        _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
+                                        if _factor is None and not self.__useDefaultWoCompId:
+                                            self.__useDefaultWoCompId = True
+                                            _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
+                                        if _factor is None:
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.prevComment!r}.")
+                                            continue
+                                        factor = {'auth_seq_id': seqId,
+                                                  'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
+                                                  'auth_atom_id': atomId,
+                                                  'iat': iat
+                                                  }
+                                        compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
+                                        chainIds = self.guessChainIdFromCompId(seqId, compId)
+                                        if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.prevComment!r}.")
+                                        elif not self.updateSanderAtomNumberDict(factor, useDefault=self.__useDefaultWoCompId):
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.prevComment!r}.")
+
+                        elif _gcwc is not None:
+                            for col, iat in enumerate(self.iat):
+
+                                if iat > 0:
+                                    if iat in self.__sanderAtomNumberDict:
+                                        pass
+                                    else:
+                                        chainId = _gcwc[0]
+                                        seqId = int(_gcwc[1])
+                                        atomId = self.ang_cang_atoms['Y'][1][col]
+                                        _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False,
+                                                                                        authChainId=chainId)
+                                        if _factor is None:
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.prevComment!r}.")
+                                            continue
+                                        factor = {'auth_chain_id': chainId,
+                                                  'auth_seq_id': seqId,
+                                                  'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
+                                                  'auth_atom_id': atomId,
+                                                  'iat': iat
+                                                  }
+                                        if not self.updateSanderAtomNumberDict(factor, useAuthSeqScheme=True):
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.prevComment!r}.")
+
+                        elif gc is not None:
+                            for col, iat in enumerate(self.iat):
+
+                                if iat > 0:
+                                    if iat in self.__sanderAtomNumberDict:
+                                        pass
+                                    else:
+                                        seqId = int(gc[0])
+                                        for na in ('Y', 'R'):
+                                            atomId = self.ang_cang_atoms[na][0][col]
+                                            _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
+                                            if _factor is None:
+                                                refAtomIds = self.ang_cang_atoms[na][0]
+                                                polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
+                                                _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
+                                                for ps in polySeq:
+                                                    chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
+                                                    for _compId in _compIds:
+                                                        if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
+                                                            __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
+                                                            if __seqId is not None and __seqId in ps['auth_seq_id']:
+                                                                _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
+                                                                break
+                                                    if _factor is not None:
+                                                        break
+                                                if _factor is None and not self.__useDefaultWoCompId:
+                                                    self.__useDefaultWoCompId = True
+                                                    _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
+                                                    if _factor is None:
+                                                        refAtomIds = self.ang_cang_atoms[na][0]
+                                                        polySeq = self.__polySeq
+                                                        _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
+                                                        for ps in polySeq:
+                                                            chainId = ps['auth_chain_id']
+                                                            for _compId in _compIds:
+                                                                if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
+                                                                    __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
+                                                                    if __seqId is not None and __seqId in ps['auth_seq_id']:
+                                                                        _factor = {'comp_id': ps['comp_id'][ps['auth_seq_id'].index(__seqId)]}
+                                                                        break
+                                                            if _factor is not None:
+                                                                break
+                                            if _factor is not None:
+                                                break
+                                        if _factor is None:
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.lastComment!r}.")
+                                            continue
+                                        factor = {'auth_seq_id': seqId,
+                                                  'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
+                                                  'auth_atom_id': atomId,
+                                                  'iat': iat
+                                                  }
+                                        compId = self.translateToStdResNameWrapper(seqId, factor['auth_comp_id'])
+                                        chainIds = self.guessChainIdFromCompId(seqId, compId)
+                                        if len(chainIds) != 1 and (self.__reasons is None or 'chain_seq_id_remap' not in self.__reasons):
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.lastComment!r}.")
+                                        elif not self.updateSanderAtomNumberDict(factor, useDefault=self.__useDefaultWoCompId):
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.lastComment!r}.")
+
+                        elif gcwc is not None:
+                            for col, iat in enumerate(self.iat):
+
+                                if iat > 0:
+                                    if iat in self.__sanderAtomNumberDict:
+                                        pass
+                                    else:
+                                        chainId = gcwc[0]
+                                        seqId = int(gcwc[1])
+                                        for na in ('Y', 'R'):
+                                            atomId = self.ang_cang_atoms[na][0][col]
+                                            _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False,
+                                                                                            authChainId=chainId)
+                                            if _factor is not None:
+                                                break
+                                        if _factor is None:
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.lastComment!r}.")
+                                            continue
+                                        factor = {'auth_chain_id': chainId,
+                                                  'auth_seq_id': seqId,
+                                                  'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
+                                                  'auth_atom_id': atomId,
+                                                  'iat': iat
+                                                  }
+                                        if not self.updateSanderAtomNumberDict(factor, useAuthSeqScheme=True):
+                                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                            f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                            f"based on Sander comment {self.lastComment!r}.")
+
                         elif ga is not None:
                             for col, iat in enumerate(self.iat):
 
@@ -2463,10 +2740,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None:
                                             refAtomIds = [ga[_col + 1] for _col in range(3)]
-                                            polySeq = self.__polySeq if self.__useDefaultWoCompId or self.__altPolySeq is None else self.__altPolySeq
+                                            polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                             for ps in polySeq:
-                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId or self.__altPolySeq is None else ps['chain_id']
+                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                                                         __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
@@ -2620,9 +2897,13 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.lastComment is None or not self.dihed_chiral_sander_pat.match(self.lastComment)\
                             else self.dihed_chiral_sander_pat.search(self.lastComment).groups()
 
-                        go = None\
-                            if self.lastComment is None or not self.dihed_omega_sander_pat.match(self.lastComment)\
-                            else self.dihed_omega_sander_pat.search(self.lastComment).groups()
+                        gto = None\
+                            if self.lastComment is None or not self.dihed_tomega_sander_pat.match(self.lastComment)\
+                            else self.dihed_tomega_sander_pat.search(self.lastComment).groups()
+
+                        gco = None\
+                            if self.lastComment is None or not self.dihed_comega_sander_pat.match(self.lastComment)\
+                            else self.dihed_comega_sander_pat.search(self.lastComment).groups()
 
                         ga = None\
                             if self.lastComment is None or not self.dihed_amb_comp_sander_pat.match(self.lastComment)\
@@ -2640,9 +2921,13 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.lastComment is None or not self.dihed_chiral_sander_w_chain_pat.match(self.lastComment)\
                             else self.dihed_chiral_sander_w_chain_pat.search(self.lastComment).groups()
 
-                        gowc = None\
-                            if self.lastComment is None or not self.dihed_omega_sander_w_chain_pat.match(self.lastComment)\
-                            else self.dihed_omega_sander_w_chain_pat.search(self.lastComment).groups()
+                        gtowc = None\
+                            if self.lastComment is None or not self.dihed_tomega_sander_w_chain_pat.match(self.lastComment)\
+                            else self.dihed_tomega_sander_w_chain_pat.search(self.lastComment).groups()
+
+                        gcowc = None\
+                            if self.lastComment is None or not self.dihed_comega_sander_w_chain_pat.match(self.lastComment)\
+                            else self.dihed_comega_sander_w_chain_pat.search(self.lastComment).groups()
 
                         if gp is not None:
                             for col, iat in enumerate(self.iat):
@@ -2664,24 +2949,30 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                             f"based on Sander comment 'PLANAR RESTRAINTS FOR RESIDUE {self.lastPlaneSeqId}' and {gp[col]!r}.")
 
-                        elif go is not None:
+                        elif gto is not None or gco is not None:
                             for col, iat in enumerate(self.iat):
 
                                 if iat > 0:
                                     if iat in self.__sanderAtomNumberDict:
                                         pass
                                     else:
-                                        seqId = int(go[0])
-                                        if col >= 2:
-                                            seqId -= 1
-                                        atomId = self.dihed_omega_atoms[col]
+                                        if gto is not None:
+                                            seqId = int(gto[0])
+                                            if col >= 2:
+                                                seqId -= 1
+                                            atomId = self.dihed_tomega_atoms[col]
+                                        else:
+                                            seqId = int(gco[0])
+                                            if col >= 2:
+                                                seqId -= 1
+                                            atomId = self.dihed_comega_atoms[col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None:
-                                            refAtomIds = self.dihed_omega_atoms
-                                            polySeq = self.__polySeq if self.__useDefaultWoCompId or self.__altPolySeq is None else self.__altPolySeq
+                                            refAtomIds = self.dihed_tomega_atoms if gto is not None else self.dihed_comega_atoms
+                                            polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                             for ps in polySeq:
-                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId or self.__altPolySeq is None else ps['chain_id']
+                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                                                         __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
@@ -2694,7 +2985,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                 self.__useDefaultWoCompId = True
                                                 _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                                 if _factor is None:
-                                                    refAtomIds = self.dihed_omega_atoms
+                                                    refAtomIds = self.dihed_tomega_atoms if gto is not None else self.dihed_comega_atoms
                                                     polySeq = self.__polySeq
                                                     _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                                     for ps in polySeq:
@@ -2728,18 +3019,25 @@ class AmberMRParserListener(ParseTreeListener):
                                                             f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                             f"based on Sander comment {self.lastComment!r}.")
 
-                        elif gowc is not None:
+                        elif gtowc is not None or gcowc is not None:
                             for col, iat in enumerate(self.iat):
 
                                 if iat > 0:
                                     if iat in self.__sanderAtomNumberDict:
                                         pass
                                     else:
-                                        chainId = gowc[0]
-                                        seqId = int(gowc[1])
-                                        if col >= 2:
-                                            seqId -= 1
-                                        atomId = self.dihed_omega_atoms[col]
+                                        if gtowc is not None:
+                                            chainId = gtowc[0]
+                                            seqId = int(gtowc[1])
+                                            if col >= 2:
+                                                seqId -= 1
+                                            atomId = self.dihed_tomega_atoms[col]
+                                        else:
+                                            chainId = gcowc[0]
+                                            seqId = int(gcowc[1])
+                                            if col >= 2:
+                                                seqId -= 1
+                                            atomId = self.dihed_comega_atoms[col]
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False,
                                                                                         authChainId=chainId)
                                         if _factor is None:
@@ -2770,10 +3068,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None:
                                             refAtomIds = [gc[_col + 1] for _col in range(4)]
-                                            polySeq = self.__polySeq if self.__useDefaultWoCompId or self.__altPolySeq is None else self.__altPolySeq
+                                            polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                             for ps in polySeq:
-                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId or self.__altPolySeq is None else ps['chain_id']
+                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                                                         __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
@@ -2860,10 +3158,10 @@ class AmberMRParserListener(ParseTreeListener):
                                         _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                         if _factor is None:
                                             refAtomIds = [ga[_col + 1] for _col in range(4)]
-                                            polySeq = self.__polySeq if self.__useDefaultWoCompId or self.__altPolySeq is None else self.__altPolySeq
+                                            polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                             _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                             for ps in polySeq:
-                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId or self.__altPolySeq is None else ps['chain_id']
+                                                chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                 for _compId in _compIds:
                                                     if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                                                         __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
@@ -2998,10 +3296,10 @@ class AmberMRParserListener(ParseTreeListener):
                                             _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                             if _factor is None:
                                                 refAtomIds = [g5[_col] for _col in range(4)]
-                                                polySeq = self.__polySeq if self.__useDefaultWoCompId or self.__altPolySeq is None else self.__altPolySeq
+                                                polySeq = self.__polySeq if self.__useDefaultWoCompId else self.__altPolySeq
                                                 _compIds = guessCompIdFromAtomIdWoLimit(refAtomIds, polySeq, self.__nefT)
                                                 for ps in polySeq:
-                                                    chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId or self.__altPolySeq is None else ps['chain_id']
+                                                    chainId = ps['auth_chain_id'] if self.__useDefaultWoCompId else ps['chain_id']
                                                     for _compId in _compIds:
                                                         if self.__reasons is not None and 'chain_seq_id_remap' in self.__reasons:
                                                             __chainId, __seqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], chainId, seqId, _compId)
@@ -3757,6 +4055,21 @@ class AmberMRParserListener(ParseTreeListener):
                             or not self.ang_nang_sander_pat.match(self.prevComment)\
                             else self.ang_nang_sander_pat.search(self.prevComment).groups()
 
+                        gc = None\
+                            if self.lastComment is None or not self.ang_cang_sander_pat.match(self.lastComment)\
+                            else self.ang_cang_sander_pat.search(self.lastComment).groups()
+
+                        _gc = None\
+                            if self.lastComment is not None or gc is not None or self.prevComment is None\
+                            or not self.ang_cang_sander_pat.match(self.prevComment)\
+                            else self.ang_cang_sander_pat.search(self.prevComment).groups()
+
+                        __gc = None\
+                            if self.lastComment is not None or gc is not None\
+                            or self.prevComment is not None or _gc is not None or self.ancComment is None\
+                            or not self.ang_cang_sander_pat.match(self.ancComment)\
+                            else self.ang_cang_sander_pat.search(self.ancComment).groups()
+
                         ga = None\
                             if self.lastComment is None or not self.ang_amb_comp_sander_pat.match(self.lastComment)\
                             else self.ang_amb_comp_sander_pat.search(self.lastComment).groups()
@@ -3792,8 +4105,6 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                 f"based on Sander comment {self.prevComment!r}.")
 
-                            self.prevComment = None
-
                         elif gn is not None:
                             for col, funcExpr in enumerate(self.funcExprs):
 
@@ -3809,6 +4120,101 @@ class AmberMRParserListener(ParseTreeListener):
                                             if _factor is None and not self.__useDefaultWoCompId:
                                                 self.__useDefaultWoCompId = True
                                                 _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
+                                            if _factor is None:
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {self.lastComment!r}.")
+                                                continue
+                                            factor = {'auth_seq_id': seqId,
+                                                      'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
+                                                      'auth_atom_id': atomId,
+                                                      'iat': iat
+                                                      }
+                                            if not self.updateSanderAtomNumberDict(factor, useDefault=self.__useDefaultWoCompId):
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {self.lastComment!r}.")
+
+                        elif __gc is not None:
+                            for col, funcExpr in enumerate(self.funcExprs):
+
+                                if isinstance(funcExpr, dict):
+                                    if 'iat' in funcExpr:
+                                        iat = funcExpr['iat']
+                                        if iat in self.__sanderAtomNumberDict:
+                                            pass
+                                        else:
+                                            seqId = int(_gc[0])
+                                            atomId = self.ang_cang_atoms['Y'][2][col]
+                                            _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
+                                            if _factor is None:
+                                                if not self.__useDefaultWoCompId:
+                                                    self.__useDefaultWoCompId = True
+                                                    _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
+                                            if __factor is None:
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {self.ancComment!r}.")
+                                                continue
+                                            factor = {'auth_seq_id': seqId,
+                                                      'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
+                                                      'auth_atom_id': atomId,
+                                                      'iat': iat
+                                                      }
+                                            if not self.updateSanderAtomNumberDict(factor, useDefault=self.__useDefaultWoCompId):
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {self.ancComment!r}.")
+
+                        elif _gc is not None:
+                            for col, funcExpr in enumerate(self.funcExprs):
+
+                                if isinstance(funcExpr, dict):
+                                    if 'iat' in funcExpr:
+                                        iat = funcExpr['iat']
+                                        if iat in self.__sanderAtomNumberDict:
+                                            pass
+                                        else:
+                                            seqId = int(_gc[0])
+                                            atomId = self.ang_cang_atoms['Y'][1][col]
+                                            _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
+                                            if _factor is None:
+                                                if not self.__useDefaultWoCompId:
+                                                    self.__useDefaultWoCompId = True
+                                                    _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
+                                            if __factor is None:
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {self.prevComment!r}.")
+                                                continue
+                                            factor = {'auth_seq_id': seqId,
+                                                      'auth_comp_id': _factor['comp_id'],  # pylint: disable=unsubscriptable-object
+                                                      'auth_atom_id': atomId,
+                                                      'iat': iat
+                                                      }
+                                            if not self.updateSanderAtomNumberDict(factor, useDefault=self.__useDefaultWoCompId):
+                                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                                                f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
+                                                                f"based on Sander comment {self.prevComment!r}.")
+
+                        elif gc is not None:
+                            for col, funcExpr in enumerate(self.funcExprs):
+
+                                if isinstance(funcExpr, dict):
+                                    if 'iat' in funcExpr:
+                                        iat = funcExpr['iat']
+                                        if iat in self.__sanderAtomNumberDict:
+                                            pass
+                                        else:
+                                            seqId = int(gc[0])
+                                            for na in ('Y', 'R'):
+                                                atomId = self.ang_cang_atoms[na][0][col]
+                                                _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
+                                                if _factor is None and not self.__useDefaultWoCompId:
+                                                    self.__useDefaultWoCompId = True
+                                                    _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
+                                                if _factor is not None:
+                                                    break
                                             if _factor is None:
                                                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
@@ -3945,9 +4351,13 @@ class AmberMRParserListener(ParseTreeListener):
                             if self.lastComment is None or not self.dihed_chiral_sander_pat.match(self.lastComment)\
                             else self.dihed_chiral_sander_pat.search(self.lastComment).groups()
 
-                        go = None\
-                            if self.lastComment is None or not self.dihed_omega_sander_pat.match(self.lastComment)\
-                            else self.dihed_omega_sander_pat.search(self.lastComment).groups()
+                        gto = None\
+                            if self.lastComment is None or not self.dihed_tomega_sander_pat.match(self.lastComment)\
+                            else self.dihed_tomega_sander_pat.search(self.lastComment).groups()
+
+                        gco = None\
+                            if self.lastComment is None or not self.dihed_comega_sander_pat.match(self.lastComment)\
+                            else self.dihed_comega_sander_pat.search(self.lastComment).groups()
 
                         ga = None\
                             if self.lastComment is None or not self.dihed_amb_comp_sander_pat.match(self.lastComment)\
@@ -3983,7 +4393,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                                 f"based on Sander comment {self.lastComment!r}.")
 
-                        elif go is not None:
+                        elif gto is not None or gco is not None:
                             for col, funcExpr in enumerate(self.funcExprs):
 
                                 if isinstance(funcExpr, dict):
@@ -3992,10 +4402,16 @@ class AmberMRParserListener(ParseTreeListener):
                                         if iat in self.__sanderAtomNumberDict:
                                             pass
                                         else:
-                                            seqId = int(go[0])
-                                            if col >= 2:
-                                                seqId -= 1
-                                            atomId = self.dihed_omega_atoms[col]
+                                            if gto is not None:
+                                                seqId = int(gto[0])
+                                                if col >= 2:
+                                                    seqId -= 1
+                                                atomId = self.dihed_tomega_atoms[col]
+                                            else:
+                                                seqId = int(gco[0])
+                                                if col >= 2:
+                                                    seqId -= 1
+                                                atomId = self.dihed_comega_atoms[col]
                                             _factor = self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, enableWarning=False, useDefault=self.__useDefaultWoCompId)
                                             if _factor is None and not self.__useDefaultWoCompId:
                                                 self.__useDefaultWoCompId = True
@@ -4175,10 +4591,16 @@ class AmberMRParserListener(ParseTreeListener):
 
         finally:
 
+            if self.ancComment is not None:
+                self.ancComment = None
+
+            if self.prevComment is not None:
+                self.ancComment = self.prevComment
+                self.prevComment = None
+
             if self.lastComment is not None:
                 self.prevComment = self.lastComment
-
-            self.lastComment = None
+                self.lastComment = None
 
     def validateDistanceRange(self, wt):
         """ Validate distance value range.
@@ -4580,18 +5002,24 @@ class AmberMRParserListener(ParseTreeListener):
 
         hasAuthSeqScheme = self.__reasons is not None and 'auth_seq_scheme' in self.__reasons
 
+        _useDefault = useDefault
         if self.__concatHetero and not hasAuthSeqScheme and authChainId is None:
             useDefault = False
 
-        for ps in (self.__polySeq if useDefault or self.__altPolySeq is None else self.__altPolySeq):
-            chainId = ps['auth_chain_id'] if useDefault or self.__altPolySeq is None else ps['chain_id']
+        enforceAuthSeq = authChainId is not None
+        if enforceAuthSeq or self.__altPolySeq is None:
+            useDefault = True
+
+        for ps in (self.__polySeq if useDefault else self.__altPolySeq):
+            refAuthChainId = ps['auth_chain_id']
+            chainId = refAuthChainId if useDefault else ps['chain_id']
 
             if authChainId is not None and chainId != authChainId:
                 continue
 
-            enforceAuthSeq = authChainId is not None
+            # enforceAuthSeq = authChainId is not None
 
-            if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
+            if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                 if len(auth_seq_id_list) > 0:
                     min_auth_seq_id = min(auth_seq_id_list)
@@ -4620,7 +5048,7 @@ class AmberMRParserListener(ParseTreeListener):
             if self.__reasons is not None and 'global_sequence_offset' in self.__reasons:
                 __chainId = __offset = None
                 for _ps in self.__polySeq:
-                    _chainId = _ps['auth_chain_id'] if useDefault or self.__altPolySeq is None else _ps['chain_id']
+                    _chainId = _ps['auth_chain_id'] if useDefault else _ps['chain_id']
                     if _chainId in self.__reasons['global_sequence_offset']:
                         _seq_id_list = list(filter(None, _ps['auth_seq_id']))
                         _offset = self.__reasons['global_sequence_offset'][_chainId]
@@ -4751,7 +5179,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     seqKey = _seqKey
 
                         if found:
-                            factor['chain_id'] = chainId
+                            factor['chain_id'] = refAuthChainId
                             factor['seq_id'] = seqId if cifSeqId is None else cifSeqId
                             factor['comp_id'] = compId
                             factor['atom_id'] = _atomId
@@ -4765,7 +5193,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if self.__ccU.updateChemCompDict(compId):
                             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                             if cca is not None:
-                                factor['chain_id'] = chainId
+                                factor['chain_id'] = refAuthChainId
                                 factor['seq_id'] = seqId if cifSeqId is None else cifSeqId
                                 factor['comp_id'] = compId
                                 factor['atom_id'] = _atomId
@@ -4817,7 +5245,7 @@ class AmberMRParserListener(ParseTreeListener):
                 chainId = ps['auth_chain_id']
 
                 seqKey = (chainId, seqId)
-                if seqKey not in self.__authToLabelSeq and 'gap_in_auth_seq' in ps:
+                if seqKey not in self.__authToLabelSeq and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                     auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                     min_auth_seq_id = min(auth_seq_id_list)
                     max_auth_seq_id = max(auth_seq_id_list)
@@ -4998,7 +5426,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
                                     return None
 
-        if not useDefault:  # or self.__altPolySeq is None:
+        if not _useDefault:
             return None
 
         return self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, order, enableWarning, False, authChainId)
@@ -5013,7 +5441,7 @@ class AmberMRParserListener(ParseTreeListener):
         else:
             lastComment = str(self.lastComment)
             if 'AMB' in lastComment and (('-' in lastComment and ':' in lastComment) or '.' in lastComment):
-                self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                 "Failed to recognize AMBER atom numbers in the restraint file "
                                 f"To interpret Sander comment {lastComment!r} as a {subtype_name}, "
                                 "please attach ambiguous atom name mapping information generated by 'makeDIST_RST' to the AMBER restraint file.")
@@ -5049,18 +5477,23 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__concatHetero and not hasAuthSeqScheme and not useAuthSeqScheme:
             useDefault = False
 
+        enforceAuthSeq = authChainId is not None or useAuthSeqScheme
+        if enforceAuthSeq or self.__altPolySeq is None:
+            useDefault = True
+
         found = False
 
-        for ps in (self.__polySeq if useDefault or self.__altPolySeq is None else self.__altPolySeq):
-            chainId = ps['auth_chain_id'] if useDefault or self.__altPolySeq is None else ps['chain_id']
+        for ps in (self.__polySeq if useDefault else self.__altPolySeq):
+            refAuthChainId = ps['auth_chain_id']
+            chainId = refAuthChainId if useDefault else ps['chain_id']
             seqId = factor['auth_seq_id']
 
             if authChainId is not None and chainId != authChainId:
                 continue
 
-            enforceAuthSeq = authChainId is not None or useAuthSeqScheme
+            # enforceAuthSeq = authChainId is not None or useAuthSeqScheme
 
-            if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
+            if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                 if len(auth_seq_id_list) > 0:
                     min_auth_seq_id = min(auth_seq_id_list)
@@ -5089,7 +5522,7 @@ class AmberMRParserListener(ParseTreeListener):
             if self.__reasons is not None and 'global_sequence_offset' in self.__reasons:
                 __chainId = __offset = None
                 for _ps in self.__polySeq:
-                    _chainId = _ps['auth_chain_id'] if useDefault or self.__altPolySeq is None else _ps['chain_id']
+                    _chainId = _ps['auth_chain_id'] if useDefault else _ps['chain_id']
                     if _chainId in self.__reasons['global_sequence_offset']:
                         _seq_id_list = list(filter(None, _ps['auth_seq_id']))
                         _offset = self.__reasons['global_sequence_offset'][_chainId]
@@ -5134,9 +5567,15 @@ class AmberMRParserListener(ParseTreeListener):
                 if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
                     idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
                     compId = ps['comp_id'][idx]
-                    if compId not in monDict3 and self.__ccU.updateChemCompDict(compId)\
-                       and _compId == self.__ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?'):
+                    if compId in monDict3 and getOneLetterCodeCan(compId) == getOneLetterCodeCan(_compId):
                         keep = True
+                        authCompId = compId
+                    elif compId not in monDict3 and self.__ccU.updateChemCompDict(compId):
+                        parentCompId = self.__ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
+                        if _compId == parentCompId or getOneLetterCodeCan(_compId) == getOneLetterCodeCan(parentCompId):
+                            keep = True
+                            if _compId != parentCompId:
+                                authCompId = compId
                 if not keep:
                     continue
 
@@ -5254,7 +5693,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             seqKey = _seqKey
 
                                 if found:
-                                    factor['chain_id'] = chainId
+                                    factor['chain_id'] = refAuthChainId
                                     factor['seq_id'] = seqKey[1]  # seqId if cifSeqId is None else cifSeqId
                                     factor['comp_id'] = compId
                                     factor['atom_id'] = _atomId
@@ -5268,7 +5707,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__ccU.updateChemCompDict(compId):
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                     if cca is not None:
-                                        factor['chain_id'] = chainId
+                                        factor['chain_id'] = refAuthChainId
                                         factor['seq_id'] = seqId if cifSeqId is None else cifSeqId
                                         factor['comp_id'] = compId
                                         factor['atom_id'] = _atomId
@@ -5306,15 +5745,18 @@ class AmberMRParserListener(ParseTreeListener):
 
                     elif 'igr' in factor:
 
-                        if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+                        if len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
 
-                            if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                            if authAtomId == 'H%' and (_authAtomId.startswith('HT') or _authAtomId == 'Q'):
                                 _atomIds = []
                                 for _atomId in coordAtomSite['atom_id']:
                                     if _atomId in aminoProtonCode:
                                         _atomIds.append(_atomId)
                                 if len(_atomIds) >= len(factor['igr']):
                                     atomIds = _atomIds
+
+                            elif _authAtomId[0] in ('Q', 'M'):
+                                atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _authAtomId)[0]
 
                         if any(_igr in self.__sanderAtomNumberDict for _igr in factor['igr']):
                             for _igr in factor['igr']:
@@ -5385,7 +5827,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             seqKey = _seqKey
 
                                 if found:
-                                    _factor['chain_id'] = chainId
+                                    _factor['chain_id'] = refAuthChainId
                                     _factor['seq_id'] = seqKey[1]  # seqId if cifSeqId is None else cifSeqId
                                     _factor['comp_id'] = compId
                                     _factor['atom_id'] = _atomId
@@ -5399,7 +5841,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                     if cca is not None:
                                         found = True
-                                        _factor['chain_id'] = chainId
+                                        _factor['chain_id'] = refAuthChainId
                                         _factor['seq_id'] = seqId if cifSeqId is None else cifSeqId
                                         _factor['comp_id'] = compId
                                         _factor['atom_id'] = _atomId
@@ -5664,15 +6106,18 @@ class AmberMRParserListener(ParseTreeListener):
 
                     elif 'igr' in factor:
 
-                        if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+                        if len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
 
-                            if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                            if authAtomId == 'H%' and (_authAtomId.startswith('HT') or _authAtomId == 'Q'):
                                 _atomIds = []
                                 for _atomId in coordAtomSite['atom_id']:
                                     if _atomId in aminoProtonCode:
                                         _atomIds.append(_atomId)
                                 if len(_atomIds) >= len(factor['igr']):
                                     atomIds = _atomIds
+
+                            elif _authAtomId[0] in ('Q', 'M'):
+                                atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _authAtomId)[0]
 
                         ccdCheckOnly = False
                         for igr, _atomId in zip(sorted(factor['igr']), atomIds):
@@ -5789,7 +6234,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if found:
                             return True
 
-        if not useDefault:  # or self.__altPolySeq is None:
+        if not _useDefault:
             return False
 
         # 6gbm, hbonds.rst
@@ -5848,14 +6293,18 @@ class AmberMRParserListener(ParseTreeListener):
 
             found = False
 
-            for ps in (self.__polySeq if useDefault or self.__altPolySeq is None else self.__altPolySeq):
+            enforceAuthSeq = authChainId is not None or useAuthSeqScheme
+            if enforceAuthSeq or self.__altPolySeq is None:
+                useDefault = True
+
+            for ps in (self.__polySeq if useDefault else self.__altPolySeq):
 
                 if ps['auth_chain_id'] != chainId:
                     continue
 
-                enforceAuthSeq = authChainId is not None or useAuthSeqScheme
+                # enforceAuthSeq = authChainId is not None or useAuthSeqScheme
 
-                if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps:
+                if not useDefault and seqId not in ps['auth_seq_id'] and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                     auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                     if len(auth_seq_id_list) > 0:
                         min_auth_seq_id = min(auth_seq_id_list)
@@ -5929,9 +6378,15 @@ class AmberMRParserListener(ParseTreeListener):
                     if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
                         idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
                         compId = ps['comp_id'][idx]
-                        if compId not in monDict3 and self.__ccU.updateChemCompDict(compId)\
-                           and _compId == self.__ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?'):
+                        if compId in monDict3 and getOneLetterCodeCan(compId) == getOneLetterCodeCan(_compId):
                             keep = True
+                            authCompId = compId
+                        elif compId not in monDict3 and self.__ccU.updateChemCompDict(compId):
+                            parentCompId = self.__ccU.lastChemCompDict.get('_chem_comp.mon_nstd_parent_comp_id', '?')
+                            if _compId == parentCompId or getOneLetterCodeCan(_compId) == getOneLetterCodeCan(parentCompId):
+                                keep = True
+                                if _compId != parentCompId:
+                                    authCompId = compId
                     if not keep:
                         continue
 
@@ -6080,15 +6535,18 @@ class AmberMRParserListener(ParseTreeListener):
 
                         elif 'igr' in factor:
 
-                            if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+                            if len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
 
-                                if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                                if authAtomId == 'H%' and (_authAtomId.startswith('HT') or _authAtomId == 'Q'):
                                     _atomIds = []
                                     for _atomId in coordAtomSite['atom_id']:
                                         if _atomId in aminoProtonCode:
                                             _atomIds.append(_atomId)
                                     if len(_atomIds) >= len(factor['igr']):
                                         atomIds = _atomIds
+
+                                elif _authAtomId[0] in ('Q', 'M'):
+                                    atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _authAtomId)[0]
 
                             ccdCheckOnly = False
                             for igr, _atomId in zip(sorted(factor['igr']), atomIds):
@@ -6352,15 +6810,18 @@ class AmberMRParserListener(ParseTreeListener):
 
                         elif 'igr' in factor:
 
-                            if len(atomIds) < len(factor['igr']) and authAtomId == 'H%' and coordAtomSite is not None:
+                            if len(atomIds) < len(factor['igr']) and coordAtomSite is not None:
 
-                                if _authAtomId.startswith('HT') or _authAtomId == 'Q':
+                                if authAtomId == 'H%' and (_authAtomId.startswith('HT') or _authAtomId == 'Q'):
                                     _atomIds = []
                                     for _atomId in coordAtomSite['atom_id']:
                                         if _atomId in aminoProtonCode:
                                             _atomIds.append(_atomId)
                                     if len(_atomIds) >= len(factor['igr']):
                                         atomIds = _atomIds
+
+                                elif _authAtomId[0] in ('Q', 'M'):
+                                    atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _authAtomId)[0]
 
                             ccdCheckOnly = False
                             for igr, _atomId in zip(sorted(factor['igr']), atomIds):
@@ -6480,7 +6941,7 @@ class AmberMRParserListener(ParseTreeListener):
         if allFound:
             return True
 
-        if not useDefault:  # or self.__altPolySeq is None:
+        if not _useDefault:
             return False
 
         # 6gbm, hbonds.rst
@@ -6904,7 +7365,7 @@ class AmberMRParserListener(ParseTreeListener):
     def guessChainIdFromCompId(self, seqId, compId):
         chainIds = [ps['auth_chain_id'] for ps in self.__polySeq if compId in ps['comp_id']]
         if len(chainIds) > 1:
-            min_gap = 1000
+            min_gap = MAX_OFFSET_ATTEMPT
             _chainIds = []
             for chainId in chainIds:
                 ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
@@ -6918,7 +7379,7 @@ class AmberMRParserListener(ParseTreeListener):
                 elif gap == min_gap:
                     _chainIds.append(chainId)
             if len(_chainIds) > 1:
-                min_gap = 1000
+                min_gap = MAX_OFFSET_ATTEMPT
                 _chainIds = []
                 offset = 0
                 for ps in self.__polySeq:
@@ -10249,7 +10710,7 @@ class AmberMRParserListener(ParseTreeListener):
             if seqId in ps['auth_seq_id']:
                 if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.add((chainId, seqId, cifCompId, True))
-            elif 'gap_in_auth_seq' in ps:
+            elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                 if len(auth_seq_id_list) > 0:
                     min_auth_seq_id = min(auth_seq_id_list)

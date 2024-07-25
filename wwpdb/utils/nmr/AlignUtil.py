@@ -76,6 +76,9 @@ zincIonCode = ('ZN', 'ME', 'Z1', 'Z2')
 unknownResidue = ('UNK', 'DN', 'N')
 reservedLigCode = ('LIG', 'DRG', 'INH')  # DAOTHER-7204, 7388: reserved ligand codes for new ligands, which must include 2 digits 01-99
 
+dnrParentCode = ('DC', 'CYT', 'DC5', 'DC3')
+chParentCode = ('C', 'RCYT', 'C5', 'C3')
+
 LARGE_ASYM_ID = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')
 LEN_LARGE_ASYM_ID = len(LARGE_ASYM_ID)
@@ -685,7 +688,7 @@ def updatePolySeqRst(polySeqRst, chainId, seqId, compId: str, authCompId=None):
         ps['auth_comp_id'].append(compId if authCompId in emptyValue else authCompId)
 
 
-def updatePolySeqRstAmbig(polySeqRstAmb, chainId, seqId, compIds: list):
+def updatePolySeqRstAmbig(polySeqRstAmb, chainId, seqId, compIds: list, polySeqRst):
     """ Update polymer sequence of the current MR file.
     """
 
@@ -704,6 +707,9 @@ def updatePolySeqRstAmbig(polySeqRstAmb, chainId, seqId, compIds: list):
         ps['comp_ids'].append(_compIds)
     else:
         ps['comp_ids'][ps['seq_id'].index(seqId)] &= _compIds
+        _compId = ps['comp_ids'][ps['seq_id'].index(seqId)]
+        if len(_compId) == 1:
+            updatePolySeqRst(polySeqRst, chainId, seqId, list(_compId)[0])
 
 
 def mergePolySeqRstAmbig(polySeqRst, polySeqRstAmb):
@@ -776,10 +782,11 @@ def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
             idx = 0
             for seqId in ps['seq_id']:
                 if seqId is not None and seqId in _seqIds:
-                    _compIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
-                    _authCompIds[_seqIds.index(seqId)] = ps['auth_comp_id'][idx]
-                    if ps['auth_comp_id'][idx] in emptyValue:
-                        _authCompIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
+                    _idx = _seqIds.index(seqId)
+                    _compIds[_idx] = ps['comp_id'][idx]
+                    _authCompIds[_idx] = ps['auth_comp_id'][idx] if 'auth_comp_id' in ps else _compIds[_idx]
+                    if _authCompIds[_idx] in emptyValue:
+                        _authCompIds[_idx] = _compIds[_idx]
                     idx += 1
 
             ps['seq_id'] = _seqIds
@@ -812,10 +819,11 @@ def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
 
             for idx, seqId in enumerate(ps['seq_id']):
                 if minSeqId <= seqId <= maxSeqId:
-                    _compIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
-                    _authCompIds[_seqIds.index(seqId)] = ps['auth_comp_id'][idx]
-                    if ps['auth_comp_id'][idx] in emptyValue:
-                        _authCompIds[_seqIds.index(seqId)] = ps['comp_id'][idx]
+                    _idx = _seqIds.index(seqId)
+                    _compIds[_idx] = ps['comp_id'][idx]
+                    _authCompIds[_idx] = ps['auth_comp_id'][idx] if 'auth_comp_id' in ps else _compIds[_idx]
+                    if _authCompIds[_idx] in emptyValue:
+                        _authCompIds[_idx] = _compIds[_idx]
 
             _endSeqIds = []
             _endCompIds = []
@@ -938,6 +946,8 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
 
         if i1 >= LEN_LARGE_ASYM_ID:
             continue
+
+        len_ident_chain_id = 0 if 'identical_chain_id' not in s1 else len(s1['identical_chain_id'])
 
         seq_id_name = 'auth_seq_id' if 'auth_seq_id' in s1 else 'seq_id'
 
@@ -1144,7 +1154,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                                 truncated = (s_p, s_q)
                                 break
 
-            if conflict > 0 and not hasLargeSeqGap(_s1, _s2, seqIdName1=_seq_id_name):
+            if conflict > len_ident_chain_id // 5 and not hasLargeSeqGap(_s1, _s2, seqIdName1=_seq_id_name):
                 tabooList.append({chain_id, chain_id2})
 
             ref_length = len(s1[seq_id_name])
@@ -1707,6 +1717,10 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
         if result['matched'] == 0:
             continue
 
+        if not fileType.startswith('nm-aux') and result['conflict'] > 0\
+           and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched']):
+            continue
+
         ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
               'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
               'sequence_coverage': result['sequence_coverage']}
@@ -1975,7 +1989,7 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
     if elemName in ('Q', 'M'):
 
         item = next((item for item in mapping
-                     if item['original_atom_id'] == 'H' + atomId[1:] + '2'), None)
+                     if item['original_atom_id'] in ('H' + atomId[1:] + '2', '2H' + atomId[1:])), None)
 
         if item is not None:
 
@@ -2520,6 +2534,15 @@ def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssign):
             if test_chain_id not in target_chain_ids:
                 target_chain_ids[test_chain_id] = []
             target_chain_ids[test_chain_id].append(ref_chain_id)
+        elif ca['conflict'] > 0 and ca['unmapped'] > 0:
+            ref_chain_id = ca['ref_chain_id']
+            ref_ps = next(ps for ps in polySeqModel if ps['auth_chain_id'] == ref_chain_id)
+            len_ident_chain_id = 0 if 'identical_chain_id' not in ref_ps else len(ref_ps['identical_chain_id'])
+            if ca['conflict'] <= len_ident_chain_id // 5:
+                test_chain_id = ca['test_chain_id']
+                if test_chain_id not in target_chain_ids:
+                    target_chain_ids[test_chain_id] = []
+                target_chain_ids[test_chain_id].append(ref_chain_id)
 
     if len(target_chain_ids) == 0:
         return None, None

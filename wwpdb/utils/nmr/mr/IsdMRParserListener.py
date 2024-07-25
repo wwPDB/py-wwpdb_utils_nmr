@@ -45,6 +45,8 @@ try:
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
+                                                       MAX_ALLOWED_EXT_SEQ,
+                                                       UNREAL_AUTH_SEQ_NUM,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        DIST_AMBIG_LOW,
@@ -64,6 +66,7 @@ try:
                                            zincIonCode,
                                            isReservedLigCode,
                                            updatePolySeqRst,
+                                           mergePolySeqRstAmbig,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
@@ -111,6 +114,8 @@ except ImportError:
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
+                                           MAX_ALLOWED_EXT_SEQ,
+                                           UNREAL_AUTH_SEQ_NUM,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            DIST_AMBIG_LOW,
@@ -130,6 +135,7 @@ except ImportError:
                                zincIonCode,
                                isReservedLigCode,
                                updatePolySeqRst,
+                               mergePolySeqRstAmbig,
                                sortPolySeqRst,
                                alignPolymerSequence,
                                assignPolymerSequence,
@@ -223,6 +229,7 @@ class IsdMRParserListener(ParseTreeListener):
     __hasBranched = False
     __hasNonPolySeq = False
     __preferAuthSeq = True
+    __extendAuthSeq = False
 
     # polymer sequence of MR file
     __polySeqRst = None
@@ -646,6 +653,14 @@ class IsdMRParserListener(ParseTreeListener):
             #     if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
             #         del self.reasonsForReParsing['seq_id_remap']
             # """
+            if 'local_seq_scheme' in self.reasonsForReParsing and len(self.reasonsForReParsing) == 1:
+                if len(self.__polySeqRstFailed) > 0:
+                    if len(self.__polySeqRstFailedAmbig) > 0:
+                        mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
+                sortPolySeqRst(self.__polySeqRstFailed)
+                if len(self.__polySeqRstFailed) > 0:
+                    self.reasonsForReParsing['extend_seq_scheme'] = self.__polySeqRstFailed
+                del self.reasonsForReParsing['local_seq_scheme']
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 
@@ -683,8 +698,8 @@ class IsdMRParserListener(ParseTreeListener):
 
         self.__retrieveLocalSeqScheme()
 
-        chainAssign1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
-        chainAssign2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+        chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+        chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
         if len(chainAssign1) == 0 or len(chainAssign2) == 0:
             return
@@ -771,7 +786,7 @@ class IsdMRParserListener(ParseTreeListener):
                              '.', memberId, memberLogicCode,
                              sf['list_id'], self.__entryId, dstFunc,
                              self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                             atom1, atom2)
+                             atom1, atom2, asis1=asis1, asis2=asis2)
                 sf['loop'].add_data(row)
 
                 if sf['constraint_subsubtype'] == 'ambi':
@@ -799,9 +814,7 @@ class IsdMRParserListener(ParseTreeListener):
 
             return int(g[1]), g[0], g[2]
 
-        except ValueError:
-            return None, None, None
-        except AttributeError:
+        except (ValueError, AttributeError):
             return None, None, None
 
     def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier):
@@ -951,6 +964,11 @@ class IsdMRParserListener(ParseTreeListener):
                     return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
                 if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
                     return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
+        if self.__reasons is not None and 'extend_seq_scheme' in self.__reasons:
+            _ps = next((_ps for _ps in self.__reasons['extend_seq_scheme'] if _ps['chain_id'] == ps['auth_chain_id']), None)
+            if _ps is not None:
+                if seqId in _ps['seq_id']:
+                    return ps['auth_chain_id'], _ps['comp_id'][_ps['seq_id'].index(seqId)]
         # if seqId in ps['seq_id']:
         #     idx = ps['seq_id'].index(seqId)
         #     if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
@@ -962,6 +980,7 @@ class IsdMRParserListener(ParseTreeListener):
         """
 
         chainAssign = set()
+        asis = False
         _seqId = seqId
         _compId = compId
 
@@ -974,7 +993,7 @@ class IsdMRParserListener(ParseTreeListener):
         self.__allow_ext_seq = False
 
         if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
-           and atomId in zincIonCode and self.__hasNonPolySeq:
+           and atomId in zincIonCode and self.__hasNonPoly:
             znCount = 0
             znSeqId = None
             for np in self.__nonPoly:
@@ -988,7 +1007,7 @@ class IsdMRParserListener(ParseTreeListener):
                     atomId = 'ZN'
                 preferNonPoly = True
 
-        if atomId in SYMBOLS_ELEMENT and self.__hasNonPolySeq:
+        if atomId in SYMBOLS_ELEMENT and self.__hasNonPoly:
             elemCount = 0
             for np in self.__nonPoly:
                 if np['comp_id'][0] == atomId:
@@ -1105,7 +1124,7 @@ class IsdMRParserListener(ParseTreeListener):
                     #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
                     #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
                     # """
-            elif 'gap_in_auth_seq' in ps:
+            elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                 if len(auth_seq_id_list) > 0:
                     min_auth_seq_id = min(auth_seq_id_list)
@@ -1350,13 +1369,28 @@ class IsdMRParserListener(ParseTreeListener):
             if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequence(seqId, compId, 'H1')
+            auth_seq_id_list = list(filter(None, self.__polySeq[0]['auth_seq_id']))
+            min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM
+            if len(auth_seq_id_list) > 0:
+                min_auth_seq_id = min(auth_seq_id_list)
+                max_auth_seq_id = max(auth_seq_id_list)
             if len(self.__polySeq) == 1\
                and (seqId < 1
-                    or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
-                    or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)
+                    or (compId == 'ACE' and seqId == min_auth_seq_id - 1)
+                    or (compId == 'NH2' and seqId == max_auth_seq_id + 1)
                     or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT)):
                 refChainId = self.__polySeq[0]['auth_chain_id']
-                if compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                if (compId == 'ACE' and seqId == min_auth_seq_id - 1)\
+                   or (compId == 'NH2' and seqId == max_auth_seq_id + 1)\
+                   or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                       and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
+                            or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
+                    self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
+                    chainAssign.add((refChainId, _seqId, compId, True))
+                    asis = True
+                elif compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
                     self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                     f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
@@ -1366,11 +1400,45 @@ class IsdMRParserListener(ParseTreeListener):
                                     f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
             else:
-                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
+                ext_seq = False
+                if (compId in monDict3 or compId in ('ACE', 'NH2')) and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                    refChainIds = []
+                    _auth_seq_id_list = auth_seq_id_list
+                    for idx, ps in enumerate(self.__polySeq):
+                        if idx > 0:
+                            auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                            _auth_seq_id_list.extend(auth_seq_id_list)
+                        if len(auth_seq_id_list) > 0:
+                            if idx > 0:
+                                min_auth_seq_id = min(auth_seq_id_list)
+                                max_auth_seq_id = max(auth_seq_id_list)
+                            if min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id\
+                               and (compId in monDict3 or (compId == 'ACE' and seqId == min_auth_seq_id - 1)):
+                                refChainIds.append(ps['auth_chain_id'])
+                                ext_seq = True
+                            if max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ\
+                               and (compId in monDict3 or (compId == 'NH2' and seqId == max_auth_seq_id + 1)):
+                                refChainIds.append(ps['auth_chain_id'])
+                                ext_seq = True
+                    if ext_seq and seqId in _auth_seq_id_list:
+                        ext_seq = False
+                if ext_seq:
+                    refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
+                    self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    "Please update the sequence in the Macromolecules page.")
+                    if isinstance(refChainId, str):
+                        chainAssign.add((refChainId, _seqId, compId, True))
+                    else:
+                        for _refChainId in refChainIds:
+                            chainAssign.add((_refChainId, _seqId, compId, True))
+                    asis = True
+                else:
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                    f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                 updatePolySeqRst(self.__polySeqRstFailed, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
 
-        return list(chainAssign)
+        return list(chainAssign), asis
 
     def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, offset=0):
         """ Select atoms of the coordinates.
@@ -1613,7 +1681,7 @@ class IsdMRParserListener(ParseTreeListener):
 
             elif self.__preferAuthSeq:
                 _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, asis=False)
-                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId and not self.__extendAuthSeq:
                     if atomId in _coordAtomSite['atom_id']:
                         found = True
                         self.__preferAuthSeq = False
@@ -1658,14 +1726,14 @@ class IsdMRParserListener(ParseTreeListener):
                         # self.__authAtomId = 'auth_atom_id'
                         seqKey = _seqKey
                         self.__setLocalSeqScheme()
-                    else:
+                    elif not self.__extendAuthSeq:
                         self.__preferAuthSeq = False
-                else:
+                elif not self.__extendAuthSeq:
                     self.__preferAuthSeq = False
 
         elif self.__preferAuthSeq:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, asis=False)
-            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId and not self.__extendAuthSeq:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
                     self.__preferAuthSeq = False
@@ -1701,8 +1769,7 @@ class IsdMRParserListener(ParseTreeListener):
                                                           or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
                     atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
                     found = True
-                    self.__preferAuthSeq = False
-                    self.__authSeqId = 'label_seq_id'
+                    self.__authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
@@ -1711,9 +1778,9 @@ class IsdMRParserListener(ParseTreeListener):
                     # self.__authAtomId = 'auth_atom_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
-                else:
+                elif not self.__extendAuthSeq:
                     self.__preferAuthSeq = False
-            else:
+            elif not self.__extendAuthSeq:
                 self.__preferAuthSeq = False
 
         if found:
@@ -1723,7 +1790,7 @@ class IsdMRParserListener(ParseTreeListener):
 
         if self.__preferAuthSeq:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, asis=False)
-            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
+            if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId and not self.__extendAuthSeq:
                 if atomId in _coordAtomSite['atom_id']:
                     found = True
                     self.__preferAuthSeq = False
@@ -1759,8 +1826,7 @@ class IsdMRParserListener(ParseTreeListener):
                                                           or ('H' + atomId[-1]) in _coordAtomSite['atom_id']):
                     atomId = atomId[-1] + 'HN' if atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + atomId[-1]
                     found = True
-                    self.__preferAuthSeq = False
-                    self.__authSeqId = 'label_seq_id'
+                    self.__authSeqId = 'auth_seq_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
                 elif 'alt_atom_id' in _coordAtomSite and atomId in _coordAtomSite['alt_atom_id']:
@@ -1769,9 +1835,9 @@ class IsdMRParserListener(ParseTreeListener):
                     # self.__authAtomId = 'auth_atom_id'
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
-                else:
+                elif not self.__extendAuthSeq:
                     self.__preferAuthSeq = False
-            else:
+            elif not self.__extendAuthSeq:
                 self.__preferAuthSeq = False
 
         if found:
@@ -1785,8 +1851,12 @@ class IsdMRParserListener(ParseTreeListener):
                 checked = False
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
+                min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM
+                if auth_seq_id_list is not None and len(auth_seq_id_list) > 0:
+                    min_auth_seq_id = min(auth_seq_id_list)
+                    max_auth_seq_id = max(auth_seq_id_list)
                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes\
-                   or (auth_seq_id_list is not None and min(auth_seq_id_list) == seqId):
+                   or seqId == min_auth_seq_id:
                     if atomId in aminoProtonCode and atomId != 'H1':
                         return self.testCoordAtomIdConsistency(chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     if atomId in aminoProtonCode or atomId == 'P' or atomId.startswith('HOP'):
@@ -1806,7 +1876,7 @@ class IsdMRParserListener(ParseTreeListener):
                                     return atomId
                             if bondedTo[0][0] == 'O':
                                 return 'Ignorable hydroxyl group'
-                    if (auth_seq_id_list is not None and seqId == max(auth_seq_id_list))\
+                    if seqId == max_auth_seq_id\
                        or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
                         if coordAtomSite is not None and atomId in carboxylCode\
                            and not isCyclicPolymer(self.__cR, self.__polySeq, chainId, self.__representativeModelId, self.__representativeAltId, self.__modelNumName):
@@ -1815,7 +1885,17 @@ class IsdMRParserListener(ParseTreeListener):
                                             "Please re-upload the model file.")
                             return atomId
 
+                    ext_seq = False
+                    if auth_seq_id_list is not None and len(auth_seq_id_list) > 0:
+                        if (compId == 'ACE' and seqId == min_auth_seq_id - 1)\
+                           or (compId == 'NH2' and seqId == max_auth_seq_id + 1)\
+                           or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                               and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
+                                    or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
+                            ext_seq = True
                     if chainId in LARGE_ASYM_ID:
+                        if ext_seq:
+                            return atomId
                         if self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                             f"The residue '{chainId}:{seqId}:{compId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
@@ -1985,7 +2065,13 @@ class IsdMRParserListener(ParseTreeListener):
                 self.reasonsForReParsing['label_seq_scheme'] = True
 
     def __retrieveLocalSeqScheme(self):
-        if self.__reasons is None or 'local_seq_scheme' not in self.__reasons:
+        if self.__reasons is None\
+           or ('label_seq_scheme' not in self.__reasons
+               and 'local_seq_scheme' not in self.__reasons
+               and 'extend_seq_scheme' not in self.__reasons):
+            return
+        if 'extend_seq_scheme' in self.__reasons:
+            self.__preferAuthSeq = self.__extendAuthSeq = True
             return
         if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
             self.__preferAuthSeq = False

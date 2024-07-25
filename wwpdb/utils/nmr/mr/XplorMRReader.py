@@ -222,6 +222,25 @@ if __name__ == "__main__":
     reader = XplorMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2lzs/2lzs-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2lzs/2lzs.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2m3t/test.mr',
+                     '../../tests-nmr/mock-data-remediation/2m3t/2m3t.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/5j0m/TARpRAM_pf1.txt-corrected',
+                     '../../tests-nmr/mock-data-remediation/5j0m/5j0m.cif')
+
+    reader = XplorMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2n1e/2n1e-corrected-div_src.mr',
                      '../../tests-nmr/mock-data-remediation/2n1e/2n1e.cif')
     print(reader_listener.getReasonsForReparsing())

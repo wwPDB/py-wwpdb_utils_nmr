@@ -345,6 +345,37 @@ class AmberMRReader:
 if __name__ == "__main__":
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2n96/2n96-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2n96/2n96.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2kxn/2kxn-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2kxn/2kxn.cif',
+                 None)
+
+    reasons_ = {'auth_seq_scheme': {'A': True}}
+    reader = AmberMRReader(True, reasons=reasons_)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/7kbv/dihedral.amber-corrected',
+                 '../../tests-nmr/mock-data-remediation/7kbv/7kbv.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2lec/2lec-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2lec/2lec.cif',
+                 None)
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/7z9l/all.rst',
+                 '../../tests-nmr/mock-data-remediation/7z9l/7z9l.cif',
+                 '../../tests-nmr/mock-data-remediation/7z9l/ok1.top')
+
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2miw/2miw-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/2miw/2miw.cif',
                  None)

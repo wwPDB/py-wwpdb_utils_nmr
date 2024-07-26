@@ -2864,15 +2864,14 @@ class CnsMRParserListener(ParseTreeListener):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         if atom_id_1[0] in protonBeginCode and atom_id_2[0] in protonBeginCode:
-                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                             "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "
                                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}). "
                                             "Did you accidentally select 'SANIsotropy' statement, instead of 'XDIPolar' statement of XPLOR-NIH?")
                         else:
-                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                             "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "
                                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
-                        return
 
             combinationId = '.'
             if self.__createSfDict:

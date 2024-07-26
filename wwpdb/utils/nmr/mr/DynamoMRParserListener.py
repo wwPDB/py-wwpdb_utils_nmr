@@ -3517,10 +3517,9 @@ class DynamoMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                        self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                         "Found an RDC vector over multiple covalent bonds; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
-                        return
 
             combinationId = '.'
             if self.__createSfDict:
@@ -3703,10 +3702,9 @@ class DynamoMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                        self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                         "Found an RDC vector over multiple covalent bonds; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
-                        return
 
             combinationId = '.'
             if self.__createSfDict:
@@ -3889,10 +3887,9 @@ class DynamoMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                        self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                         "Found an RDC vector over multiple covalent bonds; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
-                        return
 
             combinationId = '.'
             if self.__createSfDict:
@@ -4084,10 +4081,9 @@ class DynamoMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                        self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                         "Found an RDC vector over multiple covalent bonds; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
-                        return
 
             combinationId = '.'
             if self.__createSfDict:

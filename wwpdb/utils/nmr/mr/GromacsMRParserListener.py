@@ -1266,10 +1266,9 @@ class GromacsMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                        self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp,n=index)}"
                                         "Found an RDC vector over multiple covalent bonds; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
-                        return
 
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),

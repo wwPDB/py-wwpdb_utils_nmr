@@ -647,6 +647,32 @@ class CnsMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by CnsMRParser#cns_mr.
     def exitCns_mr(self, ctx: CnsMRParser.Cns_mrContext):  # pylint: disable=unused-argument
 
+        def set_label_seq_scheme():
+            if 'label_seq_scheme' not in self.reasonsForReParsing:
+                self.reasonsForReParsing['label_seq_scheme'] = {}
+            if self.distRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+            if self.dihedRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['dihed'] = True
+            if self.rdcRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['rdc'] = True
+            if self.planeRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['plane'] = True
+            if self.jcoupRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['jcoup'] = True
+            if self.hvycsRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['hvycs'] = True
+            if self.procsRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['procs'] = True
+            if self.ramaRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['rama'] = True
+            if self.diffRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['diff'] = True
+            if self.geoRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['geo'] = True
+            if 'local_seq_scheme' in self.reasonsForReParsing:
+                del self.reasonsForReParsing['local_seq_scheme']
+
         try:
 
             _seqIdRemap = []
@@ -689,30 +715,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                     if self.__reasons is None\
                        and any(f for f in self.__f if '[Anomalous data]' in f):
-                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                            self.reasonsForReParsing['label_seq_scheme'] = {}
-                        if self.distRestraints > 0:
-                            self.reasonsForReParsing['label_seq_scheme']['dist'] = True
-                        if self.dihedRestraints > 0:
-                            self.reasonsForReParsing['label_seq_scheme']['dihed'] = True
-                        if self.rdcRestraints > 0:
-                            self.reasonsForReParsing['label_seq_scheme']['rdc'] = True
-                        if self.planeRestraints > 0:
-                            self.reasonsForReParsing['label_seq_scheme']['plane'] = True
-                        if self.jcoupRestraints > 0:
-                            self.reasonsForReParsing['label_seq_scheme']['jcoup'] = True
-                        if self.hvycsRestraints > 0:
-                            self.reasonsForReParsing['label_seq_scheme']['hvycs'] = True
-                        if self.procsRestraints > 0:
-                            self.reasonsForReParsing['label_seq_scheme']['procs'] = True
-                        if self.ramaRestraints > 0:
-                            self.reasonsForReParsing['label_seq_scheme']['rama'] = True
-                        if self.diffRestraints > 0:
-                            self.reasonsForReParsing['label_seq_scheme']['diff'] = True
-                        if self.geoRestraints > 0:
-                            self.reasonsForReParsing['label_seq_scheme']['geo'] = True
-                        if 'local_seq_scheme' in self.reasonsForReParsing:
-                            del self.reasonsForReParsing['local_seq_scheme']
+                        set_label_seq_scheme()
 
                     if self.__reasons is None\
                        and (any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f or '[Sequence mismatch]' in f)
@@ -925,6 +928,29 @@ class CnsMRParserListener(ParseTreeListener):
                                                     if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
                                                         self.reasonsForReParsing['global_auth_sequence_offset'] = {}
                                                         self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offsets
+
+                                if len(chainAssignFailed) == 0:
+                                    valid_auth_seq = valid_label_seq = True
+                                    for _ps in self.__polySeqRstFailed:
+                                        test_chain_id = _ps['chain_id']
+                                        try:
+                                            ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == test_chain_id)
+                                            for test_seq_id, test_comp_id in zip(_ps['seq_id'], _ps['comp_id']):
+                                                if test_seq_id not in ps['seq_id']:
+                                                    valid_label_seq = False
+                                                elif test_comp_id != ps['comp_id'][ps['seq_id'].index(test_seq_id)]:
+                                                    valid_label_seq = False
+                                                if test_seq_id not in ps['auth_seq_id']:
+                                                    valid_auth_seq = False
+                                                elif test_comp_id != ps['comp_id'][ps['auth_seq_id'].index(test_seq_id)]:
+                                                    valid_auth_seq = False
+                                                if not valid_auth_seq and not valid_label_seq:
+                                                    break
+                                        except StopIteration:
+                                            valid_auth_seq = valid_label_seq = False
+                                            break
+                                    if not valid_auth_seq and valid_label_seq:
+                                        set_label_seq_scheme()
 
                     # DAOTHER-9063
                     if self.__reasons is None and 'np_seq_id_remap' in self.reasonsForReParsing:
@@ -2838,15 +2864,14 @@ class CnsMRParserListener(ParseTreeListener):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         if atom_id_1[0] in protonBeginCode and atom_id_2[0] in protonBeginCode:
-                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                             "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "
                                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}). "
                                             "Did you accidentally select 'SANIsotropy' statement, instead of 'XDIPolar' statement of XPLOR-NIH?")
                         else:
-                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
                                             "Found an RDC vector over multiple covalent bonds in the 'SANIsotropy' statement; "
                                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
-                        return
 
             combinationId = '.'
             if self.__createSfDict:

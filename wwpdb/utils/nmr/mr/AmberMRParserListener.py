@@ -9400,11 +9400,10 @@ class AmberMRParserListener(ParseTreeListener):
                         if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                             if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                                self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(self.dataset,n)}"
                                                 "Found an RDC vector over multiple covalent bonds; "
                                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                                 f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
-                                continue
 
                     dstFunc = self.validateRdcRange(n, dwt)
 

@@ -680,8 +680,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                     _ps = next((_ps for _ps in self.__polySeqRstFailedAmbig if _ps['chain_id'] == chainId), None)
                                     if _ps is None:
                                         continue
+                                    _matched = sa['matched']
                                     for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
-                                        _matched = 0
                                         _compId = None
                                         for compId in list(compIds):
                                             _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)

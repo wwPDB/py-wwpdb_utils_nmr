@@ -688,9 +688,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if 'branched_remap' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['branched_remap'] = branchedMapping
 
+                        mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                         if len(self.__polySeqRstFailed) > 0:
-                            if len(self.__polySeqRstFailedAmbig) > 0:
-                                mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                             sortPolySeqRst(self.__polySeqRstFailed)
 
                             seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
@@ -858,9 +857,7 @@ class CyanaMRParserListener(ParseTreeListener):
             #         del self.reasonsForReParsing['seq_id_remap']
             # """
             if 'local_seq_scheme' in self.reasonsForReParsing and len(self.reasonsForReParsing) == 1:
-                if len(self.__polySeqRstFailed) > 0:
-                    if len(self.__polySeqRstFailedAmbig) > 0:
-                        mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
+                mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                 sortPolySeqRst(self.__polySeqRstFailed)
                 if len(self.__polySeqRstFailed) > 0:
                     self.reasonsForReParsing['extend_seq_scheme'] = self.__polySeqRstFailed
@@ -3591,8 +3588,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             if len(compIds) == 1:
                                 updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compIds[0])
                             else:
-                                updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, seqId, compIds,
-                                                      self.__polySeqRstFailed)
+                                updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, seqId, compIds)
 
         return list(chainAssign)
 
@@ -3809,8 +3805,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         if len(compIds) == 1:
                             updatePolySeqRst(self.__polySeqRstFailed, fixedChainId, seqId, compIds[0])
                         else:
-                            updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, fixedChainId, seqId, compIds,
-                                                  self.__polySeqRstFailed)
+                            updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, fixedChainId, seqId, compIds)
 
         return list(chainAssign)
 

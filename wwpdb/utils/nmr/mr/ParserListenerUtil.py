@@ -2234,7 +2234,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'HD2'
 
         elif refCompId == 'NH2':
-            if atomId in ('HN*', 'HN%', 'H*', 'H%', 'QH', 'QN') and not unambig:
+            if atomId in ('HN*', 'HN%', 'H*', 'H%', 'QH', 'QN', 'Q1') and not unambig:
                 return 'HN%'
             if atomId in ('H', 'HN'):
                 return 'HN1'
@@ -3217,6 +3217,9 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
             return 'I' if refCompId == 'I' else 'DI'
         if compId == 'HCY':
             return 'CH' if refCompId == 'C' else 'DNR'
+
+        if compId == 'NHE' and refCompId == 'NH2':
+            return 'NH2'
 
     if compId in ('RADE', 'RA'):
         return 'A'

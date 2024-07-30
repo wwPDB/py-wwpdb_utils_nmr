@@ -32716,9 +32716,14 @@ class NmrDpUtility:
             self.__cur_original_ar_file_name = original_file_name
 
             _reasons = reasons_dict.get(file_type)
-            if _reasons is not None:
-                if 'label_seq_scheme' not in _reasons and 'dist_restraint' not in content_subtype and file_type != 'nm-res-amb':
-                    _reasons = None
+            if _reasons is not None\
+               and 'label_seq_scheme' not in _reasons\
+               and 'global_auth_sequence_offset' not in _reasons\
+               and 'chain_id_remap' not in _reasons\
+               and file_type != 'nm-res-amb'\
+               and 'dist_restraint' not in content_subtype:
+                _reasons = None
+
             reasons = _reasons
 
             if file_type == 'nm-res-xpl':

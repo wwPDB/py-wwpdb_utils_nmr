@@ -54,6 +54,9 @@ class TestChemCompUtil(unittest.TestCase):
         self.assertEqual(self.chem_comp_util.getAtomsBasedOnGreekLetterSystem('ACA', 'CA'), {'C2'})
         self.assertEqual(self.chem_comp_util.getAtomsBasedOnGreekLetterSystem('ACA', 'HA'), {'H21', 'H22'})
 
+    def test_imide_protons(self):
+        self.assertEqual(self.chem_comp_util.getImideProtons('U'), ['H3'])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -688,7 +688,7 @@ def updatePolySeqRst(polySeqRst, chainId, seqId, compId: str, authCompId=None):
         ps['auth_comp_id'].append(compId if authCompId in emptyValue else authCompId)
 
 
-def updatePolySeqRstAmbig(polySeqRstAmb, chainId, seqId, compIds: list, polySeqRst):
+def updatePolySeqRstAmbig(polySeqRstAmb, chainId, seqId, compIds: list):
     """ Update polymer sequence of the current MR file.
     """
 
@@ -707,9 +707,6 @@ def updatePolySeqRstAmbig(polySeqRstAmb, chainId, seqId, compIds: list, polySeqR
         ps['comp_ids'].append(_compIds)
     else:
         ps['comp_ids'][ps['seq_id'].index(seqId)] &= _compIds
-        _compId = ps['comp_ids'][ps['seq_id'].index(seqId)]
-        if len(_compId) == 1:
-            updatePolySeqRst(polySeqRst, chainId, seqId, list(_compId)[0])
 
 
 def mergePolySeqRstAmbig(polySeqRst, polySeqRstAmb):
@@ -718,6 +715,22 @@ def mergePolySeqRstAmbig(polySeqRst, polySeqRstAmb):
 
     if len(polySeqRstAmb) == 0:
         return
+
+    for _ps in polySeqRstAmb:
+        chainId = _ps['chain_id']
+
+        ps = next((ps for ps in polySeqRst if ps['chain_id'] == chainId), None)
+
+        if ps is not None:
+            continue
+
+        __ps = copy.copy(_ps)
+
+        for idx, (seqId, compIds) in enumerate(zip(__ps['seq_id'], __ps['comp_ids'])):
+            if len(compIds) == 1:
+                updatePolySeqRst(polySeqRst, chainId, seqId, list(compIds)[0])
+                del _ps['seq_id'][idx]
+                del _ps['comp_ids'][idx]
 
     for ps in polySeqRst:
         chainId = ps['chain_id']

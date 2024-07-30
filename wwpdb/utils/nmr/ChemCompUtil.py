@@ -131,6 +131,9 @@ class ChemCompUtil:
         aromaticFlag = next(d for d in _chemCompBondDict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
         self.ccbAromaticFlag = _chemCompBondDict.index(aromaticFlag)
 
+        valueOrder = next(d for d in _chemCompBondDict if d[0] == '_chem_comp_bond.value_order')
+        self.ccbValueOrder = _chemCompBondDict.index(valueOrder)
+
         def load_dict_from_pickle(file_name):
             """ Load cached dictionary from pickle file.
             """
@@ -288,6 +291,84 @@ class ChemCompUtil:
             if len(protons) != 2:
                 continue
             atmList.extend(protons[1:])
+
+        return atmList
+
+    def getRepAminoProtons(self, compId):
+        """ Return representative protons in amino group of a given comp_id.
+        """
+
+        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+            return []
+
+        atmList = []
+
+        ns = (a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] == 'N')
+
+        for n in ns:
+            protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != n else b[self.ccbAtomId2])
+                       for b in self.lastBonds
+                       if (b[self.ccbAtomId1] == n and b[self.ccbAtomId2][0] in protonBeginCode)
+                       or (b[self.ccbAtomId2] == n and b[self.ccbAtomId1][0] in protonBeginCode)]
+            if len(protons) != 2:
+                continue
+            atmList.append(protons[0])
+
+        return atmList
+
+    def getNonRepAminoProtons(self, compId):
+        """ Return non-representative protons in amino group of a given comp_id.
+        """
+
+        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+            return []
+
+        atmList = []
+
+        ns = (a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] == 'N')
+
+        for n in ns:
+            protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != n else b[self.ccbAtomId2])
+                       for b in self.lastBonds
+                       if (b[self.ccbAtomId1] == n and b[self.ccbAtomId2][0] in protonBeginCode)
+                       or (b[self.ccbAtomId2] == n and b[self.ccbAtomId1][0] in protonBeginCode)]
+            if len(protons) != 2:
+                continue
+            atmList.extend(protons[1:])
+
+        return atmList
+
+    def getImideProtons(self, compId):
+        """ Return imide protons of a given comp_id.
+        """
+
+        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+            return []
+
+        atmList = []
+
+        ns = (a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] == 'N')
+
+        for n in ns:
+            protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != n else b[self.ccbAtomId2])
+                       for b in self.lastBonds
+                       if (b[self.ccbAtomId1] == n and b[self.ccbAtomId2][0] in protonBeginCode)
+                       or (b[self.ccbAtomId2] == n and b[self.ccbAtomId1][0] in protonBeginCode)]
+            if len(protons) != 1:
+                continue
+            acyl_c = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != n else b[self.ccbAtomId2])
+                      for b in self.lastBonds
+                      if (b[self.ccbAtomId1] == n and b[self.ccbAtomId2][0] == 'C')
+                      or (b[self.ccbAtomId2] == n and b[self.ccbAtomId1][0] == 'C')]
+            if len(acyl_c) != 2:
+                continue
+            acyl_o = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] not in acyl_c else b[self.ccbAtomId2])
+                      for b in self.lastBonds if b[self.ccbValueOrder] == 'DOUB'
+                      and ((b[self.ccbAtomId1] in acyl_c and b[self.ccbAtomId2][0] == 'O')
+                           or (b[self.ccbAtomId2] in acyl_c and b[self.ccbAtomId1][0] == 'O'))]
+            if len(acyl_o) != 2:
+                continue
+            atmList.append(protons[0])
 
         return atmList
 

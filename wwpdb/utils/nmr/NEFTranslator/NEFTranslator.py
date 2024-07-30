@@ -6072,6 +6072,23 @@ class NEFTranslator:
                             atom_list, ambiguity_code, details = _atom_list, 1, None
                             return (atom_list, ambiguity_code, details)
 
+                if atom_id.startswith("HN'") and comp_id in ('DA', 'DT', 'DG', 'DC', 'DI', 'DU', 'DNR', 'A', 'T', 'G', 'C', 'U', 'CH'):
+                    nh2 = self.__ccU.getRepAminoProtons(comp_id)
+                    if len(nh2) == 1:
+                        if atom_id.endswith("''"):
+                            nh2 = self.__ccU.getNonRepAminoProtons(comp_id)
+                            if self.validate_comp_atom(comp_id, nh2[0]):
+                                atom_list, ambiguity_code, details = nh2[0], 1, None
+                                return (atom_list, ambiguity_code, details)
+                        elif self.validate_comp_atom(comp_id, nh2[0]):
+                            atom_list, ambiguity_code, details = nh2[0], 1, None
+                            return (atom_list, ambiguity_code, details)
+                    elif atom_id == "HN'":
+                        nh = self.__ccU.getImideProtons(comp_id)
+                        if len(nh) == 1:
+                            atom_list, ambiguity_code, details = nh[0], 1, None
+                            return (atom_list, ambiguity_code, details)
+
                 if atom_id[-1] == '+' and atom_id[1].isdigit() and len(atom_id) > 2 and self.__ccU.updateChemCompDict(comp_id):
                     if self.__ccU.lastChemCompDict['_chem_comp.type'] in ('DNA LINKING', 'RNA LINKING'):  # DAOTHER-9198
                         _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, 'HN' + atom_id[1:-1], details, leave_unmatched, methyl_only)

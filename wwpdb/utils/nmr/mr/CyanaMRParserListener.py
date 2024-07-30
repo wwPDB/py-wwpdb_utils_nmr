@@ -688,9 +688,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if 'branched_remap' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['branched_remap'] = branchedMapping
 
+                        mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                         if len(self.__polySeqRstFailed) > 0:
-                            if len(self.__polySeqRstFailedAmbig) > 0:
-                                mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                             sortPolySeqRst(self.__polySeqRstFailed)
 
                             seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
@@ -858,9 +857,7 @@ class CyanaMRParserListener(ParseTreeListener):
             #         del self.reasonsForReParsing['seq_id_remap']
             # """
             if 'local_seq_scheme' in self.reasonsForReParsing and len(self.reasonsForReParsing) == 1:
-                if len(self.__polySeqRstFailed) > 0:
-                    if len(self.__polySeqRstFailedAmbig) > 0:
-                        mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
+                mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                 sortPolySeqRst(self.__polySeqRstFailed)
                 if len(self.__polySeqRstFailed) > 0:
                     self.reasonsForReParsing['extend_seq_scheme'] = self.__polySeqRstFailed
@@ -1483,7 +1480,8 @@ class CyanaMRParserListener(ParseTreeListener):
                              or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
                              or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 in ('H', 'N'))
                              or (seq_id_1 > seq_id_2 and atom_id_1 in ('H', 'N') and atom_id_2.startswith('HA'))
-                             or {atom_id_1, atom_id_2} == {'H', 'N'}):
+                             or {atom_id_1, atom_id_2} == {'H', 'N'}
+                             or (seq_id_1 < seq_id_2 and atom_id_2 == 'P')):
                         pass
 
                     else:
@@ -2038,7 +2036,8 @@ class CyanaMRParserListener(ParseTreeListener):
                              or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
                              or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 in ('H', 'N'))
                              or (seq_id_1 > seq_id_2 and atom_id_1 in ('H', 'N') and atom_id_2.startswith('HA'))
-                             or {atom_id_1, atom_id_2} == {'H', 'N'}):
+                             or {atom_id_1, atom_id_2} == {'H', 'N'}
+                             or (seq_id_1 < seq_id_2 and atom_id_2 == 'P')):
                         pass
 
                     else:
@@ -3591,8 +3590,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             if len(compIds) == 1:
                                 updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compIds[0])
                             else:
-                                updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, seqId, compIds,
-                                                      self.__polySeqRstFailed)
+                                updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, seqId, compIds)
 
         return list(chainAssign)
 
@@ -3809,8 +3807,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         if len(compIds) == 1:
                             updatePolySeqRst(self.__polySeqRstFailed, fixedChainId, seqId, compIds[0])
                         else:
-                            updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, fixedChainId, seqId, compIds,
-                                                  self.__polySeqRstFailed)
+                            updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, fixedChainId, seqId, compIds)
 
         return list(chainAssign)
 
@@ -8884,6 +8881,10 @@ class CyanaMRParserListener(ParseTreeListener):
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 in ('H', 'N'))
                          or (seq_id_1 > seq_id_2 and atom_id_1 in ('H', 'N') and atom_id_2.startswith('HA'))
                          or {atom_id_1, atom_id_2} == {'H', 'N'}):
+                    pass
+
+                elif self.__csStat.getTypeOfCompId(comp_id_1)[1] and self.__csStat.getTypeOfCompId(comp_id_1)[1]\
+                        and seq_id_1 < seq_id_2 and atom_id_2 == 'P':
                     pass
 
                 else:

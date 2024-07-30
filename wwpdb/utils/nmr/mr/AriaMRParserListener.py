@@ -66,7 +66,6 @@ try:
                                            zincIonCode,
                                            isReservedLigCode,
                                            updatePolySeqRst,
-                                           mergePolySeqRstAmbig,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
@@ -135,7 +134,6 @@ except ImportError:
                                zincIonCode,
                                isReservedLigCode,
                                updatePolySeqRst,
-                               mergePolySeqRstAmbig,
                                sortPolySeqRst,
                                alignPolymerSequence,
                                assignPolymerSequence,
@@ -672,9 +670,6 @@ class AriaMRParserListener(ParseTreeListener):
             #         del self.reasonsForReParsing['seq_id_remap']
             # """
             if 'local_seq_scheme' in self.reasonsForReParsing and len(self.reasonsForReParsing) == 1:
-                if len(self.__polySeqRstFailed) > 0:
-                    if len(self.__polySeqRstFailedAmbig) > 0:
-                        mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                 sortPolySeqRst(self.__polySeqRstFailed)
                 if len(self.__polySeqRstFailed) > 0:
                     self.reasonsForReParsing['extend_seq_scheme'] = self.__polySeqRstFailed

@@ -2525,6 +2525,21 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
         if atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit():  # DAOTHER-9198: DNR(DC):H3+ -> HN3
             if 'HN' + atomId[1] in refAtomIdList:
                 return 'HN' + atomId[1]
+        if atomId.startswith("HN'")\
+           and refCompId in ('DA', 'DT', 'DG', 'DC', 'DI', 'DU', 'DNR', 'A', 'T', 'G', 'C', 'U', 'CH'):
+            nh2 = ccU.getRepAminoProtons(refCompId)
+            if len(nh2) == 1:
+                if atomId.endswith("''"):
+                    nh2 = ccU.getNonRepAminoProtons(refCompId)
+                    if nh2[0] in refAtomIdList:
+                        return nh2[0]
+                elif nh2[0] in refAtomIdList:
+                    return nh2[0]
+            elif atomId == "HN'":
+                nh = ccU.getImideProtons(refCompId)
+                if len(nh) == 1:
+                    if nh[0] in refAtomIdList:
+                        return nh[0]
         if len(atomId) > 1 and atomId[-1] not in ('*', '%') and refCompId not in monDict3:
             canAtomIdList = [_atomId for _atomId in refAtomIdList if _atomId[0] == atomId[0]]
             if len(canAtomIdList) > 0:

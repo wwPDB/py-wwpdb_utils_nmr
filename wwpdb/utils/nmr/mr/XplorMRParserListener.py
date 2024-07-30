@@ -4836,6 +4836,10 @@ class XplorMRParserListener(ParseTreeListener):
                              or {atom_id_1, atom_id_2} == {'H', 'N'}):
                         pass
 
+                    elif self.__csStat.getTypeOfCompId(comp_id_1)[1] and self.__csStat.getTypeOfCompId(comp_id_1)[1]\
+                            and seq_id_1 < seq_id_2 and atom_id_2 == 'P':
+                        pass
+
                     else:
                         warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"

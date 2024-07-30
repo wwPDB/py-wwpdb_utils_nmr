@@ -1480,7 +1480,8 @@ class CyanaMRParserListener(ParseTreeListener):
                              or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
                              or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 in ('H', 'N'))
                              or (seq_id_1 > seq_id_2 and atom_id_1 in ('H', 'N') and atom_id_2.startswith('HA'))
-                             or {atom_id_1, atom_id_2} == {'H', 'N'}):
+                             or {atom_id_1, atom_id_2} == {'H', 'N'}
+                             or (seq_id_1 < seq_id_2 and atom_id_2 == 'P')):
                         pass
 
                     else:
@@ -2035,7 +2036,8 @@ class CyanaMRParserListener(ParseTreeListener):
                              or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
                              or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 in ('H', 'N'))
                              or (seq_id_1 > seq_id_2 and atom_id_1 in ('H', 'N') and atom_id_2.startswith('HA'))
-                             or {atom_id_1, atom_id_2} == {'H', 'N'}):
+                             or {atom_id_1, atom_id_2} == {'H', 'N'}
+                             or (seq_id_1 < seq_id_2 and atom_id_2 == 'P')):
                         pass
 
                     else:
@@ -8879,6 +8881,10 @@ class CyanaMRParserListener(ParseTreeListener):
                          or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 in ('H', 'N'))
                          or (seq_id_1 > seq_id_2 and atom_id_1 in ('H', 'N') and atom_id_2.startswith('HA'))
                          or {atom_id_1, atom_id_2} == {'H', 'N'}):
+                    pass
+
+                elif self.__csStat.getTypeOfCompId(comp_id_1)[1] and self.__csStat.getTypeOfCompId(comp_id_1)[1]\
+                        and seq_id_1 < seq_id_2 and atom_id_2 == 'P':
                     pass
 
                 else:

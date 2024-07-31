@@ -1032,6 +1032,7 @@ class CnsMRParserListener(ParseTreeListener):
                                     continue
                                 _matched = sa['matched']
                                 for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
+                                    _compId = None
                                     for compId in list(compIds):
                                         _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
                                         updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
@@ -1044,7 +1045,7 @@ class CnsMRParserListener(ParseTreeListener):
                                             _matched = _sa['matched']
                                             _compId = compId
                                     if _compId is not None:
-                                        updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
+                                        updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, _compId)
                                         sortPolySeqRst(self.__polySeqRstFailed)
 
                         seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)

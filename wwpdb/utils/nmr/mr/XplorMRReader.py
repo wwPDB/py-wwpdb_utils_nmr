@@ -222,7 +222,7 @@ if __name__ == "__main__":
     reader = XplorMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/2rsy/2rsy-trimmed-div_dst-div_dst.mr',
+        reader.parse('../../tests-nmr/mock-data-remediation/2rsy/2rsy-corrected-div_dst-div_dst.mr',
                      '../../tests-nmr/mock-data-remediation/2rsy/2rsy.cif')
     print(reader_listener.getReasonsForReparsing())
 

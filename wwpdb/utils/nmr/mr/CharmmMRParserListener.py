@@ -3329,7 +3329,7 @@ class CharmmMRParserListener(ParseTreeListener):
             del __factor['atom_selection']
             if _factor['atom_id'][0] is None:
                 if self.__cur_subtype != 'plane' and cifCheck and not self.__cur_union_expr:
-                    if len(_factor['seq_id']) == 1 and _factor['alt_atom_id'][0] is not None and 'comp_id' not in _factor:
+                    if len(_factor['seq_id']) == 1 and 'alt_atom_id' in _factor and _factor['alt_atom_id'][0] is not None and 'comp_id' not in _factor:
                         for chainId in _factor['chain_id']:
                             updateSeqAtmRst(self.__seqAtmRstFailed, chainId, _factor['seq_id'][0], _factor['alt_atom_id'])
 
@@ -3439,6 +3439,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                     updatePolySeqRst(self.__polySeqRstFailed, chainId, _factor['seq_id'][0], compIds[0])
                                                 else:
                                                     updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, _factor['seq_id'][0], compIds)
+                                        for chainId in _factor['chain_id']:
+                                            updateSeqAtmRst(self.__seqAtmRstFailed, chainId, _factor['seq_id'][0], _factor['atom_id'])
 
                                 if ligands == 0:
                                     self.__preferAuthSeq = not self.__preferAuthSeq

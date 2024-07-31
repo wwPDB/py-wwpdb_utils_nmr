@@ -1103,7 +1103,9 @@ class XplorMRParserListener(ParseTreeListener):
                                     if not valid_auth_seq and valid_label_seq:
                                         set_label_seq_scheme()
 
-                        elif len(self.__seqAtmRstFailed) > 0 and 'label_seq_offset' in self.reasonsForReParsing:
+                        elif len(self.__seqAtmRstFailed) > 0\
+                                and 'label_seq_scheme' not in self.reasonsForReParsing\
+                                and 'label_seq_offset' in self.reasonsForReParsing:
                             chainIdRemap = {}
                             valid = True
                             for s in self.__seqAtmRstFailed:
@@ -1134,8 +1136,6 @@ class XplorMRParserListener(ParseTreeListener):
                                 del self.reasonsForReParsing['label_seq_offset']
                                 if 'local_seq_scheme' in self.reasonsForReParsing:
                                     del self.reasonsForReParsing['local_seq_scheme']
-                                if 'label_seq_scheme' in self.reasonsForReParsing:
-                                    del self.reasonsForReParsing['label_seq_scheme']
                                 self.reasonsForReParsing['chain_id_remap'] = chainIdRemap
 
                     # DAOTHER-9063

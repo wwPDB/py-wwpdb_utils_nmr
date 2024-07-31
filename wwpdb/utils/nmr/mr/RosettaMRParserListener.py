@@ -606,6 +606,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                     _ps = next((_ps for _ps in self.__polySeqRstFailedAmbig if _ps['chain_id'] == chainId), None)
                                     if _ps is None:
                                         continue
+                                    _matched = sa['matched']
                                     for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
                                         for compId in list(compIds):
                                             _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
@@ -615,6 +616,10 @@ class RosettaMRParserListener(ParseTreeListener):
                                             _sa = next((_sa for _sa in _seqAlignFailed if _sa['test_chain_id'] == chainId), None)
                                             if _sa is None or _sa['conflict'] > 0:
                                                 continue
+                                            if _sa['matched'] > _matched:
+                                                _matched = _sa['matched']
+                                                _compId = compId
+                                        if _compId is not None:
                                             updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
                                             sortPolySeqRst(self.__polySeqRstFailed)
 

@@ -113,6 +113,7 @@ try:
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
                                            sortPolySeqRst,
+                                           updateSeqAtmRst,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
@@ -225,6 +226,7 @@ except ImportError:
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
                                sortPolySeqRst,
+                               updateSeqAtmRst,
                                alignPolymerSequence,
                                assignPolymerSequence,
                                trimSequenceAlignment,
@@ -401,6 +403,7 @@ class XplorMRParserListener(ParseTreeListener):
     __polySeqRstValid = None
     __polySeqRstFailed = None
     __polySeqRstFailedAmbig = None
+    __seqAtmRstFailed = None
 
     __seqAlign = None
     __chainAssign = None
@@ -763,6 +766,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__polySeqRstValid = []
         self.__polySeqRstFailed = []
         self.__polySeqRstFailedAmbig = []
+        self.__seqAtmRstFailed = []
         self.__f = []
         self.__g = []
 
@@ -1099,6 +1103,41 @@ class XplorMRParserListener(ParseTreeListener):
                                     if not valid_auth_seq and valid_label_seq:
                                         set_label_seq_scheme()
 
+                        elif len(self.__seqAtmRstFailed) > 0 and 'label_seq_offset' in self.reasonsForReParsing:
+                            chainIdRemap = {}
+                            valid = True
+                            for s in self.__seqAtmRstFailed:
+                                chainId = s['chain_id']
+                                ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
+                                if chainId in self.reasonsForReParsing['label_seq_offset']:
+                                    for auth_seq_id in ps['auth_seq_id']:
+                                        if auth_seq_id in chainIdRemap:
+                                            valid = False
+                                            break
+                                        chainIdRemap[auth_seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
+                                    continue
+                                if all(seqId in ps['seq_id'] and seqId not in ps['auth_seq_id'] for seqId in s['seq_id']):
+                                    for seqId, atoms in zip(s['seq_id'], s['atom_id']):
+                                        compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                                        for atom in atoms:
+                                            _, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atom, leave_unmatched=True)
+                                            if details is not None:
+                                                valid = False
+                                                break
+                                    if valid:
+                                        for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
+                                            if seq_id in chainIdRemap:
+                                                valid = False
+                                                break
+                                            chainIdRemap[seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
+                            if valid:
+                                del self.reasonsForReParsing['label_seq_offset']
+                                if 'local_seq_scheme' in self.reasonsForReParsing:
+                                    del self.reasonsForReParsing['local_seq_scheme']
+                                if 'label_seq_scheme' in self.reasonsForReParsing:
+                                    del self.reasonsForReParsing['label_seq_scheme']
+                                self.reasonsForReParsing['chain_id_remap'] = chainIdRemap
+
                     # DAOTHER-9063
                     if self.__reasons is None and 'np_seq_id_remap' in self.reasonsForReParsing:
 
@@ -1133,6 +1172,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 _ps = next((_ps for _ps in self.__polySeqRstFailedAmbig if _ps['chain_id'] == chainId), None)
                                 if _ps is None:
                                     continue
+                                _matched = sa['matched']
                                 for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
                                     for compId in list(compIds):
                                         _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
@@ -1142,6 +1182,10 @@ class XplorMRParserListener(ParseTreeListener):
                                         _sa = next((_sa for _sa in _seqAlignFailed if _sa['test_chain_id'] == chainId), None)
                                         if _sa is None or _sa['conflict'] > 0:
                                             continue
+                                        if _sa['matched'] > _matched:
+                                            _matched = _sa['matched']
+                                            _compId = compId
+                                    if _compId is not None:
                                         updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
                                         sortPolySeqRst(self.__polySeqRstFailed)
 
@@ -9653,7 +9697,13 @@ class XplorMRParserListener(ParseTreeListener):
                     return _factor
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
-            if _factor['atom_id'][0] is not None:
+            if _factor['atom_id'][0] is None:
+                if self.__cur_subtype != 'plane' and cifCheck and not self.__cur_union_expr:
+                    if len(_factor['seq_id']) == 1 and _factor['alt_atom_id'][0] is not None and 'comp_id' not in _factor:
+                        for chainId in _factor['chain_id']:
+                            updateSeqAtmRst(self.__seqAtmRstFailed, chainId, _factor['seq_id'][0], _factor['alt_atom_id'])
+
+            else:
                 if self.__cur_subtype != 'plane':
                     if cifCheck:
                         if self.__cur_union_expr:
@@ -9753,10 +9803,11 @@ class XplorMRParserListener(ParseTreeListener):
                                     if len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
                                         compIds = guessCompIdFromAtomId(_factor['atom_id'], self.__polySeq, self.__nefT)
                                         if compIds is not None:
-                                            if len(compIds) == 1:
-                                                updatePolySeqRst(self.__polySeqRstFailed, _factor['chain_id'][0], _factor['seq_id'][0], compIds[0])
-                                            else:
-                                                updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, _factor['chain_id'][0], _factor['seq_id'][0], compIds)
+                                            for chainId in _factor['chain_id']:
+                                                if len(compIds) == 1:
+                                                    updatePolySeqRst(self.__polySeqRstFailed, chainId, _factor['seq_id'][0], compIds[0])
+                                                else:
+                                                    updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, _factor['seq_id'][0], compIds)
 
                                 if ligands == 0 and not self.__has_nx:
                                     self.__preferAuthSeq = not self.__preferAuthSeq

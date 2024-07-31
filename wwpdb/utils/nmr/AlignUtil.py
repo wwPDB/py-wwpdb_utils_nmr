@@ -936,6 +936,29 @@ def stripPolySeqRst(polySeqRst):
                 ps['auth_comp_id'] = auth_comp_ids
 
 
+def updateSeqAtmRst(seqAtmRst, chainId, seqId, atoms):
+    """ Update sequence with atom names of the current MR file.
+    """
+
+    if seqId is None:
+        return
+
+    s = next((s for s in seqAtmRst if s['chain_id'] == chainId), None)
+    if s is None:
+        seqAtmRst.append({'chain_id': chainId, 'seq_id': [], 'atom_id': []})
+        s = seqAtmRst[-1]
+
+    if seqId not in s['seq_id']:
+        s['seq_id'].append(seqId)
+        s['atom_id'].append(atoms)
+
+    else:
+        idx = s['seq_id'].index(seqId)
+        for atom in atoms:
+            if atom not in s['atom_id'][idx]:
+                s['atom_id'][idx].append(atom)
+
+
 def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolvedMultimer=False):
     """ Align polymer sequence of the coordinates and restraints.
     """

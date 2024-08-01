@@ -3456,7 +3456,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                             if has_identical_chain_id(chainId):
                                                 break
 
-                                if ligands == 0:
+                                if ligands == 0 and len(self.__polySeq) == 1:
                                     self.__preferAuthSeq = not self.__preferAuthSeq
                                     self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                                     self.__setLocalSeqScheme()

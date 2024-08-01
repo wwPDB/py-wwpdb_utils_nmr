@@ -10692,7 +10692,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                             continue
                                                     if extSeqScheme:
                                                         self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                                                        f"The residue '{seqId}:{compId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                                        f"The residue '{seqId}:{compId}' is not present in polymer sequence "
+                                                                        f"of chain {chainId} of the coordinates. "
                                                                         "Please update the sequence in the Macromolecules page.")
                                                         continue
                                                     warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\

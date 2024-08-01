@@ -970,10 +970,6 @@ class SybylMRParserListener(ParseTreeListener):
             if _ps is not None:
                 if seqId in _ps['seq_id']:
                     return ps['auth_chain_id'], _ps['comp_id'][_ps['seq_id'].index(seqId)]
-        # if seqId in ps['seq_id']:
-        #     idx = ps['seq_id'].index(seqId)
-        #     if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
-        #         return ps['auth_chain_id'], ps['auth_seq_id'][idx]
         return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequence(self, seqId, compId, atomId):
@@ -1083,6 +1079,8 @@ class SybylMRParserListener(ParseTreeListener):
 
         updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
 
+        types = self.__csStat.getTypeOfCompId(compId)
+
         for ps in self.__polySeq:
             if preferNonPoly:
                 continue
@@ -1106,6 +1104,9 @@ class SybylMRParserListener(ParseTreeListener):
                         idx = ps['auth_seq_id'].index(seqId) if seqId in ps['auth_seq_id'] else ps['seq_id'].index(seqId)
                     cifCompId = ps['comp_id'][idx]
                     origCompId = ps['auth_comp_id'][idx]
+                    _types = self.__csStat.getTypeOfCompId(cifCompId)
+                    if types != _types:
+                        continue
                 if cifCompId != compId:
                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                     if compId in compIds:
@@ -1148,6 +1149,9 @@ class SybylMRParserListener(ParseTreeListener):
                                 seqId_ = ps['auth_seq_id'][idx]
                                 cifCompId = ps['comp_id'][idx]
                                 origCompId = ps['auth_comp_id'][idx]
+                                _types = self.__csStat.getTypeOfCompId(cifCompId)
+                                if types != _types:
+                                    continue
                                 if cifCompId != compId:
                                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                                     if compId in compIds:
@@ -1256,6 +1260,9 @@ class SybylMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
+                        _types = self.__csStat.getTypeOfCompId(cifCompId)
+                        if types != _types:
+                            continue
                         if cifCompId != compId:
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
@@ -1312,6 +1319,9 @@ class SybylMRParserListener(ParseTreeListener):
                     continue
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                    _types = self.__csStat.getTypeOfCompId(cifCompId)
+                    if types != _types:
+                        continue
                     if cifCompId != compId:
                         if cifCompId in monDict3 and compId in monDict3:
                             continue
@@ -1339,6 +1349,9 @@ class SybylMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(_seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
+                        _types = self.__csStat.getTypeOfCompId(cifCompId)
+                        if types != _types:
+                            continue
                         if cifCompId != compId:
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
@@ -1387,18 +1400,21 @@ class SybylMRParserListener(ParseTreeListener):
                        and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
                             or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
                     self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
+                                    f"of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                     chainAssign.add((refChainId, _seqId, compId, True))
                     asis = True
                 elif compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
                     self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
+                                    f"of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
-                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence "
+                                    f"of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
             else:
                 ext_seq = False
@@ -1426,7 +1442,8 @@ class SybylMRParserListener(ParseTreeListener):
                 if ext_seq:
                     refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
                     self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
+                                    f"of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                     if isinstance(refChainId, str):
                         chainAssign.add((refChainId, _seqId, compId, True))
@@ -1900,7 +1917,8 @@ class SybylMRParserListener(ParseTreeListener):
                             return atomId
                         if self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                            f"The residue '{chainId}:{seqId}:{compId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                            f"The residue '{chainId}:{seqId}:{compId}' is not present in polymer sequence "
+                                            f"of chain {chainId} of the coordinates. "
                                             "Please update the sequence in the Macromolecules page.")
                         else:
                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"

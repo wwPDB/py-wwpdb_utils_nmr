@@ -4176,7 +4176,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                         or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates. "
-                                                                    f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                                    f"The residue number '{seqId}' is not present in polymer sequence "
+                                                                    f"of chain {chainId} of the coordinates. "
                                                                     "Please update the sequence in the Macromolecules page.")
                                                     if 'alt_chain_id' in _factor:
                                                         self.__failure_chain_ids.append(chainId)
@@ -4272,7 +4273,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                             continue
                                                     if extSeqScheme:
                                                         self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                                                        f"The residue '{seqId}:{compId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                                        f"The residue '{seqId}:{compId}' is not present in polymer sequence "
+                                                                        f"of chain {chainId} of the coordinates. "
                                                                         "Please update the sequence in the Macromolecules page.")
                                                         continue
                                                     warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\

@@ -9685,6 +9685,14 @@ class XplorMRParserListener(ParseTreeListener):
         else:
             _factor['atom_selection'] = self.__intersectionAtom_selections(_factor['atom_selection'], atomSelection)
 
+        def has_identical_chain_id(chain_id):
+            try:
+                next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id and 'identical_chain_id' in ps)
+                return True
+            except StopIteration:
+                pass
+            return False
+
         if len(_factor['atom_selection']) == 0:
             if 'atom_id' in _factor and _factor['atom_id'][0] is not None:
                 _atomId = _factor['atom_id'][0].upper() if len(_factor['atom_id'][0]) <= 2 else _factor['atom_id'][0][:2].upper()
@@ -9703,6 +9711,8 @@ class XplorMRParserListener(ParseTreeListener):
                     if len(_factor['seq_id']) == 1 and 'alt_atom_id' in _factor and _factor['alt_atom_id'][0] is not None and 'comp_id' not in _factor:
                         for chainId in _factor['chain_id']:
                             updateSeqAtmRst(self.__seqAtmRstFailed, chainId, _factor['seq_id'][0], _factor['alt_atom_id'])
+                            if has_identical_chain_id(chainId):
+                                break
 
             else:
                 if self.__cur_subtype != 'plane':
@@ -9809,8 +9819,12 @@ class XplorMRParserListener(ParseTreeListener):
                                                     updatePolySeqRst(self.__polySeqRstFailed, chainId, _factor['seq_id'][0], compIds[0])
                                                 else:
                                                     updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, _factor['seq_id'][0], compIds)
+                                                if has_identical_chain_id(chainId):
+                                                    break
                                         for chainId in _factor['chain_id']:
                                             updateSeqAtmRst(self.__seqAtmRstFailed, chainId, _factor['seq_id'][0], _factor['atom_id'])
+                                            if has_identical_chain_id(chainId):
+                                                break
 
                                 if ligands == 0 and not self.__has_nx:
                                     self.__preferAuthSeq = not self.__preferAuthSeq

@@ -3324,6 +3324,14 @@ class CharmmMRParserListener(ParseTreeListener):
         else:
             _factor['atom_selection'] = self.__intersectionAtom_selections(_factor['atom_selection'], atomSelection)
 
+        def has_identical_chain_id(chain_id):
+            try:
+                next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id and 'identical_chain_id' in ps)
+                return True
+            except StopIteration:
+                pass
+            return False
+
         if len(_factor['atom_selection']) == 0:
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
@@ -3332,6 +3340,8 @@ class CharmmMRParserListener(ParseTreeListener):
                     if len(_factor['seq_id']) == 1 and 'alt_atom_id' in _factor and _factor['alt_atom_id'][0] is not None and 'comp_id' not in _factor:
                         for chainId in _factor['chain_id']:
                             updateSeqAtmRst(self.__seqAtmRstFailed, chainId, _factor['seq_id'][0], _factor['alt_atom_id'])
+                            if has_identical_chain_id(chainId):
+                                break
 
             else:
                 error_type = "Insufficient atom selection" if 'atom_num' not in __factor else 'Atom not found'
@@ -3439,8 +3449,12 @@ class CharmmMRParserListener(ParseTreeListener):
                                                     updatePolySeqRst(self.__polySeqRstFailed, chainId, _factor['seq_id'][0], compIds[0])
                                                 else:
                                                     updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, _factor['seq_id'][0], compIds)
+                                                if has_identical_chain_id(chainId):
+                                                    break
                                         for chainId in _factor['chain_id']:
                                             updateSeqAtmRst(self.__seqAtmRstFailed, chainId, _factor['seq_id'][0], _factor['atom_id'])
+                                            if has_identical_chain_id(chainId):
+                                                break
 
                                 if ligands == 0:
                                     self.__preferAuthSeq = not self.__preferAuthSeq

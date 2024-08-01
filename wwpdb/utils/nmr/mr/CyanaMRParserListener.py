@@ -7714,6 +7714,22 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if k == j:
                                     continue
                                 atomId = jVal[k]
+                                chainId = jVal[3 - (j + k)]
+                                if len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
+                                    if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                                        _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                        if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                            _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+                                    if details is not None or atomId.endswith('"'):
+                                        _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                                        if _atomId_ != atomId:
+                                            if atomId.startswith('HT') and len(_atomId_) == 2:
+                                                _atomId_ = 'H'
+                                            _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                    if len(_atomId) > 0:
+                                        continue
                                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                 if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                     _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -7740,6 +7756,22 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if k == j:
                                     continue
                                 atomId = jVal[k]
+                                chainId = jVal[3 - (j + k)]
+                                if len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
+                                    if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                                        _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                        if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                            _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+                                    if details is not None or atomId.endswith('"'):
+                                        _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                                        if _atomId_ != atomId:
+                                            if atomId.startswith('HT') and len(_atomId_) == 2:
+                                                _atomId_ = 'H'
+                                            _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                    if len(_atomId) > 0:
+                                        continue
                                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                 if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                     _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -7767,6 +7799,22 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if k == j:
                                     continue
                                 atomId = jVal[k]
+                                chainId = jVal[12 - (j + k)]
+                                if len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
+                                    if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                                        _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                        if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                            _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+                                    if details is not None or atomId.endswith('"'):
+                                        _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                                        if atomId.startswith('HT') and len(_atomId_) == 2:
+                                            _atomId_ = 'H'
+                                        if _atomId_ != atomId:
+                                            _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                    if len(_atomId) > 0:
+                                        continue
                                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                 if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                     _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
@@ -7793,6 +7841,22 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if k == j:
                                     continue
                                 atomId = jVal[k]
+                                chainId = jVal[12 - (j + k)]
+                                if len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
+                                    if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                                        _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                        if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                            _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+                                    if details is not None or atomId.endswith('"'):
+                                        _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                                        if atomId.startswith('HT') and len(_atomId_) == 2:
+                                            _atomId_ = 'H'
+                                        if _atomId_ != atomId:
+                                            _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                    if len(_atomId) > 0:
+                                        continue
                                 _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                 if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
                                     _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)

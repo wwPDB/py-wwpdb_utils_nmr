@@ -22593,6 +22593,8 @@ class NmrDpUtility:
 
         modified = False
 
+        has_mr_atom_name_mapping = file_type == 'nmr-star' and self.__remediation_mode and self.__mr_atom_name_mapping is not None and len(self.__mr_atom_name_mapping) > 0
+
         try:
 
             details_col = -1
@@ -22603,6 +22605,14 @@ class NmrDpUtility:
                     loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
                 else:
                     loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
+
+                if has_mr_atom_name_mapping:
+                    auth_seq_id_col = loop.tags.index('Auth_seq_ID') if 'Auth_seq_ID' in loop.tags else -1
+                    auth_comp_id_col = loop.tags.index('Auth_comp_ID') if 'Auth_comp_ID' in loop.tags else -1
+                    auth_atom_id_col = loop.tags.index('Auth_atom_ID') if 'Auth_atom_ID' in loop.tags else -1
+                    orig_atom_name_col = loop.tags.index('Original_PDB_atom_name') if 'Original_PDB_atom_name' in loop.tags else -1
+                    if -1 in (auth_seq_id_col, auth_comp_id_col, auth_atom_id_col, orig_atom_name_col):
+                        has_mr_atom_name_mapping = False
 
                 if 'Details' in loop.tags:
                     details_col = loop.tags.index('Details')
@@ -22729,6 +22739,23 @@ class NmrDpUtility:
 
                 # non-standard residue
                 if comp_id not in monDict3:
+
+                    if has_mr_atom_name_mapping and atom_id_[0] == 'H':
+                        try:
+                            _row_ = loop.data[idx]
+                            auth_seq_id, auth_comp_id, auth_atom_id, orig_atom_name =\
+                                int(_row_[auth_seq_id_col]), _row_[auth_comp_id_col], _row_[auth_atom_id_col], _row_[orig_atom_name_col].upper()
+                            if auth_comp_id not in emptyValue and auth_atom_id not in emptyValue and orig_atom_name not in emptyValue\
+                               and auth_atom_id != orig_atom_name:
+                                try:
+                                    atom_map = next(atom_map for atom_map in self.__mr_atom_name_mapping
+                                                    if atom_map['auth_seq_id'] == auth_seq_id and atom_map['auth_comp_id'] == auth_comp_id
+                                                    and atom_map['auth_atom_id'] == auth_atom_id and atom_map['original_atom_id'] == auth_atom_id)
+                                    atom_map['original_atom_id'] = orig_atom_name
+                                except StopIteration:
+                                    pass
+                        except (ValueError, TypeError):
+                            pass
 
                     neighbor_comp_ids = set(_row[comp_id_name] for _row in lp_data
                                             if _row[chain_id_name] == chain_id and abs(_row[seq_id_name] - seq_id) < 4 and _row[seq_id_name] != seq_id)

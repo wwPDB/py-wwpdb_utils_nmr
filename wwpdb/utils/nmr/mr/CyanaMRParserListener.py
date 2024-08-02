@@ -2449,6 +2449,12 @@ class CyanaMRParserListener(ParseTreeListener):
             if types != self.__csStat.getTypeOfCompId(_compId):
                 types = None
 
+        def comp_id_unmatched_with(ps, cif_comp_id):
+            match_w_alt_comp_id = _compId in ps['alt_comp_id'] if 'alt_comp_id' in ps else False
+            return types is not None and not match_w_alt_comp_id\
+                and types != self.__csStat.getTypeOfCompId(cif_comp_id)\
+                and (compId in monDict3) is (cif_comp_id in monDict3)
+
         for ps in self.__polySeq:
             if preferNonPoly or pure_ambig:
                 continue
@@ -2472,9 +2478,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         idx = ps['auth_seq_id'].index(seqId) if seqId in ps['auth_seq_id'] else ps['seq_id'].index(seqId)
                     cifCompId = ps['comp_id'][idx]
                     origCompId = ps['auth_comp_id'][idx]
-                    if types is not None:
-                        if types != self.__csStat.getTypeOfCompId(cifCompId):
-                            continue
+                    if comp_id_unmatched_with(ps, cifCompId):
+                        continue
                 if cifCompId != compId:
                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                     if compId in compIds:
@@ -2517,9 +2522,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                 seqId_ = ps['auth_seq_id'][idx]
                                 cifCompId = ps['comp_id'][idx]
                                 origCompId = ps['auth_comp_id'][idx]
-                                if types is not None:
-                                    if types != self.__csStat.getTypeOfCompId(cifCompId):
-                                        continue
+                                if comp_id_unmatched_with(ps, cifCompId):
+                                    continue
                                 if cifCompId != compId:
                                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                                     if compId in compIds:
@@ -2630,9 +2634,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
-                        if types is not None:
-                            if types != self.__csStat.getTypeOfCompId(cifCompId):
-                                continue
+                        if comp_id_unmatched_with(ps, cifCompId):
+                            continue
                         if cifCompId != compId:
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
@@ -2691,9 +2694,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     continue
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    if types is not None:
-                        if types != self.__csStat.getTypeOfCompId(cifCompId):
-                            continue
+                    if comp_id_unmatched_with(ps, cifCompId):
+                        continue
                     if cifCompId != compId:
                         if cifCompId in monDict3 and compId in monDict3:
                             continue
@@ -2721,9 +2723,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(_seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
-                        if types is not None:
-                            if types != self.__csStat.getTypeOfCompId(cifCompId):
-                                continue
+                        if comp_id_unmatched_with(ps, cifCompId):
+                            continue
                         if cifCompId != compId:
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
@@ -2983,6 +2984,12 @@ class CyanaMRParserListener(ParseTreeListener):
             if types != self.__csStat.getTypeOfCompId(compId):
                 types = None
 
+        def comp_id_unmatched_with(ps, cif_comp_id):
+            match_w_alt_comp_id = _compId in ps['alt_comp_id'] if 'alt_comp_id' in ps else False
+            return types is not None and not match_w_alt_comp_id\
+                and types != self.__csStat.getTypeOfCompId(cif_comp_id)\
+                and (compId in monDict3) is (cif_comp_id in monDict3)
+
         if refChainId is not None or refChainId != _refChainId:
             if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _refChainId):
                 fixedChainId = _refChainId
@@ -3016,9 +3023,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         idx = ps['auth_seq_id'].index(seqId) if seqId in ps['auth_seq_id'] else ps['seq_id'].index(seqId)
                     cifCompId = ps['comp_id'][idx]
                     origCompId = ps['auth_comp_id'][idx]
-                    if types is not None:
-                        if types != self.__csStat.getTypeOfCompId(cifCompId):
-                            continue
+                    if comp_id_unmatched_with(ps, cifCompId):
+                        continue
                 if cifCompId != compId:
                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                     if compId in compIds:
@@ -3065,9 +3071,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                 seqId_ = ps['auth_seq_id'][idx]
                                 cifCompId = ps['comp_id'][idx]
                                 origCompId = ps['auth_comp_id'][idx]
-                                if types is not None:
-                                    if types != self.__csStat.getTypeOfCompId(cifCompId):
-                                        continue
+                                if comp_id_unmatched_with(ps, cifCompId):
+                                    continue
                                 if cifCompId != compId:
                                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                                     if compId in compIds:
@@ -3189,9 +3194,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
-                        if types is not None:
-                            if types != self.__csStat.getTypeOfCompId(cifCompId):
-                                continue
+                        if comp_id_unmatched_with(ps, cifCompId):
+                            continue
                         if cifCompId != compId:
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
@@ -3270,9 +3274,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     _seqId = fixedSeqId
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    if types is not None:
-                        if types != self.__csStat.getTypeOfCompId(cifCompId):
-                            continue
+                    if comp_id_unmatched_with(ps, cifCompId):
+                        continue
                     if cifCompId != compId:
                         if cifCompId in monDict3 and compId in monDict3:
                             continue
@@ -3306,9 +3309,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(_seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
-                        if types is not None:
-                            if types != self.__csStat.getTypeOfCompId(cifCompId):
-                                continue
+                        if comp_id_unmatched_with(ps, cifCompId):
+                            continue
                         if cifCompId != compId:
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:

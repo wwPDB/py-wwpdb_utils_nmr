@@ -2443,6 +2443,11 @@ class CyanaMRParserListener(ParseTreeListener):
         updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
 
         types = self.__csStat.getTypeOfCompId(compId)
+        if all(not t for t in types):
+            types = None
+        elif compId != _compId:
+            if types != self.__csStat.getTypeOfCompId(_compId):
+                types = None
 
         for ps in self.__polySeq:
             if preferNonPoly or pure_ambig:
@@ -2467,9 +2472,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         idx = ps['auth_seq_id'].index(seqId) if seqId in ps['auth_seq_id'] else ps['seq_id'].index(seqId)
                     cifCompId = ps['comp_id'][idx]
                     origCompId = ps['auth_comp_id'][idx]
-                    _types = self.__csStat.getTypeOfCompId(cifCompId)
-                    if types != _types:
-                        continue
+                    if types is not None:
+                        if types != self.__csStat.getTypeOfCompId(cifCompId):
+                            continue
                 if cifCompId != compId:
                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                     if compId in compIds:
@@ -2512,9 +2517,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                 seqId_ = ps['auth_seq_id'][idx]
                                 cifCompId = ps['comp_id'][idx]
                                 origCompId = ps['auth_comp_id'][idx]
-                                _types = self.__csStat.getTypeOfCompId(cifCompId)
-                                if types != _types:
-                                    continue
+                                if types is not None:
+                                    if types != self.__csStat.getTypeOfCompId(cifCompId):
+                                        continue
                                 if cifCompId != compId:
                                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                                     if compId in compIds:
@@ -2599,9 +2604,6 @@ class CyanaMRParserListener(ParseTreeListener):
                         idx = np['auth_seq_id'].index(seqId) if seqId in np['auth_seq_id']\
                             else np['seq_id'].index(seqId) if seqId in np['seq_id'] else 0
                     cifCompId = np['comp_id'][idx]
-                    _types = self.__csStat.getTypeOfCompId(cifCompId)
-                    if types != _types:
-                        continue
                     origCompId = np['auth_comp_id'][idx]
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
@@ -2628,9 +2630,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
-                        _types = self.__csStat.getTypeOfCompId(cifCompId)
-                        if types != _types:
-                            continue
+                        if types is not None:
+                            if types != self.__csStat.getTypeOfCompId(cifCompId):
+                                continue
                         if cifCompId != compId:
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
@@ -2689,9 +2691,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     continue
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    _types = self.__csStat.getTypeOfCompId(cifCompId)
-                    if types != _types:
-                        continue
+                    if types is not None:
+                        if types != self.__csStat.getTypeOfCompId(cifCompId):
+                            continue
                     if cifCompId != compId:
                         if cifCompId in monDict3 and compId in monDict3:
                             continue
@@ -2719,9 +2721,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(_seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
-                        _types = self.__csStat.getTypeOfCompId(cifCompId)
-                        if types != _types:
-                            continue
+                        if types is not None:
+                            if types != self.__csStat.getTypeOfCompId(cifCompId):
+                                continue
                         if cifCompId != compId:
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
@@ -2969,6 +2971,11 @@ class CyanaMRParserListener(ParseTreeListener):
         updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId, _compId)
 
         types = self.__csStat.getTypeOfCompId(compId)
+        if all(not t for t in types):
+            types = None
+        elif compId != _compId:
+            if types != self.__csStat.getTypeOfCompId(compId):
+                types = None
 
         if refChainId is not None or refChainId != _refChainId:
             if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _refChainId):
@@ -3003,9 +3010,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         idx = ps['auth_seq_id'].index(seqId) if seqId in ps['auth_seq_id'] else ps['seq_id'].index(seqId)
                     cifCompId = ps['comp_id'][idx]
                     origCompId = ps['auth_comp_id'][idx]
-                    _types = self.__csStat.getTypeOfCompId(cifCompId)
-                    if types != _types:
-                        continue
+                    if types is not None:
+                        if types != self.__csStat.getTypeOfCompId(cifCompId):
+                            continue
                 if cifCompId != compId:
                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                     if compId in compIds:
@@ -3052,9 +3059,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                 seqId_ = ps['auth_seq_id'][idx]
                                 cifCompId = ps['comp_id'][idx]
                                 origCompId = ps['auth_comp_id'][idx]
-                                _types = self.__csStat.getTypeOfCompId(cifCompId)
-                                if types != _types:
-                                    continue
+                                if types is not None:
+                                    if types != self.__csStat.getTypeOfCompId(cifCompId):
+                                        continue
                                 if cifCompId != compId:
                                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                                     if compId in compIds:
@@ -3143,9 +3150,6 @@ class CyanaMRParserListener(ParseTreeListener):
                             else np['seq_id'].index(seqId) if seqId in np['seq_id'] else 0
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
-                    _types = self.__csStat.getTypeOfCompId(cifCompId)
-                    if types != _types:
-                        continue
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
@@ -3179,9 +3183,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
-                        _types = self.__csStat.getTypeOfCompId(cifCompId)
-                        if types != _types:
-                            continue
+                        if types is not None:
+                            if types != self.__csStat.getTypeOfCompId(cifCompId):
+                                continue
                         if cifCompId != compId:
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
@@ -3226,9 +3230,6 @@ class CyanaMRParserListener(ParseTreeListener):
                             idx = np['seq_id'].index(seqId)
                             cifCompId = np['comp_id'][idx]
                             origCompId = np['auth_comp_id'][idx]
-                            _types = self.__csStat.getTypeOfCompId(cifCompId)
-                            if types != _types:
-                                continue
                             if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                                 _, coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId, cifCompId, cifCheck=self.__hasCoord)
                                 atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, origCompId, atomId, coordAtomSite)
@@ -3263,9 +3264,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     _seqId = fixedSeqId
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    _types = self.__csStat.getTypeOfCompId(cifCompId)
-                    if types != _types:
-                        continue
+                    if types is not None:
+                        if types != self.__csStat.getTypeOfCompId(cifCompId):
+                            continue
                     if cifCompId != compId:
                         if cifCompId in monDict3 and compId in monDict3:
                             continue
@@ -3299,9 +3300,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(_seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
-                        _types = self.__csStat.getTypeOfCompId(cifCompId)
-                        if types != _types:
-                            continue
+                        if types is not None:
+                            if types != self.__csStat.getTypeOfCompId(cifCompId):
+                                continue
                         if cifCompId != compId:
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
@@ -4725,6 +4726,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
             _compId = str(ctx.Simple_name(0)).upper()
             compId = translateToStdResName(_compId, ccU=self.__ccU)
+            if _compId != compId:
+                if self.__csStat.getTypeOfCompId(compId) != self.__csStat.getTypeOfCompId(_compId):
+                    compId = _compId
+
             if self.__cur_subtype_altered:  # invoked from exitCco_restraint()
                 seqId = int(str(ctx.Integer()))
                 chainId = str(ctx.Simple_name(1)).upper()
@@ -4973,7 +4978,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                     f"The angle identifier {str(ctx.Simple_name(1))!r} is unknown for the residue {_compId!r}.")
                                 else:
                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                    f"{seqId+offset}:{_compId}:{atomId} {_cifCompId=} involved in the {angleName} dihedral angle "
+                                                    f"{seqId+offset}:{_compId}:{atomId} involved in the {angleName} dihedral angle "
                                                     "is not present in the coordinates.")
                                 return
 

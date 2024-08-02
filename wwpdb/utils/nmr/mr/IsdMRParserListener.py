@@ -1074,6 +1074,11 @@ class IsdMRParserListener(ParseTreeListener):
         updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
 
         types = self.__csStat.getTypeOfCompId(compId)
+        if all(not t for t in types):
+            types = None
+        elif compId != _compId:
+            if types != self.__csStat.getTypeOfCompId(_compId):
+                types = None
 
         for ps in self.__polySeq:
             if preferNonPoly:
@@ -1098,9 +1103,9 @@ class IsdMRParserListener(ParseTreeListener):
                         idx = ps['auth_seq_id'].index(seqId) if seqId in ps['auth_seq_id'] else ps['seq_id'].index(seqId)
                     cifCompId = ps['comp_id'][idx]
                     origCompId = ps['auth_comp_id'][idx]
-                    _types = self.__csStat.getTypeOfCompId(cifCompId)
-                    if types != _types:
-                        continue
+                    if types is not None:
+                        if types != self.__csStat.getTypeOfCompId(cifCompId):
+                            continue
                 if cifCompId != compId:
                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                     if compId in compIds:
@@ -1143,9 +1148,9 @@ class IsdMRParserListener(ParseTreeListener):
                                 seqId_ = ps['auth_seq_id'][idx]
                                 cifCompId = ps['comp_id'][idx]
                                 origCompId = ps['auth_comp_id'][idx]
-                                _types = self.__csStat.getTypeOfCompId(cifCompId)
-                                if types != _types:
-                                    continue
+                                if types is not None:
+                                    if types != self.__csStat.getTypeOfCompId(cifCompId):
+                                        continue
                                 if cifCompId != compId:
                                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                                     if compId in compIds:
@@ -1254,9 +1259,9 @@ class IsdMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
-                        _types = self.__csStat.getTypeOfCompId(cifCompId)
-                        if types != _types:
-                            continue
+                        if types is not None:
+                            if types != self.__csStat.getTypeOfCompId(cifCompId):
+                                continue
                         if cifCompId != compId:
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:
@@ -1313,9 +1318,9 @@ class IsdMRParserListener(ParseTreeListener):
                     continue
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    _types = self.__csStat.getTypeOfCompId(cifCompId)
-                    if types != _types:
-                        continue
+                    if types is not None:
+                        if types != self.__csStat.getTypeOfCompId(cifCompId):
+                            continue
                     if cifCompId != compId:
                         if cifCompId in monDict3 and compId in monDict3:
                             continue
@@ -1343,9 +1348,9 @@ class IsdMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(_seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
-                        _types = self.__csStat.getTypeOfCompId(cifCompId)
-                        if types != _types:
-                            continue
+                        if types is not None:
+                            if types != self.__csStat.getTypeOfCompId(cifCompId):
+                                continue
                         if cifCompId != compId:
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:

@@ -228,7 +228,7 @@ if __name__ == "__main__":
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/5ue5/2_dp8_dihre.aco-corrected',
                      '../../tests-nmr/mock-data-remediation/5ue5/5ue5.cif')
-    sys.exit()
+
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\

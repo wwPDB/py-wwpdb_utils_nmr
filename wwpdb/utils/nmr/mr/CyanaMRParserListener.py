@@ -3471,7 +3471,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         continue
                 else:
                     if 'ext_chain_seq_id_remap' in self.__reasons:
-                        fixedChainId, fixedSeqId, fixedCompId = retrieveRemappedSeqId(self.__reasons['ext_chain_seq_id_remap'], chainId, seqId)
+                        fixedChainId, fixedSeqId, fixedCompId =\
+                            retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], chainId, seqId)
                         if fixedChainId is not None and fixedChainId != chainId:
                             continue
                         if fixedSeqId is not None:
@@ -3696,7 +3697,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         continue
                 else:
                     if 'ext_chain_seq_id_remap' in self.__reasons:
-                        fixedChainId, fixedSeqId, fixedCompId = retrieveRemappedSeqId(self.__reasons['ext_chain_seq_id_remap'], chainId, seqId)
+                        fixedChainId, fixedSeqId, fixedCompId =\
+                            retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], chainId, seqId)
                         if fixedChainId is not None and fixedChainId != chainId:
                             continue
                         if fixedSeqId is not None:

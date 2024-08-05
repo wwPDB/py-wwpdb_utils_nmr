@@ -81,6 +81,7 @@ try:
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
                                            sortPolySeqRst,
+                                           updateSeqAtmRst,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
@@ -161,6 +162,7 @@ except ImportError:
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
                                sortPolySeqRst,
+                               updateSeqAtmRst,
                                alignPolymerSequence,
                                assignPolymerSequence,
                                trimSequenceAlignment,
@@ -281,6 +283,7 @@ class CharmmMRParserListener(ParseTreeListener):
     __polySeqRstValid = None
     __polySeqRstFailed = None
     __polySeqRstFailedAmbig = None
+    __seqAtmRstFailed = None
 
     __seqAlign = None
     __chainAssign = None
@@ -502,6 +505,7 @@ class CharmmMRParserListener(ParseTreeListener):
         self.__polySeqRstValid = []
         self.__polySeqRstFailed = []
         self.__polySeqRstFailedAmbig = []
+        self.__seqAtmRstFailed = []
         self.__f = []
         self.__g = []
 
@@ -804,6 +808,41 @@ class CharmmMRParserListener(ParseTreeListener):
                                     if not valid_auth_seq and valid_label_seq:
                                         set_label_seq_scheme()
 
+                        elif len(self.__seqAtmRstFailed) > 0\
+                                and 'label_seq_scheme' not in self.reasonsForReParsing\
+                                and 'label_seq_offset' in self.reasonsForReParsing:
+                            chainIdRemap = {}
+                            valid = True
+                            for s in self.__seqAtmRstFailed:
+                                chainId = s['chain_id']
+                                ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
+                                if chainId in self.reasonsForReParsing['label_seq_offset']:
+                                    for auth_seq_id in ps['auth_seq_id']:
+                                        if auth_seq_id in chainIdRemap:
+                                            valid = False
+                                            break
+                                        chainIdRemap[auth_seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
+                                    continue
+                                if all(seqId in ps['seq_id'] and seqId not in ps['auth_seq_id'] for seqId in s['seq_id']):
+                                    for seqId, atoms in zip(s['seq_id'], s['atom_id']):
+                                        compId = ps['comp_id'][ps['seq_id'].index(seqId)]
+                                        for atom in atoms:
+                                            _, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atom, leave_unmatched=True)
+                                            if details is not None:
+                                                valid = False
+                                                break
+                                    if valid:
+                                        for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
+                                            if seq_id in chainIdRemap:
+                                                valid = False
+                                                break
+                                            chainIdRemap[seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
+                            if valid:
+                                del self.reasonsForReParsing['label_seq_offset']
+                                if 'local_seq_scheme' in self.reasonsForReParsing:
+                                    del self.reasonsForReParsing['local_seq_scheme']
+                                self.reasonsForReParsing['chain_id_remap'] = chainIdRemap
+
                     # DAOTHER-9063
                     if self.__reasons is None and 'np_seq_id_remap' in self.reasonsForReParsing:
 
@@ -838,7 +877,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                 _ps = next((_ps for _ps in self.__polySeqRstFailedAmbig if _ps['chain_id'] == chainId), None)
                                 if _ps is None:
                                     continue
+                                _matched = sa['matched']
                                 for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
+                                    _compId = None
                                     for compId in list(compIds):
                                         _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
                                         updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
@@ -847,7 +888,11 @@ class CharmmMRParserListener(ParseTreeListener):
                                         _sa = next((_sa for _sa in _seqAlignFailed if _sa['test_chain_id'] == chainId), None)
                                         if _sa is None or _sa['conflict'] > 0:
                                             continue
-                                        updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
+                                        if _sa['matched'] > _matched:
+                                            _matched = _sa['matched']
+                                            _compId = compId
+                                    if _compId is not None:
+                                        updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, _compId)
                                         sortPolySeqRst(self.__polySeqRstFailed)
 
                         seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
@@ -3279,10 +3324,26 @@ class CharmmMRParserListener(ParseTreeListener):
         else:
             _factor['atom_selection'] = self.__intersectionAtom_selections(_factor['atom_selection'], atomSelection)
 
+        def has_identical_chain_id(chain_id):
+            try:
+                next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id and 'identical_chain_id' in ps)
+                return True
+            except StopIteration:
+                pass
+            return False
+
         if len(_factor['atom_selection']) == 0:
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
-            if _factor['atom_id'][0] is not None:
+            if _factor['atom_id'][0] is None:
+                if self.__cur_subtype != 'plane' and cifCheck and not self.__cur_union_expr:
+                    if len(_factor['seq_id']) == 1 and 'alt_atom_id' in _factor and _factor['alt_atom_id'][0] is not None and 'comp_id' not in _factor:
+                        for chainId in _factor['chain_id']:
+                            updateSeqAtmRst(self.__seqAtmRstFailed, chainId, _factor['seq_id'][0], _factor['alt_atom_id'])
+                            if has_identical_chain_id(chainId):
+                                break
+
+            else:
                 error_type = "Insufficient atom selection" if 'atom_num' not in __factor else 'Atom not found'
                 if self.__cur_subtype != 'plane':
                     if cifCheck:
@@ -3383,12 +3444,19 @@ class CharmmMRParserListener(ParseTreeListener):
                                     if len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
                                         compIds = guessCompIdFromAtomId(_factor['atom_id'], self.__polySeq, self.__nefT)
                                         if compIds is not None:
-                                            if len(compIds) == 1:
-                                                updatePolySeqRst(self.__polySeqRstFailed, _factor['chain_id'][0], _factor['seq_id'][0], compIds[0])
-                                            else:
-                                                updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, _factor['chain_id'][0], _factor['seq_id'][0], compIds)
+                                            for chainId in _factor['chain_id']:
+                                                if len(compIds) == 1:
+                                                    updatePolySeqRst(self.__polySeqRstFailed, chainId, _factor['seq_id'][0], compIds[0])
+                                                else:
+                                                    updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, _factor['seq_id'][0], compIds)
+                                                if has_identical_chain_id(chainId):
+                                                    break
+                                        for chainId in _factor['chain_id']:
+                                            updateSeqAtmRst(self.__seqAtmRstFailed, chainId, _factor['seq_id'][0], _factor['atom_id'])
+                                            if has_identical_chain_id(chainId):
+                                                break
 
-                                if ligands == 0:
+                                if ligands == 0 and len(self.__polySeq) == 1:
                                     self.__preferAuthSeq = not self.__preferAuthSeq
                                     self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                                     self.__setLocalSeqScheme()
@@ -4108,7 +4176,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                         or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates. "
-                                                                    f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                                    f"The residue number '{seqId}' is not present in polymer sequence "
+                                                                    f"of chain {chainId} of the coordinates. "
                                                                     "Please update the sequence in the Macromolecules page.")
                                                     if 'alt_chain_id' in _factor:
                                                         self.__failure_chain_ids.append(chainId)
@@ -4204,7 +4273,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                             continue
                                                     if extSeqScheme:
                                                         self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                                                        f"The residue '{seqId}:{compId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                                        f"The residue '{seqId}:{compId}' is not present in polymer sequence "
+                                                                        f"of chain {chainId} of the coordinates. "
                                                                         "Please update the sequence in the Macromolecules page.")
                                                         continue
                                                     warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\

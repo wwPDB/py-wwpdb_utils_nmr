@@ -152,13 +152,13 @@ class BMRBChemShiftStat:
         """
 
         if comp_id in emptyValue:
-            return False, False, False
+            return [False, False, False]
 
         if comp_id in self.__aa_comp_ids:
-            return True, False, False
+            return [True, False, False]
 
         if comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids:
-            return False, True, False
+            return [False, True, False]
 
         if comp_id in self.__cachedDictForTypeOfCompId:
             return copy.deepcopy(self.__cachedDictForTypeOfCompId[comp_id])

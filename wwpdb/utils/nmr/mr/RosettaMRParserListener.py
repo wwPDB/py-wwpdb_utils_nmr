@@ -606,7 +606,9 @@ class RosettaMRParserListener(ParseTreeListener):
                                     _ps = next((_ps for _ps in self.__polySeqRstFailedAmbig if _ps['chain_id'] == chainId), None)
                                     if _ps is None:
                                         continue
+                                    _matched = sa['matched']
                                     for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
+                                        _compId = None
                                         for compId in list(compIds):
                                             _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
                                             updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
@@ -615,7 +617,11 @@ class RosettaMRParserListener(ParseTreeListener):
                                             _sa = next((_sa for _sa in _seqAlignFailed if _sa['test_chain_id'] == chainId), None)
                                             if _sa is None or _sa['conflict'] > 0:
                                                 continue
-                                            updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
+                                            if _sa['matched'] > _matched:
+                                                _matched = _sa['matched']
+                                                _compId = compId
+                                        if _compId is not None:
+                                            updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, _compId)
                                             sortPolySeqRst(self.__polySeqRstFailed)
 
                             seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
@@ -1226,8 +1232,6 @@ class RosettaMRParserListener(ParseTreeListener):
             if _ps is not None:
                 if seqId in _ps['seq_id']:
                     return ps['auth_chain_id'], seqId, _ps['comp_id'][_ps['seq_id'].index(seqId)]
-        # if seqId in ps['seq_id']:
-        #     return ps['auth_chain_id'], ps['auth_seq_id'][ps['seq_id'].index(seqId)]
         return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequence(self, seqId, atomId=None, fixedChainId=None):
@@ -1458,7 +1462,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:?:{atomId} is not present in the coordinates. "
-                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence "
+                                    f"of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -1478,7 +1483,8 @@ class RosettaMRParserListener(ParseTreeListener):
                 if len(self.__polySeq) == 1 and seqId < 1:
                     refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "
+                                    f"The residue number '{_seqId}' is not present in polymer sequence "
+                                    f"of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -1885,7 +1891,8 @@ class RosettaMRParserListener(ParseTreeListener):
                             return atomId
                         if self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                            f"The residue '{seqId}:{compId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                            f"The residue '{seqId}:{compId}' is not present in polymer sequence "
+                                            f"of chain {chainId} of the coordinates. "
                                             "Please update the sequence in the Macromolecules page.")
                         else:
                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"

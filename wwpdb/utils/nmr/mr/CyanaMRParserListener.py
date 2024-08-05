@@ -4877,6 +4877,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
+                    ps = None
+
                     if carbohydrate:
                         if self.__branched is not None:
                             ps = next((ps for ps in self.__branched if ps['auth_chain_id'] == chainId), None)
@@ -4929,6 +4931,13 @@ class CyanaMRParserListener(ParseTreeListener):
                     for atomId, offset in zip(atomNames, seqOffset):
 
                         atomSelection = []
+
+                        if offset != 0 and ps is None:
+                            self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                            f"The residue number '{seqId+offset}' is not present in polymer sequence "
+                                            f"of chain {chainId} of the coordinates. "
+                                            "Please update the sequence in the Macromolecules page.")
+                            return
 
                         _cifSeqId = cifSeqId + offset
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
@@ -8582,6 +8591,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
+                    ps = None
+
                     if carbohydrate:
                         if self.__branched is not None:
                             ps = next((ps for ps in self.__branched if ps['auth_chain_id'] == chainId), None)
@@ -8634,6 +8645,13 @@ class CyanaMRParserListener(ParseTreeListener):
                     for atomId, offset in zip(atomNames, seqOffset):
 
                         atomSelection = []
+
+                        if offset != 0 and ps is None:
+                            self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                            f"The residue number '{seqId+offset}' is not present in polymer sequence "
+                                            f"of chain {chainId} of the coordinates. "
+                                            "Please update the sequence in the Macromolecules page.")
+                            return
 
                         _cifSeqId = cifSeqId + offset
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)

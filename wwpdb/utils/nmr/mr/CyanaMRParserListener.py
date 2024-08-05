@@ -2430,12 +2430,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 _seqId = fixedSeqId
 
         if len(self.ambigAtomNameMapping) > 0:
-            if compId in self.ambigAtomNameMapping\
-               and atomId in self.ambigAtomNameMapping[compId]:
+            if compId in self.ambigAtomNameMapping and atomId in self.ambigAtomNameMapping[compId]:
                 return self.atomIdListToChainAssign(self.ambigAtomNameMapping[compId][atomId])
         if len(self.unambigAtomNameMapping) > 0:
-            if compId in self.unambigAtomNameMapping\
-               and atomId in self.unambigAtomNameMapping[compId]:
+            if compId in self.unambigAtomNameMapping and atomId in self.unambigAtomNameMapping[compId]:
                 atomId = self.unambigAtomNameMapping[compId][atomId][0]  # select representative one
 
         pure_ambig = _compId == 'AMB' and (('-' in atomId and ':' in atomId) or '.' in atomId)
@@ -2981,7 +2979,7 @@ class CyanaMRParserListener(ParseTreeListener):
         if all(not t for t in types):
             types = None
         elif compId != _compId:
-            if types != self.__csStat.getTypeOfCompId(compId):
+            if types != self.__csStat.getTypeOfCompId(_compId):
                 types = None
 
         def comp_id_unmatched_with(ps, cif_comp_id):
@@ -4741,7 +4739,8 @@ class CyanaMRParserListener(ParseTreeListener):
             _compId = str(ctx.Simple_name(0)).upper()
             compId = translateToStdResName(_compId, ccU=self.__ccU)
             if _compId != compId:
-                if self.__csStat.getTypeOfCompId(compId) != self.__csStat.getTypeOfCompId(_compId):
+                _types = self.__csStat.getTypeOfCompId(_compId)
+                if any(t for t in _types) and _types != self.__csStat.getTypeOfCompId(compId):
                     compId = _compId
 
             if self.__cur_subtype_altered:  # invoked from exitCco_restraint()

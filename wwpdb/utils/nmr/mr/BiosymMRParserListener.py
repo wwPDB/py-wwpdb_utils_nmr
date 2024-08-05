@@ -1269,7 +1269,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 types = None
 
         def comp_id_unmatched_with(ps, cif_comp_id):
-            if type is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
+            if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
                 return False
             return types != self.__csStat.getTypeOfCompId(cif_comp_id)\
                 and (compId in monDict3) is (cif_comp_id in monDict3)
@@ -1478,10 +1478,8 @@ class BiosymMRParserListener(ParseTreeListener):
                         idx = ps['seq_id'].index(seqId)
                         cifCompId = ps['comp_id'][idx]
                         origCompId = ps['auth_comp_id'][idx]
-                        if type is not None:
-                            if types != self.__csStat.getTypeOfCompId(cifCompId)\
-                               and (compId in monDict3) is (cifCompId in monDict3):
-                                continue
+                        if comp_id_unmatched_with(ps, cifCompId):
+                            continue
                         if cifCompId != compId:
                             compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                             if compId in compIds:

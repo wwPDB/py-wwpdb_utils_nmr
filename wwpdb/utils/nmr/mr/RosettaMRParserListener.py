@@ -455,6 +455,24 @@ class RosettaMRParserListener(ParseTreeListener):
     # Exit a parse tree produced by RosettaMRParser#rosetta_mr.
     def exitRosetta_mr(self, ctx: RosettaMRParser.Rosetta_mrContext):  # pylint: disable=unused-argument
 
+        def set_label_seq_scheme():
+            if 'label_seq_scheme' not in self.reasonsForReParsing:
+                self.reasonsForReParsing['label_seq_scheme'] = {}
+            if self.distRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+            if self.angRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['ang'] = True
+            if self.dihedRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['dihed'] = True
+            if self.rdcRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['rdc'] = True
+            if self.geoRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['geo'] = True
+            if self.ssbondRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['ssbond'] = True
+            if 'local_seq_scheme' in self.reasonsForReParsing:
+                del self.reasonsForReParsing['local_seq_scheme']
+
         try:
 
             if self.__hasPolySeq and self.__polySeqRst is not None:
@@ -492,6 +510,10 @@ class RosettaMRParserListener(ParseTreeListener):
                             self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
+
+                    if self.__reasons is None\
+                       and any(f for f in self.__f if '[Anomalous data]' in f):
+                        set_label_seq_scheme()
 
                     if self.__reasons is None and any(f for f in self.__f
                                                       if '[Atom not found]' in f or '[Sequence mismatch]' in f):
@@ -764,6 +786,33 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__dist_lb_greater_than_ub and self.__dist_ub_always_positive:
                     if 'dist_unusual_order' not in self.reasonsForReParsing:
                         self.reasonsForReParsing['dist_unusual_order'] = True
+
+            if self.hasAnyRestraints():
+
+                if all('[Anomalous data]' in f for f in self.__f)\
+                   and all('distance' in f for f in self.__f)\
+                   and 'label_seq_scheme' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['label_seq_scheme']
+                    __f = copy.deepcopy(self.__f)
+                    self.__f = []
+                    for f in __f:
+                        self.__f.append(re.sub(r'\[Anomalous data\]', '[Atom not found]', f, 1))
+
+                elif all('[Anomalous data]' in f for f in self.__f):
+                    pass
+
+                elif not any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f)\
+                        and 'non_poly_remap' not in self.reasonsForReParsing\
+                        and 'branch_remap' not in self.reasonsForReParsing:
+
+                    if len(self.reasonsForReParsing) > 0:
+                        self.reasonsForReParsing = {}
+
+                    if any(f for f in self.__f if '[Sequence mismatch]' in f):
+                        __f = copy.copy(self.__f)
+                        for f in __f:
+                            if '[Sequence mismatch]' in f:
+                                self.__f.remove(f)
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
@@ -1262,7 +1311,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if 'seq_id_remap' not in self.__reasons\
                    and 'chain_seq_id_remap' not in self.__reasons\
                    and 'ext_chain_seq_id_remap' not in self.__reasons:
-                    if fixedChainId != chainId:
+                    if fixedChainId is not None and fixedChainId != chainId:
                         continue
                 else:
                     if 'ext_chain_seq_id_remap' in self.__reasons:
@@ -1297,7 +1346,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], chainId, seqId, cifCompId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
-                        if fixedChainId != chainId or seqId not in ps['auth_seq_id']:
+                        if (fixedChainId is not None and fixedChainId != chainId) or seqId not in ps['auth_seq_id']:
                             continue
                 updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                 if atomId is not None and cifCompId not in monDict3 and self.__mrAtomNameMapping:
@@ -1345,7 +1394,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 chainId, seqId, _ = self.getRealChainSeqId(np, _seqId, False)
                 if self.__reasons is not None:
                     if 'seq_id_remap' not in self.__reasons and 'chain_seq_id_remap' not in self.__reasons:
-                        if fixedChainId != chainId:
+                        if fixedChainId is not None and fixedChainId != chainId:
                             continue
                     else:
                         if 'chain_seq_id_remap' in self.__reasons:
@@ -1468,7 +1517,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:{atomId} is not present in the coordinates.")
-                    compIds = guessCompIdFromAtomId(atomId, self.__polySeq, self.__nefT)
+                    compIds = guessCompIdFromAtomId([atomId], self.__polySeq, self.__nefT)
                     if compIds is not None:
                         chainId = fixedChainId
                         if chainId is None and len(self.__polySeq) == 1:
@@ -1895,7 +1944,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                             f"of chain {chainId} of the coordinates. "
                                             "Please update the sequence in the Macromolecules page.")
                         else:
-                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                            warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' else 'Atom not found'
+                            self.__f.append(f"[{warn_title}] 5 {self.__getCurrentRestraint()}"
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
         return atomId
 
@@ -4829,6 +4879,19 @@ class RosettaMRParserListener(ParseTreeListener):
                           }
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
+
+    def hasAnyRestraints(self):
+        """ Return whether any restraint is parsed successfully.
+        """
+        if self.__createSfDict:
+            if len(self.sfDict) == 0:
+                return False
+            for v in self.sfDict.values():
+                for item in v:
+                    if item['index_id'] > 0:
+                        return True
+            return False
+        return len(self.getContentSubtype()) > 0
 
     def getPolymerSequence(self):
         """ Return polymer sequence of ROSETTA MR file.

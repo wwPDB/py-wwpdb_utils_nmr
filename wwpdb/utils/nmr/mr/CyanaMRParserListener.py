@@ -3184,9 +3184,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:
                         continue
-                if fixedChainId is not None:
-                    if fixedChainId != chainId:
-                        continue
+                if fixedChainId is not None and fixedChainId != chainId:
+                    continue
                 seqKey = (chainId, _seqId)
                 if seqKey in self.__authToLabelSeq:
                     _, seqId = self.__authToLabelSeq[seqKey]
@@ -3228,9 +3227,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                         if chainId != self.__chainNumberDict[refChainId]:
                             continue
-                    if fixedChainId is not None:
-                        if fixedChainId != chainId:
-                            continue
+                    if fixedChainId is not None and fixedChainId != chainId:
+                        continue
                     if pure_ambig:
                         continue
                     seqKey = (chainId, _seqId)
@@ -3299,9 +3297,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:
                         continue
-                if fixedChainId is not None:
-                    if fixedChainId != chainId:
-                        continue
+                if fixedChainId is not None and fixedChainId != chainId:
+                    continue
                 seqKey = (chainId, _seqId)
                 if seqKey in self.__labelToAuthSeq:
                     _, seqId = self.__labelToAuthSeq[seqKey]
@@ -3469,7 +3466,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if 'seq_id_remap' not in self.__reasons\
                    and 'chain_seq_id_remap' not in self.__reasons\
                    and 'ext_chain_seq_id_remap' not in self.__reasons:
-                    if fixedChainId != chainId:
+                    if fixedChainId is not None and fixedChainId != chainId:
                         continue
                 else:
                     if 'ext_chain_seq_id_remap' in self.__reasons:
@@ -3506,7 +3503,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], chainId, seqId, cifCompId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
-                        if fixedChainId != chainId or seqId not in ps['auth_seq_id']:
+                        if (fixedChainId is not None and fixedChainId != chainId) or seqId not in ps['auth_seq_id']:
                             continue
                 updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                 if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -3544,7 +3541,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, None, False)
                 if self.__reasons is not None:
                     if 'seq_id_remap' not in self.__reasons and 'chain_seq_id_remap' not in self.__reasons:
-                        if fixedChainId != chainId:
+                        if fixedChainId is not None and fixedChainId != chainId:
                             continue
                     else:
                         if 'chain_seq_id_remap' in self.__reasons:
@@ -3571,9 +3568,8 @@ class CyanaMRParserListener(ParseTreeListener):
         if len(chainAssign) == 0:
             for ps in self.__polySeq:
                 chainId = ps['chain_id']
-                if fixedChainId is not None:
-                    if fixedChainId != chainId:
-                        continue
+                if fixedChainId is not None and fixedChainId != chainId:
+                    continue
                 seqKey = (chainId, _seqId)
                 if seqKey in self.__authToLabelSeq:
                     _, seqId = self.__authToLabelSeq[seqKey]
@@ -3588,9 +3584,8 @@ class CyanaMRParserListener(ParseTreeListener):
             if self.__hasNonPolySeq:
                 for np in self.__nonPolySeq:
                     chainId = np['auth_chain_id']
-                    if fixedChainId is not None:
-                        if fixedChainId != chainId:
-                            continue
+                    if fixedChainId is not None and fixedChainId != chainId:
+                        continue
                     seqKey = (chainId, _seqId)
                     if seqKey in self.__authToLabelSeq:
                         _, seqId = self.__authToLabelSeq[seqKey]
@@ -3605,9 +3600,8 @@ class CyanaMRParserListener(ParseTreeListener):
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
                 chainId = ps['auth_chain_id']
-                if fixedChainId is not None:
-                    if fixedChainId != chainId:
-                        continue
+                if fixedChainId is not None and fixedChainId != chainId:
+                    continue
                 if _seqId in ps['auth_seq_id']:
                     cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                     updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
@@ -3616,9 +3610,8 @@ class CyanaMRParserListener(ParseTreeListener):
         if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
             for ps in self.__polySeq:
                 chainId = ps['chain_id']
-                if fixedChainId is not None:
-                    if fixedChainId != chainId:
-                        continue
+                if fixedChainId is not None and fixedChainId != chainId:
+                    continue
                 seqKey = (chainId, _seqId)
                 if seqKey in self.__labelToAuthSeq:
                     _, seqId = self.__labelToAuthSeq[seqKey]
@@ -3695,7 +3688,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if 'seq_id_remap' not in self.__reasons\
                    and 'chain_seq_id_remap' not in self.__reasons\
                    and 'ext_chain_seq_id_remap' not in self.__reasons:
-                    if fixedChainId != chainId:
+                    if fixedChainId is not None and fixedChainId != chainId:
                         continue
                 else:
                     if 'ext_chain_seq_id_remap' in self.__reasons:
@@ -3732,7 +3725,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], chainId, seqId, cifCompId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
-                        if fixedChainId != chainId or seqId not in ps['auth_seq_id']:
+                        if (fixedChainId is not None and fixedChainId != chainId) or seqId not in ps['auth_seq_id']:
                             continue
                 updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -3772,7 +3765,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     continue
                 if self.__reasons is not None:
                     if 'seq_id_remap' not in self.__reasons and 'chain_seq_id_remap' not in self.__reasons:
-                        if fixedChainId != chainId:
+                        if fixedChainId is not None and fixedChainId != chainId:
                             continue
                     else:
                         if 'chain_seq_id_remap' in self.__reasons:

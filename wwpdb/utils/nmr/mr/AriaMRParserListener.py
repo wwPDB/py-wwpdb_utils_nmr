@@ -1825,9 +1825,8 @@ class AriaMRParserListener(ParseTreeListener):
                 if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:
                         continue
-                if fixedChainId is not None:
-                    if fixedChainId != chainId:
-                        continue
+                if fixedChainId is not None and fixedChainId != chainId:
+                    continue
                 seqKey = (chainId, _seqId)
                 if seqKey in self.__authToLabelSeq:
                     _, seqId = self.__authToLabelSeq[seqKey]
@@ -1869,9 +1868,8 @@ class AriaMRParserListener(ParseTreeListener):
                     if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                         if chainId != self.__chainNumberDict[refChainId]:
                             continue
-                    if fixedChainId is not None:
-                        if fixedChainId != chainId:
-                            continue
+                    if fixedChainId is not None and fixedChainId != chainId:
+                        continue
                     seqKey = (chainId, _seqId)
                     if seqKey in self.__authToLabelSeq:
                         _, seqId = self.__authToLabelSeq[seqKey]
@@ -1938,9 +1936,8 @@ class AriaMRParserListener(ParseTreeListener):
                 if refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:
                         continue
-                if fixedChainId is not None:
-                    if fixedChainId != chainId:
-                        continue
+                if fixedChainId is not None and fixedChainId != chainId:
+                    continue
                 seqKey = (chainId, _seqId)
                 if seqKey in self.__labelToAuthSeq:
                     _, seqId = self.__labelToAuthSeq[seqKey]

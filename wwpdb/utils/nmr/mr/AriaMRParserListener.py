@@ -1115,7 +1115,7 @@ class AriaMRParserListener(ParseTreeListener):
         updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
 
         types = self.__csStat.getTypeOfCompId(compId)
-        if all(not t for t in types):
+        if all(not t for t in types) or compId in ('MTS', 'ORI'):
             types = None
         elif compId != _compId:
             if types != self.__csStat.getTypeOfCompId(_compId):
@@ -1620,7 +1620,7 @@ class AriaMRParserListener(ParseTreeListener):
         updatePolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId, _compId)
 
         types = self.__csStat.getTypeOfCompId(compId)
-        if all(not t for t in types):
+        if all(not t for t in types) or compId in ('MTS', 'ORI'):
             types = None
         elif compId != _compId:
             if types != self.__csStat.getTypeOfCompId(_compId):

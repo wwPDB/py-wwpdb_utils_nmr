@@ -1590,8 +1590,9 @@ class DynamoMRParserListener(ParseTreeListener):
         def comp_id_unmatched_with(ps, cif_comp_id):
             if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
                 return False
-            return types != self.__csStat.getTypeOfCompId(cif_comp_id)\
-                and (compId in monDict3) is (cif_comp_id in monDict3)
+            if compId not in monDict3 and cif_comp_id not in monDict3:
+                return False
+            return types != self.__csStat.getTypeOfCompId(cif_comp_id)
 
         if refChainId is not None or refChainId != _refChainId:
             if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _refChainId):

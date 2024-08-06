@@ -3218,8 +3218,8 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
         if compId == 'HCY':
             return 'CH' if refCompId == 'C' else 'DNR'
 
-        if compId == 'NHE' and refCompId == 'NH2':
-            return 'NH2'
+    if compId in ('NHE', 'CONH') and refCompId == 'NH2':  # 6hnh, 2m7r
+        return 'NH2'
 
     if compId in ('RADE', 'RA'):
         return 'A'

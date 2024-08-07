@@ -3634,7 +3634,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                 f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                 "Please attach ambiguous atom name mapping information generated "
                                 "by 'makeDIST_RST' to the CYANA restraint file.")
-            else:
+            elif atomId is not None:
                 if len(self.__polySeq) == 1 and seqId < 1:
                     refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -3645,7 +3645,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:{atomId} is not present in the coordinates.")
-                    compIds = guessCompIdFromAtomId(atomId, self.__polySeq, self.__nefT)
+                    compIds = guessCompIdFromAtomId([atomId], self.__polySeq, self.__nefT)
                     if compIds is not None:
                         chainId = fixedChainId
                         if chainId is None and len(self.__polySeq) == 1:
@@ -3869,7 +3869,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates.")
-                    compIds = guessCompIdFromAtomId(atomId, self.__polySeq, self.__nefT)
+                    compIds = guessCompIdFromAtomId([atomId], self.__polySeq, self.__nefT)
                     if compIds is not None:
                         if len(compIds) == 1:
                             updatePolySeqRst(self.__polySeqRstFailed, fixedChainId, seqId, compIds[0])

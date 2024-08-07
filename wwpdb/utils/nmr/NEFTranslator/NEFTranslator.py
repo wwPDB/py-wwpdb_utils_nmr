@@ -5670,7 +5670,7 @@ class NEFTranslator:
                     return (atom_list, ambiguity_code, details)
 
             if atom_id.startswith('Q') or atom_id.startswith('M'):
-                min_len = 4 if atom_id.startswith('QQ') else 3 if atom_id.startswith('M') else 2
+                min_len = 4 if atom_id.startswith('QQ') else 3 if atom_id.startswith('M') else 1  # ILE/LEU/THR:QB -> HB
                 if atom_id[-1].isalnum():
                     atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[1:] + '%', details, coord_atom_site, methyl_only)
                     if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and len(atom_id) > 1\
@@ -6250,7 +6250,7 @@ class NEFTranslator:
                         return (atom_list, ambiguity_code, details)
 
                 if atom_id.startswith('Q') or atom_id.startswith('M'):
-                    min_len = 4 if atom_id.startswith('QQ') else 3 if atom_id.startswith('M') else 2
+                    min_len = 4 if atom_id.startswith('QQ') else 3 if atom_id.startswith('M') else 1  # ILE/LEU/THR:QB -> HB
                     if atom_id[-1].isalnum():
                         atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched, methyl_only)
                         if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and len(atom_id) > 1\

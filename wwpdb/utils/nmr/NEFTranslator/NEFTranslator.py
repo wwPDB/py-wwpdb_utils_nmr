@@ -5651,8 +5651,10 @@ class NEFTranslator:
                         for grk_atom in sorted(list(grk_atoms)):
                             _atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, grk_atom, details, coord_atom_site, methyl_only)
                             atom_list.extend(_atom_list)
-                        return (atom_list, ambiguity_code, details)
-                return (atom_list, ambiguity_code, details)
+                        if len(atom_list) >= 4:
+                            return (atom_list, ambiguity_code, details)
+                if len(atom_list) >= 4:
+                    return (atom_list, ambiguity_code, details)
 
             if atom_id.startswith('QR') or atom_id.startswith('QX'):
                 qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
@@ -5664,9 +5666,11 @@ class NEFTranslator:
                 for qr_atom in qr_atoms:
                     _atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, qr_atom, details, coord_atom_site, methyl_only)
                     atom_list.extend(_atom_list)
-                return (atom_list, ambiguity_code, details)
+                if len(atom_list) >= 4:
+                    return (atom_list, ambiguity_code, details)
 
             if atom_id.startswith('Q') or atom_id.startswith('M'):
+                min_len = 4 if atom_id.startswith('QQ') else 3 if atom_id.startswith('M') else 2
                 if atom_id[-1].isalnum():
                     atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[1:] + '%', details, coord_atom_site, methyl_only)
                     if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and len(atom_id) > 1\
@@ -5678,14 +5682,17 @@ class NEFTranslator:
                             for grk_atom in sorted(list(grk_atoms)):
                                 _atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, grk_atom, details, coord_atom_site, methyl_only)
                                 atom_list.extend(_atom_list)
-                            return (atom_list, ambiguity_code, details)
+                            if len(atom_list) >= min_len:
+                                return (atom_list, ambiguity_code, details)
                     if details is None and len(atom_list) == 1:
                         atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
-                    return (atom_list, ambiguity_code, details)
+                    if len(atom_list) >= min_len:
+                        return (atom_list, ambiguity_code, details)
                 atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[1:-1] + '*', details, coord_atom_site, methyl_only)
                 if details is None and len(atom_list) == 1:
                     atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
-                return (atom_list, ambiguity_code, details)
+                if len(atom_list) >= min_len:
+                    return (atom_list, ambiguity_code, details)
 
         if len(atom_id) > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
             atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, atom_id + '%', details, coord_atom_site, methyl_only)
@@ -6218,8 +6225,10 @@ class NEFTranslator:
                             for grk_atom in sorted(list(grk_atoms)):
                                 _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
                                 atom_list.extend(_atom_list)
-                            return (atom_list, ambiguity_code, details)
-                    return (atom_list, ambiguity_code, details)
+                            if len(atom_list) >= 4:
+                                return (atom_list, ambiguity_code, details)
+                    if len(atom_list) >= 4:
+                        return (atom_list, ambiguity_code, details)
 
                 if atom_id.startswith('QR') or atom_id.startswith('QX'):
                     qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
@@ -6231,7 +6240,8 @@ class NEFTranslator:
                     for qr_atom in qr_atoms:
                         _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, qr_atom, details, leave_unmatched, methyl_only)
                         atom_list.extend(_atom_list)
-                    return (atom_list, ambiguity_code, details)
+                    if len(atom_list) >= 4:
+                        return (atom_list, ambiguity_code, details)
 
                 if comp_id in monDict3 and atom_id.upper() == 'ME':
                     rep_methyl_protons = self.__csStat.getRepMethylProtons(comp_id)
@@ -6240,6 +6250,7 @@ class NEFTranslator:
                         return (atom_list, ambiguity_code, details)
 
                 if atom_id.startswith('Q') or atom_id.startswith('M'):
+                    min_len = 4 if atom_id.startswith('QQ') else 3 if atom_id.startswith('M') else 2
                     if atom_id[-1].isalnum():
                         atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched, methyl_only)
                         if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and len(atom_id) > 1\
@@ -6251,14 +6262,17 @@ class NEFTranslator:
                                 for grk_atom in sorted(list(grk_atoms)):
                                     _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
                                     atom_list.extend(_atom_list)
-                                return (atom_list, ambiguity_code, details)
+                                if len(atom_list) >= min_len:
+                                    return (atom_list, ambiguity_code, details)
                         if details is None and len(atom_list) == 1:
                             atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
-                        return (atom_list, ambiguity_code, details)
+                        if len(atom_list) >= min_len:
+                            return (atom_list, ambiguity_code, details)
                     atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:-1] + '*', details, leave_unmatched, methyl_only)
                     if details is None and len(atom_list) == 1:
                         atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
-                    return (atom_list, ambiguity_code, details)
+                    if len(atom_list) >= min_len:
+                        return (atom_list, ambiguity_code, details)
 
             if len(atom_id) > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
                 atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id + '%', details, leave_unmatched, methyl_only)

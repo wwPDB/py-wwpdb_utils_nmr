@@ -5197,7 +5197,7 @@ def isAsymmetricRangeRestraint(atoms, chainIdSet, symmetric):
     return False
 
 
-def guessCompIdFromAtomId(atoms, polySeq, nefT):
+def guessCompIdFromAtomId(atoms: list, polySeq, nefT):
     """ Try to find candidate comp_id that matches with a given atom_id.
     """
 
@@ -5223,7 +5223,7 @@ def guessCompIdFromAtomId(atoms, polySeq, nefT):
     return list(candidates)
 
 
-def guessCompIdFromAtomIdWoLimit(atoms, polySeq, nefT, isPolySeq=True):
+def guessCompIdFromAtomIdWoLimit(atoms: list, polySeq, nefT, isPolySeq=True):
     """ Try to find candidate comp_id that matches with a given atom_id.
     """
 
@@ -5734,7 +5734,7 @@ def isLikeHis(compId, ccU):
     return False
 
 
-def getRdcCode(atoms):
+def getRdcCode(atoms: list):
     """ Return type of residual dipolar coupling restraint.
     """
 

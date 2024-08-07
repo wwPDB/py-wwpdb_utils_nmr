@@ -218,19 +218,21 @@ if __name__ == "__main__":
     reader = RosettaMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/2miz/2miz-corrected.mr',
+        reader.parse('../../tests-nmr/mock-data-remediation/2miz/2miz-trimmed.mr',
                      '../../tests-nmr/mock-data-remediation/2miz/2miz.cif')
     print(reader_listener.getReasonsForReparsing())
     reader = RosettaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
-    reader.parse('../../tests-nmr/mock-data-remediation/2miz/2miz-corrected.mr',
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2miz/2miz-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/2miz/2miz.cif')
-    sys.exit()
+
     reader = RosettaMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/8f4v/a7IVM_NMR_PRE_NOE_HB_ESR_110722.cst',
                      '../../tests-nmr/mock-data-remediation/8f4v/8f4v.cif')
     reader = RosettaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/8f4v/a7IVM_NMR_PRE_NOE_HB_ESR_110722.cst',
                  '../../tests-nmr/mock-data-remediation/8f4v/8f4v.cif')
 

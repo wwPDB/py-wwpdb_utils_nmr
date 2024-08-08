@@ -1903,9 +1903,9 @@ save_nef_chemical_shift_list_18487
 
 save_
 
-save_nef_nmr_spectrum_aronoe_final
+save_aronoe_final
    _Spectral_peak_list.Sf_category                    spectral_peak_list
-   _Spectral_peak_list.Sf_framecode                   nef_nmr_spectrum_aronoe_final
+   _Spectral_peak_list.Sf_framecode                   aronoe_final
    _Spectral_peak_list.Entry_ID                       NEED_ACC_NO
    _Spectral_peak_list.ID                             1
    _Spectral_peak_list.Experiment_class               H_H[C].through-space
@@ -2087,9 +2087,9 @@ save_nef_nmr_spectrum_aronoe_final
 
 save_
 
-save_nef_nmr_spectrum_simnoe_13C_final
+save_simnoe_13C_final
    _Spectral_peak_list.Sf_category                    spectral_peak_list
-   _Spectral_peak_list.Sf_framecode                   nef_nmr_spectrum_simnoe_13C_final
+   _Spectral_peak_list.Sf_framecode                   simnoe_13C_final
    _Spectral_peak_list.Entry_ID                       NEED_ACC_NO
    _Spectral_peak_list.ID                             2
    _Spectral_peak_list.Experiment_class               H_H[C].through-space
@@ -7078,9 +7078,9 @@ save_nef_nmr_spectrum_simnoe_13C_final
 
 save_
 
-save_nef_nmr_spectrum_simnoe_15N_final
+save_simnoe_15N_final
    _Spectral_peak_list.Sf_category                    spectral_peak_list
-   _Spectral_peak_list.Sf_framecode                   nef_nmr_spectrum_simnoe_15N_final
+   _Spectral_peak_list.Sf_framecode                   simnoe_15N_final
    _Spectral_peak_list.Entry_ID                       NEED_ACC_NO
    _Spectral_peak_list.ID                             3
    _Spectral_peak_list.Experiment_class               H_H[N].through-space
@@ -8849,9 +8849,9 @@ save_constraint_statistics
 
 save_
 
-save_nef_distance_restraint_list_distance_constraint_list
+save_distance_constraint_list
    _Gen_dist_constraint_list.Sf_category         general_distance_constraints
-   _Gen_dist_constraint_list.Sf_framecode        nef_distance_restraint_list_distance_constraint_list
+   _Gen_dist_constraint_list.Sf_framecode        distance_constraint_list
    _Gen_dist_constraint_list.Constraint_type     .
    _Gen_dist_constraint_list.Potential_type      square-well-parabolic
    _Gen_dist_constraint_list.Data_file_name      2ltl.nef
@@ -15578,9 +15578,9 @@ save_nef_distance_restraint_list_distance_constraint_list
 
 save_
 
-save_nef_distance_restraint_list_hBond_constraint_list
+save_hBond_constraint_list
    _Gen_dist_constraint_list.Sf_category         general_distance_constraints
-   _Gen_dist_constraint_list.Sf_framecode        nef_distance_restraint_list_hBond_constraint_list
+   _Gen_dist_constraint_list.Sf_framecode        hBond_constraint_list
    _Gen_dist_constraint_list.Constraint_type     'hydrogen bond'
    _Gen_dist_constraint_list.Potential_type      square-well-parabolic
    _Gen_dist_constraint_list.Data_file_name      2ltl.nef
@@ -15671,9 +15671,9 @@ save_nef_distance_restraint_list_hBond_constraint_list
 
 save_
 
-save_nef_dihedral_restraint_list_dihedral_constraint_list
+save_dihedral_constraint_list
    _Torsion_angle_constraint_list.Sf_category         torsion_angle_constraints
-   _Torsion_angle_constraint_list.Sf_framecode        nef_dihedral_restraint_list_dihedral_constraint_list
+   _Torsion_angle_constraint_list.Sf_framecode        dihedral_constraint_list
    _Torsion_angle_constraint_list.Constraint_type     .
    _Torsion_angle_constraint_list.Potential_type      square-well-parabolic
    _Torsion_angle_constraint_list.Data_file_name      2ltl.nef
@@ -15864,9 +15864,9 @@ save_nef_dihedral_restraint_list_dihedral_constraint_list
 
 save_
 
-save_nef_rdc_restraint_list_cya-1
+save_cya-1
    _RDC_constraint_list.Sf_category          RDC_constraints
-   _RDC_constraint_list.Sf_framecode         nef_rdc_restraint_list_cya-1
+   _RDC_constraint_list.Sf_framecode         cya-1
    _RDC_constraint_list.Constraint_type      .
    _RDC_constraint_list.Potential_type       parabolic
    _RDC_constraint_list.Tensor_magnitude     -7.307
@@ -15977,9 +15977,9 @@ save_nef_rdc_restraint_list_cya-1
 
 save_
 
-save_nef_rdc_restraint_list_cya-2
+save_cya-2
    _RDC_constraint_list.Sf_category          RDC_constraints
-   _RDC_constraint_list.Sf_framecode         nef_rdc_restraint_list_cya-2
+   _RDC_constraint_list.Sf_framecode         cya-2
    _RDC_constraint_list.Constraint_type      .
    _RDC_constraint_list.Potential_type       parabolic
    _RDC_constraint_list.Tensor_magnitude     11.923

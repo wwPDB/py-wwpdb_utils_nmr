@@ -737,9 +737,9 @@ save_entity_LIG
 
 save_
 
-save_nef_chemical_shift_list_3C11
+save_3C11
    _Assigned_chem_shift_list.Sf_category     assigned_chemical_shifts
-   _Assigned_chem_shift_list.Sf_framecode    nef_chemical_shift_list_3C11
+   _Assigned_chem_shift_list.Sf_framecode    3C11
    _Assigned_chem_shift_list.Entry_ID        NEED_ACC_NO
    _Assigned_chem_shift_list.ID              1
    _Assigned_chem_shift_list.Data_file_name  D_1292133086_nmr-data-original_P1.str

@@ -11647,16 +11647,23 @@ class NEFTranslator:
         rdc_list_id = 0
         peak_list_id = 0
 
+        # DAOTHER-9623
+        def get_red_sf_framecode(sf):
+
+            pattern = re.compile(fr'{sf.category}(_|_\d+)?$')
+
+            return sf.name if pattern.match(sf.name) or not sf.name.startswith(f'{sf.category}_') else sf.name[len(sf.category) + 1:]
+
         if data_type == 'Entry':
+
+            red_sf_framecodes = [get_red_sf_framecode(sf) for sf in nef_data]
+            dup_sf_framecodes = set(sf_framecode for sf_framecode in red_sf_framecodes if red_sf_framecodes.count(sf_framecode) > 1)
 
             for saveframe in nef_data:
 
-                pattern = re.compile(fr'{saveframe.category}(_|_\d+)?$')
-
-                # DAOTHER-9623
-                sf_framecode = saveframe.name\
-                    if pattern.match(saveframe.name) or not saveframe.name.startswith(f'{saveframe.category}_')\
-                    else saveframe.name[len(saveframe.category) + 1:]
+                sf_framecode = get_red_sf_framecode(saveframe)
+                if sf_framecode in dup_sf_framecodes:
+                    sf_framecode = saveframe.name
 
                 sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
 
@@ -11858,12 +11865,7 @@ class NEFTranslator:
             if data_type == 'Saveframe':
                 saveframe = nef_data
 
-                pattern = re.compile(fr'{saveframe.category}(_|_\d+)?$')
-
-                # DAOTHER-9623
-                sf_framecode = saveframe.name\
-                    if pattern.match(saveframe.name) or not saveframe.name.startswith(f'{saveframe.category}_')\
-                    else saveframe.name[len(saveframe.category) + 1:]
+                sf_framecode = get_red_sf_framecode(saveframe)
 
                 sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
 
@@ -12178,6 +12180,10 @@ class NEFTranslator:
         self.selfSeqMap = None
         self.atomIdMap = None
 
+        # DAOTHER-9623
+        def get_nef_sf_framecode(sf, prefix):
+            return sf.name if sf.name.startswith(prefix) else f'{prefix}_{sf.name}'
+
         if data_type == 'Entry':
 
             for saveframe in star_data:
@@ -12187,8 +12193,7 @@ class NEFTranslator:
                 if nef_tag is None:
                     continue
 
-                # DAOTHER-9623
-                sf_framecode = saveframe.name if saveframe.name.startswith(nef_tag) else f'{nef_tag}_{saveframe.name}'
+                sf_framecode = get_nef_sf_framecode(saveframe, nef_tag)
 
                 sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
 
@@ -12343,8 +12348,7 @@ class NEFTranslator:
 
                 if nef_tag is not None:
 
-                    # DAOTHER-9623
-                    sf_framecode = saveframe.name if saveframe.name.startswith(nef_tag) else f'{nef_tag}_{saveframe.name}'
+                    sf_framecode = sf_framecode = get_nef_sf_framecode(saveframe, nef_tag)
 
                     sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
 

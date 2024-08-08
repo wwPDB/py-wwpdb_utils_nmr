@@ -588,7 +588,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
                     if self.__reasons is None and any(f for f in self.__f
-                                                      if '[Atom not found]' in f or '[Sequence mismatch]' in f):
+                                                      if '[Atom not found]' in f or '[Sequence mismatch]' in f or 'Invalid atom nomenclature' in f):
 
                         seqIdRemap = []
 
@@ -4111,6 +4111,12 @@ class CyanaMRParserListener(ParseTreeListener):
                 if enableWarning:
                     self.__f.append(f"[Invalid atom nomenclature] {self.__getCurrentRestraint()}"
                                     f"{seqId}:{__compId}:{__atomId} is invalid atom nomenclature.")
+                    compIds = guessCompIdFromAtomId([__atomId], self.__polySeq, self.__nefT)
+                    if compIds is not None:
+                        if len(compIds) == 1:
+                            updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compIds[0])
+                        else:
+                            updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, seqId, compIds)
                 continue
             if lenAtomId > 1 and not allowAmbig:
                 if enableWarning:

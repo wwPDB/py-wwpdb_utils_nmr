@@ -10,7 +10,7 @@ import sys
 import re
 import copy
 import itertools
-# import collections
+import collections
 import numpy
 
 from antlr4 import ParseTreeListener
@@ -724,42 +724,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                             break
                                     if not valid_auth_seq and valid_label_seq:
                                         set_label_seq_scheme()
-                        """
-                        mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
-                        if len(self.__polySeqRstFailed) > 0:
-                            sortPolySeqRst(self.__polySeqRstFailed)
 
-                            seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
-
-                            for sa in seqAlignFailed:
-                                if sa['conflict'] == 0:
-                                    chainId = sa['test_chain_id']
-                                    _ps = next((_ps for _ps in self.__polySeqRstFailedAmbig if _ps['chain_id'] == chainId), None)
-                                    if _ps is None:
-                                        continue
-                                    _matched = sa['matched']
-                                    for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
-                                        _compId = None
-                                        for compId in list(compIds):
-                                            _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
-                                            updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
-                                            sortPolySeqRst(_polySeqRstFailed)
-                                            _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, _polySeqRstFailed)
-                                            _sa = next((_sa for _sa in _seqAlignFailed if _sa['test_chain_id'] == chainId), None)
-                                            if _sa is None or _sa['conflict'] > 0:
-                                                continue
-                                            if _sa['matched'] > _matched:
-                                                _matched = _sa['matched']
-                                                _compId = compId
-                                        if _compId is not None:
-                                            updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, _compId)
-                                            sortPolySeqRst(self.__polySeqRstFailed)
-
-                            seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
-                            chainAssignFailed, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type,
-                                                                         self.__polySeq, self.__polySeqRstFailed, seqAlignFailed)
-
-                            if chainAssignFailed is not None:
                                 seqIdRemapFailed = []
 
                                 uniq_ps = not any('identical_chain_id' in ps for ps in self.__polySeq)
@@ -862,7 +827,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                or seqIdRemap[0]['chain_id'] != seqIdRemapFailed[0]['chain_id']\
                                                or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
                                                 self.reasonsForReParsing['ext_chain_seq_id_remap'] = seqIdRemapFailed
-                        """
+
             # """
             # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
             #     if 'non_poly_remap' in self.reasonsForReParsing:
@@ -1492,7 +1457,7 @@ class RosettaMRParserListener(ParseTreeListener):
                    and 'ext_chain_seq_id_remap' not in self.__reasons:
                     if fixedChainId is not None and fixedChainId != chainId:
                         continue
-                else:
+                elif 'global_auth_sequence_offset' not in self.__reasons:
                     if 'ext_chain_seq_id_remap' in self.__reasons:
                         fixedChainId, fixedSeqId, fixedCompId =\
                             retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], chainId, seqId)

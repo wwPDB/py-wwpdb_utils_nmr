@@ -10745,7 +10745,7 @@ class XplorMRParserListener(ParseTreeListener):
                             return None
                 if seqId + offset in ps['auth_seq_id']:
                     return seqId + offset
-            seqKey = (ps['auth_chain_id'], seqId + offset)
+            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
             if seqKey in self.__labelToAuthSeq:
                 _, _seqId = self.__labelToAuthSeq[seqKey]
                 return _seqId
@@ -10811,7 +10811,7 @@ class XplorMRParserListener(ParseTreeListener):
                             return None, None, False
                 if seqId + offset in ps['auth_seq_id']:
                     return seqId + offset, ps['comp_id'][ps['auth_seq_id'].index(seqId + offset)], False
-            seqKey = (ps['auth_chain_id'], seqId + offset)
+            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
             if seqKey in self.__labelToAuthSeq:
                 _, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:

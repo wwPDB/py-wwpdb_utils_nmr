@@ -882,8 +882,6 @@ class RosettaMRParserListener(ParseTreeListener):
                                         break
                                     chainIdRemap[auth_seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
                         if valid:
-                            if 'global_sequence_offset' in self.reasonsForReParsing:
-                                del self.reasonsForReParsing['global_sequence_offset']
                             del self.reasonsForReParsing['global_auth_sequence_offset']
                             self.reasonsForReParsing['chain_id_remap'] = chainIdRemap
 
@@ -1398,7 +1396,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                 break
                 if seqId + offset in ps['auth_seq_id']:
                     return ps['auth_chain_id'], seqId + offset, ps['comp_id'][ps['auth_seq_id'].index(seqId + offset)]
-            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
+            seqKey = (ps['auth_chain_id'], seqId)
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
@@ -1425,7 +1423,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if _ps is not None:
                 if seqId in _ps['seq_id']:
                     return ps['auth_chain_id'], seqId, _ps['comp_id'][_ps['seq_id'].index(seqId)]
-        return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId, None
+        return ps['auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequence(self, seqId, atomId=None, fixedChainId=None):
         """ Assign polymer sequences of the coordinates.

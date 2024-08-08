@@ -10668,7 +10668,7 @@ class AmberMRParserListener(ParseTreeListener):
                 break
         if refCompId is None and self.__hasNonPolySeq:
             for np in self.__nonPolySeq:
-                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId, False)
+                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId)
                 if refCompId is not None:
                     compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
                     break
@@ -10676,7 +10676,7 @@ class AmberMRParserListener(ParseTreeListener):
             compId = translateToStdResName(_compId, ccU=self.__ccU)
         return compId
 
-    def getRealChainSeqId(self, ps, seqId, compId=None, isPolySeq=True):  # pylint: disable=no-self-use
+    def getRealChainSeqId(self, ps, seqId, compId=None):  # pylint: disable=no-self-use
         if compId is not None:
             compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
             if len(_compId) == 2 and _compId.startswith('D'):
@@ -10697,7 +10697,7 @@ class AmberMRParserListener(ParseTreeListener):
                 return ps['auth_chain_id'], ps['auth_seq_id'][idx], ps['comp_id'][idx]
             if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
                 return ps['auth_chain_id'], ps['auth_seq_id'][idx], ps['comp_id'][idx]
-        return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId, None
+        return ps['auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequenceWithoutCompId(self, seqId, atomId=None):
         """ Assign polymer sequences of the coordinates.
@@ -10740,7 +10740,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         if self.__hasNonPolySeq:
             for np in self.__nonPolySeq:
-                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, isPolySeq=False)
+                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId)
                 if seqId in np['auth_seq_id']:
                     if atomId is None or len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.add((chainId, seqId, cifCompId, False))

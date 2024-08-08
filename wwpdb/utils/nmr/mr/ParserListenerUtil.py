@@ -8239,7 +8239,7 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
                         ligands += np['alt_comp_id'].count(compId)
 
         for np in nonPolySeq:
-            chainId, seqId = getRealChainSeqId(nefT.get_ccu(), np, _seqId, compId, False)
+            chainId, seqId = getRealChainSeqId(nefT.get_ccu(), np, _seqId, compId)
             if refChainId != chainId:
                 continue
             if seqId in np['auth_seq_id']\
@@ -8524,7 +8524,7 @@ def selectCoordAtoms(cR, caC, nefT, chainAssign, authChainId, seqId, compId, ato
     return atomSelection, warningMessage
 
 
-def getRealChainSeqId(ccU, polySeq, seqId, compId=None, isPolySeq=True):
+def getRealChainSeqId(ccU, polySeq, seqId, compId=None):
     """ Return effective sequence key according to polymer sequence of the coordinates.
         @return: sequence key
     """
@@ -8537,7 +8537,7 @@ def getRealChainSeqId(ccU, polySeq, seqId, compId=None, isPolySeq=True):
         idx = polySeq['auth_seq_id'].index(seqId)
         if compId in (polySeq['comp_id'][idx], polySeq['auth_comp_id'][idx]):
             return polySeq['auth_chain_id'], seqId
-    return polySeq['chain_id' if isPolySeq else 'auth_chain_id'], seqId
+    return polySeq['auth_chain_id'], seqId
 
 
 def getCoordAtomSiteOf(caC, authChainId, chainId, seqId, compId=None, asis=True):

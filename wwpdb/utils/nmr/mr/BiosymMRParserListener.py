@@ -1102,7 +1102,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 break
         if refCompId is None and self.__hasNonPolySeq:
             for np in self.__nonPolySeq:
-                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId, False)
+                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId)
                 if refCompId is not None:
                     compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
                     break
@@ -1110,13 +1110,13 @@ class BiosymMRParserListener(ParseTreeListener):
             compId = translateToStdResName(_compId, ccU=self.__ccU)
         return compId
 
-    def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
+    def getRealChainSeqId(self, ps, seqId, compId):
         compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
         if len(_compId) == 2 and _compId.startswith('D'):
             _compId = compId[1]
         # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
         if not self.__preferAuthSeq:
-            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
+            seqKey = (ps['auth_chain_id'], seqId)
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
@@ -1137,7 +1137,7 @@ class BiosymMRParserListener(ParseTreeListener):
             if _ps is not None:
                 if seqId in _ps['seq_id']:
                     return ps['auth_chain_id'], _ps['comp_id'][_ps['seq_id'].index(seqId)]
-        return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId, None
+        return ps['auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequence(self, refChainId, seqId, compId, atomId):
         """ Assign polymer sequences of the coordinates.
@@ -1413,7 +1413,7 @@ class BiosymMRParserListener(ParseTreeListener):
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
             for np in self.__nonPolySeq:
-                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
+                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId)
                 if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:
                         continue

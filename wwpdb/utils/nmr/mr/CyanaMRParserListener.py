@@ -319,6 +319,9 @@ class CyanaMRParserListener(ParseTreeListener):
     # chain number dictionary
     __chainNumberDict = None
 
+    # extended residue key
+    __extResKey = None
+
     # polymer sequence of MR file
     __polySeqRst = None
     __polySeqRstFailed = None
@@ -541,6 +544,7 @@ class CyanaMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CyanaMRParser#cyana_mr.
     def enterCyana_mr(self, ctx: CyanaMRParser.Cyana_mrContext):  # pylint: disable=unused-argument
         self.__chainNumberDict = {}
+        self.__extResKey = []
         self.__polySeqRst = []
         self.__polySeqRstFailed = []
         self.__polySeqRstFailedAmbig = []
@@ -2784,6 +2788,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                             f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                             f"of chain {refChainId} of the coordinates. "
                                             "Please update the sequence in the Macromolecules page.")
+                            resKey = (_seqId, _compId)
+                            if resKey not in self.__extResKey:
+                                self.__extResKey.append(resKey)
                         chainAssign.add((refChainId, _seqId, compId, True))
                         asis = True
                     elif compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
@@ -2792,6 +2799,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                             f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                             f"of chain {refChainId} of the coordinates. "
                                             "Please update the sequence in the Macromolecules page.")
+                            resKey = (_seqId, _compId)
+                            if resKey not in self.__extResKey:
+                                self.__extResKey.append(resKey)
                     else:
                         if enableWarning:
                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -2829,6 +2839,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                             f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                             f"of chain {refChainId} of the coordinates. "
                                             "Please update the sequence in the Macromolecules page.")
+                            resKey = (_seqId, _compId)
+                            if resKey not in self.__extResKey:
+                                self.__extResKey.append(resKey)
                         if isinstance(refChainId, str):
                             chainAssign.add((refChainId, _seqId, compId, True))
                         else:
@@ -3372,6 +3385,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                             f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                             f"of chain {refChainId} of the coordinates. "
                                             "Please update the sequence in the Macromolecules page.")
+                            resKey = (_seqId, _compId)
+                            if resKey not in self.__extResKey:
+                                self.__extResKey.append(resKey)
                         chainAssign.add((refChainId, _seqId, compId, True))
                         asis = True
                     elif compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
@@ -3380,6 +3396,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                             f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                             f"of chain {refChainId} of the coordinates. "
                                             "Please update the sequence in the Macromolecules page.")
+                            resKey = (_seqId, _compId)
+                            if resKey not in self.__extResKey:
+                                self.__extResKey.append(resKey)
                     else:
                         if enableWarning:
                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -3417,6 +3436,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                             f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                             f"of chain {refChainId} of the coordinates. "
                                             "Please update the sequence in the Macromolecules page.")
+                            resKey = (_seqId, _compId)
+                            if resKey not in self.__extResKey:
+                                self.__extResKey.append(resKey)
                         if isinstance(refChainId, str):
                             chainAssign.add((refChainId, _seqId, compId, True))
                         else:
@@ -4861,8 +4883,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         if not isinstance(atomId, str):
                             atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
                             if atomId is None:
-                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                f"{seqId}:{_compId} is not present in the coordinates.")
+                                resKey = (seqId, _compId)
+                                if resKey not in self.__extResKey:
+                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                    f"{seqId}:{_compId} is not present in the coordinates.")
                                 return
 
                 self.__retrieveLocalSeqScheme()
@@ -4873,8 +4897,10 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainAssign, _ = self.assignCoordPolymerSequence(seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
-                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"{seqId}:{_compId} is not present in the coordinates.")
+                    resKey = (seqId, _compId)
+                    if resKey not in self.__extResKey:
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{seqId}:{_compId} is not present in the coordinates.")
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
@@ -5098,8 +5124,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainAssign, _ = self.assignCoordPolymerSequence(seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
-                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"{seqId}:{_compId} is not present in the coordinates.")
+                    resKey = (seqId, _compId)
+                    if resKey not in self.__extResKey:
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{seqId}:{_compId} is not present in the coordinates.")
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
@@ -8578,8 +8606,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         if not isinstance(atomId, str):
                             atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
                             if atomId is None:
-                                self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                f"{seqId}:{_compId} is not present in the coordinates.")
+                                resKey = (seqId, _compId)
+                                if resKey not in self.__extResKey:
+                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                    f"{seqId}:{_compId} is not present in the coordinates.")
                                 return
 
                 self.__retrieveLocalSeqScheme()
@@ -8587,8 +8617,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainAssign, _ = self.assignCoordPolymerSequenceWithChainId(chainId, seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
-                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"{seqId}:{_compId} is not present in the coordinates.")
+                    resKey = (seqId, _compId)
+                    if resKey not in self.__extResKey:
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{seqId}:{_compId} is not present in the coordinates.")
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
@@ -8812,8 +8844,10 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainAssign, _ = self.assignCoordPolymerSequenceWithChainId(chainId, seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
-                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"{seqId}:{_compId} is not present in the coordinates.")
+                    resKey = (seqId, _compId)
+                    if resKey not in self.__extResKey:
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{seqId}:{_compId} is not present in the coordinates.")
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:

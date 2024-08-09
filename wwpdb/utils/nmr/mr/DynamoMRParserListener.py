@@ -286,6 +286,9 @@ class DynamoMRParserListener(ParseTreeListener):
     # chain number dictionary
     __chainNumberDict = None
 
+    # extended residue key
+    __extResKey = None
+
     # polymer sequence of MR file
     __polySeqRst = None
     __polySeqRstFailed = None
@@ -444,6 +447,7 @@ class DynamoMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by DynamoMRParser#dynamo_mr.
     def enterDynamo_mr(self, ctx: DynamoMRParser.Dynamo_mrContext):  # pylint: disable=unused-argument
         self.__chainNumberDict = {}
+        self.__extResKey = []
         self.__polySeqRst = []
         self.__polySeqRstFailed = []
         self.__f = []
@@ -1962,6 +1966,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                     f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                     f"of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
+                    resKey = (_seqId, _compId)
+                    if resKey not in self.__extResKey:
+                        self.__extResKey.append(resKey)
                     chainAssign.add((refChainId, _seqId, compId, True))
                     asis = True
                 elif compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
@@ -1969,6 +1976,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                     f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                     f"of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
+                    resKey = (_seqId, _compId)
+                    if resKey not in self.__extResKey:
+                        self.__extResKey.append(resKey)
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
@@ -2004,6 +2014,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                     f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                     f"of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
+                    resKey = (_seqId, _compId)
+                    if resKey not in self.__extResKey:
+                        self.__extResKey.append(resKey)
                     if isinstance(refChainId, str):
                         chainAssign.add((refChainId, _seqId, compId, True))
                     else:
@@ -4854,8 +4867,10 @@ class DynamoMRParserListener(ParseTreeListener):
                     self.__ccU.updateChemCompDict(compId)
                     atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
                     if atomId is None:
-                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                        f"{seqId}:{compId} is not present in the coordinates.")
+                        resKey = (seqId, compId)
+                        if resKey not in self.__extResKey:
+                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                            f"{seqId}:{compId} is not present in the coordinates.")
                         return
 
                 self.__retrieveLocalSeqScheme()
@@ -4863,8 +4878,10 @@ class DynamoMRParserListener(ParseTreeListener):
                 chainAssign, _ = self.assignCoordPolymerSequence(None, seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
-                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"{seqId}:{compId} is not present in the coordinates.")
+                    resKey = (seqId, compId)
+                    if resKey not in self.__extResKey:
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{seqId}:{compId} is not present in the coordinates.")
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
@@ -5073,8 +5090,10 @@ class DynamoMRParserListener(ParseTreeListener):
                     self.__ccU.updateChemCompDict(compId)
                     atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
                     if atomId is None:
-                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                        f"{seqId}:{compId} is not present in the coordinates.")
+                        resKey = (seqId, compId)
+                        if resKey not in self.__extResKey:
+                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                            f"{seqId}:{compId} is not present in the coordinates.")
                         return
 
                 self.__retrieveLocalSeqScheme()
@@ -5082,8 +5101,10 @@ class DynamoMRParserListener(ParseTreeListener):
                 chainAssign, _ = self.assignCoordPolymerSequence(None, seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
-                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"{seqId}:{compId} is not present in the coordinates.")
+                    resKey = (seqId, compId)
+                    if resKey not in self.__extResKey:
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{seqId}:{compId} is not present in the coordinates.")
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:

@@ -193,6 +193,7 @@
 # 25-Jun-2024  M. Yokochi - strip white spaces in a datablock name derived from the model file (DAOTHER-9511)
 # 28-Jun-2024  M. Yokochi - ignore extraneous input value for numeric tags and replace statistics of chemical shifts using remediated loop (DAOTHER-9520)
 # 28-Jun-2024  M. Yokochi - convert conventional NMR name of carbonyl carbon 'CO' to valid one 'C' (DAOTHER-9520, 2nd case)
+# 19-Aug-2024  M. Yokochi - fill 'Data_file_name' saveframe tag by default (DAOTHER-9520, 4th case)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -49801,21 +49802,38 @@ class NmrDpUtility:
 
                 for content_subtype in input_source_dic['content_subtype']:
 
-                    if content_subtype in ('entry_info', 'poly_seq', 'entity', 'chem_shift'):
+                    if content_subtype in ('entry_info', 'poly_seq', 'entity'):
                         continue
 
                     sf_category = self.sf_categories[file_type][content_subtype]
                     # lp_category = self.lp_categories[file_type][content_subtype]
 
+                    has_data_file_name = file_type == 'nmr-star' and 'Data_file_name' in self.sf_allowed_tags[file_type][content_subtype]
                     tag_items = self._sf_tag_items[file_type][content_subtype]
 
-                    if tag_items is None:
+                    if not has_data_file_name and tag_items is None:
                         continue
 
                     for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                         tagNames = [t[0] for t in sf.tags]
+
+                        # DAOTHER-9520: fill data_file_name by default
+                        if has_data_file_name:
+                            original_file_name = input_source_dic['file_name']
+                            if 'original_file_name' in input_source_dic and input_source_dic['original_file_name'] is not None:
+                                original_file_name = os.path.basename(input_source_dic['original_file_name'])
+
+                            if 'Data_file_name' in tagNames:
+                                data_file_name = get_first_sf_tag(sf, 'Data_file_name').strip()
+                                if len(data_file_name) == 0 or data_file_name in emptyValue:
+                                    set_sf_tag(sf, 'Data_file_name', original_file_name)
+                            else:
+                                set_sf_tag(sf, 'Data_file_name', original_file_name)
+
+                        if tag_items is None:
+                            continue
 
                         for tag_item in tag_items:
 

@@ -828,13 +828,6 @@ class RosettaMRParserListener(ParseTreeListener):
                                                or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
                                                 self.reasonsForReParsing['ext_chain_seq_id_remap'] = seqIdRemapFailed
 
-            # """
-            # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
-            #     if 'non_poly_remap' in self.reasonsForReParsing:
-            #         self.reasonsForReParsing['label_seq_scheme'] = False
-            #     if 'seq_id_remap' in self.reasonsForReParsing:
-            #         del self.reasonsForReParsing['seq_id_remap']
-            # """
             if 'local_seq_scheme' in self.reasonsForReParsing:
                 if 'non_poly_remap' in self.reasonsForReParsing or 'branched_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
@@ -848,6 +841,9 @@ class RosettaMRParserListener(ParseTreeListener):
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
                 if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
                     del self.reasonsForReParsing['seq_id_remap']
+
+            label_seq_scheme = 'label_seq_scheme' in self.reasonsForReParsing\
+                and all(t for t in self.reasonsForReParsing['label_seq_scheme'].values())
 
             if 'global_auth_sequence_offset' in self.reasonsForReParsing:
                 if 'local_seq_scheme' in self.reasonsForReParsing:
@@ -876,11 +872,18 @@ class RosettaMRParserListener(ParseTreeListener):
                                         break
                                     chainIdRemap[auth_seq_id - offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
                             else:
-                                for auth_seq_id in ps['auth_seq_id']:
-                                    if auth_seq_id in chainIdRemap:
-                                        valid = False
-                                        break
-                                    chainIdRemap[auth_seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
+                                if label_seq_scheme:
+                                    for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
+                                        if seq_id in chainIdRemap:
+                                            valid = False
+                                            break
+                                        chainIdRemap[seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
+                                else:
+                                    for auth_seq_id in ps['auth_seq_id']:
+                                        if auth_seq_id in chainIdRemap:
+                                            valid = False
+                                            break
+                                        chainIdRemap[auth_seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
                         if valid:
                             del self.reasonsForReParsing['global_auth_sequence_offset']
                             self.reasonsForReParsing['chain_id_remap'] = chainIdRemap
@@ -1377,7 +1380,6 @@ class RosettaMRParserListener(ParseTreeListener):
         return dstFunc
 
     def getRealChainSeqId(self, ps, seqId, isPolySeq=True):
-        # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
         offset = 0
         if not self.__preferAuthSeq:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
@@ -1585,8 +1587,6 @@ class RosettaMRParserListener(ParseTreeListener):
                         if atomId is None\
                            or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                             chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
-                            # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                            #     self.reasonsForReParsing['label_seq_scheme'] = True
 
             if self.__hasNonPolySeq:
                 for np in self.__nonPolySeq:
@@ -1607,8 +1607,6 @@ class RosettaMRParserListener(ParseTreeListener):
                             if atomId is None\
                                or (atomId is not None and len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0):
                                 chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
-                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                #     self.reasonsForReParsing['label_seq_scheme'] = True
 
         if len(chainAssign) == 0 and self.__altPolySeq is not None:
             for ps in self.__altPolySeq:
@@ -1641,8 +1639,6 @@ class RosettaMRParserListener(ParseTreeListener):
                             chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
                             self.__authSeqId = 'label_seq_id'
                             self.__setLocalSeqScheme()
-                            # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                            #     self.reasonsForReParsing['label_seq_scheme'] = True
 
         if len(chainAssign) == 0:
             if atomId is not None:

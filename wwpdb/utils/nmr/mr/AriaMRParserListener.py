@@ -648,13 +648,6 @@ class AriaMRParserListener(ParseTreeListener):
                                                or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
                                                 self.reasonsForReParsing['ext_chain_seq_id_remap'] = seqIdRemapFailed
 
-            # """
-            # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
-            #     if 'non_poly_remap' in self.reasonsForReParsing:
-            #         self.reasonsForReParsing['label_seq_scheme'] = False
-            #     if 'seq_id_remap' in self.reasonsForReParsing:
-            #         del self.reasonsForReParsing['seq_id_remap']
-            # """
             if 'local_seq_scheme' in self.reasonsForReParsing:
                 if 'non_poly_remap' in self.reasonsForReParsing or 'branched_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
@@ -664,11 +657,7 @@ class AriaMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['local_seq_scheme']
                 elif 'ext_chain_seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
-            # """
-            # if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-            #     if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
-            #         del self.reasonsForReParsing['seq_id_remap']
-            # """
+
             if 'local_seq_scheme' in self.reasonsForReParsing and len(self.reasonsForReParsing) == 1:
                 sortPolySeqRst(self.__polySeqRstFailed)
                 if len(self.__polySeqRstFailed) > 0:
@@ -982,7 +971,6 @@ class AriaMRParserListener(ParseTreeListener):
         compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
         if len(_compId) == 2 and _compId.startswith('D'):
             _compId = compId[1]
-        # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
         if not self.__preferAuthSeq:
             seqKey = (ps['auth_chain_id'], seqId)
             if seqKey in self.__labelToAuthSeq:
@@ -1167,11 +1155,7 @@ class AriaMRParserListener(ParseTreeListener):
                         chainAssign.add((chainId, seqId, cifCompId, True))
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.add((chainId, seqId, cifCompId, True))
-                    # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
-                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                    # """
+
             elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                 if len(auth_seq_id_list) > 0:
@@ -1319,15 +1303,8 @@ class AriaMRParserListener(ParseTreeListener):
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
-                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                #     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
-                            # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
-                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                            # """
 
             if self.__hasNonPolySeq:
                 for np in self.__nonPolySeq:
@@ -1347,8 +1324,6 @@ class AriaMRParserListener(ParseTreeListener):
                             if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
-                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
                             else:
                                 _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
                                 if len(_atomId) > 0 and (details is None or _compId not in monDict3):
@@ -1372,11 +1347,6 @@ class AriaMRParserListener(ParseTreeListener):
                         if compId in compIds:
                             cifCompId = compId
                     chainAssign.add((chainId, _seqId, cifCompId, True))
-                    # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
-                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                    # """
 
         if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
             for ps in self.__polySeq:
@@ -1409,17 +1379,10 @@ class AriaMRParserListener(ParseTreeListener):
                                 if compId in (cifCompId, origCompId):
                                     self.__authSeqId = 'label_seq_id'
                                     self.__setLocalSeqScheme()
-                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
                             self.__authSeqId = 'label_seq_id'
                             self.__setLocalSeqScheme()
-                            # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
-                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                            # """
 
         if len(chainAssign) == 0:
             refChainId = chainId if fixedChainId is None else fixedChainId
@@ -1686,11 +1649,7 @@ class AriaMRParserListener(ParseTreeListener):
                     chainAssign.add((chainId, seqId, cifCompId, True))
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
-                    # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
-                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                    # """
+
             elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                 if len(auth_seq_id_list) > 0:
@@ -1850,17 +1809,10 @@ class AriaMRParserListener(ParseTreeListener):
                                 chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
-                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                #     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
-                            # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
-                            #             f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                            # """
 
             if self.__hasNonPolySeq:
                 for np in self.__nonPolySeq:
@@ -1885,8 +1837,6 @@ class AriaMRParserListener(ParseTreeListener):
                                     chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
-                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
                             else:
                                 _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
                                 if len(_atomId) > 0 and (details is None or _compId not in monDict3):
@@ -1922,11 +1872,6 @@ class AriaMRParserListener(ParseTreeListener):
                     chainAssign.add((chainId, _seqId, cifCompId, True))
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
-                    # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
-                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                    # """
 
         if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
             for ps in self.__polySeq:
@@ -1964,19 +1909,12 @@ class AriaMRParserListener(ParseTreeListener):
                                     self.__setLocalSeqScheme()
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
-                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
                             self.__authSeqId = 'label_seq_id'
                             self.__setLocalSeqScheme()
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
-                            # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
-                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                            # """
 
         if len(chainAssign) == 0:
             if seqId == 1 or (refChainId, seqId - 1) in self.__coordUnobsRes:

@@ -167,7 +167,7 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.peptideLike('D4P'), True)
         self.assertEqual(self.bmrb_cs_stat.peptideLike('GHP'), True)
 
-    def udpate_stat_cvs_files(self):
+    def test_udpate_stat_cvs_files(self):
         self.assertEqual(self.bmrb_cs_stat.updateStatCsvFiles(), True)
 
     def test_atom_nomenclature(self):
@@ -190,6 +190,14 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertIsNone(h3_stat)
         hn3_stat = next(cs_stat for cs_stat in self.bmrb_cs_stat.get('DNR') if cs_stat['atom_id'] == "HN3")
         self.assertTrue(hn3_stat['avg'] > 5.0)
+
+    def test_c_h42_stat(self):
+        h4c_stat = next(cs_stat for cs_stat in self.bmrb_cs_stat.get('C') if cs_stat['atom_id'] == "H4'")
+        self.assertTrue(h4c_stat['avg'] < 5.0)
+        h41_stat = next(cs_stat for cs_stat in self.bmrb_cs_stat.get('C') if cs_stat['atom_id'] == "H41")
+        self.assertTrue(h41_stat['avg'] > 5.0)
+        h42_stat = next(cs_stat for cs_stat in self.bmrb_cs_stat.get('C') if cs_stat['atom_id'] == "H42")
+        self.assertTrue(h42_stat['avg'] > 5.0)
 
 
 if __name__ == '__main__':

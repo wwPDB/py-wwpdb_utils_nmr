@@ -1642,6 +1642,7 @@ save_anoe_final
    _Spectral_peak_list.Sf_framecode                   anoe_final
    _Spectral_peak_list.Entry_ID                       NEED_ACC_NO
    _Spectral_peak_list.ID                             1
+   _Spectral_peak_list.Data_file_name                 2la6.nef
    _Spectral_peak_list.Experiment_class               H_H[C].through-space
    _Spectral_peak_list.Experiment_type                '13C NOESY-HSQC'
    _Spectral_peak_list.Number_of_spectral_dimensions  3
@@ -2039,6 +2040,7 @@ save_cnoe_final
    _Spectral_peak_list.Sf_framecode                   cnoe_final
    _Spectral_peak_list.Entry_ID                       NEED_ACC_NO
    _Spectral_peak_list.ID                             2
+   _Spectral_peak_list.Data_file_name                 2la6.nef
    _Spectral_peak_list.Experiment_class               H_H[C].through-space
    _Spectral_peak_list.Experiment_type                '13C NOESY-HSQC'
    _Spectral_peak_list.Number_of_spectral_dimensions  3
@@ -6972,6 +6974,7 @@ save_nnoe_final
    _Spectral_peak_list.Sf_framecode                   nnoe_final
    _Spectral_peak_list.Entry_ID                       NEED_ACC_NO
    _Spectral_peak_list.ID                             3
+   _Spectral_peak_list.Data_file_name                 2la6.nef
    _Spectral_peak_list.Experiment_class               H_H[N].through-space
    _Spectral_peak_list.Experiment_type                '15N NOESY-HSQC'
    _Spectral_peak_list.Number_of_spectral_dimensions  3

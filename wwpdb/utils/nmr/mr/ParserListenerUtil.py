@@ -7,6 +7,7 @@
 # 29-Sep-2023  M. Yokochi - add atom name mapping dictionary (DAOTHER-8817, 8828)
 # 24-Jan-2024  M. Yokochi - reconstruct polymer/non-polymer sequence based on pdb_mon_id, instead of auth_mon_id (D_1300043061)
 # 04-Apr-2024  M. Yokochi - permit dihedral angle restraint across entities due to ligand split (DAOTHER-9063)
+# 20-Aug-2024  M. Yokochi - support truncated loop sequence in the model (DAOTHER-9644)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -3275,12 +3276,18 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     """ Check assembly of the coordinates for MR/PT parser listener.
     """
 
+    def to_np_array(a):
+        """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
+        """
+        return numpy.asarray([a['x'], a['y'], a['z']], dtype=float)
+
     changed = has_nonpoly_only = gen_ent_asm_from_nonpoly = False
 
     polySeq = None if prevResult is None else prevResult.get('polymer_sequence')
     altPolySeq = None if prevResult is None else prevResult.get('alt_polymer_sequence')
     nonPoly = None if prevResult is None else prevResult.get('non_polymer')
     branched = None if prevResult is None else prevResult.get('branched')
+    misPolyLink = None if prevResult is None else prevResult.get('missing_polymer_linkage')
     nmrExtPolySeq = None if prevResult is None else prevResult.get('nmr_ext_poly_seq')
     modResidue = None if prevResult is None else prevResult.get('mod_residue')
     splitLigand = None if prevResult is None else prevResult.get('split_ligand')
@@ -3293,7 +3300,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
     nonPolyAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'auth_mon_id') else 'mon_id'
     branchedAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_branch_scheme', 'auth_mon_id') else 'mon_id'
 
-    if polySeq is None or nmrExtPolySeq is None or modResidue is None or splitLigand is None:
+    if polySeq is None or misPolyLink is None or nmrExtPolySeq is None or modResidue is None or splitLigand is None:
         changed = True
 
         # loop categories
@@ -3301,6 +3308,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                          'non_poly': 'pdbx_nonpoly_scheme',
                          'branched': 'pdbx_branch_scheme',
                          'coordinate': 'atom_site',
+                         'mis_poly_link': 'pdbx_validate_polymer_linkage',
                          'mod_residue': 'pdbx_struct_mod_residue'
                          }
 
@@ -3330,9 +3338,14 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                     {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                     {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
-                                    {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'auth_comp_id'},
+                                    {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
                                     ],
+                     'mis_poly_link': [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                       {'name': 'auth_seq_id_1', 'type': 'int'},
+                                       {'name': 'auth_asym_id_2', 'type': 'str', 'alt_name': 'test_auth_chain_id'},
+                                       {'name': 'auth_seq_id_2', 'type': 'int'}
+                                       ],
                      'mod_residue': [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                      {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                      {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
@@ -3340,6 +3353,31 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'parent_comp_id', 'type': 'str', 'alt_name': 'auth_comp_id'},
                                      {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'}]
                      }
+
+        contentSubtype = 'mis_poly_link'
+
+        lpCategory = _lpCategories[contentSubtype]
+        keyItems = _keyItems[contentSubtype]
+
+        # DAOTHER-9644: support for truncated loop in the model
+        misPolyLink = []
+        if cR.hasCategory(lpCategory):
+            filterItems = [{'name': 'PDB_model_num', 'type': 'int',
+                            'value': representativeModelId},
+                           {'name': 'label_alt_id_1', 'type': 'enum', 'enum': (representativeAltId,)},
+                           {'name': 'label_alt_id_2', 'type': 'enum', 'enum': (representativeAltId,)}
+                           ]
+
+            try:
+
+                for mis in cR.getDictListWithFilter(lpCategory, keyItems, filterItems):
+                    if mis['auth_chain_id'] == mis['test_auth_chain_id']:
+                        del mis['test_auth_chain_id']
+                        misPolyLink.append(mis)
+
+            except Exception as e:
+                if verbose:
+                    log.write(f"+ParserListenerUtil.coordAssemblyChecker() ++ Error  - {str(e)}\n")
 
         contentSubtype = 'poly_seq'
 
@@ -3469,7 +3507,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                             pos = len(s2['seq_id'])
                                         else:
                                             for idx, _seq_id in enumerate(s2['seq_id']):
-                                                if cif_label_seq_id < _seq_id:
+                                                if _seq_id < cif_label_seq_id:
                                                     continue
                                                 pos = idx
                                                 break
@@ -3486,12 +3524,123 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                               'comp_id': nmr_comp_id,
                                                               'auth_comp_id': nmr_comp_id})
 
+            # DAOTHER-9644: support for truncated loop in the model
+            if len(misPolyLink) > 0:
+
+                for ps in polySeq:
+
+                    for mis in misPolyLink:
+
+                        if mis['auth_chain_id'] != ps['auth_chain_id']:
+                            continue
+
+                        authSeqId1 = mis['auth_seq_id_1']
+                        authSeqId2 = mis['auth_seq_id_2']
+
+                        if authSeqId1 in ps['auth_seq_id']\
+                           and authSeqId2 in ps['auth_seq_id']\
+                           and authSeqId1 < authSeqId2:
+
+                            for authSeqId in range(authSeqId1 + 1, authSeqId2):
+                                authSeqIdList = list(filter(None, ps['auth_seq_id']))
+
+                                if authSeqId < min(authSeqIdList):
+                                    pos = 0
+                                elif authSeqId > max(authSeqIdList):
+                                    pos = len(authSeqIdList)
+                                else:
+                                    for idx, _authSeqId in enumerate(authSeqIdList):
+                                        if _authSeqId < authSeqId:
+                                            continue
+                                        pos = idx
+                                        break
+
+                                ps['auth_seq_id'].insert(pos, authSeqId)
+                                ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
+                                if 'auth_comp_id' in ps:
+                                    ps['auth_comp_id'].insert(pos, '.')
+
+                            ps['seq_id'] = list(range(1, len(ps['auth_seq_id']) + 1))
+
+            # DAOTHER-9644: simulate pdbx_poly_seq_scheme category
+            elif not cR.hasCategory('pdbx_validate_polymer_linkage'):
+
+                entity_poly = cR.getDictList('entity_poly')
+
+                for ps in polySeq:
+                    c = ps['chain_id']
+
+                    etype = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
+
+                    if etype is None:
+                        continue
+
+                    if 'polypeptide' in etype:
+                        BEG_ATOM = "C"
+                        END_ATOM = "N"
+                    else:
+                        BEG_ATOM = "O3'"
+                        END_ATOM = "P"
+
+                    for p in range(len(ps['auth_seq_id']) - 1):
+                        s_p = ps['auth_seq_id'][p]
+                        s_q = ps['auth_seq_id'][p + 1]
+                        if s_p is None or s_q is None:
+                            continue
+                        if s_p + 1 != s_q:
+                            auth_seq_id_1 = s_p
+                            auth_seq_id_2 = s_q
+
+                            _beg = cR.getDictListWithFilter('atom_site',
+                                                            CARTN_DATA_ITEMS,
+                                                            [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                                             {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_1},
+                                                             {'name': 'auth_atom_id', 'type': 'str', 'value': BEG_ATOM},
+                                                             {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': representativeModelId},
+                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
+                                                             ])
+
+                            _end = cR.getDictListWithFilter('atom_site',
+                                                            CARTN_DATA_ITEMS,
+                                                            [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                                             {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_2},
+                                                             {'name': 'auth_atom_id', 'type': 'str', 'value': END_ATOM},
+                                                             {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': representativeModelId},
+                                                             {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
+                                                             ])
+
+                            if len(_beg) == 1 and len(_end) == 1 and numpy.linalg.norm(to_np_array(_beg[0]) - to_np_array(_end[0])) > 5.0:
+                                misPolyLink.append({'auth_chain_id': ps['auth_chain_id'],
+                                                    'auth_seq_id_1': auth_seq_id_1,
+                                                    'auth_seq_id_2': auth_seq_id_2})
+
+                                for auth_seq_id_ in range(auth_seq_id_1 + 1, auth_seq_id_2):
+                                    auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+
+                                    if auth_seq_id_ < min(auth_seq_id_list):
+                                        pos = 0
+                                    elif auth_seq_id_ > max(auth_seq_id_list):
+                                        pos = len(auth_seq_id_list)
+                                    else:
+                                        for idx, _auth_seq_id_ in enumerate(auth_seq_id_list):
+                                            if _auth_seq_id_ < auth_seq_id_:
+                                                continue
+                                            pos = idx
+                                            break
+
+                                    ps['auth_seq_id'].insert(pos, auth_seq_id_)
+                                    ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
+                                    if 'auth_comp_id' in ps:
+                                        ps['auth_comp_id'].insert(pos, '.')
+
+                                ps['seq_id'] = list(range(1, len(ps['auth_seq_id']) + 1))
+
             if len(polySeq) > 1:
                 ps = copy.copy(polySeq[0])
                 ps['auth_seq_id'] = ps['seq_id']
                 altPolySeq = [ps]
-                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
-                lastSeqId = max(auth_seq_id_list)
+                authSeqIdList = list(filter(None, ps['auth_seq_id']))
+                lastSeqId = max(authSeqIdList)
 
                 for chainId in range(1, len(polySeq)):
                     ps = copy.copy(polySeq[chainId])
@@ -3502,8 +3651,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         offset = 0
                     ps['auth_seq_id'] = [s + offset for s in ps['seq_id']]
                     altPolySeq.append(ps)
-                    auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
-                    lastSeqId = max(auth_seq_id_list)
+                    authSeqIdList = list(filter(None, ps['auth_seq_id']))
+                    lastSeqId = max(authSeqIdList)
 
             for ps in polySeq:
                 if 'ins_code' in ps and len(collections.Counter(ps['ins_code']).most_common()) == 1:
@@ -3676,7 +3825,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                     ent['chain_id'] = c
                     ent['auth_chain_id'] = authChainDict[c]
 
-                    ent['seq_id'] = ent['auth_seq_id'] = seqDict[c]
+                    ent['seq_id'] = seqDict[c]
                     ent['comp_id'] = compDict[c]
                     if c in insCodeDict:
                         if any(i for i in insCodeDict[c] if i not in emptyValue):
@@ -3715,15 +3864,6 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 ent['auth_comp_id'].append('.')
 
                     nonPoly.append(ent)
-
-        contentSubtype = 'mod_residue'
-
-        lpCategory = _lpCategories[contentSubtype]
-        keyItems = _keyItems[contentSubtype]
-
-        modResidue = []
-        if cR.hasCategory(lpCategory):
-            modResidue = cR.getDictListWithFilter(lpCategory, keyItems)
 
         contentSubtype = 'branched'
 
@@ -3826,6 +3966,15 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                 splitLigand[seqKey] = [{'auth_seq_id': altAuthSeqId, 'comp_id': _compId, 'atom_ids': []}]
                                             splitLigand[seqKey].append({'auth_seq_id': authSeqId, 'comp_id': compId, 'atom_ids': []})
 
+        contentSubtype = 'mod_residue'
+
+        lpCategory = _lpCategories[contentSubtype]
+        keyItems = _keyItems[contentSubtype]
+
+        modResidue = []
+        if cR.hasCategory(lpCategory):
+            modResidue = cR.getDictListWithFilter(lpCategory, keyItems)
+
     if not fullCheck:
         if not changed:
             return prevResult
@@ -3834,6 +3983,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                 'alt_polymer_sequence': altPolySeq,
                 'non_polymer': nonPoly,
                 'branched': branched,
+                'missing_polymer_linkage': misPolyLink,
                 'nmr_ext_poly_seq': nmrExtPolySeq,
                 'mod_residue': modResidue}
 
@@ -4037,11 +4187,6 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         if compId not in chemCompAtom:
                             chemCompAtom[compId] = atomIds
 
-                            def to_np_array(a):
-                                """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
-                                """
-                                return numpy.asarray([a['x'], a['y'], a['z']], dtype=float)
-
                             dataItems = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                          {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                          {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
@@ -4165,12 +4310,49 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         if labelSeqKey not in labelToAuthSeq:
                                             labelToAuthSeq[labelSeqKey] = authSeqKey
 
+        if len(nmrExtPolySeq) > 0:
+            changed = True
+
+            if coordUnobsRes is None:
+                coordUnobsRes = {}
+
             for extSeq in nmrExtPolySeq:
                 authSeqKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'])
                 labelSeqKey = (extSeq['chain_id'], extSeq['seq_id'])
-                coordUnobsRes[authSeqKey] = {'comp_id': extSeq['comp_id']}
-                authToLabelSeq[authSeqKey] = labelSeqKey
-                labelToAuthSeq[labelSeqKey] = authSeqKey
+                if authSeqKey not in coordUnobsRes:
+                    coordUnobsRes[authSeqKey] = {'comp_id': extSeq['comp_id']}
+                if authSeqKey not in authToLabelSeq:
+                    authToLabelSeq[authSeqKey] = labelSeqKey
+                if labelSeqKey not in labelToAuthSeq:
+                    labelToAuthSeq[labelSeqKey] = authSeqKey
+
+        if len(misPolyLink) > 0:  # DAOTHER-9644: support for truncated loop in the model
+            changed = True
+
+            if coordUnobsRes is None:
+                coordUnobsRes = {}
+
+            for mis in misPolyLink:
+                authChainId = mis['auth_chain_id']
+                authSeqId1 = mis['auth_seq_id_1']
+                authSeqId2 = mis['auth_seq_id_2']
+
+                ps = next((ps for ps in polySeq if ps['auth_chain_id'] == authChainId), None)
+
+                if ps is not None and authSeqId1 in ps['auth_seq_id'] and authSeqId2 in ps['auth_seq_id']\
+                   and authSeqId1 < authSeqId2:
+
+                    chainId = ps['chain_id']
+
+                    for authSeqId in range(authSeqId1 + 1, authSeqId2):
+                        authSeqKey = (authChainId, authSeqId)
+                        if authSeqKey not in coordUnobsRes:
+                            coordUnobsRes[authSeqKey] = {'comp_id': '.'}
+                        labelSeqKey = (chainId, ps['seq_id'][ps['auth_seq_id'].index(authSeqId)])
+                        if authSeqKey not in authToLabelSeq:
+                            authToLabelSeq[authSeqKey] = labelSeqKey
+                        if labelSeqKey not in labelToAuthSeq:
+                            labelToAuthSeq[labelSeqKey] = authSeqKey
 
         if authToStarSeq is None or authToEntityType is None or entityAssembly is None or authToStarSeqAnn is None:
             changed = True
@@ -4319,6 +4501,49 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         for item in _mappings:
                             if item not in mappings:
                                 mappings.append(item)
+
+                    if len(misPolyLink) > 0:  # DAOTHER-9644: support for truncated loop in the model
+
+                        for item in mappings:
+                            if any(mis for mis in misPolyLink if mis['auth_chain_id'] == item['auth_asym_id']):
+                                ps = next((ps for ps in polySeq if ps['auth_chain_id'] == item['auth_asym_id']), None)
+
+                                if ps is None:
+                                    continue
+
+                                # DAOTHER-9644: insert label_seq_id for truncated loop in the coordinates
+                                if item['auth_seq_id'] in ps['auth_seq_id']:
+                                    item['seq_id'] = ps['seq_id'][ps['auth_seq_id'].index(item['auth_seq_id'])]
+
+                        for mis in misPolyLink:
+                            authChainId = mis['auth_chain_id']
+
+                            if authChainId not in mappings[0]['auth_asym_id']:
+                                continue
+
+                            authSeqId1 = mis['auth_seq_id_1']
+                            authSeqId2 = mis['auth_seq_id_2']
+
+                            ps = next((ps for ps in polySeq if ps['auth_chain_id'] == authChainId), None)
+
+                            if ps is not None and authSeqId1 in ps['auth_seq_id'] and authSeqId2 in ps['auth_seq_id']\
+                               and authSeqId1 < authSeqId2:
+
+                                chainId = ps['chain_id']
+
+                                for authSeqId in range(authSeqId1 + 1, authSeqId2):
+                                    idx = ps['auth_seq_id'].index(authSeqId)
+                                    mappings.append({'label_asym_id': chainId,
+                                                     'auth_asym_id': authChainId,
+                                                     'seq_id': ps['seq_id'][idx],
+                                                     'auth_seq_id': authSeqId,
+                                                     'alt_seq_id': authSeqId,
+                                                     'comp_id': ps['comp_id'][idx],  # DAOTHER-9644: comp_id must be specified at Macromelucule page
+                                                     'auth_comp_id': ps['auth_comp_id'][idx],
+                                                     'alt_comp_id': ps['auth_comp_id'][idx],
+                                                     'ins_code': None})
+
+                                mappings = sorted(mappings, key=itemgetter('seq_id'))
 
                     authAsymIds = []
                     labelAsymIds = []
@@ -4866,6 +5091,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'alt_polymer_sequence': altPolySeq,
             'non_polymer': nonPoly,
             'branched': branched,
+            'missing_polymer_linkage': misPolyLink,
             'nmr_ext_poly_seq': nmrExtPolySeq,
             'mod_residue': modResidue,
             'coord_atom_site': coordAtomSite,
@@ -5813,10 +6039,10 @@ def isCyclicPolymer(cR, polySeq, authAsymId,
         return False
 
     labelAsymId = ps['chain_id']
-    auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+    authSeqIdList = list(filter(None, ps['auth_seq_id']))
     seq_id_list = list(filter(None, ps['seq_id']))
-    begAuthSeqId = min(auth_seq_id_list)
-    endAuthSeqId = max(auth_seq_id_list)
+    begAuthSeqId = min(authSeqIdList)
+    endAuthSeqId = max(authSeqIdList)
     begLabelSeqId = min(seq_id_list)
     endLabelSeqId = max(seq_id_list)
 
@@ -8183,19 +8409,19 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
                 chainAssign.add((chainId, seqId, cifCompId, True))
 
         elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
-            auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
-            if len(auth_seq_id_list) > 0:
-                min_auth_seq_id = min(auth_seq_id_list)
-                max_auth_seq_id = max(auth_seq_id_list)
-                if min_auth_seq_id <= seqId <= max_auth_seq_id:
+            authSeqIdList = list(filter(None, ps['auth_seq_id']))
+            if len(authSeqIdList) > 0:
+                minAuthSeqId = min(authSeqIdList)
+                maxAuthSeqId = max(authSeqIdList)
+                if minAuthSeqId <= seqId <= maxAuthSeqId:
                     _seqId_ = seqId + 1
-                    while _seqId_ <= max_auth_seq_id:
+                    while _seqId_ <= maxAuthSeqId:
                         if _seqId_ in ps['auth_seq_id']:
                             break
                         _seqId_ += 1
                     if _seqId_ not in ps['auth_seq_id']:
                         _seqId_ = seqId - 1
-                        while _seqId_ >= min_auth_seq_id:
+                        while _seqId_ >= minAuthSeqId:
                             if _seqId_ in ps['auth_seq_id']:
                                 break
                             _seqId_ -= 1
@@ -8626,8 +8852,8 @@ def testCoordAtomIdConsistency(caC, ccU, authChainId, chainId, seqId, compId, at
         if cca is not None and seqKey not in caC['coord_unobs_res'] and ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
             checked = False
             ps = next((ps for ps in caC['polymer_sequence'] if ps['auth_chain_id'] == chainId), None)
-            auth_seq_id_list = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
-            if seqId == 1 or (chainId, seqId - 1) in caC['coord_unobs_res'] or (ps is not None and min(auth_seq_id_list) == seqId):
+            authSeqIdList = list(filter(None, ps['auth_seq_id'])) if ps is not None else None
+            if seqId == 1 or (chainId, seqId - 1) in caC['coord_unobs_res'] or (ps is not None and min(authSeqIdList) == seqId):
                 if aminoProtonCode and atomId != 'H1':
                     testCoordAtomIdConsistency(caC, ccU, authChainId, chainId, seqId, compId, 'H1', seqKey, coordAtomSite)
                     return None

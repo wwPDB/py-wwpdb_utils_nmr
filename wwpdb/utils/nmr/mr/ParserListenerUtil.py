@@ -3515,7 +3515,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         s2['seq_id'].insert(pos, cif_label_seq_id)
                                         s2['auth_seq_id'].insert(pos, cif_auth_seq_id)
                                         s2['comp_id'].insert(pos, nmr_comp_id)
-                                        s2['auth_comp_id'].insert(pos, nmr_comp_id)
+                                        if s2['comp_id'] is not s2['auth_comp_id']:  # avoid doulble inserts to 'auth_comp_id'
+                                            s2['auth_comp_id'].insert(pos, nmr_comp_id)
 
                                         nmrExtPolySeq.append({'auth_chain_id': s2['auth_chain_id'],
                                                               'chain_id': s2['chain_id'],
@@ -3557,7 +3558,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                                 ps['auth_seq_id'].insert(pos, authSeqId)
                                 ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
-                                if 'auth_comp_id' in ps:
+                                if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:  # avoid doulble inserts to 'auth_comp_id'
                                     ps['auth_comp_id'].insert(pos, '.')
 
                             ps['seq_id'] = list(range(1, len(ps['auth_seq_id']) + 1))
@@ -3630,7 +3631,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                                     ps['auth_seq_id'].insert(pos, auth_seq_id_)
                                     ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
-                                    if 'auth_comp_id' in ps:
+                                    if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:  # avoid doulble inserts to 'auth_comp_id'
                                         ps['auth_comp_id'].insert(pos, '.')
 
                                 ps['seq_id'] = list(range(1, len(ps['auth_seq_id']) + 1))
@@ -4058,7 +4059,19 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
             coord = cR.getDictListWithFilter('atom_site', dataItems, filterItems)
 
-            authToLabelChain = {ps['auth_chain_id']: ps['chain_id'] for ps in polySeq}
+            # DAOTHER-8572: taking consideration of multiple mapping from auth_asym_id(s) to label_asym_id
+            authToLabelChain = {}
+            for ps in polySeq:
+                if ps['auth_chain_id'] not in authToLabelChain:
+                    authToLabelChain[ps['auth_chain_id']] = ps['chain_id']
+                elif isinstance(authToLabelChain[ps['auth_chain_id']], str):
+                    if ps['chain_id'] == authToLabelChain[ps['auth_chain_id']]:
+                        continue
+                    authToLabelChain[ps['auth_chain_id']] = [authToLabelChain[ps['auth_chain_id']], ps['chain_id']]
+                else:
+                    if ps['chain_id'] in authToLabelChain[ps['auth_chain_id']]:
+                        continue
+                    authToLabelChain[ps['auth_chain_id']].append(ps['chain_id'])
             labelToAuthChain = {ps['chain_id']: ps['auth_chain_id'] for ps in polySeq}
 
             if cR.hasCategory('pdbx_entity_branch'):
@@ -4134,7 +4147,13 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         coordAtomSite[seqKey]['alt_atom_id'] = altAtomIds
                     altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId and c['comp_id'] == compId), None)
                     if chainId in authToLabelChain and altSeqId is not None and altSeqId.isdigit():
-                        labelToAuthSeq[(authToLabelChain[chainId], int(altSeqId))] = seqKey
+                        if isinstance(authToLabelChain[chainId], str):
+                            labelToAuthSeq[(authToLabelChain[chainId], int(altSeqId))] = seqKey
+                        else:
+                            for _chainId in authToLabelChain[chainId]:  # DAOTHER-8572: select possible auth_asym_id(s)
+                                ps = next((ps for ps in polySeq if ps['chain_id'] == _chainId), None)
+                                if seqId in ps['auth_seq_id']:
+                                    labelToAuthSeq[(_chainId, int(altSeqId))] = seqKey
                     else:
                         labelToAuthSeq[seqKey] = seqKey
                         if chainId != authChainId:
@@ -4173,7 +4192,13 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 coordAtomSite[seqKey]['alt_atom_id'] = altAtomIds
                             altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId and c['comp_id'] == compId), None)
                             if chainId in authToLabelChain and altSeqId is not None and altSeqId.isdigit():
-                                labelToAuthSeq[(authToLabelChain[chainId], int(altSeqId))] = (chainId, seqId)
+                                if isinstance(authToLabelChain[chainId], str):
+                                    labelToAuthSeq[(authToLabelChain[chainId], int(altSeqId))] = (chainId, seqId)
+                                else:
+                                    for _chainId in authToLabelChain[chainId]:  # DAOTHER-8572: select possible auth_asym_id(s)
+                                        ps = next((ps for ps in polySeq if ps['chain_id'] == _chainId), None)
+                                        if seqId in ps['auth_seq_id']:
+                                            labelToAuthSeq[(_chainId, int(altSeqId))] = (chainId, seqId)
                             else:
                                 _seqKey = (seqKey[0], seqKey[1])
                                 labelToAuthSeq[_seqKey] = _seqKey

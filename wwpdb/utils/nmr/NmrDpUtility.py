@@ -24868,6 +24868,7 @@ class NmrDpUtility:
             trial = 0
 
             incomplete_comp_id_annotation = []  # DAOTHER-9286
+            truncated_loop_sequence = []  # DAOTHER-9644
 
             def fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
                 _src_idx = src_idx
@@ -24877,6 +24878,8 @@ class NmrDpUtility:
                 fill_orig_atom_id = _row[23] not in emptyValue
 
                 if _seq_key is not None:
+                    if _seq_key in truncated_loop_sequence and _row[24] in emptyValue:
+                        _row[24] = 'UNMAPPED'
                     seq_key = (_seq_key[0], _seq_key[1], comp_id)
                     _seq_key = seq_key if seq_key in coord_atom_site else _seq_key
                 if _seq_key in coord_atom_site:
@@ -26230,6 +26233,8 @@ class NmrDpUtility:
                                         try:
                                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                                         except KeyError:  # DAOTHER-9644: map residue on truncated loop
+                                            if _seq_key not in truncated_loop_sequence:
+                                                truncated_loop_sequence.append(_seq_key)
                                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[dummy_key]
                                             auth_to_star_seq[seq_key] = auth_to_star_seq[dummy_key]
                                             del auth_to_star_seq[dummy_key]
@@ -45771,7 +45776,7 @@ class NmrDpUtility:
                 auth_asym_id, auth_seq_id, comp_id = k
                 entity_assembly_id, seq_id, entity_id, genuine = v
 
-                if not genuine:
+                if auth_seq_id is None or not genuine:
                     continue
 
                 seq_key = (entity_assembly_id, seq_id)
@@ -45822,34 +45827,37 @@ class NmrDpUtility:
                         nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0], label_scheme=False)
 
                     if nmr_ps is not None:
-                        j = ps['auth_seq_id'].index(auth_seq_id)
-                        label_seq_id = ps['seq_id'][j]
-                        length = len(ps['seq_id'])
-                        cyclic = self.__isCyclicPolymer(nmr_ps['chain_id'])
-                        if cyclic and label_seq_id in (1, length):
-                            row[seq_link_col] = 'cyclic'
-                        elif label_seq_id == 1 and length == 1:
-                            row[seq_link_col] = 'single'
-                        elif index == 1:
-                            row[seq_link_col] = 'start'
-                        elif j == length - 1:
-                            row[seq_link_col] = 'end'
-                        elif label_seq_id - 1 == ps['seq_id'][j - 1] and label_seq_id + 1 == ps['seq_id'][j + 1]:
-                            row[seq_link_col] = 'middle'
-                        elif label_seq_id == 1:
-                            row[seq_link_col] = 'middle'
-                        else:
-                            row[seq_link_col] = 'break'
-
-                        entity_poly_type = next((item['entity_poly_type'] for item in entity_assembly
-                                                 if item['entity_id'] == entity_id and item['entity_type'] == 'polymer'), None)
-                        if entity_poly_type is not None and entity_poly_type.startswith('polypeptide'):
-                            if self.__isProtCis(nmr_ps['chain_id'], seq_id):
-                                row[cis_res_col] = 'true'
-                            elif auth_comp_id in ('PRO', 'GLY'):
-                                row[cis_res_col] = 'false'
+                        try:
+                            j = ps['auth_seq_id'].index(auth_seq_id)
+                            label_seq_id = ps['seq_id'][j]
+                            length = len(ps['seq_id'])
+                            cyclic = self.__isCyclicPolymer(nmr_ps['chain_id'])
+                            if cyclic and label_seq_id in (1, length):
+                                row[seq_link_col] = 'cyclic'
+                            elif label_seq_id == 1 and length == 1:
+                                row[seq_link_col] = 'single'
+                            elif index == 1:
+                                row[seq_link_col] = 'start'
+                            elif j == length - 1:
+                                row[seq_link_col] = 'end'
+                            elif label_seq_id - 1 == ps['seq_id'][j - 1] and label_seq_id + 1 == ps['seq_id'][j + 1]:
+                                row[seq_link_col] = 'middle'
+                            elif label_seq_id == 1:
+                                row[seq_link_col] = 'middle'
                             else:
-                                row[cis_res_col] = '.'
+                                row[seq_link_col] = 'break'
+
+                            entity_poly_type = next((item['entity_poly_type'] for item in entity_assembly
+                                                     if item['entity_id'] == entity_id and item['entity_type'] == 'polymer'), None)
+                            if entity_poly_type is not None and entity_poly_type.startswith('polypeptide'):
+                                if self.__isProtCis(nmr_ps['chain_id'], seq_id):
+                                    row[cis_res_col] = 'true'
+                                elif auth_comp_id in ('PRO', 'GLY'):
+                                    row[cis_res_col] = 'false'
+                                else:
+                                    row[cis_res_col] = '.'
+                        except ValueError:
+                            pass
 
                 row[idx_col] = nef_index
 
@@ -46011,7 +46019,7 @@ class NmrDpUtility:
                 auth_asym_id, auth_seq_id, comp_id = k
                 entity_assembly_id, seq_id, entity_id, genuine = v
 
-                if not genuine:
+                if auth_seq_id is None or not genuine:
                     continue
 
                 seq_key = (entity_assembly_id, seq_id)
@@ -46072,38 +46080,41 @@ class NmrDpUtility:
                         nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0], label_scheme=False)
 
                     if nmr_ps is not None:
-                        j = ps['auth_seq_id'].index(auth_seq_id)
-                        label_seq_id = ps['seq_id'][j]
-                        if label_seq_id is not None:
-                            try:
-                                length = len(ps['seq_id'])
-                                cyclic = self.__isCyclicPolymer(nmr_ps['chain_id'])
-                                if cyclic and label_seq_id in (1, length):
-                                    row[seq_link_col] = 'cyclic'
-                                elif label_seq_id == 1 and length == 1:
-                                    row[seq_link_col] = 'single'
-                                elif index == 1:
-                                    row[seq_link_col] = 'start'
-                                elif j == length - 1:
-                                    row[seq_link_col] = 'end'
-                                elif label_seq_id - 1 == ps['seq_id'][j - 1] and label_seq_id + 1 == ps['seq_id'][j + 1]:
-                                    row[seq_link_col] = 'middle'
-                                elif label_seq_id == 1:
-                                    row[seq_link_col] = 'middle'
-                                else:
-                                    row[seq_link_col] = 'break'
-                            except IndexError:
-                                pass
+                        try:
+                            j = ps['auth_seq_id'].index(auth_seq_id)
+                            label_seq_id = ps['seq_id'][j]
+                            if label_seq_id is not None:
+                                try:
+                                    length = len(ps['seq_id'])
+                                    cyclic = self.__isCyclicPolymer(nmr_ps['chain_id'])
+                                    if cyclic and label_seq_id in (1, length):
+                                        row[seq_link_col] = 'cyclic'
+                                    elif label_seq_id == 1 and length == 1:
+                                        row[seq_link_col] = 'single'
+                                    elif index == 1:
+                                        row[seq_link_col] = 'start'
+                                    elif j == length - 1:
+                                        row[seq_link_col] = 'end'
+                                    elif label_seq_id - 1 == ps['seq_id'][j - 1] and label_seq_id + 1 == ps['seq_id'][j + 1]:
+                                        row[seq_link_col] = 'middle'
+                                    elif label_seq_id == 1:
+                                        row[seq_link_col] = 'middle'
+                                    else:
+                                        row[seq_link_col] = 'break'
+                                except IndexError:
+                                    pass
 
-                        entity_poly_type = next((item['entity_poly_type'] for item in entity_assembly
-                                                 if item['entity_id'] == entity_id and item['entity_type'] == 'polymer'), None)
-                        if entity_poly_type is not None and entity_poly_type.startswith('polypeptide'):
-                            if self.__isProtCis(nmr_ps['chain_id'], seq_id):
-                                row[cis_res_col] = 'yes'
-                            elif auth_comp_id in ('PRO', 'GLY'):
-                                row[cis_res_col] = 'no'
-                            else:
-                                row[cis_res_col] = '.'
+                            entity_poly_type = next((item['entity_poly_type'] for item in entity_assembly
+                                                     if item['entity_id'] == entity_id and item['entity_type'] == 'polymer'), None)
+                            if entity_poly_type is not None and entity_poly_type.startswith('polypeptide'):
+                                if self.__isProtCis(nmr_ps['chain_id'], seq_id):
+                                    row[cis_res_col] = 'yes'
+                                elif auth_comp_id in ('PRO', 'GLY'):
+                                    row[cis_res_col] = 'no'
+                                else:
+                                    row[cis_res_col] = '.'
+                        except ValueError:
+                            pass
 
                 row[asm_id_col] = 1
 

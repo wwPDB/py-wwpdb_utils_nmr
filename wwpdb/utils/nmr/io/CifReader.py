@@ -926,8 +926,8 @@ class CifReader:
                             END_ATOM = "P"
 
                         for p in range(len(authSeqDict[c]) - 1):
-                            s_p = ent['auth_seq_id'][p]
-                            s_q = ent['auth_seq_id'][p + 1]
+                            s_p = authSeqDict[c][p]
+                            s_q = authSeqDict[c][p + 1]
                             if s_p is None or s_q is None:
                                 continue
                             if s_p + 1 != s_q:
@@ -1092,7 +1092,7 @@ class CifReader:
                                                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                            {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                            {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                             {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
                                                                             {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
@@ -1108,7 +1108,7 @@ class CifReader:
                                                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                            {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                            {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                             {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
                                                                             {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
@@ -1124,7 +1124,7 @@ class CifReader:
                                                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                            {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                            {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                                             {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                             {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
                                                                             {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
@@ -1154,7 +1154,7 @@ class CifReader:
                                                                       [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                                        {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                                        {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                       {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                       {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                                        {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
                                                                        {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
@@ -1169,7 +1169,7 @@ class CifReader:
                                                                        [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                        {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                                        {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                         {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
                                                                         {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}

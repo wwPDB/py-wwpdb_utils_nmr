@@ -35412,21 +35412,24 @@ class NmrDpUtility:
 
                     if conflict_warns is not None:
 
-                        for c_warn in conflict_warns:
-                            for index in c_warn['row_locations'][index_tag]:
-                                inconsistent.add(int(index))
+                        for item in conflict_warns:
+                            if 'row_locations' in item:
+                                for index in item['row_locations'][index_tag]:
+                                    inconsistent.add(int(index))
 
                     if inconsist_warns is not None:
 
-                        for i_warn in inconsist_warns:
-                            for index in i_warn['row_locations'][index_tag]:
-                                inconsistent.add(int(index))
+                        for item in inconsist_warns:
+                            if 'row_locations' in item:
+                                for index in item['row_locations'][index_tag]:
+                                    inconsistent.add(int(index))
 
                     if redundant_warns is not None:
 
-                        for d_warn in redundant_warns:
-                            for index in d_warn['row_locations'][index_tag]:
-                                redundant.add(int(index))
+                        for item in redundant_warns:
+                            if 'row_locations' in item:
+                                for index in item['row_locations'][index_tag]:
+                                    redundant.add(int(index))
 
                     if content_subtype == 'dist_restraint':
                         self.__calculateStatsOfDistanceRestraint(file_list_id, sf_framecode, lp_data, conflict_id_set, inconsistent, redundant, ent)

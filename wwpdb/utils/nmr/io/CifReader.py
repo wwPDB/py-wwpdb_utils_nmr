@@ -697,26 +697,27 @@ class CifReader:
         repModelId = effModelIds[0] if effModelIds is not None else 1
 
         # DAOTHER-9644: support for truncated loop in the model
-        misPolyLink = []
-        if catName == 'pdbx_poly_seq_scheme':
+        if withRmsd:  # avoid interference of ParserListenerUtils.coordAssemblyChecker()
+            misPolyLink = []
+            if catName == 'pdbx_poly_seq_scheme':
 
-            _catName = 'pdbx_validate_polymer_linkage'
+                _catName = 'pdbx_validate_polymer_linkage'
 
-            if self.hasCategory(_catName):
-                _keyItems = [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                             {'name': 'auth_seq_id_1', 'type': 'int'},
-                             {'name': 'auth_asym_id_2', 'type': 'str', 'alt_name': 'test_auth_chain_id'},
-                             {'name': 'auth_seq_id_2', 'type': 'int'}
-                             ]
-                _filterItems = [{'name': 'PDB_model_num', 'type': 'int', 'value': repModelId},
-                                {'name': 'label_alt_id_1', 'type': 'enum', 'enum': (repAltId,)},
-                                {'name': 'label_alt_id_2', 'type': 'enum', 'enum': (repAltId,)}
-                                ]
+                if self.hasCategory(_catName):
+                    _keyItems = [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                 {'name': 'auth_seq_id_1', 'type': 'int'},
+                                 {'name': 'auth_asym_id_2', 'type': 'str', 'alt_name': 'test_auth_chain_id'},
+                                 {'name': 'auth_seq_id_2', 'type': 'int'}
+                                 ]
+                    _filterItems = [{'name': 'PDB_model_num', 'type': 'int', 'value': repModelId},
+                                    {'name': 'label_alt_id_1', 'type': 'enum', 'enum': (repAltId,)},
+                                    {'name': 'label_alt_id_2', 'type': 'enum', 'enum': (repAltId,)}
+                                    ]
 
-                for mis in self.getDictListWithFilter(_catName, _keyItems, _filterItems):
-                    if mis['auth_chain_id'] == mis['test_auth_chain_id']:
-                        del mis['test_auth_chain_id']
-                        misPolyLink.append(mis)
+                    for mis in self.getDictListWithFilter(_catName, _keyItems, _filterItems):
+                        if mis['auth_chain_id'] == mis['test_auth_chain_id']:
+                            del mis['test_auth_chain_id']
+                            misPolyLink.append(mis)
 
         # get category object
         catObj = self.__dBlock.getObj(catName)
@@ -879,82 +880,21 @@ class CifReader:
                     etype = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
 
                     # DAOTHER-9644: support for truncated loop in the model
-                    if len(misPolyLink) > 0 and len(authSeqDict) > 0:
+                    if withRmsd:  # avoid interference of ParserListenerUtils.coordAssemblyChecker()
+                        if len(misPolyLink) > 0 and len(authSeqDict) > 0:
 
-                        for mis in misPolyLink:
+                            for mis in misPolyLink:
 
-                            if mis['auth_chain_id'] != (authChainDict[c] if auth_chain_id_col != -1 else c):
-                                continue
+                                if mis['auth_chain_id'] != (authChainDict[c] if auth_chain_id_col != -1 else c):
+                                    continue
 
-                            auth_seq_id_1 = mis['auth_seq_id_1']
-                            auth_seq_id_2 = mis['auth_seq_id_2']
+                                auth_seq_id_1 = mis['auth_seq_id_1']
+                                auth_seq_id_2 = mis['auth_seq_id_2']
 
-                            if auth_seq_id_1 in authSeqDict[c]\
-                               and auth_seq_id_2 in authSeqDict[c]\
-                               and auth_seq_id_1 < auth_seq_id_2:
+                                if auth_seq_id_1 in authSeqDict[c]\
+                                   and auth_seq_id_2 in authSeqDict[c]\
+                                   and auth_seq_id_1 < auth_seq_id_2:
 
-                                for auth_seq_id_ in range(auth_seq_id_1 + 1, auth_seq_id_2):
-                                    auth_seq_id_list = list(filter(None, authSeqDict[c]))
-
-                                    if auth_seq_id_ < min(auth_seq_id_list):
-                                        pos = 0
-                                    elif auth_seq_id_ > max(auth_seq_id_list):
-                                        pos = len(auth_seq_id_list)
-                                    else:
-                                        for idx, _auth_seq_id_ in enumerate(auth_seq_id_list):
-                                            if _auth_seq_id_ < auth_seq_id_:
-                                                continue
-                                            pos = idx
-                                            break
-
-                                    authSeqDict[c].insert(pos, auth_seq_id_)
-                                    compDict[c].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
-                                    if ins_code_col != -1:
-                                        insCodeDict[c].insert(pos, '.')
-
-                                # DAOTHER-9644: insert label_seq_id for truncated loop in the coordinates
-                                seqDict[c] = labelSeqDict[c] = list(range(1, len(authSeqDict[c]) + 1))
-
-                    # DAOTHER-9644: simulate pdbx_poly_seq_scheme category
-                    elif catName == 'pdbx_poly_seq_scheme' and len(authSeqDict) > 0 and etype is not None:
-
-                        if 'polypeptide' in etype:
-                            BEG_ATOM = "C"
-                            END_ATOM = "N"
-                        else:
-                            BEG_ATOM = "O3'"
-                            END_ATOM = "P"
-
-                        for p in range(len(authSeqDict[c]) - 1):
-                            s_p = authSeqDict[c][p]
-                            s_q = authSeqDict[c][p + 1]
-                            if s_p is None or s_q is None:
-                                continue
-                            if s_p + 1 != s_q:
-                                auth_seq_id_1 = s_p
-                                auth_seq_id_2 = s_q
-
-                                _beg =\
-                                    self.getDictListWithFilter('atom_site',
-                                                               CARTN_DATA_ITEMS,
-                                                               [{'name': 'label_asym_id', 'type': 'str', 'value': c},
-                                                                {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_1},
-                                                                {'name': 'label_atom_id', 'type': 'str', 'value': BEG_ATOM},
-                                                                {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': repModelId},
-                                                                {'name': 'label_alt_id', 'type': 'enum', 'enum': (repAltId,)}
-                                                                ])
-
-                                _end =\
-                                    self.getDictListWithFilter('atom_site',
-                                                               CARTN_DATA_ITEMS,
-                                                               [{'name': 'label_asym_id', 'type': 'str', 'value': c},
-                                                                {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_2},
-                                                                {'name': 'label_atom_id', 'type': 'str', 'value': END_ATOM},
-                                                                {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': repModelId},
-                                                                {'name': 'label_alt_id', 'type': 'enum', 'enum': (repAltId,)}
-                                                                ])
-
-                                if len(_beg) == 1 and len(_end) == 1 and np.linalg.norm(to_np_array(_beg[0]) - to_np_array(_end[0])) > 5.0:
                                     for auth_seq_id_ in range(auth_seq_id_1 + 1, auth_seq_id_2):
                                         auth_seq_id_list = list(filter(None, authSeqDict[c]))
 
@@ -976,6 +916,68 @@ class CifReader:
 
                                     # DAOTHER-9644: insert label_seq_id for truncated loop in the coordinates
                                     seqDict[c] = labelSeqDict[c] = list(range(1, len(authSeqDict[c]) + 1))
+
+                        # DAOTHER-9644: simulate pdbx_poly_seq_scheme category
+                        elif catName == 'pdbx_poly_seq_scheme' and len(authSeqDict) > 0 and etype is not None:
+
+                            if 'polypeptide' in etype:
+                                BEG_ATOM = "C"
+                                END_ATOM = "N"
+                            else:
+                                BEG_ATOM = "O3'"
+                                END_ATOM = "P"
+
+                            for p in range(len(authSeqDict[c]) - 1):
+                                s_p = authSeqDict[c][p]
+                                s_q = authSeqDict[c][p + 1]
+                                if s_p is None or s_q is None:
+                                    continue
+                                if s_p + 1 != s_q:
+                                    auth_seq_id_1 = s_p
+                                    auth_seq_id_2 = s_q
+
+                                    _beg =\
+                                        self.getDictListWithFilter('atom_site',
+                                                                   CARTN_DATA_ITEMS,
+                                                                   [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                                                    {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_1},
+                                                                    {'name': 'label_atom_id', 'type': 'str', 'value': BEG_ATOM},
+                                                                    {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': repModelId},
+                                                                    {'name': 'label_alt_id', 'type': 'enum', 'enum': (repAltId,)}
+                                                                    ])
+
+                                    _end =\
+                                        self.getDictListWithFilter('atom_site',
+                                                                   CARTN_DATA_ITEMS,
+                                                                   [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                                                    {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_2},
+                                                                    {'name': 'label_atom_id', 'type': 'str', 'value': END_ATOM},
+                                                                    {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': repModelId},
+                                                                    {'name': 'label_alt_id', 'type': 'enum', 'enum': (repAltId,)}
+                                                                    ])
+
+                                    if len(_beg) == 1 and len(_end) == 1 and np.linalg.norm(to_np_array(_beg[0]) - to_np_array(_end[0])) > 5.0:
+                                        for auth_seq_id_ in range(auth_seq_id_1 + 1, auth_seq_id_2):
+                                            auth_seq_id_list = list(filter(None, authSeqDict[c]))
+
+                                            if auth_seq_id_ < min(auth_seq_id_list):
+                                                pos = 0
+                                            elif auth_seq_id_ > max(auth_seq_id_list):
+                                                pos = len(auth_seq_id_list)
+                                            else:
+                                                for idx, _auth_seq_id_ in enumerate(auth_seq_id_list):
+                                                    if _auth_seq_id_ < auth_seq_id_:
+                                                        continue
+                                                    pos = idx
+                                                    break
+
+                                            authSeqDict[c].insert(pos, auth_seq_id_)
+                                            compDict[c].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
+                                            if ins_code_col != -1:
+                                                insCodeDict[c].insert(pos, '.')
+
+                                        # DAOTHER-9644: insert label_seq_id for truncated loop in the coordinates
+                                        seqDict[c] = labelSeqDict[c] = list(range(1, len(authSeqDict[c]) + 1))
 
                     ent['seq_id'] = seqDict[c]
                     ent['comp_id'] = compDict[c]

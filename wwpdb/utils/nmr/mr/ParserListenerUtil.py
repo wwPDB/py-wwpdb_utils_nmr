@@ -3564,7 +3564,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             ps['seq_id'] = list(range(1, len(ps['auth_seq_id']) + 1))
 
             # DAOTHER-9644: simulate pdbx_poly_seq_scheme category
-            elif not cR.hasCategory('pdbx_validate_polymer_linkage'):
+            else:
 
                 entity_poly = cR.getDictList('entity_poly')
 

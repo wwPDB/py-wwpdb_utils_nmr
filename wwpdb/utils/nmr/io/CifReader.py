@@ -697,27 +697,26 @@ class CifReader:
         repModelId = effModelIds[0] if effModelIds is not None else 1
 
         # DAOTHER-9644: support for truncated loop in the model
-        if withRmsd:  # avoid interference of ParserListenerUtils.coordAssemblyChecker()
+        if withRmsd and catName == 'pdbx_poly_seq_scheme':  # avoid interference of ParserListenerUtils.coordAssemblyChecker()
             misPolyLink = []
-            if catName == 'pdbx_poly_seq_scheme':
 
-                _catName = 'pdbx_validate_polymer_linkage'
+            _catName = 'pdbx_validate_polymer_linkage'
 
-                if self.hasCategory(_catName):
-                    _keyItems = [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                 {'name': 'auth_seq_id_1', 'type': 'int'},
-                                 {'name': 'auth_asym_id_2', 'type': 'str', 'alt_name': 'test_auth_chain_id'},
-                                 {'name': 'auth_seq_id_2', 'type': 'int'}
-                                 ]
-                    _filterItems = [{'name': 'PDB_model_num', 'type': 'int', 'value': repModelId},
-                                    {'name': 'label_alt_id_1', 'type': 'enum', 'enum': (repAltId,)},
-                                    {'name': 'label_alt_id_2', 'type': 'enum', 'enum': (repAltId,)}
-                                    ]
+            if self.hasCategory(_catName):
+                _keyItems = [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                             {'name': 'auth_seq_id_1', 'type': 'int'},
+                             {'name': 'auth_asym_id_2', 'type': 'str', 'alt_name': 'test_auth_chain_id'},
+                             {'name': 'auth_seq_id_2', 'type': 'int'}
+                             ]
+                _filterItems = [{'name': 'PDB_model_num', 'type': 'int', 'value': repModelId},
+                                {'name': 'label_alt_id_1', 'type': 'enum', 'enum': (repAltId,)},
+                                {'name': 'label_alt_id_2', 'type': 'enum', 'enum': (repAltId,)}
+                                ]
 
-                    for mis in self.getDictListWithFilter(_catName, _keyItems, _filterItems):
-                        if mis['auth_chain_id'] == mis['test_auth_chain_id']:
-                            del mis['test_auth_chain_id']
-                            misPolyLink.append(mis)
+                for mis in self.getDictListWithFilter(_catName, _keyItems, _filterItems):
+                    if mis['auth_chain_id'] == mis['test_auth_chain_id']:
+                        del mis['test_auth_chain_id']
+                        misPolyLink.append(mis)
 
         # get category object
         catObj = self.__dBlock.getObj(catName)
@@ -880,8 +879,9 @@ class CifReader:
                     etype = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
 
                     # DAOTHER-9644: support for truncated loop in the model
-                    if withRmsd:  # avoid interference of ParserListenerUtils.coordAssemblyChecker()
-                        if len(misPolyLink) > 0 and len(authSeqDict) > 0:
+                    if withRmsd and catName == 'pdbx_poly_seq_scheme' and len(authSeqDict) > 0:  # avoid interference of ParserListenerUtils.coordAssemblyChecker()
+
+                        if len(misPolyLink) > 0:
 
                             for mis in misPolyLink:
 
@@ -918,7 +918,7 @@ class CifReader:
                                     seqDict[c] = labelSeqDict[c] = list(range(1, len(authSeqDict[c]) + 1))
 
                         # DAOTHER-9644: simulate pdbx_poly_seq_scheme category
-                        elif catName == 'pdbx_poly_seq_scheme' and len(authSeqDict) > 0 and etype is not None:
+                        elif etype is not None:
 
                             if 'polypeptide' in etype:
                                 BEG_ATOM = "C"

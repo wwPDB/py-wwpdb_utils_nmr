@@ -24724,6 +24724,7 @@ class NmrDpUtility:
             coord_atom_site = self.__caC['coord_atom_site'] if self.__caC is not None else {}
             auth_atom_name_to_id = self.__caC['auth_atom_name_to_id'] if self.__caC is not None else {}
             auth_atom_name_to_id_ext = self.__caC['auth_atom_name_to_id_ext'] if self.__caC is not None else {}
+            mis_poly_link = self.__caC['missing_polymer_linkage'] if self.__caC is not None else []
 
             _auth_to_orig_seq = {}
 
@@ -24869,6 +24870,18 @@ class NmrDpUtility:
 
             incomplete_comp_id_annotation = []  # DAOTHER-9286
             truncated_loop_sequence = []  # DAOTHER-9644
+            for mis in mis_poly_link:
+                auth_chain_id = mis['auth_chain_id']
+                auth_seq_id_1 = mis['auth_seq_id_1']
+                auth_seq_id_2 = mis['auth_seq_id_2']
+
+                cif_ps = next((cif_ps for cif_ps in self.__caC['polymer_sequence'] if cif_ps['auth_chain_id'] == auth_chain_id), None)
+
+                if cif_ps is not None and auth_seq_id_1 in cif_ps['auth_seq_id'] and auth_seq_id_2 in cif_ps['auth_seq_id']\
+                   and auth_seq_id_1 < auth_seq_id_2:
+                    for auth_seq_id in range(auth_seq_id_1 + 1, auth_seq_id_2):
+                        _seq_key = (auth_chain_id, auth_seq_id)
+                        truncated_loop_sequence.append(_seq_key)
 
             def fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
                 _src_idx = src_idx

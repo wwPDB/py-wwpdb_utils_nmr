@@ -3338,7 +3338,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                     {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                     {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
-                                    {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                    {'name': 'auth_comp_id', 'type': 'int', 'alt_name': 'auth_comp_id'},
                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
                                     ],
                      'mis_poly_link': [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id'},
@@ -3596,7 +3596,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                             CARTN_DATA_ITEMS,
                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                              {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_1},
-                                                             {'name': 'auth_atom_id', 'type': 'str', 'value': BEG_ATOM},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'value': BEG_ATOM},
                                                              {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': representativeModelId},
                                                              {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                              ])
@@ -3605,7 +3605,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                             CARTN_DATA_ITEMS,
                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                              {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_2},
-                                                             {'name': 'auth_atom_id', 'type': 'str', 'value': END_ATOM},
+                                                             {'name': 'label_atom_id', 'type': 'str', 'value': END_ATOM},
                                                              {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': representativeModelId},
                                                              {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                              ])

@@ -939,7 +939,7 @@ class CifReader:
                                                                CARTN_DATA_ITEMS,
                                                                [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                                 {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_1},
-                                                                {'name': 'auth_atom_id', 'type': 'str', 'value': BEG_ATOM},
+                                                                {'name': 'label_atom_id', 'type': 'str', 'value': BEG_ATOM},
                                                                 {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': repModelId},
                                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (repAltId,)}
                                                                 ])
@@ -949,7 +949,7 @@ class CifReader:
                                                                CARTN_DATA_ITEMS,
                                                                [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                                 {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_2},
-                                                                {'name': 'auth_atom_id', 'type': 'str', 'value': END_ATOM},
+                                                                {'name': 'label_atom_id', 'type': 'str', 'value': END_ATOM},
                                                                 {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': repModelId},
                                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (repAltId,)}
                                                                 ])

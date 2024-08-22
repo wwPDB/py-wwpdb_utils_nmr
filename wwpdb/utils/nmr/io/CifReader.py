@@ -927,12 +927,25 @@ class CifReader:
                                 BEG_ATOM = "O3'"
                                 END_ATOM = "P"
 
+                            has_ins_code = False
+
                             for p in range(len(authSeqDict[c]) - 1):
                                 s_p = authSeqDict[c][p]
                                 s_q = authSeqDict[c][p + 1]
+
                                 if s_p is None or s_q is None:
                                     continue
+
+                                if s_p == s_q:
+                                    has_ins_code = True
+                                    continue
+
                                 if s_p + 1 != s_q:
+
+                                    if has_ins_code:
+                                        has_ins_code = False
+                                        continue
+
                                     auth_seq_id_1 = s_p
                                     auth_seq_id_2 = s_q
 
@@ -982,7 +995,7 @@ class CifReader:
                     ent['seq_id'] = seqDict[c]
                     ent['comp_id'] = compDict[c]
                     if c in insCodeDict:
-                        if any(i for i in insCodeDict[c] if i not in self.emptyValue):
+                        if any(ic for ic in insCodeDict[c] if ic not in self.emptyValue):
                             ent['ins_code'] = insCodeDict[c]
                         if any(s for s in labelSeqDict[c] if s not in self.emptyValue):
                             if c in labelSeqDict and all(isinstance(s, int) for s in labelSeqDict[c]):
@@ -1005,19 +1018,34 @@ class CifReader:
                     if auth_comp_id_col != -1:
                         ent['auth_comp_id'] = []
                         if auth_scheme:
-                            for s in authSeqDict[c]:
-                                row = next((row for row in rowList if row[chain_id_col] == c and int(row[auth_seq_id_col]) == s), None)
-                                if row is not None:
-                                    comp_id = row[auth_comp_id_col]
-                                    if comp_id not in self.emptyValue:
-                                        ent['auth_comp_id'].append(comp_id)
+                            if ins_code_col != -1:
+                                for s, ic in zip(authSeqDict[c], insCodeDict[c]):
+                                    row = next((row for row in rowList if row[chain_id_col] == c
+                                                and int(row[auth_seq_id_col]) == s and row[ins_code_col] == ic), None)
+                                    if row is not None:
+                                        comp_id = row[auth_comp_id_col]
+                                        if comp_id not in self.emptyValue:
+                                            ent['auth_comp_id'].append(comp_id)
+                                        else:
+                                            ent['auth_comp_id'].append('.')
                                     else:
                                         ent['auth_comp_id'].append('.')
-                                else:
-                                    ent['auth_comp_id'].append('.')
+                            else:
+                                for s in authSeqDict[c]:
+                                    row = next((row for row in rowList if row[chain_id_col] == c
+                                                and int(row[auth_seq_id_col]) == s), None)
+                                    if row is not None:
+                                        comp_id = row[auth_comp_id_col]
+                                        if comp_id not in self.emptyValue:
+                                            ent['auth_comp_id'].append(comp_id)
+                                        else:
+                                            ent['auth_comp_id'].append('.')
+                                    else:
+                                        ent['auth_comp_id'].append('.')
                         else:
                             for s in seqDict[c]:
-                                row = next((row for row in rowList if row[chain_id_col] == c and int(row[seq_id_col]) == s), None)
+                                row = next((row for row in rowList if row[chain_id_col] == c
+                                            and int(row[seq_id_col]) == s), None)
                                 if row is not None:
                                     comp_id = row[auth_comp_id_col]
                                     if comp_id not in self.emptyValue:
@@ -1032,19 +1060,34 @@ class CifReader:
                     if alt_comp_id_col != -1:
                         ent['alt_comp_id'] = []
                         if auth_scheme:
-                            for s in authSeqDict[c]:
-                                row = next((row for row in rowList if row[chain_id_col] == c and int(row[auth_seq_id_col]) == s), None)
-                                if row is not None:
-                                    comp_id = row[alt_comp_id_col]
-                                    if comp_id not in self.emptyValue:
-                                        ent['alt_comp_id'].append(comp_id)
+                            if ins_code_col != -1:
+                                for s, ic in zip(authSeqDict[c], insCodeDict[c]):
+                                    row = next((row for row in rowList if row[chain_id_col] == c
+                                                and int(row[auth_seq_id_col]) == s and row[ins_code_col] == ic), None)
+                                    if row is not None:
+                                        comp_id = row[alt_comp_id_col]
+                                        if comp_id not in self.emptyValue:
+                                            ent['alt_comp_id'].append(comp_id)
+                                        else:
+                                            ent['alt_comp_id'].append('.')
                                     else:
                                         ent['alt_comp_id'].append('.')
-                                else:
-                                    ent['alt_comp_id'].append('.')
+                            else:
+                                for s in authSeqDict[c]:
+                                    row = next((row for row in rowList if row[chain_id_col] == c
+                                                and int(row[auth_seq_id_col]) == s), None)
+                                    if row is not None:
+                                        comp_id = row[alt_comp_id_col]
+                                        if comp_id not in self.emptyValue:
+                                            ent['alt_comp_id'].append(comp_id)
+                                        else:
+                                            ent['alt_comp_id'].append('.')
+                                    else:
+                                        ent['alt_comp_id'].append('.')
                         else:
                             for s in seqDict[c]:
-                                row = next((row for row in rowList if row[chain_id_col] == c and int(row[seq_id_col]) == s), None)
+                                row = next((row for row in rowList if row[chain_id_col] == c
+                                            and int(row[seq_id_col]) == s), None)
                                 if row is not None:
                                     comp_id = row[alt_comp_id_col]
                                     if comp_id not in self.emptyValue:

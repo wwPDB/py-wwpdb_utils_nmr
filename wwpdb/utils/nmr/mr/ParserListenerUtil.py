@@ -3583,12 +3583,25 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         BEG_ATOM = "O3'"
                         END_ATOM = "P"
 
+                    has_ins_code = False
+
                     for p in range(len(ps['auth_seq_id']) - 1):
                         s_p = ps['auth_seq_id'][p]
                         s_q = ps['auth_seq_id'][p + 1]
+
                         if s_p is None or s_q is None:
                             continue
+
+                        if s_p == s_q:
+                            has_ins_code = True
+                            continue
+
                         if s_p + 1 != s_q:
+
+                            if has_ins_code:
+                                has_ins_code = False
+                                continue
+
                             auth_seq_id_1 = s_p
                             auth_seq_id_2 = s_q
 

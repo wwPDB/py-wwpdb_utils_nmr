@@ -2091,6 +2091,8 @@ class RosettaMRParserListener(ParseTreeListener):
                             warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' else 'Atom not found'
                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                            if warn_title == 'Atom not found':
+                                updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
         return atomId
 
     def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):

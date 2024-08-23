@@ -2520,6 +2520,7 @@ class DynamoMRParserListener(ParseTreeListener):
                         else:
                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index,g=group)}"
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                            updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
         return atomId
 
     def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):

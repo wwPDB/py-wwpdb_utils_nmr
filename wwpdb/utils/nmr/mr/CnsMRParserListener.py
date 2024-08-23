@@ -1152,13 +1152,6 @@ class CnsMRParserListener(ParseTreeListener):
                                     if 'branched_remap' not in self.reasonsForReParsing:
                                         self.reasonsForReParsing['branched_remap'] = branchedMapping
 
-            # """
-            # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
-            #     if 'non_poly_remap' in self.reasonsForReParsing:
-            #         self.reasonsForReParsing['label_seq_scheme'] = False
-            #     if 'seq_id_remap' in self.reasonsForReParsing:
-            #         del self.reasonsForReParsing['seq_id_remap']
-            # """
             if 'local_seq_scheme' in self.reasonsForReParsing:
                 if 'non_poly_remap' in self.reasonsForReParsing or 'branched_remap' in self.reasonsForReParsing\
                    or 'np_seq_id_remap' in self.reasonsForReParsing:
@@ -1183,6 +1176,9 @@ class CnsMRParserListener(ParseTreeListener):
                         self.reasonsForReParsing['global_sequence_offset'][k] = list(v)[0]
                     if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
                         del self.reasonsForReParsing['global_sequence_offset']
+
+            label_seq_scheme = 'label_seq_scheme' in self.reasonsForReParsing\
+                and all(t for t in self.reasonsForReParsing['label_seq_scheme'].values())
 
             if 'global_sequence_offset' in self.reasonsForReParsing:
                 if 'local_seq_scheme' in self.reasonsForReParsing:
@@ -1230,11 +1226,18 @@ class CnsMRParserListener(ParseTreeListener):
                                         break
                                     chainIdRemap[auth_seq_id - offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
                             else:
-                                for auth_seq_id in ps['auth_seq_id']:
-                                    if auth_seq_id in chainIdRemap:
-                                        valid = False
-                                        break
-                                    chainIdRemap[auth_seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
+                                if label_seq_scheme:
+                                    for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
+                                        if seq_id in chainIdRemap:
+                                            valid = False
+                                            break
+                                        chainIdRemap[seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
+                                else:
+                                    for auth_seq_id in ps['auth_seq_id']:
+                                        if auth_seq_id in chainIdRemap:
+                                            valid = False
+                                            break
+                                        chainIdRemap[auth_seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
                         if valid:
                             if 'global_sequence_offset' in self.reasonsForReParsing:
                                 del self.reasonsForReParsing['global_sequence_offset']
@@ -5687,11 +5690,6 @@ class CnsMRParserListener(ParseTreeListener):
                                     self.__preferAuthSeq = not self.__preferAuthSeq
                                     self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                                     self.__setLocalSeqScheme()
-                                    # """
-                                    # if 'atom_id' in __factor and __factor['atom_id'][0] is None:
-                                    #     if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    #         self.reasonsForReParsing['label_seq_scheme'] = True
-                                    # """
                     else:
                         self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                         f"The {clauseName} has no effect for a factor {__factor}. "
@@ -6426,17 +6424,6 @@ class CnsMRParserListener(ParseTreeListener):
                                             if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in atomSiteAtomId)
                                                                               or _atomId == 'P' or _atomId.startswith('HOP')):
                                                 continue
-                                        # """
-                                        # if self.__reasons is None and seqKey in self.__authToLabelSeq:
-                                        #     _, _seqId = self.__authToLabelSeq[seqKey]
-                                        #     if ps is not None and _seqId in ps['auth_seq_id']:
-                                        #         _compId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                                        #         if self.__ccU.updateChemCompDict(_compId):
-                                        #             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
-                                        #             if cca is not None:
-                                        #                 if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                        #                     self.reasonsForReParsing['label_seq_scheme'] = True
-                                        # """
                                         if cifCheck and self.__cur_subtype != 'plane'\
                                            and 'seq_id' in _factor and len(_factor['seq_id']) == 1\
                                            and (self.__reasons is None or 'non_poly_remap' not in self.__reasons)\
@@ -6570,7 +6557,6 @@ class CnsMRParserListener(ParseTreeListener):
         return compId
 
     def getOrigSeqId(self, ps, seqId, isPolySeq=True):
-        # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
         offset = 0
         if not self.__preferAuthSeq:
             chainId = ps['chain_id']
@@ -6621,12 +6607,9 @@ class CnsMRParserListener(ParseTreeListener):
                             return None
         if seqId + offset in ps['auth_seq_id']:
             return seqId + offset
-        # if seqId in ps['seq_id']:
-        #     return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
         return seqId
 
     def getRealSeqId(self, ps, seqId, isPolySeq=True):
-        # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme'] or not self.__preferAuthSeq:
         offset = 0
         preferLabelSeq = False
         if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and 'segment_id_match_stats' in self.__reasons:
@@ -6695,8 +6678,6 @@ class CnsMRParserListener(ParseTreeListener):
             if _ps is not None:
                 if seqId + offset in _ps['seq_id']:
                     return seqId + offset, _ps['comp_id'][_ps['seq_id'].index(seqId + offset)], True
-        # if seqId in ps['seq_id']:
-        #     return ps['auth_seq_id'][ps['seq_id'].index(seqId)]
         return seqId, None, False
 
     def getRealChainId(self, chainId):

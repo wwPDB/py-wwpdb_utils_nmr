@@ -1090,11 +1090,11 @@ class NmrDpReport:
         if chain_assigns is None:
             return None
 
-        for chain_assign in chain_assigns:
+        for ca in chain_assigns:
 
-            if (chain_assign['ref_chain_id'] == cif_chain_id and label_scheme) or\
-               ('ref_auth_chain_id' in chain_assign and chain_assign['ref_auth_chain_id'] == cif_chain_id and not label_scheme):
-                return self.getNmrPolymerSequenceOf(chain_assign['test_chain_id'])
+            if (ca['ref_chain_id'] == cif_chain_id and label_scheme) or\
+               ((ca['ref_auth_chain_id'] if 'ref_auth_chain_id' in ca else ca['ref_chain_id']) == cif_chain_id and not label_scheme):
+                return self.getNmrPolymerSequenceOf(ca['test_chain_id'])
 
         return None
 
@@ -1109,28 +1109,28 @@ class NmrDpReport:
         if chain_assigns is None:
             return None
 
-        for chain_assign in chain_assigns:
+        for ca in chain_assigns:
 
-            if chain_assign['ref_chain_id'] == nmr_chain_id:
+            if ca['ref_chain_id'] == nmr_chain_id:
 
-                if chain_assign['conflict'] > 0:
+                if ca['conflict'] > 0:
                     return None
 
-                cif_chain_id = chain_assign['test_chain_id']
+                cif_chain_id = ca['test_chain_id']
 
                 sequence_aligns = get_value_safe(self.sequence_alignment.get(), key)
 
                 if sequence_aligns is None:
                     return None
 
-                for sequence_align in sequence_aligns:
+                for sa in sequence_aligns:
 
-                    if sequence_align['ref_chain_id'] == nmr_chain_id and sequence_align['test_chain_id'] == cif_chain_id:
+                    if sa['ref_chain_id'] == nmr_chain_id and sa['test_chain_id'] == cif_chain_id:
 
-                        if sequence_align['conflict'] > 0:
+                        if sa['conflict'] > 0:
                             return None
 
-                        return sequence_align
+                        return sa
 
         return None
 
@@ -1145,31 +1145,31 @@ class NmrDpReport:
         if chain_assigns is None:
             return None
 
-        for chain_assign in chain_assigns:
+        for ca in chain_assigns:
 
-            if (chain_assign['ref_chain_id'] == cif_chain_id and label_scheme) or\
-               ('ref_auth_chain_id' in chain_assign and chain_assign['ref_auth_chain_id'] == cif_chain_id and not label_scheme):
+            if (ca['ref_chain_id'] == cif_chain_id and label_scheme) or\
+               ((ca['ref_auth_chain_id'] if 'ref_auth_chain_id' in ca else ca['ref_chain_id']) == cif_chain_id and not label_scheme):
 
-                if chain_assign['conflict'] > 0:
+                if ca['conflict'] > 0:
                     return None
 
-                _cif_chain_id = chain_assign['ref_chain_id']
+                _cif_chain_id = ca['ref_chain_id']
 
-                nmr_chain_id = chain_assign['test_chain_id']
+                nmr_chain_id = ca['test_chain_id']
 
                 sequence_aligns = get_value_safe(self.sequence_alignment.get(), key)
 
                 if sequence_aligns is None:
                     return None
 
-                for sequence_align in sequence_aligns:
+                for sa in sequence_aligns:
 
-                    if sequence_align['ref_chain_id'] == _cif_chain_id and sequence_align['test_chain_id'] == nmr_chain_id:
+                    if sa['ref_chain_id'] == _cif_chain_id and sa['test_chain_id'] == nmr_chain_id:
 
-                        if sequence_align['conflict'] > 0:
+                        if sa['conflict'] > 0:
                             return None
 
-                        return sequence_align
+                        return sa
 
         return None
 
@@ -1182,10 +1182,10 @@ class NmrDpReport:
         if chain_assigns is None:
             return None
 
-        for chain_assign in chain_assigns:
+        for ca in chain_assigns:
 
-            if chain_assign['ref_chain_id'] == nmr_chain_id:
-                return self.getModelPolymerSequenceOf(chain_assign['test_chain_id'])
+            if ca['ref_chain_id'] == nmr_chain_id:
+                return self.getModelPolymerSequenceOf(ca['test_chain_id'])
 
         return None
 
@@ -1209,23 +1209,23 @@ class NmrDpReport:
 
             if _chain_assigns is not None:
 
-                for _chain_assign in _chain_assigns:
+                for _ca in _chain_assigns:
 
-                    if (_chain_assign['test_chain_id'] == cif_chain_id and label_scheme) or\
-                       ('test_auth_chain_id' in _chain_assign and _chain_assign['test_auth_chain_id'] == cif_chain_id and not label_scheme):
+                    if (_ca['test_chain_id'] == cif_chain_id and label_scheme) or\
+                       ((_ca['test_auth_chain_id'] if 'test_auth_chain_id' in _ca else _ca['test_chain_id']) == cif_chain_id and not label_scheme):
 
-                        if 'unmapped_sequence' in _chain_assign:
+                        if 'unmapped_sequence' in _ca:
 
-                            for unmapped_sequence in _chain_assign['unmapped_sequence']:
+                            for unmapped_sequence in _ca['unmapped_sequence']:
                                 unmappedSeqId.append(unmapped_sequence['ref_seq_id'])
 
                         break
 
-        for chain_assign in chain_assigns:
+        for ca in chain_assigns:
 
-            if (chain_assign['ref_chain_id'] == cif_chain_id and label_scheme) or\
-               ('ref_auth_chain_id' in chain_assign and chain_assign['ref_auth_chain_id'] == cif_chain_id and not label_scheme):
-                return self.getNmrSeq1LetterCodeOf(chain_assign['test_chain_id'], fullSequence=fullSeqeucne, unmappedSeqId=unmappedSeqId)
+            if (ca['ref_chain_id'] == cif_chain_id and label_scheme) or\
+               ((ca['ref_auth_chain_id'] if 'ref_auth_chain_id' in ca else ca['ref_chain_id']) == cif_chain_id and not label_scheme):
+                return self.getNmrSeq1LetterCodeOf(ca['test_chain_id'], fullSequence=fullSeqeucne, unmappedSeqId=unmappedSeqId)
 
         return None
 
@@ -1238,10 +1238,10 @@ class NmrDpReport:
         if chain_assigns is None:
             return None
 
-        for chain_assign in chain_assigns:
+        for ca in chain_assigns:
 
-            if chain_assign['ref_chain_id'] == nmr_chain_id:
-                return self.getModelSeq1LetterCodeOf(chain_assign['test_chain_id'])
+            if ca['ref_chain_id'] == nmr_chain_id:
+                return self.getModelSeq1LetterCodeOf(ca['test_chain_id'])
 
         return None
 

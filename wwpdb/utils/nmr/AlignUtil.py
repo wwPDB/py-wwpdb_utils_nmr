@@ -480,12 +480,9 @@ def getScoreOfSeqAlign(myAlign):
             break
 
     notAligned = True
-    offset1 = 0
-    offset2 = 0
 
-    unmapped = 0
-    conflict = 0
-    matched = 0
+    matched = unmapped = conflict = offset1 = offset2 = 0
+
     for p in range(length):
         myPr = myAlign[p]
         myPr0 = str(myPr[0])
@@ -547,24 +544,14 @@ def getOneLetterCodeCanSequence(compIdList):
     """ Convert array of comp_IDs to canonical one-letter code sequence.
     """
 
-    f = []
-
-    for compId in compIdList:
-        f.append(getOneLetterCodeCan(compId))
-
-    return ''.join(f)
+    return ''.join([getOneLetterCodeCan(compId) for compId in compIdList])
 
 
 def getOneLetterCodeSequence(compIdList):
     """ Convert array of comp_IDs to one-letter code sequence.
     """
 
-    f = []
-
-    for compId in compIdList:
-        f.append(getOneLetterCode(compId))
-
-    return ''.join(f)
+    return ''.join([getOneLetterCode(compId) for compId in compIdList])
 
 
 def letterToDigit(code, minDigit=0):
@@ -654,6 +641,7 @@ def getRestraintFormatName(fileType, ambig=False):
 def getRestraintFormatNames(fileTypes, ambig=False):
     """ Return restraint format name.
     """
+
     if len(fileTypes) == 0:
         return None
 

@@ -31,6 +31,7 @@
 # 24-Jan-2024   my  - add 'default-from' attribute for key/data items (D_1300043061)
 # 21-Feb-2024   my  - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
 # 07-Mar-2024   my  - extract pdbx_poly_seq_scheme.auth_mon_id as alt_cmop_id to prevent sequence mismatch due to 5-letter CCD ID (DAOTHER-9158 vs D_1300043061)
+# 20-Aug-2024   my  - support truncated loop sequence in the model (DAOTHER-9644)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -73,6 +74,11 @@ REORDER = False
 LEN_MAJOR_ASYM_ID = 26
 
 SYMBOLS_ELEMENT = {k.upper(): v for k, v in NAMES_ELEMENT.items()}
+
+CARTN_DATA_ITEMS = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                    {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                    ]
 
 
 def M(axis, theta):
@@ -688,6 +694,30 @@ class CifReader:
         if self.__dBlock is None:
             return asm
 
+        repModelId = effModelIds[0] if effModelIds is not None else 1
+
+        # DAOTHER-9644: support for truncated loop in the model
+        if withRmsd and catName == 'pdbx_poly_seq_scheme':  # avoid interference of ParserListenerUtils.coordAssemblyChecker()
+            misPolyLink = []
+
+            _catName = 'pdbx_validate_polymer_linkage'
+
+            if self.hasCategory(_catName):
+                _keyItems = [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                             {'name': 'auth_seq_id_1', 'type': 'int'},
+                             {'name': 'auth_asym_id_2', 'type': 'str', 'alt_name': 'test_auth_chain_id'},
+                             {'name': 'auth_seq_id_2', 'type': 'int'}
+                             ]
+                _filterItems = [{'name': 'PDB_model_num', 'type': 'int', 'value': repModelId},
+                                {'name': 'label_alt_id_1', 'type': 'enum', 'enum': (repAltId,)},
+                                {'name': 'label_alt_id_2', 'type': 'enum', 'enum': (repAltId,)}
+                                ]
+
+                for mis in self.getDictListWithFilter(_catName, _keyItems, _filterItems):
+                    if mis['auth_chain_id'] == mis['test_auth_chain_id']:
+                        del mis['test_auth_chain_id']
+                        misPolyLink.append(mis)
+
         # get category object
         catObj = self.__dBlock.getObj(catName)
 
@@ -724,6 +754,7 @@ class CifReader:
             compDict = {}
             seqDict = {}
             insCodeDict = {}
+            authSeqDict = {}
             labelSeqDict = {}
 
             authChainDict = {}
@@ -737,6 +768,8 @@ class CifReader:
             auth_seq_id_col = -1 if 'auth_seq_id' not in altDict else altDict['auth_seq_id']
             auth_comp_id_col = -1 if 'auth_comp_id' not in altDict else altDict['auth_comp_id']
             alt_comp_id_col = -1 if 'alt_comp_id' not in altDict else altDict['alt_comp_id']
+
+            auth_scheme = auth_seq_id_col != -1
 
             chainIds = sorted(set(row[chain_id_col] for row in rowList), key=lambda x: (len(x), x))
 
@@ -801,12 +834,29 @@ class CifReader:
                     if c not in authChainDict:
                         authChainDict[c] = row[auth_chain_id_col]
 
+            if auth_scheme:
+                for c in chainIds:
+                    authSeqDict[c] = []
+                    for s in seqDict[c]:
+                        row = next((row for row in rowList if row[chain_id_col] == c and int(row[seq_id_col]) == s), None)
+                        if row is not None:
+                            if row[auth_seq_id_col] not in self.emptyValue:
+                                try:
+                                    _s = int(row[auth_seq_id_col])
+                                except ValueError:
+                                    _s = None
+                                authSeqDict[c].append(_s)
+                            else:
+                                authSeqDict[c].append(None)
+
             large_model = catName == 'pdbx_poly_seq_scheme' and len(chainIds) > LEN_MAJOR_ASYM_ID
 
             entity_poly = self.getDictList('entity_poly')
 
             ca_rmsd = ca_well_defined_region = None
             polypeptide_chains = polypeptide_lengths = []
+
+            _seqDict = copy.deepcopy(seqDict)
 
             for i, c in enumerate(chainIds):
                 ent = {}  # entity
@@ -820,72 +870,235 @@ class CifReader:
                 if ident:
                     ent = copy.copy(asm[-1])
 
-                ent['chain_id'] = c
+                ent['chain_id'] = ent['auth_chain_id'] = c
                 if auth_chain_id_col != -1:
                     ent['auth_chain_id'] = authChainDict[c]
 
                 if not ident:
 
+                    etype = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
+
+                    # DAOTHER-9644: support for truncated loop in the model
+                    if withRmsd and catName == 'pdbx_poly_seq_scheme' and len(authSeqDict) > 0:  # avoid interference of ParserListenerUtils.coordAssemblyChecker()
+
+                        if len(misPolyLink) > 0:
+
+                            for mis in misPolyLink:
+
+                                if mis['auth_chain_id'] != (authChainDict[c] if auth_chain_id_col != -1 else c):
+                                    continue
+
+                                auth_seq_id_1 = mis['auth_seq_id_1']
+                                auth_seq_id_2 = mis['auth_seq_id_2']
+
+                                if auth_seq_id_1 in authSeqDict[c]\
+                                   and auth_seq_id_2 in authSeqDict[c]\
+                                   and auth_seq_id_1 < auth_seq_id_2:
+
+                                    for auth_seq_id_ in range(auth_seq_id_1 + 1, auth_seq_id_2):
+                                        auth_seq_id_list = list(filter(None, authSeqDict[c]))
+
+                                        if auth_seq_id_ < min(auth_seq_id_list):
+                                            pos = 0
+                                        elif auth_seq_id_ > max(auth_seq_id_list):
+                                            pos = len(auth_seq_id_list)
+                                        else:
+                                            for idx, _auth_seq_id_ in enumerate(auth_seq_id_list):
+                                                if _auth_seq_id_ < auth_seq_id_:
+                                                    continue
+                                                pos = idx
+                                                break
+
+                                        authSeqDict[c].insert(pos, auth_seq_id_)
+                                        compDict[c].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
+                                        if ins_code_col != -1:
+                                            insCodeDict[c].insert(pos, '.')
+
+                                    # DAOTHER-9644: insert label_seq_id for truncated loop in the coordinates
+                                    seqDict[c] = labelSeqDict[c] = list(range(1, len(authSeqDict[c]) + 1))
+
+                        # DAOTHER-9644: simulate pdbx_poly_seq_scheme category
+                        elif etype is not None:
+
+                            if 'polypeptide' in etype:
+                                BEG_ATOM = "C"
+                                END_ATOM = "N"
+                            else:
+                                BEG_ATOM = "O3'"
+                                END_ATOM = "P"
+
+                            has_ins_code = False
+
+                            for p in range(len(authSeqDict[c]) - 1):
+                                s_p = authSeqDict[c][p]
+                                s_q = authSeqDict[c][p + 1]
+
+                                if s_p is None or s_q is None:
+                                    continue
+
+                                if s_p == s_q:
+                                    has_ins_code = True
+                                    continue
+
+                                if s_p + 1 != s_q:
+
+                                    if has_ins_code:
+                                        has_ins_code = False
+                                        continue
+
+                                    auth_seq_id_1 = s_p
+                                    auth_seq_id_2 = s_q
+
+                                    _beg =\
+                                        self.getDictListWithFilter('atom_site',
+                                                                   CARTN_DATA_ITEMS,
+                                                                   [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                                                    {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_1},
+                                                                    {'name': 'label_atom_id', 'type': 'str', 'value': BEG_ATOM},
+                                                                    {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': repModelId},
+                                                                    {'name': 'label_alt_id', 'type': 'enum', 'enum': (repAltId,)}
+                                                                    ])
+
+                                    _end =\
+                                        self.getDictListWithFilter('atom_site',
+                                                                   CARTN_DATA_ITEMS,
+                                                                   [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                                                    {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_2},
+                                                                    {'name': 'label_atom_id', 'type': 'str', 'value': END_ATOM},
+                                                                    {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': repModelId},
+                                                                    {'name': 'label_alt_id', 'type': 'enum', 'enum': (repAltId,)}
+                                                                    ])
+
+                                    if len(_beg) == 1 and len(_end) == 1 and np.linalg.norm(to_np_array(_beg[0]) - to_np_array(_end[0])) > 5.0:
+                                        for auth_seq_id_ in range(auth_seq_id_1 + 1, auth_seq_id_2):
+                                            auth_seq_id_list = list(filter(None, authSeqDict[c]))
+
+                                            if auth_seq_id_ < min(auth_seq_id_list):
+                                                pos = 0
+                                            elif auth_seq_id_ > max(auth_seq_id_list):
+                                                pos = len(auth_seq_id_list)
+                                            else:
+                                                for idx, _auth_seq_id_ in enumerate(auth_seq_id_list):
+                                                    if _auth_seq_id_ < auth_seq_id_:
+                                                        continue
+                                                    pos = idx
+                                                    break
+
+                                            authSeqDict[c].insert(pos, auth_seq_id_)
+                                            compDict[c].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
+                                            if ins_code_col != -1:
+                                                insCodeDict[c].insert(pos, '.')
+
+                                        # DAOTHER-9644: insert label_seq_id for truncated loop in the coordinates
+                                        seqDict[c] = labelSeqDict[c] = list(range(1, len(authSeqDict[c]) + 1))
+
                     ent['seq_id'] = seqDict[c]
                     ent['comp_id'] = compDict[c]
                     if c in insCodeDict:
-                        if any(i for i in insCodeDict[c] if i not in self.emptyValue):
+                        if any(ic for ic in insCodeDict[c] if ic not in self.emptyValue):
                             ent['ins_code'] = insCodeDict[c]
                         if any(s for s in labelSeqDict[c] if s not in self.emptyValue):
                             if c in labelSeqDict and all(isinstance(s, int) for s in labelSeqDict[c]):
-                                ent['auth_seq_id'] = seqDict[c]
+                                ent['auth_seq_id'] = authSeqDict[c] if auth_scheme else seqDict[c]
                                 ent['label_seq_id'] = labelSeqDict[c]
                                 ent['seq_id'] = ent['label_seq_id']
 
-                    if auth_seq_id_col != -1:
-                        ent['auth_seq_id'] = []
-                        for s in seqDict[c]:
-                            row = next((row for row in rowList if row[chain_id_col] == c and int(row[seq_id_col]) == s), None)
-                            if row is not None:
-                                if row[auth_seq_id_col] not in self.emptyValue:
-                                    try:
-                                        _s = int(row[auth_seq_id_col])
-                                    except ValueError:
-                                        _s = None
-                                    ent['auth_seq_id'].append(_s)
-                                else:
-                                    ent['auth_seq_id'].append(None)
-                                ent['gap_in_auth_seq'] = False
-                                for p in range(len(ent['auth_seq_id']) - 1):
-                                    s_p = ent['auth_seq_id'][p]
-                                    s_q = ent['auth_seq_id'][p + 1]
-                                    if s_p is None or s_q is None:
-                                        continue
-                                    if s_p + 1 != s_q:
-                                        ent['gap_in_auth_seq'] = True
-                                        break
+                    if auth_scheme:
+                        ent['auth_seq_id'] = authSeqDict[c]
+                        ent['gap_in_auth_seq'] = False
+                        for p in range(len(authSeqDict[c]) - 1):
+                            s_p = ent['auth_seq_id'][p]
+                            s_q = ent['auth_seq_id'][p + 1]
+                            if s_p is None or s_q is None:
+                                continue
+                            if s_p + 1 != s_q:
+                                ent['gap_in_auth_seq'] = True
+                                break
 
                     if auth_comp_id_col != -1:
                         ent['auth_comp_id'] = []
-                        for s in seqDict[c]:
-                            row = next((row for row in rowList if row[chain_id_col] == c and int(row[seq_id_col]) == s), None)
-                            if row is not None:
-                                comp_id = row[auth_comp_id_col]
-                                if comp_id not in self.emptyValue:
-                                    ent['auth_comp_id'].append(comp_id)
+                        if auth_scheme:
+                            if ins_code_col != -1:
+                                for s, ic in zip(authSeqDict[c], insCodeDict[c]):
+                                    row = next((row for row in rowList if row[chain_id_col] == c
+                                                and int(row[auth_seq_id_col]) == s and row[ins_code_col] == ic), None)
+                                    if row is not None:
+                                        comp_id = row[auth_comp_id_col]
+                                        if comp_id not in self.emptyValue:
+                                            ent['auth_comp_id'].append(comp_id)
+                                        else:
+                                            ent['auth_comp_id'].append('.')
+                                    else:
+                                        ent['auth_comp_id'].append('.')
+                            else:
+                                for s in authSeqDict[c]:
+                                    row = next((row for row in rowList if row[chain_id_col] == c
+                                                and int(row[auth_seq_id_col]) == s), None)
+                                    if row is not None:
+                                        comp_id = row[auth_comp_id_col]
+                                        if comp_id not in self.emptyValue:
+                                            ent['auth_comp_id'].append(comp_id)
+                                        else:
+                                            ent['auth_comp_id'].append('.')
+                                    else:
+                                        ent['auth_comp_id'].append('.')
+                        else:
+                            for s in seqDict[c]:
+                                row = next((row for row in rowList if row[chain_id_col] == c
+                                            and int(row[seq_id_col]) == s), None)
+                                if row is not None:
+                                    comp_id = row[auth_comp_id_col]
+                                    if comp_id not in self.emptyValue:
+                                        ent['auth_comp_id'].append(comp_id)
+                                    else:
+                                        ent['auth_comp_id'].append('.')
                                 else:
                                     ent['auth_comp_id'].append('.')
+                    else:
+                        ent['auth_comp_id'] = ent['comp_id']
 
                     if alt_comp_id_col != -1:
                         ent['alt_comp_id'] = []
-                        for s in seqDict[c]:
-                            row = next((row for row in rowList if row[chain_id_col] == c and int(row[seq_id_col]) == s), None)
-                            if row is not None:
-                                comp_id = row[alt_comp_id_col]
-                                if comp_id not in self.emptyValue:
-                                    ent['alt_comp_id'].append(comp_id)
+                        if auth_scheme:
+                            if ins_code_col != -1:
+                                for s, ic in zip(authSeqDict[c], insCodeDict[c]):
+                                    row = next((row for row in rowList if row[chain_id_col] == c
+                                                and int(row[auth_seq_id_col]) == s and row[ins_code_col] == ic), None)
+                                    if row is not None:
+                                        comp_id = row[alt_comp_id_col]
+                                        if comp_id not in self.emptyValue:
+                                            ent['alt_comp_id'].append(comp_id)
+                                        else:
+                                            ent['alt_comp_id'].append('.')
+                                    else:
+                                        ent['alt_comp_id'].append('.')
+                            else:
+                                for s in authSeqDict[c]:
+                                    row = next((row for row in rowList if row[chain_id_col] == c
+                                                and int(row[auth_seq_id_col]) == s), None)
+                                    if row is not None:
+                                        comp_id = row[alt_comp_id_col]
+                                        if comp_id not in self.emptyValue:
+                                            ent['alt_comp_id'].append(comp_id)
+                                        else:
+                                            ent['alt_comp_id'].append('.')
+                                    else:
+                                        ent['alt_comp_id'].append('.')
+                        else:
+                            for s in seqDict[c]:
+                                row = next((row for row in rowList if row[chain_id_col] == c
+                                            and int(row[seq_id_col]) == s), None)
+                                if row is not None:
+                                    comp_id = row[alt_comp_id_col]
+                                    if comp_id not in self.emptyValue:
+                                        ent['alt_comp_id'].append(comp_id)
+                                    else:
+                                        ent['alt_comp_id'].append('.')
                                 else:
                                     ent['alt_comp_id'].append('.')
 
                     if withStructConf and i < LEN_MAJOR_ASYM_ID:  # to process large assembly avoiding forced timeout
-                        ent['struct_conf'] = self.__extractStructConf(c, seqDict[c])
-
-                    etype = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
+                        ent['struct_conf'] = self.__extractStructConf(c, authSeqDict[c] if auth_scheme else seqDict[c], not auth_scheme)
 
                     # to process large assembly avoiding forced timeout (2ms7, 21 chains)
                     if withRmsd and etype is not None and totalModels > 1 and i < LEN_MAJOR_ASYM_ID / 2:
@@ -907,7 +1120,7 @@ class CifReader:
                             if ca_rmsd is None:
 
                                 polypeptide_chains = [c]
-                                polypeptide_lengths = [len(seqDict[c])]
+                                polypeptide_lengths = [len(_seqDict[c])]
 
                                 for c2 in chainIds:
 
@@ -918,14 +1131,14 @@ class CifReader:
 
                                     if etype2 is not None and 'polypeptide' in etype2:
                                         polypeptide_chains.append(c2)
-                                        polypeptide_lengths.append(len(seqDict[c2]))
+                                        polypeptide_lengths.append(len(_seqDict[c2]))
 
                                 ca_atom_sites = self.getDictListWithFilter('atom_site',
                                                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                             {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                                            {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                            {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                             {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
                                                                             {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                             ],
@@ -941,7 +1154,7 @@ class CifReader:
                                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                             {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                                            {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                            {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                             {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
                                                                             {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                             ],
@@ -957,7 +1170,7 @@ class CifReader:
                                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                             {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                                            {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                            {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                             {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
                                                                             {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                             ],
@@ -987,7 +1200,7 @@ class CifReader:
                                                                        {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                                        {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                        {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                                       {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                       {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
                                                                        {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                        ],
@@ -1002,7 +1215,7 @@ class CifReader:
                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                                         {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                                        {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                                        {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                         {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
                                                                         {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                         ],
@@ -1015,7 +1228,7 @@ class CifReader:
 
                             bb_atom_sites.extend(p_atom_sites)
 
-                            p_rmsd, p_well_defined_region = self.__calculateRmsd([c], [len(seqDict[c])],
+                            p_rmsd, p_well_defined_region = self.__calculateRmsd([c], [len(_seqDict[c])],
                                                                                  totalModels, effModelIds,
                                                                                  p_atom_sites, bb_atom_sites, randomM)
 
@@ -1040,7 +1253,7 @@ class CifReader:
 
         return asm
 
-    def __extractStructConf(self, chain_id, seq_ids):
+    def __extractStructConf(self, chain_id, seq_ids, label_scheme=True):
         """ Extract structure conformational annotations.
         """
 
@@ -1051,30 +1264,30 @@ class CifReader:
         struct_conf = self.getDictListWithFilter('struct_conf',
                                                  [{'name': 'conf_type_id', 'type': 'str'},
                                                   {'name': helix_id_name, 'type': 'str', 'alt_name': 'helix_id'},
-                                                  {'name': 'beg_label_seq_id', 'type': 'int'},
-                                                  {'name': 'end_label_seq_id', 'type': 'int'}
+                                                  {'name': 'beg_label_seq_id' if label_scheme else 'beg_auth_seq_id', 'type': 'int', 'alt_name': 'beg_seq_id'},
+                                                  {'name': 'end_label_seq_id' if label_scheme else 'end_auth_seq_id', 'type': 'int', 'alt_name': 'end_seq_id'}
                                                   ],
                                                  [{'name': 'beg_label_asym_id', 'type': 'str', 'value': chain_id},
                                                   {'name': 'end_label_asym_id', 'type': 'str', 'value': chain_id}
                                                   ])
 
         for sc in struct_conf:
-            for seq_id in range(sc['beg_label_seq_id'], sc['end_label_seq_id'] + 1):
+            for seq_id in range(sc['beg_seq_id'], sc['end_seq_id'] + 1):
                 if seq_id in seq_ids and sc['conf_type_id'] is not None and sc['helix_id'] is not None:
                     ret[seq_ids.index(seq_id)] = sc['conf_type_id'] + ':' + sc['helix_id']
 
         struct_sheet_range = self.getDictListWithFilter('struct_sheet_range',
                                                         [{'name': 'sheet_id', 'type': 'str'},
                                                          {'name': 'id', 'type': 'str'},
-                                                         {'name': 'beg_label_seq_id', 'type': 'int'},
-                                                         {'name': 'end_label_seq_id', 'type': 'int'}
+                                                         {'name': 'beg_label_seq_id' if label_scheme else 'beg_auth_seq_id', 'type': 'int', 'alt_name': 'beg_seq_id'},
+                                                         {'name': 'end_label_seq_id' if label_scheme else 'end_auth_seq_id', 'type': 'int', 'alt_name': 'end_seq_id'}
                                                          ],
                                                         [{'name': 'beg_label_asym_id', 'type': 'str', 'value': chain_id},
                                                          {'name': 'end_label_asym_id', 'type': 'str', 'value': chain_id}
                                                          ])
 
         for ssr in struct_sheet_range:
-            for seq_id in range(ssr['beg_label_seq_id'], ssr['end_label_seq_id'] + 1):
+            for seq_id in range(ssr['beg_seq_id'], ssr['end_seq_id'] + 1):
                 if seq_id in seq_ids and ssr['sheet_id'] is not None and ssr['id'] is not None:
                     ret[seq_ids.index(seq_id)] = 'STRN:' + ssr['sheet_id'] + ':' + ssr['id']
 

@@ -286,6 +286,9 @@ class DynamoMRParserListener(ParseTreeListener):
     # chain number dictionary
     __chainNumberDict = None
 
+    # extended residue key
+    __extResKey = None
+
     # polymer sequence of MR file
     __polySeqRst = None
     __polySeqRstFailed = None
@@ -444,6 +447,7 @@ class DynamoMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by DynamoMRParser#dynamo_mr.
     def enterDynamo_mr(self, ctx: DynamoMRParser.Dynamo_mrContext):  # pylint: disable=unused-argument
         self.__chainNumberDict = {}
+        self.__extResKey = []
         self.__polySeqRst = []
         self.__polySeqRstFailed = []
         self.__f = []
@@ -701,13 +705,6 @@ class DynamoMRParserListener(ParseTreeListener):
                                                or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
                                                 self.reasonsForReParsing['ext_chain_seq_id_remap'] = seqIdRemapFailed
 
-            # """
-            # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
-            #     if 'non_poly_remap' in self.reasonsForReParsing:
-            #         self.reasonsForReParsing['label_seq_scheme'] = False
-            #     if 'seq_id_remap' in self.reasonsForReParsing:
-            #         del self.reasonsForReParsing['seq_id_remap']
-            # """
             if 'local_seq_scheme' in self.reasonsForReParsing:
                 if 'non_poly_remap' in self.reasonsForReParsing or 'branched_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
@@ -717,11 +714,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['local_seq_scheme']
                 elif 'ext_chain_seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
-            # """
-            # if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-            #     if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
-            #         del self.reasonsForReParsing['seq_id_remap']
-            # """
+
             if 'local_seq_scheme' in self.reasonsForReParsing and len(self.reasonsForReParsing) == 1:
                 sortPolySeqRst(self.__polySeqRstFailed)
                 if len(self.__polySeqRstFailed) > 0:
@@ -1389,13 +1382,12 @@ class DynamoMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
+    def getRealChainSeqId(self, ps, seqId, compId):
         compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
         if len(_compId) == 2 and _compId.startswith('D'):
             _compId = compId[1]
-        # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
         if not self.__preferAuthSeq:
-            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
+            seqKey = (ps['auth_chain_id'], seqId)
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
@@ -1416,7 +1408,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if _ps is not None:
                 if seqId in _ps['seq_id']:
                     return ps['auth_chain_id'], _ps['comp_id'][_ps['seq_id'].index(seqId)]
-        return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId, None
+        return ps['auth_chain_id'], seqId, None
 
     def translateToStdResNameWrapper(self, seqId, compId, preferNonPoly=False):
         _compId = compId
@@ -1430,7 +1422,7 @@ class DynamoMRParserListener(ParseTreeListener):
                 break
         if refCompId is None and self.__hasNonPolySeq:
             for np in self.__nonPolySeq:
-                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId, False)
+                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId)
                 if refCompId is not None:
                     compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
                     break
@@ -1443,16 +1435,6 @@ class DynamoMRParserListener(ParseTreeListener):
         """
 
         if self.__has_sequence and self.__reasons is None:
-            # """
-            # if seqId < self.__first_resid:
-            #     self.__f.append(f"[Sequence mismatch] {self.__getCurrentRestraint()}"
-            #                     f"The residue number '{seqId}' must be grater than or equal to the internally defined first residue number {self.__first_resid}.")
-            #     return []
-            # if seqId - self.__first_resid >= len(self.__cur_sequence):
-            #     self.__f.append(f"[Sequence mismatch] {self.__getCurrentRestraint()}"
-            #                     f"The residue number '{seqId}' must be less than {len(self.__cur_sequence)}, total number of the internally defined sequence.")
-            #     return []
-            # """
             if self.__first_resid <= seqId < self.__first_resid + len(self.__cur_sequence):
                 oneLetterCode = self.__cur_sequence[seqId - self.__first_resid].upper()
 
@@ -1581,17 +1563,18 @@ class DynamoMRParserListener(ParseTreeListener):
         updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, compId, _compId)
 
         types = self.__csStat.getTypeOfCompId(compId)
-        if all(not t for t in types):
+        if all(not t for t in types) or compId in ('MTS', 'ORI'):
             types = None
         elif compId != _compId:
             if types != self.__csStat.getTypeOfCompId(_compId):
                 types = None
 
         def comp_id_unmatched_with(ps, cif_comp_id):
-            if type is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
+            if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
                 return False
-            return types != self.__csStat.getTypeOfCompId(cif_comp_id)\
-                and (compId in monDict3) is (cif_comp_id in monDict3)
+            if compId not in monDict3 and cif_comp_id not in monDict3:
+                return False
+            return types != self.__csStat.getTypeOfCompId(cif_comp_id)
 
         if refChainId is not None or refChainId != _refChainId:
             if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _refChainId):
@@ -1646,11 +1629,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     chainAssign.add((chainId, seqId, cifCompId, True))
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
-                    # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint(n=index,g=group)}"
-                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                    # """
+
             elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                 if len(auth_seq_id_list) > 0:
@@ -1731,7 +1710,7 @@ class DynamoMRParserListener(ParseTreeListener):
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
             for np in self.__nonPolySeq:
-                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
+                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId)
                 if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:
                         continue
@@ -1814,17 +1793,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                 chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
-                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                #     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
-                            # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint(n=index,g=group)}"
-                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                            # """
 
             if self.__hasNonPolySeq:
                 for np in self.__nonPolySeq:
@@ -1849,8 +1821,6 @@ class DynamoMRParserListener(ParseTreeListener):
                                     chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
-                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
                             else:
                                 _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
                                 if len(_atomId) > 0 and (details is None or _compId not in monDict3):
@@ -1881,11 +1851,6 @@ class DynamoMRParserListener(ParseTreeListener):
                     chainAssign.add((chainId, _seqId, cifCompId, True))
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
-                    # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint(n=index,g=group)}"
-                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                    # """
 
         if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
             for ps in self.__polySeq:
@@ -1923,19 +1888,12 @@ class DynamoMRParserListener(ParseTreeListener):
                                     self.__setLocalSeqScheme()
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
-                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
                             self.__authSeqId = 'label_seq_id'
                             self.__setLocalSeqScheme()
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
-                            # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint(n=index,g=group)}"
-                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                            # """
 
         if len(chainAssign) == 0:
             if seqId == 1 or (refChainId, seqId - 1) in self.__coordUnobsRes:
@@ -1961,6 +1919,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                     f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                     f"of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
+                    resKey = (_seqId, _compId)
+                    if resKey not in self.__extResKey:
+                        self.__extResKey.append(resKey)
                     chainAssign.add((refChainId, _seqId, compId, True))
                     asis = True
                 elif compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
@@ -1968,6 +1929,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                     f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                     f"of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
+                    resKey = (_seqId, _compId)
+                    if resKey not in self.__extResKey:
+                        self.__extResKey.append(resKey)
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
@@ -2003,6 +1967,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                     f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                     f"of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
+                    resKey = (_seqId, _compId)
+                    if resKey not in self.__extResKey:
+                        self.__extResKey.append(resKey)
                     if isinstance(refChainId, str):
                         chainAssign.add((refChainId, _seqId, compId, True))
                     else:
@@ -4853,8 +4820,10 @@ class DynamoMRParserListener(ParseTreeListener):
                     self.__ccU.updateChemCompDict(compId)
                     atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
                     if atomId is None:
-                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                        f"{seqId}:{compId} is not present in the coordinates.")
+                        resKey = (seqId, compId)
+                        if resKey not in self.__extResKey:
+                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                            f"{seqId}:{compId} is not present in the coordinates.")
                         return
 
                 self.__retrieveLocalSeqScheme()
@@ -4862,8 +4831,10 @@ class DynamoMRParserListener(ParseTreeListener):
                 chainAssign, _ = self.assignCoordPolymerSequence(None, seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
-                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"{seqId}:{compId} is not present in the coordinates.")
+                    resKey = (seqId, compId)
+                    if resKey not in self.__extResKey:
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{seqId}:{compId} is not present in the coordinates.")
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:
@@ -5072,8 +5043,10 @@ class DynamoMRParserListener(ParseTreeListener):
                     self.__ccU.updateChemCompDict(compId)
                     atomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if atomId.match(cca[self.__ccU.ccaAtomId])), None)
                     if atomId is None:
-                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                        f"{seqId}:{compId} is not present in the coordinates.")
+                        resKey = (seqId, compId)
+                        if resKey not in self.__extResKey:
+                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                            f"{seqId}:{compId} is not present in the coordinates.")
                         return
 
                 self.__retrieveLocalSeqScheme()
@@ -5081,8 +5054,10 @@ class DynamoMRParserListener(ParseTreeListener):
                 chainAssign, _ = self.assignCoordPolymerSequence(None, seqId, compId, atomId)
 
                 if len(chainAssign) == 0:
-                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"{seqId}:{compId} is not present in the coordinates.")
+                    resKey = (seqId, compId)
+                    if resKey not in self.__extResKey:
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{seqId}:{compId} is not present in the coordinates.")
                     return
 
                 for chainId, cifSeqId, cifCompId, _ in chainAssign:

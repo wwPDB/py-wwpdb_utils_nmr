@@ -1351,7 +1351,9 @@ class BMRBChemShiftStat:
                     if len(_atom_id) > 2 and has_geminal_stat:
                         others = self.__ccU.getProtonsInSameGroup(comp_id, _atom_id, exclSelf=True)
                         if len(others) > 0 and not any('avg' in item for item in prev_atm_list if item['atom_id'] == others[0])\
-                           and others[0] in rep_methylene_protons:
+                           and others[0] in rep_methylene_protons\
+                           and (not _atom_id.endswith("'") or others[0].endswith("'"))\
+                           and (_atom_id.endswith("'") or not others[0].endswith("'")):
 
                             _atom_id = others[0]
 
@@ -1391,7 +1393,9 @@ class BMRBChemShiftStat:
                                                     if rep_methylene_proton.startswith(_atom_id[:-1]))
                         others = self.__ccU.getProtonsInSameGroup(comp_id, rep_methylene_proton, exclSelf=True)
                         if len(others) > 0 and any('avg' in item for item in prev_atm_list if item['atom_id'] == others[0])\
-                           and others[0] in non_rep_methylene_protons:
+                           and others[0] in non_rep_methylene_protons\
+                           and (not _atom_id.endswith("'") or others[0].endswith("'"))\
+                           and (_atom_id.endswith("'") or not others[0].endswith("'")):
 
                             _atom_id = others[0]
 
@@ -1430,7 +1434,9 @@ class BMRBChemShiftStat:
                         other = next((item['atom_id'] for item in prev_atm_list
                                       if item['desc'] == _item['desc'] and item['atom_id'].startswith(_item['atom_id'][:-1]) and item['atom_id'] != _item['atom_id']), None)
 
-                        if other is not None and not any('avg' in item for item in prev_atm_list if item['atom_id'] == other):
+                        if other is not None and not any('avg' in item for item in prev_atm_list if item['atom_id'] == other)\
+                           and (not _atom_id.endswith("'") or other.endswith("'"))\
+                           and (_atom_id.endswith("'") or not other.endswith("'")):
 
                             for __atom_id in sorted([_atom_id, other]):
                                 _row = {}
@@ -1468,7 +1474,9 @@ class BMRBChemShiftStat:
                         others = [item['atom_id'] for item in prev_atm_list
                                   if item['desc'] == _item['desc'] and item['atom_id'].startswith(_item['atom_id'][:-2]) and item['atom_id'] != _item['atom_id']]
 
-                        if len(others) > 0 and not any('avg' in item for item in prev_atm_list if item['atom_id'] in others):
+                        if len(others) > 0 and not any('avg' in item for item in prev_atm_list if item['atom_id'] in others)\
+                           and (not _atom_id.endswith("'") or others[0].endswith("'"))\
+                           and (_atom_id.endswith("'") or not others[0].endswith("'")):
                             others.append(_atom_id)
 
                             for __atom_id in sorted(others):

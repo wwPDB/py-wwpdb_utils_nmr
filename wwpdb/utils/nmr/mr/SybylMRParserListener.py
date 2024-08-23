@@ -630,13 +630,6 @@ class SybylMRParserListener(ParseTreeListener):
                                                or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
                                                 self.reasonsForReParsing['ext_chain_seq_id_remap'] = seqIdRemapFailed
 
-            # """
-            # if 'label_seq_scheme' in self.reasonsForReParsing and self.reasonsForReParsing['label_seq_scheme']:
-            #     if 'non_poly_remap' in self.reasonsForReParsing:
-            #         self.reasonsForReParsing['label_seq_scheme'] = False
-            #     if 'seq_id_remap' in self.reasonsForReParsing:
-            #         del self.reasonsForReParsing['seq_id_remap']
-            # """
             if 'local_seq_scheme' in self.reasonsForReParsing:
                 if 'non_poly_remap' in self.reasonsForReParsing or 'branched_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
@@ -646,11 +639,7 @@ class SybylMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['local_seq_scheme']
                 elif 'ext_chain_seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
-            # """
-            # if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-            #     if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
-            #         del self.reasonsForReParsing['seq_id_remap']
-            # """
+
             if 'local_seq_scheme' in self.reasonsForReParsing and len(self.reasonsForReParsing) == 1:
                 sortPolySeqRst(self.__polySeqRstFailed)
                 if len(self.__polySeqRstFailed) > 0:
@@ -935,7 +924,7 @@ class SybylMRParserListener(ParseTreeListener):
                 break
         if refCompId is None and self.__hasNonPolySeq:
             for np in self.__nonPolySeq:
-                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId, False)
+                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId)
                 if refCompId is not None:
                     compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
                     break
@@ -943,13 +932,12 @@ class SybylMRParserListener(ParseTreeListener):
             compId = translateToStdResName(_compId, ccU=self.__ccU)
         return compId
 
-    def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
+    def getRealChainSeqId(self, ps, seqId, compId):
         compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
         if len(_compId) == 2 and _compId.startswith('D'):
             _compId = compId[1]
-        # if self.__reasons is not None and 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:
         if not self.__preferAuthSeq:
-            seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId)
+            seqKey = (ps['auth_chain_id'], seqId)
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
@@ -970,7 +958,7 @@ class SybylMRParserListener(ParseTreeListener):
             if _ps is not None:
                 if seqId in _ps['seq_id']:
                     return ps['auth_chain_id'], _ps['comp_id'][_ps['seq_id'].index(seqId)]
-        return ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId, None
+        return ps['auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequence(self, seqId, compId, atomId):
         """ Assign polymer sequences of the coordinates.
@@ -1080,17 +1068,18 @@ class SybylMRParserListener(ParseTreeListener):
         updatePolySeqRst(self.__polySeqRst, self.__polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId, _compId)
 
         types = self.__csStat.getTypeOfCompId(compId)
-        if all(not t for t in types):
+        if all(not t for t in types) or compId in ('MTS', 'ORI'):
             types = None
         elif compId != _compId:
             if types != self.__csStat.getTypeOfCompId(_compId):
                 types = None
 
         def comp_id_unmatched_with(ps, cif_comp_id):
-            if type is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
+            if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
                 return False
-            return types != self.__csStat.getTypeOfCompId(cif_comp_id)\
-                and (compId in monDict3) is (cif_comp_id in monDict3)
+            if compId not in monDict3 and cif_comp_id not in monDict3:
+                return False
+            return types != self.__csStat.getTypeOfCompId(cif_comp_id)
 
         for ps in self.__polySeq:
             if preferNonPoly:
@@ -1131,11 +1120,7 @@ class SybylMRParserListener(ParseTreeListener):
                         chainAssign.add((chainId, seqId, cifCompId, True))
                 elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                     chainAssign.add((chainId, seqId, cifCompId, True))
-                    # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
-                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                    # """
+
             elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                 if len(auth_seq_id_list) > 0:
@@ -1212,7 +1197,7 @@ class SybylMRParserListener(ParseTreeListener):
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
             for np in self.__nonPolySeq:
-                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
+                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId)
                 if self.__reasons is not None:
                     if fixedChainId is not None:
                         if fixedChainId != chainId:
@@ -1283,15 +1268,8 @@ class SybylMRParserListener(ParseTreeListener):
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
-                                # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                #     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
-                            # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
-                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                            # """
 
             if self.__hasNonPolySeq:
                 for np in self.__nonPolySeq:
@@ -1311,8 +1289,6 @@ class SybylMRParserListener(ParseTreeListener):
                             if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                 if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                     chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
-                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
                             else:
                                 _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
                                 if len(_atomId) > 0 and (details is None or _compId not in monDict3):
@@ -1336,11 +1312,6 @@ class SybylMRParserListener(ParseTreeListener):
                         if compId in compIds:
                             cifCompId = compId
                     chainAssign.add((chainId, _seqId, cifCompId, True))
-                    # """ defer to sequence alignment error
-                    # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                    #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
-                    #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                    # """
 
         if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
             for ps in self.__polySeq:
@@ -1373,17 +1344,10 @@ class SybylMRParserListener(ParseTreeListener):
                                 if compId in (cifCompId, origCompId):
                                     self.__authSeqId = 'label_seq_id'
                                     self.__setLocalSeqScheme()
-                                    # if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                    #     self.reasonsForReParsing['label_seq_scheme'] = True
                         elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
                             self.__authSeqId = 'label_seq_id'
                             self.__setLocalSeqScheme()
-                            # """ defer to sequence alignment error
-                            # if cifCompId != translateToStdResName(compId, ccU=self.__ccU):
-                            #     self.__f.append(f"[Unmatched residue name] {self.__getCurrentRestraint()}"
-                            #                     f"The residue name {_seqId}:{_compId} is unmatched with the name of the coordinates, {cifCompId}.")
-                            # """
 
         if len(chainAssign) == 0:
             if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:

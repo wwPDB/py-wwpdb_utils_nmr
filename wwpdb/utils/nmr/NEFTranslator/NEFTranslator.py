@@ -97,6 +97,10 @@
 # 28-Jun-2024  M. Yokochi - do not evaluate value in case of ValueError exception (v3.6.1, DAOTHER-9520)
 # 28-Jun-2024  M. Yokochi - throw error for key items with empty value (v3.6.2, DAOTHER-9520, 2nd case)
 # 03-Jul-2024  M. Yokochi - convert protonated DC/C residue to valid DNR/CH respectively because of existence of H3/H3+ assignment (v3.6.3)
+# 08-Aug-2024  M. Yokochi - remove deprecated function (star_data_to_nmrstar)
+#                           remove dependency of CSV resource files (NEF_NMRSTAR_equivalence.csv, NEF_mandatory.csv, NMR-STAR_mandatory.csv) (v4.0.0)
+# 08-Aug-2024  M. Yokochi - conform to the NEF specification 3.3 (sf_framecode must start with sf_category) and
+#                           preserve the original NMR-STAR frame codes provided by author through bidirectional conversion (v4.0.0, DAOTHER-9623)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -107,7 +111,7 @@ import ntpath
 import logging
 import re
 import io
-import csv
+# import csv
 import itertools
 import copy
 import pynmrstar
@@ -151,7 +155,7 @@ except ImportError:
 
 
 __package_name__ = 'wwpdb.utils.nmr'
-__version__ = '3.6.3'
+__version__ = '4.0.0'
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
@@ -619,11 +623,852 @@ class NEFTranslator:
         # whether allow missing distance restraints
         self.__allow_missing_dist_restraint = False
 
-        libDirPath = os.path.dirname(__file__) + '/lib/'
+        # libDirPath = os.path.dirname(__file__) + '/lib/'
 
-        self.tagMap = self.load_csv_data(libDirPath + 'NEF_NMRSTAR_equivalence.csv', transpose=True)
-        self.nefMandatoryTag = self.load_csv_data(libDirPath + 'NEF_mandatory.csv')
-        self.starMandatoryTag = self.load_csv_data(libDirPath + 'NMR-STAR_mandatory.csv')
+        # self.tagMap = self.load_csv_data(libDirPath + 'NEF_NMRSTAR_equivalence.csv', transpose=True)
+        self.sfCatMap = [('nef_nmr_meta_data', 'entry_information'),
+                         ('nef_molecular_system', 'assembly'),
+                         ('nef_chemical_shift_list', 'assigned_chemical_shifts'),
+                         ('nef_distance_restraint_list', 'general_distance_constraints'),
+                         ('nef_dihedral_restraint_list', 'torsion_angle_constraints'),
+                         ('nef_rdc_restraint_list', 'RDC_constraints'),
+                         ('nef_nmr_spectrum', 'spectral_peak_list'),
+                         ('nef_peak_restraint_links', 'peak_constraint_links'),
+                         ('nef_related_entries', 'Related_entries'),
+                         ('nef_program_script', 'Software_applied_methods'),
+                         ('nef_run_history', 'History'),
+                         ('nef_sequence', 'Chem_comp_assembly'),
+                         ('nef_covalent_links', 'Bond'),
+                         ('nef_chemical_shift', 'Atom_chem_shift'),
+                         ('nef_distance_restraint', 'Gen_dist_constraint'),
+                         ('nef_dihedral_restraint', 'Torsion_angle_constraint'),
+                         ('nef_rdc_restraint', 'RDC_constraint'),
+                         ('nef_spectrum_dimension', 'Spectral_dim'),
+                         ('nef_spectrum_dimension_transfer', 'Spectral_dim_transfer'),
+                         ('nef_peak', 'Peak_row_format'),
+                         ('nef_peak_restraint_link', 'Peak_constraint_link'),
+                         ('audit', 'Audit')
+                         ]
+
+        # nef tag, nmr-star auth tag, nmr-star tag
+        self.tagMap = [('_nef_program_script.program_name', '_Software_applied_methods.Software_name', '_Software_applied_methods.Software_name'),
+                       ('_nef_program_script.script_name', '_Software_applied_methods.Script_name', '_Software_applied_methods.Script_name'),
+                       ('_nef_program_script.script', '_Software_applied_methods.Script', '_Software_applied_methods.Script'),
+                       ('_nef_run_history.run_number', '_History.Run_number', '_History.Run_number'),
+                       ('_nef_run_history.program_name', '_History.Software_name', '_History.Software_name'),
+                       ('_nef_run_history.program_version', '_History.Software_version', '_History.Software_version'),
+                       ('_nef_run_history.script_name', '_History.Script_name', '_History.Script_name'),
+                       ('_nef_run_history.script', '_History.Script', '_History.Script'),
+                       ('_nef_nmr_meta_data.sf_category', '_Entry.Sf_category', '_Entry.Sf_category'),
+                       ('_nef_nmr_meta_data.sf_framecode', '_Entry.Sf_framecode', '_Entry.Sf_framecode'),
+                       ('_nef_nmr_meta_data.format_name', '_Entry.Source_data_format', '_Entry.Source_data_format'),
+                       ('_nef_nmr_meta_data.format_version', '_Entry.Source_data_format_version', '_Entry.Source_data_format_version'),
+                       ('_nef_nmr_meta_data.program_name', '_Entry.Generated_software_name', '_Entry.Generated_software_name'),
+                       ('_nef_nmr_meta_data.program_version', '_Entry.Generated_software_version', '_Entry.Generated_software_version'),
+                       ('_nef_nmr_meta_data.creation_date', '_Entry.Generated_date', '_Entry.Generated_date'),
+                       ('_nef_nmr_meta_data.uuid', '_Entry.UUID', '_Entry.UUID'),
+                       ('_nef_nmr_meta_data.coordinate_file_name', '_Entry.Related_coordinate_file_name', '_Entry.Related_coordinate_file_name'),
+                       ('_nef_related_entries.database_name', '_Related_entries.Database_name', '_Related_entries.Database_name'),
+                       ('_nef_related_entries.database_accession_code', '_Related_entries.Database_accession_code', '_Related_entries.Database_accession_code'),
+                       ('_nef_molecular_system.sf_category', '_Assembly.Sf_category', '_Assembly.Sf_category'),
+                       ('_nef_molecular_system.sf_framecode', '_Assembly.Sf_framecode', '_Assembly.Sf_framecode'),
+                       ('_nef_sequence.index', '_Chem_comp_assembly.NEF_index', '_Chem_comp_assembly.NEF_index'),
+                       ('_nef_sequence.chain_code', '_Chem_comp_assembly.Auth_asym_ID', '_Chem_comp_assembly.Entity_assembly_ID'),
+                       ('_nef_sequence.sequence_code', '_Chem_comp_assembly.Auth_seq_ID', '_Chem_comp_assembly.Comp_index_ID'),
+                       ('_nef_sequence.residue_name', '_Chem_comp_assembly.Auth_comp_ID', '_Chem_comp_assembly.Comp_ID'),
+                       ('_nef_sequence.linking', '_Chem_comp_assembly.Sequence_linking', '_Chem_comp_assembly.Sequence_linking'),
+                       ('_nef_sequence.residue_variant', '_Chem_comp_assembly.Auth_variant_ID', '_Chem_comp_assembly.Auth_variant_ID'),
+                       ('_nef_sequence.cis_peptide', '_Chem_comp_assembly.Cis_residue', '_Chem_comp_assembly.Cis_residue'),
+                       ('_nef_covalent_links.chain_code_1', '_Bond.Auth_asym_ID_1', '_Bond.Entity_assembly_ID_1'),
+                       ('_nef_covalent_links.sequence_code_1', '_Bond.Auth_seq_ID_1', '_Bond.Comp_index_ID_1'),
+                       ('_nef_covalent_links.residue_name_1', '_Bond.Auth_comp_ID_1', '_Bond.Comp_ID_1'),
+                       ('_nef_covalent_links.atom_name_1', '_Bond.Auth_atom_ID_1', '_Bond.Atom_ID_1'),
+                       ('_nef_covalent_links.chain_code_2', '_Bond.Auth_asym_ID_2', '_Bond.Entity_assembly_ID_2'),
+                       ('_nef_covalent_links.sequence_code_2', '_Bond.Auth_seq_ID_2', '_Bond.Comp_index_ID_2'),
+                       ('_nef_covalent_links.residue_name_2', '_Bond.Auth_comp_ID_2', '_Bond.Comp_ID_2'),
+                       ('_nef_covalent_links.atom_name_2', '_Bond.Auth_atom_ID_2', '_Bond.Atom_ID_2'),
+                       ('_nef_chemical_shift_list.sf_category', '_Assigned_chem_shift_list.Sf_category', '_Assigned_chem_shift_list.Sf_category'),
+                       ('_nef_chemical_shift_list.sf_framecode', '_Assigned_chem_shift_list.Sf_framecode', '_Assigned_chem_shift_list.Sf_framecode'),
+                       ('_nef_chemical_shift_list.atom_chemical_shift_units', '', ''),
+                       ('_nef_chemical_shift.chain_code', '_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Entity_assembly_ID'),
+                       ('_nef_chemical_shift.sequence_code', '_Atom_chem_shift.Auth_seq_ID', '_Atom_chem_shift.Comp_index_ID'),
+                       ('_nef_chemical_shift.residue_name', '_Atom_chem_shift.Auth_comp_ID', '_Atom_chem_shift.Comp_ID'),
+                       ('_nef_chemical_shift.atom_name', '_Atom_chem_shift.Auth_atom_ID', '_Atom_chem_shift.Atom_ID'),
+                       ('_nef_chemical_shift.element', '_Atom_chem_shift.Atom_type', '_Atom_chem_shift.Atom_type'),
+                       ('_nef_chemical_shift.isotope_number', '_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Atom_isotope_number'),
+                       ('_nef_chemical_shift.value', '_Atom_chem_shift.Val', '_Atom_chem_shift.Val'),
+                       ('_nef_chemical_shift.value_uncertainty', '_Atom_chem_shift.Val_err', '_Atom_chem_shift.Val_err'),
+                       ('_nef_distance_restraint_list.sf_category', '_Gen_dist_constraint_list.Sf_category', '_Gen_dist_constraint_list.Sf_category'),
+                       ('_nef_distance_restraint_list.sf_framecode', '_Gen_dist_constraint_list.Sf_framecode', '_Gen_dist_constraint_list.Sf_framecode'),
+                       ('_nef_distance_restraint_list.potential_type', '_Gen_dist_constraint_list.Potential_type', '_Gen_dist_constraint_list.Potential_type'),
+                       ('_nef_distance_restraint_list.restraint_origin', '_Gen_dist_constraint_list.Constraint_type', '_Gen_dist_constraint_list.Constraint_type'),
+                       ('_nef_distance_restraint.index', '_Gen_dist_constraint.Index_ID', '_Gen_dist_constraint.Index_ID'),
+                       ('_nef_distance_restraint.restraint_id', '_Gen_dist_constraint.ID', '_Gen_dist_constraint.ID'),
+                       ('_nef_distance_restraint.restraint_combination_id', '_Gen_dist_constraint.Combination_ID', '_Gen_dist_constraint.Combination_ID'),
+                       ('_nef_distance_restraint.chain_code_1', '_Gen_dist_constraint.Auth_asym_ID_1', '_Gen_dist_constraint.Entity_assembly_ID_1'),
+                       ('_nef_distance_restraint.sequence_code_1', '_Gen_dist_constraint.Auth_seq_ID_1', '_Gen_dist_constraint.Comp_index_ID_1'),
+                       ('_nef_distance_restraint.residue_name_1', '_Gen_dist_constraint.Auth_comp_ID_1', '_Gen_dist_constraint.Comp_ID_1'),
+                       ('_nef_distance_restraint.atom_name_1', '_Gen_dist_constraint.Auth_atom_ID_1', '_Gen_dist_constraint.Atom_ID_1'),
+                       ('_nef_distance_restraint.chain_code_2', '_Gen_dist_constraint.Auth_asym_ID_2', '_Gen_dist_constraint.Entity_assembly_ID_2'),
+                       ('_nef_distance_restraint.sequence_code_2', '_Gen_dist_constraint.Auth_seq_ID_2', '_Gen_dist_constraint.Comp_index_ID_2'),
+                       ('_nef_distance_restraint.residue_name_2', '_Gen_dist_constraint.Auth_comp_ID_2', '_Gen_dist_constraint.Comp_ID_2'),
+                       ('_nef_distance_restraint.atom_name_2', '_Gen_dist_constraint.Auth_atom_ID_2', '_Gen_dist_constraint.Atom_ID_2'),
+                       ('_nef_distance_restraint.weight', '_Gen_dist_constraint.Weight', '_Gen_dist_constraint.Weight'),
+                       ('_nef_distance_restraint.target_value', '_Gen_dist_constraint.Target_val', '_Gen_dist_constraint.Target_val'),
+                       ('_nef_distance_restraint.target_value_uncertainty', '_Gen_dist_constraint.Target_val_uncertainty', '_Gen_dist_constraint.Target_val_uncertainty'),
+                       ('_nef_distance_restraint.lower_linear_limit', '_Gen_dist_constraint.Lower_linear_limit', '_Gen_dist_constraint.Lower_linear_limit'),
+                       ('_nef_distance_restraint.lower_limit', '_Gen_dist_constraint.Distance_lower_bound_val', '_Gen_dist_constraint.Distance_lower_bound_val'),
+                       ('_nef_distance_restraint.upper_limit', '_Gen_dist_constraint.Distance_upper_bound_val', '_Gen_dist_constraint.Distance_upper_bound_val'),
+                       ('_nef_distance_restraint.upper_linear_limit', '_Gen_dist_constraint.Upper_linear_limit', '_Gen_dist_constraint.Upper_linear_limit'),
+                       ('_nef_dihedral_restraint_list.sf_category', '_Torsion_angle_constraint_list.Sf_category', '_Torsion_angle_constraint_list.Sf_category'),
+                       ('_nef_dihedral_restraint_list.sf_framecode', '_Torsion_angle_constraint_list.Sf_framecode', '_Torsion_angle_constraint_list.Sf_framecode'),
+                       ('_nef_dihedral_restraint_list.potential_type', '_Torsion_angle_constraint_list.Potential_type', '_Torsion_angle_constraint_list.Potential_type'),
+                       ('_nef_dihedral_restraint_list.restraint_origin', '_Torsion_angle_constraint_list.Constraint_type', '_Torsion_angle_constraint_list.Constraint_type'),
+                       ('_nef_dihedral_restraint.index', '_Torsion_angle_constraint.Index_ID', '_Torsion_angle_constraint.Index_ID'),
+                       ('_nef_dihedral_restraint.restraint_id', '_Torsion_angle_constraint.ID', '_Torsion_angle_constraint.ID'),
+                       ('_nef_dihedral_restraint.restraint_combination_id', '_Torsion_angle_constraint.Combination_ID', '_Torsion_angle_constraint.Combination_ID'),
+                       ('_nef_dihedral_restraint.chain_code_1', '_Torsion_angle_constraint.Auth_asym_ID_1', '_Torsion_angle_constraint.Entity_assembly_ID_1'),
+                       ('_nef_dihedral_restraint.sequence_code_1', '_Torsion_angle_constraint.Auth_seq_ID_1', '_Torsion_angle_constraint.Comp_index_ID_1'),
+                       ('_nef_dihedral_restraint.residue_name_1', '_Torsion_angle_constraint.Auth_comp_ID_1', '_Torsion_angle_constraint.Comp_ID_1'),
+                       ('_nef_dihedral_restraint.atom_name_1', '_Torsion_angle_constraint.Auth_atom_ID_1', '_Torsion_angle_constraint.Atom_ID_1'),
+                       ('_nef_dihedral_restraint.chain_code_2', '_Torsion_angle_constraint.Auth_asym_ID_2', '_Torsion_angle_constraint.Entity_assembly_ID_2'),
+                       ('_nef_dihedral_restraint.sequence_code_2', '_Torsion_angle_constraint.Auth_seq_ID_2', '_Torsion_angle_constraint.Comp_index_ID_2'),
+                       ('_nef_dihedral_restraint.residue_name_2', '_Torsion_angle_constraint.Auth_comp_ID_2', '_Torsion_angle_constraint.Comp_ID_2'),
+                       ('_nef_dihedral_restraint.atom_name_2', '_Torsion_angle_constraint.Auth_atom_ID_2', '_Torsion_angle_constraint.Atom_ID_2'),
+                       ('_nef_dihedral_restraint.chain_code_3', '_Torsion_angle_constraint.Auth_asym_ID_3', '_Torsion_angle_constraint.Entity_assembly_ID_3'),
+                       ('_nef_dihedral_restraint.sequence_code_3', '_Torsion_angle_constraint.Auth_seq_ID_3', '_Torsion_angle_constraint.Comp_index_ID_3'),
+                       ('_nef_dihedral_restraint.residue_name_3', '_Torsion_angle_constraint.Auth_comp_ID_3', '_Torsion_angle_constraint.Comp_ID_3'),
+                       ('_nef_dihedral_restraint.atom_name_3', '_Torsion_angle_constraint.Auth_atom_ID_3', '_Torsion_angle_constraint.Atom_ID_3'),
+                       ('_nef_dihedral_restraint.chain_code_4', '_Torsion_angle_constraint.Auth_asym_ID_4', '_Torsion_angle_constraint.Entity_assembly_ID_4'),
+                       ('_nef_dihedral_restraint.sequence_code_4', '_Torsion_angle_constraint.Auth_seq_ID_4', '_Torsion_angle_constraint.Comp_index_ID_4'),
+                       ('_nef_dihedral_restraint.residue_name_4', '_Torsion_angle_constraint.Auth_comp_ID_4', '_Torsion_angle_constraint.Comp_ID_4'),
+                       ('_nef_dihedral_restraint.atom_name_4', '_Torsion_angle_constraint.Auth_atom_ID_4', '_Torsion_angle_constraint.Atom_ID_4'),
+                       ('_nef_dihedral_restraint.weight', '_Torsion_angle_constraint.Weight', '_Torsion_angle_constraint.Weight'),
+                       ('_nef_dihedral_restraint.target_value', '_Torsion_angle_constraint.Angle_target_val', '_Torsion_angle_constraint.Angle_target_val'),
+                       ('_nef_dihedral_restraint.target_value_uncertainty', '_Torsion_angle_constraint.Angle_target_val_err', '_Torsion_angle_constraint.Angle_target_val_err'),
+                       ('_nef_dihedral_restraint.lower_linear_limit', '_Torsion_angle_constraint.Angle_lower_linear_limit', '_Torsion_angle_constraint.Angle_lower_linear_limit'),
+                       ('_nef_dihedral_restraint.lower_limit', '_Torsion_angle_constraint.Angle_lower_bound_val', '_Torsion_angle_constraint.Angle_lower_bound_val'),
+                       ('_nef_dihedral_restraint.upper_limit', '_Torsion_angle_constraint.Angle_upper_bound_val', '_Torsion_angle_constraint.Angle_upper_bound_val'),
+                       ('_nef_dihedral_restraint.upper_linear_limit', '_Torsion_angle_constraint.Angle_upper_linear_limit', '_Torsion_angle_constraint.Angle_upper_linear_limit'),
+                       ('_nef_dihedral_restraint.name', '_Torsion_angle_constraint.Torsion_angle_name', '_Torsion_angle_constraint.Torsion_angle_name'),
+                       ('_nef_rdc_restraint_list.sf_category', '_RDC_constraint_list.Sf_category', '_RDC_constraint_list.Sf_category'),
+                       ('_nef_rdc_restraint_list.sf_framecode', '_RDC_constraint_list.Sf_framecode', '_RDC_constraint_list.Sf_framecode'),
+                       ('_nef_rdc_restraint_list.potential_type', '_RDC_constraint_list.Potential_type', '_RDC_constraint_list.Potential_type'),
+                       ('_nef_rdc_restraint_list.restraint_origin', '_RDC_constraint_list.Constraint_type', '_RDC_constraint_list.Constraint_type'),
+                       ('_nef_rdc_restraint_list.tensor_magnitude', '_RDC_constraint_list.Tensor_magnitude', '_RDC_constraint_list.Tensor_magnitude'),
+                       ('_nef_rdc_restraint_list.tensor_rhombicity', '_RDC_constraint_list.Tensor_rhombicity', '_RDC_constraint_list.Tensor_rhombicity'),
+                       ('_nef_rdc_restraint_list.tensor_chain_code', '_RDC_constraint_list.Tensor_auth_asym_ID', '_RDC_constraint_list.Tensor_Entity_assembly_ID'),
+                       ('_nef_rdc_restraint_list.tensor_sequence_code', '_RDC_constraint_list.Tensor_Auth_seq_ID', '_RDC_constraint_list.Tensor_seq_ID'),
+                       ('_nef_rdc_restraint_list.tensor_residue_name', '_RDC_constraint_list.Tensor_auth_comp_ID', '_RDC_constraint_list.Tensor_comp_ID'),
+                       ('_nef_rdc_restraint.index', '_RDC_constraint.Index_ID', '_RDC_constraint.Index_ID'),
+                       ('_nef_rdc_restraint.restraint_id', '_RDC_constraint.ID', '_RDC_constraint.ID'),
+                       ('_nef_rdc_restraint.restraint_combination_id', '_RDC_constraint.Combination_ID', '_RDC_constraint.Combination_ID'),
+                       ('_nef_rdc_restraint.chain_code_1', '_RDC_constraint.Auth_asym_ID_1', '_RDC_constraint.Entity_assembly_ID_1'),
+                       ('_nef_rdc_restraint.sequence_code_1', '_RDC_constraint.Auth_seq_ID_1', '_RDC_constraint.Comp_index_ID_1'),
+                       ('_nef_rdc_restraint.residue_name_1', '_RDC_constraint.Auth_comp_ID_1', '_RDC_constraint.Comp_ID_1'),
+                       ('_nef_rdc_restraint.atom_name_1', '_RDC_constraint.Auth_atom_ID_1', '_RDC_constraint.Atom_ID_1'),
+                       ('_nef_rdc_restraint.chain_code_2', '_RDC_constraint.Auth_asym_ID_2', '_RDC_constraint.Entity_assembly_ID_2'),
+                       ('_nef_rdc_restraint.sequence_code_2', '_RDC_constraint.Auth_seq_ID_2', '_RDC_constraint.Comp_index_ID_2'),
+                       ('_nef_rdc_restraint.residue_name_2', '_RDC_constraint.Auth_comp_ID_2', '_RDC_constraint.Comp_ID_2'),
+                       ('_nef_rdc_restraint.atom_name_2', '_RDC_constraint.Auth_atom_ID_2', '_RDC_constraint.Atom_ID_2'),
+                       ('_nef_rdc_restraint.weight', '_RDC_constraint.Weight', '_RDC_constraint.Weight'),
+                       ('_nef_rdc_restraint.target_value', '_RDC_constraint.Target_value', '_RDC_constraint.Target_value'),
+                       ('_nef_rdc_restraint.target_value_uncertainty', '_RDC_constraint.Target_value_uncertainty', '_RDC_constraint.Target_value_uncertainty'),
+                       ('_nef_rdc_restraint.lower_linear_limit', '_RDC_constraint.RDC_lower_linear_limit', '_RDC_constraint.RDC_lower_linear_limit'),
+                       ('_nef_rdc_restraint.lower_limit', '_RDC_constraint.RDC_lower_bound', '_RDC_constraint.RDC_lower_bound'),
+                       ('_nef_rdc_restraint.upper_limit', '_RDC_constraint.RDC_upper_bound', '_RDC_constraint.RDC_upper_bound'),
+                       ('_nef_rdc_restraint.upper_linear_limit', '_RDC_constraint.RDC_upper_linear_limit', '_RDC_constraint.RDC_upper_linear_limit'),
+                       ('_nef_rdc_restraint.scale', '_RDC_constraint.RDC_val_scale_factor', '_RDC_constraint.RDC_val_scale_factor'),
+                       ('_nef_rdc_restraint.distance_dependent', '_RDC_constraint.RDC_distant_dependent', '_RDC_constraint.RDC_distant_dependent'),
+                       ('_nef_nmr_spectrum.sf_category', '_Spectral_peak_list.Sf_category', '_Spectral_peak_list.Sf_category'),
+                       ('_nef_nmr_spectrum.sf_framecode', '_Spectral_peak_list.Sf_framecode', '_Spectral_peak_list.Sf_framecode'),
+                       ('_nef_nmr_spectrum.num_dimensions', '_Spectral_peak_list.Number_of_spectral_dimensions', '_Spectral_peak_list.Number_of_spectral_dimensions'),
+                       ('_nef_nmr_spectrum.chemical_shift_list', '_Spectral_peak_list.Chemical_shift_list', '_Spectral_peak_list.Chemical_shift_list'),
+                       ('_nef_nmr_spectrum.experiment_classification', '_Spectral_peak_list.Experiment_class', '_Spectral_peak_list.Experiment_class'),
+                       ('_nef_nmr_spectrum.experiment_type', '_Spectral_peak_list.Experiment_type', '_Spectral_peak_list.Experiment_type'),
+                       ('_nef_spectrum_dimension.dimension_id', '_Spectral_dim.ID', '_Spectral_dim.ID'),
+                       ('_nef_spectrum_dimension.axis_unit', '_Spectral_dim.Sweep_width_units', '_Spectral_dim.Sweep_width_units'),
+                       ('_nef_spectrum_dimension.axis_code', '_Spectral_dim.Axis_code', '_Spectral_dim.Axis_code'),
+                       ('_nef_spectrum_dimension.spectrometer_frequency', '_Spectral_dim.Spectrometer_frequency', '_Spectral_dim.Spectrometer_frequency'),
+                       ('_nef_spectrum_dimension.spectral_width', '_Spectral_dim.Sweep_width', '_Spectral_dim.Sweep_width'),
+                       ('_nef_spectrum_dimension.value_first_point', '_Spectral_dim.Value_first_point', '_Spectral_dim.Value_first_point'),
+                       ('_nef_spectrum_dimension.folding', '_Spectral_dim.Under_sampling_type', '_Spectral_dim.Under_sampling_type'),
+                       ('_nef_spectrum_dimension.absolute_peak_positions', '_Spectral_dim.Absolute_peak_positions', '_Spectral_dim.Absolute_peak_positions'),
+                       ('_nef_spectrum_dimension.is_acquisition', '_Spectral_dim.Acquisition', '_Spectral_dim.Acquisition'),
+                       ('_nef_spectrum_dimension_transfer.dimension_1', '_Spectral_dim_transfer.Spectral_dim_ID_1', '_Spectral_dim_transfer.Spectral_dim_ID_1'),
+                       ('_nef_spectrum_dimension_transfer.dimension_2', '_Spectral_dim_transfer.Spectral_dim_ID_2', '_Spectral_dim_transfer.Spectral_dim_ID_2'),
+                       ('_nef_spectrum_dimension_transfer.transfer_type', '_Spectral_dim_transfer.Type', '_Spectral_dim_transfer.Type'),
+                       ('_nef_spectrum_dimension_transfer.is_indirect', '_Spectral_dim_transfer.Indirect', '_Spectral_dim_transfer.Indirect'),
+                       ('_nef_peak.index', '_Peak_row_format.Index_ID', '_Peak_row_format.Index_ID'),
+                       ('_nef_peak.peak_id', '_Peak_row_format.ID', '_Peak_row_format.ID'),
+                       ('_nef_peak.volume', '_Peak_row_format.Volume', '_Peak_row_format.Volume'),
+                       ('_nef_peak.volume_uncertainty', '_Peak_row_format.Volume_uncertainty', '_Peak_row_format.Volume_uncertainty'),
+                       ('_nef_peak.height', '_Peak_row_format.Height', '_Peak_row_format.Height'),
+                       ('_nef_peak.height_uncertainty', '_Peak_row_format.Height_uncertainty', '_Peak_row_format.Height_uncertainty'),
+                       ('_nef_peak.position_1', '_Peak_row_format.Position_1', '_Peak_row_format.Position_1'),
+                       ('_nef_peak.position_uncertainty_1', '_Peak_row_format.Position_uncertainty_1', '_Peak_row_format.Position_uncertainty_1'),
+                       ('_nef_peak.position_2', '_Peak_row_format.Position_2', '_Peak_row_format.Position_2'),
+                       ('_nef_peak.position_uncertainty_2', '_Peak_row_format.Position_uncertainty_2', '_Peak_row_format.Position_uncertainty_2'),
+                       ('_nef_peak.position_3', '_Peak_row_format.Position_3', '_Peak_row_format.Position_3'),
+                       ('_nef_peak.position_uncertainty_3', '_Peak_row_format.Position_uncertainty_3', '_Peak_row_format.Position_uncertainty_3'),
+                       ('_nef_peak.position_4', '_Peak_row_format.Position_4', '_Peak_row_format.Position_4'),
+                       ('_nef_peak.position_uncertainty_4', '_Peak_row_format.Position_uncertainty_4', '_Peak_row_format.Position_uncertainty_4'),
+                       ('_nef_peak.position_5', '_Peak_row_format.Position_5', '_Peak_row_format.Position_5'),
+                       ('_nef_peak.position_uncertainty_5', '_Peak_row_format.Position_uncertainty_5', '_Peak_row_format.Position_uncertainty_5'),
+                       ('_nef_peak.position_6', '_Peak_row_format.Position_6', '_Peak_row_format.Position_6'),
+                       ('_nef_peak.position_uncertainty_6', '_Peak_row_format.Position_uncertainty_6', '_Peak_row_format.Position_uncertainty_6'),
+                       ('_nef_peak.position_7', '_Peak_row_format.Position_7', '_Peak_row_format.Position_7'),
+                       ('_nef_peak.position_uncertainty_7', '_Peak_row_format.Position_uncertainty_7', '_Peak_row_format.Position_uncertainty_7'),
+                       ('_nef_peak.position_8', '_Peak_row_format.Position_8', '_Peak_row_format.Position_8'),
+                       ('_nef_peak.position_uncertainty_8', '_Peak_row_format.Position_uncertainty_8', '_Peak_row_format.Position_uncertainty_8'),
+                       ('_nef_peak.position_9', '_Peak_row_format.Position_9', '_Peak_row_format.Position_9'),
+                       ('_nef_peak.position_uncertainty_9', '_Peak_row_format.Position_uncertainty_9', '_Peak_row_format.Position_uncertainty_9'),
+                       ('_nef_peak.position_10', '_Peak_row_format.Position_10', '_Peak_row_format.Position_10'),
+                       ('_nef_peak.position_uncertainty_10', '_Peak_row_format.Position_uncertainty_10', '_Peak_row_format.Position_uncertainty_10'),
+                       ('_nef_peak.position_11', '_Peak_row_format.Position_11', '_Peak_row_format.Position_11'),
+                       ('_nef_peak.position_uncertainty_11', '_Peak_row_format.Position_uncertainty_11', '_Peak_row_format.Position_uncertainty_11'),
+                       ('_nef_peak.position_12', '_Peak_row_format.Position_12', '_Peak_row_format.Position_12'),
+                       ('_nef_peak.position_uncertainty_12', '_Peak_row_format.Position_uncertainty_12', '_Peak_row_format.Position_uncertainty_12'),
+                       ('_nef_peak.position_13', '_Peak_row_format.Position_13', '_Peak_row_format.Position_13'),
+                       ('_nef_peak.position_uncertainty_13', '_Peak_row_format.Position_uncertainty_13', '_Peak_row_format.Position_uncertainty_13'),
+                       ('_nef_peak.position_14', '_Peak_row_format.Position_14', '_Peak_row_format.Position_14'),
+                       ('_nef_peak.position_uncertainty_14', '_Peak_row_format.Position_uncertainty_14', '_Peak_row_format.Position_uncertainty_14'),
+                       ('_nef_peak.position_15', '_Peak_row_format.Position_15', '_Peak_row_format.Position_15'),
+                       ('_nef_peak.position_uncertainty_15', '_Peak_row_format.Position_uncertainty_15', '_Peak_row_format.Position_uncertainty_15'),
+                       ('_nef_peak.chain_code_1', '_Peak_row_format.Auth_asym_ID_1', '_Peak_row_format.Entity_assembly_ID_1'),
+                       ('_nef_peak.sequence_code_1', '_Peak_row_format.Auth_seq_ID_1', '_Peak_row_format.Comp_index_ID_1'),
+                       ('_nef_peak.residue_name_1', '_Peak_row_format.Auth_comp_ID_1', '_Peak_row_format.Comp_ID_1'),
+                       ('_nef_peak.atom_name_1', '_Peak_row_format.Auth_atom_ID_1', '_Peak_row_format.Atom_ID_1'),
+                       ('_nef_peak.chain_code_2', '_Peak_row_format.Auth_asym_ID_2', '_Peak_row_format.Entity_assembly_ID_2'),
+                       ('_nef_peak.sequence_code_2', '_Peak_row_format.Auth_seq_ID_2', '_Peak_row_format.Comp_index_ID_2'),
+                       ('_nef_peak.residue_name_2', '_Peak_row_format.Auth_comp_ID_2', '_Peak_row_format.Comp_ID_2'),
+                       ('_nef_peak.atom_name_2', '_Peak_row_format.Auth_atom_ID_2', '_Peak_row_format.Atom_ID_2'),
+                       ('_nef_peak.chain_code_3', '_Peak_row_format.Auth_asym_ID_3', '_Peak_row_format.Entity_assembly_ID_3'),
+                       ('_nef_peak.sequence_code_3', '_Peak_row_format.Auth_seq_ID_3', '_Peak_row_format.Comp_index_ID_3'),
+                       ('_nef_peak.residue_name_3', '_Peak_row_format.Auth_comp_ID_3', '_Peak_row_format.Comp_ID_3'),
+                       ('_nef_peak.atom_name_3', '_Peak_row_format.Auth_atom_ID_3', '_Peak_row_format.Atom_ID_3'),
+                       ('_nef_peak.chain_code_4', '_Peak_row_format.Auth_asym_ID_4', '_Peak_row_format.Entity_assembly_ID_4'),
+                       ('_nef_peak.sequence_code_4', '_Peak_row_format.Auth_seq_ID_4', '_Peak_row_format.Comp_index_ID_4'),
+                       ('_nef_peak.residue_name_4', '_Peak_row_format.Auth_comp_ID_4', '_Peak_row_format.Comp_ID_4'),
+                       ('_nef_peak.atom_name_4', '_Peak_row_format.Auth_atom_ID_4', '_Peak_row_format.Atom_ID_4'),
+                       ('_nef_peak.chain_code_5', '_Peak_row_format.Auth_asym_ID_5', '_Peak_row_format.Entity_assembly_ID_5'),
+                       ('_nef_peak.sequence_code_5', '_Peak_row_format.Auth_seq_ID_5', '_Peak_row_format.Comp_index_ID_5'),
+                       ('_nef_peak.residue_name_5', '_Peak_row_format.Auth_comp_ID_5', '_Peak_row_format.Comp_ID_5'),
+                       ('_nef_peak.atom_name_5', '_Peak_row_format.Auth_atom_ID_5', '_Peak_row_format.Atom_ID_5'),
+                       ('_nef_peak.chain_code_6', '_Peak_row_format.Auth_asym_ID_6', '_Peak_row_format.Entity_assembly_ID_6'),
+                       ('_nef_peak.sequence_code_6', '_Peak_row_format.Auth_seq_ID_6', '_Peak_row_format.Comp_index_ID_6'),
+                       ('_nef_peak.residue_name_6', '_Peak_row_format.Auth_comp_ID_6', '_Peak_row_format.Comp_ID_6'),
+                       ('_nef_peak.atom_name_6', '_Peak_row_format.Auth_atom_ID_6', '_Peak_row_format.Atom_ID_6'),
+                       ('_nef_peak.chain_code_7', '_Peak_row_format.Auth_asym_ID_7', '_Peak_row_format.Entity_assembly_ID_7'),
+                       ('_nef_peak.sequence_code_7', '_Peak_row_format.Auth_seq_ID_7', '_Peak_row_format.Comp_index_ID_7'),
+                       ('_nef_peak.residue_name_7', '_Peak_row_format.Auth_comp_ID_7', '_Peak_row_format.Comp_ID_7'),
+                       ('_nef_peak.atom_name_7', '_Peak_row_format.Auth_atom_ID_7', '_Peak_row_format.Atom_ID_7'),
+                       ('_nef_peak.chain_code_8', '_Peak_row_format.Auth_asym_ID_8', '_Peak_row_format.Entity_assembly_ID_8'),
+                       ('_nef_peak.sequence_code_8', '_Peak_row_format.Auth_seq_ID_8', '_Peak_row_format.Comp_index_ID_8'),
+                       ('_nef_peak.residue_name_8', '_Peak_row_format.Auth_comp_ID_8', '_Peak_row_format.Comp_ID_8'),
+                       ('_nef_peak.atom_name_8', '_Peak_row_format.Auth_atom_ID_8', '_Peak_row_format.Atom_ID_8'),
+                       ('_nef_peak.chain_code_9', '_Peak_row_format.Auth_asym_ID_9', '_Peak_row_format.Entity_assembly_ID_9'),
+                       ('_nef_peak.sequence_code_9', '_Peak_row_format.Auth_seq_ID_9', '_Peak_row_format.Comp_index_ID_9'),
+                       ('_nef_peak.residue_name_9', '_Peak_row_format.Auth_comp_ID_9', '_Peak_row_format.Comp_ID_9'),
+                       ('_nef_peak.atom_name_9', '_Peak_row_format.Auth_atom_ID_9', '_Peak_row_format.Atom_ID_9'),
+                       ('_nef_peak.chain_code_10', '_Peak_row_format.Auth_asym_ID_10', '_Peak_row_format.Entity_assembly_ID_10'),
+                       ('_nef_peak.sequence_code_10', '_Peak_row_format.Auth_seq_ID_10', '_Peak_row_format.Comp_index_ID_10'),
+                       ('_nef_peak.residue_name_10', '_Peak_row_format.Auth_comp_ID_10', '_Peak_row_format.Comp_ID_10'),
+                       ('_nef_peak.atom_name_10', '_Peak_row_format.Auth_atom_ID_10', '_Peak_row_format.Atom_ID_10'),
+                       ('_nef_peak.chain_code_11', '_Peak_row_format.Auth_asym_ID_11', '_Peak_row_format.Entity_assembly_ID_11'),
+                       ('_nef_peak.sequence_code_11', '_Peak_row_format.Auth_seq_ID_11', '_Peak_row_format.Comp_index_ID_11'),
+                       ('_nef_peak.residue_name_11', '_Peak_row_format.Auth_comp_ID_11', '_Peak_row_format.Comp_ID_11'),
+                       ('_nef_peak.atom_name_11', '_Peak_row_format.Auth_atom_ID_11', '_Peak_row_format.Atom_ID_11'),
+                       ('_nef_peak.chain_code_12', '_Peak_row_format.Auth_asym_ID_12', '_Peak_row_format.Entity_assembly_ID_12'),
+                       ('_nef_peak.sequence_code_12', '_Peak_row_format.Auth_seq_ID_12', '_Peak_row_format.Comp_index_ID_12'),
+                       ('_nef_peak.residue_name_12', '_Peak_row_format.Auth_comp_ID_12', '_Peak_row_format.Comp_ID_12'),
+                       ('_nef_peak.atom_name_12', '_Peak_row_format.Auth_atom_ID_12', '_Peak_row_format.Atom_ID_12'),
+                       ('_nef_peak.chain_code_13', '_Peak_row_format.Auth_asym_ID_13', '_Peak_row_format.Entity_assembly_ID_13'),
+                       ('_nef_peak.sequence_code_13', '_Peak_row_format.Auth_seq_ID_13', '_Peak_row_format.Comp_index_ID_13'),
+                       ('_nef_peak.residue_name_13', '_Peak_row_format.Auth_comp_ID_13', '_Peak_row_format.Comp_ID_13'),
+                       ('_nef_peak.atom_name_13', '_Peak_row_format.Auth_atom_ID_13', '_Peak_row_format.Atom_ID_13'),
+                       ('_nef_peak.chain_code_14', '_Peak_row_format.Auth_asym_ID_14', '_Peak_row_format.Entity_assembly_ID_14'),
+                       ('_nef_peak.sequence_code_14', '_Peak_row_format.Auth_seq_ID_14', '_Peak_row_format.Comp_index_ID_14'),
+                       ('_nef_peak.residue_name_14', '_Peak_row_format.Auth_comp_ID_14', '_Peak_row_format.Comp_ID_14'),
+                       ('_nef_peak.atom_name_14', '_Peak_row_format.Auth_atom_ID_14', '_Peak_row_format.Atom_ID_14'),
+                       ('_nef_peak.chain_code_15', '_Peak_row_format.Auth_asym_ID_15', '_Peak_row_format.Entity_assembly_ID_15'),
+                       ('_nef_peak.sequence_code_15', '_Peak_row_format.Auth_seq_ID_15', '_Peak_row_format.Comp_index_ID_15'),
+                       ('_nef_peak.residue_name_15', '_Peak_row_format.Auth_comp_ID_15', '_Peak_row_format.Comp_ID_15'),
+                       ('_nef_peak.atom_name_15', '_Peak_row_format.Auth_atom_ID_15', '_Peak_row_format.Atom_ID_15'),
+                       ('_nef_peak_restraint_links.sf_category', '_Peak_constraint_link_list.Sf_category', '_Peak_constraint_link_list.Sf_category'),
+                       ('_nef_peak_restraint_links.sf_framecode', '_Peak_constraint_link_list.Sf_framecode', '_Peak_constraint_link_list.Sf_framecode'),
+                       ('_nef_peak_restraint_link.nmr_spectrum_id',
+                        '_Peak_constraint_link.Spectral_Peak_list_Sf_framecode', '_Peak_constraint_link.Spectral_Peak_list_Sf_framecode'),
+                       ('_nef_peak_restraint_link.peak_id', '_Peak_constraint_link.Peak_ID', '_Peak_constraint_link.Peak_ID'),
+                       ('_nef_peak_restraint_link.restraint_list_id', '_Peak_constraint_link.Constraint_Sf_framecode', '_Peak_constraint_link.Constraint_Sf_framecode'),
+                       ('_nef_peak_restraint_link.restraint_id', '_Peak_constraint_link.Constraint_ID', '_Peak_constraint_link.Constraint_ID'),
+                       ('_audit.revision_id', '_Audit.Revision_ID', '_Audit.Revision_ID'),  # add support for _audit loop in NEF (DAOTHER-6327)
+                       ('_audit.creation_date', '_Audit.Creation_date', '_Audit.Creation_date'),
+                       ('_audit.creation_method', '_Audit.Creation_method', '_Audit.Creation_method'),
+                       ('_audit.update_record', '_Audit.Update_record', '_Audit.Update_record')
+                       ]
+
+        # self.nefMandatoryTag = self.load_csv_data(libDirPath + 'NEF_mandatory.csv')
+        # """
+        # self.nefMandatorySfCat = {'nef_nmr_meta_data': True,
+        #                           'nef_related_entries': False,
+        #                           'nef_program_script': False,
+        #                           'nef_run_history': False,
+        #                           'nef_molecular_system': True,
+        #                           'nef_sequence': True,
+        #                           'nef_covalent_links': False,
+        #                           'nef_chemical_shift_list': True,
+        #                           'nef_chemical_shift': True,
+        #                           'nef_distance_restraint_list': False,
+        #                           'nef_distance_restraint': False,
+        #                           'nef_dihedral_restraint_list': False,
+        #                           'nef_dihedral_restraint': False,
+        #                           'nef_rdc_restraint_list': False,
+        #                           'nef_rdc_restraint': False,
+        #                           'nef_nmr_spectrum': False,
+        #                           'nef_spectrum_dimension': True,
+        #                           'nef_spectrum_dimension_transfer': True,
+        #                           'nef_peak': False,
+        #                           'nef_peak_restraint_links': False,
+        #                           'nef_peak_restraint_link': False,
+        #                           'audit': False
+        #                           }
+        # """
+        self.nefMandatoryTag = {'_nef_nmr_meta_data.sf_category': True,
+                                '_nef_nmr_meta_data.sf_framecode': True,
+                                '_nef_nmr_meta_data.format_name': True,
+                                '_nef_nmr_meta_data.format_version': True,
+                                '_nef_nmr_meta_data.program_name': True,
+                                '_nef_nmr_meta_data.program_version': True,
+                                '_nef_nmr_meta_data.creation_date': True,
+                                '_nef_nmr_meta_data.uuid': True,
+                                '_nef_nmr_meta_data.coordinate_file_name': False,
+                                '_nef_related_entries.database_name': True,
+                                '_nef_related_entries.database_accession_code': True,
+                                '_nef_program_script.program_name': True,
+                                '_nef_program_script.script_name': False,
+                                '_nef_program_script.script': False,
+                                '_nef_run_history.run_number': True,
+                                '_nef_run_history.program_name': True,
+                                '_nef_run_history.program_version': False,
+                                '_nef_run_history.script_name': False,
+                                '_nef_run_history.script': False,
+                                '_nef_molecular_system.sf_category': True,
+                                '_nef_molecular_system.sf_framecode': True,
+                                '_nef_sequence.index': True,
+                                '_nef_sequence.chain_code': True,
+                                '_nef_sequence.sequence_code': True,
+                                '_nef_sequence.residue_name': True,
+                                '_nef_sequence.linking': False,
+                                '_nef_sequence.residue_variant': False,
+                                '_nef_sequence.cis_peptide': False,
+                                '_nef_covalent_links.chain_code_1': True,
+                                '_nef_covalent_links.sequence_code_1': True,
+                                '_nef_covalent_links.residue_name_1': True,
+                                '_nef_covalent_links.atom_name_1': True,
+                                '_nef_covalent_links.chain_code_2': True,
+                                '_nef_covalent_links.sequence_code_2': True,
+                                '_nef_covalent_links.residue_name_2': True,
+                                '_nef_covalent_links.atom_name_2': True,
+                                '_nef_chemical_shift_list.sf_category': True,
+                                '_nef_chemical_shift_list.sf_framecode': True,
+                                '_nef_chemical_shift.chain_code': True,
+                                '_nef_chemical_shift.sequence_code': True,
+                                '_nef_chemical_shift.residue_name': True,
+                                '_nef_chemical_shift.atom_name': True,
+                                '_nef_chemical_shift.value': True,
+                                '_nef_chemical_shift.value_uncertainty': False,
+                                '_nef_chemical_shift.element': False,
+                                '_nef_chemical_shift.isotope_number': False,
+                                '_nef_distance_restraint_list.sf_category': True,
+                                '_nef_distance_restraint_list.sf_framecode': True,
+                                '_nef_distance_restraint_list.potential_type': True,
+                                '_nef_distance_restraint_list.restraint_origin': False,
+                                '_nef_distance_restraint.index': True,
+                                '_nef_distance_restraint.restraint_id': True,
+                                '_nef_distance_restraint.restraint_combination_id': False,
+                                '_nef_distance_restraint.chain_code_1': True,
+                                '_nef_distance_restraint.sequence_code_1': True,
+                                '_nef_distance_restraint.residue_name_1': True,
+                                '_nef_distance_restraint.atom_name_1': True,
+                                '_nef_distance_restraint.chain_code_2': True,
+                                '_nef_distance_restraint.sequence_code_2': True,
+                                '_nef_distance_restraint.residue_name_2': True,
+                                '_nef_distance_restraint.atom_name_2': True,
+                                '_nef_distance_restraint.weight': True,
+                                '_nef_distance_restraint.target_value': False,
+                                '_nef_distance_restraint.target_value_uncertainty': False,
+                                '_nef_distance_restraint.lower_linear_limit': False,
+                                '_nef_distance_restraint.lower_limit': False,
+                                '_nef_distance_restraint.upper_limit': False,
+                                '_nef_distance_restraint.upper_linear_limit': False,
+                                '_nef_dihedral_restraint_list.sf_category': True,
+                                '_nef_dihedral_restraint_list.sf_framecode': True,
+                                '_nef_dihedral_restraint_list.potential_type': True,
+                                '_nef_dihedral_restraint_list.restraint_origin': False,
+                                '_nef_dihedral_restraint.index': True,
+                                '_nef_dihedral_restraint.restraint_id': True,
+                                '_nef_dihedral_restraint.restraint_combination_id': False,
+                                '_nef_dihedral_restraint.chain_code_1': True,
+                                '_nef_dihedral_restraint.sequence_code_1': True,
+                                '_nef_dihedral_restraint.residue_name_1': True,
+                                '_nef_dihedral_restraint.atom_name_1': True,
+                                '_nef_dihedral_restraint.chain_code_2': True,
+                                '_nef_dihedral_restraint.sequence_code_2': True,
+                                '_nef_dihedral_restraint.residue_name_2': True,
+                                '_nef_dihedral_restraint.atom_name_2': True,
+                                '_nef_dihedral_restraint.chain_code_3': True,
+                                '_nef_dihedral_restraint.sequence_code_3': True,
+                                '_nef_dihedral_restraint.residue_name_3': True,
+                                '_nef_dihedral_restraint.atom_name_3': True,
+                                '_nef_dihedral_restraint.chain_code_4': True,
+                                '_nef_dihedral_restraint.sequence_code_4': True,
+                                '_nef_dihedral_restraint.residue_name_4': True,
+                                '_nef_dihedral_restraint.atom_name_4': True,
+                                '_nef_dihedral_restraint.weight': True,
+                                '_nef_dihedral_restraint.target_value': False,
+                                '_nef_dihedral_restraint.target_value_uncertainty': False,
+                                '_nef_dihedral_restraint.lower_linear_limit': False,
+                                '_nef_dihedral_restraint.lower_limit': False,
+                                '_nef_dihedral_restraint.upper_limit': False,
+                                '_nef_dihedral_restraint.upper_linear_limit': False,
+                                '_nef_dihedral_restraint.name': False,
+                                '_nef_rdc_restraint_list.sf_category': True,
+                                '_nef_rdc_restraint_list.sf_framecode': True,
+                                '_nef_rdc_restraint_list.potential_type': True,
+                                '_nef_rdc_restraint_list.restraint_origin': False,
+                                '_nef_rdc_restraint_list.tensor_magnitude': False,
+                                '_nef_rdc_restraint_list.tensor_rhombicity': False,
+                                '_nef_rdc_restraint_list.tensor_chain_code': False,
+                                '_nef_rdc_restraint_list.tensor_sequence_code': False,
+                                '_nef_rdc_restraint_list.tensor_residue_name': False,
+                                '_nef_rdc_restraint.index': True,
+                                '_nef_rdc_restraint.restraint_id': True,
+                                '_nef_rdc_restraint.restraint_combination_id': False,
+                                '_nef_rdc_restraint.chain_code_1': True,
+                                '_nef_rdc_restraint.sequence_code_1': True,
+                                '_nef_rdc_restraint.residue_name_1': True,
+                                '_nef_rdc_restraint.atom_name_1': True,
+                                '_nef_rdc_restraint.chain_code_2': True,
+                                '_nef_rdc_restraint.sequence_code_2': True,
+                                '_nef_rdc_restraint.residue_name_2': True,
+                                '_nef_rdc_restraint.atom_name_2': True,
+                                '_nef_rdc_restraint.weight': True,
+                                '_nef_rdc_restraint.target_value': False,
+                                '_nef_rdc_restraint.target_value_uncertainty': False,
+                                '_nef_rdc_restraint.lower_linear_limit': False,
+                                '_nef_rdc_restraint.lower_limit': False,
+                                '_nef_rdc_restraint.upper_limit': False,
+                                '_nef_rdc_restraint.upper_linear_limit': False,
+                                '_nef_rdc_restraint.scale': False,
+                                '_nef_rdc_restraint.distance_dependent': False,
+                                '_nef_nmr_spectrum.sf_category': True,
+                                '_nef_nmr_spectrum.sf_framecode': True,
+                                '_nef_nmr_spectrum.num_dimensions': False,
+                                '_nef_nmr_spectrum.chemical_shift_list': False,
+                                '_nef_nmr_spectrum.experiment_classification': False,
+                                '_nef_nmr_spectrum.experiment_type': False,
+                                '_nef_spectrum_dimension.dimension_id': True,
+                                '_nef_spectrum_dimension.axis_unit': True,
+                                '_nef_spectrum_dimension.axis_code': True,
+                                '_nef_spectrum_dimension.spectrometer_frequency': False,
+                                '_nef_spectrum_dimension.spectral_width': False,
+                                '_nef_spectrum_dimension.value_first_point': False,
+                                '_nef_spectrum_dimension.folding': False,
+                                '_nef_spectrum_dimension.absolute_peak_positions': False,
+                                '_nef_spectrum_dimension.is_acquisition': False,
+                                '_nef_spectrum_dimension_transfer.dimension_1': True,
+                                '_nef_spectrum_dimension_transfer.dimension_2': True,
+                                '_nef_spectrum_dimension_transfer.transfer_type': True,
+                                '_nef_spectrum_dimension_transfer.is_indirect': False,
+                                '_nef_peak.index': True,
+                                '_nef_peak.peak_id': True,
+                                '_nef_peak.volume': False,
+                                '_nef_peak.volume_uncertainty': False,
+                                '_nef_peak.height': False,
+                                '_nef_peak.height_uncertainty': False,
+                                '_nef_peak.position_1': False,
+                                '_nef_peak.position_uncertainty_1': False,
+                                '_nef_peak.position_2': False,
+                                '_nef_peak.position_uncertainty_2': False,
+                                '_nef_peak.position_3': False,
+                                '_nef_peak.position_uncertainty_3': False,
+                                '_nef_peak.position_4': False,
+                                '_nef_peak.position_uncertainty_4': False,
+                                '_nef_peak.position_5': False,
+                                '_nef_peak.position_uncertainty_5': False,
+                                '_nef_peak.position_6': False,
+                                '_nef_peak.position_uncertainty_6': False,
+                                '_nef_peak.position_7': False,
+                                '_nef_peak.position_uncertainty_7': False,
+                                '_nef_peak.position_8': False,
+                                '_nef_peak.position_uncertainty_8': False,
+                                '_nef_peak.position_9': False,
+                                '_nef_peak.position_uncertainty_9': False,
+                                '_nef_peak.position_10': False,
+                                '_nef_peak.position_uncertainty_10': False,
+                                '_nef_peak.position_11': False,
+                                '_nef_peak.position_uncertainty_11': False,
+                                '_nef_peak.position_12': False,
+                                '_nef_peak.position_uncertainty_12': False,
+                                '_nef_peak.position_13': False,
+                                '_nef_peak.position_uncertainty_13': False,
+                                '_nef_peak.position_14': False,
+                                '_nef_peak.position_uncertainty_14': False,
+                                '_nef_peak.position_15': False,
+                                '_nef_peak.position_uncertainty_15': False,
+                                '_nef_peak.chain_code_1': False,
+                                '_nef_peak.sequence_code_1': False,
+                                '_nef_peak.residue_name_1': False,
+                                '_nef_peak.atom_name_1': False,
+                                '_nef_peak.chain_code_2': False,
+                                '_nef_peak.sequence_code_2': False,
+                                '_nef_peak.residue_name_2': False,
+                                '_nef_peak.atom_name_2': False,
+                                '_nef_peak.chain_code_3': False,
+                                '_nef_peak.sequence_code_3': False,
+                                '_nef_peak.residue_name_3': False,
+                                '_nef_peak.atom_name_3': False,
+                                '_nef_peak.chain_code_4': False,
+                                '_nef_peak.sequence_code_4': False,
+                                '_nef_peak.residue_name_4': False,
+                                '_nef_peak.atom_name_4': False,
+                                '_nef_peak.chain_code_5': False,
+                                '_nef_peak.sequence_code_5': False,
+                                '_nef_peak.residue_name_5': False,
+                                '_nef_peak.atom_name_5': False,
+                                '_nef_peak.chain_code_6': False,
+                                '_nef_peak.sequence_code_6': False,
+                                '_nef_peak.residue_name_6': False,
+                                '_nef_peak.atom_name_6': False,
+                                '_nef_peak.chain_code_7': False,
+                                '_nef_peak.sequence_code_7': False,
+                                '_nef_peak.residue_name_7': False,
+                                '_nef_peak.atom_name_7': False,
+                                '_nef_peak.chain_code_8': False,
+                                '_nef_peak.sequence_code_8': False,
+                                '_nef_peak.residue_name_8': False,
+                                '_nef_peak.atom_name_8': False,
+                                '_nef_peak.chain_code_9': False,
+                                '_nef_peak.sequence_code_9': False,
+                                '_nef_peak.residue_name_9': False,
+                                '_nef_peak.atom_name_9': False,
+                                '_nef_peak.chain_code_10': False,
+                                '_nef_peak.sequence_code_10': False,
+                                '_nef_peak.residue_name_10': False,
+                                '_nef_peak.atom_name_10': False,
+                                '_nef_peak.chain_code_11': False,
+                                '_nef_peak.sequence_code_11': False,
+                                '_nef_peak.residue_name_11': False,
+                                '_nef_peak.atom_name_11': False,
+                                '_nef_peak.chain_code_12': False,
+                                '_nef_peak.sequence_code_12': False,
+                                '_nef_peak.residue_name_12': False,
+                                '_nef_peak.atom_name_12': False,
+                                '_nef_peak.chain_code_13': False,
+                                '_nef_peak.sequence_code_13': False,
+                                '_nef_peak.residue_name_13': False,
+                                '_nef_peak.atom_name_13': False,
+                                '_nef_peak.chain_code_14': False,
+                                '_nef_peak.sequence_code_14': False,
+                                '_nef_peak.residue_name_14': False,
+                                '_nef_peak.atom_name_14': False,
+                                '_nef_peak.chain_code_15': False,
+                                '_nef_peak.sequence_code_15': False,
+                                '_nef_peak.residue_name_15': False,
+                                '_nef_peak.atom_name_15': False,
+                                '_nef_peak_restraint_links.sf_category': True,
+                                '_nef_peak_restraint_links.sf_framecode': True,
+                                '_nef_peak_restraint_link.nmr_spectrum_id': True,
+                                '_nef_peak_restraint_link.peak_id': True,
+                                '_nef_peak_restraint_link.restraint_list_id': True,
+                                '_nef_peak_restraint_link.restraint_id': True,
+                                '_audit.revision_id': True,  # add support for _audit loop in NEF (DAOTHER-6327)
+                                '_audit.creation_date': False,
+                                '_audit.creation_method': False,
+                                '_audit.update_record': False
+                                }
+
+        # self.starMandatoryTag = self.load_csv_data(libDirPath + 'NMR-STAR_mandatory.csv')
+        # """
+        # self.starMandatorySfCat = {'entry_information': True,
+        #                            'Related_entries': False,
+        #                            'Software_applied_methods': False,
+        #                            'History': False,
+        #                            'assembly': True,
+        #                            'Chem_comp_assembly': True,
+        #                            'Bond': False,
+        #                            'assigned_chemical_shifts': True,
+        #                            'Atom_chem_shift': True,
+        #                            'general_distance_constraints': False,
+        #                            'Gen_dist_constraint': False,
+        #                            'torsion_angle_constraints': False,
+        #                            'Torsion_angle_constraint': False,
+        #                            'RDC_constraints': False,
+        #                            'RDC_constraint': False,
+        #                            'spectral_peak_list': False,
+        #                            'Spectral_dim': True,
+        #                            'Spectral_dim_transfer': True,
+        #                            'Peak_row_format': False,
+        #                            'peak_constraint_links': False,
+        #                            'Peak_constraint_link': False,
+        #                            'Audit': False
+        #                            }
+        # """
+        self.starMandatoryTag = {'_Entry.Sf_category': True,
+                                 '_Entry.Sf_framecode': True,
+                                 '_Entry.Source_data_format': True,
+                                 '_Entry.Source_data_format_version': True,
+                                 '_Entry.Generated_software_name': True,
+                                 '_Entry.Generated_software_version': True,
+                                 '_Entry.Generated_date': True,
+                                 '_Entry.UUID': True,
+                                 '_Entry.Related_coordinate_file_name': False,
+                                 '_Related_entries.Database_name': True,
+                                 '_Related_entries.Database_accession_code': True,
+                                 '_Software_applied_methods.Software_name': True,
+                                 '_Software_applied_methods.Script_name': False,
+                                 '_Software_applied_methods.Script': False,
+                                 '_History.Run_number': True,
+                                 '_History.Software_name': True,
+                                 '_History.Software_version': False,
+                                 '_History.Script_name': False,
+                                 '_History.Script': False,
+                                 '_Assembly.Sf_category': True,
+                                 '_Assembly.Sf_framecode': True,
+                                 '_Chem_comp_assembly.NEF_index': True,
+                                 '_Chem_comp_assembly.Entity_assembly_ID': True,
+                                 '_Chem_comp_assembly.Comp_index_ID': True,
+                                 '_Chem_comp_assembly.Comp_ID': True,
+                                 '_Chem_comp_assembly.Sequence_linking': False,
+                                 '_Chem_comp_assembly.Auth_variant_ID': False,
+                                 '_Chem_comp_assembly.Cis_residue': False,
+                                 '_Bond.Entity_assembly_ID_1': True,
+                                 '_Bond.Comp_index_ID_1': True,
+                                 '_Bond.Comp_ID_1': True,
+                                 '_Bond.Atom_ID_1': True,
+                                 '_Bond.Entity_assembly_ID_2': True,
+                                 '_Bond.Comp_index_ID_2': True,
+                                 '_Bond.Comp_ID_2': True,
+                                 '_Bond.Atom_ID_2': True,
+                                 '_Assigned_chem_shift_list.Sf_category': True,
+                                 '_Assigned_chem_shift_list.Sf_framecode': True,
+                                 '_Atom_chem_shift.Entity_assembly_ID': True,
+                                 '_Atom_chem_shift.Comp_index_ID': True,
+                                 '_Atom_chem_shift.Comp_ID': True,
+                                 '_Atom_chem_shift.Atom_ID': True,
+                                 '_Atom_chem_shift.Val': True,
+                                 '_Atom_chem_shift.Val_err': False,
+                                 '_Atom_chem_shift.Atom_type': False,
+                                 '_Atom_chem_shift.Atom_isotope_number': False,
+                                 '_Gen_dist_constraint_list.Sf_category': True,
+                                 '_Gen_dist_constraint_list.Sf_framecode': True,
+                                 '_Gen_dist_constraint_list.Potential_type': True,
+                                 '_Gen_dist_constraint_list.Constraint_type': False,
+                                 '_Gen_dist_constraint.Index_ID': True,
+                                 '_Gen_dist_constraint.ID': True,
+                                 '_Gen_dist_constraint.Combination_ID': False,
+                                 '_Gen_dist_constraint.Entity_assembly_ID_1': True,
+                                 '_Gen_dist_constraint.Comp_index_ID_1': True,
+                                 '_Gen_dist_constraint.Comp_ID_1': True,
+                                 '_Gen_dist_constraint.Atom_ID_1': True,
+                                 '_Gen_dist_constraint.Entity_assembly_ID_2': True,
+                                 '_Gen_dist_constraint.Comp_index_ID_2': True,
+                                 '_Gen_dist_constraint.Comp_ID_2': True,
+                                 '_Gen_dist_constraint.Atom_ID_2': True,
+                                 '_Gen_dist_constraint.Weight': True,
+                                 '_Gen_dist_constraint.Target_val': False,
+                                 '_Gen_dist_constraint.Target_val_uncertainty': False,
+                                 '_Gen_dist_constraint.Lower_linear_limit': False,
+                                 '_Gen_dist_constraint.Distance_lower_bound_val': False,
+                                 '_Gen_dist_constraint.Distance_upper_bound_val': False,
+                                 '_Gen_dist_constraint.Upper_linear_limit': False,
+                                 '_Torsion_angle_constraint_list.Sf_category': True,
+                                 '_Torsion_angle_constraint_list.Sf_framecode': True,
+                                 '_Torsion_angle_constraint_list.Potential_type': True,
+                                 '_Torsion_angle_constraint_list.Constraint_type': False,
+                                 '_Torsion_angle_constraint.Index_ID': True,
+                                 '_Torsion_angle_constraint.ID': True,
+                                 '_Torsion_angle_constraint.Combination_ID': False,
+                                 '_Torsion_angle_constraint.Entity_assembly_ID_1': True,
+                                 '_Torsion_angle_constraint.Comp_index_ID_1': True,
+                                 '_Torsion_angle_constraint.Comp_ID_1': True,
+                                 '_Torsion_angle_constraint.Atom_ID_1': True,
+                                 '_Torsion_angle_constraint.Entity_assembly_ID_2': True,
+                                 '_Torsion_angle_constraint.Comp_index_ID_2': True,
+                                 '_Torsion_angle_constraint.Comp_ID_2': True,
+                                 '_Torsion_angle_constraint.Atom_ID_2': True,
+                                 '_Torsion_angle_constraint.Entity_assembly_ID_3': True,
+                                 '_Torsion_angle_constraint.Comp_index_ID_3': True,
+                                 '_Torsion_angle_constraint.Comp_ID_3': True,
+                                 '_Torsion_angle_constraint.Atom_ID_3': True,
+                                 '_Torsion_angle_constraint.Entity_assembly_ID_4': True,
+                                 '_Torsion_angle_constraint.Comp_index_ID_4': True,
+                                 '_Torsion_angle_constraint.Comp_ID_4': True,
+                                 '_Torsion_angle_constraint.Atom_ID_4': True,
+                                 '_Torsion_angle_constraint.Weight': True,
+                                 '_Torsion_angle_constraint.Angle_target_val': False,
+                                 '_Torsion_angle_constraint.Angle_target_val_err': False,
+                                 '_Torsion_angle_constraint.Angle_lower_linear_limit': False,
+                                 '_Torsion_angle_constraint.Angle_lower_bound_val': False,
+                                 '_Torsion_angle_constraint.Angle_upper_bound_val': False,
+                                 '_Torsion_angle_constraint.Angle_upper_linear_limit': False,
+                                 '_Torsion_angle_constraint.Torsion_angle_name': False,
+                                 '_RDC_constraint_list.Sf_category': True,
+                                 '_RDC_constraint_list.Sf_framecode': True,
+                                 '_RDC_constraint_list.Potential_type': True,
+                                 '_RDC_constraint_list.Constraint_type': False,
+                                 '_RDC_constraint_list.Tensor_magnitude': False,
+                                 '_RDC_constraint_list.Tensor_rhombicity': False,
+                                 '_RDC_constraint_list.Tensor_Entity_assembly_ID': False,
+                                 '_RDC_constraint_list.Tensor_seq_ID': False,
+                                 '_RDC_constraint_list.Tensor_comp_ID': False,
+                                 '_RDC_constraint.Index_ID': True,
+                                 '_RDC_constraint.ID': True,
+                                 '_RDC_constraint.Combination_ID': False,
+                                 '_RDC_constraint.Entity_assembly_ID_1': True,
+                                 '_RDC_constraint.Comp_index_ID_1': True,
+                                 '_RDC_constraint.Comp_ID_1': True,
+                                 '_RDC_constraint.Atom_ID_1': True,
+                                 '_RDC_constraint.Entity_assembly_ID_2': True,
+                                 '_RDC_constraint.Comp_index_ID_2': True,
+                                 '_RDC_constraint.Comp_ID_2': True,
+                                 '_RDC_constraint.Atom_ID_2': True,
+                                 '_RDC_constraint.Weight': True,
+                                 '_RDC_constraint.Target_value': False,
+                                 '_RDC_constraint.Target_value_uncertainty': False,
+                                 '_RDC_constraint.RDC_lower_linear_limit': False,
+                                 '_RDC_constraint.RDC_lower_bound': False,
+                                 '_RDC_constraint.RDC_upper_bound': False,
+                                 '_RDC_constraint.RDC_upper_linear_limit': False,
+                                 '_RDC_constraint.RDC_val_scale_factor': False,
+                                 '_RDC_constraint.RDC_distant_dependent': False,
+                                 '_Spectral_peak_list.Sf_category': True,
+                                 '_Spectral_peak_list.Sf_framecode': True,
+                                 '_Spectral_peak_list.Number_of_spectral_dimensions': False,
+                                 '_Spectral_peak_list.Chemical_shift_list': False,
+                                 '_Spectral_peak_list.Experiment_class': False,
+                                 '_Spectral_peak_list.Experiment_type': False,
+                                 '_Spectral_dim.ID': True,
+                                 '_Spectral_dim.Sweep_width_units': True,
+                                 '_Spectral_dim.Axis_code': False,
+                                 '_Spectral_dim.Spectrometer_frequency': False,
+                                 '_Spectral_dim.Sweep_width': False,
+                                 '_Spectral_dim.Value_first_point': False,
+                                 '_Spectral_dim.Under_sampling_type': False,
+                                 '_Spectral_dim.Absolute_peak_positions': False,
+                                 '_Spectral_dim.Acquisition': False,
+                                 '_Spectral_dim_transfer.Spectral_dim_ID_1': True,
+                                 '_Spectral_dim_transfer.Spectral_dim_ID_2': True,
+                                 '_Spectral_dim_transfer.Type': True,
+                                 '_Spectral_dim_transfer.Indirect': False,
+                                 '_Peak_row_format.Index_ID': True,
+                                 '_Peak_row_format.ID': True,
+                                 '_Peak_row_format.Volume': False,
+                                 '_Peak_row_format.Volume_uncertainty': False,
+                                 '_Peak_row_format.Height': False,
+                                 '_Peak_row_format.Height_uncertainty': False,
+                                 '_Peak_row_format.Position_1': False,
+                                 '_Peak_row_format.Position_uncertainty_1': False,
+                                 '_Peak_row_format.Position_2': False,
+                                 '_Peak_row_format.Position_uncertainty_2': False,
+                                 '_Peak_row_format.Position_3': False,
+                                 '_Peak_row_format.Position_uncertainty_3': False,
+                                 '_Peak_row_format.Position_4': False,
+                                 '_Peak_row_format.Position_uncertainty_4': False,
+                                 '_Peak_row_format.Position_5': False,
+                                 '_Peak_row_format.Position_uncertainty_5': False,
+                                 '_Peak_row_format.Position_6': False,
+                                 '_Peak_row_format.Position_uncertainty_6': False,
+                                 '_Peak_row_format.Position_7': False,
+                                 '_Peak_row_format.Position_uncertainty_7': False,
+                                 '_Peak_row_format.Position_8': False,
+                                 '_Peak_row_format.Position_uncertainty_8': False,
+                                 '_Peak_row_format.Position_9': False,
+                                 '_Peak_row_format.Position_uncertainty_9': False,
+                                 '_Peak_row_format.Position_10': False,
+                                 '_Peak_row_format.Position_uncertainty_10': False,
+                                 '_Peak_row_format.Position_11': False,
+                                 '_Peak_row_format.Position_uncertainty_11': False,
+                                 '_Peak_row_format.Position_12': False,
+                                 '_Peak_row_format.Position_uncertainty_12': False,
+                                 '_Peak_row_format.Position_13': False,
+                                 '_Peak_row_format.Position_uncertainty_13': False,
+                                 '_Peak_row_format.Position_14': False,
+                                 '_Peak_row_format.Position_uncertainty_14': False,
+                                 '_Peak_row_format.Position_15': False,
+                                 '_Peak_row_format.Position_uncertainty_15': False,
+                                 '_Peak_row_format.Entity_assembly_ID_1': False,
+                                 '_Peak_row_format.Comp_index_ID_1': False,
+                                 '_Peak_row_format.Comp_ID_1': False,
+                                 '_Peak_row_format.Atom_ID_1': False,
+                                 '_Peak_row_format.Entity_assembly_ID_2': False,
+                                 '_Peak_row_format.Comp_index_ID_2': False,
+                                 '_Peak_row_format.Comp_ID_2': False,
+                                 '_Peak_row_format.Atom_ID_2': False,
+                                 '_Peak_row_format.Entity_assembly_ID_3': False,
+                                 '_Peak_row_format.Comp_index_ID_3': False,
+                                 '_Peak_row_format.Comp_ID_3': False,
+                                 '_Peak_row_format.Atom_ID_3': False,
+                                 '_Peak_row_format.Entity_assembly_ID_4': False,
+                                 '_Peak_row_format.Comp_index_ID_4': False,
+                                 '_Peak_row_format.Comp_ID_4': False,
+                                 '_Peak_row_format.Atom_ID_4': False,
+                                 '_Peak_row_format.Entity_assembly_ID_5': False,
+                                 '_Peak_row_format.Comp_index_ID_5': False,
+                                 '_Peak_row_format.Comp_ID_5': False,
+                                 '_Peak_row_format.Atom_ID_5': False,
+                                 '_Peak_row_format.Entity_assembly_ID_6': False,
+                                 '_Peak_row_format.Comp_index_ID_6': False,
+                                 '_Peak_row_format.Comp_ID_6': False,
+                                 '_Peak_row_format.Atom_ID_6': False,
+                                 '_Peak_row_format.Entity_assembly_ID_7': False,
+                                 '_Peak_row_format.Comp_index_ID_7': False,
+                                 '_Peak_row_format.Comp_ID_7': False,
+                                 '_Peak_row_format.Atom_ID_7': False,
+                                 '_Peak_row_format.Entity_assembly_ID_8': False,
+                                 '_Peak_row_format.Comp_index_ID_8': False,
+                                 '_Peak_row_format.Comp_ID_8': False,
+                                 '_Peak_row_format.Atom_ID_8': False,
+                                 '_Peak_row_format.Entity_assembly_ID_9': False,
+                                 '_Peak_row_format.Comp_index_ID_9': False,
+                                 '_Peak_row_format.Comp_ID_9': False,
+                                 '_Peak_row_format.Atom_ID_9': False,
+                                 '_Peak_row_format.Entity_assembly_ID_10': False,
+                                 '_Peak_row_format.Comp_index_ID_10': False,
+                                 '_Peak_row_format.Comp_ID_10': False,
+                                 '_Peak_row_format.Atom_ID_10': False,
+                                 '_Peak_row_format.Entity_assembly_ID_11': False,
+                                 '_Peak_row_format.Comp_index_ID_11': False,
+                                 '_Peak_row_format.Comp_ID_11': False,
+                                 '_Peak_row_format.Atom_ID_11': False,
+                                 '_Peak_row_format.Entity_assembly_ID_12': False,
+                                 '_Peak_row_format.Comp_index_ID_12': False,
+                                 '_Peak_row_format.Comp_ID_12': False,
+                                 '_Peak_row_format.Atom_ID_12': False,
+                                 '_Peak_row_format.Entity_assembly_ID_13': False,
+                                 '_Peak_row_format.Comp_index_ID_13': False,
+                                 '_Peak_row_format.Comp_ID_13': False,
+                                 '_Peak_row_format.Atom_ID_13': False,
+                                 '_Peak_row_format.Entity_assembly_ID_14': False,
+                                 '_Peak_row_format.Comp_index_ID_14': False,
+                                 '_Peak_row_format.Comp_ID_14': False,
+                                 '_Peak_row_format.Atom_ID_14': False,
+                                 '_Peak_row_format.Entity_assembly_ID_15': False,
+                                 '_Peak_row_format.Comp_index_ID_15': False,
+                                 '_Peak_row_format.Comp_ID_15': False,
+                                 '_Peak_row_format.Atom_ID_15': False,
+                                 '_Peak_constraint_link_list.Sf_category': True,
+                                 '_Peak_constraint_link_list.Sf_framecode': True,
+                                 '_Peak_constraint_link.Spectral_Peak_list_Sf_framecode': True,
+                                 '_Peak_constraint_link.Peak_ID': True,
+                                 '_Peak_constraint_link.Constraint_Sf_framecode': True,
+                                 '_Peak_constraint_link.Constraint_ID': True,
+                                 '_Audit.Revision_ID': True,  # add support for _audit loop in NEF (DAOTHER-6327)
+                                 '_Audit.Creation_date': False,
+                                 '_Audit.Creation_method': False,
+                                 '_Audit.Update_record': False
+                                 }
 
         # whether to replace zero by empty if 'void-zero' is set
         self.replace_zero_by_null_in_case = False
@@ -711,31 +1556,31 @@ class NEFTranslator:
         if isinstance(chem_comp_topo, dict):
             self.chemCompTopo = chem_comp_topo
 
-    def load_csv_data(self, csv_file, transpose=False):
-        """ Load CSV data to list.
-            @param cvs_file: input CSV file path
-            @param transpose: transpose CSV data
-            @return: list object
-        """
-
-        data_map = []
-
-        try:
-            data = []
-
-            with open(csv_file, 'r', encoding='utf-8') as file:
-                csv_reader = csv.reader(file, delimiter=',')
-
-                for r in csv_reader:
-                    if r[0][0] != '#':
-                        data.append(r)
-
-            data_map = list(map(list, zip(*data))) if transpose else data
-
-        except Exception as e:
-            self.__lfh.write(f"+NEFTranslator.load_csv_data() ++ Error  - {str(e)}\n")
-
-        return data_map
+    # def load_csv_data(self, csv_file, transpose=False):
+    #     """ Load CSV data to list.
+    #         @param cvs_file: input CSV file path
+    #         @param transpose: transpose CSV data
+    #         @return: list object
+    #     """
+    #
+    #     data_map = []
+    #
+    #     try:
+    #         data = []
+    #
+    #         with open(csv_file, 'r', encoding='utf-8') as file:
+    #             csv_reader = csv.reader(file, delimiter=',')
+    #
+    #             for r in csv_reader:
+    #                 if r[0][0] != '#':
+    #                     data.append(r)
+    #
+    #         data_map = list(map(list, zip(*data))) if transpose else data
+    #
+    #     except Exception as e:
+    #         self.__lfh.write(f"+NEFTranslator.load_csv_data() ++ Error  - {str(e)}\n")
+    #
+    #     return data_map
 
     def read_input_file(self, in_file):  # pylint: disable=no-self-use
         """ Read input NEF/NMR-STAR file.
@@ -812,46 +1657,46 @@ class NEFTranslator:
 
             sf_list = [sf.category for sf in star_data.frame_list]
 
-            for _tag in mandatoryTag:
+            for k, v in mandatoryTag.items():
 
-                if _tag[0][0] == '_' and _tag[1] == 'yes':
+                if v:
 
                     try:
-                        tags = star_data.get_tags([_tag[0]])
-                        if len(tags[_tag[0]]) == 0 and _tag[0][1:].split('.')[0] in sf_list:
-                            missing_sf_tags.append(_tag[0])
+                        tags = star_data.get_tags([k])
+                        if len(tags[k]) == 0 and k[1:].split('.')[0] in sf_list:
+                            missing_sf_tags.append(k)
                     except Exception:  # ValueError:
-                        missing_lp_tags.append(_tag[0])
+                        missing_lp_tags.append(k)
 
         except Exception:  # ValueError:
 
             try:
                 star_data = pynmrstar.Saveframe.from_file(in_file)
 
-                for _tag in mandatoryTag:
+                for k, v in mandatoryTag.items():
 
-                    if _tag[0][0] == '_' and _tag[1] == 'yes':
+                    if v:
 
                         try:
-                            tag = star_data.get_tag(_tag[0])
-                            if len(tag) == 0 and _tag[0][1:].split('.')[0] == star_data.category:
-                                missing_sf_tags.append(_tag[0])
+                            tag = star_data.get_tag(k)
+                            if len(tag) == 0 and k[1:].split('.')[0] == star_data.category:
+                                missing_sf_tags.append(k)
                         except Exception:  # ValueError:
-                            missing_lp_tags.append(_tag[0])
+                            missing_lp_tags.append(k)
 
             except Exception:  # ValueError:
 
                 try:
                     star_data = pynmrstar.Loop.from_file(in_file)
 
-                    for _tag in mandatoryTag:
+                    for k, v in mandatoryTag.items():
 
-                        if _tag[0][0] == '_' and _tag[0][1:].split('.')[0] == star_data.category and _tag[1] == 'yes':
+                        if k[1:].split('.')[0] == star_data.category and v:
 
                             try:
-                                get_lp_tag(star_data, _tag[0])
+                                get_lp_tag(star_data, k)
                             except Exception:  # ValueError:
-                                missing_lp_tags.append(_tag[0])
+                                missing_lp_tags.append(k)
 
                 except Exception:  # ValueError:
                     pass
@@ -868,7 +1713,10 @@ class NEFTranslator:
 
         mandatoryTag = self.nefMandatoryTag if file_type == 'nef' else self.starMandatoryTag
 
-        return any(t[0] == item and t[1] == 'yes' for t in mandatoryTag)
+        if item not in mandatoryTag:
+            return False
+
+        return mandatoryTag[item]
 
     def validate_file(self, in_file, file_subtype='A', allow_empty=False):
         """ Validate input NEF/NMR-STAR file.
@@ -5239,6 +6087,32 @@ class NEFTranslator:
 
         return False
 
+    def get_star_sf_cat(self, nef_sf_cat):
+        """ Return NMR-STAR saveframe category corresponding to NEF saveframe category.
+            @author: Masashi Yokochi
+            @return: NEF saveframe category
+        """
+
+        try:
+
+            return next(row for row in self.sfCatMap if row[0] == nef_sf_cat)[1]
+
+        except StopIteration:
+            return None
+
+    def get_nef_sf_cat(self, star_sf_cat):
+        """ Return NEF saveframe category corresponding to NMR-STAR saveframe category.
+            @author: Masashi Yokochi
+            @return: NMR-STAR saveframe category
+        """
+
+        try:
+
+            return next(row for row in self.sfCatMap if row[1] == star_sf_cat)[0]
+
+        except StopIteration:
+            return None
+
     def get_star_tag(self, nef_tag):
         """ Return NMR-STAR saveframe/loop tag corresponding to NEF tag.
             @change: rename the original get_nmrstar_tag() to get_star_tag() by Masashi Yokochi
@@ -5247,11 +6121,11 @@ class NEFTranslator:
 
         try:
 
-            n = self.tagMap[0].index(nef_tag)
+            row = next(row for row in self.tagMap if row[0] == nef_tag)
 
-            return self.tagMap[1][n], self.tagMap[2][n], n  # author tag, data tag
+            return row[1], row[2], self.tagMap.index(row)  # author tag, data tag
 
-        except ValueError:
+        except StopIteration:
             return None, None, None
 
     def get_nef_tag(self, star_tag):
@@ -5262,11 +6136,11 @@ class NEFTranslator:
 
         try:
 
-            n = self.tagMap[2].index(star_tag)  # NEF has no auth tags
+            row = next(row for row in self.tagMap if row[2] == star_tag)
 
-            return self.tagMap[0][n], n
+            return row[0], self.tagMap.index(row)
 
-        except ValueError:  # None for NMR-STAR specific tag
+        except StopIteration:  # None for NMR-STAR specific tag
             return None, None
 
     def get_star_auth_tag(self, star_tag):
@@ -5276,9 +6150,9 @@ class NEFTranslator:
 
         try:
 
-            n = self.tagMap[2].index(star_tag)
+            row = next(row for row in self.tagMap if row[2] == star_tag)
 
-            return self.tagMap[1][n], n  # author tag
+            return row[1], self.tagMap.index(row)  # author tag
 
         except ValueError:
             return None, None
@@ -5651,8 +6525,10 @@ class NEFTranslator:
                         for grk_atom in sorted(list(grk_atoms)):
                             _atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, grk_atom, details, coord_atom_site, methyl_only)
                             atom_list.extend(_atom_list)
-                        return (atom_list, ambiguity_code, details)
-                return (atom_list, ambiguity_code, details)
+                        if len(atom_list) >= 4:
+                            return (atom_list, ambiguity_code, details)
+                if len(atom_list) >= 4:
+                    return (atom_list, ambiguity_code, details)
 
             if atom_id.startswith('QR') or atom_id.startswith('QX'):
                 qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
@@ -5664,9 +6540,11 @@ class NEFTranslator:
                 for qr_atom in qr_atoms:
                     _atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, qr_atom, details, coord_atom_site, methyl_only)
                     atom_list.extend(_atom_list)
-                return (atom_list, ambiguity_code, details)
+                if len(atom_list) >= 4:
+                    return (atom_list, ambiguity_code, details)
 
             if atom_id.startswith('Q') or atom_id.startswith('M'):
+                min_len = 4 if atom_id.startswith('QQ') else 1  # ILE/LEU/THR:QB -> HB (2m6i), MG -> Magnesium (2n3r)
                 if atom_id[-1].isalnum():
                     atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[1:] + '%', details, coord_atom_site, methyl_only)
                     if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and len(atom_id) > 1\
@@ -5678,14 +6556,17 @@ class NEFTranslator:
                             for grk_atom in sorted(list(grk_atoms)):
                                 _atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, grk_atom, details, coord_atom_site, methyl_only)
                                 atom_list.extend(_atom_list)
-                            return (atom_list, ambiguity_code, details)
+                            if len(atom_list) >= min_len:
+                                return (atom_list, ambiguity_code, details)
                     if details is None and len(atom_list) == 1:
                         atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
-                    return (atom_list, ambiguity_code, details)
+                    if len(atom_list) >= min_len:
+                        return (atom_list, ambiguity_code, details)
                 atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[1:-1] + '*', details, coord_atom_site, methyl_only)
                 if details is None and len(atom_list) == 1:
                     atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
-                return (atom_list, ambiguity_code, details)
+                if len(atom_list) >= min_len:
+                    return (atom_list, ambiguity_code, details)
 
         if len(atom_id) > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
             atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, atom_id + '%', details, coord_atom_site, methyl_only)
@@ -6218,8 +7099,10 @@ class NEFTranslator:
                             for grk_atom in sorted(list(grk_atoms)):
                                 _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
                                 atom_list.extend(_atom_list)
-                            return (atom_list, ambiguity_code, details)
-                    return (atom_list, ambiguity_code, details)
+                            if len(atom_list) >= 4:
+                                return (atom_list, ambiguity_code, details)
+                    if len(atom_list) >= 4:
+                        return (atom_list, ambiguity_code, details)
 
                 if atom_id.startswith('QR') or atom_id.startswith('QX'):
                     qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id)
@@ -6231,7 +7114,8 @@ class NEFTranslator:
                     for qr_atom in qr_atoms:
                         _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, qr_atom, details, leave_unmatched, methyl_only)
                         atom_list.extend(_atom_list)
-                    return (atom_list, ambiguity_code, details)
+                    if len(atom_list) >= 4:
+                        return (atom_list, ambiguity_code, details)
 
                 if comp_id in monDict3 and atom_id.upper() == 'ME':
                     rep_methyl_protons = self.__csStat.getRepMethylProtons(comp_id)
@@ -6240,6 +7124,7 @@ class NEFTranslator:
                         return (atom_list, ambiguity_code, details)
 
                 if atom_id.startswith('Q') or atom_id.startswith('M'):
+                    min_len = 4 if atom_id.startswith('QQ') else 1  # ILE/LEU/THR:QB -> HB (2m6i), MG -> Magnesium (2n3r)
                     if atom_id[-1].isalnum():
                         atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched, methyl_only)
                         if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and len(atom_id) > 1\
@@ -6251,14 +7136,17 @@ class NEFTranslator:
                                 for grk_atom in sorted(list(grk_atoms)):
                                     _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
                                     atom_list.extend(_atom_list)
-                                return (atom_list, ambiguity_code, details)
+                                if len(atom_list) >= min_len:
+                                    return (atom_list, ambiguity_code, details)
                         if details is None and len(atom_list) == 1:
                             atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
-                        return (atom_list, ambiguity_code, details)
+                        if len(atom_list) >= min_len:
+                            return (atom_list, ambiguity_code, details)
                     atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:-1] + '*', details, leave_unmatched, methyl_only)
                     if details is None and len(atom_list) == 1:
                         atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
-                    return (atom_list, ambiguity_code, details)
+                    if len(atom_list) >= min_len:
+                        return (atom_list, ambiguity_code, details)
 
             if len(atom_id) > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
                 atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id + '%', details, leave_unmatched, methyl_only)
@@ -10797,10 +11685,25 @@ class NEFTranslator:
         rdc_list_id = 0
         peak_list_id = 0
 
+        # DAOTHER-9623
+        def get_red_sf_framecode(sf):
+
+            pattern = re.compile(fr'{sf.category}(_|_\d+)?$')
+
+            return sf.name if pattern.match(sf.name) or not sf.name.startswith(f'{sf.category}_') else sf.name[len(sf.category) + 1:]
+
         if data_type == 'Entry':
 
+            red_sf_framecodes = [get_red_sf_framecode(sf) for sf in nef_data]
+            dup_sf_framecodes = set(sf_framecode for sf_framecode in red_sf_framecodes if red_sf_framecodes.count(sf_framecode) > 1)
+
             for saveframe in nef_data:
-                sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
+
+                sf_framecode = get_red_sf_framecode(saveframe)
+                if sf_framecode in dup_sf_framecodes:
+                    sf_framecode = saveframe.name
+
+                sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
 
                 if saveframe.category == 'nef_nmr_meta_data':
                     sf.set_tag_prefix('Entry')
@@ -10835,9 +11738,10 @@ class NEFTranslator:
                 for tag in saveframe.tags:
 
                     if tag[0].lower() == 'sf_category':
-                        auth_tag = self.get_star_tag(saveframe.category)[0]
-                        if auth_tag is not None:
-                            sf.add_tag('Sf_category', auth_tag)
+                        star_sf_cat = self.get_star_sf_cat(saveframe.category)
+                        if star_sf_cat is not None:
+                            sf.add_tag('Sf_category', star_sf_cat)
+                        sf.add_tag('Sf_framecode', sf_framecode)
                     elif saveframe.category == 'nef_distance_restraint_list' and tag[0] == 'restraint_origin':
                         nef_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_tag(nef_tag)[0]
@@ -10853,7 +11757,7 @@ class NEFTranslator:
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1] if tag[1] not in altRdcConstraintType['nmr-star'] else altRdcConstraintType['nmr-star'][tag[1]])
-                    else:
+                    elif tag[0].lower() != 'sf_framecode':
                         nef_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
@@ -10998,7 +11902,10 @@ class NEFTranslator:
 
             if data_type == 'Saveframe':
                 saveframe = nef_data
-                sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
+
+                sf_framecode = get_red_sf_framecode(saveframe)
+
+                sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
 
                 if saveframe.category == 'nef_nmr_meta_data':
                     sf.set_tag_prefix('Entry')
@@ -11030,9 +11937,10 @@ class NEFTranslator:
                 for tag in saveframe.tags:
 
                     if tag[0].lower() == 'sf_category':
-                        auth_tag = self.get_star_tag(saveframe.category)[0]
-                        if auth_tag is not None:
-                            sf.add_tag('Sf_category', auth_tag)
+                        star_sf_cat = self.get_star_sf_cat(saveframe.category)
+                        if star_sf_cat is not None:
+                            sf.add_tag('Sf_category', star_sf_cat)
+                        sf.add_tag('Sf_framecode', sf_framecode)
                     elif saveframe.category == 'nef_distance_restraint_list' and tag[0] == 'restraint_origin':
                         nef_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_tag(nef_tag)[0]
@@ -11048,7 +11956,7 @@ class NEFTranslator:
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1] if tag[1] not in altRdcConstraintType['nmr-star'] else altRdcConstraintType['nmr-star'][tag[1]])
-                    else:
+                    elif tag[0].lower() != 'sf_framecode':
                         nef_tag = f"{saveframe.tag_prefix}.{tag[0]}"
                         auth_tag = self.get_star_tag(nef_tag)[0]
                         if auth_tag is not None:
@@ -11310,20 +12218,27 @@ class NEFTranslator:
         self.selfSeqMap = None
         self.atomIdMap = None
 
+        # DAOTHER-9623
+        def get_nef_sf_framecode(sf, prefix):
+            return sf.name if sf.name.startswith(prefix) else f'{prefix}_{sf.name}'
+
         if data_type == 'Entry':
 
             for saveframe in star_data:
-                sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
 
-                nef_tag, _ = self.get_nef_tag(saveframe.category)
+                nef_sf_cat = self.get_nef_sf_cat(saveframe.category)
 
-                if nef_tag is None:
+                if nef_sf_cat is None:
                     continue
 
-                sf.set_tag_prefix(nef_tag)
+                sf_framecode = get_nef_sf_framecode(saveframe, nef_sf_cat)
 
-                sf.add_tag('sf_category', nef_tag)
-                sf.add_tag('sf_framecode', saveframe.name)
+                sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
+
+                sf.set_tag_prefix(nef_sf_cat)
+
+                sf.add_tag('sf_category', nef_sf_cat)
+                sf.add_tag('sf_framecode', sf.name)
 
                 for tag in saveframe.tags:
                     tag_name = tag[0].lower()
@@ -11466,16 +12381,19 @@ class NEFTranslator:
 
             if data_type == 'Saveframe':
                 saveframe = star_data
-                sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
 
-                nef_tag, _ = self.get_nef_tag(saveframe.category)
+                nef_sf_cat = self.get_nef_sf_cat(saveframe.category)
 
-                if nef_tag is not None:
+                if nef_sf_cat is not None:
 
-                    sf.set_tag_prefix(nef_tag)
+                    sf_framecode = sf_framecode = get_nef_sf_framecode(saveframe, nef_sf_cat)
 
-                    sf.add_tag('sf_category', nef_tag)
-                    sf.add_tag('sf_framecode', saveframe.name)
+                    sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
+
+                    sf.set_tag_prefix(nef_sf_cat)
+
+                    sf.add_tag('sf_category', nef_sf_cat)
+                    sf.add_tag('sf_framecode', sf.name)
 
                     for tag in saveframe.tags:
                         tag_name = tag[0].lower()
@@ -11674,513 +12592,6 @@ class NEFTranslator:
             nef_data.write_to_file(nef_file)
 
         info.append(f"File {nef_file} successfully written.")
-
-        return True, {'info': info, 'error': error}
-
-    def star_data_to_nmrstar(self, star_data, output_file_path=None, input_source_id=None, report=None, leave_unmatched=False):
-        """ Convert PyNMRSTAR data object (Entry/Saveframe/Loop) to complete NMR-STAR (Entry) file.
-            @deprecated: Comprehensive solution has been integrated in NmrDpUtility class.
-            @author: Masashi Yokochi
-            @param star_data: input PyNMRSTAR data object
-            @param output_file_path: output NMR-STAR file path
-            @param input_source_id: input source id of NMR data processing report
-            @param report: NMR data processing report object
-        """
-
-        data_type = 'Entry' if isinstance(star_data, pynmrstar.Entry)\
-            else ('Saveframe' if isinstance(star_data, pynmrstar.Saveframe) else 'Loop')
-
-        _, file_name = ntpath.split(os.path.realpath(output_file_path))
-
-        info = []
-        error = []
-
-        try:
-            out_data = pynmrstar.Entry.from_scratch(star_data.entry_id)
-        except Exception:  # AttributeError:
-            out_data = pynmrstar.Entry.from_scratch(file_name.split('.')[0])
-            # warning.append('Not a complete Entry.')
-
-        if star_data is None or report is None:
-            error.append('Input file not readable.')
-            return False, {'info': info, 'error': error}
-
-        polymer_sequence = report.getPolymerSequenceByInputSrcId(input_source_id)
-
-        if polymer_sequence is None:
-            error.append('Common polymer sequence does not exist.')
-            return False, {'info': info, 'error': error}
-
-        self.authChainId = sorted([ps['chain_id'] for ps in polymer_sequence])
-        self.authSeqMap = {}
-        self.selfSeqMap = {}
-
-        for star_chain in self.authChainId:
-
-            ps = next(ps for ps in polymer_sequence if ps['chain_id'] == star_chain)
-
-            if len(ps['seq_id']) == 0:
-                continue
-
-            cif_chain = cif_ps = None
-            if report is not None:
-                seq_align = report.getSequenceAlignmentWithNmrChainId(star_chain)
-                if seq_align is not None:
-                    cif_chain = seq_align['test_chain_id']  # label_asym_id
-                    cif_ps = report.getModelPolymerSequenceOf(cif_chain, label_scheme=True)
-                    if cif_ps is not None and 'auth_chain_id' in cif_ps:
-                        cif_chain = cif_ps['auth_chain_id']  # auth_asym_id
-
-            # self.star2CifChainMapping[star_chain] = cif_chain
-
-            for star_seq in ps['seq_id']:
-
-                _cif_seq = None
-                if cif_chain is not None and seq_align is not None:
-                    try:
-                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(star_seq)]  # label_seq_id
-                        if cif_ps is not None and 'auth_seq_id' in cif_ps:
-                            _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
-                    except IndexError:
-                        pass
-
-                self.authSeqMap[(star_chain, star_seq)] = (star_chain, star_seq)
-                self.selfSeqMap[(star_chain, star_seq)] = (star_chain if cif_chain is None else cif_chain,
-                                                           star_seq if _cif_seq is None else _cif_seq)
-
-        asm_id = 0
-        cs_list_id = 0
-        dist_list_id = 0
-        dihed_list_id = 0
-        rdc_list_id = 0
-        peak_list_id = 0
-
-        if data_type == 'Entry':
-
-            for saveframe in star_data:
-                sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
-
-                if saveframe.tag_prefix == '_Assembly':
-                    asm_id += 1
-
-                elif saveframe.tag_prefix == '_Assigned_chem_shift_list':
-                    cs_list_id += 1
-
-                elif saveframe.tag_prefix == '_Gen_dist_constraint_list':
-                    dist_list_id += 1
-
-                elif saveframe.tag_prefix == '_Torsion_angle_constraint_list':
-                    dihed_list_id += 1
-
-                elif saveframe.tag_prefix == '_RDC_constraint_list':
-                    rdc_list_id += 1
-
-                elif saveframe.tag_prefix == '_Spectral_peak_list':
-                    peak_list_id += 1
-
-                sf.set_tag_prefix(saveframe.tag_prefix)
-
-                for tag in saveframe.tags:
-
-                    if tag[0].lower() == 'sf_category':
-                        auth_tag = self.get_star_auth_tag(saveframe.category)[0]
-                        if auth_tag is not None:
-                            sf.add_tag('Sf_category', auth_tag)
-                    elif saveframe.tag_prefix == '_Gen_dist_constraint_list' and tag[0] == 'Constraint_type':
-                        star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
-                        auth_tag = self.get_star_auth_tag(star_tag)[0]
-                        if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altDistanceConstraintType['nmr-star'] else altDistanceConstraintType['nmr-star'][tag[1]])
-                    elif saveframe.tag_prefix == '_Torsion_angle_constraint_list' and tag[0] == 'Constraint_type':
-                        star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
-                        auth_tag = self.get_star_auth_tag(star_tag)[0]
-                        if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altDihedralAngleConstraintType['nmr-star'] else altDihedralAngleConstraintType['nmr-star'][tag[1]])
-                    elif saveframe.tag_prefix == '_RDC_constraint_list' and tag[0] == 'Constraint_type':
-                        star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
-                        auth_tag = self.get_star_auth_tag(star_tag)[0]
-                        if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altRdcConstraintType['nmr-star'] else altRdcConstraintType['nmr-star'][tag[1]])
-                    else:
-                        star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
-                        auth_tag = self.get_star_auth_tag(star_tag)[0]
-                        if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1])
-
-                for loop in saveframe:
-
-                    lp = pynmrstar.Loop.from_scratch()
-                    tags = self.extend_star_loop_tags(loop.get_tag_names())
-
-                    if len(tags) == 0:
-                        continue
-
-                    for tag in tags:
-                        lp.add_tag(tag)
-
-                    if loop.category == '_Chem_comp_assembly':
-                        rows, aux_rows = self.star2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
-                        for d in rows:
-                            d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
-                            lp.add_data(d)
-
-                    elif loop.category == '_Bond':
-                        rows = self.star2star_bond_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                        for d in rows:
-                            d[lp.get_tag_names().index('_Bond.Assembly_ID')] = asm_id
-                            lp.add_data(d)
-
-                    elif loop.category == '_Atom_chem_shift':
-                        rows = self.star2star_cs_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, leave_unmatched)
-                        for d in rows:
-                            d[lp.get_tag_names().index('_Atom_chem_shift.Assigned_chem_shift_list_ID')] = cs_list_id
-                            lp.add_data(d)
-
-                    elif loop.category == '_Gen_dist_constraint':
-                        rows = self.star2star_dist_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                        for d in rows:
-                            d[lp.get_tag_names().index('_Gen_dist_constraint.Gen_dist_constraint_list_ID')] = dist_list_id
-                            lp.add_data(d)
-
-                    elif loop.category == '_Torsion_angle_constraint':
-                        rows = self.star2star_dihed_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                        for d in rows:
-                            d[lp.get_tag_names().index('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = dihed_list_id
-                            lp.add_data(d)
-
-                    elif loop.category == '_RDC_constraint':
-                        rows = self.star2star_rdc_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                        for d in rows:
-                            d[lp.get_tag_names().index('_RDC_constraint.RDC_constraint_list_ID')] = rdc_list_id
-                            lp.add_data(d)
-
-                    elif loop.category == '_Peak_row_format':
-                        rows = self.star2star_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, leave_unmatched)
-                        for d in rows:
-                            d[lp.get_tag_names().index('_Peak_row_format.Spectral_peak_list_ID')] = peak_list_id
-                            lp.add_data(d)
-
-                    else:
-
-                        for data in loop:
-
-                            if loop.category == '_Spectral_dim':
-                                rows = self.star2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                                for d in rows:
-                                    d[lp.get_tag_names().index('_Spectral_dim.Spectral_peak_list_ID')] = peak_list_id
-                                    lp.add_data(d)
-
-                            elif loop.category == '_Spectral_dim_transfer':
-                                rows = self.star2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                                for d in rows:
-                                    d[lp.get_tag_names().index('_Spectral_dim_transfer.Spectral_peak_list_ID', )] = peak_list_id
-                                    lp.add_data(d)
-
-                            else:
-                                rows = self.star2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                                for d in rows:
-                                    lp.add_data(d)
-
-                    sf.add_loop(lp)
-
-                if saveframe.tag_prefix == '_Entry':
-                    sf.add_tag('NMR_STAR_version', NMR_STAR_VERSION)
-
-                    try:
-                        if __pynmrstar_v3_2__:
-                            loop = sf.get_loop('_Software_applied_methods')
-                        else:
-                            loop = sf.get_loop_by_category('_Software_applied_methods')
-                        row = []
-                        for t in loop.tags:
-                            if t == 'Software_name':
-                                row.append(__package_name__)
-                            # elif t == 'Script_name':
-                            #     row.append(self.star_data_to_nmrstar.__name__)
-                            else:
-                                row.append('.')
-                        loop.add_data(row)
-                    except KeyError:
-                        pass
-
-                elif saveframe.tag_prefix == '_Assembly':
-                    sf.add_tag('ID', asm_id)
-
-                elif saveframe.tag_prefix == '_Assigned_chem_shift_list':
-                    sf.add_tag('ID', cs_list_id)
-
-                elif saveframe.tag_prefix == '_Gen_dist_constraint_list':
-                    sf.add_tag('ID', dist_list_id)
-
-                elif saveframe.tag_prefix == '_Torsion_angle_constraint_list':
-                    sf.add_tag('ID', dihed_list_id)
-
-                elif saveframe.tag_prefix == '_RDC_constraint_list':
-                    sf.add_tag('ID', rdc_list_id)
-
-                elif saveframe.tag_prefix == '_Spectral_peak_list':
-                    sf.add_tag('ID', peak_list_id)
-
-                else:
-                    continue
-
-                out_data.add_saveframe(sf)
-
-        elif data_type in ('Saveframe', 'Loop'):
-
-            if data_type == 'Saveframe':
-                saveframe = star_data
-                sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
-
-                if saveframe.category == 'entry_information':
-                    sf.set_tag_prefix('Entry')
-
-                elif saveframe.category == 'assembly':
-                    asm_id += 1
-                    sf.set_tag_prefix('Assembly')
-
-                elif saveframe.category == 'assigned_chemical_shifts':
-                    cs_list_id += 1
-                    sf.set_tag_prefix('Assigned_chem_shift_list')
-
-                elif saveframe.category == 'general_distance_constraints':
-                    dist_list_id += 1
-                    sf.set_tag_prefix('Gen_dist_constraint_list')
-
-                elif saveframe.category == 'torsion_angle_constraints':
-                    dihed_list_id += 1
-                    sf.set_tag_prefix('Torsion_angle_constraint_list')
-
-                elif saveframe.category == 'RDC_constraints':
-                    rdc_list_id += 1
-                    sf.set_tag_prefix('RDC_constraint_list')
-
-                elif saveframe.category == 'spectral_peak_list':
-                    peak_list_id += 1
-                    sf.set_tag_prefix('Spectral_peak_list')
-
-                for tag in saveframe.tags:
-
-                    if tag[0].lower() == 'sf_category':
-                        auth_tag = self.get_star_auth_tag(saveframe.category)[0]
-                        if auth_tag is not None:
-                            sf.add_tag('Sf_category', auth_tag)
-                    elif saveframe.tag_prefix == '_Gen_dist_constraint_list' and tag[0] == 'Constraint_type':
-                        star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
-                        auth_tag = self.get_star_auth_tag(star_tag)[0]
-                        if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altDistanceConstraintType['nmr-star'] else altDistanceConstraintType['nmr-star'][tag[1]])
-                    elif saveframe.tag_prefix == '_Torsion_angle_constraint_list' and tag[0] == 'Constraint_type':
-                        star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
-                        auth_tag = self.get_star_auth_tag(star_tag)[0]
-                        if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altDihedralAngleConstraintType['nmr-star'] else altDihedralAngleConstraintType['nmr-star'][tag[1]])
-                    elif saveframe.tag_prefix == '_RDC_constraint_list' and tag[0] == 'Constraint_type':
-                        star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
-                        auth_tag = self.get_star_auth_tag(star_tag)[0]
-                        if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1] if tag[1] not in altRdcConstraintType['nmr-star'] else altRdcConstraintType['nmr-star'][tag[1]])
-                    else:
-                        star_tag = f"{saveframe.tag_prefix}.{tag[0]}"
-                        auth_tag = self.get_star_auth_tag(star_tag)[0]
-                        if auth_tag is not None:
-                            sf.add_tag(auth_tag, tag[1])
-
-            else:
-
-                if star_data.category == '_Software_applied_methods':
-                    sf = pynmrstar.Saveframe.from_scratch('entry')
-                    sf.set_tag_prefix('Entry')
-                    sf.add_tag('Sf_category', 'entry_information')
-
-                elif star_data.category == '_Audit':  # DAOTHER-6327
-                    sf = pynmrstar.Saveframe.from_scratch('entry')
-                    sf.set_tag_prefix('Entry')
-                    sf.add_tag('Sf_category', 'entry_information')
-
-                elif star_data.category == '_Chem_comp_assembly':
-                    sf = pynmrstar.Saveframe.from_scratch('assembly')
-                    asm_id += 1
-                    sf.set_tag_prefix('Assembly')
-                    sf.add_tag('Sf_category', 'assembly')
-
-                elif star_data.category == '_Atom_chem_shift':
-                    cs_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch(f"assigned_chem_shift_list_{cs_list_id}")
-                    sf.set_tag_prefix('Assigned_chem_shift_list')
-                    sf.add_tag('Sf_category', 'assigned_chemical_shifts')
-
-                elif star_data.category == '_Gen_dist_constraint':
-                    dist_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch(f"gen_dist_constraint_list_{dist_list_id}")
-                    sf.set_tag_prefix('Gen_dist_constraint_list')
-                    sf.add_tag('Sf_category', 'general_distance_constraints')
-
-                elif star_data.category == '_Torsion_angle_constraint':
-                    dihed_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch(f"torsion_angle_constraint_list_{dihed_list_id}")
-                    sf.set_tag_prefix('Torsion_angle_constraint_list')
-                    sf.add_tag('Sf_category', 'torsion_angle_constraints')
-
-                elif star_data.category == '_RDC_constraint':
-                    rdc_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch(f"rdc_constraint_list_{rdc_list_id}")
-                    sf.set_tag_prefix('RDC_constraint_list')
-                    sf.add_tag('Sf_category', 'RDC_constraints')
-
-                elif star_data.category == '_Peak_row_format':
-                    peak_list_id += 1
-                    sf = pynmrstar.Saveframe.from_scratch(f"spectral_peak_list_{peak_list_id}")
-                    sf.set_tag_prefix('Spectral_peak_list')
-                    sf.add_tag('Sf_category', 'spectral_peak_list')
-
-                else:
-                    error.append(f"Loop category {star_data.category} is not supported.")
-                    return False, {'info': info, 'error': error}
-
-                sf.add_tag('Sf_framecode', sf.name)
-
-                saveframe = [star_data]
-
-            has_covalent_links = any(loop for loop in saveframe if loop.category == '_Bond')
-            aux_rows = []
-
-            for loop in saveframe:
-
-                lp = pynmrstar.Loop.from_scratch()
-                tags = self.extend_star_loop_tags(loop.get_tag_names())
-
-                if len(tags) == 0:
-                    continue
-
-                for tag in tags:
-                    lp.add_tag(tag)
-
-                if loop.category == '_Chem_comp_assembly':
-                    rows, aux_rows = self.star2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
-                    for d in rows:
-                        d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
-                        lp.add_data(d)
-
-                elif loop.category == '_Bond':
-                    rows = self.star2star_bond_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                    for d in rows:
-                        d[lp.get_tag_names().index('_Bond.Assembly_ID')] = asm_id
-                        lp.add_data(d)
-
-                elif loop.category == '_Atom_chem_shift':
-                    rows = self.star2star_cs_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, leave_unmatched)
-                    for d in rows:
-                        d[lp.get_tag_names().index('_Atom_chem_shift.Assigned_chem_shift_list_ID')] = cs_list_id
-                        lp.add_data(d)
-
-                elif loop.category == '_Gen_dist_constraint':
-                    rows = self.star2star_dist_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                    for d in rows:
-                        d[lp.get_tag_names().index('_Gen_dist_constraint.Gen_dist_constraint_list_ID')] = dist_list_id
-                        lp.add_data(d)
-
-                elif loop.category == '_Torsion_angle_constraint':
-                    rows = self.star2star_dihed_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                    for d in rows:
-                        d[lp.get_tag_names().index('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = dihed_list_id
-                        lp.add_data(d)
-
-                elif loop.category == '_RDC_constraint':
-                    rows = self.star2star_rdc_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                    for d in rows:
-                        d[lp.get_tag_names().index('_RDC_constraint.RDC_constraint_list_ID')] = rdc_list_id
-                        lp.add_data(d)
-
-                elif loop.category == '_Peak_row_format':
-                    rows = self.star2star_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, leave_unmatched)
-                    for d in rows:
-                        d[lp.get_tag_names().index('_Peak_row_format.Spectral_peak_list_ID')] = peak_list_id
-                        lp.add_data(d)
-
-                else:
-
-                    for data in loop:
-
-                        if loop.category == '_Spectral_dim':
-                            rows = self.star2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                            for d in rows:
-                                d[lp.get_tag_names().index('_Spectral_dim.Spectral_peak_list_ID')] = peak_list_id
-                                lp.add_data(d)
-
-                        elif loop.category == '_Spectral_dim_transfer':
-                            rows = self.star2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                            for d in rows:
-                                d[lp.get_tag_names().index('_Spectral_dim_transfer.Spectral_peak_list_ID', )] = peak_list_id
-                                lp.add_data(d)
-
-                        else:
-                            rows = self.star2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                            for d in rows:
-                                lp.add_data(d)
-
-                sf.add_loop(lp)
-
-                if len(aux_rows) > 0 and ((loop.category == '_Chem_comp_assembly' and not has_covalent_links)
-                                          or (loop.category == '_Bond' and has_covalent_links)):
-                    lp = pynmrstar.Loop.from_scratch()
-                    for _tag in ENTITY_DELETED_ATOM_ITEMS:
-                        lp.add_tag('_Entity_deleted_atom.' + _tag)
-                    for d in aux_rows:
-                        d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
-                        lp.add_data(d)
-                    sf.add_loop(lp)
-
-            if sf.tag_prefix == '_Entry':
-                sf.add_tag('NMR_STAR_version', NMR_STAR_VERSION)
-
-                try:
-                    if __pynmrstar_v3_2__:
-                        loop = sf.get_loop('_Software_applied_methods')
-                    else:
-                        loop = sf.get_loop_by_category('_Software_applied_methods')
-                    row = []
-                    for t in loop.tags:
-                        if t == 'Software_name':
-                            row.append(__package_name__)
-                        # elif t == 'Script_name':
-                        #     row.append(self.star_data_to_nmrstar.__name__)
-                        else:
-                            row.append('.')
-                    loop.add_data(row)
-                except KeyError:
-                    pass
-
-            elif sf.tag_prefix == '_Assembly':
-                sf.add_tag('ID', asm_id)
-
-            elif sf.tag_prefix == '_Assigned_chem_shift_list':
-                sf.add_tag('ID', cs_list_id)
-
-            elif sf.tag_prefix == '_Gen_dist_constraint':
-                sf.add_tag('ID', dist_list_id)
-
-            elif sf.tag_prefix == '_Torsion_angle_constraint':
-                sf.add_tag('ID', dihed_list_id)
-
-            elif sf.tag_prefix == '_RDC_constraint':
-                sf.add_tag('ID', rdc_list_id)
-
-            elif sf.tag_prefix == '_Peak_row_format':
-                sf.add_tag('ID', peak_list_id)
-
-            out_data.add_saveframe(sf)
-
-        # out_data.normalize()  # do not invoke normalize() to preserve ID
-
-        self.__c2S.normalize_str(out_data)
-
-        if __pynmrstar_v3__:
-            out_data.write_to_file(output_file_path, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
-        else:
-            out_data.write_to_file(output_file_path)
-
-        info.append(f"File {output_file_path} successfully written.")
 
         return True, {'info': info, 'error': error}
 

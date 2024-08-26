@@ -2102,20 +2102,32 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 if refAtomIdList is not None:
                     if atomId[1:] + '1' in refAtomIdList:
                         return atomId[1:] + '1'
+                    if atomId[1:].endswith("'") and atomId[1:-1] + "1'" in refAtomIdList:
+                        return atomId[1:-1] + "1'"
                 if atomId[1:] + '1' in _refAtomIdList:
                     return atomId[1:] + '1'
+                if atomId[1:].endswith("'") and atomId[1:-1] + "1'" in _refAtomIdList:
+                    return atomId[1:-1] + "1'"
             elif atomId.startswith('2H'):
                 if refAtomIdList is not None:
                     if atomId[1:] + '2' in refAtomIdList:
                         return atomId[1:] + '2'
+                    if atomId[1:].endswith("'") and atomId[1:-1] + "2'" in refAtomIdList:
+                        return atomId[1:-1] + "2'"
                 if atomId[1:] + '2' in _refAtomIdList:
                     return atomId[1:] + '2'
+                if atomId[1:].endswith("'") and atomId[1:-1] + "2'" in _refAtomIdList:
+                    return atomId[1:-1] + "2'"
             elif atomId.startswith('3H'):
                 if refAtomIdList is not None:
                     if atomId[1:] + '3' in refAtomIdList:
                         return atomId[1:] + '3'
+                    if atomId[1:].endswith("'") and atomId[1:-1] + "3'" in refAtomIdList:
+                        return atomId[1:-1] + "3'"
                 if atomId[1:] + '3' in _refAtomIdList:
                     return atomId[1:] + '3'
+                if atomId[1:].endswith("'") and atomId[1:-1] + "3'" in _refAtomIdList:
+                    return atomId[1:-1] + "3'"
             elif atomId == "HX'":  # derived from 2mko AMBER RDC restraints
                 if refAtomIdList is not None:
                     if "H4'" in refAtomIdList:

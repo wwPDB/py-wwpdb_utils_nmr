@@ -2562,7 +2562,7 @@ class NEFTranslator:
                                                 r[chain_id_col] = str(_entity_assembly_id)
                                                 if entity_id_col != -1:
                                                     r[entity_id_col] = str(_entity_id)
-                                                if sync_seq:
+                                                if sync_seq or r[seq_id_col] if isinstance(r[seq_id_col], str) else str(r[seq_id_col]) != str(_seq_id):
                                                     if seq_id_col != -1:
                                                         r[seq_id_col] = str(_seq_id)
                                                     if alt_seq_id_col != -1:

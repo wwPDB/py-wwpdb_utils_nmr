@@ -19290,7 +19290,6 @@ class NmrDpUtility:
                                 self.__fixAtomNomenclature(comp_id, {atom_id: 'C'})
                                 continue
 
-                        if self.__remediation_mode:
                             _atom_id = self.__nefT.get_star_atom(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU), leave_unmatched=False)[0]
                             if len(_atom_id) == 1 and atom_id != _atom_id[0]:
                                 self.__fixAtomNomenclature(comp_id, {atom_id: _atom_id[0]})

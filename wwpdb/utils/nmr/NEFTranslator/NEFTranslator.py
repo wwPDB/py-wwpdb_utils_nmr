@@ -2562,7 +2562,7 @@ class NEFTranslator:
                                                 r[chain_id_col] = str(_entity_assembly_id)
                                                 if entity_id_col != -1:
                                                     r[entity_id_col] = str(_entity_id)
-                                                if sync_seq or r[seq_id_col] if isinstance(r[seq_id_col], str) else str(r[seq_id_col]) != str(_seq_id):
+                                                if sync_seq:
                                                     if seq_id_col != -1:
                                                         r[seq_id_col] = str(_seq_id)
                                                     if alt_seq_id_col != -1:
@@ -2645,7 +2645,17 @@ class NEFTranslator:
                             for r in loop.data:
                                 r[chain_id_col] = r[entity_id_col]
                     elif len(alt_chain_id_set) == 1 and len(chain_id_set) == 1:  # 5xv8
-                        resolve_entity_assembly(False)
+                        sync_seq = True
+                        if 'Original_PDB_strand_ID' in loop.tags:
+                            pre_tag = ['Auth_asym_ID', 'Original_PDB_strand_ID']
+                            pre_chain_data = get_lp_tag(loop, pre_tag)
+                            for row in pre_chain_data:
+                                if row[0] != row[1]:
+                                    sync_seq = False
+                                    break
+                        else:
+                            sync_seq = False
+                        resolve_entity_assembly(sync_seq)
 
                 if 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags:
                     pre_comp_data = get_lp_tag(loop, ['Auth_asym_ID', 'Auth_seq_ID', 'Comp_ID'])

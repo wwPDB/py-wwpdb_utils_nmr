@@ -818,7 +818,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                                     auth_seq_id = sa['ref_seq_id'][idx]
                                                     seq_id_mapping[seq_id] = auth_seq_id
                                                     comp_id_mapping[seq_id] = comp_id
-                                            if any(k for k, v in seq_id_mapping.items() if k != v):
+                                            if any(k for k, v in seq_id_mapping.items() if k != v)\
+                                               or any(v not in poly_seq_model['auth_seq_id'] for v in seq_id_mapping.values()):
                                                 seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
                                                                          'comp_id_dict': comp_id_mapping})
 
@@ -855,7 +856,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['local_seq_scheme']
                 elif 'ext_chain_seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
-                    
+
             if 'local_seq_scheme' in self.reasonsForReParsing and len(self.reasonsForReParsing) == 1:
                 mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                 sortPolySeqRst(self.__polySeqRstFailed)

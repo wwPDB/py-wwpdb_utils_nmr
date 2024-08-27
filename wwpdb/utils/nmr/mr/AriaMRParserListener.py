@@ -637,7 +637,8 @@ class AriaMRParserListener(ParseTreeListener):
                                                     seq_id_mapping[seq_id] = auth_seq_id
                                                     comp_id_mapping[seq_id] = comp_id
                                             if any(k for k, v in seq_id_mapping.items() if k != v)\
-                                               or any(v not in poly_seq_model['auth_seq_id'] for v in seq_id_mapping.values()):
+                                               or ('label_seq_scheme' not in self.reasonsForReParsing
+                                                   and all(v not in poly_seq_model['auth_seq_id'] for v in seq_id_mapping.values())):
                                                 seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
                                                                          'comp_id_dict': comp_id_mapping})
 

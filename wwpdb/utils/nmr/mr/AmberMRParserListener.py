@@ -326,7 +326,7 @@ class AmberMRParserListener(ParseTreeListener):
     __preferAuthSeq = True
     __gapInAuthSeq = False
     __concatHetero = False
-    __concatHeteroLabel = False
+    __concatHeteroLabel = {}
 
     # polymer sequence of MR file
     __polySeqRst = None
@@ -5006,8 +5006,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         _useDefault = useDefault
         if self.__concatHetero and not hasAuthSeqScheme and authChainId is None:
-            if not self.__concatHeteroLabel:  # 2mki
-                useDefault = False
+            useDefault = False
 
         enforceAuthSeq = authChainId is not None
         if enforceAuthSeq or self.__altPolySeq is None:
@@ -5079,12 +5078,12 @@ class AmberMRParserListener(ParseTreeListener):
             enforceAuthSeq |= hasAuthSeqScheme\
                 and chainId in self.__reasons['auth_seq_scheme'] and self.__reasons['auth_seq_scheme'][chainId]
 
-            if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
+            if seqId in (ps['seq_id'] if (useDefault or refAuthChainId in self.__concatHeteroLabel) and not enforceAuthSeq else ps['auth_seq_id']):
                 idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
                 compId = ps['comp_id'][idx]
                 cifSeqId = None if useDefault or enforceAuthSeq else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
 
-                asis = (not hasAuthSeqScheme and not self.__concatHeteroLabel) or enforceAuthSeq or not self.__preferAuthSeq
+                asis = (not hasAuthSeqScheme and refAuthChainId not in self.__concatHeteroLabel) or enforceAuthSeq or not self.__preferAuthSeq
 
                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
                                                                 asis=asis)
@@ -5479,15 +5478,15 @@ class AmberMRParserListener(ParseTreeListener):
 
         _useDefault = useDefault
         if self.__concatHetero and not hasAuthSeqScheme and not useAuthSeqScheme:
-            if authCompId != 'None' and not self.__concatHeteroLabel:
+            if authCompId != 'None':
                 _compId = translateToStdResName(authCompId, ccU=self.__ccU)
                 for ps in self.__polySeq:
+                    if ps['auth_chain_id'] in self.__concatHeteroLabel:
+                        continue
                     if factor['auth_seq_id'] in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(factor['auth_seq_id'])] == _compId\
                        and (factor['auth_seq_id'] not in ps['auth_seq_id'] or ps['comp_id'][ps['auth_seq_id'].index(factor['auth_seq_id'])] != _compId):
-                        self.__concatHeteroLabel = True  # 2mki
-                        break
-            if not self.__concatHeteroLabel:  # 2mki
-                useDefault = False
+                        self.__concatHeteroLabel[ps['auth_chain_id']] = True  # 2mki
+            useDefault = False
 
         enforceAuthSeq = authChainId is not None or useAuthSeqScheme
         if enforceAuthSeq or self.__altPolySeq is None:
@@ -5591,7 +5590,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if not keep:
                     continue
 
-            if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
+            if seqId in (ps['seq_id'] if (useDefault or refAuthChainId in self.__concatHeteroLabel) and not enforceAuthSeq else ps['auth_seq_id']):
                 idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
                 compId = ps['comp_id'][idx]
                 origCompId = ps['auth_comp_id'][idx]
@@ -5604,7 +5603,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
                    or compId == translateToStdResName(authCompId, compId, self.__ccU) or asis:
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
-                                                                    asis=((not hasAuthSeqScheme and not self.__concatHeteroLabel)  # 2mki
+                                                                    asis=((not hasAuthSeqScheme and refAuthChainId not in self.__concatHeteroLabel)  # 2mki
                                                                           or enforceAuthSeq or not self.__preferAuthSeq))
 
                     if authCompId in (compId, origCompId) and compId in monDict3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
@@ -5726,7 +5725,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         factor['atom_id'] = _atomId
                                         del factor['iat']
                                         self.__sanderAtomNumberDict[iat] = factor
-                                        if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
+                                        if self.__cur_subtype == 'dist' and not useDefault and not self.__concatHetero and 'use_alt_poly_seq' not in self.reasonsForReParsing:
                                             self.reasonsForReParsing['use_alt_poly_seq'] = True
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
@@ -5861,7 +5860,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         del _factor['igr']
                                         self.__sanderAtomNumberDict[igr] = _factor
                                         ccdCheckOnly = True
-                                        if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
+                                        if self.__cur_subtype == 'dist' and not useDefault and not self.__concatHetero and 'use_alt_poly_seq' not in self.reasonsForReParsing:
                                             self.reasonsForReParsing['use_alt_poly_seq'] = True
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
@@ -6291,15 +6290,15 @@ class AmberMRParserListener(ParseTreeListener):
 
         _useDefault = useDefault
         if self.__concatHetero and not hasAuthSeqScheme and not useAuthSeqScheme:
-            if authCompId != 'None' and not self.__concatHeteroLabel:
+            if authCompId != 'None':
                 _compId = translateToStdResName(authCompId, ccU=self.__ccU)
                 for ps in self.__polySeq:
+                    if ps['auth_chain_id'] in self.__concatHeteroLabel:
+                        continue
                     if factor['auth_seq_id'] in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(factor['auth_seq_id'])] == _compId\
                        and (factor['auth_seq_id'] not in ps['auth_seq_id'] or ps['comp_id'][ps['auth_seq_id'].index(factor['auth_seq_id'])] != _compId):
-                        self.__concatHeteroLabel = True  # 2mki
-                        break
-            if not self.__concatHeteroLabel:  # 2mki
-                useDefault = False
+                        self.__concatHeteroLabel[ps['auth_chain_id']] = True  # 2mki
+            useDefault = False
 
         allFound = True
 
@@ -6411,7 +6410,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if not keep:
                         continue
 
-                if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
+                if seqId in (ps['seq_id'] if (useDefault or chainId in self.__concatHeteroLabel) and not enforceAuthSeq else ps['auth_seq_id']):
                     idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
                     compId = ps['comp_id'][idx]
                     origCompId = ps['auth_comp_id'][idx]
@@ -6426,7 +6425,7 @@ class AmberMRParserListener(ParseTreeListener):
                        or compId == translateToStdResName(authCompId, compId, self.__ccU) or asis:
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
-                                                                        asis=((not hasAuthSeqScheme and not self.__concatHeteroLabel)  # 2mki
+                                                                        asis=((not hasAuthSeqScheme and chainId not in self.__concatHeteroLabel)  # 2mki
                                                                               or enforceAuthSeq or not self.__preferAuthSeq))
 
                         if authCompId in (compId, origCompId) and compId in monDict3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
@@ -6525,7 +6524,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             factor['atom_id'] = _atomId
                                             del factor['iat']
                                             self.__sanderAtomNumberDict[iat] = factor
-                                            if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
+                                            if self.__cur_subtype == 'dist' and not useDefault and not self.__concatHetero and 'use_alt_poly_seq' not in self.reasonsForReParsing:
                                                 self.reasonsForReParsing['use_alt_poly_seq'] = True
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
@@ -6652,7 +6651,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             del _factor['igr']
                                             self.__sanderAtomNumberDict[igr] = _factor
                                             ccdCheckOnly = True
-                                            if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
+                                            if self.__cur_subtype == 'dist' and not useDefault and not self.__concatHetero and 'use_alt_poly_seq' not in self.reasonsForReParsing:
                                                 self.reasonsForReParsing['use_alt_poly_seq'] = True
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
@@ -10817,11 +10816,11 @@ class AmberMRParserListener(ParseTreeListener):
                                 "by 'makeDIST_RST' to the AMBER restraint file.")
             else:
                 if len(self.__polySeq) == 1 and seqId < 1:
-                    refChainId = self.__polySeq[0]['auth_chain_id']
+                    refAuthChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                     f"The residue number '{_seqId}' is not present in polymer sequence "
-                                    f"of chain {refChainId} of the coordinates. "
+                                    f"of chain {refAuthChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                 else:
                     self.__f.append(f"[Atom not found] "

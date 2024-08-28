@@ -326,6 +326,7 @@ class AmberMRParserListener(ParseTreeListener):
     __preferAuthSeq = True
     __gapInAuthSeq = False
     __concatHetero = False
+    __concatHeteroLabel = False
 
     # polymer sequence of MR file
     __polySeqRst = None
@@ -5005,7 +5006,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         _useDefault = useDefault
         if self.__concatHetero and not hasAuthSeqScheme and authChainId is None:
-            useDefault = False
+            if not self.__concatHeteroLabel:  # 2mki
+                useDefault = False
 
         enforceAuthSeq = authChainId is not None
         if enforceAuthSeq or self.__altPolySeq is None:
@@ -5082,7 +5084,7 @@ class AmberMRParserListener(ParseTreeListener):
                 compId = ps['comp_id'][idx]
                 cifSeqId = None if useDefault or enforceAuthSeq else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
 
-                asis = not hasAuthSeqScheme or enforceAuthSeq or not self.__preferAuthSeq
+                asis = (not hasAuthSeqScheme and not self.__concatHeteroLabel) or enforceAuthSeq or not self.__preferAuthSeq
 
                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
                                                                 asis=asis)
@@ -5477,7 +5479,15 @@ class AmberMRParserListener(ParseTreeListener):
 
         _useDefault = useDefault
         if self.__concatHetero and not hasAuthSeqScheme and not useAuthSeqScheme:
-            useDefault = False
+            if authCompId != 'None' and not self.__concatHeteroLabel:
+                _compId = translateToStdResName(authCompId, ccU=self.__ccU)
+                for ps in self.__polySeq:
+                    if factor['auth_seq_id'] in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(factor['auth_seq_id'])] == _compId\
+                       and (factor['auth_seq_id'] not in ps['auth_seq_id'] or ps['comp_id'][ps['auth_seq_id'].index(factor['auth_seq_id'])] != _compId):
+                        self.__concatHeteroLabel = True  # 2mki
+                        break
+            if not self.__concatHeteroLabel:  # 2mki
+                useDefault = False
 
         enforceAuthSeq = authChainId is not None or useAuthSeqScheme
         if enforceAuthSeq or self.__altPolySeq is None:
@@ -5594,7 +5604,8 @@ class AmberMRParserListener(ParseTreeListener):
                 if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
                    or compId == translateToStdResName(authCompId, compId, self.__ccU) or asis:
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
-                                                                    asis=(not hasAuthSeqScheme or enforceAuthSeq or not self.__preferAuthSeq))
+                                                                    asis=((not hasAuthSeqScheme and not self.__concatHeteroLabel)  # 2mki
+                                                                          or enforceAuthSeq or not self.__preferAuthSeq))
 
                     if authCompId in (compId, origCompId) and compId in monDict3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
                         continue
@@ -6280,7 +6291,15 @@ class AmberMRParserListener(ParseTreeListener):
 
         _useDefault = useDefault
         if self.__concatHetero and not hasAuthSeqScheme and not useAuthSeqScheme:
-            useDefault = False
+            if authCompId != 'None' and not self.__concatHeteroLabel:
+                _compId = translateToStdResName(authCompId, ccU=self.__ccU)
+                for ps in self.__polySeq:
+                    if factor['auth_seq_id'] in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(factor['auth_seq_id'])] == _compId\
+                       and (factor['auth_seq_id'] not in ps['auth_seq_id'] or ps['comp_id'][ps['auth_seq_id'].index(factor['auth_seq_id'])] != _compId):
+                        self.__concatHeteroLabel = True  # 2mki
+                        break
+            if not self.__concatHeteroLabel:  # 2mki
+                useDefault = False
 
         allFound = True
 
@@ -6407,7 +6426,8 @@ class AmberMRParserListener(ParseTreeListener):
                        or compId == translateToStdResName(authCompId, compId, self.__ccU) or asis:
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
-                                                                        asis=(not hasAuthSeqScheme or enforceAuthSeq or not self.__preferAuthSeq))
+                                                                        asis=((not hasAuthSeqScheme and not self.__concatHeteroLabel)  # 2mki
+                                                                              or enforceAuthSeq or not self.__preferAuthSeq))
 
                         if authCompId in (compId, origCompId) and compId in monDict3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
                             continue

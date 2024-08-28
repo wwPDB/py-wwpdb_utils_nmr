@@ -2331,6 +2331,11 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'N'
             if atomId.startswith('HQ'):  # 1e8e
                 return atomId[1:]
+            if refCompId in ('PHE', 'TYR'):  # 4ar0
+                if atomId == 'HD3':
+                    return 'HD1'
+                if atomId == 'HE3':
+                    return 'HE1'
 
         # BIOSYM atom nomenclature
         if (atomId[-1] in ('R', 'S', 'Z', 'E') or (len(atomId) > 2 and atomId[-1] in ('*', '%') and atomId[-2] in ('R', 'S'))):

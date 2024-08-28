@@ -5077,11 +5077,12 @@ class AmberMRParserListener(ParseTreeListener):
 
             enforceAuthSeq |= hasAuthSeqScheme\
                 and chainId in self.__reasons['auth_seq_scheme'] and self.__reasons['auth_seq_scheme'][chainId]
+            useDefault_ = (useDefault or refAuthChainId in self.__concatHeteroLabel) and not enforceAuthSeq
 
-            if seqId in (ps['seq_id'] if (useDefault or refAuthChainId in self.__concatHeteroLabel) and not enforceAuthSeq else ps['auth_seq_id']):
-                idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
+            if seqId in (ps['seq_id'] if useDefault_ else ps['auth_seq_id']):
+                idx = ps['seq_id'].index(seqId) if useDefault_ else ps['auth_seq_id'].index(seqId)
                 compId = ps['comp_id'][idx]
-                cifSeqId = None if useDefault or enforceAuthSeq else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
+                cifSeqId = None if useDefault_ else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
 
                 asis = (not hasAuthSeqScheme and refAuthChainId not in self.__concatHeteroLabel) or enforceAuthSeq or not self.__preferAuthSeq
 
@@ -5572,11 +5573,12 @@ class AmberMRParserListener(ParseTreeListener):
 
             enforceAuthSeq |= hasAuthSeqScheme\
                 and chainId in self.__reasons['auth_seq_scheme'] and self.__reasons['auth_seq_scheme'][chainId]
+            useDefault_ = (useDefault or refAuthChainId in self.__concatHeteroLabel) and not enforceAuthSeq
 
             if _compId in monDict3 and _compId not in ps['comp_id']:
                 keep = False
-                if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
-                    idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
+                if seqId in (ps['seq_id'] if useDefault_ else ps['auth_seq_id']):
+                    idx = ps['seq_id'].index(seqId) if useDefault_ else ps['auth_seq_id'].index(seqId)
                     compId = ps['comp_id'][idx]
                     if compId in monDict3 and getOneLetterCodeCan(compId) == getOneLetterCodeCan(_compId):
                         keep = True
@@ -5590,11 +5592,11 @@ class AmberMRParserListener(ParseTreeListener):
                 if not keep:
                     continue
 
-            if seqId in (ps['seq_id'] if (useDefault or refAuthChainId in self.__concatHeteroLabel) and not enforceAuthSeq else ps['auth_seq_id']):
-                idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
+            if seqId in (ps['seq_id'] if useDefault_ else ps['auth_seq_id']):
+                idx = ps['seq_id'].index(seqId) if useDefault_ else ps['auth_seq_id'].index(seqId)
                 compId = ps['comp_id'][idx]
                 origCompId = ps['auth_comp_id'][idx]
-                cifSeqId = None if useDefault else ps['seq_id'][idx]
+                cifSeqId = None if useDefault_ else ps['seq_id'][idx]
 
                 if compId not in monDict3 and self.__mrAtomNameMapping is not None:
                     _, _, authAtomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId,
@@ -6392,11 +6394,12 @@ class AmberMRParserListener(ParseTreeListener):
 
                 enforceAuthSeq |= hasAuthSeqScheme\
                     and chainId in self.__reasons['auth_seq_scheme'] and self.__reasons['auth_seq_scheme'][chainId]
+                useDefault_ = (useDefault or chainId in self.__concatHeteroLabel) and not enforceAuthSeq
 
                 if _compId in monDict3 and _compId not in ps['comp_id']:
                     keep = False
-                    if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
-                        idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
+                    if seqId in (ps['seq_id'] if useDefault_ else ps['auth_seq_id']):
+                        idx = ps['seq_id'].index(seqId) if useDefault_ else ps['auth_seq_id'].index(seqId)
                         compId = ps['comp_id'][idx]
                         if compId in monDict3 and getOneLetterCodeCan(compId) == getOneLetterCodeCan(_compId):
                             keep = True
@@ -6410,11 +6413,11 @@ class AmberMRParserListener(ParseTreeListener):
                     if not keep:
                         continue
 
-                if seqId in (ps['seq_id'] if (useDefault or chainId in self.__concatHeteroLabel) and not enforceAuthSeq else ps['auth_seq_id']):
-                    idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
+                if seqId in (ps['seq_id'] if useDefault_ else ps['auth_seq_id']):
+                    idx = ps['seq_id'].index(seqId) if useDefault_ else ps['auth_seq_id'].index(seqId)
                     compId = ps['comp_id'][idx]
                     origCompId = ps['auth_comp_id'][idx]
-                    cifSeqId = None if useDefault else ps['seq_id'][idx]
+                    cifSeqId = None if useDefault_ else ps['seq_id'][idx]
 
                     _authAtomId_ = authAtomId
                     if compId not in monDict3 and self.__mrAtomNameMapping is not None:

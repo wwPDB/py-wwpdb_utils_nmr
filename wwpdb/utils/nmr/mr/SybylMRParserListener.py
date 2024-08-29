@@ -525,7 +525,8 @@ class SybylMRParserListener(ParseTreeListener):
 
                         if len(self.__polySeqRstFailed) > 0:
                             sortPolySeqRst(self.__polySeqRstFailed)
-                            syncCompIdOfPolySeqRst(self.__polySeqRstFailed, self.__compIdMap)
+                            if not any(f for f in self.__f if '[Sequence mismatch]' in f):  # 2n6y
+                                syncCompIdOfPolySeqRst(self.__polySeqRstFailed, self.__compIdMap)  # 2mx9
 
                             seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
                             chainAssignFailed, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type,

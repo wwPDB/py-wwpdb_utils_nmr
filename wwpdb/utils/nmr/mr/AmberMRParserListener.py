@@ -5082,7 +5082,7 @@ class AmberMRParserListener(ParseTreeListener):
             if seqId in (ps['seq_id'] if useDefault_ else ps['auth_seq_id']):
                 idx = ps['seq_id'].index(seqId) if useDefault_ else ps['auth_seq_id'].index(seqId)
                 compId = ps['comp_id'][idx]
-                cifSeqId = None if useDefault_ else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
+                cifSeqId = None if useDefault or enforceAuthSeq else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
 
                 asis = (not hasAuthSeqScheme and refAuthChainId not in self.__concatHeteroLabel) or enforceAuthSeq or not self.__preferAuthSeq
 
@@ -5596,7 +5596,7 @@ class AmberMRParserListener(ParseTreeListener):
                 idx = ps['seq_id'].index(seqId) if useDefault_ else ps['auth_seq_id'].index(seqId)
                 compId = ps['comp_id'][idx]
                 origCompId = ps['auth_comp_id'][idx]
-                cifSeqId = None if useDefault_ else ps['seq_id'][idx]
+                cifSeqId = None if useDefault or enforceAuthSeq else ps['seq_id'][idx]
 
                 if compId not in monDict3 and self.__mrAtomNameMapping is not None:
                     _, _, authAtomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId,

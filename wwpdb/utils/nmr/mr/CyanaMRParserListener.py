@@ -94,6 +94,7 @@ try:
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
                                            sortPolySeqRst,
+                                           syncCompIdOfPolySeqRst,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
@@ -189,6 +190,7 @@ except ImportError:
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
                                sortPolySeqRst,
+                               syncCompIdOfPolySeqRst,
                                alignPolymerSequence,
                                assignPolymerSequence,
                                trimSequenceAlignment,
@@ -326,6 +328,7 @@ class CyanaMRParserListener(ParseTreeListener):
     __polySeqRst = None
     __polySeqRstFailed = None
     __polySeqRstFailedAmbig = None
+    __compIdMap = None
 
     __seqAlign = None
     __chainAssign = None
@@ -548,6 +551,7 @@ class CyanaMRParserListener(ParseTreeListener):
         self.__polySeqRst = []
         self.__polySeqRstFailed = []
         self.__polySeqRstFailedAmbig = []
+        self.__compIdMap = {}
         self.__f = []
 
     # Exit a parse tree produced by CyanaMRParser#cyana_mr.
@@ -695,6 +699,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                         if len(self.__polySeqRstFailed) > 0:
                             sortPolySeqRst(self.__polySeqRstFailed)
+                            syncCompIdOfPolySeqRst(self.__polySeqRstFailed, self.__compIdMap)
 
                             seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
 
@@ -4074,6 +4079,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
                                     f"Ambiguous atom selection '{seqId}:{__compId}:{__atomId}' is not allowed as a angle restraint.")
                 continue
+
+            if __compId != cifCompId and __compId not in self.__compIdMap:
+                self.__compIdMap[__compId] = cifCompId
 
             for cifAtomId in _atomId:
 

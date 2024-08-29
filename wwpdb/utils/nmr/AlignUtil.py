@@ -873,6 +873,19 @@ def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
             ps['auth_comp_id'] = _authCompIds
 
 
+def syncCompIdOfPolySeqRst(polySeqRst, compIdMap):
+    """ Synchronize residue names of polymer sequence of the current MR file.
+    """
+
+    if polySeqRst is None or compIdMap is None or len(polySeqRst) == 0 or len(compIdMap) == 0:
+        return
+
+    for ps in polySeqRst:
+        for idx, compId in enumerate(ps['comp_id']):
+            if compId in compIdMap:
+                ps['comp_id'][idx] = compIdMap[compId]
+
+
 def stripPolySeqRst(polySeqRst):
     """ Strip polymer sequence of the current MR file.
     """

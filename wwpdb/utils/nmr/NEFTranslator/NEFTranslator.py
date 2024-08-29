@@ -2526,6 +2526,8 @@ class NEFTranslator:
                                     entity_id_col = _loop.tags.index('Entity_ID') if 'Entity_ID' in _loop.tags else -1
                                     seq_id_col = _loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in _loop.tags else -1
                                     alt_seq_id_col = _loop.tags.index('Seq_ID') if 'Seq_ID' in _loop.tags else -1
+                                    orig_chain_id_col = _loop.tags.index('Original_PDB_strand_ID') if 'Original_PDB_strand_ID' in _loop.tags else -1
+                                    orig_seq_id_col = _loop.tags.index('Original_PDB_residue_no') if 'Original_PDB_residue_no' in _loop.tags else -1
                                     auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
 
                                     rev_seq = {}
@@ -2565,9 +2567,13 @@ class NEFTranslator:
                                         k = (r[alt_chain_id_col], int(r[auth_seq_id_col]))
                                         if k in rev_seq:
                                             _rev_seq = rev_seq[k]
-                                            r[alt_chain_id_col], r[auth_seq_id_col] = _rev_seq[0], str(_rev_seq[1])
                                             _k = (_rev_seq[0], _rev_seq[1], r[comp_id_col])
                                             if _k in auth_to_star_seq:
+                                                r[alt_chain_id_col], r[auth_seq_id_col] = _rev_seq[0], str(_rev_seq[1])
+                                                if orig_chain_id_col != -1:
+                                                    r[orig_chain_id_col] = _rev_seq[0]
+                                                if orig_seq_id_col != -1:
+                                                    r[orig_seq_id_col] = str(_rev_seq[1])
                                                 _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
                                                 r[chain_id_col] = str(_entity_assembly_id)
                                                 if entity_id_col != -1:
@@ -2577,9 +2583,20 @@ class NEFTranslator:
                                                         r[seq_id_col] = str(_seq_id)
                                                     if alt_seq_id_col != -1:
                                                         r[alt_seq_id_col] = str(_seq_id)
+                                            elif _offset is not None:
+                                                r[chain_id_col], r[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
+                                                if sync_seq:
+                                                    if int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset:
+                                                        continue
+                                                    if seq_id_col != -1:
+                                                        r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset)
+                                                    if alt_seq_id_col != -1:
+                                                        r[alt_seq_id_col] = str(int(r[auth_seq_id_col]) + _offset)
                                         elif _offset is not None:  # 2k7b
                                             r[chain_id_col], r[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
                                             if sync_seq:
+                                                if int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset:
+                                                    continue
                                                 if seq_id_col != -1:
                                                     r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset)
                                                 if alt_seq_id_col != -1:

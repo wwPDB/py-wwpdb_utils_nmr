@@ -1289,6 +1289,7 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
+            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
             self.__lfh.write(f"+NmrVrptUtility.__extractCoordAtomSite() ++ Error  - {str(e)}\n")
 
             self.__atomIdList = self.__coordinates = None
@@ -1513,6 +1514,7 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
+            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
             self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Error  - {str(e)}\n")
 
             self.__distRestDict = self.__distRestSeqDict = None
@@ -1713,6 +1715,7 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
+            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
             self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - {str(e)}\n")
 
             self.__dihedRestDict = self.__dihedRestSeqDict = None
@@ -1885,6 +1888,7 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
+            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
             self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Error  - {str(e)}\n")
 
             self.__rdcRestDict = self.__rdcRestSeqDict = None
@@ -2177,6 +2181,7 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
+            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
             self.__lfh.write(f"+NmrVrptUtility.__calculateDistanceRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__distRestViolDict = self.__distRestUnmapped = None
@@ -2358,6 +2363,7 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
+            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
             self.__lfh.write(f"+NmrVrptUtility.__calculateDihedralAngleRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__dihedRestViolDict = self.__dihedRestUnmapped = None
@@ -2519,6 +2525,7 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
+            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
             self.__lfh.write(f"+NmrVrptUtility.__calculateRdcRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__rdcRestViolDict = self.__rdcRestUnmapped = None
@@ -2798,6 +2805,7 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
+            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
             self.__lfh.write(f"+NmrVrptUtility.__summarizeDistanceRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False
@@ -3045,6 +3053,7 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
+            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
             self.__lfh.write(f"+NmrVrptUtility.__summarizeDihedralAngleRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False
@@ -3275,6 +3284,7 @@ class NmrVrptUtility:
             return True
 
         except Exception as e:
+            self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
             self.__lfh.write(f"+NmrVrptUtility.__summarizeRdcRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False

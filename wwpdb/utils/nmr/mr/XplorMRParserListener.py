@@ -10480,7 +10480,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
-                                                    if len(bondedTo) > 0:
+                                                    if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                         if coordAtomSite is not None and bondedTo[0] in atomSiteAtomId:
                                                             if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
                                                                or (self.__csStat.peptideLike(compId)

@@ -2106,7 +2106,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 if not checked:
                     if atomId[0] in protonBeginCode:
                         bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
-                        if len(bondedTo) > 0:
+                        if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                             if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
                                 if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
                                    or (self.__csStat.peptideLike(compId)

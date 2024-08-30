@@ -110,7 +110,7 @@ DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}
 
 
 ANGLE_RESTRAINT_RANGE = {'min_inclusive': -355.0, 'max_inclusive': 355.0}
-ANGLE_RESTRAINT_ERROR = {'min_exclusive': -360.0, 'max_exclusive': 360.0}
+ANGLE_RESTRAINT_ERROR = {'min_exclusive': -375.0, 'max_exclusive': 375.0}
 
 
 RDC_RESTRAINT_RANGE = {'min_inclusive': -150.0, 'max_inclusive': 150.0}
@@ -2102,20 +2102,32 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 if refAtomIdList is not None:
                     if atomId[1:] + '1' in refAtomIdList:
                         return atomId[1:] + '1'
+                    if atomId[1:].endswith("'") and atomId[1:-1] + "1'" in refAtomIdList:
+                        return atomId[1:-1] + "1'"
                 if atomId[1:] + '1' in _refAtomIdList:
                     return atomId[1:] + '1'
+                if atomId[1:].endswith("'") and atomId[1:-1] + "1'" in _refAtomIdList:
+                    return atomId[1:-1] + "1'"
             elif atomId.startswith('2H'):
                 if refAtomIdList is not None:
                     if atomId[1:] + '2' in refAtomIdList:
                         return atomId[1:] + '2'
+                    if atomId[1:].endswith("'") and atomId[1:-1] + "2'" in refAtomIdList:
+                        return atomId[1:-1] + "2'"
                 if atomId[1:] + '2' in _refAtomIdList:
                     return atomId[1:] + '2'
+                if atomId[1:].endswith("'") and atomId[1:-1] + "2'" in _refAtomIdList:
+                    return atomId[1:-1] + "2'"
             elif atomId.startswith('3H'):
                 if refAtomIdList is not None:
                     if atomId[1:] + '3' in refAtomIdList:
                         return atomId[1:] + '3'
+                    if atomId[1:].endswith("'") and atomId[1:-1] + "3'" in refAtomIdList:
+                        return atomId[1:-1] + "3'"
                 if atomId[1:] + '3' in _refAtomIdList:
                     return atomId[1:] + '3'
+                if atomId[1:].endswith("'") and atomId[1:-1] + "3'" in _refAtomIdList:
+                    return atomId[1:-1] + "3'"
             elif atomId == "HX'":  # derived from 2mko AMBER RDC restraints
                 if refAtomIdList is not None:
                     if "H4'" in refAtomIdList:
@@ -2132,6 +2144,11 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
             if atomId[0] in ('N', 'O', 'P', 'S', 'F') and refAtomIdList is not None:
                 candidates = [_atomId for _atomId in refAtomIdList if _atomId[0] == atomId[0]]
                 if len(candidates) == 1:
+                    return candidates[0]
+
+            if len(refCompId) == 3 and refCompId in monDict3 and len(atomId) > 1:
+                candidates = [_atomId for _atomId in _refAtomIdList if _atomId.startswith(atomId)]
+                if len(candidates) == 1 and len(candidates[0]) == len(atomId) + 1 and candidates[0][-1].isdigit():
                     return candidates[0]
 
             if not unambig:
@@ -2314,6 +2331,11 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'N'
             if atomId.startswith('HQ'):  # 1e8e
                 return atomId[1:]
+            if refCompId in ('PHE', 'TYR'):  # 4ar0
+                if atomId == 'HD3':
+                    return 'HD1'
+                if atomId == 'HE3':
+                    return 'HE1'
 
         # BIOSYM atom nomenclature
         if (atomId[-1] in ('R', 'S', 'Z', 'E') or (len(atomId) > 2 and atomId[-1] in ('*', '%') and atomId[-2] in ('R', 'S'))):

@@ -94,6 +94,7 @@ try:
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
                                            sortPolySeqRst,
+                                           syncCompIdOfPolySeqRst,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
@@ -189,6 +190,7 @@ except ImportError:
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
                                sortPolySeqRst,
+                               syncCompIdOfPolySeqRst,
                                alignPolymerSequence,
                                assignPolymerSequence,
                                trimSequenceAlignment,
@@ -326,6 +328,7 @@ class CyanaMRParserListener(ParseTreeListener):
     __polySeqRst = None
     __polySeqRstFailed = None
     __polySeqRstFailedAmbig = None
+    __compIdMap = None
 
     __seqAlign = None
     __chainAssign = None
@@ -548,6 +551,7 @@ class CyanaMRParserListener(ParseTreeListener):
         self.__polySeqRst = []
         self.__polySeqRstFailed = []
         self.__polySeqRstFailedAmbig = []
+        self.__compIdMap = {}
         self.__f = []
 
     # Exit a parse tree produced by CyanaMRParser#cyana_mr.
@@ -695,6 +699,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                         if len(self.__polySeqRstFailed) > 0:
                             sortPolySeqRst(self.__polySeqRstFailed)
+                            if not any(f for f in self.__f if '[Sequence mismatch]' in f):  # 2n6y
+                                syncCompIdOfPolySeqRst(self.__polySeqRstFailed, self.__compIdMap)  # 2mx9
 
                             seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
 
@@ -818,8 +824,11 @@ class CyanaMRParserListener(ParseTreeListener):
                                                     auth_seq_id = sa['ref_seq_id'][idx]
                                                     seq_id_mapping[seq_id] = auth_seq_id
                                                     comp_id_mapping[seq_id] = comp_id
-                                            seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
-                                                                     'comp_id_dict': comp_id_mapping})
+                                            if any(k for k, v in seq_id_mapping.items() if k != v)\
+                                               or ('label_seq_scheme' not in self.reasonsForReParsing
+                                                   and all(v not in poly_seq_model['auth_seq_id'] for v in seq_id_mapping.values())):
+                                                seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
+                                                                         'comp_id_dict': comp_id_mapping})
 
                                     if len(seqIdRemapFailed) > 0:
                                         if 'ext_chain_seq_id_remap' not in self.reasonsForReParsing:
@@ -4072,6 +4081,9 @@ class CyanaMRParserListener(ParseTreeListener):
                                     f"Ambiguous atom selection '{seqId}:{__compId}:{__atomId}' is not allowed as a angle restraint.")
                 continue
 
+            if __compId != cifCompId and __compId not in self.__compIdMap:
+                self.__compIdMap[__compId] = cifCompId
+
             for cifAtomId in _atomId:
 
                 if seqKey in self.__coordUnobsRes and cifCompId in monDict3 and self.__reasons is not None and 'non_poly_remap' in self.__reasons:
@@ -4311,7 +4323,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if not checked:
                     if atomId[0] in protonBeginCode:
                         bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
-                        if len(bondedTo) > 0:
+                        if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                             if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
                                 if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
                                    or (self.__csStat.peptideLike(compId)
@@ -4352,6 +4364,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             else:
                                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                 f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                                updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
         return atomId
 
     def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):

@@ -19290,6 +19290,11 @@ class NmrDpUtility:
                                 self.__fixAtomNomenclature(comp_id, {atom_id: 'C'})
                                 continue
 
+                            _atom_id = self.__nefT.get_star_atom(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU), leave_unmatched=False)[0]
+                            if len(_atom_id) == 1 and atom_id != _atom_id[0]:
+                                self.__fixAtomNomenclature(comp_id, {atom_id: _atom_id[0]})
+                                continue
+
                         atom_id_ = atom_id
 
                         if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and self.__isNmrAtomName(comp_id, atom_id):
@@ -24897,6 +24902,7 @@ class NmrDpUtility:
                     _seq_key = seq_key if seq_key in coord_atom_site else _seq_key
                 if _seq_key in coord_atom_site:
                     _coord_atom_site = coord_atom_site[_seq_key]
+                    _atom_site_atom_id = _coord_atom_site['atom_id']
                     # DAOTHER-8817
                     if 'chain_id' in _coord_atom_site:
                         _row[16] = _coord_atom_site['chain_id']
@@ -24926,20 +24932,20 @@ class NmrDpUtility:
                                     missing_ch3.remove(row[atom_id_col])
                                     if len(missing_ch3) == 0:
                                         break
-                    if atom_id in _coord_atom_site['atom_id'] and valid and len(missing_ch3) == 0\
+                    if atom_id in _atom_site_atom_id and valid and len(missing_ch3) == 0\
                        and (not self.__annotation_mode or comp_id not in incomplete_comp_id_annotation):
                         _row[6] = atom_id
                         if fill_auth_atom_id or _row[6] != _row[19]:
                             _row[19] = _row[6]
-                        _row[7] = _coord_atom_site['type_symbol'][_coord_atom_site['atom_id'].index(atom_id)]
+                        _row[7] = _coord_atom_site['type_symbol'][_atom_site_atom_id.index(atom_id)]
                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                        if fill_orig_atom_id and _row[6] != _row[23] and _row[23] in _coord_atom_site['atom_id']:
+                        if fill_orig_atom_id and _row[6] != _row[23] and _row[23] in _atom_site_atom_id:
                             if _row[23] in self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True):
                                 _row[23] = copy.copy(atom_id)
                     else:
-                        if atom_id in ('H1', 'HT1') and 'H' in _coord_atom_site['atom_id']\
-                           and atom_id not in _coord_atom_site['atom_id']:
+                        if atom_id in ('H1', 'HT1') and 'H' in _atom_site_atom_id\
+                           and atom_id not in _atom_site_atom_id:
                             if self.__ccU.updateChemCompDict(comp_id):
                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
                                 if cca is None:
@@ -24950,8 +24956,8 @@ class NmrDpUtility:
                                 atom_id = 'H'
                                 if fill_auth_atom_id:
                                     _row[19] = atom_id
-                        elif atom_id in ('H', 'HT1') and 'H1' in _coord_atom_site['atom_id']\
-                                and atom_id not in _coord_atom_site['atom_id']:
+                        elif atom_id in ('H', 'HT1') and 'H1' in _atom_site_atom_id\
+                                and atom_id not in _atom_site_atom_id:
                             if self.__ccU.updateChemCompDict(comp_id):
                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
                                 if cca is None:
@@ -24962,9 +24968,9 @@ class NmrDpUtility:
                                 atom_id = 'H1'
                                 if fill_auth_atom_id:
                                     _row[19] = atom_id
-                        elif atom_id in aminoProtonCode and 'C' + atom_id[1:] in _coord_atom_site['atom_id']:
+                        elif atom_id in aminoProtonCode and 'C' + atom_id[1:] in _atom_site_atom_id:
                             bonded = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[1:], onlyProton=True)
-                            if len(bonded) == 1 and bonded[0] in _coord_atom_site['atom_id']:
+                            if len(bonded) == 1 and bonded[0] in _atom_site_atom_id:
                                 atom_id = bonded[0]
                                 if fill_auth_atom_id:
                                     _row[19] = atom_id
@@ -24976,20 +24982,22 @@ class NmrDpUtility:
                             if not heme:
                                 missing_ch3 = []
                         _atom_id = atom_id
-                        if not valid and len(missing_ch3) > 0 and atom_id not in _coord_atom_site['atom_id']:
+                        if not valid and len(missing_ch3) > 0 and atom_id not in _atom_site_atom_id:
                             atom_id = atom_id[:-1]
                             if _atom_id in self.__csStat.getRepMethylProtons(comp_id):
                                 atom_id = _atom_id
-                        if (valid and atom_id in _coord_atom_site['atom_id'])\
+                        if (valid and atom_id in _atom_site_atom_id)\
                            or ((prefer_auth_atom_name or _row[24] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M')):
                             atom_ids = [atom_id]
                             if self.__annotation_mode and comp_id in incomplete_comp_id_annotation and trial > 0:  # DAOTHER-9286
                                 atom_ids = self.__getAtomIdListInXplorForLigandRemap(comp_id, _row[23] if fill_orig_atom_id else atom_id, _coord_atom_site)
                         else:
                             atom_ids = self.__getAtomIdListInXplor(comp_id, atom_id)
-                            if len(atom_ids) == 0 or atom_ids[0] not in _coord_atom_site['atom_id']:
-                                atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, ccU=self.__ccU))
-                            if self.__annotation_mode and atom_ids[0] not in _coord_atom_site['atom_id']:  # DAOTHER-9286
+                            if len(atom_ids) == 0 or atom_ids[0] not in _atom_site_atom_id:
+                                atom_ids = self.__getAtomIdListInXplor(comp_id, translateToStdAtomName(atom_id, comp_id, _atom_site_atom_id, ccU=self.__ccU))
+                                if len(atom_ids) == 1 and atom_ids[0] in _atom_site_atom_id and atom_id not in _atom_site_atom_id:
+                                    atom_id = atom_ids[0]
+                            if self.__annotation_mode and atom_ids[0] not in _atom_site_atom_id:  # DAOTHER-9286
                                 atom_ids = self.__getAtomIdListInXplorForLigandRemap(comp_id, atom_id, _coord_atom_site)
                                 if comp_id not in incomplete_comp_id_annotation:
                                     incomplete_comp_id_annotation.append(comp_id)
@@ -24999,7 +25007,7 @@ class NmrDpUtility:
                                 atom_ids = self.__getAtomIdListInXplor(comp_id, _row[23])
                             else:
                                 missing_ch3.clear()
-                        if not valid and len(missing_ch3) > 0 and atom_id in _coord_atom_site['atom_id']:
+                        if not valid and len(missing_ch3) > 0 and atom_id in _atom_site_atom_id:
                             atom_ids.extend(missing_ch3)
                         len_atom_ids = len(atom_ids)
                         if len_atom_ids == 0:
@@ -44644,7 +44652,7 @@ class NmrDpUtility:
 
                         if comp_id in monDict3:
 
-                            checked = False
+                            checked = coord_issue = False
                             if atom_id_[0] in protonBeginCode:
                                 self.__ccU.updateChemCompDict(comp_id)
                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atom_id_), None)
@@ -44665,7 +44673,16 @@ class NmrDpUtility:
                             if (self.__remediation_mode or self.__combined_mode) and checked:
                                 continue
 
-                            self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'atom_not_found',
+                            if not checked and err.endswith("not present in the coordinates.") and atom_id_[0] in protonBeginCode:
+                                bonded_to = self.__ccU.getBondedAtoms(comp_id, atom_id_)
+                                if len(bonded_to) > 0 and coord_atom_site_ is not None and bonded_to[0] not in coord_atom_site_['atom_id']:
+                                    err += " Additionally, the attached atom ("\
+                                        + self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
+                                                                        comp_id_names[j], comp_id, atom_id_names[j], bonded_to[0])\
+                                        + ") is not instantiated in the coordinates. Please re-upload the model file."
+                                    coord_issue = True
+
+                            self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'coordinate_issue' if coord_issue else 'atom_not_found',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                  'description': err})
                             self.report.setError()

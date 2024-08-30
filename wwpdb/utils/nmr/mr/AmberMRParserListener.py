@@ -326,6 +326,7 @@ class AmberMRParserListener(ParseTreeListener):
     __preferAuthSeq = True
     __gapInAuthSeq = False
     __concatHetero = False
+    __concatHeteroLabel = {}
 
     # polymer sequence of MR file
     __polySeqRst = None
@@ -5076,13 +5077,14 @@ class AmberMRParserListener(ParseTreeListener):
 
             enforceAuthSeq |= hasAuthSeqScheme\
                 and chainId in self.__reasons['auth_seq_scheme'] and self.__reasons['auth_seq_scheme'][chainId]
+            useDefault_ = (useDefault or refAuthChainId in self.__concatHeteroLabel) and not enforceAuthSeq
 
-            if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
-                idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
+            if seqId in (ps['seq_id'] if useDefault_ else ps['auth_seq_id']):
+                idx = ps['seq_id'].index(seqId) if useDefault_ else ps['auth_seq_id'].index(seqId)
                 compId = ps['comp_id'][idx]
-                cifSeqId = None if useDefault or enforceAuthSeq else ps['seq_id'][ps['auth_seq_id'].index(seqId)]
+                cifSeqId = None if useDefault or enforceAuthSeq else ps['seq_id'][idx]
 
-                asis = not hasAuthSeqScheme or enforceAuthSeq or not self.__preferAuthSeq
+                asis = (not hasAuthSeqScheme and refAuthChainId not in self.__concatHeteroLabel) or enforceAuthSeq or not self.__preferAuthSeq
 
                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
                                                                 asis=asis)
@@ -5209,7 +5211,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             checked = True
                                     if _atomId[0] in protonBeginCode:
                                         bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
-                                        if len(bondedTo) > 0:
+                                        if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                             if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
                                                 if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
                                                    or (self.__csStat.peptideLike(compId)
@@ -5395,7 +5397,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
-                                                if len(bondedTo) > 0:
+                                                if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                     if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
                                                         if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
                                                            or (self.__csStat.peptideLike(compId)
@@ -5477,6 +5479,14 @@ class AmberMRParserListener(ParseTreeListener):
 
         _useDefault = useDefault
         if self.__concatHetero and not hasAuthSeqScheme and not useAuthSeqScheme:
+            if authCompId != 'None':
+                _compId = translateToStdResName(authCompId, ccU=self.__ccU)
+                for ps in self.__polySeq:
+                    if ps['auth_chain_id'] in self.__concatHeteroLabel:
+                        continue
+                    if factor['auth_seq_id'] in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(factor['auth_seq_id'])] == _compId\
+                       and (factor['auth_seq_id'] not in ps['auth_seq_id'] or ps['comp_id'][ps['auth_seq_id'].index(factor['auth_seq_id'])] != _compId):
+                        self.__concatHeteroLabel[ps['auth_chain_id']] = True  # 2mki
             useDefault = False
 
         enforceAuthSeq = authChainId is not None or useAuthSeqScheme
@@ -5563,11 +5573,12 @@ class AmberMRParserListener(ParseTreeListener):
 
             enforceAuthSeq |= hasAuthSeqScheme\
                 and chainId in self.__reasons['auth_seq_scheme'] and self.__reasons['auth_seq_scheme'][chainId]
+            useDefault_ = (useDefault or refAuthChainId in self.__concatHeteroLabel) and not enforceAuthSeq
 
             if _compId in monDict3 and _compId not in ps['comp_id']:
                 keep = False
-                if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
-                    idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
+                if seqId in (ps['seq_id'] if useDefault_ else ps['auth_seq_id']):
+                    idx = ps['seq_id'].index(seqId) if useDefault_ else ps['auth_seq_id'].index(seqId)
                     compId = ps['comp_id'][idx]
                     if compId in monDict3 and getOneLetterCodeCan(compId) == getOneLetterCodeCan(_compId):
                         keep = True
@@ -5581,11 +5592,11 @@ class AmberMRParserListener(ParseTreeListener):
                 if not keep:
                     continue
 
-            if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
-                idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
+            if seqId in (ps['seq_id'] if useDefault_ else ps['auth_seq_id']):
+                idx = ps['seq_id'].index(seqId) if useDefault_ else ps['auth_seq_id'].index(seqId)
                 compId = ps['comp_id'][idx]
                 origCompId = ps['auth_comp_id'][idx]
-                cifSeqId = None if useDefault else ps['seq_id'][idx]
+                cifSeqId = None if useDefault or enforceAuthSeq else ps['seq_id'][idx]
 
                 if compId not in monDict3 and self.__mrAtomNameMapping is not None:
                     _, _, authAtomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId,
@@ -5594,7 +5605,8 @@ class AmberMRParserListener(ParseTreeListener):
                 if (((authCompId in (compId, origCompId, 'None') or compId not in monDict3) and useDefault) or not useDefault)\
                    or compId == translateToStdResName(authCompId, compId, self.__ccU) or asis:
                     seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
-                                                                    asis=(not hasAuthSeqScheme or enforceAuthSeq or not self.__preferAuthSeq))
+                                                                    asis=((not hasAuthSeqScheme and refAuthChainId not in self.__concatHeteroLabel)  # 2mki
+                                                                          or enforceAuthSeq or not self.__preferAuthSeq))
 
                     if authCompId in (compId, origCompId) and compId in monDict3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
                         continue
@@ -5715,7 +5727,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         factor['atom_id'] = _atomId
                                         del factor['iat']
                                         self.__sanderAtomNumberDict[iat] = factor
-                                        if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
+                                        if self.__cur_subtype == 'dist' and not useDefault and not self.__concatHetero and 'use_alt_poly_seq' not in self.reasonsForReParsing:
                                             self.reasonsForReParsing['use_alt_poly_seq'] = True
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
@@ -5726,7 +5738,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
-                                                if len(bondedTo) > 0:
+                                                if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                     if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
                                                         if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
                                                            or (self.__csStat.peptideLike(compId)
@@ -5850,7 +5862,7 @@ class AmberMRParserListener(ParseTreeListener):
                                         del _factor['igr']
                                         self.__sanderAtomNumberDict[igr] = _factor
                                         ccdCheckOnly = True
-                                        if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
+                                        if self.__cur_subtype == 'dist' and not useDefault and not self.__concatHetero and 'use_alt_poly_seq' not in self.reasonsForReParsing:
                                             self.reasonsForReParsing['use_alt_poly_seq'] = True
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             checked = False
@@ -5861,7 +5873,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
-                                                if len(bondedTo) > 0:
+                                                if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                     if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
                                                         if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
                                                            or (self.__csStat.peptideLike(compId)
@@ -6079,7 +6091,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
-                                                if len(bondedTo) > 0:
+                                                if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                     if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
                                                         if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
                                                            or (self.__csStat.peptideLike(compId)
@@ -6215,7 +6227,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     checked = True
                                             if _atomId[0] in protonBeginCode:
                                                 bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
-                                                if len(bondedTo) > 0:
+                                                if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                     if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
                                                         if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
                                                            or (self.__csStat.peptideLike(compId)
@@ -6280,6 +6292,14 @@ class AmberMRParserListener(ParseTreeListener):
 
         _useDefault = useDefault
         if self.__concatHetero and not hasAuthSeqScheme and not useAuthSeqScheme:
+            if authCompId != 'None':
+                _compId = translateToStdResName(authCompId, ccU=self.__ccU)
+                for ps in self.__polySeq:
+                    if ps['auth_chain_id'] in self.__concatHeteroLabel:
+                        continue
+                    if factor['auth_seq_id'] in ps['seq_id'] and ps['comp_id'][ps['seq_id'].index(factor['auth_seq_id'])] == _compId\
+                       and (factor['auth_seq_id'] not in ps['auth_seq_id'] or ps['comp_id'][ps['auth_seq_id'].index(factor['auth_seq_id'])] != _compId):
+                        self.__concatHeteroLabel[ps['auth_chain_id']] = True  # 2mki
             useDefault = False
 
         allFound = True
@@ -6374,11 +6394,12 @@ class AmberMRParserListener(ParseTreeListener):
 
                 enforceAuthSeq |= hasAuthSeqScheme\
                     and chainId in self.__reasons['auth_seq_scheme'] and self.__reasons['auth_seq_scheme'][chainId]
+                useDefault_ = (useDefault or chainId in self.__concatHeteroLabel) and not enforceAuthSeq
 
                 if _compId in monDict3 and _compId not in ps['comp_id']:
                     keep = False
-                    if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
-                        idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
+                    if seqId in (ps['seq_id'] if useDefault_ else ps['auth_seq_id']):
+                        idx = ps['seq_id'].index(seqId) if useDefault_ else ps['auth_seq_id'].index(seqId)
                         compId = ps['comp_id'][idx]
                         if compId in monDict3 and getOneLetterCodeCan(compId) == getOneLetterCodeCan(_compId):
                             keep = True
@@ -6392,11 +6413,11 @@ class AmberMRParserListener(ParseTreeListener):
                     if not keep:
                         continue
 
-                if seqId in (ps['seq_id'] if useDefault and not enforceAuthSeq else ps['auth_seq_id']):
-                    idx = ps['seq_id'].index(seqId) if useDefault and not enforceAuthSeq else ps['auth_seq_id'].index(seqId)
+                if seqId in (ps['seq_id'] if useDefault_ else ps['auth_seq_id']):
+                    idx = ps['seq_id'].index(seqId) if useDefault_ else ps['auth_seq_id'].index(seqId)
                     compId = ps['comp_id'][idx]
                     origCompId = ps['auth_comp_id'][idx]
-                    cifSeqId = None if useDefault else ps['seq_id'][idx]
+                    cifSeqId = None if useDefault_ else ps['seq_id'][idx]
 
                     _authAtomId_ = authAtomId
                     if compId not in monDict3 and self.__mrAtomNameMapping is not None:
@@ -6407,7 +6428,8 @@ class AmberMRParserListener(ParseTreeListener):
                        or compId == translateToStdResName(authCompId, compId, self.__ccU) or asis:
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId if cifSeqId is None else cifSeqId, cifCheck=cifCheck,
-                                                                        asis=(not hasAuthSeqScheme or enforceAuthSeq or not self.__preferAuthSeq))
+                                                                        asis=((not hasAuthSeqScheme and chainId not in self.__concatHeteroLabel)  # 2mki
+                                                                              or enforceAuthSeq or not self.__preferAuthSeq))
 
                         if authCompId in (compId, origCompId) and compId in monDict3 and coordAtomSite is not None and compId != coordAtomSite['comp_id']:
                             continue
@@ -6505,7 +6527,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             factor['atom_id'] = _atomId
                                             del factor['iat']
                                             self.__sanderAtomNumberDict[iat] = factor
-                                            if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
+                                            if self.__cur_subtype == 'dist' and not useDefault and not self.__concatHetero and 'use_alt_poly_seq' not in self.reasonsForReParsing:
                                                 self.reasonsForReParsing['use_alt_poly_seq'] = True
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
@@ -6516,7 +6538,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
-                                                    if len(bondedTo) > 0:
+                                                    if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                         if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
                                                             if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
                                                                or (self.__csStat.peptideLike(compId)
@@ -6632,7 +6654,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             del _factor['igr']
                                             self.__sanderAtomNumberDict[igr] = _factor
                                             ccdCheckOnly = True
-                                            if self.__cur_subtype == 'dist' and not useDefault and 'use_alt_poly_seq' not in self.reasonsForReParsing:
+                                            if self.__cur_subtype == 'dist' and not useDefault and not self.__concatHetero and 'use_alt_poly_seq' not in self.reasonsForReParsing:
                                                 self.reasonsForReParsing['use_alt_poly_seq'] = True
                                             if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                                 checked = False
@@ -6643,7 +6665,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
-                                                    if len(bondedTo) > 0:
+                                                    if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                         if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
                                                             if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
                                                                or (self.__csStat.peptideLike(compId)
@@ -6791,7 +6813,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
                                                     bondedTo = self.__ccU.getBondedAtoms(compId, _atomId)
-                                                    if len(bondedTo) > 0:
+                                                    if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                         if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
                                                             if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
                                                                or (self.__csStat.peptideLike(compId)
@@ -6919,7 +6941,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                         checked = True
                                                 if _atomId[0] in protonBeginCode:
                                                     bondedTo = self.__ccU.getBondedTo(compId, _atomId)
-                                                    if len(bondedTo) > 0:
+                                                    if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                                                         if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
                                                             if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
                                                                or (self.__csStat.peptideLike(compId)
@@ -10797,11 +10819,11 @@ class AmberMRParserListener(ParseTreeListener):
                                 "by 'makeDIST_RST' to the AMBER restraint file.")
             else:
                 if len(self.__polySeq) == 1 and seqId < 1:
-                    refChainId = self.__polySeq[0]['auth_chain_id']
+                    refAuthChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                     f"The residue number '{_seqId}' is not present in polymer sequence "
-                                    f"of chain {refChainId} of the coordinates. "
+                                    f"of chain {refAuthChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                 else:
                     self.__f.append(f"[Atom not found] "
@@ -10983,7 +11005,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if not checked:
                     if atomId[0] in protonBeginCode:
                         bondedTo = self.__ccU.getBondedAtoms(compId, atomId)
-                        if len(bondedTo) > 0:
+                        if len(bondedTo) > 0 and bondedTo[0][0] != 'P':
                             if coordAtomSite is not None and bondedTo[0] in coordAtomSite['atom_id']:
                                 if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y'\
                                    or (self.__csStat.peptideLike(compId)

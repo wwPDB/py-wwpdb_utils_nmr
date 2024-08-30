@@ -2487,15 +2487,14 @@ class NEFTranslator:
                         if row not in emptyValue:
                             chain_id_set.add(row)
 
-                    def resolve_entity_assembly(sync_seq):
-                        if coord_assembly_checker is not None and 'Auth_seq_ID' in loop.tags:  # pylint: disable=cell-var-from-loop
+                    def resolve_entity_assembly(_loop, _alt_chain_id_list, sync_seq):
+                        if coord_assembly_checker is not None and 'Auth_seq_ID' in _loop.tags:
                             pre_tags = [alt_chain_id, 'Auth_seq_ID', 'Comp_ID']
-                            pre_seq_data = get_lp_tag(loop, pre_tags)  # pylint: disable=cell-var-from-loop
-                            alt_chain_id_list = list(alt_chain_id_set)  # pylint: disable=cell-var-from-loop
+                            pre_seq_data = get_lp_tag(_loop, pre_tags)
                             cif_ps = coord_assembly_checker['polymer_sequence']
                             cif_np = coord_assembly_checker['non_polymer']
                             nmr_ps = []
-                            for c in alt_chain_id_list:
+                            for c in _alt_chain_id_list:
                                 nmr_ps.append({'chain_id': c, 'seq_id': [], 'comp_id': []})
                             seq = set()
                             valid = True
@@ -2508,7 +2507,7 @@ class NEFTranslator:
                                 sorted_seq = sorted(seq, key=itemgetter(0, 1))
                                 for row in sorted_seq:
                                     c = row[0]
-                                    _nmr_ps = nmr_ps[alt_chain_id_list.index(row[0])]
+                                    _nmr_ps = nmr_ps[_alt_chain_id_list.index(row[0])]
                                     _nmr_ps['seq_id'].append(row[1])
                                     _nmr_ps['comp_id'].append(row[2])
                                 pa = PairwiseAlign()
@@ -2520,7 +2519,19 @@ class NEFTranslator:
                                         valid = False
                                         break
                                 if valid:
+                                    chain_id_col = _loop.tags.index('Entity_assembly_ID')
+                                    alt_chain_id_col = _loop.tags.index('Auth_asym_ID')
+                                    auth_seq_id_col = _loop.tags.index('Auth_seq_ID')
+                                    comp_id_col = _loop.tags.index('Comp_ID')
+                                    entity_id_col = _loop.tags.index('Entity_ID') if 'Entity_ID' in _loop.tags else -1
+                                    seq_id_col = _loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in _loop.tags else -1
+                                    alt_seq_id_col = _loop.tags.index('Seq_ID') if 'Seq_ID' in _loop.tags else -1
+                                    orig_chain_id_col = _loop.tags.index('Original_PDB_strand_ID') if 'Original_PDB_strand_ID' in _loop.tags else -1
+                                    orig_seq_id_col = _loop.tags.index('Original_PDB_residue_no') if 'Original_PDB_residue_no' in _loop.tags else -1
+                                    auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
+
                                     rev_seq = {}
+                                    _entity_assembly_id = _entity_id = _offset = None
                                     for ca in chain_assign:
                                         if ca['matched'] == 0 or ca['conflict'] > 0:
                                             continue
@@ -2541,23 +2552,28 @@ class NEFTranslator:
                                                          next(auth_seq_id for auth_seq_id, _seq_id
                                                               in zip(ps['auth_seq_id'], ps['seq_id'])
                                                               if _seq_id == ref_seq_id and isinstance(auth_seq_id, int)))
+                                                    if _offset is None:
+                                                        auth_seq_id = rev_seq[rev_seq_key][1]
+                                                        _rev_seq = rev_seq[rev_seq_key]
+                                                        _k = (ps['auth_chain_id'], auth_seq_id, ps['comp_id'][ps['auth_seq_id'].index(auth_seq_id)])
+                                                        if _k in auth_to_star_seq:
+                                                            _entity_assembly_id, _offset, _entity_id, _ = auth_to_star_seq[_k]
+                                                            _offset -= auth_seq_id
                                                 except StopIteration:
                                                     rev_seq[rev_seq_key] = (ps['auth_chain_id'], ref_seq_id)
-                                    chain_id_col = loop.tags.index('Entity_assembly_ID')  # pylint: disable=cell-var-from-loop
-                                    alt_chain_id_col = loop.tags.index('Auth_asym_ID')  # pylint: disable=cell-var-from-loop
-                                    auth_seq_id_col = loop.tags.index('Auth_seq_ID')  # pylint: disable=cell-var-from-loop
-                                    comp_id_col = loop.tags.index('Comp_ID')  # pylint: disable=cell-var-from-loop
-                                    entity_id_col = loop.tags.index('Entity_ID') if 'Entity_ID' in loop.tags else -1  # pylint: disable=cell-var-from-loop
-                                    seq_id_col = loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in loop.tags else -1  # pylint: disable=cell-var-from-loop
-                                    alt_seq_id_col = loop.tags.index('Seq_ID') if 'Seq_ID' in loop.tags else -1  # pylint: disable=cell-var-from-loop
-                                    auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
-                                    for r in loop.data:  # pylint: disable=cell-var-from-loop
+                                    if _offset is not None and _offset != 0:
+                                        sync_seq = True
+                                    for r in _loop.data:
                                         k = (r[alt_chain_id_col], int(r[auth_seq_id_col]))
                                         if k in rev_seq:
                                             _rev_seq = rev_seq[k]
-                                            r[alt_chain_id_col], r[auth_seq_id_col] = _rev_seq[0], str(_rev_seq[1])
                                             _k = (_rev_seq[0], _rev_seq[1], r[comp_id_col])
                                             if _k in auth_to_star_seq:
+                                                r[alt_chain_id_col], r[auth_seq_id_col] = _rev_seq[0], str(_rev_seq[1])
+                                                if orig_chain_id_col != -1:
+                                                    r[orig_chain_id_col] = _rev_seq[0]
+                                                if orig_seq_id_col != -1:
+                                                    r[orig_seq_id_col] = str(_rev_seq[1])
                                                 _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
                                                 r[chain_id_col] = str(_entity_assembly_id)
                                                 if entity_id_col != -1:
@@ -2567,6 +2583,24 @@ class NEFTranslator:
                                                         r[seq_id_col] = str(_seq_id)
                                                     if alt_seq_id_col != -1:
                                                         r[alt_seq_id_col] = str(_seq_id)
+                                            elif _offset is not None:
+                                                r[chain_id_col], r[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
+                                                if sync_seq:
+                                                    if int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset:
+                                                        continue
+                                                    if seq_id_col != -1:
+                                                        r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset)
+                                                    if alt_seq_id_col != -1:
+                                                        r[alt_seq_id_col] = str(int(r[auth_seq_id_col]) + _offset)
+                                        elif _offset is not None:  # 2k7b
+                                            r[chain_id_col], r[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
+                                            if sync_seq:
+                                                if int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset:
+                                                    continue
+                                                if seq_id_col != -1:
+                                                    r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset)
+                                                if alt_seq_id_col != -1:
+                                                    r[alt_seq_id_col] = str(int(r[auth_seq_id_col]) + _offset)
                                 # 2ksi
                                 if cif_np is not None:
                                     seq_align, _ = alignPolymerSequence(pa, cif_np, nmr_ps)
@@ -2599,15 +2633,15 @@ class NEFTranslator:
                                                                   if _seq_id == ref_seq_id and isinstance(auth_seq_id, int)))
                                                     except StopIteration:
                                                         rev_seq[rev_seq_key] = (np['auth_chain_id'], ref_seq_id)
-                                        chain_id_col = loop.tags.index('Entity_assembly_ID')  # pylint: disable=cell-var-from-loop
-                                        alt_chain_id_col = loop.tags.index('Auth_asym_ID')  # pylint: disable=cell-var-from-loop
-                                        auth_seq_id_col = loop.tags.index('Auth_seq_ID')  # pylint: disable=cell-var-from-loop
-                                        comp_id_col = loop.tags.index('Comp_ID')  # pylint: disable=cell-var-from-loop
-                                        entity_id_col = loop.tags.index('Entity_ID') if 'Entity_ID' in loop.tags else -1  # pylint: disable=cell-var-from-loop
-                                        seq_id_col = loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in loop.tags else -1  # pylint: disable=cell-var-from-loop
-                                        alt_seq_id_col = loop.tags.index('Seq_ID') if 'Seq_ID' in loop.tags else -1  # pylint: disable=cell-var-from-loop
+                                        chain_id_col = _loop.tags.index('Entity_assembly_ID')
+                                        alt_chain_id_col = _loop.tags.index('Auth_asym_ID')
+                                        auth_seq_id_col = _loop.tags.index('Auth_seq_ID')
+                                        comp_id_col = _loop.tags.index('Comp_ID')
+                                        entity_id_col = _loop.tags.index('Entity_ID') if 'Entity_ID' in _loop.tags else -1
+                                        seq_id_col = _loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in _loop.tags else -1
+                                        alt_seq_id_col = _loop.tags.index('Seq_ID') if 'Seq_ID' in _loop.tags else -1
                                         auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
-                                        for r in loop.data:  # pylint: disable=cell-var-from-loop
+                                        for r in _loop.data:
                                             k = (r[alt_chain_id_col], int(r[auth_seq_id_col]))
                                             if k in rev_seq:
                                                 _rev_seq = rev_seq[k]
@@ -2624,14 +2658,29 @@ class NEFTranslator:
                                                         if alt_seq_id_col != -1:
                                                             r[alt_seq_id_col] = str(_seq_id)
 
+                    def refresh_entity_assembly(_loop, _alt_chain_id_list):
+                        sync_seq = True
+                        if 'Original_PDB_strand_ID' in _loop.tags:
+                            _pre_tag = ['Auth_asym_ID', 'Original_PDB_strand_ID']
+                            _pre_chain_data = get_lp_tag(_loop, _pre_tag)
+                            for _row in _pre_chain_data:
+                                if _row[0] != _row[1]:
+                                    sync_seq = False
+                                    break
+                        else:
+                            sync_seq = False
+                        resolve_entity_assembly(_loop, _alt_chain_id_list, sync_seq)  # pylint: disable=cell-var-from-loop
+
                     if len(alt_chain_id_set) > 0 and (len(chain_id_set) > LEN_LARGE_ASYM_ID or len(chain_id_set) == 0):
                         if 'UNMAPPED' in alt_chain_id_set:  # 2c34, 2ksi
-                            resolve_entity_assembly(True)
+                            resolve_entity_assembly(loop, list(alt_chain_id_set), True)
                         else:  # 2lpk, 2lnh
                             chain_id_col = loop.tags.index('Entity_assembly_ID')
                             alt_chain_id_col = loop.tags.index('Auth_asym_ID')
                             for r in loop.data:
                                 r[chain_id_col] = r[alt_chain_id_col]
+                            if len(alt_chain_id_set) == 1:
+                                refresh_entity_assembly(loop, list(alt_chain_id_set))
                     elif len(chain_id_set) == 0 and 'Entity_ID' in loop.tags:
                         pre_tag = ['Entity_ID']
                         pre_chain_data = get_lp_tag(loop, pre_tag)
@@ -2644,8 +2693,10 @@ class NEFTranslator:
                             chain_id_col = loop.tags.index('Entity_assembly_ID')
                             for r in loop.data:
                                 r[chain_id_col] = r[entity_id_col]
+                            if len(alt_chain_id_set) == 1:
+                                refresh_entity_assembly(loop, list(alt_chain_id_set))
                     elif len(alt_chain_id_set) == 1 and len(chain_id_set) == 1:  # 5xv8
-                        resolve_entity_assembly(False)
+                        refresh_entity_assembly(loop, list(alt_chain_id_set))
 
                 if 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags:
                     pre_comp_data = get_lp_tag(loop, ['Auth_asym_ID', 'Auth_seq_ID', 'Comp_ID'])

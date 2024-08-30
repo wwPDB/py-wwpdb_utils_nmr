@@ -1011,6 +1011,12 @@ class SybylMRParserListener(ParseTreeListener):
                     seqId = _seqId = elemSeqId
                     compId = _compId = atomId
                     preferNonPoly = True
+                elif elemCount == 1:
+                    for np in self.__nonPoly:
+                        if np['comp_id'][0] == atomId:
+                            seqId = _seqId = np['auth_seq_id'][0]
+                            compId = _compId = atomId
+                            preferNonPoly = True
 
         if self.__splitLigand is not None and len(self.__splitLigand):
             found = False

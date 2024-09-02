@@ -3241,6 +3241,20 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
         if compId == 'HCY':
             return 'CH' if refCompId == 'C' else 'DNR'
 
+    if len(compId) == 2 and compId[1] == 'P':
+        if compId == 'AP':
+            return 'A' if refCompId == 'A' else 'DA'
+        if compId == 'CP':
+            return 'C' if refCompId == 'C' else 'DC'
+        if compId == 'GP':
+            return 'G' if refCompId == 'G' else 'DG'
+        if compId == 'TP':
+            return 'DT'
+        if compId == 'UP':
+            return 'U'
+        if compId == 'IP':
+            return 'I' if refCompId == 'I' else 'DI'
+
     if compId in ('NHE', 'CONH') and refCompId == 'NH2':  # 6hnh, 2m7r
         return 'NH2'
 

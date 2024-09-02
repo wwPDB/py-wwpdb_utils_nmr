@@ -32,6 +32,7 @@ try:
                                                        isAmbigAtomSelection,
                                                        getAltProtonIdInBondConstraint,
                                                        guessCompIdFromAtomId,
+                                                       guessCompIdFromAtomIdWoLimit,
                                                        getTypeOfDihedralRestraint,
                                                        isLikePheOrTyr,
                                                        getRdcCode,
@@ -133,6 +134,7 @@ except ImportError:
                                            isAmbigAtomSelection,
                                            getAltProtonIdInBondConstraint,
                                            guessCompIdFromAtomId,
+                                           guessCompIdFromAtomIdWoLimit,
                                            getTypeOfDihedralRestraint,
                                            isLikePheOrTyr,
                                            getRdcCode,
@@ -5868,6 +5870,15 @@ class CnsMRParserListener(ParseTreeListener):
                             pass
 
                     if compId is None:
+                        if isPolySeq and isChainSpecified and self.__reasons is None and self.__preferAuthSeq:
+                            self.__preferAuthSeq = False
+                            seqId, _compId_, _ = self.getRealSeqId(ps, seqId, isPolySeq)
+                            compIds = guessCompIdFromAtomIdWoLimit(_factor['atom_id'], self.__polySeq, self.__nefT)
+                            if len(compIds) <= 4 and _compId_ in compIds:
+                                if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                    self.reasonsForReParsing['label_seq_scheme'] = {}
+                                self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
+                            self.__preferAuthSeq = True
                         continue
 
                     if self.__reasons is not None:

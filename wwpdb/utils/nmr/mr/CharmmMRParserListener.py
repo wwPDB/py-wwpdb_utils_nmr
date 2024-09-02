@@ -1127,6 +1127,9 @@ class CharmmMRParserListener(ParseTreeListener):
                             if '[Sequence mismatch]' in f:
                                 self.__f.remove(f)
 
+            elif self.__reasons is None and len(self.reasonsForReParsing) == 0 and all('[Insufficient atom selection]' in f for f in self.__f):
+                set_label_seq_scheme()
+
             if 'segment_id_mismatch' in self.reasonsForReParsing:
                 if 'seq_id_remap' not in self.reasonsForReParsing:
                     if 'local_seq_scheme' in self.reasonsForReParsing:

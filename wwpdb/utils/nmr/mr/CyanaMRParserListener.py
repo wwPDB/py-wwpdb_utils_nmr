@@ -89,6 +89,7 @@ try:
                                            carboxylCode,
                                            rdcBbPairCode,
                                            zincIonCode,
+                                           calciumIonCode,
                                            isReservedLigCode,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
@@ -185,6 +186,7 @@ except ImportError:
                                carboxylCode,
                                rdcBbPairCode,
                                zincIonCode,
+                               calciumIonCode,
                                isReservedLigCode,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
@@ -2349,6 +2351,21 @@ class CyanaMRParserListener(ParseTreeListener):
                     atomId = 'ZN'
                 preferNonPoly = True
 
+        if compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
+           and atomId in calciumIonCode and self.__hasNonPoly:
+            caCount = 0
+            caSeqId = None
+            for np in self.__nonPoly:
+                if np['comp_id'][0] == 'CA':
+                    caSeqId = np['auth_seq_id'][0]
+                    caCount += 1
+            if caCount > 0:
+                compId = _compId = 'CA'
+                if caCount == 1:
+                    seqId = _seqId = caSeqId
+                    atomId = 'CA'
+                preferNonPoly = True
+
         if atomId in SYMBOLS_ELEMENT and self.__hasNonPoly:
             elemCount = 0
             for np in self.__nonPoly:
@@ -2865,6 +2882,21 @@ class CyanaMRParserListener(ParseTreeListener):
                 if znCount == 1:
                     seqId = _seqId = znSeqId
                     atomId = 'ZN'
+                preferNonPoly = True
+
+        if compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
+           and atomId in calciumIonCode and self.__hasNonPoly:
+            caCount = 0
+            caSeqId = None
+            for np in self.__nonPoly:
+                if np['comp_id'][0] == 'CA':
+                    caSeqId = np['auth_seq_id'][0]
+                    caCount += 1
+            if caCount > 0:
+                compId = _compId = 'CA'
+                if caCount == 1:
+                    seqId = _seqId = caSeqId
+                    atomId = 'CA'
                 preferNonPoly = True
 
         if atomId in SYMBOLS_ELEMENT and self.__hasNonPoly:
@@ -4038,6 +4070,9 @@ class CyanaMRParserListener(ParseTreeListener):
                 atomSiteAtomId = coordAtomSite['atom_id']
                 if len(_atomId) == 0 and __atomId in zincIonCode and 'ZN' in atomSiteAtomId:
                     compId = atomId = 'ZN'
+                    _atomId = [atomId]
+                elif len(_atomId) == 0 and __atomId in calciumIonCode and 'CA' in atomSiteAtomId:
+                    compId = atomId = 'CA'
                     _atomId = [atomId]
                 elif not any(_atomId_ in atomSiteAtomId for _atomId_ in _atomId):
                     pass

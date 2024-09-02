@@ -76,6 +76,7 @@ try:
                                            aminoProtonCode,
                                            carboxylCode,
                                            zincIonCode,
+                                           calciumIonCode,
                                            isReservedLigCode,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
@@ -157,6 +158,7 @@ except ImportError:
                                aminoProtonCode,
                                carboxylCode,
                                zincIonCode,
+                               calciumIonCode,
                                isReservedLigCode,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
@@ -3709,6 +3711,23 @@ class CharmmMRParserListener(ParseTreeListener):
                                 if _coordAtomSite is not None and _coordAtomSite['comp_id'] == 'ZN':
                                     compId = 'ZN'
                                     seqId = znSeqId
+                                    seqKey = _seqKey
+                                    coordAtomSite = _coordAtomSite
+                                    atomSiteAtomId = _coordAtomSite['atom_id']
+
+                    if compId == 'CYS' and _factor['atom_id'][0] in calciumIonCode and self.__hasNonPoly:
+                        caCount = 0
+                        caSeqId = None
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == 'CA':
+                                caSeqId = np['auth_seq_id'][0]
+                                caCount += 1
+                        if caCount > 0:
+                            if caCount == 1:
+                                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, caSeqId, 'CA', cifCheck=cifCheck)
+                                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == 'CA':
+                                    compId = 'CA'
+                                    seqId = caSeqId
                                     seqKey = _seqKey
                                     coordAtomSite = _coordAtomSite
                                     atomSiteAtomId = _coordAtomSite['atom_id']

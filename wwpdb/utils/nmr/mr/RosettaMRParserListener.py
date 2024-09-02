@@ -76,6 +76,7 @@ try:
                                            carboxylCode,
                                            rdcBbPairCode,
                                            zincIonCode,
+                                           calciumIonCode,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
@@ -157,6 +158,7 @@ except ImportError:
                                carboxylCode,
                                rdcBbPairCode,
                                zincIonCode,
+                               calciumIonCode,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
@@ -1780,6 +1782,9 @@ class RosettaMRParserListener(ParseTreeListener):
                 atomSiteAtomId = coordAtomSite['atom_id']
                 if len(_atomId) == 0 and authAtomId in zincIonCode and 'ZN' in atomSiteAtomId:
                     atomId = 'ZN'
+                    _atomId = [atomId]
+                elif len(_atomId) == 0 and authAtomId in calciumIonCode and 'CA' in atomSiteAtomId:
+                    atomId = 'CA'
                     _atomId = [atomId]
                 elif not any(_atomId_ in atomSiteAtomId for _atomId_ in _atomId):
                     pass

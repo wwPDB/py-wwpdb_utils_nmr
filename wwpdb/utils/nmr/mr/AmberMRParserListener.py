@@ -5894,12 +5894,12 @@ class AmberMRParserListener(ParseTreeListener):
                         if found:
                             return True
 
-            elif not useDefault and _useDefault:
+            elif _useDefault:
                 _ps = next((_ps for _ps in self.__polySeq if _ps['chain_id'] == chainId), None)
                 if _ps is not None and seqId in _ps['auth_seq_id']:
                     idx = _ps['auth_seq_id'].index(seqId)
                     compId = _ps['comp_id'][idx]
-                    if compId == authCompId:
+                    if compId == _compId:
                         if 'auth_seq_scheme' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['auth_seq_scheme'] = {}
                         self.reasonsForReParsing['auth_seq_scheme'][chainId] = True
@@ -6683,12 +6683,12 @@ class AmberMRParserListener(ParseTreeListener):
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
 
-                elif not useDefault and _useDefault:
+                elif _useDefault:
                     _ps = next((_ps for _ps in self.__polySeq if _ps['chain_id'] == chainId), None)
                     if _ps is not None and seqId in _ps['auth_seq_id']:
                         idx = _ps['auth_seq_id'].index(seqId)
                         compId = _ps['comp_id'][idx]
-                        if compId == authCompId:
+                        if compId == _compId:
                             if 'auth_seq_scheme' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['auth_seq_scheme'] = {}
                             self.reasonsForReParsing['auth_seq_scheme'][chainId] = True

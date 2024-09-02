@@ -926,6 +926,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if is_eff_ext(text, 'lol') and self.__file_ext != 'upl':
                         self.__cur_dist_type = 'lol'
                         break
+                if self.__cur_dist_type == 'cco' and ('bond' in text or 'distance' in text):
+                    self.__cur_dist_type = ''
             else:
                 break
 
@@ -1018,6 +1020,47 @@ class CyanaMRParserListener(ParseTreeListener):
                 elif self.__cur_subtype == 'noepk':
                     self.noepkRestraints -= 1
                 return
+
+            if self.__cur_subtype == 'jcoup' and self.__hasPolySeq:
+
+                self.__retrieveLocalSeqScheme()
+
+                chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+                if len(chainAssign1) > 0 and len(chainAssign2) > 0:
+
+                    self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                    self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                    if len(self.atomSelectionSet) >= 2:
+
+                        if len(self.atomSelectionSet[0]) == 1 and len(self.atomSelectionSet[1]) == 1:
+
+                            isCco = True
+
+                            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                                isCco = False
+
+                            if chain_id_1 != chain_id_2:
+                                isCco = False
+
+                            if abs(seq_id_1 - seq_id_2) > 1:
+                                isCco = False
+
+                            if not isCco:
+                                self.jcoupRestraints -= 1
+                                self.__cur_subtype = 'dist'
+                                self.__cur_dist_type = ''
+                                self.distRestraints += 1
 
             if self.__cur_subtype in ('dist', 'noepk'):
 
@@ -1577,6 +1620,47 @@ class CyanaMRParserListener(ParseTreeListener):
                 elif self.__cur_subtype == 'noepk':
                     self.noepkRestraints -= 1
                 return
+
+            if self.__cur_subtype == 'jcoup' and self.__hasPolySeq:
+
+                self.__retrieveLocalSeqScheme()
+
+                chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
+                chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
+
+                if len(chainAssign1) > 0 and len(chainAssign2) > 0:
+
+                    self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
+                    self.selectCoordAtoms(chainAssign2, seqId2, None, atomId2)
+
+                    if len(self.atomSelectionSet) >= 2:
+
+                        if len(self.atomSelectionSet[0]) == 1 and len(self.atomSelectionSet[1]) == 1:
+
+                            isCco = True
+
+                            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                                isCco = False
+
+                            if chain_id_1 != chain_id_2:
+                                isCco = False
+
+                            if abs(seq_id_1 - seq_id_2) > 1:
+                                isCco = False
+
+                            if not isCco:
+                                self.jcoupRestraints -= 1
+                                self.__cur_subtype = 'dist'
+                                self.__cur_dist_type = ''
+                                self.distRestraints += 1
 
             if self.__cur_subtype in ('dist', 'noepk'):
 

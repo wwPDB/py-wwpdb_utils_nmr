@@ -222,6 +222,17 @@ if __name__ == "__main__":
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/5oay/cluster_noe2.tbl',
+                     '../../tests-nmr/mock-data-remediation/5oay/5oay.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = XplorMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5oay/cluster_noe2.tbl',
+                 '../../tests-nmr/mock-data-remediation/5oay/5oay.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/6uz4/AGL55_K2_NOE.tbl',
                      '../../tests-nmr/mock-data-remediation/6uz4/6uz4.cif')
     print(reader_listener.getReasonsForReparsing())

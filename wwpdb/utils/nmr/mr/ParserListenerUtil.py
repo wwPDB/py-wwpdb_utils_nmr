@@ -2593,6 +2593,12 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
         if atomId[:-2] in SYMBOLS_ELEMENT:
             return atomId[:-2]
 
+    if atomId.endswith('++'):
+        return atomId[:-2] + '*'
+
+    if atomId.endswith('+'):
+        return atomId[:-1] + '%'
+
     return atomId
 
 

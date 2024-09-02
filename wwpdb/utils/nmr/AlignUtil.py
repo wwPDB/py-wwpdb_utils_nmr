@@ -73,7 +73,7 @@ carboxylCode = ('C', 'O', 'O1', 'O2', 'OT1', 'OT2', 'OXT', 'HXT')
 jcoupBbPairCode = ('N', 'H', 'CA', 'C')
 rdcBbPairCode = ('N', 'H', 'CA')
 zincIonCode = ('ZN', 'ME', 'Z1', 'Z2')
-calciumIonCode = ('CA', 'ME', 'C1', 'C2')
+calciumIonCode = ('CA2', 'CA2+', 'CA+2', 'ME')
 unknownResidue = ('UNK', 'DN', 'N')
 reservedLigCode = ('LIG', 'DRG', 'INH')  # DAOTHER-7204, 7388: reserved ligand codes for new ligands, which must include 2 digits 01-99
 

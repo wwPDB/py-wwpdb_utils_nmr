@@ -1022,53 +1022,55 @@ class AriaMRParserListener(ParseTreeListener):
 
         self.__allow_ext_seq = False
 
-        if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
-           and atomId in zincIonCode and self.__hasNonPoly:
-            znCount = 0
-            znSeqId = None
-            for np in self.__nonPoly:
-                if np['comp_id'][0] == 'ZN':
-                    znSeqId = np['auth_seq_id'][0]
-                    znCount += 1
-            if znCount > 0:
-                compId = _compId = 'ZN'
-                if znCount == 1:
-                    seqId = _seqId = znSeqId
-                    atomId = 'ZN'
-                preferNonPoly = True
+        if self.__hasNonPoly:
 
-        if compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
-           and atomId in calciumIonCode and self.__hasNonPoly:
-            caCount = 0
-            caSeqId = None
-            for np in self.__nonPoly:
-                if np['comp_id'][0] == 'CA':
-                    caSeqId = np['auth_seq_id'][0]
-                    caCount += 1
-            if caCount > 0:
-                compId = _compId = 'CA'
-                if caCount == 1:
-                    seqId = _seqId = caSeqId
-                    atomId = 'CA'
-                preferNonPoly = True
-
-        if atomId in SYMBOLS_ELEMENT and self.__hasNonPoly:
-            elemCount = 0
-            for np in self.__nonPoly:
-                if np['comp_id'][0] == atomId:
-                    elemCount += 1
-            if elemCount > 0:
-                _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
-                if elemSeqId is not None:
-                    seqId = _seqId = elemSeqId
-                    compId = _compId = atomId
+            if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
+               and atomId in zincIonCode:
+                znCount = 0
+                znSeqId = None
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == 'ZN':
+                        znSeqId = np['auth_seq_id'][0]
+                        znCount += 1
+                if znCount > 0:
+                    compId = _compId = 'ZN'
+                    if znCount == 1:
+                        seqId = _seqId = znSeqId
+                        atomId = 'ZN'
                     preferNonPoly = True
-                elif elemCount == 1:
-                    for np in self.__nonPoly:
-                        if np['comp_id'][0] == atomId:
-                            seqId = _seqId = np['auth_seq_id'][0]
-                            compId = _compId = atomId
-                            preferNonPoly = True
+
+            if compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
+               and atomId in calciumIonCode:
+                caCount = 0
+                caSeqId = None
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == 'CA':
+                        caSeqId = np['auth_seq_id'][0]
+                        caCount += 1
+                if caCount > 0:
+                    compId = _compId = 'CA'
+                    if caCount == 1:
+                        seqId = _seqId = caSeqId
+                        atomId = 'CA'
+                    preferNonPoly = True
+
+            if atomId in SYMBOLS_ELEMENT:
+                elemCount = 0
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == atomId:
+                        elemCount += 1
+                if elemCount > 0:
+                    _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
+                    if elemSeqId is not None:
+                        seqId = _seqId = elemSeqId
+                        compId = _compId = atomId
+                        preferNonPoly = True
+                    elif elemCount == 1:
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == atomId:
+                                seqId = _seqId = np['auth_seq_id'][0]
+                                compId = _compId = atomId
+                                preferNonPoly = True
 
         if self.__splitLigand is not None and len(self.__splitLigand):
             found = False
@@ -1295,6 +1297,7 @@ class AriaMRParserListener(ParseTreeListener):
                             else np['seq_id'].index(seqId) if seqId in np['seq_id'] else 0
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
+                    seqId = np['auth_seq_id'][idx]
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
@@ -1515,53 +1518,55 @@ class AriaMRParserListener(ParseTreeListener):
 
         self.__allow_ext_seq = False
 
-        if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
-           and atomId in zincIonCode and self.__hasNonPoly:
-            znCount = 0
-            znSeqId = None
-            for np in self.__nonPoly:
-                if np['comp_id'][0] == 'ZN':
-                    znSeqId = np['auth_seq_id'][0]
-                    znCount += 1
-            if znCount > 0:
-                compId = _compId = 'ZN'
-                if znCount == 1:
-                    seqId = _seqId = znSeqId
-                    atomId = 'ZN'
-                preferNonPoly = True
+        if self.__hasNonPoly:
 
-        if compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
-           and atomId in calciumIonCode and self.__hasNonPoly:
-            caCount = 0
-            caSeqId = None
-            for np in self.__nonPoly:
-                if np['comp_id'][0] == 'CA':
-                    caSeqId = np['auth_seq_id'][0]
-                    caCount += 1
-            if caCount > 0:
-                compId = _compId = 'CA'
-                if caCount == 1:
-                    seqId = _seqId = caSeqId
-                    atomId = 'CA'
-                preferNonPoly = True
-
-        if atomId in SYMBOLS_ELEMENT and self.__hasNonPoly:
-            elemCount = 0
-            for np in self.__nonPoly:
-                if np['comp_id'][0] == atomId:
-                    elemCount += 1
-            if elemCount > 0:
-                _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
-                if elemSeqId is not None:
-                    seqId = _seqId = elemSeqId
-                    compId = _compId = atomId
+            if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
+               and atomId in zincIonCode:
+                znCount = 0
+                znSeqId = None
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == 'ZN':
+                        znSeqId = np['auth_seq_id'][0]
+                        znCount += 1
+                if znCount > 0:
+                    compId = _compId = 'ZN'
+                    if znCount == 1:
+                        seqId = _seqId = znSeqId
+                        atomId = 'ZN'
                     preferNonPoly = True
-                elif elemCount == 1:
-                    for np in self.__nonPoly:
-                        if np['comp_id'][0] == atomId:
-                            seqId = _seqId = np['auth_seq_id'][0]
-                            compId = _compId = atomId
-                            preferNonPoly = True
+
+            if compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
+               and atomId in calciumIonCode:
+                caCount = 0
+                caSeqId = None
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == 'CA':
+                        caSeqId = np['auth_seq_id'][0]
+                        caCount += 1
+                if caCount > 0:
+                    compId = _compId = 'CA'
+                    if caCount == 1:
+                        seqId = _seqId = caSeqId
+                        atomId = 'CA'
+                    preferNonPoly = True
+
+            if atomId in SYMBOLS_ELEMENT:
+                elemCount = 0
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == atomId:
+                        elemCount += 1
+                if elemCount > 0:
+                    _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
+                    if elemSeqId is not None:
+                        seqId = _seqId = elemSeqId
+                        compId = _compId = atomId
+                        preferNonPoly = True
+                    elif elemCount == 1:
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == atomId:
+                                seqId = _seqId = np['auth_seq_id'][0]
+                                compId = _compId = atomId
+                                preferNonPoly = True
 
         if self.__splitLigand is not None and len(self.__splitLigand):
             found = False
@@ -1813,6 +1818,7 @@ class AriaMRParserListener(ParseTreeListener):
                             else np['seq_id'].index(seqId) if seqId in np['seq_id'] else 0
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
+                    seqId = np['auth_seq_id'][idx]
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)

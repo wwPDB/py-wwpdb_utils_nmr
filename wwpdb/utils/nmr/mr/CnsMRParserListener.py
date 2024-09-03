@@ -3630,7 +3630,7 @@ class CnsMRParserListener(ParseTreeListener):
                 if atom1['atom_id'][0] not in protonBeginCode:
                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                     f"Not a proton; {atom1}.")
-                return
+                    return
 
             if self.__createSfDict:
                 sf = self.__getSf(self.classification)

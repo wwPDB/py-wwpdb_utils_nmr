@@ -1158,6 +1158,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
         if self.__hasNonPoly:
 
+            resolved = False
+
             if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
                and atomId in zincIonCode:
                 znCount = 0
@@ -1171,9 +1173,10 @@ class BiosymMRParserListener(ParseTreeListener):
                     if znCount == 1:
                         seqId = _seqId = znSeqId
                         atomId = 'ZN'
+                        resolved = True
                     preferNonPoly = True
 
-            if not preferNonPoly and compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
+            if not resolved and compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
                and atomId in calciumIonCode:
                 caCount = 0
                 caSeqId = None
@@ -1186,9 +1189,10 @@ class BiosymMRParserListener(ParseTreeListener):
                     if caCount == 1:
                         seqId = _seqId = caSeqId
                         atomId = 'CA'
+                        resolved = True
                     preferNonPoly = True
 
-            if not preferNonPoly and len(atomId) > 1 and atomId in SYMBOLS_ELEMENT:
+            if not resolved and len(atomId) > 1 and atomId in SYMBOLS_ELEMENT:
                 elemCount = 0
                 for np in self.__nonPoly:
                     if np['comp_id'][0] == atomId:
@@ -1198,15 +1202,15 @@ class BiosymMRParserListener(ParseTreeListener):
                     if elemSeqId is not None:
                         seqId = _seqId = elemSeqId
                         compId = _compId = atomId
-                        preferNonPoly = True
+                        preferNonPoly = resolved = True
                     elif elemCount == 1:
                         for np in self.__nonPoly:
                             if np['comp_id'][0] == atomId:
                                 seqId = _seqId = np['auth_seq_id'][0]
                                 compId = _compId = atomId
-                                preferNonPoly = True
+                                preferNonPoly = resolved = True
 
-            if not preferNonPoly and len(compId) > 1 and compId in SYMBOLS_ELEMENT:
+            if not resolved and len(compId) > 1 and compId in SYMBOLS_ELEMENT:
                 elemCount = 0
                 for np in self.__nonPoly:
                     if np['comp_id'][0] == compId:

@@ -2437,7 +2437,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         atomId = 'ZN'
                     preferNonPoly = True
 
-            if compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
+            if not preferNonPoly and compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
                and atomId in calciumIonCode:
                 caCount = 0
                 caSeqId = None
@@ -2452,7 +2452,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         atomId = 'CA'
                     preferNonPoly = True
 
-            if atomId in SYMBOLS_ELEMENT:
+            if not preferNonPoly and len(atomId) > 1 and atomId in SYMBOLS_ELEMENT:
                 elemCount = 0
                 for np in self.__nonPoly:
                     if np['comp_id'][0] == atomId:
@@ -2468,6 +2468,24 @@ class CyanaMRParserListener(ParseTreeListener):
                             if np['comp_id'][0] == atomId:
                                 seqId = _seqId = np['auth_seq_id'][0]
                                 compId = _compId = atomId
+                                preferNonPoly = True
+
+            if not preferNonPoly and len(compId) > 1 and compId in SYMBOLS_ELEMENT:
+                elemCount = 0
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == compId:
+                        elemCount += 1
+                if elemCount > 0:
+                    _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, compId)
+                    if elemSeqId is not None:
+                        seqId = _seqId = elemSeqId
+                        atomId = _compId = compId
+                        preferNonPoly = True
+                    elif elemCount == 1:
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == compId:
+                                seqId = _seqId = np['auth_seq_id'][0]
+                                atomId = _compId = compId
                                 preferNonPoly = True
 
         if self.__splitLigand is not None and len(self.__splitLigand):
@@ -2973,7 +2991,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         atomId = 'ZN'
                     preferNonPoly = True
 
-            if compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
+            if not preferNonPoly and compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
                and atomId in calciumIonCode:
                 caCount = 0
                 caSeqId = None
@@ -2988,7 +3006,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         atomId = 'CA'
                     preferNonPoly = True
 
-            if atomId in SYMBOLS_ELEMENT:
+            if not preferNonPoly and len(atomId) > 1 and atomId in SYMBOLS_ELEMENT:
                 elemCount = 0
                 for np in self.__nonPoly:
                     if np['comp_id'][0] == atomId:
@@ -3004,6 +3022,24 @@ class CyanaMRParserListener(ParseTreeListener):
                             if np['comp_id'][0] == atomId:
                                 seqId = _seqId = np['auth_seq_id'][0]
                                 compId = _compId = atomId
+                                preferNonPoly = True
+
+            if not preferNonPoly and len(compId) > 1 and compId in SYMBOLS_ELEMENT:
+                elemCount = 0
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == compId:
+                        elemCount += 1
+                if elemCount > 0:
+                    _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, compId)
+                    if elemSeqId is not None:
+                        seqId = _seqId = elemSeqId
+                        atomId = _compId = compId
+                        preferNonPoly = True
+                    elif elemCount == 1:
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == compId:
+                                seqId = _seqId = np['auth_seq_id'][0]
+                                atomId = _compId = compId
                                 preferNonPoly = True
 
         if self.__splitLigand is not None and len(self.__splitLigand):
@@ -4195,6 +4231,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
             if compId != cifCompId and compId in monDict3 and not isPolySeq:
                 continue
+
+            if lenAtomId == 0 and not isPolySeq and cifCompId in SYMBOLS_ELEMENT:
+                _atomId = [cifCompId]
+                lenAtomId = 1
 
             if lenAtomId == 0:
                 if compId != cifCompId and any(item for item in chainAssign if item[2] == compId):

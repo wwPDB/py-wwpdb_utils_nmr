@@ -9903,7 +9903,23 @@ class XplorMRParserListener(ParseTreeListener):
             psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == chainId]
 
             if len(psList) == 0:
-                continue
+                if isChainSpecified:
+                    _chainIds = [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)]
+                    if all(_chainId.isdigit() for _chainId in _chainIds)\
+                       and not any(_chainId.isdigit() for _chainId in chainIds)\
+                       and chainId in [ps['chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)]:
+                        psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['chain_id'] == chainId]
+                    if len(psList) == 0:
+                        continue
+                    _authChainIds = []
+                    for _chainId in _factor['auth_chain_id']:
+                        _authChainId = next((ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['chain_id'] == _chainId), _chainId)
+                        if _chainId == chainId:
+                            chainId = _authChainId
+                        _authChainIds.append(_authChainId)
+                    _factor['auth_chain_id'] = _authChainIds
+                else:
+                    continue
 
             pref_alt_auth_seq_id = False
 

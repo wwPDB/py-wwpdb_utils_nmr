@@ -7953,6 +7953,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                     continue
                                 atomId = jVal[k]
                                 chainId = jVal[3 - (j + k)]
+                                if atomId in ('M', 'Q'):
+                                    continue
                                 if self.__hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
@@ -7995,6 +7997,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                     continue
                                 atomId = jVal[k]
                                 chainId = jVal[3 - (j + k)]
+                                if atomId in ('M', 'Q'):
+                                    continue
                                 if self.__hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
@@ -8038,6 +8042,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                     continue
                                 atomId = jVal[k]
                                 chainId = jVal[12 - (j + k)]
+                                if atomId in ('M', 'Q'):
+                                    continue
                                 if self.__hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
@@ -8080,6 +8086,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                     continue
                                 atomId = jVal[k]
                                 chainId = jVal[12 - (j + k)]
+                                if atomId in ('M', 'Q'):
+                                    continue
                                 if self.__hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():

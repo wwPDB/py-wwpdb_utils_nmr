@@ -2273,6 +2273,20 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
     if len(mapping) == 0:
         return atomId
 
+    if any(item for item in mapping
+           if len(item['original_atom_id']) > 1
+           and item['original_atom_id'][0].isdigit()
+           and item['original_atom_id'][1] == 'H'):
+        _mapping = copy.deepcopy(mapping)
+        for item in mapping:
+            if len(item['original_atom_id']) > 1\
+               and item['original_atom_id'][0].isdigit()\
+               and item['original_atom_id'][1] == 'H':
+                _item = copy.copy(item)
+                _item['original_atom_id'] = item['original_atom_id'][1:] + item['original_atom_id'][0]
+                _mapping.append(_item)
+        mapping = _mapping
+
     if elemName in ('Q', 'M'):
 
         item = next((item for item in mapping

@@ -7269,6 +7269,9 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
         if atom1 is not None:
             row[key_size] = atomType = atom1['atom_id'][0]
             row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        elif atom2 is not None:
+            row[key_size] = atomType = atom2['atom_id'][0]
+            row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         row[key_size + 2] = dstFunc['obs_value'] if atom2 is None else dstFunc['obs_value_2']
         # Chem_shift_val_err
 

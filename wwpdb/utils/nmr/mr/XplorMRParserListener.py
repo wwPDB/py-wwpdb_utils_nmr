@@ -5249,41 +5249,31 @@ class XplorMRParserListener(ParseTreeListener):
                 sf = self.__getSf(self.classification)
                 sf['id'] += 1
 
-            if lenAtomSelectionSet == 1:
-                for atom1 in self.atomSelectionSet[0]:
-                    if self.__debug:
-                        print(f"subtype={self.__cur_subtype} (PROTON/OBSE) id={self.procsRestraints} "
-                              f"atom={atom1} {dstFunc}")
-                    if self.__createSfDict and sf is not None:
-                        sf['index_id'] += 1
-                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     '.', None, None,
-                                     sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                                     atom1)
-                        sf['loop'].add_data(row)
+            for atom in self.atomSelectionSet[0]:
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (PROTON/OBSE) id={self.procsRestraints} "
+                          f"atom={atom} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', None, None,
+                                 sf['list_id'], self.__entryId, dstFunc,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                 atom)
+                    sf['loop'].add_data(row)
 
-            else:
-                for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                                      self.atomSelectionSet[1]):
+            if lenAtomSelectionSet > 1:
+                for atom in self.atomSelectionSet[1]:
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} (PROTON/OBSE) id={self.procsRestraints} "
-                              f"atom1={atom1} atom2={atom2} {dstFunc}")
+                              f"atom={atom} {dstFunc}")
                     if self.__createSfDict and sf is not None:
-                        sf['index_id'] += 1
-                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
-                                     1, None, '.',
-                                     sf['list_id'], self.__entryId, dstFunc,
-                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                                     atom1)
-                        sf['loop'].add_data(row)
-                        #
                         sf['index_id'] += 1
                         row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                      2, None, '.',
                                      sf['list_id'], self.__entryId, dstFunc,
                                      self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                                     None, atom2)
+                                     None, atom)
                         sf['loop'].add_data(row)
 
         finally:

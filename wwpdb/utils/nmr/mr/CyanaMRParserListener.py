@@ -2424,7 +2424,33 @@ class CyanaMRParserListener(ParseTreeListener):
 
             resolved = False
 
-            if compId in ('CYS', 'CYSZ', 'CYZ', 'CZN', 'CYO', 'ION', 'ZN1', 'ZN2')\
+            for np in self.__nonPoly:
+                if 'alt_comp_id' in np and 'alt_auth_seq_id' in np\
+                   and compId in np['alt_comp_id'] and seqId in np['alt_auth_seq_id']:
+                    npCompId = np['comp_id'][0]
+                    npSeqId = np['auth_seq_id'][0]
+                    for ps in self.__polySeq:
+                        if 'ambig_auth_seq_id' in ps and seqId in ps['ambig_auth_seq_id']:
+                            psCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(psCompId, atomId, leave_unmatched=True)
+                            if details is None:
+                                _, _coordAtomSite = self.getCoordAtomSiteOf(ps['auth_chain_id'], seqId, psCompId, cifCheck=self.__hasCoord)
+                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                    compId = _compId = psCompId
+                                    resolved = True
+                                    break
+                            _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], npSeqId, npCompId, cifCheck=self.__hasCoord)
+                            if self.__mrAtomNameMapping is not None:
+                                atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, npSeqId, npCompId, atomId, _coordAtomSite)
+                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(npCompId, atomId, leave_unmatched=True)
+                            if details is None:
+                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                    compId = _compId = npCompId
+                                    seqId = _seqId = npSeqId
+                                    preferNonPoly = resolved = True
+                                    break
+
+            if not resolved and compId in ('CYS', 'CYSZ', 'CYZ', 'CZN', 'CYO', 'ION', 'ZN1', 'ZN2')\
                and atomId in zincIonCode:
                 znCount = 0
                 znSeqId = None
@@ -2982,7 +3008,33 @@ class CyanaMRParserListener(ParseTreeListener):
 
             resolved = False
 
-            if compId in ('CYS', 'CYSZ', 'CYZ', 'CZN', 'CYO', 'ION', 'ZN1', 'ZN2')\
+            for np in self.__nonPoly:
+                if 'alt_comp_id' in np and 'alt_auth_seq_id' in np\
+                   and compId in np['alt_comp_id'] and seqId in np['alt_auth_seq_id']:
+                    npCompId = np['comp_id'][0]
+                    npSeqId = np['auth_seq_id'][0]
+                    for ps in self.__polySeq:
+                        if 'ambig_auth_seq_id' in ps and seqId in ps['ambig_auth_seq_id']:
+                            psCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(psCompId, atomId, leave_unmatched=True)
+                            if details is None:
+                                _, _coordAtomSite = self.getCoordAtomSiteOf(ps['auth_chain_id'], seqId, psCompId, cifCheck=self.__hasCoord)
+                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                    compId = _compId = psCompId
+                                    resolved = True
+                                    break
+                            _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], npSeqId, npCompId, cifCheck=self.__hasCoord)
+                            if self.__mrAtomNameMapping is not None:
+                                atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, npSeqId, npCompId, atomId, _coordAtomSite)
+                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(npCompId, atomId, leave_unmatched=True)
+                            if details is None:
+                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                    compId = _compId = npCompId
+                                    seqId = _seqId = npSeqId
+                                    preferNonPoly = resolved = True
+                                    break
+
+            if not resolved and compId in ('CYS', 'CYSZ', 'CYZ', 'CZN', 'CYO', 'ION', 'ZN1', 'ZN2')\
                and atomId in zincIonCode:
                 znCount = 0
                 znSeqId = None

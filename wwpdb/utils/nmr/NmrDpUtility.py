@@ -31356,7 +31356,7 @@ class NmrDpUtility:
                             _other_angles += 1
 
                 if _br_angles > _other_angles:
-                    sf_item['constraint_type'] = 'saccaride dihedral angle'
+                    sf_item['constraint_type'] = 'carbohydrate dihedral angle'
 
                     tagNames = [t[0] for t in sf.tags]
 
@@ -53061,7 +53061,7 @@ class NmrDpUtility:
                                 _other_angles += 1
 
                     if _br_angles > _other_angles:
-                        sf_item['constraint_type'] = 'saccaride dihedral angle'
+                        sf_item['constraint_type'] = 'carbohydrate dihedral angle'
 
                         sf = sf_item['saveframe']
 
@@ -55066,7 +55066,7 @@ class NmrDpUtility:
                                     _other_angles += 1
 
                         if _br_angles > _other_angles:
-                            sf_item[sf_framecode]['constraint_type'] = 'saccaride dihedral angle'
+                            sf_item[sf_framecode]['constraint_type'] = 'carbohydrate dihedral angle'
 
                             tagNames = [t[0] for t in sf.tags]
 

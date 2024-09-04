@@ -17597,6 +17597,15 @@ class NmrDpUtility:
 
         content_subtype = 'entity'
 
+        for sf in self.__star_data[file_list_id].get_saveframes_by_category(content_subtype):
+            entity_id = get_first_sf_tag(sf, 'ID')
+            if len(entity_id) == 0 or entity_id in emptyValue or not entity_id.isdigit():
+                entity_id = 1
+                set_sf_tag(sf, 'ID', entity_id)
+            else:
+                entity_id = int(entity_id)
+            self.__c2S.set_local_sf_id(sf, str(entity_id))
+
         lp_category = self.lp_categories[file_type][content_subtype]
 
         try:

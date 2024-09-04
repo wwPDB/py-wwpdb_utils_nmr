@@ -2699,7 +2699,8 @@ class NEFTranslator:
                                 r[chain_id_col] = r[entity_id_col]
                             if len(alt_chain_id_set) == 1:
                                 refresh_entity_assembly(loop, list(alt_chain_id_set))
-                    elif len(alt_chain_id_set) == 1 and len(chain_id_set) == 1:  # 5xv8
+                    elif (len(alt_chain_id_set) == 1 and len(chain_id_set) == 1)\
+                            or (len(alt_chain_id_set) > len(chain_id_set)):  # 5xv8, 2n7k
                         refresh_entity_assembly(loop, list(alt_chain_id_set))
 
                 if 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags:

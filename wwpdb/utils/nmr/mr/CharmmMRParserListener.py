@@ -76,6 +76,7 @@ try:
                                            aminoProtonCode,
                                            carboxylCode,
                                            zincIonCode,
+                                           calciumIonCode,
                                            isReservedLigCode,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
@@ -157,6 +158,7 @@ except ImportError:
                                aminoProtonCode,
                                carboxylCode,
                                zincIonCode,
+                               calciumIonCode,
                                isReservedLigCode,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
@@ -1124,6 +1126,9 @@ class CharmmMRParserListener(ParseTreeListener):
                         for f in __f:
                             if '[Sequence mismatch]' in f:
                                 self.__f.remove(f)
+
+            elif self.__reasons is None and len(self.reasonsForReParsing) == 0 and all('[Insufficient atom selection]' in f for f in self.__f):
+                set_label_seq_scheme()
 
             if 'segment_id_mismatch' in self.reasonsForReParsing:
                 if 'seq_id_remap' not in self.reasonsForReParsing:
@@ -3528,7 +3533,23 @@ class CharmmMRParserListener(ParseTreeListener):
             psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == chainId]
 
             if len(psList) == 0:
-                continue
+                if isChainSpecified:
+                    _chainIds = [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)]
+                    if all(_chainId.isdigit() for _chainId in _chainIds)\
+                       and not any(_chainId.isdigit() for _chainId in chainIds)\
+                       and chainId in [ps['chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)]:
+                        psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['chain_id'] == chainId]
+                    if len(psList) == 0:
+                        continue
+                    _authChainIds = []
+                    for _chainId in _factor['auth_chain_id']:
+                        _authChainId = next((ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['chain_id'] == _chainId), _chainId)
+                        if _chainId == chainId:
+                            chainId = _authChainId
+                        _authChainIds.append(_authChainId)
+                    _factor['auth_chain_id'] = _authChainIds
+                else:
+                    continue
 
             pref_alt_auth_seq_id = False
 
@@ -3639,6 +3660,16 @@ class CharmmMRParserListener(ParseTreeListener):
                             pass
 
                     if compId is None:
+                        if isPolySeq and isChainSpecified and self.__reasons is None and self.__preferAuthSeq:
+                            self.__preferAuthSeq = False
+                            seqId, _compId_, _ = self.getRealSeqId(ps, seqId, isPolySeq)
+                            if self.__csStat.peptideLike(_compId_):
+                                compIds = guessCompIdFromAtomId(_factor['atom_id'], self.__polySeq, self.__nefT)
+                                if compIds is not None and _compId_ in compIds:
+                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                        self.reasonsForReParsing['label_seq_scheme'] = {}
+                                    self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
+                            self.__preferAuthSeq = True
                         continue
 
                     if self.__reasons is not None:
@@ -3696,22 +3727,41 @@ class CharmmMRParserListener(ParseTreeListener):
                                 coordAtomSite = _coordAtomSite
                                 atomSiteAtomId = _coordAtomSite['atom_id']
 
-                    if compId == 'CYS' and _factor['atom_id'][0] in zincIonCode and self.__hasNonPoly:
-                        znCount = 0
-                        znSeqId = None
-                        for np in self.__nonPoly:
-                            if np['comp_id'][0] == 'ZN':
-                                znSeqId = np['auth_seq_id'][0]
-                                znCount += 1
-                        if znCount > 0:
-                            if znCount == 1:
-                                _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, znSeqId, 'ZN', cifCheck=cifCheck)
-                                if _coordAtomSite is not None and _coordAtomSite['comp_id'] == 'ZN':
-                                    compId = 'ZN'
-                                    seqId = znSeqId
-                                    seqKey = _seqKey
-                                    coordAtomSite = _coordAtomSite
-                                    atomSiteAtomId = _coordAtomSite['atom_id']
+                    if self.__hasNonPoly and compId == 'CYS':
+
+                        if _factor['atom_id'][0] in zincIonCode:
+                            znCount = 0
+                            znSeqId = None
+                            for np in self.__nonPoly:
+                                if np['comp_id'][0] == 'ZN':
+                                    znSeqId = np['auth_seq_id'][0]
+                                    znCount += 1
+                            if znCount > 0:
+                                if znCount == 1:
+                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, znSeqId, 'ZN', cifCheck=cifCheck)
+                                    if _coordAtomSite is not None and _coordAtomSite['comp_id'] == 'ZN':
+                                        compId = 'ZN'
+                                        seqId = znSeqId
+                                        seqKey = _seqKey
+                                        coordAtomSite = _coordAtomSite
+                                        atomSiteAtomId = _coordAtomSite['atom_id']
+
+                        if _factor['atom_id'][0] in calciumIonCode:
+                            caCount = 0
+                            caSeqId = None
+                            for np in self.__nonPoly:
+                                if np['comp_id'][0] == 'CA':
+                                    caSeqId = np['auth_seq_id'][0]
+                                    caCount += 1
+                            if caCount > 0:
+                                if caCount == 1:
+                                    _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, caSeqId, 'CA', cifCheck=cifCheck)
+                                    if _coordAtomSite is not None and _coordAtomSite['comp_id'] == 'CA':
+                                        compId = 'CA'
+                                        seqId = caSeqId
+                                        seqKey = _seqKey
+                                        coordAtomSite = _coordAtomSite
+                                        atomSiteAtomId = _coordAtomSite['atom_id']
 
                     for atomId in _factor['atom_id']:
                         origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']

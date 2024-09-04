@@ -89,6 +89,7 @@ try:
                                            carboxylCode,
                                            rdcBbPairCode,
                                            zincIonCode,
+                                           calciumIonCode,
                                            isReservedLigCode,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
@@ -185,6 +186,7 @@ except ImportError:
                                carboxylCode,
                                rdcBbPairCode,
                                zincIonCode,
+                               calciumIonCode,
                                isReservedLigCode,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
@@ -924,6 +926,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     if is_eff_ext(text, 'lol') and self.__file_ext != 'upl':
                         self.__cur_dist_type = 'lol'
                         break
+                if self.__cur_dist_type == 'cco' and ('bond' in text or 'distance' in text):
+                    self.__cur_dist_type = ''
             else:
                 break
 
@@ -1016,6 +1020,47 @@ class CyanaMRParserListener(ParseTreeListener):
                 elif self.__cur_subtype == 'noepk':
                     self.noepkRestraints -= 1
                 return
+
+            if self.__cur_subtype == 'jcoup' and self.__hasPolySeq:
+
+                self.__retrieveLocalSeqScheme()
+
+                chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
+                chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
+
+                if len(chainAssign1) > 0 and len(chainAssign2) > 0:
+
+                    self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                    self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                    if len(self.atomSelectionSet) >= 2:
+
+                        if len(self.atomSelectionSet[0]) == 1 and len(self.atomSelectionSet[1]) == 1:
+
+                            isCco = True
+
+                            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                                isCco = False
+
+                            if chain_id_1 != chain_id_2:
+                                isCco = False
+
+                            if abs(seq_id_1 - seq_id_2) > 1:
+                                isCco = False
+
+                            if not isCco:
+                                self.jcoupRestraints -= 1
+                                self.__cur_subtype = 'dist'
+                                self.__cur_dist_type = ''
+                                self.distRestraints += 1
 
             if self.__cur_subtype in ('dist', 'noepk'):
 
@@ -1575,6 +1620,47 @@ class CyanaMRParserListener(ParseTreeListener):
                 elif self.__cur_subtype == 'noepk':
                     self.noepkRestraints -= 1
                 return
+
+            if self.__cur_subtype == 'jcoup' and self.__hasPolySeq:
+
+                self.__retrieveLocalSeqScheme()
+
+                chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
+                chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
+
+                if len(chainAssign1) > 0 and len(chainAssign2) > 0:
+
+                    self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
+                    self.selectCoordAtoms(chainAssign2, seqId2, None, atomId2)
+
+                    if len(self.atomSelectionSet) >= 2:
+
+                        if len(self.atomSelectionSet[0]) == 1 and len(self.atomSelectionSet[1]) == 1:
+
+                            isCco = True
+
+                            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                                isCco = False
+
+                            if chain_id_1 != chain_id_2:
+                                isCco = False
+
+                            if abs(seq_id_1 - seq_id_2) > 1:
+                                isCco = False
+
+                            if not isCco:
+                                self.jcoupRestraints -= 1
+                                self.__cur_subtype = 'dist'
+                                self.__cur_dist_type = ''
+                                self.distRestraints += 1
 
             if self.__cur_subtype in ('dist', 'noepk'):
 
@@ -2334,32 +2420,77 @@ class CyanaMRParserListener(ParseTreeListener):
 
         preferNonPoly = False
 
-        if compId in ('CYS', 'CYSZ', 'CYZ', 'CZN', 'CYO', 'ION', 'ZN1', 'ZN2')\
-           and atomId in zincIonCode and self.__hasNonPoly:
-            znCount = 0
-            znSeqId = None
-            for np in self.__nonPoly:
-                if np['comp_id'][0] == 'ZN':
-                    znSeqId = np['auth_seq_id'][0]
-                    znCount += 1
-            if znCount > 0:
-                compId = _compId = 'ZN'
-                if znCount == 1:
-                    seqId = _seqId = znSeqId
-                    atomId = 'ZN'
-                preferNonPoly = True
+        if self.__hasNonPoly:
 
-        if atomId in SYMBOLS_ELEMENT and self.__hasNonPoly:
-            elemCount = 0
-            for np in self.__nonPoly:
-                if np['comp_id'][0] == atomId:
-                    elemCount += 1
-            if elemCount > 0:
-                _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
-                if elemSeqId is not None:
-                    seqId = _seqId = elemSeqId
-                    compId = _compId = atomId
+            resolved = False
+
+            if compId in ('CYS', 'CYSZ', 'CYZ', 'CZN', 'CYO', 'ION', 'ZN1', 'ZN2')\
+               and atomId in zincIonCode:
+                znCount = 0
+                znSeqId = None
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == 'ZN':
+                        znSeqId = np['auth_seq_id'][0]
+                        znCount += 1
+                if znCount > 0:
+                    compId = _compId = 'ZN'
+                    if znCount == 1:
+                        seqId = _seqId = znSeqId
+                        atomId = 'ZN'
+                        resolved = True
                     preferNonPoly = True
+
+            if not resolved and compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
+               and atomId in calciumIonCode:
+                caCount = 0
+                caSeqId = None
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == 'CA':
+                        caSeqId = np['auth_seq_id'][0]
+                        caCount += 1
+                if caCount > 0:
+                    compId = _compId = 'CA'
+                    if caCount == 1:
+                        seqId = _seqId = caSeqId
+                        atomId = 'CA'
+                        resolved = True
+                    preferNonPoly = True
+
+            if not resolved and len(atomId) > 1 and atomId in SYMBOLS_ELEMENT:
+                elemCount = 0
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == atomId:
+                        elemCount += 1
+                if elemCount > 0:
+                    _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
+                    if elemSeqId is not None:
+                        seqId = _seqId = elemSeqId
+                        compId = _compId = atomId
+                        preferNonPoly = resolved = True
+                    elif elemCount == 1:
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == atomId:
+                                seqId = _seqId = np['auth_seq_id'][0]
+                                compId = _compId = atomId
+                                preferNonPoly = resolved = True
+
+            if not resolved and len(compId) > 1 and compId in SYMBOLS_ELEMENT:
+                elemCount = 0
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == compId:
+                        elemCount += 1
+                if elemCount > 0:
+                    _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, compId)
+                    if elemSeqId is not None:
+                        seqId = _seqId = elemSeqId
+                        atomId = _compId = compId
+                        preferNonPoly = True
+                    elif elemCount == 1:
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == compId:
+                                seqId = _seqId = np['auth_seq_id'][0]
+                                atomId = _compId = compId
+                                preferNonPoly = True
 
         if self.__splitLigand is not None and len(self.__splitLigand):
             found = False
@@ -2605,6 +2736,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             else np['seq_id'].index(seqId) if seqId in np['seq_id'] else 0
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
+                    seqId = np['auth_seq_id'][idx]
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
@@ -2846,32 +2978,77 @@ class CyanaMRParserListener(ParseTreeListener):
 
         preferNonPoly = False
 
-        if compId in ('CYS', 'CYSZ', 'CYZ', 'CZN', 'CYO', 'ION', 'ZN1', 'ZN2')\
-           and atomId in zincIonCode and self.__hasNonPoly:
-            znCount = 0
-            znSeqId = None
-            for np in self.__nonPoly:
-                if np['comp_id'][0] == 'ZN':
-                    znSeqId = np['auth_seq_id'][0]
-                    znCount += 1
-            if znCount > 0:
-                compId = _compId = 'ZN'
-                if znCount == 1:
-                    seqId = _seqId = znSeqId
-                    atomId = 'ZN'
-                preferNonPoly = True
+        if self.__hasNonPoly:
 
-        if atomId in SYMBOLS_ELEMENT and self.__hasNonPoly:
-            elemCount = 0
-            for np in self.__nonPoly:
-                if np['comp_id'][0] == atomId:
-                    elemCount += 1
-            if elemCount > 0:
-                _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
-                if elemSeqId is not None:
-                    seqId = _seqId = elemSeqId
-                    compId = _compId = atomId
+            resolved = False
+
+            if compId in ('CYS', 'CYSZ', 'CYZ', 'CZN', 'CYO', 'ION', 'ZN1', 'ZN2')\
+               and atomId in zincIonCode:
+                znCount = 0
+                znSeqId = None
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == 'ZN':
+                        znSeqId = np['auth_seq_id'][0]
+                        znCount += 1
+                if znCount > 0:
+                    compId = _compId = 'ZN'
+                    if znCount == 1:
+                        seqId = _seqId = znSeqId
+                        atomId = 'ZN'
+                        resolved = True
                     preferNonPoly = True
+
+            if not resolved and compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
+               and atomId in calciumIonCode:
+                caCount = 0
+                caSeqId = None
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == 'CA':
+                        caSeqId = np['auth_seq_id'][0]
+                        caCount += 1
+                if caCount > 0:
+                    compId = _compId = 'CA'
+                    if caCount == 1:
+                        seqId = _seqId = caSeqId
+                        atomId = 'CA'
+                        resolved = True
+                    preferNonPoly = True
+
+            if not resolved and len(atomId) > 1 and atomId in SYMBOLS_ELEMENT:
+                elemCount = 0
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == atomId:
+                        elemCount += 1
+                if elemCount > 0:
+                    _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
+                    if elemSeqId is not None:
+                        seqId = _seqId = elemSeqId
+                        compId = _compId = atomId
+                        preferNonPoly = resolved = True
+                    elif elemCount == 1:
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == atomId:
+                                seqId = _seqId = np['auth_seq_id'][0]
+                                compId = _compId = atomId
+                                preferNonPoly = resolved = True
+
+            if not resolved and len(compId) > 1 and compId in SYMBOLS_ELEMENT:
+                elemCount = 0
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == compId:
+                        elemCount += 1
+                if elemCount > 0:
+                    _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, compId)
+                    if elemSeqId is not None:
+                        seqId = _seqId = elemSeqId
+                        atomId = _compId = compId
+                        preferNonPoly = True
+                    elif elemCount == 1:
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == compId:
+                                seqId = _seqId = np['auth_seq_id'][0]
+                                atomId = _compId = compId
+                                preferNonPoly = True
 
         if self.__splitLigand is not None and len(self.__splitLigand):
             found = False
@@ -3142,6 +3319,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             else np['seq_id'].index(seqId) if seqId in np['seq_id'] else 0
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
+                    seqId = np['auth_seq_id'][idx]
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
@@ -4027,6 +4205,9 @@ class CyanaMRParserListener(ParseTreeListener):
                 if len(_atomId) == 0 and __atomId in zincIonCode and 'ZN' in atomSiteAtomId:
                     compId = atomId = 'ZN'
                     _atomId = [atomId]
+                elif len(_atomId) == 0 and __atomId in calciumIonCode and 'CA' in atomSiteAtomId:
+                    compId = atomId = 'CA'
+                    _atomId = [atomId]
                 elif not any(_atomId_ in atomSiteAtomId for _atomId_ in _atomId):
                     pass
                 elif atomId[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in _atomId):
@@ -4058,6 +4239,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
             if compId != cifCompId and compId in monDict3 and not isPolySeq:
                 continue
+
+            if lenAtomId == 0 and not isPolySeq and cifCompId in SYMBOLS_ELEMENT:
+                _atomId = [cifCompId]
+                lenAtomId = 1
 
             if lenAtomId == 0:
                 if compId != cifCompId and any(item for item in chainAssign if item[2] == compId):
@@ -7776,6 +7961,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                     continue
                                 atomId = jVal[k]
                                 chainId = jVal[3 - (j + k)]
+                                if atomId in ('M', 'Q'):
+                                    continue
                                 if self.__hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
@@ -7818,6 +8005,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                     continue
                                 atomId = jVal[k]
                                 chainId = jVal[3 - (j + k)]
+                                if atomId in ('M', 'Q'):
+                                    continue
                                 if self.__hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
@@ -7861,6 +8050,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                     continue
                                 atomId = jVal[k]
                                 chainId = jVal[12 - (j + k)]
+                                if atomId in ('M', 'Q'):
+                                    continue
                                 if self.__hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
@@ -7903,6 +8094,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                     continue
                                 atomId = jVal[k]
                                 chainId = jVal[12 - (j + k)]
+                                if atomId in ('M', 'Q'):
+                                    continue
                                 if self.__hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
                                     _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
                                     if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():

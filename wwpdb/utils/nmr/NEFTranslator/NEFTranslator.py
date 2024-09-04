@@ -2499,10 +2499,14 @@ class NEFTranslator:
                             seq = set()
                             valid = True
                             for row in pre_seq_data:
-                                if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or not row[1].isdigit():
+                                if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue:
                                     valid = False
                                     break
-                                seq.add((row[0], int(row[1]), row[2]))
+                                try:
+                                    seq.add((row[0], int(row[1]), row[2]))
+                                except ValueError:
+                                    valid = False
+                                    break
                             if valid:
                                 sorted_seq = sorted(seq, key=itemgetter(0, 1))
                                 for row in sorted_seq:
@@ -2695,7 +2699,8 @@ class NEFTranslator:
                                 r[chain_id_col] = r[entity_id_col]
                             if len(alt_chain_id_set) == 1:
                                 refresh_entity_assembly(loop, list(alt_chain_id_set))
-                    elif len(alt_chain_id_set) == 1 and len(chain_id_set) == 1:  # 5xv8
+                    elif (len(alt_chain_id_set) == 1 and len(chain_id_set) == 1)\
+                            or (len(alt_chain_id_set) > len(chain_id_set)):  # 5xv8, 2n7k
                         refresh_entity_assembly(loop, list(alt_chain_id_set))
 
                 if 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags:
@@ -2711,13 +2716,19 @@ class NEFTranslator:
                                 cif_np = coord_assembly_checker['non_polymer']
                                 ps = next((ps for ps in cif_ps if ps['auth_chain_id'] == row[0]), None)
                                 if ps is not None:
-                                    if row[1].isdigit() and int(row[1]) in ps['auth_seq_id']:
-                                        ref_comp_id = ps['comp_id'][ps['auth_seq_id'].index(int(row[1]))]
+                                    try:
+                                        if int(row[1]) in ps['auth_seq_id']:
+                                            ref_comp_id = ps['comp_id'][ps['auth_seq_id'].index(int(row[1]))]
+                                    except ValueError:
+                                        pass
                                 if cif_np is not None:
                                     np = next((np for np in cif_np if np['auth_chain_id'] == row[0]), None)
                                     if np is not None:
-                                        if row[1].isdigit() and int(row[1]) in np['auth_seq_id']:
-                                            ref_comp_id = np['comp_id'][np['auth_seq_id'].index(int(row[1]))]
+                                        try:
+                                            if int(row[1]) in np['auth_seq_id']:
+                                                ref_comp_id = np['comp_id'][np['auth_seq_id'].index(int(row[1]))]
+                                        except ValueError:
+                                            pass
                             loop.data[idx][comp_id_col] = translateToStdResName(row[2].upper(), refCompId=ref_comp_id, ccU=self.__ccU)
 
                     if 'Auth_comp_ID' in loop.tags:
@@ -2899,10 +2910,14 @@ class NEFTranslator:
                     seq = set()
                     valid = True
                     for row in pre_seq_data:
-                        if row[0] in emptyValue or row[1] in emptyValue or not row[0].isdigit():
+                        if row[0] in emptyValue or row[1] in emptyValue:
                             valid = False
                             break
-                        seq.add((nmr_chain_id, int(row[0]), row[1]))
+                        try:
+                            seq.add((nmr_chain_id, int(row[0]), row[1]))
+                        except ValueError:
+                            valid = False
+                            break
                     if valid:
                         sorted_seq = sorted(seq, key=itemgetter(0, 1))
                         for row in sorted_seq:
@@ -3081,15 +3096,18 @@ class NEFTranslator:
                             if not row[2].isdigit():
                                 wrong_chain_id_anno = False
                                 break
-                            _seq_id = int(row[0])
-                            _chain_id = int(row[2])
-                            _seq_id_set.add(_seq_id)
-                            if offset is None:
-                                offset = _seq_id - _chain_id
+                            try:
+                                _seq_id = int(row[0])
+                                _chain_id = int(row[2])
+                                _seq_id_set.add(_seq_id)
+                                if offset is None:
+                                    offset = _seq_id - _chain_id
+                                    continue
+                                if _seq_id - _chain_id != offset:
+                                    wrong_chain_id_anno = False
+                                    break
+                            except ValueError:
                                 continue
-                            if _seq_id - _chain_id != offset:
-                                wrong_chain_id_anno = False
-                                break
                         if len(_seq_id_set) < 2:
                             wrong_chain_id_anno = False
                     if wrong_chain_id_anno:

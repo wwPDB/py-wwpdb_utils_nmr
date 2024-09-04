@@ -79,6 +79,7 @@ try:
                                            aminoProtonCode,
                                            carboxylCode,
                                            zincIonCode,
+                                           calciumIonCode,
                                            isReservedLigCode,
                                            rdcBbPairCode,
                                            updatePolySeqRst,
@@ -165,6 +166,7 @@ except ImportError:
                                carboxylCode,
                                rdcBbPairCode,
                                zincIonCode,
+                               calciumIonCode,
                                isReservedLigCode,
                                updatePolySeqRst,
                                sortPolySeqRst,
@@ -1472,32 +1474,77 @@ class DynamoMRParserListener(ParseTreeListener):
 
         self.__allow_ext_seq = False
 
-        if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
-           and atomId in zincIonCode and self.__hasNonPoly:
-            znCount = 0
-            znSeqId = None
-            for np in self.__nonPoly:
-                if np['comp_id'][0] == 'ZN':
-                    znSeqId = np['auth_seq_id'][0]
-                    znCount += 1
-            if znCount > 0:
-                compId = _compId = 'ZN'
-                if znCount == 1:
-                    seqId = _seqId = znSeqId
-                    atomId = 'ZN'
-                preferNonPoly = True
+        if self.__hasNonPoly:
 
-        if atomId in SYMBOLS_ELEMENT and self.__hasNonPoly:
-            elemCount = 0
-            for np in self.__nonPoly:
-                if np['comp_id'][0] == atomId:
-                    elemCount += 1
-            if elemCount > 0:
-                _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
-                if elemSeqId is not None:
-                    seqId = _seqId = elemSeqId
-                    compId = _compId = atomId
+            resolved = False
+
+            if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
+               and atomId in zincIonCode:
+                znCount = 0
+                znSeqId = None
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == 'ZN':
+                        znSeqId = np['auth_seq_id'][0]
+                        znCount += 1
+                if znCount > 0:
+                    compId = _compId = 'ZN'
+                    if znCount == 1:
+                        seqId = _seqId = znSeqId
+                        atomId = 'ZN'
+                        resolved = True
                     preferNonPoly = True
+
+            if not resolved and compId in ('CYS', 'CYSC', 'CYC', 'CCA', 'CYO', 'ION', 'CA1', 'CA2')\
+               and atomId in calciumIonCode:
+                caCount = 0
+                caSeqId = None
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == 'CA':
+                        caSeqId = np['auth_seq_id'][0]
+                        caCount += 1
+                if caCount > 0:
+                    compId = _compId = 'CA'
+                    if caCount == 1:
+                        seqId = _seqId = caSeqId
+                        atomId = 'CA'
+                        resolved = True
+                    preferNonPoly = True
+
+            if not resolved and len(atomId) > 1 and atomId in SYMBOLS_ELEMENT:
+                elemCount = 0
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == atomId:
+                        elemCount += 1
+                if elemCount > 0:
+                    _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, atomId)
+                    if elemSeqId is not None:
+                        seqId = _seqId = elemSeqId
+                        compId = _compId = atomId
+                        preferNonPoly = resolved = True
+                    elif elemCount == 1:
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == atomId:
+                                seqId = _seqId = np['auth_seq_id'][0]
+                                compId = _compId = atomId
+                                preferNonPoly = resolved = True
+
+            if not resolved and len(compId) > 1 and compId in SYMBOLS_ELEMENT:
+                elemCount = 0
+                for np in self.__nonPoly:
+                    if np['comp_id'][0] == compId:
+                        elemCount += 1
+                if elemCount > 0:
+                    _, elemSeqId = getMetalCoordOf(self.__cR, seqId, compId, compId)
+                    if elemSeqId is not None:
+                        seqId = _seqId = elemSeqId
+                        atomId = _compId = compId
+                        preferNonPoly = True
+                    elif elemCount == 1:
+                        for np in self.__nonPoly:
+                            if np['comp_id'][0] == compId:
+                                seqId = _seqId = np['auth_seq_id'][0]
+                                atomId = _compId = compId
+                                preferNonPoly = True
 
         if self.__splitLigand is not None and len(self.__splitLigand):
             found = False
@@ -1753,6 +1800,7 @@ class DynamoMRParserListener(ParseTreeListener):
                             else np['seq_id'].index(seqId) if seqId in np['seq_id'] else 0
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
+                    seqId = np['auth_seq_id'][idx]
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
@@ -2136,6 +2184,9 @@ class DynamoMRParserListener(ParseTreeListener):
                 if len(_atomId) == 0 and __atomId in zincIonCode and 'ZN' in atomSiteAtomId:
                     compId = atomId = 'ZN'
                     _atomId = [atomId]
+                elif len(_atomId) == 0 and __atomId in calciumIonCode and 'CA' in atomSiteAtomId:
+                    compId = atomId = 'CA'
+                    _atomId = [atomId]
                 elif not any(_atomId_ in atomSiteAtomId for _atomId_ in _atomId):
                     pass
                 elif atomId[0] not in pseProBeginCode and not all(_atomId in atomSiteAtomId for _atomId in _atomId):
@@ -2167,6 +2218,10 @@ class DynamoMRParserListener(ParseTreeListener):
 
             if compId != cifCompId and compId in monDict3 and not isPolySeq:
                 continue
+
+            if lenAtomId == 0 and not isPolySeq and cifCompId in SYMBOLS_ELEMENT:
+                _atomId = [cifCompId]
+                lenAtomId = 1
 
             if lenAtomId == 0:
                 if compId != cifCompId and any(item for item in chainAssign if item[2] == compId):

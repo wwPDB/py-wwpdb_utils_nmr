@@ -73,6 +73,7 @@ carboxylCode = ('C', 'O', 'O1', 'O2', 'OT1', 'OT2', 'OXT', 'HXT')
 jcoupBbPairCode = ('N', 'H', 'CA', 'C')
 rdcBbPairCode = ('N', 'H', 'CA')
 zincIonCode = ('ZN', 'ME', 'Z1', 'Z2')
+calciumIonCode = ('CA2', 'CA2+', 'CA+2', 'ME')
 unknownResidue = ('UNK', 'DN', 'N')
 reservedLigCode = ('LIG', 'DRG', 'INH')  # DAOTHER-7204, 7388: reserved ligand codes for new ligands, which must include 2 digits 01-99
 
@@ -2271,6 +2272,20 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
 
     if len(mapping) == 0:
         return atomId
+
+    if any(item for item in mapping
+           if len(item['original_atom_id']) > 1
+           and item['original_atom_id'][0].isdigit()
+           and item['original_atom_id'][1] == 'H'):
+        _mapping = copy.deepcopy(mapping)
+        for item in mapping:
+            if len(item['original_atom_id']) > 1\
+               and item['original_atom_id'][0].isdigit()\
+               and item['original_atom_id'][1] == 'H':
+                _item = copy.copy(item)
+                _item['original_atom_id'] = item['original_atom_id'][1:] + item['original_atom_id'][0]
+                _mapping.append(_item)
+        mapping = _mapping
 
     if elemName in ('Q', 'M'):
 

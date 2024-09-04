@@ -2593,6 +2593,12 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
         if atomId[:-2] in SYMBOLS_ELEMENT:
             return atomId[:-2]
 
+    if atomId.endswith('++'):
+        return atomId[:-2] + '*'
+
+    if atomId.endswith('+'):
+        return atomId[:-1] + '%'
+
     return atomId
 
 
@@ -3240,6 +3246,20 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
             return 'I' if refCompId == 'I' else 'DI'
         if compId == 'HCY':
             return 'CH' if refCompId == 'C' else 'DNR'
+
+    if len(compId) == 2 and compId[1] == 'P':
+        if compId == 'AP':
+            return 'A' if refCompId == 'A' else 'DA'
+        if compId == 'CP':
+            return 'C' if refCompId == 'C' else 'DC'
+        if compId == 'GP':
+            return 'G' if refCompId == 'G' else 'DG'
+        if compId == 'TP':
+            return 'DT'
+        if compId == 'UP':
+            return 'U'
+        if compId == 'IP':
+            return 'I' if refCompId == 'I' else 'DI'
 
     if compId in ('NHE', 'CONH') and refCompId == 'NH2':  # 6hnh, 2m7r
         return 'NH2'
@@ -7248,6 +7268,9 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
     elif mrSubtype == 'procs':
         if atom1 is not None:
             row[key_size] = atomType = atom1['atom_id'][0]
+            row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        elif atom2 is not None:
+            row[key_size] = atomType = atom2['atom_id'][0]
             row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         row[key_size + 2] = dstFunc['obs_value'] if atom2 is None else dstFunc['obs_value_2']
         # Chem_shift_val_err

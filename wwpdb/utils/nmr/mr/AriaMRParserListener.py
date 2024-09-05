@@ -59,6 +59,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            # trueValue,
                                            monDict3,
+                                           emptyValue,
                                            protonBeginCode,
                                            pseProBeginCode,
                                            aminoProtonCode,
@@ -67,6 +68,7 @@ try:
                                            calciumIonCode,
                                            isReservedLigCode,
                                            updatePolySeqRst,
+                                           clearPolySeqRst,
                                            sortPolySeqRst,
                                            syncCompIdOfPolySeqRst,
                                            alignPolymerSequence,
@@ -129,6 +131,7 @@ except ImportError:
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                # trueValue,
                                monDict3,
+                               emptyValue,
                                protonBeginCode,
                                pseProBeginCode,
                                aminoProtonCode,
@@ -137,6 +140,7 @@ except ImportError:
                                calciumIonCode,
                                isReservedLigCode,
                                updatePolySeqRst,
+                               clearPolySeqRst,
                                sortPolySeqRst,
                                syncCompIdOfPolySeqRst,
                                alignPolymerSequence,
@@ -464,13 +468,21 @@ class AriaMRParserListener(ParseTreeListener):
 
                             seq_id_mapping = {}
                             for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
-                                if mid_code == '|' and test_seq_id is not None:
+                                if test_seq_id is None:
+                                    continue
+                                if mid_code == '|':
                                     try:
                                         seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
                                                                            in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
                                                                            if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                     except StopIteration:
                                         pass
+                                elif mid_code == ' ' and test_seq_id in poly_seq_rst['seq_id']:
+                                    idx = poly_seq_rst['seq_id'].index(test_seq_id)
+                                    if poly_seq_rst['comp_id'][idx] == '.' and poly_seq_rst['auth_comp_id'][idx] not in emptyValue:
+                                        seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
+                                                                           in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                                                           if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
 
                             if ref_chain_id not in cyclicPolymer:
                                 cyclicPolymer[ref_chain_id] =\
@@ -571,7 +583,9 @@ class AriaMRParserListener(ParseTreeListener):
 
                                     seq_id_mapping = {}
                                     for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
-                                        if mid_code == '|' and test_seq_id is not None:
+                                        if test_seq_id is None:
+                                            continue
+                                        if mid_code == '|':
                                             try:
                                                 seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
                                                                                    in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
@@ -1191,6 +1205,10 @@ class AriaMRParserListener(ParseTreeListener):
                 types = None
 
         def comp_id_unmatched_with(ps, cif_comp_id):
+            if 'alt_comp_id' in ps and self.__csStat.peptideLike(cif_comp_id) and compId.startswith('D') and len(compId) >= 3\
+               and self.__ccU.lastChemCompDict['_chem_comp.type'].upper() == 'D-PEPTIDE LINKING':
+                clearPolySeqRst(self.__polySeqRst, ps['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId)
+
             if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
                 return False
             if compId not in monDict3 and cif_comp_id not in monDict3:
@@ -1220,6 +1238,11 @@ class AriaMRParserListener(ParseTreeListener):
                         idx = ps['auth_seq_id'].index(seqId) if seqId in ps['auth_seq_id'] else ps['seq_id'].index(seqId)
                     cifCompId = ps['comp_id'][idx]
                     origCompId = ps['auth_comp_id'][idx]
+                    if 'alt_comp_id' in ps and self.__csStat.peptideLike(cifCompId):
+                        ctype = self.__ccU.lastChemCompDict['_chem_comp.type'].upper()
+                        if ctype == 'D-PEPTIDE LINKING':
+                            if compId.startswith('D') and len(compId) >= 3:
+                                clearPolySeqRst(self.__polySeqRst, ps['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId)
                     if comp_id_unmatched_with(ps, cifCompId):
                         continue
                 if cifCompId != compId:
@@ -1260,6 +1283,11 @@ class AriaMRParserListener(ParseTreeListener):
                                 seqId_ = ps['auth_seq_id'][idx]
                                 cifCompId = ps['comp_id'][idx]
                                 origCompId = ps['auth_comp_id'][idx]
+                                if 'alt_comp_id' in ps and self.__csStat.peptideLike(cifCompId):
+                                    ctype = self.__ccU.lastChemCompDict['_chem_comp.type'].upper()
+                                    if ctype == 'D-PEPTIDE LINKING':
+                                        if compId.startswith('D') and len(compId) >= 3:
+                                            clearPolySeqRst(self.__polySeqRst, ps['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId)
                                 if comp_id_unmatched_with(ps, cifCompId):
                                     continue
                                 if cifCompId != compId:
@@ -1743,6 +1771,10 @@ class AriaMRParserListener(ParseTreeListener):
                 types = None
 
         def comp_id_unmatched_with(ps, cif_comp_id):
+            if 'alt_comp_id' in ps and self.__csStat.peptideLike(cif_comp_id) and compId.startswith('D') and len(compId) >= 3\
+               and self.__ccU.lastChemCompDict['_chem_comp.type'].upper() == 'D-PEPTIDE LINKING':
+                clearPolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId)
+
             if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
                 return False
             if compId not in monDict3 and cif_comp_id not in monDict3:

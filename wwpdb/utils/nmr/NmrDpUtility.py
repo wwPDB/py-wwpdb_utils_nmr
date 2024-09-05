@@ -22808,21 +22808,8 @@ class NmrDpUtility:
                         has_cs_stat = True
 
                         if atom_id_[0] in protonBeginCode and 'methyl' in cs_stat['desc']:
-                            _atom_id = self.__getRepAtomId(comp_id, atom_id)
                             methyl_h_list = self.__csStat.getProtonsInSameGroup(comp_id, atom_id)
-
-                            name_len = [len(n) for n in methyl_h_list]
-                            if len(name_len) > 0:
-                                max_len = max(name_len)
-                                min_len = min(name_len)
-
-                                if max_len == min_len or len(atom_id) == max_len:
-                                    _atom_id = atom_id[:-1]
-                                else:
-                                    _atom_id = atom_id
-                            else:  # For example, HEM HM[A-D]
-                                _atom_id = atom_id
-
+                            _atom_id = methyl_h_list[0] if len(methyl_h_list) > 0 else atom_id
                             methyl_cs_key = (chain_id, seq_id, _atom_id, occupancy)
 
                             if methyl_cs_key not in methyl_cs_vals:

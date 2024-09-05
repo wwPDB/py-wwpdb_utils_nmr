@@ -8272,10 +8272,10 @@ save_constraint_statistics
       _Constraint_file.Entry_ID
       _Constraint_file.Constraint_stat_list_ID
 
-     1   2m5o.nef   1   distance                      'hydrogen bond'   simple   3038   NEED_ACC_NO   1    
-     1   2m5o.nef   2   'protein dihedral angle'      .                 .        120    NEED_ACC_NO   1    
-     1   2m5o.nef   3   'residual dipolar coupling'   RDC               .        46     NEED_ACC_NO   1    
-     1   2m5o.nef   4   'residual dipolar coupling'   RDC               .        49     NEED_ACC_NO   1    
+     1   2m5o.nef   1   distance                   'hydrogen bond'   simple   3038   NEED_ACC_NO   1    
+     1   2m5o.nef   2   'protein dihedral angle'   .                 .        120    NEED_ACC_NO   1    
+     1   2m5o.nef   3   'dipolar coupling'         RDC               .        46     NEED_ACC_NO   1    
+     1   2m5o.nef   4   'dipolar coupling'         RDC               .        49     NEED_ACC_NO   1    
 
    stop_
 

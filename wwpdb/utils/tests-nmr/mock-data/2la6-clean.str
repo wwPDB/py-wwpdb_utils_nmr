@@ -8627,11 +8627,11 @@ save_constraint_statistics
       _Constraint_file.Entry_ID
       _Constraint_file.Constraint_stat_list_ID
 
-     1   2la6.nef   1   distance                      NOE               simple   2888   NEED_ACC_NO   1    
-     1   2la6.nef   2   distance                      'hydrogen bond'   simple   30     NEED_ACC_NO   1    
-     1   2la6.nef   3   'protein dihedral angle'      .                 .        80     NEED_ACC_NO   1    
-     1   2la6.nef   4   'residual dipolar coupling'   RDC               .        61     NEED_ACC_NO   1    
-     1   2la6.nef   5   'residual dipolar coupling'   RDC               .        65     NEED_ACC_NO   1    
+     1   2la6.nef   1   distance                   NOE               simple   2888   NEED_ACC_NO   1    
+     1   2la6.nef   2   distance                   'hydrogen bond'   simple   30     NEED_ACC_NO   1    
+     1   2la6.nef   3   'protein dihedral angle'   .                 .        80     NEED_ACC_NO   1    
+     1   2la6.nef   4   'dipolar coupling'         RDC               .        61     NEED_ACC_NO   1    
+     1   2la6.nef   5   'dipolar coupling'         RDC               .        65     NEED_ACC_NO   1    
 
    stop_
 

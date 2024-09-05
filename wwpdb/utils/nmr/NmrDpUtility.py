@@ -31344,7 +31344,7 @@ class NmrDpUtility:
                             _other_angles += 1
 
                 if _br_angles > _other_angles:
-                    sf_item['constraint_type'] = 'carbohydrate dihedral angle'
+                    sf_item['constraint_type'] = 'carbohydrate dihedral angle'  # DAOTHER-9471
 
                     tagNames = [t[0] for t in sf.tags]
 
@@ -31354,7 +31354,7 @@ class NmrDpUtility:
 
             elif content_subtype == 'rdc_restraint':
 
-                sf_item['constraint_type'] = 'dipolar coupling'
+                sf_item['constraint_type'] = 'dipolar coupling'  # DAOTHER-9471
                 sf_item['constraint_subtype'] = 'RDC'
 
                 item_names = self.item_names_in_rdc_loop[file_type]
@@ -53049,7 +53049,7 @@ class NmrDpUtility:
                                 _other_angles += 1
 
                     if _br_angles > _other_angles:
-                        sf_item['constraint_type'] = 'carbohydrate dihedral angle'
+                        sf_item['constraint_type'] = 'carbohydrate dihedral angle'  # DAOTHER-9471
 
                         sf = sf_item['saveframe']
 
@@ -53594,6 +53594,13 @@ class NmrDpUtility:
                                     constraint_type = 'nucleic acid base planarity'
                         except (KeyError, IndexError):
                             pass
+
+                    if constraint_type == 'scalar J-coupling':  # DAOTHER-9471
+                        constraint_type = 'coupling constant'
+                    if constraint_type == 'angle database':  # DAOTHER-9471
+                        constraint_type = 'protein dihedral angle'
+                    if constraint_type == 'paramagnetic relaxation enhancement':  # DAOTHER-9471
+                        constraint_type = 'line broadening'
                     constraint_subtype = get_first_sf_tag(sf, 'Constraint_type') if content_subtype != 'other_restraint' else get_first_sf_tag(sf, 'Definition')
                     if len(constraint_subtype) == 0:
                         constraint_subtype = None
@@ -53602,7 +53609,42 @@ class NmrDpUtility:
                     if sf_item['file_type'] == 'nm-res-sax':
                         constraint_subtype = 'SAXS'
                     if constraint_subtype is not None and constraint_subtype == 'RDC':
-                        constraint_type = 'dipolar coupling'
+                        constraint_type = 'dipolar coupling'  # DAOTHER-9471
+                    if constraint_type == 'scalar J-coupling':  # DAOTHER-9471
+                        constraint_type, constraint_subtype = 'coupling constant', 'J-couplings'
+                    if constraint_type in ('hydrogen bond', 'disulfide bond', 'diselenide bond'):  # DAOTHER-9471
+                        constraint_type, constraint_subtype = 'distance', constraint_type
+                    if constraint_type in ('carbon chemical shift', 'proton chemical shift'):  # DAOTHER-9471
+                        constraint_type, constraint_subtype = 'chemical shift', f'{constraint_type}s'
+                    if constraint_type == 'floating chiral stereo assignments':  # DAOTHER-9471
+                        constraint_type, constraint_subtype = 'chemical shift', constraint_type
+                    if constraint_type == 'NOESY peak volume':  # DAOTHER-9471
+                        constraint_type, constraint_subtype = 'peak volume', 'NOE'
+                    if constraint_type == 'radius of gyration':  # DAOTHER-9471
+                        constraint_type, constraint_subtype = 'coordinate geometry', constraint_type
+                    if constraint_type == 'small angle X-ray scattering':  # DAOTHER-9471
+                        constraint_type, constraint_subtype = 'coordinate geometry', 'SAXS'
+
+                    if constraint_subtype is not None:
+                        if 'prochirality' in constraint_subtype:  # DAOTHER-9471
+                            constraint_subtype = 'prochirality'
+                        if 'NCS restraint' in constraint_subtype:  # DAOTHER-9471
+                            constraint_subtype = 'symmetry'
+                        if constraint_subtype == 'angle restraint':  # DAOTHER-9471
+                            constraint_subtype = 'general angle'
+                        if constraint_subtype == 'chemical shift perturbation':  # DAOTHER-9471
+                            constraint_subtype = 'CSP'
+                        if constraint_subtype == 'covalent bond linkage':  # DAOTHER-9471
+                            constraint_subtype = 'covalent bond'
+                        if constraint_subtype == 'paramagnetic relaxation':  # DAOTHER-9471
+                            constraint_subtype = 'PRE'
+                        if 'planality' in constraint_subtype:  # DAOTHER-9471
+                            constraint_subtype = None
+                        if 'radius of gyration' in constraint_subtype:  # DAOTHER-9471
+                            constraint_type, constraint_subtype = 'coordinate geometry', constraint_type
+                        if constraint_subtype == 'unknown':  # DAOTHER-9471
+                            constraint_subtype = 'Not applicable'
+
                     constraint_subsubtype = sf_item.get('constraint_subsubtype')
 
                     try:
@@ -55054,7 +55096,7 @@ class NmrDpUtility:
                                     _other_angles += 1
 
                         if _br_angles > _other_angles:
-                            sf_item[sf_framecode]['constraint_type'] = 'carbohydrate dihedral angle'
+                            sf_item[sf_framecode]['constraint_type'] = 'carbohydrate dihedral angle'  # DAOTHER-9471
 
                             tagNames = [t[0] for t in sf.tags]
 
@@ -55070,7 +55112,7 @@ class NmrDpUtility:
                     for sf in master_entry.get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
                         if sf_framecode not in sf_item:
-                            sf_item[sf_framecode] = {'constraint_type': 'dipolar coupling', 'constraint_subtype': 'RDC'}
+                            sf_item[sf_framecode] = {'constraint_type': 'dipolar coupling', 'constraint_subtype': 'RDC'}  # DAOTHER-9471
 
                         if __pynmrstar_v3_2__:
                             lp = sf.get_loop(lp_category)
@@ -55414,8 +55456,9 @@ class NmrDpUtility:
                         if len(constraint_subtype) == 0 or constraint_subtype in emptyValue:
                             constraint_subtype = sf_item[sf_framecode]['constraint_subtype']\
                                 if 'constraint_subtype' in sf_item[sf_framecode] else None
-                        if constraint_subtype is not None and constraint_subtype == 'RDC':
+                        if constraint_subtype is not None and constraint_subtype == 'RDC':  # DAOTHER-9471
                             constraint_type = 'dipolar coupling'
+
                         constraint_subsubtype = sf_item[sf_framecode]['constraint_subsubtype']\
                             if 'constraint_subsubtype' in sf_item[sf_framecode] else None
                         row[3], row[4], row[5], row[6] =\

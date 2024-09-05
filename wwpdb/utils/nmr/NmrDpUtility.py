@@ -31366,7 +31366,7 @@ class NmrDpUtility:
 
             elif content_subtype == 'rdc_restraint':
 
-                sf_item['constraint_type'] = 'residual dipolar coupling'
+                sf_item['constraint_type'] = 'dipolar coupling'
                 sf_item['constraint_subtype'] = 'RDC'
 
                 item_names = self.item_names_in_rdc_loop[file_type]
@@ -53517,7 +53517,7 @@ class NmrDpUtility:
                                   'hydrogen exchange', 'line broadening', 'pseudocontact shift', 'intervector projection angle',
                                   'protein peptide planarity', 'protein other kinds of constraints',
                                   'nucleic acid base planarity', 'nucleic acid other kinds of constraints',
-                                  'residual dipolar coupling')},
+                                  'carbohydrate dihedral angle')},
                         {'name': 'Constraint_subtype', 'type': 'enum',
                          'enum': ('Not applicable', 'NOE', 'NOE buildup', 'NOE not seen', 'general distance',
                                   'alignment tensor', 'chirality', 'prochirality', 'disulfide bond', 'hydrogen bond',
@@ -53614,7 +53614,7 @@ class NmrDpUtility:
                     if sf_item['file_type'] == 'nm-res-sax':
                         constraint_subtype = 'SAXS'
                     if constraint_subtype is not None and constraint_subtype == 'RDC':
-                        constraint_type = 'residual dipolar coupling'
+                        constraint_type = 'dipolar coupling'
                     constraint_subsubtype = sf_item.get('constraint_subsubtype')
 
                     try:
@@ -55082,7 +55082,7 @@ class NmrDpUtility:
                     for sf in master_entry.get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
                         if sf_framecode not in sf_item:
-                            sf_item[sf_framecode] = {'constraint_type': 'residual dipolar coupling', 'constraint_subtype': 'RDC'}
+                            sf_item[sf_framecode] = {'constraint_type': 'dipolar coupling', 'constraint_subtype': 'RDC'}
 
                         if __pynmrstar_v3_2__:
                             lp = sf.get_loop(lp_category)
@@ -55380,7 +55380,7 @@ class NmrDpUtility:
                                   'hydrogen exchange', 'line broadening', 'pseudocontact shift', 'intervector projection angle',
                                   'protein peptide planarity', 'protein other kinds of constraints',
                                   'nucleic acid base planarity', 'nucleic acid other kinds of constraints',
-                                  'residual dipolar coupling')},
+                                  'carbohydrate dihedral angle')},
                         {'name': 'Constraint_subtype', 'type': 'enum',
                          'enum': ('Not applicable', 'NOE', 'NOE buildup', 'NOE not seen', 'general distance',
                                   'alignment tensor', 'chirality', 'prochirality', 'disulfide bond', 'hydrogen bond',
@@ -55427,7 +55427,7 @@ class NmrDpUtility:
                             constraint_subtype = sf_item[sf_framecode]['constraint_subtype']\
                                 if 'constraint_subtype' in sf_item[sf_framecode] else None
                         if constraint_subtype is not None and constraint_subtype == 'RDC':
-                            constraint_type = 'residual dipolar coupling'
+                            constraint_type = 'dipolar coupling'
                         constraint_subsubtype = sf_item[sf_framecode]['constraint_subsubtype']\
                             if 'constraint_subsubtype' in sf_item[sf_framecode] else None
                         row[3], row[4], row[5], row[6] =\

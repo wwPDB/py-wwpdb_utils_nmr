@@ -92,7 +92,7 @@ try:
                                            calciumIonCode,
                                            isReservedLigCode,
                                            updatePolySeqRst,
-                                           clearPolySeqRst,
+                                           revertPolySeqRst,
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
                                            sortPolySeqRst,
@@ -190,7 +190,7 @@ except ImportError:
                                calciumIonCode,
                                isReservedLigCode,
                                updatePolySeqRst,
-                               clearPolySeqRst,
+                               revertPolySeqRst,
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
                                sortPolySeqRst,
@@ -2620,7 +2620,7 @@ class CyanaMRParserListener(ParseTreeListener):
         def comp_id_unmatched_with(ps, cif_comp_id):
             if 'alt_comp_id' in ps and self.__csStat.peptideLike(cif_comp_id) and compId.startswith('D') and len(compId) >= 3\
                and self.__ccU.lastChemCompDict['_chem_comp.type'].upper() == 'D-PEPTIDE LINKING':
-                clearPolySeqRst(self.__polySeqRst, ps['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId)
+                revertPolySeqRst(self.__polySeqRst, ps['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId)
 
             if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
                 return False
@@ -3216,7 +3216,7 @@ class CyanaMRParserListener(ParseTreeListener):
         def comp_id_unmatched_with(ps, cif_comp_id):
             if 'alt_comp_id' in ps and self.__csStat.peptideLike(cif_comp_id) and compId.startswith('D') and len(compId) >= 3\
                and self.__ccU.lastChemCompDict['_chem_comp.type'].upper() == 'D-PEPTIDE LINKING':
-                clearPolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId)
+                revertPolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId)
 
             if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
                 return False

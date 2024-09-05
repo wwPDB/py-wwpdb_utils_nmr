@@ -677,8 +677,8 @@ def updatePolySeqRst(polySeqRst, chainId, seqId, compId: str, authCompId=None):
         ps['auth_comp_id'].append(compId if authCompId in emptyValue else authCompId)
 
 
-def clearPolySeqRst(polySeqRst, chainId, seqId, authCompId):
-    """ Clear polymer sequence of the current MR file.
+def revertPolySeqRst(polySeqRst, chainId, seqId, authCompId):
+    """ Revert polymer sequence of the current MR file.
     """
 
     if seqId is None or authCompId in emptyValue:

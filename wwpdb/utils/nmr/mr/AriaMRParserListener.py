@@ -68,7 +68,7 @@ try:
                                            calciumIonCode,
                                            isReservedLigCode,
                                            updatePolySeqRst,
-                                           clearPolySeqRst,
+                                           revertPolySeqRst,
                                            sortPolySeqRst,
                                            syncCompIdOfPolySeqRst,
                                            alignPolymerSequence,
@@ -140,7 +140,7 @@ except ImportError:
                                calciumIonCode,
                                isReservedLigCode,
                                updatePolySeqRst,
-                               clearPolySeqRst,
+                               revertPolySeqRst,
                                sortPolySeqRst,
                                syncCompIdOfPolySeqRst,
                                alignPolymerSequence,
@@ -1207,7 +1207,7 @@ class AriaMRParserListener(ParseTreeListener):
         def comp_id_unmatched_with(ps, cif_comp_id):
             if 'alt_comp_id' in ps and self.__csStat.peptideLike(cif_comp_id) and compId.startswith('D') and len(compId) >= 3\
                and self.__ccU.lastChemCompDict['_chem_comp.type'].upper() == 'D-PEPTIDE LINKING':
-                clearPolySeqRst(self.__polySeqRst, ps['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId)
+                revertPolySeqRst(self.__polySeqRst, ps['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId)
 
             if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
                 return False
@@ -1238,11 +1238,6 @@ class AriaMRParserListener(ParseTreeListener):
                         idx = ps['auth_seq_id'].index(seqId) if seqId in ps['auth_seq_id'] else ps['seq_id'].index(seqId)
                     cifCompId = ps['comp_id'][idx]
                     origCompId = ps['auth_comp_id'][idx]
-                    if 'alt_comp_id' in ps and self.__csStat.peptideLike(cifCompId):
-                        ctype = self.__ccU.lastChemCompDict['_chem_comp.type'].upper()
-                        if ctype == 'D-PEPTIDE LINKING':
-                            if compId.startswith('D') and len(compId) >= 3:
-                                clearPolySeqRst(self.__polySeqRst, ps['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId)
                     if comp_id_unmatched_with(ps, cifCompId):
                         continue
                 if cifCompId != compId:
@@ -1283,11 +1278,6 @@ class AriaMRParserListener(ParseTreeListener):
                                 seqId_ = ps['auth_seq_id'][idx]
                                 cifCompId = ps['comp_id'][idx]
                                 origCompId = ps['auth_comp_id'][idx]
-                                if 'alt_comp_id' in ps and self.__csStat.peptideLike(cifCompId):
-                                    ctype = self.__ccU.lastChemCompDict['_chem_comp.type'].upper()
-                                    if ctype == 'D-PEPTIDE LINKING':
-                                        if compId.startswith('D') and len(compId) >= 3:
-                                            clearPolySeqRst(self.__polySeqRst, ps['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId)
                                 if comp_id_unmatched_with(ps, cifCompId):
                                     continue
                                 if cifCompId != compId:
@@ -1773,7 +1763,7 @@ class AriaMRParserListener(ParseTreeListener):
         def comp_id_unmatched_with(ps, cif_comp_id):
             if 'alt_comp_id' in ps and self.__csStat.peptideLike(cif_comp_id) and compId.startswith('D') and len(compId) >= 3\
                and self.__ccU.lastChemCompDict['_chem_comp.type'].upper() == 'D-PEPTIDE LINKING':
-                clearPolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId)
+                revertPolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId)
 
             if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
                 return False

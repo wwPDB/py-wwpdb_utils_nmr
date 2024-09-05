@@ -74,7 +74,7 @@ try:
                                            calciumIonCode,
                                            isReservedLigCode,
                                            updatePolySeqRst,
-                                           clearPolySeqRst,
+                                           revertPolySeqRst,
                                            sortPolySeqRst,
                                            syncCompIdOfPolySeqRst,
                                            alignPolymerSequence,
@@ -152,7 +152,7 @@ except ImportError:
                                calciumIonCode,
                                isReservedLigCode,
                                updatePolySeqRst,
-                               clearPolySeqRst,
+                               revertPolySeqRst,
                                sortPolySeqRst,
                                syncCompIdOfPolySeqRst,
                                alignPolymerSequence,
@@ -1352,7 +1352,7 @@ class BiosymMRParserListener(ParseTreeListener):
         def comp_id_unmatched_with(ps, cif_comp_id):
             if 'alt_comp_id' in ps and self.__csStat.peptideLike(cif_comp_id) and compId.startswith('D') and len(compId) >= 3\
                and self.__ccU.lastChemCompDict['_chem_comp.type'].upper() == 'D-PEPTIDE LINKING':
-                clearPolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId)
+                revertPolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId)
 
             if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
                 return False

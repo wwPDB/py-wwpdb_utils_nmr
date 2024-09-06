@@ -2419,6 +2419,7 @@ class NEFTranslator:
                                 seq_key = (row[2], row[0])
                                 if seq_key in ch_set:
                                     loop.data[idx][comp_id_col] = 'CH'
+
                 elif 'Atom_ID' in loop.tags and 'Auth_comp_ID' in loop.tags\
                         and set(tags) & set(loop.tags) == set(tags):
                     pre_tags = copy.deepcopy(tags)
@@ -2687,38 +2688,40 @@ class NEFTranslator:
                                 sync_seq = False
                             resolve_entity_assembly(_loop, _alt_chain_id_list, sync_seq)  # pylint: disable=cell-var-from-loop
 
+                        def sync_entity_assembly_with_entity(_loop):
+                            if len(chain_id_set) == 0 and 'Entity_ID' in _loop.tags:
+                                _pre_tag = ['Entity_ID']
+                                _pre_chain_data = get_lp_tag(_loop, _pre_tag)
+                                entity_id_set = set()
+                                for _row in _pre_chain_data:
+                                    if _row not in emptyValue:
+                                        entity_id_set.add(_row)
+                                if len(entity_id_set) > 0 and len(entity_id_set) == len(alt_chain_id_set):  # 2rqz
+                                    chain_id_col = _loop.tags.index('Entity_assembly_ID')
+                                    entity_id_col = _loop.tags.index('Entity_ID')
+                                    for r in _loop.data:
+                                        r[chain_id_col] = r[entity_id_col]
+                                    return True
+                            return False
+
                         if len(alt_chain_id_set) > 0 and (len(chain_id_set) > LEN_LARGE_ASYM_ID or len(chain_id_set) == 0):
                             if 'UNMAPPED' in alt_chain_id_set:  # 2c34, 2ksi
                                 resolve_entity_assembly(loop, list(alt_chain_id_set), True)
+
                             else:  # 2lpk, 2lnh
-                                chain_id_col = loop.tags.index('Entity_assembly_ID')
-                                alt_chain_id_col = loop.tags.index('Auth_asym_ID')
-                                for r in loop.data:
-                                    r[chain_id_col] = r[alt_chain_id_col]
-                                # if len(alt_chain_id_set) == 1:
-                                if len(chain_id_set) <= len(alt_chain_id_set):
-                                    refresh_entity_assembly(loop, list(alt_chain_id_set))
+                                if not sync_entity_assembly_with_entity(loop):  # 2rqz
+                                    chain_id_col = loop.tags.index('Entity_assembly_ID')
+                                    alt_chain_id_col = loop.tags.index('Auth_asym_ID')
+                                    for r in loop.data:
+                                        r[chain_id_col] = r[alt_chain_id_col]
+                                    # if len(alt_chain_id_set) == 1:
+                                    if len(chain_id_set) <= len(alt_chain_id_set):
+                                        refresh_entity_assembly(loop, list(alt_chain_id_set))
 
-                        elif len(chain_id_set) == 0 and 'Entity_ID' in loop.tags:
-                            pre_tag = ['Entity_ID']
-                            pre_chain_data = get_lp_tag(loop, pre_tag)
-                            entity_id_set = set()
-                            for row in pre_chain_data:
-                                if row not in emptyValue:
-                                    entity_id_set.add(row)
-                            if len(entity_id_set) > 0 and len(entity_id_set) == len(alt_chain_id_set):  # 2kxc
-                                entity_id_col = loop.tags.index('Entity_ID')
-                                chain_id_col = loop.tags.index('Entity_assembly_ID')
-                                for r in loop.data:
-                                    r[chain_id_col] = r[entity_id_col]
-                                # if len(alt_chain_id_set) == 1:
-                                if len(chain_id_set) <= len(alt_chain_id_set):
-                                    refresh_entity_assembly(loop, list(alt_chain_id_set))
-
-                        # elif (len(alt_chain_id_set) == 1 and len(chain_id_set) == 1)\
-                        #         or (len(alt_chain_id_set) > len(chain_id_set)):  # 5xv8, 2n7k
-                        elif len(chain_id_set) <= len(alt_chain_id_set):
-                            refresh_entity_assembly(loop, list(alt_chain_id_set))
+                        elif not sync_entity_assembly_with_entity(loop):  # 2kxc
+                            if (len(alt_chain_id_set) == 1 and len(chain_id_set) == 1)\
+                               or (len(alt_chain_id_set) > len(chain_id_set)):  # 5xv8, 2n7k
+                                refresh_entity_assembly(loop, list(alt_chain_id_set))
 
                 if 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags and coord_assembly_checker is not None:
                     pre_comp_data = get_lp_tag(loop, ['Auth_asym_ID', 'Auth_seq_ID', 'Comp_ID'])

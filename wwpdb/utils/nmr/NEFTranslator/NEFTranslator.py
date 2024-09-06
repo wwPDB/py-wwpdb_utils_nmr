@@ -2696,7 +2696,8 @@ class NEFTranslator:
                                 for r in loop.data:
                                     r[chain_id_col] = r[alt_chain_id_col]
                                 # if len(alt_chain_id_set) == 1:
-                                refresh_entity_assembly(loop, list(alt_chain_id_set))
+                                if len(chain_id_set) <= len(alt_chain_id_set):
+                                    refresh_entity_assembly(loop, list(alt_chain_id_set))
 
                         elif len(chain_id_set) == 0 and 'Entity_ID' in loop.tags:
                             pre_tag = ['Entity_ID']
@@ -2711,11 +2712,12 @@ class NEFTranslator:
                                 for r in loop.data:
                                     r[chain_id_col] = r[entity_id_col]
                                 # if len(alt_chain_id_set) == 1:
-                                refresh_entity_assembly(loop, list(alt_chain_id_set))
+                                if len(chain_id_set) <= len(alt_chain_id_set):
+                                    refresh_entity_assembly(loop, list(alt_chain_id_set))
 
                         # elif (len(alt_chain_id_set) == 1 and len(chain_id_set) == 1)\
                         #         or (len(alt_chain_id_set) > len(chain_id_set)):  # 5xv8, 2n7k
-                        else:
+                        elif len(chain_id_set) <= len(alt_chain_id_set):
                             refresh_entity_assembly(loop, list(alt_chain_id_set))
 
                 if 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags and coord_assembly_checker is not None:

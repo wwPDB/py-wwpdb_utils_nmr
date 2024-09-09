@@ -687,7 +687,7 @@ class CifReader:
 
         keyNames = [k['name'] for k in keyItems]
 
-        len_key = len(keyItems)
+        lenKeyItems = len(keyItems)
 
         asm = []  # assembly of a loop
 
@@ -743,16 +743,16 @@ class CifReader:
             unmapResidue = {}
 
             for row in rowList:
-                for j in range(len_key):
+                for j in range(lenKeyItems):
                     itCol = itDict[keyNames[j]]
                     if itCol < len(row) and row[itCol] in self.emptyValue:
                         if 'default-from' in keyItems[j] and keyItems[j]['default-from'] in keyNames:
                             if catName == 'pdbx_poly_seq_scheme':
                                 if 'alt_name' in keyItems[j] and keyItems[j]['alt_name'] == 'auth_comp_id':
-                                    chain_id = row[altDict['chain_id']]
-                                    if chain_id not in unmapResidue:
-                                        unmapResidue[chain_id] = []
-                                    unmapResidue[chain_id].append((row[altDict['seq_id']], row[altDict['comp_id']]))
+                                    c = row[altDict['chain_id']]
+                                    if c not in unmapResidue:
+                                        unmapResidue[c] = []
+                                    unmapResidue[c].append((row[altDict['seq_id']], row[altDict['comp_id']]))
                             row[itCol] = row[itDict[keyItems[j]['default-from']]]
                             continue
                         if 'default' not in keyItems[j] or keyItems[j]['default'] not in self.emptyValue:
@@ -762,24 +762,25 @@ class CifReader:
             if len(unmapResidue) > 1:
                 chainIdWoDefault = set()
                 for (i, j) in itertools.combinations(unmapResidue.keys(), 2):
-                    if unmapResidue[i] == unmapResidue[j]:
+                    if i not in chainIdWoDefault and j not in chainIdWoDefault\
+                       and unmapResidue[i] == unmapResidue[j]:
                         chainIdWoDefault.add(i)
                         chainIdWoDefault.add(j)
 
                 if len(chainIdWoDefault) > 1:
-                    _rowList = copy.depcopy(catObj.getRowList())
+                    _rowList = copy.deepcopy(catObj.getRowList())
                     rowList = []
 
                     for row in _rowList:
                         skip = False
-                        for j in range(len_key):
+                        for j in range(lenKeyItems):
                             itCol = itDict[keyNames[j]]
                             if itCol < len(row) and row[itCol] in self.emptyValue:
                                 if 'default-from' in keyItems[j] and keyItems[j]['default-from'] in keyNames:
                                     if catName == 'pdbx_poly_seq_scheme':
                                         if 'alt_name' in keyItems[j] and keyItems[j]['alt_name'] == 'auth_comp_id':
-                                            chain_id = row[altDict['chain_id']]
-                                            if chain_id in chainIdWoDefault:
+                                            c = row[altDict['chain_id']]
+                                            if c in chainIdWoDefault:
                                                 skip = True
                                                 continue
                                     row[itCol] = row[itDict[keyItems[j]['default-from']]]
@@ -804,7 +805,7 @@ class CifReader:
             auth_comp_id_col = -1 if 'auth_comp_id' not in altDict else altDict['auth_comp_id']
             alt_comp_id_col = -1 if 'alt_comp_id' not in altDict else altDict['alt_comp_id']
 
-            auth_scheme = auth_seq_id_col != -1
+            authScheme = auth_seq_id_col != -1
 
             chainIds = sorted(set(row[chain_id_col] for row in rowList), key=lambda x: (len(x), x))
 
@@ -869,7 +870,7 @@ class CifReader:
                     if c not in authChainDict:
                         authChainDict[c] = row[auth_chain_id_col]
 
-            if auth_scheme:
+            if authScheme:
                 for c in chainIds:
                     authSeqDict[c] = []
                     for s in seqDict[c]:
@@ -884,12 +885,12 @@ class CifReader:
                             else:
                                 authSeqDict[c].append(None)
 
-            large_model = catName == 'pdbx_poly_seq_scheme' and len(chainIds) > LEN_MAJOR_ASYM_ID
+            largeAssembly = catName == 'pdbx_poly_seq_scheme' and len(chainIds) > LEN_MAJOR_ASYM_ID
 
-            entity_poly = self.getDictList('entity_poly')
+            entityPoly = self.getDictList('entity_poly')
 
-            ca_rmsd = ca_well_defined_region = None
-            polypeptide_chains = polypeptide_lengths = []
+            caRmsd = caWellDefinedRegion = None
+            polyPeptideChains = polyPeptideLengths = []
 
             _seqDict = copy.deepcopy(seqDict)
 
@@ -897,7 +898,7 @@ class CifReader:
                 ent = {}  # entity
 
                 ident = False
-                if len(asm) > 0 and large_model:
+                if len(asm) > 0 and largeAssembly:
                     _ent = asm[-1]
                     if 'identical_chain_id' in _ent and c in _ent['identical_chain_id']:
                         ident = True
@@ -911,7 +912,7 @@ class CifReader:
 
                 if not ident:
 
-                    etype = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
+                    etype = next((e['type'] for e in entityPoly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
 
                     # DAOTHER-9644: support for truncated loop in the model
                     if withRmsd and catName == 'pdbx_poly_seq_scheme' and len(authSeqDict) > 0:  # avoid interference of ParserListenerUtils.coordAssemblyChecker()
@@ -1034,11 +1035,11 @@ class CifReader:
                             ent['ins_code'] = insCodeDict[c]
                         if any(s for s in labelSeqDict[c] if s not in self.emptyValue):
                             if c in labelSeqDict and all(isinstance(s, int) for s in labelSeqDict[c]):
-                                ent['auth_seq_id'] = authSeqDict[c] if auth_scheme else seqDict[c]
+                                ent['auth_seq_id'] = authSeqDict[c] if authScheme else seqDict[c]
                                 ent['label_seq_id'] = labelSeqDict[c]
                                 ent['seq_id'] = ent['label_seq_id']
 
-                    if auth_scheme:
+                    if authScheme:
                         ent['auth_seq_id'] = authSeqDict[c]
                         ent['gap_in_auth_seq'] = False
                         for p in range(len(authSeqDict[c]) - 1):
@@ -1052,7 +1053,7 @@ class CifReader:
 
                     if auth_comp_id_col != -1:
                         ent['auth_comp_id'] = []
-                        if auth_scheme:
+                        if authScheme:
                             if ins_code_col != -1:
                                 for s, ic in zip(authSeqDict[c], insCodeDict[c]):
                                     row = next((row for row in rowList if row[chain_id_col] == c
@@ -1094,7 +1095,7 @@ class CifReader:
 
                     if alt_comp_id_col != -1:
                         ent['alt_comp_id'] = []
-                        if auth_scheme:
+                        if authScheme:
                             if ins_code_col != -1:
                                 for s, ic in zip(authSeqDict[c], insCodeDict[c]):
                                     row = next((row for row in rowList if row[chain_id_col] == c
@@ -1133,7 +1134,7 @@ class CifReader:
                                     ent['alt_comp_id'].append('.')
 
                     if withStructConf and i < LEN_MAJOR_ASYM_ID:  # to process large assembly avoiding forced timeout
-                        ent['struct_conf'] = self.__extractStructConf(c, authSeqDict[c] if auth_scheme else seqDict[c], not auth_scheme)
+                        ent['struct_conf'] = self.__extractStructConf(c, authSeqDict[c] if authScheme else seqDict[c], not authScheme)
 
                     # to process large assembly avoiding forced timeout (2ms7, 21 chains)
                     if withRmsd and etype is not None and totalModels > 1 and i < LEN_MAJOR_ASYM_ID / 2:
@@ -1152,21 +1153,21 @@ class CifReader:
 
                         if 'polypeptide' in etype:
 
-                            if ca_rmsd is None:
+                            if caRmsd is None:
 
-                                polypeptide_chains = [c]
-                                polypeptide_lengths = [len(_seqDict[c])]
+                                polyPeptideChains = [c]
+                                polyPeptideLengths = [len(_seqDict[c])]
 
                                 for c2 in chainIds:
 
                                     if c2 == c:
                                         continue
 
-                                    etype2 = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c2 in e['pdbx_strand_id'].split(',')), None)
+                                    etype2 = next((e['type'] for e in entityPoly if 'pdbx_strand_id' in e and c2 in e['pdbx_strand_id'].split(',')), None)
 
                                     if etype2 is not None and 'polypeptide' in etype2:
-                                        polypeptide_chains.append(c2)
-                                        polypeptide_lengths.append(len(_seqDict[c2]))
+                                        polyPeptideChains.append(c2)
+                                        polyPeptideLengths.append(len(_seqDict[c2]))
 
                                 ca_atom_sites = self.getDictListWithFilter('atom_site',
                                                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
@@ -1178,7 +1179,7 @@ class CifReader:
                                                                             {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                             ],
                                                                            [{'name': 'label_asym_id', 'type': 'enum',
-                                                                             'enum': polypeptide_chains},
+                                                                             'enum': polyPeptideChains},
                                                                             {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'},
                                                                             {'name': 'label_alt_id', 'type': 'enum',
                                                                              'enum': (repAltId,)},
@@ -1194,7 +1195,7 @@ class CifReader:
                                                                             {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                             ],
                                                                            [{'name': 'label_asym_id', 'type': 'enum',
-                                                                             'enum': polypeptide_chains},
+                                                                             'enum': polyPeptideChains},
                                                                             {'name': 'label_atom_id', 'type': 'str', 'value': 'C'},
                                                                             {'name': 'label_alt_id', 'type': 'enum',
                                                                              'enum': (repAltId,)},
@@ -1210,7 +1211,7 @@ class CifReader:
                                                                             {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                             ],
                                                                            [{'name': 'label_asym_id', 'type': 'enum',
-                                                                             'enum': polypeptide_chains},
+                                                                             'enum': polyPeptideChains},
                                                                             {'name': 'label_atom_id', 'type': 'str', 'value': 'N'},
                                                                             {'name': 'label_alt_id', 'type': 'enum',
                                                                              'enum': (repAltId,)},
@@ -1219,14 +1220,14 @@ class CifReader:
                                 bb_atom_sites.extend(ca_atom_sites)
                                 bb_atom_sites.extend(co_atom_sites)
 
-                                ca_rmsd, ca_well_defined_region = self.__calculateRmsd(polypeptide_chains, polypeptide_lengths,
-                                                                                       totalModels, effModelIds,
-                                                                                       ca_atom_sites, bb_atom_sites, randomM)
+                                caRmsd, caWellDefinedRegion = self.__calculateRmsd(polyPeptideChains, polyPeptideLengths,
+                                                                                   totalModels, effModelIds,
+                                                                                   ca_atom_sites, bb_atom_sites, randomM)
 
-                            if ca_rmsd is not None:
-                                ent['ca_rmsd'] = ca_rmsd[polypeptide_chains.index(c)]
-                            if ca_well_defined_region is not None:
-                                ent['well_defined_region'] = ca_well_defined_region[polypeptide_chains.index(c)]
+                            if caRmsd is not None:
+                                ent['ca_rmsd'] = caRmsd[polyPeptideChains.index(c)]
+                            if caWellDefinedRegion is not None:
+                                ent['well_defined_region'] = caWellDefinedRegion[polyPeptideChains.index(c)]
 
                         elif 'ribonucleotide' in etype:
 
@@ -1263,14 +1264,14 @@ class CifReader:
 
                             bb_atom_sites.extend(p_atom_sites)
 
-                            p_rmsd, p_well_defined_region = self.__calculateRmsd([c], [len(_seqDict[c])],
-                                                                                 totalModels, effModelIds,
-                                                                                 p_atom_sites, bb_atom_sites, randomM)
+                            pRmsd, pWellDefinedRegion = self.__calculateRmsd([c], [len(_seqDict[c])],
+                                                                             totalModels, effModelIds,
+                                                                             p_atom_sites, bb_atom_sites, randomM)
 
-                            if p_rmsd is not None:
-                                ent['p_rmsd'] = p_rmsd[0]
-                            if p_well_defined_region is not None:
-                                ent['well_defined_region'] = p_well_defined_region[0]
+                            if pRmsd is not None:
+                                ent['p_rmsd'] = pRmsd[0]
+                            if pWellDefinedRegion is not None:
+                                ent['well_defined_region'] = pWellDefinedRegion[0]
 
                 if len(chainIds) > 1:
                     identity = []

@@ -740,16 +740,51 @@ class CifReader:
 
             # get row list
             rowList = catObj.getRowList()
+            unmapResidue = {}
 
             for row in rowList:
                 for j in range(len_key):
                     itCol = itDict[keyNames[j]]
                     if itCol < len(row) and row[itCol] in self.emptyValue:
                         if 'default-from' in keyItems[j] and keyItems[j]['default-from'] in keyNames:
+                            if catName == 'pdbx_poly_seq_scheme':
+                                if 'alt_name' in keyItems[j] and keyItems[j]['alt_name'] == 'auth_comp_id':
+                                    chain_id = row[altDict['chain_id']]
+                                    if chain_id not in unmapResidue:
+                                        unmapResidue[chain_id] = []
+                                    unmapResidue[chain_id].append((row[altDict['seq_id']], row[altDict['comp_id']]))
                             row[itCol] = row[itDict[keyItems[j]['default-from']]]
                             continue
                         if 'default' not in keyItems[j] or keyItems[j]['default'] not in self.emptyValue:
                             raise ValueError(f"{keyNames[j]} must not be empty.")
+
+            # DAOTHER-9674
+            if len(unmapResidue) > 1:
+                chainIdWoDefault = set()
+                for (i, j) in itertools.combinations(unmapResidue.keys(), 2):
+                    if unmapResidue[i] == unmapResidue[j]:
+                        chainIdWoDefault.add(i)
+                        chainIdWoDefault.add(j)
+
+                if len(chainIdWoDefault) > 1:
+                    _rowList = copy.depcopy(catObj.getRowList())
+                    rowList = []
+
+                    for row in _rowList:
+                        skip = False
+                        for j in range(len_key):
+                            itCol = itDict[keyNames[j]]
+                            if itCol < len(row) and row[itCol] in self.emptyValue:
+                                if 'default-from' in keyItems[j] and keyItems[j]['default-from'] in keyNames:
+                                    if catName == 'pdbx_poly_seq_scheme':
+                                        if 'alt_name' in keyItems[j] and keyItems[j]['alt_name'] == 'auth_comp_id':
+                                            chain_id = row[altDict['chain_id']]
+                                            if chain_id in chainIdWoDefault:
+                                                skip = True
+                                                continue
+                                    row[itCol] = row[itDict[keyItems[j]['default-from']]]
+                        if not skip:
+                            rowList.append(row)
 
             compDict = {}
             seqDict = {}

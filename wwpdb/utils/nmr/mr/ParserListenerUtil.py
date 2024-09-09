@@ -3684,6 +3684,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                             pos = idx
                                             break
 
+                                    if 'unmapped_auth_seq_id' in ps and auth_seq_id_ in ps['unmapped_auth_seq_id']:
+                                        continue
                                     ps['auth_seq_id'].insert(pos, auth_seq_id_)
                                     ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
                                     if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:  # avoid doulble inserts to 'auth_comp_id'
@@ -4634,6 +4636,25 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         if item['label_asym_id'] not in labelAsymIds:
                             labelAsymIds.append(item['label_asym_id'])
                         compIds.add(item['comp_id'])
+
+                    delIdx = []
+                    for chainId in labelAsymIds:
+                        ps = next(ps for ps in polySeq if ps['chain_id'] == chainId)
+                        if 'unmapped_seq_id' not in ps:
+                            continue
+                        for seqId in ps['unmapped_seq_id']:
+                            try:
+                                item = next(item for item in mappings
+                                            if item['label_asym_id'] == chainId
+                                            and item['seq_id'] == seqId)
+                                delIdx.append(mappings.index(item))
+                            except StopIteration:
+                                pass
+
+                    if len(delIdx) > 0:
+                        for idx in reversed(delIdx):
+                            del mappings[idx]
+
                     for extSeq in nmrExtPolySeq:
                         if extSeq['auth_chain_id'] not in authAsymIds:
                             continue

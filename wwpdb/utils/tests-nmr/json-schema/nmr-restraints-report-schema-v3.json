@@ -912,6 +912,20 @@
         "gap_in_auth_seq": {
           "description": "Whether there are explicit sequence gaps in the author sequence, excluding null value concatenation.",
           "type": "boolean"
+        },
+        "unmapped_seq_id": {
+          "description": "List of sequence ID that is not mapped in the coordinates due to entity split.",
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "unmapped_auth_seq_id": {
+          "description": "List of auth sequence ID that is not mapped in the coordinates due to entity split.",
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
         }
       },
       "additionalProperties": false,

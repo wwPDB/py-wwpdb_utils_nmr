@@ -740,7 +740,10 @@ class CifReader:
 
             # get row list
             rowList = catObj.getRowList()
-            unmapResidue = {}
+            _rowList = None
+            unmapSeqIds = {}
+            unmapAuthSeqIds = {}
+            chainIdWoDefault = set()
 
             for row in rowList:
                 for j in range(lenKeyItems):
@@ -750,25 +753,25 @@ class CifReader:
                             if catName == 'pdbx_poly_seq_scheme':
                                 if 'alt_name' in keyItems[j] and keyItems[j]['alt_name'] == 'auth_comp_id':
                                     c = row[altDict['chain_id']]
-                                    if c not in unmapResidue:
-                                        unmapResidue[c] = []
-                                    unmapResidue[c].append((row[altDict['seq_id']], row[altDict['comp_id']]))
-                            row[itCol] = row[itDict[keyItems[j]['default-from']]]
+                                    if c not in unmapSeqIds:
+                                        unmapSeqIds[c], unmapAuthSeqIds[c] = [], []
+                                    unmapSeqIds[c].append((row[altDict['seq_id']], row[altDict['comp_id']]))
+                                    unmapAuthSeqIds[c].append(row[altDict['auth_seq_id']])
+                                    if _rowList is None:
+                                        _rowList = copy.deepcopy(rowList)
                             continue
                         if 'default' not in keyItems[j] or keyItems[j]['default'] not in self.emptyValue:
                             raise ValueError(f"{keyNames[j]} must not be empty.")
 
             # DAOTHER-9674
-            if len(unmapResidue) > 1:
-                chainIdWoDefault = set()
-                for (i, j) in itertools.combinations(unmapResidue.keys(), 2):
-                    if i not in chainIdWoDefault and j not in chainIdWoDefault\
-                       and unmapResidue[i] == unmapResidue[j]:
+            if len(unmapSeqIds) > 1:
+                for (i, j) in itertools.combinations(unmapSeqIds.keys(), 2):
+                    if (i not in chainIdWoDefault or j not in chainIdWoDefault)\
+                       and unmapSeqIds[i] == unmapSeqIds[j]:
                         chainIdWoDefault.add(i)
                         chainIdWoDefault.add(j)
 
                 if len(chainIdWoDefault) > 1:
-                    _rowList = copy.deepcopy(catObj.getRowList())
                     rowList = []
 
                     for row in _rowList:
@@ -782,10 +785,21 @@ class CifReader:
                                             c = row[altDict['chain_id']]
                                             if c in chainIdWoDefault:
                                                 skip = True
-                                                continue
+                                                break
                                     row[itCol] = row[itDict[keyItems[j]['default-from']]]
                         if not skip:
                             rowList.append(row)
+
+            for row in rowList:
+                for j in range(lenKeyItems):
+                    itCol = itDict[keyNames[j]]
+                    if itCol < len(row) and row[itCol] in self.emptyValue:
+                        if 'default-from' in keyItems[j] and keyItems[j]['default-from'] in keyNames:
+                            if catName == 'pdbx_poly_seq_scheme':
+                                if 'alt_name' in keyItems[j] and keyItems[j]['alt_name'] == 'auth_comp_id':
+                                    c = row[altDict['chain_id']]
+                            row[itCol] = row[itDict[keyItems[j]['default-from']]]
+                            continue
 
             compDict = {}
             seqDict = {}
@@ -1284,6 +1298,10 @@ class CifReader:
                         ent['identical_chain_id'] = identity
                         if auth_chain_id_col != -1:
                             ent['identical_auth_chain_id'] = [authChainDict[c] for c in identity]
+
+                    if len(unmapSeqIds) > 0 and c in unmapSeqIds and c in chainIdWoDefault:
+                        ent['unmapped_seq_id'] = [int(s) for s, r in unmapSeqIds[c]]
+                        ent['unmapped_auth_seq_id'] = [int(s) for s in unmapAuthSeqIds[c]]
 
                 asm.append(ent)
 

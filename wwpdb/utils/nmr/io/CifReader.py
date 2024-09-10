@@ -32,6 +32,7 @@
 # 21-Feb-2024   my  - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
 # 07-Mar-2024   my  - extract pdbx_poly_seq_scheme.auth_mon_id as alt_cmop_id to prevent sequence mismatch due to 5-letter CCD ID (DAOTHER-9158 vs D_1300043061)
 # 20-Aug-2024   my  - support truncated loop sequence in the model (DAOTHER-9644)
+# 10-Sep-2024   my  - ignore identical polymer sequence extensions within polynucleotide multiplexes (DAOTHER-9674)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -743,8 +744,12 @@ class CifReader:
             _rowList = None
             unmapSeqIds = {}
             unmapAuthSeqIds = {}
+            mapAuthSeqIds = {}
             chainIdWoDefault = set()
 
+            entityPoly = self.getDictList('entity_poly')
+
+            # DAOTHER-9674
             for row in rowList:
                 for j in range(lenKeyItems):
                     itCol = itDict[keyNames[j]]
@@ -753,10 +758,12 @@ class CifReader:
                             if catName == 'pdbx_poly_seq_scheme':
                                 if 'alt_name' in keyItems[j] and keyItems[j]['alt_name'] == 'auth_comp_id':
                                     c = row[altDict['chain_id']]
-                                    if c not in unmapSeqIds:
-                                        unmapSeqIds[c], unmapAuthSeqIds[c] = [], []
-                                    unmapSeqIds[c].append((row[altDict['seq_id']], row[altDict['comp_id']]))
-                                    unmapAuthSeqIds[c].append(row[altDict['auth_seq_id']])
+                                    etype = next((e['type'] for e in entityPoly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
+                                    if etype is not None and 'polypeptide' not in etype:
+                                        if c not in unmapSeqIds:
+                                            unmapSeqIds[c], unmapAuthSeqIds[c] = [], []
+                                        unmapSeqIds[c].append((row[altDict['seq_id']], row[altDict['comp_id']]))
+                                        unmapAuthSeqIds[c].append(row[altDict['auth_seq_id']])
                                     if _rowList is None:
                                         _rowList = copy.deepcopy(rowList)
                             continue
@@ -764,10 +771,23 @@ class CifReader:
                             raise ValueError(f"{keyNames[j]} must not be empty.")
 
             # DAOTHER-9674
+            if catName == 'pdbx_poly_seq_scheme' and 'auth_comp_id' in altDict:
+                for row in rowList:
+                    if row[altDict['auth_comp_id']] not in self.emptyValue:
+                        c = row[altDict['chain_id']]
+                        etype = next((e['type'] for e in entityPoly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
+                        if etype is not None and 'polypeptide' not in etype:
+                            if c not in mapAuthSeqIds:
+                                mapAuthSeqIds[c] = []
+                            mapAuthSeqIds[c].append(row[altDict['auth_seq_id']])
+
+            # DAOTHER-9674
             if len(unmapSeqIds) > 1:
                 for (i, j) in itertools.combinations(unmapSeqIds.keys(), 2):
                     if (i not in chainIdWoDefault or j not in chainIdWoDefault)\
-                       and unmapSeqIds[i] == unmapSeqIds[j]:
+                       and unmapSeqIds[i] == unmapSeqIds[j]\
+                       and (len(unmapAuthSeqIds[i]) % len(mapAuthSeqIds[i]) == 0
+                            or len(mapAuthSeqIds[i]) % len(unmapAuthSeqIds[i]) == 0):
                         chainIdWoDefault.add(i)
                         chainIdWoDefault.add(j)
 
@@ -900,8 +920,6 @@ class CifReader:
                                 authSeqDict[c].append(None)
 
             largeAssembly = catName == 'pdbx_poly_seq_scheme' and len(chainIds) > LEN_MAJOR_ASYM_ID
-
-            entityPoly = self.getDictList('entity_poly')
 
             caRmsd = caWellDefinedRegion = None
             polyPeptideChains = polyPeptideLengths = []

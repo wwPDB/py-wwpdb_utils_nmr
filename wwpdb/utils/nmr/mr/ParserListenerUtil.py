@@ -8,6 +8,7 @@
 # 24-Jan-2024  M. Yokochi - reconstruct polymer/non-polymer sequence based on pdb_mon_id, instead of auth_mon_id (D_1300043061)
 # 04-Apr-2024  M. Yokochi - permit dihedral angle restraint across entities due to ligand split (DAOTHER-9063)
 # 20-Aug-2024  M. Yokochi - support truncated loop sequence in the model (DAOTHER-9644)
+# 10-Sep-2024  M. Yokochi - ignore identical polymer sequence extensions within polynucleotide multiplexes (DAOTHER-9674)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -3684,8 +3685,10 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                             pos = idx
                                             break
 
+                                    # DAOTHER-9674
                                     if 'unmapped_auth_seq_id' in ps and auth_seq_id_ in ps['unmapped_auth_seq_id']:
                                         continue
+
                                     ps['auth_seq_id'].insert(pos, auth_seq_id_)
                                     ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
                                     if 'auth_comp_id' in ps and ps['comp_id'] is not ps['auth_comp_id']:  # avoid doulble inserts to 'auth_comp_id'
@@ -4637,6 +4640,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                             labelAsymIds.append(item['label_asym_id'])
                         compIds.add(item['comp_id'])
 
+                    # DAOTHER-9674
                     delIdx = []
                     for chainId in labelAsymIds:
                         ps = next(ps for ps in polySeq if ps['chain_id'] == chainId)

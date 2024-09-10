@@ -2550,7 +2550,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
             if 'HN' + atomId[1] in refAtomIdList:
                 return 'HN' + atomId[1]
         if atomId.startswith("HN'")\
-           and refCompId in ('DA', 'DT', 'DG', 'DC', 'DI', 'DU', 'DNR', 'A', 'T', 'G', 'C', 'U', 'CH'):
+           and refCompId in ('DA', 'DT', 'DG', 'DC', 'DI', 'DU', 'DNR', 'A', 'T', 'G', 'C', 'U', 'CH', "5CM"):
             nh2 = ccU.getRepAminoProtons(refCompId)
             if len(nh2) == 1:
                 if atomId.endswith("''"):

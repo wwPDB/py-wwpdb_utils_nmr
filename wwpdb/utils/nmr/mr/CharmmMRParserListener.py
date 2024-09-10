@@ -4939,7 +4939,7 @@ class CharmmMRParserListener(ParseTreeListener):
                     simpleNamesIndex += 1
 
                 if len(self.factor['chain_id']) == 0:
-                    if len(self.__polySeq) == 1 and not self.__hasNonPoly:
+                    if len(self.__polySeq) == 1 and not self.__hasBranched and not self.__hasNonPoly:
                         self.factor['chain_id'] = self.__polySeq[0]['chain_id']
                         self.factor['auth_chain_id'] = chainId
                     elif self.__reasons is not None:
@@ -6092,7 +6092,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                             f"The symbol {symbol_name!r} is not defined.")
                     if len(self.factor['chain_id']) == 0:
-                        if len(self.__polySeq) == 1 and not self.__hasNonPoly:
+                        if len(self.__polySeq) == 1 and not self.__hasBranched and not self.__hasNonPoly:
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']
                             self.factor['auth_chain_id'] = chainId
                         elif self.__reasons is not None:

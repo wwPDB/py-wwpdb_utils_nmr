@@ -7293,7 +7293,7 @@ class CnsMRParserListener(ParseTreeListener):
                     if len(self.__fibril_chain_ids) > 0 and not self.__hasNonPoly:
                         if chainId[0] in self.__fibril_chain_ids:
                             self.factor['chain_id'] = [chainId[0]]
-                    elif len(self.__polySeq) == 1 and not self.__hasNonPoly:
+                    elif len(self.__polySeq) == 1 and not self.__branched and not self.__hasNonPoly:
                         self.factor['chain_id'] = self.__polySeq[0]['chain_id']
                         self.factor['auth_chain_id'] = chainId
                     elif self.__reasons is not None:
@@ -8708,7 +8708,7 @@ class CnsMRParserListener(ParseTreeListener):
                         if len(self.__fibril_chain_ids) > 0 and not self.__hasNonPoly:
                             if chainId[0] in self.__fibril_chain_ids:
                                 self.factor['chain_id'] = [chainId[0]]
-                        elif len(self.__polySeq) == 1 and not self.__hasNonPoly:
+                        elif len(self.__polySeq) == 1 and not self.__branched and not self.__hasNonPoly:
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']
                             self.factor['auth_chain_id'] = chainId
                         elif self.__reasons is not None:

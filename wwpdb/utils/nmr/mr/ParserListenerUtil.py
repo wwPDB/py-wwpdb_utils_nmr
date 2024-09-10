@@ -3996,6 +3996,13 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         if (internal_conflict or conflict_per_chain[idx]) and 'alt_auth_seq_id' in br:
                             br['auth_seq_id'], br['alt_auth_seq_id'] = br['alt_auth_seq_id'], br['auth_seq_id']
 
+                else:
+                    for br in branched:
+                        orderedAuthSeqIds = sorted(br['auth_seq_id'])
+                        altSeqIds = [br['seq_id'][br['auth_seq_id'].index(authSeqId)] for authSeqId in orderedAuthSeqIds]
+                        if br['seq_id'] != altSeqIds:
+                            br['alt_auth_seq_id'] = altSeqIds
+
             except KeyError:
                 branched = None
 

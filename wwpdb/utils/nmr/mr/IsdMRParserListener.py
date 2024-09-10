@@ -449,6 +449,7 @@ class IsdMRParserListener(ParseTreeListener):
                                                 if ps['chain_id'] == test_chain_id)
 
                             seq_id_mapping = {}
+                            offset = None
                             for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                                 if test_seq_id is None:
                                     continue
@@ -457,6 +458,8 @@ class IsdMRParserListener(ParseTreeListener):
                                         seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
                                                                            in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
                                                                            if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
+                                        if offset is None:
+                                            offset = seq_id_mapping[test_seq_id] - test_seq_id
                                     except StopIteration:
                                         pass
                                 elif mid_code == ' ' and test_seq_id in poly_seq_rst['seq_id']:
@@ -465,6 +468,14 @@ class IsdMRParserListener(ParseTreeListener):
                                         seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
                                                                            in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
                                                                            if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
+
+                            if offset is not None and all(v - k == offset for k, v in seq_id_mapping.items()):
+                                test_seq_id_list = list(seq_id_mapping.keys())
+                                min_test_seq_id = min(test_seq_id_list)
+                                max_test_seq_id = max(test_seq_id_list)
+                                for test_seq_id in range(min_test_seq_id + 1, max_test_seq_id):
+                                    if test_seq_id not in seq_id_mapping:
+                                        seq_id_mapping[test_seq_id] = test_seq_id + offset
 
                             if ref_chain_id not in cyclicPolymer:
                                 cyclicPolymer[ref_chain_id] =\

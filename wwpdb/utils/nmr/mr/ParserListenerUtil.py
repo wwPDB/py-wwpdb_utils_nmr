@@ -2549,8 +2549,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
         if atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit():  # DAOTHER-9198: DNR(DC):H3+ -> HN3
             if 'HN' + atomId[1] in refAtomIdList:
                 return 'HN' + atomId[1]
-        if atomId.startswith("HN'")\
-           and refCompId in ('DA', 'DT', 'DG', 'DC', 'DI', 'DU', 'DNR', 'A', 'T', 'G', 'C', 'U', 'CH', "5CM"):
+        if atomId.startswith("HN'") and ccU.getTypeOfCompId(refCompId)[1]:
             nh2 = ccU.getRepAminoProtons(refCompId)
             if len(nh2) == 1:
                 if atomId.endswith("''"):

@@ -6974,6 +6974,8 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
     ins_code1, ins_code2, ins_code3, ins_code4, ins_code5 = None, None, None, None, None
 
     if atom1 is not None:
+        if 'asis' in atom1:
+            asis1 = True
         star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, atom2, asis=asis1)
         if star_atom1 is None:
             star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, asis=asis1)
@@ -6983,6 +6985,8 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             ins_code1 = getInsCode(authToInsCode, offsetHolder, atom1)
 
     if atom2 is not None:
+        if 'asis' in atom2:
+            asis2 = True
         star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, atom1, asis=asis2)
         if star_atom2 is None:
             star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, asis=asis2)
@@ -6992,6 +6996,8 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             ins_code2 = getInsCode(authToInsCode, offsetHolder, atom2)
 
     if atom3 is not None:
+        if 'asis' in atom3:
+            asis3 = True
         star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, atom1, asis=asis3)
         if star_atom3 is None:
             star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, asis=asis3)
@@ -7001,6 +7007,8 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             ins_code3 = getInsCode(authToInsCode, offsetHolder, atom3)
 
     if atom4 is not None:
+        if 'asis' in atom4:
+            asis4 = True
         star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, atom1, asis=asis4)
         if star_atom4 is None:
             star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, asis=asis4)
@@ -7010,6 +7018,8 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             ins_code4 = getInsCode(authToInsCode, offsetHolder, atom4)
 
     if atom5 is not None:
+        if 'asis' in atom5:
+            asis5 = True
         star_atom5 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom5, atom1, asis=asis5)
         if star_atom5 is None:
             star_atom5 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom5, asis=asis5)

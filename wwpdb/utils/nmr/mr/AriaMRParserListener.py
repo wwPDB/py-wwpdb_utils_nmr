@@ -2442,7 +2442,9 @@ class AriaMRParserListener(ParseTreeListener):
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
                                       'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
 
-                _cifAtomId = self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+                _cifAtomId, asis = self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+                if asis:
+                    atomSelection[-1]['asis'] = True
                 if cifAtomId != _cifAtomId:
                     atomSelection[-1]['atom_id'] = _cifAtomId
                     if _cifAtomId.startswith('Ignorable'):
@@ -2452,8 +2454,9 @@ class AriaMRParserListener(ParseTreeListener):
             self.atomSelectionSet.append(atomSelection)
 
     def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite):
+        asis = False
         if not self.__hasCoord:
-            return atomId
+            return atomId, asis
 
         found = False
 
@@ -2575,7 +2578,7 @@ class AriaMRParserListener(ParseTreeListener):
         if found:
             if self.__preferAuthSeq:
                 self.__preferAuthSeqCount += 1
-            return atomId
+            return atomId, asis
 
         if chainId in self.__chainNumberDict.values():
 
@@ -2633,7 +2636,7 @@ class AriaMRParserListener(ParseTreeListener):
             if found:
                 if self.__preferAuthSeq:
                     self.__preferAuthSeqCount += 1
-                return atomId
+                return atomId, asis
 
         if self.__ccU.updateChemCompDict(compId):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
@@ -2663,9 +2666,9 @@ class AriaMRParserListener(ParseTreeListener):
                                     self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                     f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                     "Please re-upload the model file.")
-                                    return atomId
+                                    return atomId, asis
                             if bondedTo[0][0] == 'O':
-                                return 'Ignorable hydroxyl group'
+                                return 'Ignorable hydroxyl group', asis
                     if seqId == max_auth_seq_id\
                        or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
                         if coordAtomSite is not None and atomId in carboxylCode\
@@ -2673,7 +2676,7 @@ class AriaMRParserListener(ParseTreeListener):
                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                             "Please re-upload the model file.")
-                            return atomId
+                            return atomId, asis
 
                     ext_seq = False
                     if auth_seq_id_list is not None and len(auth_seq_id_list) > 0:
@@ -2685,17 +2688,18 @@ class AriaMRParserListener(ParseTreeListener):
                             ext_seq = True
                     if chainId in LARGE_ASYM_ID:
                         if ext_seq:
-                            return atomId
+                            return atomId, asis
                         if self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                             f"The residue '{chainId}:{seqId}:{compId}' is not present in polymer sequence "
                                             f"of chain {chainId} of the coordinates. "
                                             "Please update the sequence in the Macromolecules page.")
+                            asis = True
                         else:
                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                             updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
-        return atomId
+        return atomId, asis
 
     def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
         """ Return realistic bond constraint taking into account the current coordinates.

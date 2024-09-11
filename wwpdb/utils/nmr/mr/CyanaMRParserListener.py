@@ -2418,7 +2418,9 @@ class CyanaMRParserListener(ParseTreeListener):
                     if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], ps['alt_comp_id'][idx]):
                         return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
                 if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx])\
-                   or (isPolySeq and seqId == 1 and compId.endswith('-N') and all(c in ps['comp_id'][idx] for c in compId.split('-')[0])):
+                   or (isPolySeq and seqId == 1
+                       and ((compId.endswith('-N') and all(c in ps['comp_id'][idx] for c in compId.split('-')[0]))
+                            or (ps['comp_id'][idx] == 'PCA' and 'P' == compId[0] and ('GL' in compId or 'N' in compId)))):
                     return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
                 if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
                     return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
@@ -2640,6 +2642,14 @@ class CyanaMRParserListener(ParseTreeListener):
                 return False
             return types != self.__csStat.getTypeOfCompId(cif_comp_id)
 
+        def comp_id_in_polymer(np):
+            return (_seqId == 1
+                    and ((compId.endswith('-N') and all(c in np['comp_id'][0] for c in compId.split('-')[0]))
+                         or (np['comp_id'][0] == 'PCA' and 'P' == compId[0] and ('GL' in compId or 'N' in compId))))\
+                or (compId in monDict3
+                    and any(compId in ps['comp_id'] for ps in self.__polySeq)
+                    and compId not in np['comp_id'])
+
         for ps in self.__polySeq:
             if preferNonPoly or pure_ambig:
                 continue
@@ -2769,10 +2779,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             seqId = fixedSeqId
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
-                if (_seqId == 1 and compId.endswith('-N'))\
-                   or (compId in monDict3
-                       and any(compId in ps['comp_id'] for ps in self.__polySeq)
-                       and compId not in np['comp_id']):
+                if comp_id_in_polymer(np):
                     continue
                 if pure_ambig:
                     continue
@@ -2848,6 +2855,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 for np in self.__nonPolySeq:
                     chainId = np['auth_chain_id']
                     if fixedChainId is not None and fixedChainId != chainId:
+                        continue
+                    if comp_id_in_polymer(np):
                         continue
                     if pure_ambig:
                         continue
@@ -3249,6 +3258,14 @@ class CyanaMRParserListener(ParseTreeListener):
                 return False
             return types != self.__csStat.getTypeOfCompId(cif_comp_id)
 
+        def comp_id_in_polymer(np):
+            return (_seqId == 1
+                    and ((compId.endswith('-N') and all(c in np['comp_id'][0] for c in compId.split('-')[0]))
+                         or (np['comp_id'][0] == 'PCA' and 'P' == compId[0] and ('GL' in compId or 'N' in compId))))\
+                or (compId in monDict3
+                    and any(compId in ps['comp_id'] for ps in self.__polySeq)
+                    and compId not in np['comp_id'])
+
         if refChainId is not None or refChainId != _refChainId:
             if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _refChainId):
                 fixedChainId = _refChainId
@@ -3395,10 +3412,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             seqId = fixedSeqId
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
-                if (_seqId == 1 and compId.endswith('-N'))\
-                   or (compId in monDict3
-                       and any(compId in ps['comp_id'] for ps in self.__polySeq)
-                       and compId not in np['comp_id']):
+                if comp_id_in_polymer(np):
                     continue
                 if pure_ambig:
                     continue
@@ -3488,6 +3502,8 @@ class CyanaMRParserListener(ParseTreeListener):
                         if chainId != self.__chainNumberDict[refChainId]:
                             continue
                     if fixedChainId is not None and fixedChainId != chainId:
+                        continue
+                    if comp_id_in_polymer(np):
                         continue
                     if pure_ambig:
                         continue

@@ -3156,7 +3156,7 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
 
         compId3 = compId[1:]  # 1e8e
 
-        if compId3 in monDict3:
+        if compId3 in monDict3 and compId[0] != 'P':  # 2lyw: PGLU -> PCA
             return compId3
 
     if compId[-1] in ('5', '3'):

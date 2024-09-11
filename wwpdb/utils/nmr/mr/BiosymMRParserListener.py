@@ -1124,7 +1124,7 @@ class BiosymMRParserListener(ParseTreeListener):
                 break
         if refCompId is None and self.__hasNonPolySeq:
             for np in self.__nonPolySeq:
-                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId)
+                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId, False)
                 if refCompId is not None:
                     compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
                     break
@@ -1132,7 +1132,7 @@ class BiosymMRParserListener(ParseTreeListener):
             compId = translateToStdResName(_compId, ccU=self.__ccU)
         return compId
 
-    def getRealChainSeqId(self, ps, seqId, compId):
+    def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
         compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
         if len(_compId) == 2 and _compId.startswith('D'):
             _compId = compId[1]
@@ -1149,7 +1149,8 @@ class BiosymMRParserListener(ParseTreeListener):
                         return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
                     if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], ps['alt_comp_id'][idx], 'MTS', 'ORI'):
                         return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
-                if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
+                if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI')\
+                   or (isPolySeq and seqId == 1 and compId.endswith('-N') and all(c in ps['comp_id'][idx] for c in compId.split('-')[0])):
                     return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
                 if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
                     return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
@@ -1420,7 +1421,7 @@ class BiosymMRParserListener(ParseTreeListener):
                         chainAssign.add((chainId, seqId, cifCompId, True))
                         if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                             self.__chainNumberDict[refChainId] = chainId
-                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                elif self.__nefT.get_valid_star_atom(cifCompId, atomId)[2] is None:
                     chainAssign.add((chainId, seqId, cifCompId, True))
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
@@ -1464,7 +1465,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
                                         if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                             self.__chainNumberDict[refChainId] = chainId
-                                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                elif self.__nefT.get_valid_star_atom(cifCompId, atomId)[2] is None:
                                     chainAssign.add((chainId, seqId_, cifCompId, True))
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
@@ -1505,10 +1506,15 @@ class BiosymMRParserListener(ParseTreeListener):
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
             for np in self.__nonPolySeq:
-                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId)
+                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:
                         continue
+                if (_seqId == 1 and compId.endswith('-N'))\
+                   or (compId in monDict3
+                       and any(compId in ps['comp_id'] for ps in self.__polySeq)
+                       and compId not in np['comp_id']):
+                    continue
                 if self.__reasons is not None:
                     if fixedChainId is not None:
                         if fixedChainId != chainId:
@@ -1588,7 +1594,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                 chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                     self.__chainNumberDict[refChainId] = chainId
-                        elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        elif self.__nefT.get_valid_star_atom(cifCompId, atomId)[2] is None:
                             chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
@@ -1600,6 +1606,8 @@ class BiosymMRParserListener(ParseTreeListener):
                         if chainId != self.__chainNumberDict[refChainId]:
                             continue
                     if fixedChainId is not None and fixedChainId != chainId:
+                        continue
+                    if (_seqId == 1 and compId.endswith('-N')) or (compId in monDict3 and any(compId in ps['comp_id'] for ps in self.__polySeq)):
                         continue
                     seqKey = (chainId, _seqId)
                     if seqKey in self.__authToLabelSeq:
@@ -1683,7 +1691,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                     self.__setLocalSeqScheme()
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
-                        elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        elif self.__nefT.get_valid_star_atom(cifCompId, atomId)[2] is None:
                             chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
                             self.__authSeqId = 'label_seq_id'
                             self.__setLocalSeqScheme()

@@ -951,7 +951,7 @@ class IsdMRParserListener(ParseTreeListener):
                 break
         if refCompId is None and self.__hasNonPolySeq:
             for np in self.__nonPolySeq:
-                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId)
+                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId, False)
                 if refCompId is not None:
                     compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
                     break
@@ -959,7 +959,7 @@ class IsdMRParserListener(ParseTreeListener):
             compId = translateToStdResName(_compId, ccU=self.__ccU)
         return compId
 
-    def getRealChainSeqId(self, ps, seqId, compId):
+    def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
         compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
         if len(_compId) == 2 and _compId.startswith('D'):
             _compId = compId[1]
@@ -976,7 +976,8 @@ class IsdMRParserListener(ParseTreeListener):
                         return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
                     if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], ps['alt_comp_id'][idx], 'MTS', 'ORI'):
                         return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
-                if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
+                if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI')\
+                   or (isPolySeq and seqId == 1 and compId.endswith('-N') and all(c in ps['comp_id'][idx] for c in compId.split('-')[0])):
                     return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
                 if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
                     return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
@@ -1220,8 +1221,10 @@ class IsdMRParserListener(ParseTreeListener):
                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.add((chainId, seqId, cifCompId, True))
-                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                    chainAssign.add((chainId, seqId, cifCompId, True))
+                else:
+                    _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                    if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                        chainAssign.add((chainId, seqId, cifCompId, True))
 
             elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
@@ -1260,8 +1263,10 @@ class IsdMRParserListener(ParseTreeListener):
                                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
-                                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                    chainAssign.add((chainId, seqId_, cifCompId, True))
+                                else:
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                                    if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                        chainAssign.add((chainId, seqId_, cifCompId, True))
                             except IndexError:
                                 pass
 
@@ -1299,7 +1304,7 @@ class IsdMRParserListener(ParseTreeListener):
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
             for np in self.__nonPolySeq:
-                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId)
+                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if self.__reasons is not None:
                     if fixedChainId is not None:
                         if fixedChainId != chainId:
@@ -1308,6 +1313,11 @@ class IsdMRParserListener(ParseTreeListener):
                             seqId = fixedSeqId
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
+                if (_seqId == 1 and compId.endswith('-N'))\
+                   or (compId in monDict3
+                       and any(compId in ps['comp_id'] for ps in self.__polySeq)
+                       and compId not in np['comp_id']):
+                    continue
                 if 'alt_auth_seq_id' in np and seqId not in np['auth_seq_id'] and seqId in np['alt_auth_seq_id']:
                     try:
                         seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _altSeqId_ == seqId)
@@ -1371,8 +1381,10 @@ class IsdMRParserListener(ParseTreeListener):
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
-                        elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
+                        else:
+                            _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                            if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
 
             if self.__hasNonPolySeq:
                 for np in self.__nonPolySeq:
@@ -1447,10 +1459,12 @@ class IsdMRParserListener(ParseTreeListener):
                                     chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
                                     self.__authSeqId = 'label_seq_id'
                                     self.__setLocalSeqScheme()
-                        elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
-                            self.__authSeqId = 'label_seq_id'
-                            self.__setLocalSeqScheme()
+                        else:
+                            _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                            if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
+                                self.__authSeqId = 'label_seq_id'
+                                self.__setLocalSeqScheme()
 
         if len(chainAssign) == 0:
             if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:

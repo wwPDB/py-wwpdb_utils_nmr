@@ -8754,7 +8754,7 @@ class CyanaMRParserListener(ParseTreeListener):
         try:
 
             chainId = str(ctx.Simple_name(0))
-            seqId = int(str(ctx.Integer()))
+            seqId = int(str(ctx.Integer(0)))
             compId = str(ctx.Simple_name(1)).upper()
             _compId = translateToStdResName(compId, ccU=self.__ccU)
             angleName = str(ctx.Simple_name(2)).upper()
@@ -8786,14 +8786,14 @@ class CyanaMRParserListener(ParseTreeListener):
             if weight == 0.0:
                 self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                 f"The relative weight value of '{weight}' should be a positive value.")
-            ""
+            """
             if lower_limit > upper_limit:
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                 f"The angle's lower limit '{lower_limit}' must be less than or equal to the upper limit '{upper_limit}'.")
                 if self.__remediate:
                     self.__dihed_lb_greater_than_ub = True
                 return
-            ""
+            """
             if self.__remediate and upper_limit < 0.0:
                 self.__dihed_ub_always_positive = False
 
@@ -8952,12 +8952,12 @@ class CyanaMRParserListener(ParseTreeListener):
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.__hasCoord)
 
                         if _cifCompId is None:
-                            # ""
+                            # """
                             # try:
                             #     _cifCompId = ps['comp_id'][ps['auth_seq_id'].index(cifSeqId) + offset]
                             # except IndexError:
                             #     pass
-                            # ""
+                            # """
                             if _cifCompId is None and not self.__allow_ext_seq:
                                 self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                                 f"The residue number '{seqId+offset}' is not present in polymer sequence "

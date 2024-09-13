@@ -42758,7 +42758,7 @@ class NmrDpUtility:
 
                         j = 0
                         for i in range(length):
-                            if str(myAlign[i][0]) != '.' and j < len(s1['seq_id']):
+                            if (str(myAlign[i][0]) != '.' or s1['comp_id'][j] == '.') and j < len(s1['seq_id']):
                                 seq_id1.append(s1['seq_id'][j])
                                 j += 1
                             else:
@@ -42766,7 +42766,7 @@ class NmrDpUtility:
 
                         j = 0
                         for i in range(length):
-                            if str(myAlign[i][1]) != '.' and j < len(s2['seq_id']):
+                            if (str(myAlign[i][1]) != '.' or s2['comp_id'][j] == '.') and j < len(s2['seq_id']):
                                 seq_id2.append(s2['seq_id'][j])
                                 j += 1
                             else:
@@ -43040,15 +43040,19 @@ class NmrDpUtility:
                         seq_id1 = []
                         seq_id2 = []
 
+                        j = 0
                         for i in range(length):
-                            if str(myAlign[i][0]) != '.' and i < len(s1['seq_id']):  # DAOTHER-7421
-                                seq_id1.append(s1['seq_id'][i])
+                            if (str(myAlign[i][0]) != '.' or s1['comp_id'][j] == '.') and j < len(s1['seq_id']):  # DAOTHER-7421
+                                seq_id1.append(s1['seq_id'][j])
+                                j += 1
                             else:
                                 seq_id1.append(None)
 
+                        j = 0
                         for i in range(length):
-                            if str(myAlign[i][1]) != '.' and i < len(s2['seq_id']):  # DAOTHER-7421
-                                seq_id2.append(s2['seq_id'][i])
+                            if (str(myAlign[i][1]) != '.' or s2['comp_id'][j] == '.') and j < len(s2['seq_id']):  # DAOTHER-7421
+                                seq_id2.append(s2['seq_id'][j])
+                                j += 1
                             else:
                                 seq_id2.append(None)
 
@@ -43524,7 +43528,7 @@ class NmrDpUtility:
 
                         j = 0
                         for i in range(length):
-                            if str(myAlign[i][0]) != '.' and j < len(s1['seq_id']):
+                            if (str(myAlign[i][0]) != '.' or s1['comp_id'][j] == '.') and j < len(s1['seq_id']):
                                 seq_id1.append(s1['seq_id'][j])
                                 j += 1
                             else:
@@ -43532,7 +43536,7 @@ class NmrDpUtility:
 
                         j = 0
                         for i in range(length):
-                            if str(myAlign[i][1]) != '.' and j < len(s2['seq_id']):
+                            if (str(myAlign[i][1]) != '.' or s2['comp_id'][j] == '.') and j < len(s2['seq_id']):
                                 seq_id2.append(s2['seq_id'][j])
                                 j += 1
                             else:

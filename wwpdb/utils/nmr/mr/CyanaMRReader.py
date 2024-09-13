@@ -226,9 +226,14 @@ if __name__ == "__main__":
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/7zex/D_1292113916_mr_P2.cyana.V1',
+                     '../../tests-nmr/mock-data-remediation/7zex/7zex.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/7zew/protein_renumb.upl',
                      '../../tests-nmr/mock-data-remediation/7zew/7zew.cif')
-    print(reader_listener.getReasonsForReparsing())
 
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)

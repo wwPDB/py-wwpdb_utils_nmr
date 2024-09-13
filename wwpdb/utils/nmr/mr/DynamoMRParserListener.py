@@ -278,6 +278,7 @@ class DynamoMRParserListener(ParseTreeListener):
     __splitLigand = None
 
     __offsetHolder = None
+    __shiftNonPosSeq = None
 
     __representativeModelId = REPRESENTATIVE_MODEL_ID
     __representativeAltId = REPRESENTATIVE_ALT_ID
@@ -1717,6 +1718,8 @@ class DynamoMRParserListener(ParseTreeListener):
                         seqId = fixedSeqId
                 elif fixedSeqId is not None:
                     seqId = fixedSeqId
+            if seqId <= 0 and self.__shiftNonPosSeq is not None and chainId in self.__shiftNonPosSeq:
+                seqId -= 1
             if seqId in ps['auth_seq_id'] or fixedCompId is not None:
                 if fixedCompId is not None:
                     cifCompId = origCompId = fixedCompId
@@ -1731,6 +1734,13 @@ class DynamoMRParserListener(ParseTreeListener):
                     if comp_id_unmatched_with(ps, cifCompId):
                         continue
                 if cifCompId != compId:
+                    if (self.__shiftNonPosSeq is None or chainId not in self.__shiftNonPosSeq)\
+                       and seqId <= 0 and seqId - 1 in ps['auth_seq_id']\
+                       and compId == ps['comp_id'][ps['auth_seq_id'].index(seqId - 1)]:
+                        seqId -= 1
+                        if self.__shiftNonPosSeq is None:
+                            self.__shiftNonPosSeq = {}
+                        self.__shiftNonPosSeq[chainId] = True
                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                     if compId in compIds:
                         cifCompId = compId

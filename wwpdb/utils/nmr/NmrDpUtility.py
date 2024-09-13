@@ -19305,6 +19305,10 @@ class NmrDpUtility:
                                 self.__fixAtomNomenclature(comp_id, {atom_id: _atom_id[0]})
                                 continue
 
+                        elif len(atom_id) > 2 and atom_id.endswith('"') and atom_id[-2].isdigit():  # 7zew, 7zex: H5" -> H5''
+                            self.__fixAtomNomenclature(comp_id, {atom_id: atom_id[:-1] + "''"})
+                            continue
+
                         atom_id_ = atom_id
 
                         if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and self.__isNmrAtomName(comp_id, atom_id):
@@ -19443,6 +19447,10 @@ class NmrDpUtility:
                                 if atom_id.upper() == 'CO':
                                     self.__fixAtomNomenclature(comp_id, {atom_id: 'C'})
                                     continue
+
+                            elif len(atom_id) > 2 and atom_id.endswith('"') and atom_id[-2].isdigit():  # 7xew, 7zex: H5" -> H5''
+                                self.__fixAtomNomenclature(comp_id, {atom_id: atom_id[:-1] + "''"})
+                                continue
 
                             atom_id_ = atom_id
 

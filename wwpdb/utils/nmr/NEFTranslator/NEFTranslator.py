@@ -2495,6 +2495,8 @@ class NEFTranslator:
                         def resolve_entity_assembly(_loop, _alt_chain_id_list, sync_seq):
                             if 'Auth_seq_ID' in _loop.tags:
                                 pre_tags = [alt_chain_id, 'Auth_seq_ID', 'Comp_ID']
+                                if 'Auth_comp_ID' in _loop.tags:
+                                    pre_tags.append('Auth_comp_ID')
                                 pre_seq_data = get_lp_tag(_loop, pre_tags)
                                 cif_ps = coord_assembly_checker['polymer_sequence']
                                 cif_np = coord_assembly_checker['non_polymer']
@@ -2503,12 +2505,17 @@ class NEFTranslator:
                                     nmr_ps.append({'chain_id': c, 'seq_id': [], 'comp_id': []})
                                 seq = set()
                                 valid = True
-                                for row in pre_seq_data:
+                                for idx, row in enumerate(pre_seq_data):
                                     if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue:
                                         valid = False
                                         break
                                     try:
-                                        seq.add((row[0], int(row[1]), row[2]))
+                                        comp_id_col = _loop.tags.index('Comp_ID')
+                                        _ref_comp_id = row[3] if len(row) > 3 else None
+                                        _comp_id = translateToStdResName(row[2].upper(), refCompId=_ref_comp_id, ccU=self.__ccU)
+                                        seq.add((row[0], int(row[1]), _comp_id))
+                                        if row[2] != _comp_id:
+                                            _loop.data[idx][comp_id_col] = _comp_id
                                     except ValueError:
                                         valid = False
                                         break

@@ -226,6 +226,12 @@ if __name__ == "__main__":
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2mv8/test2.mr',
+                     '../../tests-nmr/mock-data-remediation/2mv8/2mv8.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/7zex/D_1292113916_mr_P2.cyana.V1',
                      '../../tests-nmr/mock-data-remediation/7zex/7zex.cif')
 

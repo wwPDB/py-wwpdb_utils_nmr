@@ -5247,7 +5247,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.__hasCoord)
 
-                        if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' and ps:
+                        if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' in ps:
                             idx = ps['auth_seq_id'].index(cifSeqId)
                             try:
                                 _cifSeqId = ps['auth_seq_id'][idx + offset]
@@ -5438,7 +5438,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         _cifSeqId = cifSeqId + offset
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
-                        if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' and ps:
+                        if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' in ps:
                             idx = ps['auth_seq_id'].index(cifSeqId)
                             try:
                                 _cifSeqId = ps['auth_seq_id'][idx + offset]
@@ -8991,7 +8991,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, _cifSeqId, _cifCompId, cifCheck=self.__hasCoord)
 
-                        if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' and ps:
+                        if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' in ps:
                             idx = ps['auth_seq_id'].index(cifSeqId)
                             try:
                                 _cifSeqId = ps['auth_seq_id'][idx + offset]
@@ -9182,7 +9182,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         _cifSeqId = cifSeqId + offset
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)] if _cifSeqId in ps['auth_seq_id'] else None)
 
-                        if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' and ps:
+                        if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' in ps:
                             idx = ps['auth_seq_id'].index(cifSeqId)
                             try:
                                 _cifSeqId = ps['auth_seq_id'][idx + offset]

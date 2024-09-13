@@ -5109,10 +5109,22 @@ class XplorMRParserListener(ParseTreeListener):
             offsets = [seq_id - seq_id_3 for seq_id in seq_ids]
             atom_ids = [atom_id_1, atom_id_2, atom_id_3, atom_id_4, atom_id_5]
 
+            ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_3), None)
+
+            if ps is not None and chain_ids == [chain_id_1] * 5 and atom_ids == ['C', 'N', 'CA', 'C', 'N']\
+               and offsets != [-1, 0, 0, 0, 1]:
+
+                try:
+                    _seq_ids = [ps['seq_id'][ps['auth_seq_id'].index(seq_id)] for seq_id in seq_ids]
+                    _seq_id_3 = _seq_ids[2]
+                    offsets = [seq_id - _seq_id_3 for seq_id in _seq_ids]
+                except (IndexError, ValueError):
+                    pass
+
             if chain_ids != [chain_id_1] * 5 or offsets != [-1, 0, 0, 0, 1] or atom_ids != ['C', 'N', 'CA', 'C', 'N']:
-                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_3), None)
 
                 if ps is not None:
+
                     if ps['auth_seq_id'][0] == seq_id_3 and atom_ids[0] == 'C':
                         hint = f"'{seq_id_3 - 1}'"
                         if ps['seq_id'][0] != seq_id_3:

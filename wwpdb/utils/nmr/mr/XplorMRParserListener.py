@@ -3105,6 +3105,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#sani_assign.
     def enterSani_assign(self, ctx: XplorMRParser.Sani_assignContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
+        self.__cur_subtype_altered = self.__cur_subtype != 'rdc'
         if self.__cur_subtype != 'rdc':
             self.rdcStatements += 1
         self.__cur_subtype = 'rdc'
@@ -3114,6 +3115,32 @@ class XplorMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XplorMRParser#sani_assign.
     def exitSani_assign(self, ctx: XplorMRParser.Sani_assignContext):  # pylint: disable=unused-argument
+
+        def proc_as_if_pcs_assign(_target_value, _lower_limit, _upper_limit):
+
+            _dstFunc = self.validatePcsRange(1.0, _target_value, _lower_limit, _upper_limit)
+
+            if _dstFunc is None:
+                return
+
+            atom_id_0 = self.paramagCenter
+
+            if self.__createSfDict:
+                sf = self.__getSf(alignCenter=atom_id_0)
+                sf['id'] += 1
+
+            for atom1 in self.atomSelectionSet[5]:
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
+                          f"paramag_center={atom_id_0} atom={atom1} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 '.', None, None,
+                                 sf['list_id'], self.__entryId, _dstFunc,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                 atom1)
+                    sf['loop'].add_data(row)
 
         try:
 
@@ -3164,7 +3191,20 @@ class XplorMRParserListener(ParseTreeListener):
                 seq_id_2 = self.atomSelectionSet[5][0]['seq_id']
                 comp_id_2 = self.atomSelectionSet[5][0]['comp_id']
                 atom_id_2 = self.atomSelectionSet[5][0]['atom_id']
+
             except IndexError:
+                if len(self.atomSelectionSet[4]) == 0 and self.paramagCenter is not None:
+                    self.rdcRestraints -= 1
+                    self.pcsRestraints += 1
+                    if self.__cur_subtype_altered:
+                        self.rdcStatements -= 1
+                        if self.pcsStatements == 0:
+                            self.pcsStatements += 1
+                    self.__cur_subtype = 'pcs'
+
+                    proc_as_if_pcs_assign(target_value, lower_limit, upper_limit)
+                    return
+
                 if not self.areUniqueCoordAtoms('an RDC (SANI)', XPLOR_ORIGIN_AXIS_COLS):
                     if len(self.__g) > 0:
                         self.__f.extend(self.__g)
@@ -9736,13 +9776,15 @@ class XplorMRParserListener(ParseTreeListener):
                                 break
 
             else:
-                if self.__cur_subtype != 'plane':
+                if self.__cur_subtype != 'plane'\
+                   and not (self.__cur_subtype == 'rdc' and len(self.atomSelectionSet) == 4
+                            and len(_factor['atom_id'][0]) >= 2 and _factor['atom_id'][0][:2].upper() in PARAMAGNETIC_ELEMENTS):
                     if cifCheck:
                         if self.__cur_union_expr:
                             self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {__factor}.")
                         else:
-                            self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                            self.__f.append(f"[Insufficient atom selection] 3 {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {__factor}.")
                             if 'alt_chain_id' in _factor:  # 2mnz
                                 for chainId in _factor['chain_id']:
@@ -9852,14 +9894,14 @@ class XplorMRParserListener(ParseTreeListener):
                                     self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                                     self.__setLocalSeqScheme()
                     else:
-                        self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                        self.__g.append(f"[Insufficient atom selection] 2 {self.__getCurrentRestraint()}"
                                         f"The {clauseName} has no effect for a factor {__factor}. "
                                         "Please update the sequence in the Macromolecules page.")
-                else:
+                elif self.__cur_subtype == 'plane':
                     if 'atom_id' not in _factor or ('H5T' not in _factor['atom_id'] and 'H3T' not in _factor['atom_id']):
                         hint = f" Please verify that the planarity restraints match with the residue {_factor['comp_id'][0]!r}"\
                             if 'comp_id' in _factor and len(_factor['comp_id']) == 1 else ''
-                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                        self.__f.append(f"[Insufficient atom selection] 1 {self.__getCurrentRestraint()}"
                                         f"The {clauseName} has no effect for a factor {__factor}.{hint}")
 
         elif len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
@@ -10746,6 +10788,13 @@ class XplorMRParserListener(ParseTreeListener):
                                                                         f"The residue '{seqId}:{compId}' is not present in polymer sequence "
                                                                         f"of chain {chainId} of the coordinates. "
                                                                         "Please update the sequence in the Macromolecules page.")
+                                                        continue
+                                                    # 5t1n: SANI -> PCS
+                                                    if self.__cur_subtype == 'rdc' and len(self.atomSelectionSet) == 4 and\
+                                                       compId in ('CYS', 'SER', 'GLU', 'GLN', 'ASP', 'ASN', 'LYS', 'THR', 'HIS')\
+                                                       and len(origAtomId0) >= 2 and origAtomId0[:2].upper() in PARAMAGNETIC_ELEMENTS:
+                                                        self.paramagCenter = copy.copy(_factor)
+                                                        self.paramagCenter['atom_id'][0] = origAtomId0[:2].upper()
                                                         continue
                                                     warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                         and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\

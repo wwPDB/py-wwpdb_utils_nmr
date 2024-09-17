@@ -19448,7 +19448,7 @@ class NmrDpUtility:
                                     self.__fixAtomNomenclature(comp_id, {atom_id: 'C'})
                                     continue
 
-                            elif len(atom_id) > 2 and atom_id.endswith('"') and atom_id[-2].isdigit():  # 7xew, 7zex: H5" -> H5''
+                            elif len(atom_id) > 2 and atom_id.endswith('"') and atom_id[-2].isdigit():  # 7zew, 7zex: H5" -> H5''
                                 self.__fixAtomNomenclature(comp_id, {atom_id: atom_id[:-1] + "''"})
                                 continue
 

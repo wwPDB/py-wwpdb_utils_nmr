@@ -2494,6 +2494,7 @@ class NEFTranslator:
 
                         def resolve_entity_assembly(_loop, _alt_chain_id_list, sync_seq):
                             if 'Auth_seq_ID' in _loop.tags:
+                                comp_id_col = _loop.tags.index('Comp_ID')
                                 pre_tags = [alt_chain_id, 'Auth_seq_ID', 'Comp_ID']
                                 if 'Auth_comp_ID' in _loop.tags:
                                     pre_tags.append('Auth_comp_ID')
@@ -2510,12 +2511,27 @@ class NEFTranslator:
                                         valid = False
                                         break
                                     try:
-                                        comp_id_col = _loop.tags.index('Comp_ID')
                                         _ref_comp_id = row[3] if len(row) > 3 else None
                                         _comp_id = translateToStdResName(row[2].upper(), refCompId=_ref_comp_id, ccU=self.__ccU)
                                         seq.add((row[0], int(row[1]), _comp_id))
                                         if row[2] != _comp_id:
-                                            _loop.data[idx][comp_id_col] = _comp_id
+                                            not_found = True
+                                            found = False
+                                            for ps in cif_ps:
+                                                if _comp_id in ps['comp_id']:
+                                                    found = True
+                                                if row[2] in ps['comp_id']:
+                                                    not_found = False
+                                                    break
+                                            if not_found:
+                                                for np in cif_np:
+                                                    if _comp_id in np['comp_id']:
+                                                        found = True
+                                                    if row[2] in np['comp_id']:
+                                                        not_found = False
+                                                        break
+                                            if not_found and found:
+                                                loop.data[idx][comp_id_col] = _comp_id
                                     except ValueError:
                                         valid = False
                                         break
@@ -2538,7 +2554,6 @@ class NEFTranslator:
                                         chain_id_col = _loop.tags.index('Entity_assembly_ID')
                                         alt_chain_id_col = _loop.tags.index('Auth_asym_ID')
                                         auth_seq_id_col = _loop.tags.index('Auth_seq_ID')
-                                        comp_id_col = _loop.tags.index('Comp_ID')
                                         entity_id_col = _loop.tags.index('Entity_ID') if 'Entity_ID' in _loop.tags else -1
                                         seq_id_col = _loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in _loop.tags else -1
                                         alt_seq_id_col = _loop.tags.index('Seq_ID') if 'Seq_ID' in _loop.tags else -1

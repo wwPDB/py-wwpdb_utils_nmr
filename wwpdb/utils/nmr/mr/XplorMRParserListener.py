@@ -9796,7 +9796,7 @@ class XplorMRParserListener(ParseTreeListener):
                             self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {__factor}.")
                         else:
-                            self.__f.append(f"[Insufficient atom selection] 3 {self.__getCurrentRestraint()}"
+                            self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {__factor}.")
                             if 'alt_chain_id' in _factor:  # 2mnz
                                 for chainId in _factor['chain_id']:
@@ -9906,14 +9906,14 @@ class XplorMRParserListener(ParseTreeListener):
                                     self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                                     self.__setLocalSeqScheme()
                     else:
-                        self.__g.append(f"[Insufficient atom selection] 2 {self.__getCurrentRestraint()}"
+                        self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                         f"The {clauseName} has no effect for a factor {__factor}. "
                                         "Please update the sequence in the Macromolecules page.")
                 elif self.__cur_subtype == 'plane':
                     if 'atom_id' not in _factor or ('H5T' not in _factor['atom_id'] and 'H3T' not in _factor['atom_id']):
                         hint = f" Please verify that the planarity restraints match with the residue {_factor['comp_id'][0]!r}"\
                             if 'comp_id' in _factor and len(_factor['comp_id']) == 1 else ''
-                        self.__f.append(f"[Insufficient atom selection] 1 {self.__getCurrentRestraint()}"
+                        self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                         f"The {clauseName} has no effect for a factor {__factor}.{hint}")
 
         elif len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:

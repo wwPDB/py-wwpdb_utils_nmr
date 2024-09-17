@@ -2512,26 +2512,26 @@ class NEFTranslator:
                                         break
                                     try:
                                         _ref_comp_id = row[3] if len(row) > 3 else None
-                                        _comp_id = translateToStdResName(row[2].upper(), refCompId=_ref_comp_id, ccU=self.__ccU)
-                                        seq.add((row[0], int(row[1]), _comp_id))
-                                        if row[2] != _comp_id:
-                                            not_found = True
-                                            found = False
+                                        ref_comp_id = row[2].upper()
+                                        can_comp_id = translateToStdResName(ref_comp_id, refCompId=_ref_comp_id, ccU=self.__ccU)
+                                        seq.add((row[0], int(row[1]), can_comp_id))
+                                        if ref_comp_id != can_comp_id:  # 7zew, 7zex
+                                            ref_comp_id_not_found, can_comp_id_found = True, False
                                             for ps in cif_ps:
-                                                if _comp_id in ps['comp_id']:
-                                                    found = True
-                                                if row[2] in ps['comp_id']:
-                                                    not_found = False
+                                                if can_comp_id in ps['comp_id']:
+                                                    can_comp_id_found = True
+                                                if ref_comp_id in ps['comp_id']:
+                                                    ref_comp_id_not_found = False
                                                     break
-                                            if not_found:
+                                            if ref_comp_id_not_found:
                                                 for np in cif_np:
-                                                    if _comp_id in np['comp_id']:
-                                                        found = True
-                                                    if row[2] in np['comp_id']:
-                                                        not_found = False
+                                                    if can_comp_id in np['comp_id']:
+                                                        can_comp_id_found = True
+                                                    if ref_comp_id in np['comp_id']:
+                                                        ref_comp_id_not_found = False
                                                         break
-                                            if not_found and found:
-                                                loop.data[idx][comp_id_col] = _comp_id
+                                            if ref_comp_id_not_found and can_comp_id_found:  # 6alt
+                                                _loop.data[idx][comp_id_col] = can_comp_id
                                     except ValueError:
                                         valid = False
                                         break

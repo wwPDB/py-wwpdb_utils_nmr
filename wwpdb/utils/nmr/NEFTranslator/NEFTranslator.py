@@ -2523,7 +2523,7 @@ class NEFTranslator:
                                                 if ref_comp_id in ps['comp_id']:
                                                     ref_comp_id_not_found = False
                                                     break
-                                            if ref_comp_id_not_found:
+                                            if cif_np is not None and ref_comp_id_not_found:
                                                 for np in cif_np:
                                                     if can_comp_id in np['comp_id']:
                                                         can_comp_id_found = True

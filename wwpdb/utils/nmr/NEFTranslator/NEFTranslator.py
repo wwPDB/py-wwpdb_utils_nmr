@@ -2520,14 +2520,14 @@ class NEFTranslator:
                                             for ps in cif_ps:
                                                 if can_comp_id in ps['comp_id']:
                                                     can_comp_id_found = True
-                                                if ref_comp_id in ps['comp_id']:
+                                                if ref_comp_id in ps['comp_id'] or ref_comp_id in ps['auth_comp_id']:
                                                     ref_comp_id_not_found = False
                                                     break
                                             if cif_np is not None and ref_comp_id_not_found:
                                                 for np in cif_np:
                                                     if can_comp_id in np['comp_id']:
                                                         can_comp_id_found = True
-                                                    if ref_comp_id in np['comp_id']:
+                                                    if ref_comp_id in np['comp_id'] or ref_comp_id in np['auth_comp_id']:
                                                         ref_comp_id_not_found = False
                                                         break
                                             if ref_comp_id_not_found and can_comp_id_found:  # 6alt
@@ -7151,7 +7151,7 @@ class NEFTranslator:
                                         if len(branch) == 2:
                                             for b in branch:
                                                 protons.extend(self.__ccU.getBondedAtoms(comp_id, b, onlyProton=True))
-                                else:
+                                else:  # 2mlm
                                     for cca in self.__ccU.lastAtomList:
                                         if cca[self.__ccU.ccaTypeSymbol] in ('C', 'N'):
                                             _root = cca[self.__ccU.ccaAtomId]
@@ -7167,10 +7167,10 @@ class NEFTranslator:
                                             if cca[self.__ccU.ccaAromaticFlag] == 'Y':
                                                 aliphatic = False
                                             protons.extend(self.__ccU.getBondedAtoms(comp_id, k, onlyProton=True))
-                        len_protons = len(protons)
-                        if len_protons in (4, 6):
-                            atom_list, ambiguity_code, details = protons, 2 if aliphatic else 3, None
-                            resolved = True
+                                len_protons = len(protons)
+                                if len_protons in (4, 6):
+                                    atom_list, ambiguity_code, details = protons, 2 if aliphatic else 3, None
+                                    resolved = True
                         # 5lig, comp_id=6XM, atom_id=HA' -> ["HA1'", "HA2'"]
                         elif details is not None and atom_id.endswith("'") and not atom_id.endswith("''"):
                             _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, atom_id[:-1] + "%'", details, leave_unmatched, methyl_only)

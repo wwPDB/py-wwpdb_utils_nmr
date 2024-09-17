@@ -43170,11 +43170,17 @@ class NmrDpUtility:
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insertion error'
                                     # DAOTHER-9644: skip insertion error due to truncated loop
+                                    cif_ps = next(cif_ps for cif_ps in cif_polymer_sequence if cif_ps['chain_id'] == chain_id2)
                                     if label_seq_id is None:
-                                        cif_ps = next(cif_ps for cif_ps in cif_polymer_sequence if cif_ps['chain_id'] == chain_id2)
                                         if self.__caC is not None and 'missing_polymer_linkage' in self.__caC\
                                            and any(mis for mis in self.__caC['missing_polymer_linkage']
                                                    if mis['auth_chain_id'] == (cif_ps['auth_chain_id'] if 'auth_chain_id' in cif_ps else cif_ps['chain_id'])):
+                                            continue
+                                    else:
+                                        if self.__caC is not None and 'missing_polymer_linkage' in self.__caC\
+                                           and any(mis for mis in self.__caC['missing_polymer_linkage']
+                                                   if mis['auth_chain_id'] == (cif_ps['auth_chain_id'] if 'auth_chain_id' in cif_ps else cif_ps['chain_id'])
+                                                   and mis['auth_seq_id_1'] < auth_seq_id < mis['auth_seq_id_2']):
                                             continue
                                 nmr_seq_code = f"{chain_id}:{_seq_id1}:{nmr_comp_id}"
                                 if nmr_comp_id == '.':
@@ -43648,11 +43654,17 @@ class NmrDpUtility:
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insertion error'
                                     # DAOTHER-9644: skip insertion error due to truncated loop
+                                    cif_ps = next(cif_ps for cif_ps in cif_polymer_sequence if cif_ps['chain_id'] == chain_id)
                                     if label_seq_id is None:
-                                        cif_ps = next(cif_ps for cif_ps in cif_polymer_sequence if cif_ps['chain_id'] == chain_id)
                                         if self.__caC is not None and 'missing_polymer_linkage' in self.__caC\
                                            and any(mis for mis in self.__caC['missing_polymer_linkage']
                                                    if mis['auth_chain_id'] == (cif_ps['auth_chain_id'] if 'auth_chain_id' in cif_ps else cif_ps['chain_id'])):
+                                            continue
+                                    else:
+                                        if self.__caC is not None and 'missing_polymer_linkage' in self.__caC\
+                                           and any(mis for mis in self.__caC['missing_polymer_linkage']
+                                                   if mis['auth_chain_id'] == (cif_ps['auth_chain_id'] if 'auth_chain_id' in cif_ps else cif_ps['chain_id'])
+                                                   and mis['auth_seq_id_1'] < auth_seq_id < mis['auth_seq_id_2']):
                                             continue
                                 nmr_seq_code = f"{chain_id2}:{_seq_id2}:{nmr_comp_id}"
                                 if nmr_comp_id == '.':

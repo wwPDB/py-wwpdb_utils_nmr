@@ -1828,12 +1828,12 @@ CARTN_DATA_ITEMS = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
 
 AUTH_ATOM_DATA_ITEMS = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                        {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                        {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                        {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                        {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
                         ]
 
-ATOM_NAME_DATA_ITEMS = [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                        {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+ATOM_NAME_DATA_ITEMS = [{'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                        {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
                         ]
 
 AUTH_ATOM_CARTN_DATA_ITEMS = CARTN_DATA_ITEMS
@@ -1841,14 +1841,14 @@ AUTH_ATOM_CARTN_DATA_ITEMS.extend(AUTH_ATOM_DATA_ITEMS)
 
 PTNR1_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                               {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                              {'name': 'ptnr1_label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                              {'name': 'ptnr1_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                              {'name': 'ptnr1_label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                              {'name': 'ptnr1_label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
                               ]
 
 PTNR2_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                               {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                              {'name': 'ptnr2_label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                              {'name': 'ptnr2_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                              {'name': 'ptnr2_label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                              {'name': 'ptnr2_label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
                               ]
 
 
@@ -3357,21 +3357,21 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         # key items of loop
         _keyItems = {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                  {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                  {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
                      'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                  {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                  {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
                      'branched': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                  {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                  {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
@@ -3381,7 +3381,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                     {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
                                     {'name': 'auth_comp_id', 'type': 'int', 'alt_name': 'auth_comp_id'},
-                                    {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                    {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'}
                                     ],
                      'mis_poly_link': [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                        {'name': 'auth_seq_id_1', 'type': 'int'},
@@ -3393,7 +3393,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
                                      {'name': 'parent_comp_id', 'type': 'str', 'alt_name': 'auth_comp_id'},
-                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'}]
+                                     {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'}]
                      }
 
         contentSubtype = 'mis_poly_link'
@@ -3651,7 +3651,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                             CARTN_DATA_ITEMS,
                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                              {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_1},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'value': BEG_ATOM},
+                                                             {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': BEG_ATOM},
                                                              {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': representativeModelId},
                                                              {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                              ])
@@ -3660,7 +3660,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                             CARTN_DATA_ITEMS,
                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                              {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_2},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'value': END_ATOM},
+                                                             {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': END_ATOM},
                                                              {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': representativeModelId},
                                                              {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                              ])
@@ -3818,7 +3818,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                          {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
                          {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
                          {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'alt_comp_id'},
+                         {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'alt_comp_id'},
                          {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'}
                          ]
 
@@ -4550,7 +4550,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'seq_id', 'type': 'int'},
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                     {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                     {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                      {'name': polySeqAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'},  # DAOTHER-8817
                                      {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
                                      ]
@@ -4571,7 +4571,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'auth_seq_id', 'type': 'int'},
                                      {'name': 'pdbx_auth_seq_id' if cR.hasItem('atom_site', 'pdbx_auth_seq_id') else 'auth_seq_id',
                                       'type': 'int', 'alt_name': 'alt_seq_id'},
-                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                     {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                      {'name': 'pdbx_auth_comp_id' if cR.hasItem('atom_site', 'pdbx_auth_comp_id') else 'auth_comp_id',
                                       'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'label_comp_id'},
                                      {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'label_comp_id'},
@@ -4923,7 +4923,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                     {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                     {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                      {'name': branchedAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id'},  # DAOTHER-8817
                                      {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id'}
                                      ]
@@ -5032,7 +5032,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                     {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                     {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                      {'name': nonPolyAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'},  # DAOTHER-8817
                                      {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
                                      ]

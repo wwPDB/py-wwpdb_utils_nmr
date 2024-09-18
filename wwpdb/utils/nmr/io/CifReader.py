@@ -33,6 +33,7 @@
 # 07-Mar-2024   my  - extract pdbx_poly_seq_scheme.auth_mon_id as alt_cmop_id to prevent sequence mismatch due to 5-letter CCD ID (DAOTHER-9158 vs D_1300043061)
 # 20-Aug-2024   my  - support truncated loop sequence in the model (DAOTHER-9644)
 # 10-Sep-2024   my  - ignore identical polymer sequence extensions within polynucleotide multiplexes (DAOTHER-9674)
+# 18-Sep-2024   my  - add 'starts-with-alnum' item type (DAOTHER-9694)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -246,7 +247,7 @@ class CifReader:
         self.itemTypes = ('str', 'bool',
                           'int', 'range-int', 'abs-int', 'range-abs-int',
                           'float', 'range-float', 'abs-float', 'range-abs-float',
-                          'enum')
+                          'enum', 'starts-with-alnum')
 
         # random rotation test for detection of non-superimposed models (DAOTHER-4060)
         self.__random_rotaion_test = False
@@ -591,6 +592,10 @@ class CifReader:
                             filterItemType = filterItem['type']
                             if filterItemType in ('str', 'enum'):
                                 pass
+                            elif filterItemType == 'starts-with-alnum':
+                                if not val[0].isalnum():
+                                    keep = False
+                                    break
                             elif filterItemType == 'bool':
                                 val = val.lower() in self.trueValue
                             elif filterItemType == 'int':
@@ -661,6 +666,9 @@ class CifReader:
                         dataItemType = dataItem['type']
                         if dataItemType in ('str', 'enum'):
                             pass
+                        elif dataItemType == 'starts-with-alnum':
+                            if not val[0].isalnum():
+                                val = None
                         elif dataItemType == 'bool':
                             val = val.lower() in self.trueValue
                         elif dataItemType == 'int' and val is not None:
@@ -762,7 +770,10 @@ class CifReader:
                                     if etype is not None and 'polypeptide' not in etype:
                                         if c not in unmapSeqIds:
                                             unmapSeqIds[c], unmapAuthSeqIds[c] = [], []
-                                        unmapSeqIds[c].append((row[altDict['seq_id']], row[altDict['comp_id']]))
+                                        compId = row[altDict['comp_id']]
+                                        if compId in self.emptyValue or not compId[0].isalnum():  # DAOTHER-9694
+                                            continue
+                                        unmapSeqIds[c].append((row[altDict['seq_id']], compId))
                                         unmapAuthSeqIds[c].append(row[altDict['auth_seq_id']])
                                     if _rowList is None:
                                         _rowList = copy.deepcopy(rowList)
@@ -779,6 +790,9 @@ class CifReader:
                         if etype is not None and 'polypeptide' not in etype:
                             if c not in mapAuthSeqIds:
                                 mapAuthSeqIds[c] = []
+                            compId = row[altDict['comp_id']]
+                            if compId in self.emptyValue or not compId[0].isalnum():  # DAOTHER-9694
+                                continue
                             mapAuthSeqIds[c].append(row[altDict['auth_seq_id']])
 
             # DAOTHER-9674
@@ -1022,7 +1036,7 @@ class CifReader:
                                                                    CARTN_DATA_ITEMS,
                                                                    [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                                     {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_1},
-                                                                    {'name': 'label_atom_id', 'type': 'str', 'value': BEG_ATOM},
+                                                                    {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': BEG_ATOM},
                                                                     {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': repModelId},
                                                                     {'name': 'label_alt_id', 'type': 'enum', 'enum': (repAltId,)}
                                                                     ])
@@ -1032,7 +1046,7 @@ class CifReader:
                                                                    CARTN_DATA_ITEMS,
                                                                    [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                                     {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_2},
-                                                                    {'name': 'label_atom_id', 'type': 'str', 'value': END_ATOM},
+                                                                    {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': END_ATOM},
                                                                     {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': repModelId},
                                                                     {'name': 'label_alt_id', 'type': 'enum', 'enum': (repAltId,)}
                                                                     ])
@@ -1212,7 +1226,7 @@ class CifReader:
                                                                             ],
                                                                            [{'name': 'label_asym_id', 'type': 'enum',
                                                                              'enum': polyPeptideChains},
-                                                                            {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'},
+                                                                            {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': 'CA'},
                                                                             {'name': 'label_alt_id', 'type': 'enum',
                                                                              'enum': (repAltId,)},
                                                                             {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
@@ -1228,7 +1242,7 @@ class CifReader:
                                                                             ],
                                                                            [{'name': 'label_asym_id', 'type': 'enum',
                                                                              'enum': polyPeptideChains},
-                                                                            {'name': 'label_atom_id', 'type': 'str', 'value': 'C'},
+                                                                            {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': 'C'},
                                                                             {'name': 'label_alt_id', 'type': 'enum',
                                                                              'enum': (repAltId,)},
                                                                             {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
@@ -1244,7 +1258,7 @@ class CifReader:
                                                                             ],
                                                                            [{'name': 'label_asym_id', 'type': 'enum',
                                                                              'enum': polyPeptideChains},
-                                                                            {'name': 'label_atom_id', 'type': 'str', 'value': 'N'},
+                                                                            {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': 'N'},
                                                                             {'name': 'label_alt_id', 'type': 'enum',
                                                                              'enum': (repAltId,)},
                                                                             {'name': 'type_symbol', 'type': 'str', 'value': 'N'}])
@@ -1273,7 +1287,7 @@ class CifReader:
                                                                        {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
                                                                        ],
                                                                       [{'name': 'label_asym_id', 'type': 'str', 'value': c},
-                                                                       {'name': 'label_atom_id', 'type': 'str', 'value': 'P'},
+                                                                       {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': 'P'},
                                                                        {'name': 'label_alt_id', 'type': 'enum',
                                                                         'enum': (repAltId,)},
                                                                        {'name': 'type_symbol', 'type': 'str', 'value': 'P'}])

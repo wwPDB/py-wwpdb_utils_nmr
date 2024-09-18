@@ -2252,29 +2252,29 @@ class NmrDpUtility:
                                        },
                           'pdbx': {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                 {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                                 {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'}
                                                 ],
                                    'poly_seq_alias': [{'name': 'id', 'type': 'str', 'alt_name': 'chain_id'},
                                                       {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                      {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                                       {'name': 'pdb_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                                       {'name': 'pdb_num', 'type': 'int', 'alt_name': 'auth_seq_id'}
                                                       ],
                                    'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                                {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                                 {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
                                                 ],
                                    'non_poly_alias': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                       {'name': 'pdb_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                      {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                                       {'name': 'pdb_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
                                                       ],
                                    'branched': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                                {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                                 {'name': 'pdb_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
                                                 ],
                                    'coordinate': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
@@ -41636,8 +41636,8 @@ class NmrDpUtility:
                           {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
                           {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                           {'name': 'auth_seq_id', 'type': 'int'},  # non-polymer
-                          {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                          {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                          {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                          {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
                           {'name': 'type_symbol', 'type': 'str'}  # DAOTHER-9084
                           ]
 
@@ -45847,14 +45847,15 @@ class NmrDpUtility:
                    and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id):
                     for d in self.__nmr_ext_poly_seq:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id and 'touch' not in d:
-                            _seq_key = (entity_assembly_id, d['auth_seq_id'])
-                            if _seq_key in seq_keys:
+                            _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
+                            _seq_key = (entity_assembly_id, _auth_seq_id)
+                            if _seq_key in seq_keys or _auth_comp_id in emptyValue or not _auth_comp_id[0].isalnum():  # 2l1f, DAOTHER-9694
                                 continue
                             seq_keys.add(_seq_key)
                             row = [None] * len(loop.tags)
                             row[chain_id_col], row[seq_id_col], row[comp_id_col], row[idx_col] =\
-                                auth_asym_id, d['auth_seq_id'], d['auth_comp_id'], nef_index
-                            row[seq_link_col] = 'start' if index == 1 else 'middle' if d['auth_comp_id'] not in unknownResidue else 'dummy'
+                                auth_asym_id, _auth_seq_id, _auth_comp_id, nef_index
+                            row[seq_link_col] = 'start' if index == 1 else 'middle' if _auth_comp_id not in unknownResidue else 'dummy'
 
                             loop.add_data(row)
 
@@ -45934,14 +45935,15 @@ class NmrDpUtility:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id and 'touch' not in d:
                             if loop.data[-1][seq_link_col] == 'end':
                                 loop.data[-1][seq_link_col] = 'middle'
-                            _seq_key = (entity_assembly_id, d['auth_seq_id'])
-                            if _seq_key in seq_keys:
+                            _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
+                            _seq_key = (entity_assembly_id, _auth_seq_id)
+                            if _seq_key in seq_keys or _auth_comp_id in emptyValue or not _auth_comp_id[0].isalnum():  # 2l1f, DAOTHER-9694:
                                 continue
                             seq_keys.add(_seq_key)
                             row = [None] * len(loop.tags)
                             row[chain_id_col], row[seq_id_col], row[comp_id_col], row[idx_col] =\
-                                auth_asym_id, d['auth_seq_id'], d['auth_comp_id'], nef_index
-                            row[seq_link_col] = 'end' if d['auth_comp_id'] not in unknownResidue else 'dummy'
+                                auth_asym_id, _auth_seq_id, _auth_comp_id, nef_index
+                            row[seq_link_col] = 'end' if _auth_comp_id not in unknownResidue else 'dummy'
 
                             loop.add_data(row)
 
@@ -46095,17 +46097,18 @@ class NmrDpUtility:
                     for d in self.__nmr_ext_poly_seq:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id and 'touch' not in d:
                             _offset = seq_id - auth_seq_id
-                            _seq_id = d['auth_seq_id'] + _offset
+                            _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
+                            _seq_id = _auth_seq_id + _offset
                             _seq_key = (entity_assembly_id, _seq_id)
-                            if _seq_key in seq_keys:
+                            if _seq_key in seq_keys or _auth_comp_id in emptyValue or not _auth_comp_id[0].isalnum():  # 2l1f, DAOTHER-9694
                                 continue
                             seq_keys.add(_seq_key)
                             row = [None] * len(loop.tags)
                             row[chain_id_col], row[ent_id_col], row[seq_id_col], row[alt_seq_id_col] =\
                                 entity_assembly_id, entity_id, _seq_id, _seq_id
                             row[comp_id_col], row[auth_asym_id_col], row[auth_seq_id_col], row[auth_comp_id_col] =\
-                                d['auth_comp_id'], auth_asym_id, d['auth_seq_id'], d['auth_comp_id']
-                            row[seq_link_col] = 'start' if index == 1 else 'middle' if d['auth_comp_id'] not in unknownResidue else 'dummy'
+                                _auth_comp_id, auth_asym_id, _auth_seq_id, _auth_comp_id
+                            row[seq_link_col] = 'start' if index == 1 else 'middle' if _auth_comp_id not in unknownResidue else 'dummy'
                             row[asm_id_col] = 1
                             if idx_col != -1:
                                 row[idx_col] = nef_index
@@ -46203,17 +46206,18 @@ class NmrDpUtility:
                             if loop.data[-1][seq_link_col] == 'end':
                                 loop.data[-1][seq_link_col] = 'middle'
                             _offset = seq_id - auth_seq_id
-                            _seq_id = d['auth_seq_id'] + _offset
+                            _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
+                            _seq_id = _auth_seq_id + _offset
                             _seq_key = (entity_assembly_id, _seq_id)
-                            if _seq_key in seq_keys:
+                            if _seq_key in seq_keys or _auth_comp_id in emptyValue or not _auth_comp_id[0].isalnum():  # 2l1f, DAOTHER-9694:
                                 continue
                             seq_keys.add(_seq_key)
                             row = [None] * len(loop.tags)
                             row[chain_id_col], row[ent_id_col], row[seq_id_col], row[alt_seq_id_col] =\
                                 entity_assembly_id, entity_id, _seq_id, _seq_id
                             row[comp_id_col], row[auth_asym_id_col], row[auth_seq_id_col], row[auth_comp_id_col] =\
-                                d['auth_comp_id'], auth_asym_id, d['auth_seq_id'], d['auth_comp_id']
-                            row[seq_link_col] = 'end' if d['auth_comp_id'] not in unknownResidue else 'dummy'
+                                _auth_comp_id, auth_asym_id, _auth_seq_id, _auth_comp_id
+                            row[seq_link_col] = 'end' if _auth_comp_id not in unknownResidue else 'dummy'
                             row[asm_id_col] = 1
                             if idx_col != -1:
                                 row[idx_col] = nef_index
@@ -47768,7 +47772,7 @@ class NmrDpUtility:
                 try:
 
                     protons = self.__cR.getDictListWithFilter('atom_site',
-                                                              [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                              [{'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
                                                                {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
                                                                ],
                                                               [{'name': 'label_asym_id', 'type': 'str', 'value': chain_id},
@@ -47877,7 +47881,7 @@ class NmrDpUtility:
                 model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
 
                 protons = self.__cR.getDictListWithFilter('atom_site',
-                                                          [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                          [{'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
                                                            ],
                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
@@ -47965,7 +47969,7 @@ class NmrDpUtility:
                 model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
 
                 atoms = self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                        [{'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
                                                          {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                          {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                          {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
@@ -48074,7 +48078,7 @@ class NmrDpUtility:
                 model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
 
                 atoms = self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                        [{'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
                                                          {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                          {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                          {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
@@ -48204,7 +48208,7 @@ class NmrDpUtility:
                 model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
 
                 atoms = self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                        [{'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
                                                          {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                          {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                          {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
@@ -49153,8 +49157,8 @@ class NmrDpUtility:
                 _neighbor = self.__cR.getDictListWithFilter('atom_site',
                                                             [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                              {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                             {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                                                             {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
                                                              {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                              {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                              {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
@@ -49339,7 +49343,7 @@ class NmrDpUtility:
             try:
 
                 _na = self.__cR.getDictListWithFilter('atom_site',
-                                                      [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                      [{'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
                                                        {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                        {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                        {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
@@ -49498,8 +49502,8 @@ class NmrDpUtility:
                 _neighbor = self.__cR.getDictListWithFilter('atom_site',
                                                             [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                              {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},  # non-polymer
-                                                             {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                             {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                                                             {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
                                                              {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                              {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                              {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},

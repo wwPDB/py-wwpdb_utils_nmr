@@ -45863,8 +45863,6 @@ class NmrDpUtility:
                             nef_index += 1
                             index += 1
 
-                            auth_seq_id = d['auth_seq_id']
-
                 auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == k), comp_id)
 
                 row = [None] * len(loop.tags)
@@ -45936,6 +45934,10 @@ class NmrDpUtility:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id and 'touch' not in d:
                             if loop.data[-1][seq_link_col] == 'end':
                                 loop.data[-1][seq_link_col] = 'middle'
+                            _seq_key = (entity_assembly_id, d['auth_seq_id'])
+                            if _seq_key in seq_keys:
+                                continue
+                            seq_keys.add(_seq_key)
                             row = [None] * len(loop.tags)
                             row[chain_id_col], row[seq_id_col], row[comp_id_col], row[idx_col] =\
                                 auth_asym_id, d['auth_seq_id'], d['auth_comp_id'], nef_index
@@ -45946,8 +45948,6 @@ class NmrDpUtility:
                             d['touch'] = True
 
                             nef_index += 1
-
-                            auth_seq_id = d['auth_seq_id']
 
             if len(self.__auth_asym_ids_with_chem_exch) > 0:
                 for item in entity_assembly:
@@ -46119,14 +46119,13 @@ class NmrDpUtility:
                             nef_index += 1
                             index += 1
 
-                            auth_seq_id = d['auth_seq_id']
-
                 auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == k), comp_id)
 
                 row = [None] * len(loop.tags)
 
                 row[chain_id_col], row[ent_id_col] = entity_assembly_id, entity_id
                 row[seq_id_col] = row[alt_seq_id_col] = seq_id
+                seq_keys.add((entity_assembly_id, seq_id))
 
                 entity_type = entity_type_of[entity_id]
 
@@ -46205,6 +46204,10 @@ class NmrDpUtility:
                                 loop.data[-1][seq_link_col] = 'middle'
                             _offset = seq_id - auth_seq_id
                             _seq_id = d['auth_seq_id'] + _offset
+                            _seq_key = (entity_assembly_id, _seq_id)
+                            if _seq_key in seq_keys:
+                                continue
+                            seq_keys.add(_seq_key)
                             row = [None] * len(loop.tags)
                             row[chain_id_col], row[ent_id_col], row[seq_id_col], row[alt_seq_id_col] =\
                                 entity_assembly_id, entity_id, _seq_id, _seq_id
@@ -46222,8 +46225,6 @@ class NmrDpUtility:
                             d['touch'] = True
 
                             nef_index += 1
-
-                            auth_seq_id = d['auth_seq_id']
 
             if len(self.__auth_asym_ids_with_chem_exch) > 0:
                 _entity_assembly_id = loop.data[-1][chain_id_col]

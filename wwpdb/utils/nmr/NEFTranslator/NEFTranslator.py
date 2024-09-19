@@ -2452,6 +2452,18 @@ class NEFTranslator:
                                 seq_key = (row[2], row[0])
                                 if seq_key in ch_set:
                                     loop.data[idx][comp_id_col] = loop.data[idx][auth_comp_id_col] = 'CH'
+                    pre_tags = ['Comp_ID', 'Auth_comp_ID']
+                    pre_seq_data = get_lp_tag(loop, pre_tags)
+                    for idx, row in enumerate(pre_seq_data):
+                        _comp_id, _auth_comp_id = row
+                        if _comp_id not in emptyValue:
+                            __comp_id = _comp_id.upper()
+                            if __comp_id != _comp_id:
+                                loop.data[idx][comp_id_col] = __comp_id
+                        if _auth_comp_id not in emptyValue:
+                            __auth_comp_id = _auth_comp_id.upper()
+                            if __auth_comp_id != _auth_comp_id:
+                                loop.data[idx][auth_comp_id_col] = __auth_comp_id
 
             if lp_category == '_Atom_chem_shift' and self.__remediation_mode and has_auth_asym_id\
                and set(tags) & set(loop.tags) == set(tags) and set(tags__) & set(loop.tags) == set(tags__):

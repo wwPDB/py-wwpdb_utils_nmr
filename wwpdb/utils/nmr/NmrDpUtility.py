@@ -10286,7 +10286,7 @@ class NmrDpUtility:
                                     for name in names:
 
                                         if isinstance(name, int):
-                                            if int != -1:
+                                            if name != -1:
                                                 atom_likes += 1
                                             else:
                                                 atom_unlikes += 1

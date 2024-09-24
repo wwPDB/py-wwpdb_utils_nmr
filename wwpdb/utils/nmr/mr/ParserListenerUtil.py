@@ -9032,12 +9032,50 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, hint='.'):
     if 'lower_limit' in dstFunc and dstFunc['lower_limit'] is not None:
         lowerLimit = float(dstFunc['lower_limit'])
 
+    atom_id_1_ = atom_id_1[0]
+    atom_id_2_ = atom_id_2[0]
+
+    def is_like_hbond():
+        if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
+            return True
+
+        if (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+            return True
+
+        if (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
+            return True
+
+        if (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
+            return True
+
+        if (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+            return True
+
+        if (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
+            return True
+
+        if (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+            return True
+
+        return False
+
     if atom1['chain_id'] == atom2['chain_id'] and atom1['seq_id'] == atom2['seq_id']:
+        if upperLimit == 0.0 and 0.0 < lowerLimit <= 1.8\
+           and atom_id_1_ not in protonBeginCode and atom_id_2_ not in protonBeginCode:
+            return 'covalent bond'
         if upperLimit >= DIST_AMBIG_UP or lowerLimit >= DIST_AMBIG_UP:
+            if is_like_hbond():
+                return 'ambiguous hydrogen bond'
             return 'general distance'
         return None
 
     _hint = hint.lower()
+
+    def is_like_sebond():
+        return (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _hint
+
+    def is_like_ssbond():
+        return (atom_id_1 == 'SG' and atom_id_2 == 'SG') or ('disulfide' in _hint or ('ss' in _hint and 'bond' in _hint))
 
     ambig = len(atomSelectionSet[0]) * len(atomSelectionSet[1]) > 1\
         and (isAmbigAtomSelection(atomSelectionSet[0], csStat)
@@ -9070,72 +9108,45 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, hint='.'):
         return 'ROE'
 
     if upperLimit >= DIST_AMBIG_UP or lowerLimit >= DIST_AMBIG_UP:
-        return 'general distance'
 
-    atom_id_1_ = atom_id_1[0]
-    atom_id_2_ = atom_id_2[0]
+        if upperLimit > DIST_AMBIG_BND or (atom1['chain_id'] == atom2['chain_id'] and atom1['seq_id'] == atom2['seq_id']):
+
+            if is_like_sebond():
+                return 'ambiguous diselenide bond'
+
+            if is_like_ssbond():
+                return 'ambiguous disulfide bond'
+
+            if is_like_hbond():
+                return 'ambiguous hydrogen bond'
+
+        return 'general distance'
 
     if upperLimit <= DIST_AMBIG_LOW or upperLimit > DIST_AMBIG_BND or ambig:
 
-        if upperLimit > DIST_AMBIG_BND:
+        if upperLimit > DIST_AMBIG_BND or (atom1['chain_id'] == atom2['chain_id'] and atom1['seq_id'] == atom2['seq_id']):
 
-            if (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _hint:
-                return 'general distance'
+            if is_like_sebond():
+                return 'ambiguous diselenide bond'
 
-            if (atom_id_1 == 'SG' and atom_id_2 == 'SG') or ('disulfide' in _hint or ('ss' in _hint and 'bond' in _hint)):
-                return 'general distance'
+            if is_like_ssbond():
+                return 'ambiguous disufide bond'
 
-            if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
-                return 'general distance'
-
-            if (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
-                return 'general distance'
-
-            if (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
-                return 'general distance'
-
-            if (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
-                return 'general distance'
-
-            if (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
-                return 'general distance'
-
-            if (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
-                return 'general distance'
-
-            if (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
-                return 'general distance'
+            if is_like_hbond():
+                return 'ambiguous hydrogen bond'
 
         if upperLimit >= DIST_AMBIG_MED and lowerLimit <= 0.0:
             return 'general distance'
 
         return None
 
-    if (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _hint:
+    if is_like_sebond():
         return 'diselenide bond'
 
-    if (atom_id_1 == 'SG' and atom_id_2 == 'SG') or ('disulfide' in _hint or ('ss' in _hint and 'bond' in _hint)):
+    if is_like_ssbond():
         return 'disulfide bond'
 
-    if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
-        return 'hydrogen bond'
-
-    if (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
-        return 'hydrogen bond'
-
-    if (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
-        return 'hydrogen bond'
-
-    if (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
-        return 'hydrogen bond'
-
-    if (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
-        return 'hydrogen bond'
-
-    if (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
-        return 'hydrogen bond'
-
-    if (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+    if is_like_hbond():
         return 'hydrogen bond'
 
     return None

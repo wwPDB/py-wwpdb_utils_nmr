@@ -43301,6 +43301,56 @@ class NmrDpUtility:
                                 except StopIteration:
                                     pass
 
+                            if self.__combined_mode:  # DAOTHER-9660, issue #2
+                                nmr_ident_chain_id = set()
+                                cif_ident_chain_id = set()
+
+                                for ca in chain_assign:
+
+                                    if ca['conflict'] > 0:
+                                        continue
+
+                                    nmr_chain_id = ca['ref_chain_id']
+                                    cif_chain_id = ca['test_chain_id']
+
+                                    try:
+                                        identity = next(s['identical_chain_id'] for s in nmr_polymer_sequence
+                                                        if s['chain_id'] == nmr_chain_id and 'identical_chain_id' in s)
+                                        nmr_ident_chain_id.add(nmr_chain_id)
+                                    except StopIteration:
+                                        pass
+
+                                    try:
+                                        identity = next(s['identical_chain_id'] for s in cif_polymer_sequence
+                                                        if s['chain_id'] == cif_chain_id and 'identical_chain_id' in s)
+                                        cif_ident_chain_id.add(cif_chain_id)
+                                    except StopIteration:
+                                        pass
+
+                                if len(cif_ident_chain_id) == len(nmr_ident_chain_id) and len(cif_ident_chain_id) > 1:
+                                    _chain_assign = chain_assign.copy()
+
+                                    nmr_mapped_chain_id = []
+                                    cif_mapped_chain_id = []
+
+                                    for ca in _chain_assign:
+
+                                        if ca['conflict'] > 0:
+                                            continue
+
+                                        nmr_chain_id = ca['ref_chain_id']
+                                        cif_chain_id = ca['test_chain_id']
+
+                                        if nmr_chain_id not in nmr_ident_chain_id or cif_chain_id not in cif_ident_chain_id:
+                                            continue
+
+                                        if nmr_chain_id not in nmr_mapped_chain_id and cif_chain_id not in cif_mapped_chain_id:
+                                            nmr_mapped_chain_id.append(nmr_chain_id)
+                                            cif_mapped_chain_id.append(cif_chain_id)
+
+                                        else:
+                                            chain_assign.remove(ca)
+
                     self.report.chain_assignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', chain_assign)
 
                     if len(self.__suspended_errors_for_lazy_eval) > 0:
@@ -43783,6 +43833,56 @@ class NmrDpUtility:
 
                                 except StopIteration:
                                     pass
+
+                            if self.__combined_mode:  # DAOTHER-9660, issue #2
+                                nmr_ident_chain_id = set()
+                                cif_ident_chain_id = set()
+
+                                for ca in chain_assign:
+
+                                    if ca['conflict'] > 0:
+                                        continue
+
+                                    nmr_chain_id = ca['test_chain_id']
+                                    cif_chain_id = ca['ref_chain_id']
+
+                                    try:
+                                        identity = next(s['identical_chain_id'] for s in nmr_polymer_sequence
+                                                        if s['chain_id'] == nmr_chain_id and 'identical_chain_id' in s)
+                                        nmr_ident_chain_id.add(nmr_chain_id)
+                                    except StopIteration:
+                                        pass
+
+                                    try:
+                                        identity = next(s['identical_chain_id'] for s in cif_polymer_sequence
+                                                        if s['chain_id'] == cif_chain_id and 'identical_chain_id' in s)
+                                        cif_ident_chain_id.add(cif_chain_id)
+                                    except StopIteration:
+                                        pass
+
+                                if len(cif_ident_chain_id) == len(nmr_ident_chain_id) and len(cif_ident_chain_id) > 1:
+                                    _chain_assign = chain_assign.copy()
+
+                                    nmr_mapped_chain_id = []
+                                    cif_mapped_chain_id = []
+
+                                    for ca in _chain_assign:
+
+                                        if ca['conflict'] > 0:
+                                            continue
+
+                                        nmr_chain_id = ca['test_chain_id']
+                                        cif_chain_id = ca['ref_chain_id']
+
+                                        if nmr_chain_id not in nmr_ident_chain_id or cif_chain_id not in cif_ident_chain_id:
+                                            continue
+
+                                        if nmr_chain_id not in nmr_mapped_chain_id and cif_chain_id not in cif_mapped_chain_id:
+                                            nmr_mapped_chain_id.append(nmr_chain_id)
+                                            cif_mapped_chain_id.append(cif_chain_id)
+
+                                        else:
+                                            chain_assign.remove(ca)
 
                     self.report.chain_assignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', chain_assign)
 

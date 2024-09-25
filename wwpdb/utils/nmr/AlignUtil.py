@@ -2181,6 +2181,9 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
 
         return seqId, compId, atomId
 
+    if elemName not in protonBeginCode and coordAtomSite is not None and atomId in coordAtomSite['atom_id']:
+        return seqId, compId, atomId
+
     _atomId = 'H' + atomId[1:]
 
     item = next((item for item in mapping
@@ -2441,6 +2444,9 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
         if item is not None and item['auth_atom_id'][-1] == '2':
             return item['auth_atom_id'][:-1] + '%'
 
+        return atomId
+
+    if elemName not in protonBeginCode and coordAtomSite is not None and atomId in coordAtomSite['atom_id']:
         return atomId
 
     _atomId = 'H' + atomId[1:]

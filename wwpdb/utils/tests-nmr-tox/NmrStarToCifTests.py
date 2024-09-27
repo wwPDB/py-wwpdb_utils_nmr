@@ -18,19 +18,7 @@ if __package__ is None or __package__ == "":
 else:
     from .commonsetup import TESTOUTPUT  # noqa: F401 pylint: disable=relative-beyond-top-level
 
-try:
-    from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
-except ImportError:
-    from nmr.NmrStarToCif import NmrStarToCif
-
-
-if __package__ is None or __package__ == "":
-    from os import path
-
-    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-    from commonsetup import TESTOUTPUT  # noqa: F401, pylint: disable=import-error,unused-import
-else:
-    from .commonsetup import TESTOUTPUT  # noqa: F401, pylint: disable=relative-beyond-top-level
+from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
 
 
 class TestNmrStarToCif(unittest.TestCase):

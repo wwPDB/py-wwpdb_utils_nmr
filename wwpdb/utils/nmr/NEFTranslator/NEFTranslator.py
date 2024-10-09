@@ -7092,6 +7092,10 @@ class NEFTranslator:
                             atom_list, ambiguity_code, details = nh[0], 1, None
                             return (atom_list, ambiguity_code, details)
 
+                if atom_id == 'HY' and comp_id == 'ILE':  # 2l9i, AMBER
+                    atom_list, ambiguity_code, details = ['HB', 'HG12', 'HG13'], 4, None
+                    return (atom_list, ambiguity_code, details)
+
                 if atom_id[-1] == '+' and atom_id[1].isdigit() and len(atom_id) > 2 and self.__ccU.updateChemCompDict(comp_id):
                     if self.__ccU.lastChemCompDict['_chem_comp.type'] in ('DNA LINKING', 'RNA LINKING'):  # DAOTHER-9198
                         _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, 'HN' + atom_id[1:-1], details, leave_unmatched, methyl_only)
